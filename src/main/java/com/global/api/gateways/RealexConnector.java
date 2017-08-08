@@ -231,6 +231,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("VALIDATE_CARD_ONLY", builder.getTransactionType() == TransactionType.Verify ? "1" : "0");
         request.set("HPP_FRAUD_FILTER_MODE", hostedPaymentConfig.getFraudFilterMode());
         request.set("HPP_VERSION", hostedPaymentConfig.getVersion());
+        if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
+            request.set("RECURRING_TYPE", builder.getRecurringType().getValue());
+            request.set("RECURRING_SEQUENCE", builder.getRecurringSequence().getValue());
+        }
 
         List<String> toHash = Arrays.asList(
                 timestamp, merchantId, orderId,

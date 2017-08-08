@@ -76,12 +76,12 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public IDeviceResponse closeLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.Pax_S300))
+        if(controller.getDeviceType().equals(DeviceType.PAX_S300))
             throw new UnsupportedTransactionException("The S300 does not support this call.");
         throw new UnsupportedTransactionException();
     }
     public IDeviceResponse openLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.Pax_S300))
+        if(controller.getDeviceType().equals(DeviceType.PAX_S300))
             throw new UnsupportedTransactionException("The S300 does not support this call.");
         throw new UnsupportedTransactionException();
     }
@@ -153,7 +153,13 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public TerminalAuthBuilder giftAddValue(int referenceNumber) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withCurrency(CurrencyType.Currency);
+        return giftAddValue(referenceNumber, null);
+    }
+    public TerminalAuthBuilder giftAddValue(int referenceNumber, BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift)
+                .withReferenceNumber(referenceNumber)
+                .withCurrency(CurrencyType.Currency)
+                .withAmount(amount);
     }
 
     public TerminalManageBuilder giftVoid(int referenceNumber) throws ApiException {

@@ -26,7 +26,7 @@ public class PaxCreditTests {
 
     public PaxCreditTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
-        deviceConfig.setDeviceType(DeviceType.Pax_S300);
+        deviceConfig.setDeviceType(DeviceType.PAX_S300);
         deviceConfig.setConnectionMode(ConnectionModes.HTTP);
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);

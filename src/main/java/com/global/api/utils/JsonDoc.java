@@ -11,6 +11,10 @@ public class JsonDoc {
     private IRequestEncoder encoder;
     private static final Gson gson = new Gson();
 
+    public Set<String> getKeys() {
+        return dict.keySet();
+    }
+
     public JsonDoc() {
         this(new HashMap<String, Object>(), null);
     }
@@ -100,6 +104,12 @@ public class JsonDoc {
                 return (JsonDoc)value;
             return null;
         }
+        return null;
+    }
+
+    public Object getValue(String name) {
+        if(dict.containsKey(name))
+            return dict.get(name);
         return null;
     }
 

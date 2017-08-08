@@ -41,11 +41,11 @@ public class ServicesContainer {
         DeviceController deviceController = null;
         if(config.getDeviceConnectionConfig() != null) {
             switch(config.getDeviceConnectionConfig().getDeviceType()) {
-                case Pax_S300:
+                case PAX_S300:
                     deviceController = new PaxController(config.getDeviceConnectionConfig());
                     deviceInterface = deviceController.configureInterface();
                     break;
-                case Hsip_ISC250:
+                case HSIP_ISC250:
                     deviceController = new HeartSipController(config.getDeviceConnectionConfig());
                     deviceInterface = deviceController.configureInterface();
                 default:

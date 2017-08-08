@@ -9,7 +9,6 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.terminals.pax.responses.BatchCloseResponse;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +20,7 @@ public class PaxBatchTests {
 
     public PaxBatchTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
-        deviceConfig.setDeviceType(DeviceType.Pax_S300);
+        deviceConfig.setDeviceType(DeviceType.PAX_S300);
         deviceConfig.setConnectionMode(ConnectionModes.HTTP);
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);

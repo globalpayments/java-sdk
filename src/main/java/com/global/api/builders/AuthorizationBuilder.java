@@ -28,6 +28,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private Address billingAddress;
     private BigDecimal cashBackAmount;
     private String clientTransactionId;
+    private BigDecimal convinienceAmount;
     private String currency;
     private String customerId;
     private String customerIpAddress;
@@ -49,6 +50,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private GiftCard replacementCard;
     private String scheduleId;
     private Address shippingAddress;
+    private BigDecimal shippingAmount;
     private String timestamp;
 
     public String getAlias() {
@@ -143,6 +145,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getTimestamp() {
         return timestamp;
     }
+    public BigDecimal getConvinienceAmount() {
+        return convinienceAmount;
+    }
+    public BigDecimal getShippingAmount() {
+        return shippingAmount;
+    }
 
     public AuthorizationBuilder withAddress(Address value) {
         return withAddress(value, AddressType.Billing);
@@ -195,6 +203,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
             }
         }
         else clientTransactionId = value;
+        return this;
+    }
+    public AuthorizationBuilder withConvenienceAmt(BigDecimal value) {
+        this.convinienceAmount = value;
         return this;
     }
     public AuthorizationBuilder withCurrency(String value) {
@@ -299,6 +311,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withScheduleId(String value) {
         this.scheduleId = value;
+        return this;
+    }
+    public AuthorizationBuilder withShippingAmt(BigDecimal value) {
+        this.shippingAmount = value;
         return this;
     }
     public AuthorizationBuilder withTimestamp(String value) {

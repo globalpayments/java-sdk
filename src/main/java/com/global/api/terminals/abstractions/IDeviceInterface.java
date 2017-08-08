@@ -44,6 +44,7 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder giftSale(int referenceNumber, BigDecimal amount) throws ApiException;
     TerminalAuthBuilder giftSale(int referenceNumber) throws ApiException;
     TerminalAuthBuilder giftAddValue(int referenceNumber) throws ApiException;
+    TerminalAuthBuilder giftAddValue(int referenceNumber, BigDecimal amount) throws ApiException;
     TerminalManageBuilder giftVoid(int referenceNumber) throws ApiException;
     TerminalAuthBuilder giftBalance(int referenceNumber) throws ApiException;
 }

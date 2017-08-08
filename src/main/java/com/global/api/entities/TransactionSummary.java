@@ -8,6 +8,7 @@ public class TransactionSummary {
     private String authCode;
     private BigDecimal authorizedAmount;
     private String clientTransactionId;
+    private BigDecimal convenienceAmount;
     private int deviceId;
     private String issuerResponseCode;
     private String issuerResponseMessage;
@@ -18,6 +19,7 @@ public class TransactionSummary {
     private String referenceNumber;
     private String serviceName;
     private BigDecimal settlementAmount;
+    private BigDecimal shippingAmount;
     private String status;
     private Date transactionDate;
     private String transactionId;
@@ -123,5 +125,17 @@ public class TransactionSummary {
     }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+    public BigDecimal getConvenienceAmount() {
+        return convenienceAmount;
+    }
+    public void setConvenienceAmount(BigDecimal convenienceAmount) {
+        this.convenienceAmount = convenienceAmount;
+    }
+    public BigDecimal getShippingAmount() {
+        return shippingAmount;
+    }
+    public void setShippingAmount(BigDecimal shippingAmount) {
+        this.shippingAmount = shippingAmount;
     }
 }

@@ -72,7 +72,7 @@ public class ConnectionConfig implements ITerminalConfiguration {
     }
 
     public ConnectionConfig(){
-        setTimeout(1000);
+        setTimeout(30000);
     }
 
     public void validate() throws ConfigurationException {

@@ -7,6 +7,7 @@ import com.global.api.utils.Element;
 public class SipBatchResponse extends SipBaseResponse implements IBatchCloseResponse {
     private String totalCount;
     private String totalAmount;
+    private String sequenceNumber;
 
     public String getTotalCount() {
         return totalCount;
@@ -20,6 +21,12 @@ public class SipBatchResponse extends SipBaseResponse implements IBatchCloseResp
     public void setTotalAmount(String totalAmount) {
         this.totalAmount = totalAmount;
     }
+    public String getSequenceNumber() {
+        return sequenceNumber;
+    }
+    public void setSequenceNumber(String sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
 
     public SipBatchResponse(byte[] buffer, String... messageIds) throws ApiException {
         super(buffer, messageIds);
@@ -27,6 +34,14 @@ public class SipBatchResponse extends SipBaseResponse implements IBatchCloseResp
 
     protected void mapResponse(Element response) {
         super.mapResponse(response);
+
+        if(response.has("BatchSeqNbr")) {
+            responseCode = response.getString("ResponseCode", "Result");
+            responseText = response.getString("ResponseText", "ResultText");
+            sequenceNumber = response.getString("BatchSeqNbr");
+            totalAmount = response.getString("BatchTxnAmt");
+            totalCount = response.getString("BatchTxnCnt");
+        }
 
         Element[] cardRecords = response.getAll("CardSummaryRecord");
         for(Element record: cardRecords) {}

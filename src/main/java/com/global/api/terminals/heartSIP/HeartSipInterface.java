@@ -78,8 +78,7 @@ public class HeartSipInterface implements IDeviceInterface {
         return creditCapture(referenceNumber, null);
     }
     public TerminalManageBuilder creditCapture(int referenceNumber, BigDecimal amount) throws ApiException {
-        //return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).WithReferenceNumber(referenceNumber).WithAmount(amount);
-        throw new UnsupportedTransactionException("HeartSIP currently does not support authorization capture (I know, right?). Please void the authorization and perform a credit sale for the authorization amount.");
+        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withReferenceNumber(referenceNumber).withAmount(amount);
     }
 
     public TerminalAuthBuilder creditRefund(int referenceNumber) {
@@ -126,11 +125,19 @@ public class HeartSipInterface implements IDeviceInterface {
     }
 
     public TerminalAuthBuilder giftAddValue(int referenceNumber) {
-        return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withCurrency(CurrencyType.Currency);
+        return giftAddValue(referenceNumber, null);
+    }
+    public TerminalAuthBuilder giftAddValue(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift)
+                .withReferenceNumber(referenceNumber)
+                .withCurrency(CurrencyType.Currency)
+                .withAmount(amount);
     }
 
     public TerminalManageBuilder giftVoid(int referenceNumber) {
-        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit).withReferenceNumber(referenceNumber);
+        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit)
+                .withReferenceNumber(referenceNumber)
+                .withCurrency(CurrencyType.Currency);
     }
 
     public TerminalAuthBuilder giftBalance(int referenceNumber) {

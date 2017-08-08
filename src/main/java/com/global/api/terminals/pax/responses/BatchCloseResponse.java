@@ -14,6 +14,7 @@ public class BatchCloseResponse extends PaxDeviceResponse implements IBatchClose
     private String tid;
     private String mid;
     private String batchNumber;
+    private String sequenceNumber;
 
     public String getTotalCount() {
         return totalCount;
@@ -32,6 +33,9 @@ public class BatchCloseResponse extends PaxDeviceResponse implements IBatchClose
     }
     public String getBatchNumber() {
         return batchNumber;
+    }
+    public String getSequenceNumber() {
+        return sequenceNumber;
     }
 
     public BatchCloseResponse(byte[] buffer) throws MessageException {

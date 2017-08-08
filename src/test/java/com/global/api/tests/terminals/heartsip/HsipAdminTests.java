@@ -24,7 +24,7 @@ public class HsipAdminTests {
 
     public HsipAdminTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
-        deviceConfig.setDeviceType(DeviceType.Hsip_ISC250);
+        deviceConfig.setDeviceType(DeviceType.HSIP_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
         deviceConfig.setIpAddress("10.12.220.130");
         deviceConfig.setPort(12345);

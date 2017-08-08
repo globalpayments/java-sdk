@@ -4,9 +4,11 @@ import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
+import com.global.api.services.ReportingService;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,6 +54,36 @@ public class PorticoCreditTests {
     }
 
     @Test
+    public void creditAuthWithConvenienceAmt() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withConvenienceAmt(new BigDecimal(2))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId()).execute();
+        assertNotNull(report);
+        assertEquals(new BigDecimal("2.00"), report.getConvenienceAmount());
+    }
+
+    @Test
+    public void creditAuthWithShippingAmt() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withShippingAmt(new BigDecimal(2))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId()).execute();
+        assertNotNull(report);
+        assertEquals(new BigDecimal("2.00"), report.getShippingAmount());
+    }
+
+    @Test
     public void creditSale() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
@@ -59,6 +91,36 @@ public class PorticoCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSaleWithConvenienceAmt() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withConvenienceAmt(new BigDecimal(2))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId()).execute();
+        assertNotNull(report);
+        assertEquals(new BigDecimal("2.00"), report.getConvenienceAmount());
+    }
+
+    @Test
+    public void creditSaleWithShippingAmt() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withShippingAmt(new BigDecimal(2))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId()).execute();
+        assertNotNull(report);
+        assertEquals(new BigDecimal("2.00"), report.getShippingAmount());
     }
 
     @Test

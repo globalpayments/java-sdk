@@ -17,19 +17,19 @@ public class SipDeviceResponse extends SipBaseResponse implements IDeviceRespons
         approvalCode = authorizationCode = response.getString("ApprovalCode");
         amountDue = StringUtils.toAmount(response.getString("BalanceDueAmount"));
         avsResponseCode = response.getString("AVS");
-        avsResponseText = response.getString("AVSRsltText");
+        avsResponseText = response.getString("AVSRsltText", "AVSResultText");
         transactionType = response.getString("CardGroup");
         balanceAmount = StringUtils.toAmount(response.getString("AvailableBalance", "BalanceReturned"));
         cardHolderName = response.getString("CardHolderName");
         cvvResponseCode = response.getString("CVV");
-        cvvResponseText = response.getString("CVVRsltText");
+        cvvResponseText = response.getString("CVVRsltText", "CVVResultText");
         entryMethod = response.getString("CardAcquisition");
         maskedCardNumber = response.getString("MaskedPAN");
         paymentType = response.getString("CardType");
         // PinVerified
         // QPSQualified
         responseCode = normalizeResponse(response.getString("ResponseCode", "Result"));
-        transactionId = response.getString("ResponseId");
+        transactionId = response.getString("ResponseId", "TransactionId");
         responseText = response.getString("ResponseText", "ResultText");
         signatureStatus = response.getString("SignatureLine");
         // StoreAndForward

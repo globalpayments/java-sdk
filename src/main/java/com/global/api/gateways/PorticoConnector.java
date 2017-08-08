@@ -71,6 +71,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         }
         et.subElement(block1, "Amt", builder.getAmount());
         et.subElement(block1, "GratuityAmtInfo", builder.getGratuity());
+        et.subElement(block1, "ConvenienceAmtInfo", builder.getConvinienceAmount());
+        et.subElement(block1, "ShippingAmtInfo", builder.getShippingAmount());
 
         // because plano...
         et.subElement(block1, paymentType == PaymentMethodType.Debit ? "CashbackAmtInfo" : "CashBackAmount", builder.getCashBackAmount());
@@ -703,6 +705,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         summary.setStatus(root.getString("Status", "TxnStatus"));
         summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
         summary.setTransactionId(root.getString("GatewayTxnId"));
+        summary.setConvenienceAmount(root.getDecimal("ConvenienceAmtInfo"));
+        summary.setShippingAmount(root.getDecimal("ShippingAmtInfo"));
 
         return summary;
     }
