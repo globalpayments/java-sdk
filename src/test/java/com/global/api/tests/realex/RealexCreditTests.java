@@ -2,7 +2,9 @@ package com.global.api.tests.realex;
 
 import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.AddressType;
 import com.global.api.entities.enums.RecurringSequence;
 import com.global.api.entities.enums.RecurringType;
 import com.global.api.entities.exceptions.ApiException;
@@ -119,5 +121,40 @@ public class RealexCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+    
+    @Test
+    public void creditFraudResponse() throws ApiException {
+        Address billingAddress = new Address();
+        billingAddress.setStreetAddress1("Flat 123");
+        billingAddress.setStreetAddress2("House 456");
+        billingAddress.setStreetAddress3("Cul-De-Sac");
+        billingAddress.setCity("Halifax");
+        billingAddress.setProvince("West Yorkshire");
+        billingAddress.setState("Yorkshire and the Humber");
+        billingAddress.setCountry("GB");
+        billingAddress.setPostalCode("E77 4QJ");
+
+        Address shippingAddress = new Address();
+        shippingAddress.setStreetAddress1("House 456");
+        shippingAddress.setStreetAddress2("987 The Street");
+        shippingAddress.setStreetAddress3("Basement Flat");
+        shippingAddress.setCity("Chicago");
+        shippingAddress.setState("Illinois");
+        shippingAddress.setProvince("Mid West");
+        shippingAddress.setCountry("US");
+        shippingAddress.setPostalCode("50001");
+
+        Transaction fraudResponse = card.charge(new BigDecimal("199.99"))
+                .withCurrency("EUR")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withProductId("SID9838383")
+                .withClientTransactionId("Car Part HV")
+                .withCustomerId("E8953893489")
+                .withCustomerIpAddress("123.123.123.123")
+                .execute();
+        assertNotNull(fraudResponse);
+        assertEquals("00", fraudResponse.getResponseCode(), fraudResponse.getResponseMessage());
     }
 }

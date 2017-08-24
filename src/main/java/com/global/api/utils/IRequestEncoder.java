@@ -1,6 +1,6 @@
 package com.global.api.utils;
 
-import java.io.UnsupportedEncodingException;
+import com.global.api.entities.exceptions.ApiException;
 
 public interface IRequestEncoder {
     String encode(Object value);

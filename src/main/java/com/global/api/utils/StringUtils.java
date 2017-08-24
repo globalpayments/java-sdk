@@ -35,12 +35,12 @@ public class StringUtils {
         return currency.replaceAll("[^0-9]", "");
     }
 
-    public static String join(String separator, String[] fields) {
+    public static String join(String separator, Object[] fields) {
         String rvalue = "";
-        for(String field: fields) {
+        for(Object field: fields) {
             if(field == null)
                 field = "";
-            rvalue += field + separator;
+            rvalue += field.toString() + separator;
         }
         //return trimEnd(rvalue, separator);
         return rvalue.substring(0, rvalue.length() - separator.length());

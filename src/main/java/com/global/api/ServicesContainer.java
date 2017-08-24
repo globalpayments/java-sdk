@@ -1,5 +1,6 @@
 package com.global.api;
 
+import com.global.api.entities.enums.TableServiceProviders;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
@@ -14,6 +15,7 @@ public class ServicesContainer {
     private IRecurringGateway recurring;
     private IDeviceInterface device;
     private DeviceController deviceController;
+    private TableServiceConnector tableServiceConnector;
     private static ServicesContainer instance;
 
     public IDeviceInterface getDeviceInterface() {
@@ -26,6 +28,7 @@ public class ServicesContainer {
         return gateway;
     }
     public IRecurringGateway getRecurring() { return recurring; }
+    public TableServiceConnector getTableService() { return tableServiceConnector; }
 
     public static ServicesContainer getInstance() throws ApiException {
         if(instance != null)
@@ -53,6 +56,16 @@ public class ServicesContainer {
             }
         }
 
+        // configure table service
+        TableServiceConnector tableServiceConnector = null;
+        if(config.getTableServiceProvider() != null) {
+            if(config.getTableServiceProvider().equals(TableServiceProviders.FreshTxt)) {
+                tableServiceConnector = new TableServiceConnector();
+                tableServiceConnector.setServiceUrl("https://www.freshtxt.com/api31/");
+                tableServiceConnector.setTimeout(config.getTimeout());
+            }
+        }
+
         if(!StringUtils.isNullOrEmpty(config.getMerchantId())) {
             RealexConnector gateway = new RealexConnector();
             gateway.setMerchantId(config.getMerchantId());
@@ -65,7 +78,7 @@ public class ServicesContainer {
             gateway.setServiceUrl(config.getServiceUrl());
             gateway.setHostedPaymentConfig(config.getHostedPaymentConfig());
 
-            instance = new ServicesContainer(gateway, gateway, deviceController, deviceInterface);
+            instance = new ServicesContainer(gateway, gateway, deviceController, deviceInterface, tableServiceConnector);
         }
         else {
             PorticoConnector gateway = new PorticoConnector();
@@ -85,14 +98,15 @@ public class ServicesContainer {
             payplan.setTimeout(config.getTimeout());
             payplan.setServiceUrl(config.getServiceUrl() + "/Portico.PayPlan.v2/");
 
-            instance = new ServicesContainer(gateway, payplan, deviceController, deviceInterface);
+            instance = new ServicesContainer(gateway, payplan, deviceController, deviceInterface, tableServiceConnector);
         }
     }
 
-    private ServicesContainer(IPaymentGateway gateway, IRecurringGateway recurring, DeviceController deviceController, IDeviceInterface deviceInterface) {
+    private ServicesContainer(IPaymentGateway gateway, IRecurringGateway recurring, DeviceController deviceController, IDeviceInterface deviceInterface, TableServiceConnector tableServiceConnector) {
         this.gateway = gateway;
         this.recurring = recurring;
         this.deviceController = deviceController;
         this.device = deviceInterface;
+        this.tableServiceConnector = tableServiceConnector;
     }
 }

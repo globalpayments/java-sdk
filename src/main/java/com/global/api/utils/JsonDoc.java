@@ -4,6 +4,8 @@ import com.global.api.entities.enums.IStringConstant;
 import com.google.gson.*;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class JsonDoc {
@@ -147,6 +149,19 @@ public class JsonDoc {
         String value = getString(name);
         if(value != null)
             return Integer.parseInt(value);
+        return null;
+    }
+    public Date getDate(String name) {
+        String value = getString(name);
+        if(value != null) {
+            SimpleDateFormat format = new SimpleDateFormat("hh:MM:ss");
+            try {
+                return format.parse(value);
+            }
+            catch(ParseException exc) {
+                /* NOM NOM */
+            }
+        }
         return null;
     }
 

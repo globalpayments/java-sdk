@@ -13,6 +13,7 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 public class HostedService {
     ServicesConfig _config;
@@ -62,6 +63,13 @@ public class HostedService {
         if (!hash.equals(sha1Hash))
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
 
+        HashMap<String, String> rvalues = new HashMap<String, String>();
+        for(String key: response.getKeys()) {
+            String value = response.getString(key);
+            if(value != null)
+                rvalues.put(key, value);
+        }
+
         TransactionReference ref = new TransactionReference();
         ref.setAuthCode(authCode);
         ref.setOrderId(orderId);
@@ -75,6 +83,7 @@ public class HostedService {
         trans.setResponseMessage(message);
         trans.setAvsResponseCode(response.getString("AVSPOSTCODERESULT"));
         trans.setTransactionReference(ref);
+        trans.setResponseValues(rvalues);
 
         return trans;
     }

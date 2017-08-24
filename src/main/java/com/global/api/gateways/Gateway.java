@@ -1,11 +1,14 @@
 package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
+import com.sun.xml.internal.messaging.saaj.soap.MultipartDataContentHandler;
+import org.apache.http.entity.mime.MultipartEntity;
 import sun.misc.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -76,6 +79,39 @@ abstract class Gateway {
                 requestStream.close();
             }
             else System.out.println("Request: " + endpoint);
+
+            InputStream responseStream = conn.getInputStream();
+            String rawResponse = new String(IOUtils.readFully(responseStream, conn.getContentLength(), true));
+            responseStream.close();
+            System.out.println("Response: " + rawResponse);
+
+            GatewayResponse response = new GatewayResponse();
+            response.setStatusCode(conn.getResponseCode());
+            response.setRawResponse(rawResponse);
+            return response;
+        }
+        catch(Exception exc) {
+            throw new GatewayException("Error occurred while communicating with gateway.", exc);
+        }
+        finally { }
+    }
+    protected GatewayResponse sendRequest(String endpoint, MultipartEntity content) throws GatewayException {
+        HttpsURLConnection conn;
+        try{
+            conn = (HttpsURLConnection)new URL((serviceUrl + endpoint).trim()).openConnection();
+            conn.setSSLSocketFactory(new SSLSocketFactoryEx());
+            conn.setConnectTimeout(timeout);
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.addRequestProperty("Content-Type", content.getContentType().getValue());
+            conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
+
+            OutputStream out = conn.getOutputStream();
+            System.out.println("Request: " + content);
+            content.writeTo(out);
+            out.flush();
+            out.close();
 
             InputStream responseStream = conn.getInputStream();
             String rawResponse = new String(IOUtils.readFully(responseStream, conn.getContentLength(), true));

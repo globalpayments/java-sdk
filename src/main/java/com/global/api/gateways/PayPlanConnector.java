@@ -52,9 +52,11 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
     }
     public void setSecretApiKey(String secretApiKey) {
         this.secretApiKey = secretApiKey;
-        byte[] encoded = Base64.encodeBase64(secretApiKey.getBytes());
-        String auth = String.format("Basic %s", new String(encoded));
-        headers.put("Authorization", auth);
+        if(secretApiKey != null) {
+            byte[] encoded = Base64.encodeBase64(secretApiKey.getBytes());
+            String auth = String.format("Basic %s", new String(encoded));
+            headers.put("Authorization", auth);
+        }
     }
     public boolean supportsRetrieval() { return true; }
     public boolean supportsUpdatePaymentDetails() { return false; }

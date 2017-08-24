@@ -13,7 +13,6 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,7 +134,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
 
-        // TODO: fraudfilter
+        // fraudfilter
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             et.subElement(request, "recurring")
                 .set("type", builder.getRecurringType().getValue().toLowerCase())
@@ -143,13 +142,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // tssinfo
-        if (builder.getCustomerId() != null || builder.getProductId() != null || builder.getCustomerIpAddress() != null || builder.getClientTransactionId() != null) {
+        if (builder.getCustomerId() != null || builder.getProductId() != null || builder.getCustomerIpAddress() != null || builder.getClientTransactionId() != null || builder.getBillingAddress() != null || builder.getShippingAddress() != null) {
             Element tssInfo = et.subElement(request, "tssinfo");
             et.subElement(tssInfo, "custnum", builder.getCustomerId());
             et.subElement(tssInfo, "prodid", builder.getProductId());
             et.subElement(tssInfo, "varref", builder.getClientTransactionId());
             et.subElement(tssInfo, "custipaddress", builder.getCustomerIpAddress());
-            //et.SubElement(tssInfo, "address", "");
+
+            if(builder.getBillingAddress() != null)
+                tssInfo.append(buildAddress(et, builder.getBillingAddress()));
+            if(builder.getShippingAddress() != null)
+                tssInfo.append(buildAddress(et, builder.getShippingAddress()));
         }
 
         // TODO: mpi
@@ -197,8 +200,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         // request.set("COMMENT2", );
         if(hostedPaymentConfig.isRequestTransactionStabilityScore() != null)
             request.set("RETURN_TSS", hostedPaymentConfig.isRequestTransactionStabilityScore() ? "1" : "0");
-        if(hostedPaymentConfig.isDirectCurrencyConversionEnabled() != null)
-            request.set("DCC_ENABLE", hostedPaymentConfig.isDirectCurrencyConversionEnabled() ? "1" : "0");
+        if(hostedPaymentConfig.isDynamicCurrencyConversionEnabled() != null)
+            request.set("DCC_ENABLE", hostedPaymentConfig.isDynamicCurrencyConversionEnabled() ? "1" : "0");
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
             request.set("CUST_NUM", paymentData.getCustomerNumber());
@@ -208,7 +211,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 request.set("OFFER_SAVE_CARD", paymentData.isOfferToSaveCard() ? "1" : "0");
             if(paymentData.isCustomerExists() != null)
                 request.set("PAYER_EXIST", paymentData.isCustomerExists() ? "1" : "0");
-            request.set("PAYER_REF", paymentData.getCustomerKey());
+            if(hostedPaymentConfig.isDisplaySavedCards() == null)
+                request.set("PAYER_REF", paymentData.getCustomerKey());
             request.set("PMT_REF", paymentData.getPaymentKey());
             request.set("PROD_ID", paymentData.getProductId());
         }
@@ -229,17 +233,20 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("CARD_STORAGE_ENABLE", hostedPaymentConfig.isCardStorageEnabled() ? "1" : "0");
         if (builder.getTransactionType() == TransactionType.Verify)
             request.set("VALIDATE_CARD_ONLY", builder.getTransactionType() == TransactionType.Verify ? "1" : "0");
-        request.set("HPP_FRAUD_FILTER_MODE", hostedPaymentConfig.getFraudFilterMode());
-        request.set("HPP_VERSION", hostedPaymentConfig.getVersion());
+        if(!hostedPaymentConfig.getFraudFilterMode().equals(FraudFilterMode.None))
+            request.set("HPP_FRAUDFILTER_MODE", hostedPaymentConfig.getFraudFilterMode());
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
-            request.set("RECURRING_TYPE", builder.getRecurringType().getValue());
-            request.set("RECURRING_SEQUENCE", builder.getRecurringSequence().getValue());
+            request.set("RECURRING_TYPE", builder.getRecurringType().getValue().toLowerCase());
+            request.set("RECURRING_SEQUENCE", builder.getRecurringSequence().getValue().toLowerCase());
         }
+        request.set("HPP_VERSION", hostedPaymentConfig.getVersion());
+        request.set("HPP_POST_DIMENSIONS", hostedPaymentConfig.getPostDimensions());
+        request.set("HPP_POST_RESPONSE", hostedPaymentConfig.getPostResponse());
 
-        List<String> toHash = Arrays.asList(
+        List<String> toHash = new ArrayList<String>(Arrays.asList(
                 timestamp, merchantId, orderId,
                 (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null,
-                builder.getCurrency());
+                builder.getCurrency()));
 
         if(builder.getHostedPaymentData() != null) {
             if (hostedPaymentConfig.isCardStorageEnabled() != null || builder.getHostedPaymentData().isOfferToSaveCard() != null || hostedPaymentConfig.isDisplaySavedCards() != null) {
@@ -509,5 +516,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // comments
         return payer;
+    }
+
+    private Element buildAddress(ElementTree et, Address address) {
+        String code = String.format("%s|%s", address.getPostalCode(), address.getStreetAddress1());
+        if(address.getCountry().equals("GB"))
+            code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
+
+        Element addressNode = et.element("address").set("type", address.getType().equals(AddressType.Billing) ? "billing" : "shipping");
+        et.subElement(addressNode, "code").text(code);
+        et.subElement(addressNode, "country").text(address.getCountry());
+
+        return addressNode;
     }
 }

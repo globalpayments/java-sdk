@@ -5,11 +5,13 @@ import com.global.api.entities.enums.HppVersion;
 
 public class HostedPaymentConfig {
     private Boolean cardStorageEnabled;
-    private Boolean directCurrencyConversionEnabled;
+    private Boolean dynamicCurrencyConversionEnabled;
     private Boolean displaySavedCards;
-    private FraudFilterMode fraudFilterMode;
+    private FraudFilterMode fraudFilterMode = FraudFilterMode.None;
     private String language;
     private String paymentButtonText;
+    private String postDimensions;
+    private String postResponse;
     private String responseUrl;
     private Boolean requestTransactionStabilityScore;
     private HppVersion version;
@@ -20,11 +22,11 @@ public class HostedPaymentConfig {
     public void setCardStorageEnabled(boolean cardStorageEnabled) {
         this.cardStorageEnabled = cardStorageEnabled;
     }
-    public Boolean isDirectCurrencyConversionEnabled() {
-        return directCurrencyConversionEnabled;
+    public Boolean isDynamicCurrencyConversionEnabled() {
+        return dynamicCurrencyConversionEnabled;
     }
-    public void setDirectCurrencyConversionEnabled(boolean directCurrencyConversionEnabled) {
-        this.directCurrencyConversionEnabled = directCurrencyConversionEnabled;
+    public void setDynamicCurrencyConversionEnabled(boolean directCurrencyConversionEnabled) {
+        this.dynamicCurrencyConversionEnabled = directCurrencyConversionEnabled;
     }
     public Boolean isDisplaySavedCards() {
         return displaySavedCards;
@@ -49,6 +51,18 @@ public class HostedPaymentConfig {
     }
     public void setPaymentButtonText(String paymentButtonText) {
         this.paymentButtonText = paymentButtonText;
+    }
+    public String getPostDimensions() {
+        return postDimensions;
+    }
+    public void setPostDimensions(String postDimensions) {
+        this.postDimensions = postDimensions;
+    }
+    public String getPostResponse() {
+        return postResponse;
+    }
+    public void setPostResponse(String postResponse) {
+        this.postResponse = postResponse;
     }
     public String getResponseUrl() {
         return responseUrl;

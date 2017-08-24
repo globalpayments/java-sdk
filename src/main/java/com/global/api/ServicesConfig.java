@@ -1,6 +1,9 @@
 package com.global.api;
 
+import com.global.api.entities.enums.TableServiceProviders;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.gateways.TableServiceConnector;
+import com.global.api.services.TableService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.utils.StringUtils;
 
@@ -26,6 +29,9 @@ public class ServicesConfig {
 
     // device specific
     private ConnectionConfig deviceConnectionConfig;
+
+    // table service
+    private TableServiceProviders tableServiceProvider;
 
     // common
     private String serviceUrl;
@@ -139,6 +145,12 @@ public class ServicesConfig {
     public void setDeviceConnectionConfig(ConnectionConfig deviceConnectionConfig) {
         this.deviceConnectionConfig = deviceConnectionConfig;
     }
+    public TableServiceProviders getTableServiceProvider() {
+        return tableServiceProvider;
+    }
+    public void setTableServiceProvider(TableServiceProviders tableServiceProvider) {
+        this.tableServiceProvider = tableServiceProvider;
+    }
 
     public ServicesConfig() {
         timeout = 65000;
@@ -164,7 +176,7 @@ public class ServicesConfig {
         }
 
         // service url
-        if (StringUtils.isNullOrEmpty(getServiceUrl())) {
+        if (StringUtils.isNullOrEmpty(getServiceUrl()) && (!StringUtils.isNullOrEmpty(secretApiKey) || !StringUtils.isNullOrEmpty(sharedSecret))) {
             throw new ConfigurationException("Service URL could not be determined from the credentials provided. Please specify an endpoint.");
         }
     }

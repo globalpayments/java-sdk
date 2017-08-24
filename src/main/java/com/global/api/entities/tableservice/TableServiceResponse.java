@@ -1,0 +1,38 @@
+package com.global.api.entities.tableservice;
+
+import com.global.api.ServicesContainer;
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.MessageException;
+import com.global.api.gateways.TableServiceConnector;
+import com.global.api.utils.JsonDoc;
+import com.global.api.utils.MultipartForm;
+import com.global.api.utils.StringUtils;
+import com.sun.java.swing.plaf.windows.WindowsTreeUI;
+
+public class TableServiceResponse extends BaseTableServiceResponse {
+    protected String expectedAction;
+
+    public TableServiceResponse(String json) throws ApiException {
+        super(json);
+    }
+
+    protected void mapResponse(JsonDoc response) throws ApiException {
+        if(!StringUtils.isNullOrEmpty(expectedAction) && !action.equals(expectedAction))
+            throw new MessageException(String.format("Unexpected message type received. %s", action));
+    }
+
+    protected <T extends TableServiceResponse> T sendRequest(Class<T> clazz, String endpoint, MultipartForm formData) throws ApiException {
+        TableServiceConnector connector = ServicesContainer.getInstance().getTableService();
+        if(!connector.isConfigured() && !endpoint.equals("user/login"))
+            throw new ConfigurationException("Table service has not been configured properly. Please ensure you have logged in first.");
+
+        try {
+            String response = connector.call(endpoint, formData);
+            return clazz.getDeclaredConstructor(String.class).newInstance(response);
+        }
+        catch(Exception exc) {
+            throw new ApiException(exc.getMessage(), exc);
+        }
+    }
+}

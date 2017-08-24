@@ -1,5 +1,6 @@
 package com.global.api.utils;
 
+import com.global.api.entities.exceptions.ApiException;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.UnsupportedEncodingException;

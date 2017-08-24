@@ -7,6 +7,7 @@ import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 public class Transaction {
     private BigDecimal authorizedAmount;
@@ -27,6 +28,7 @@ public class Transaction {
     private String referenceNumber;
     private String responseCode;
     private String responseMessage;
+    private HashMap<String, String> responseValues;
     private String timestamp;
     private String transactionDescriptor;
     private String token;
@@ -121,6 +123,12 @@ public class Transaction {
     }
     public void setCvnResponseMessage(String cvnResponseMessage) {
         this.cvnResponseMessage = cvnResponseMessage;
+    }
+    public HashMap<String, String> getResponseValues() {
+        return responseValues;
+    }
+    public void setResponseValues(HashMap<String, String> responseValues) {
+        this.responseValues = responseValues;
     }
     public String getEmvIssuerResponse() {
         return emvIssuerResponse;
