@@ -69,7 +69,10 @@ public class Ticket extends TableServiceResponse {
     }
 
     public Ticket(String json) throws ApiException {
-        super(json);
+        this(json, "default");
+    }
+    public Ticket(String json, String configName) throws ApiException {
+        super(json, configName);
         expectedAction = "assignCheck";
     }
 
@@ -77,7 +80,7 @@ public class Ticket extends TableServiceResponse {
         super.mapResponse(response);
 
         checkId = response.getInt("checkID");
-        checkInTime = response.getDate("checkInTime");
+        checkInTime = response.getDate("checkInTime", "dd-MM-yyyy hh:mm");
         tableNumber = response.getInt("tableNumber");
         waitTime = response.getInt("waitTime");
     }
@@ -86,7 +89,7 @@ public class Ticket extends TableServiceResponse {
         return bumpStatus(bumpStatus, null);
     }
     public TableServiceResponse bumpStatus(String bumpStatus, Date bumpTime) throws ApiException {
-        int bumpStatusId = ServicesContainer.getInstance().getTableService().getBumpStatusCollection().get(bumpStatus);
+        int bumpStatusId = ServicesContainer.getInstance().getTableService(configName).getBumpStatusCollection().get(bumpStatus);
         if(bumpStatusId == 0)
             throw new MessageException(String.format("Unknown status value: %s", bumpStatus));
         return bumpStatus(bumpStatusId, bumpTime);
@@ -136,7 +139,7 @@ public class Ticket extends TableServiceResponse {
     public TableServiceResponse settleCheck(String bumpStatus, Date settleTime) throws ApiException {
         Integer bumpStatusId = null;
         if (!StringUtils.isNullOrEmpty(bumpStatus)) {
-            bumpStatusId = ServicesContainer.getInstance().getTableService().getBumpStatusCollection().get(bumpStatus);
+            bumpStatusId = ServicesContainer.getInstance().getTableService(configName).getBumpStatusCollection().get(bumpStatus);
             if (bumpStatusId == 0)
                 throw new MessageException(String.format("Unknown status value: %s", bumpStatus));
         }
@@ -180,10 +183,16 @@ public class Ticket extends TableServiceResponse {
     }
 
     public static Ticket fromId(int checkId) throws ApiException {
-        return Ticket.fromId(checkId, null);
+        return Ticket.fromId(checkId, null, "default");
+    }
+    public static Ticket fromId(int checkId, String configName) throws ApiException {
+        return Ticket.fromId(checkId, null, configName);
     }
     public static Ticket fromId(int checkId, Integer tableNumber) throws ApiException {
-        Ticket ticket = new Ticket("");
+        return fromId(checkId, tableNumber, "default");
+    }
+    public static Ticket fromId(int checkId, Integer tableNumber, String configName) throws ApiException {
+        Ticket ticket = new Ticket("", configName);
         ticket.setTableNumber(tableNumber);
         ticket.setCheckId(checkId);
 

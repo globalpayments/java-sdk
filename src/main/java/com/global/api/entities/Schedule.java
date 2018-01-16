@@ -253,7 +253,7 @@ public class Schedule extends RecurringEntity<Schedule> {
         this.paymentKey = paymentKey;
     }
 
-    public Schedule create() throws ApiException {
+    public Schedule create(String configName) throws ApiException {
         return RecurringService.create(this, Schedule.class);
     }
 
@@ -270,7 +270,10 @@ public class Schedule extends RecurringEntity<Schedule> {
     }
 
     public static Schedule find(String id) throws ApiException {
-        checkSupportsRetrieval();
+        return find(id, "default");
+    }
+    public static Schedule find(String id, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
 
         List<Schedule> response = RecurringService.search(ScheduleCollection.class)
                 .addSearchCriteria("scheduleIdentifier", id)
@@ -284,12 +287,18 @@ public class Schedule extends RecurringEntity<Schedule> {
     }
 
     public static List<Schedule> findAll() throws ApiException {
-        checkSupportsRetrieval();
+        return findAll("default");
+    }
+    public static List<Schedule> findAll(String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.search(ScheduleCollection.class).execute();
     }
 
     public static Schedule get(String key) throws ApiException {
-        checkSupportsRetrieval();
+        return get(key, "default");
+    }
+    public static Schedule get(String key, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.get(key, Schedule.class);
     }
 

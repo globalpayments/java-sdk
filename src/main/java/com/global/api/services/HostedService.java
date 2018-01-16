@@ -45,7 +45,7 @@ public class HostedService {
     }
 
     public Transaction parseResponse(String json) throws ApiException {
-        return parseResponse(json, true);
+        return parseResponse(json, false);
     }
     public Transaction parseResponse(String json, boolean encoded) throws ApiException {
         JsonDoc response = JsonDoc.parse(json, encoded ? JsonEncoders.base64Encoder() : null);

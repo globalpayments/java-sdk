@@ -11,10 +11,12 @@ import com.global.api.utils.StringUtils;
 import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 
 public class TableServiceResponse extends BaseTableServiceResponse {
+    protected String configName = "default";
     protected String expectedAction;
 
-    public TableServiceResponse(String json) throws ApiException {
+    public TableServiceResponse(String json, String configName) throws ApiException {
         super(json);
+        this.configName = configName;
     }
 
     protected void mapResponse(JsonDoc response) throws ApiException {
@@ -23,13 +25,13 @@ public class TableServiceResponse extends BaseTableServiceResponse {
     }
 
     protected <T extends TableServiceResponse> T sendRequest(Class<T> clazz, String endpoint, MultipartForm formData) throws ApiException {
-        TableServiceConnector connector = ServicesContainer.getInstance().getTableService();
+        TableServiceConnector connector = ServicesContainer.getInstance().getTableService(configName);
         if(!connector.isConfigured() && !endpoint.equals("user/login"))
             throw new ConfigurationException("Table service has not been configured properly. Please ensure you have logged in first.");
 
         try {
             String response = connector.call(endpoint, formData);
-            return clazz.getDeclaredConstructor(String.class).newInstance(response);
+            return clazz.getDeclaredConstructor(String.class, String.class).newInstance(response, configName);
         }
         catch(Exception exc) {
             throw new ApiException(exc.getMessage(), exc);

@@ -1,6 +1,5 @@
 package com.global.api.terminals.heartSIP.interfaces;
 
-import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;

@@ -13,7 +13,6 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -123,6 +122,19 @@ public class RealexRecurringTests {
         paymentMethod.saveChanges();
     }
 
+    @Test
+    public void Test_002c_EditPaymentMethodExpOnly() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        CreditCardData card = new CreditCardData();
+        card.setCardType("MC");
+        card.setExpMonth(10);
+        card.setExpYear(2020);
+        card.setCardHolderName("Philip Marlowe");
+
+        paymentMethod.setPaymentMethod(card);
+        paymentMethod.saveChanges();
+    }
+
     @Test(expected = UnsupportedTransactionException.class)
     public void Test_003_FindOnRealex() throws ApiException {
         Customer.find(customerId());
@@ -159,14 +171,8 @@ public class RealexRecurringTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test @Ignore
-    public void Test_005_DeletePaymentMethod() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
-        paymentMethod.delete();
-    }
-
     @Test
-    public void Test_006_RecurringPayment() throws ApiException {
+    public void Test_005_RecurringPayment() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.charge(new BigDecimal("12"))
                 .withRecurringInfo(RecurringType.Fixed, RecurringSequence.First)
@@ -175,4 +181,11 @@ public class RealexRecurringTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
+    @Test
+    public void Test_006_DeletePaymentMethod() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        paymentMethod.delete();
+    }
 }
+

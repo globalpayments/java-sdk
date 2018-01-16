@@ -7,7 +7,10 @@ import com.global.api.terminals.abstractions.IDeviceInterface;
 
 public class DeviceService {
     public static IDeviceInterface create(ServicesConfig config) throws ApiException {
-        ServicesContainer.configure(config);
-        return ServicesContainer.getInstance().getDeviceInterface();
+        return create(config, "default");
+    }
+    public static IDeviceInterface create(ServicesConfig config, String configName) throws ApiException {
+        ServicesContainer.configure(config, configName);
+        return ServicesContainer.getInstance().getDeviceInterface(configName);
     }
 }

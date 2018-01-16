@@ -1,6 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.entities.enums.AddressType;
+import com.global.api.utils.CountryUtils;
 
 public class Address {
     private AddressType type;
@@ -11,8 +12,9 @@ public class Address {
     private String province;
     private String postalCode;
     private String country;
+    private String countryCode;
 
-    public AddressType getType() {
+	public AddressType getType() {
         return type;
     }
     public void setType(AddressType type) {
@@ -60,12 +62,25 @@ public class Address {
     public void setPostalCode(String code) {
         this.postalCode = code;
     }
+    public String getCountryCode() {
+       return countryCode;
+    }
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+        if(this.country == null)
+            this.country = CountryUtils.getCountryByCode(countryCode);
+    }
     public String getCountry() {
         return country;
     }
     public void setCountry(String country) {
         this.country = country;
+        if(this.countryCode == null)
+            this.countryCode = CountryUtils.getCountryCodeByCountry(country);
     }
+    public boolean isCountry(String countryCode) {
+        return CountryUtils.isCountry(this, countryCode);
+	}
 
     public Address() { this(null); }
     public Address(String code) {

@@ -155,6 +155,20 @@ public class RealexCreditTests {
                 .withCustomerIpAddress("123.123.123.123")
                 .execute();
         assertNotNull(fraudResponse);
-        assertEquals("00", fraudResponse.getResponseCode(), fraudResponse.getResponseMessage());
+        assertEquals("00", fraudResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_GB_NoStreetAddress() throws ApiException {
+        Address billingAddress = new Address();
+        billingAddress.setCountry("GB");
+        billingAddress.setPostalCode("E77 4QJ");
+
+        Transaction response = card.charge(new BigDecimal("19.99"))
+               .withCurrency("EUR")
+               .withAddress(billingAddress, AddressType.Billing)
+               .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

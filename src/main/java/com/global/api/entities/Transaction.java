@@ -7,6 +7,7 @@ import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 
 public class Transaction {
@@ -22,13 +23,16 @@ public class Transaction {
     private String commercialIndicator;
     private String cvnResponseCode;
     private String cvnResponseMessage;
+    private DebitMac debitMac;
     private String emvIssuerResponse;
+    private Date hostResponseDate;
     private BigDecimal pointsBalanceAmount;
     private String recurringDataCode;
     private String referenceNumber;
     private String responseCode;
     private String responseMessage;
     private HashMap<String, String> responseValues;
+    private ThreeDSecure threeDsecure;
     private String timestamp;
     private String transactionDescriptor;
     private String token;
@@ -124,6 +128,18 @@ public class Transaction {
     public void setCvnResponseMessage(String cvnResponseMessage) {
         this.cvnResponseMessage = cvnResponseMessage;
     }
+    public DebitMac getDebitMac() {
+        return debitMac;
+    }
+    public void setDebitMac(DebitMac debitMac) {
+        this.debitMac = debitMac;
+    }
+    public Date getHostResponseDate() {
+        return hostResponseDate;
+    }
+    public void setHostResponseDate(Date hostResponseDate) {
+        this.hostResponseDate = hostResponseDate;
+    }
     public HashMap<String, String> getResponseValues() {
         return responseValues;
     }
@@ -188,6 +204,12 @@ public class Transaction {
     }
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
+    }
+    public ThreeDSecure getThreeDsecure() {
+        return threeDsecure;
+    }
+    public void setThreeDsecure(ThreeDSecure threeDsecure) {
+        this.threeDsecure = threeDsecure;
     }
     public String getTimestamp() {
         return timestamp;
@@ -284,10 +306,10 @@ public class Transaction {
     }
 
     public static Transaction fromId(String transactionId) {
-        return fromId(transactionId, PaymentMethodType.Credit);
+        return fromId(transactionId, null, PaymentMethodType.Credit);
     }
     public static Transaction fromId(String transactionId, PaymentMethodType paymentMethodType) {
-        return fromId(transactionId, paymentMethodType);
+        return fromId(transactionId, null, paymentMethodType);
     }
     public static Transaction fromId(String transactionId, String orderId) {
         return fromId(transactionId, orderId, PaymentMethodType.Credit);

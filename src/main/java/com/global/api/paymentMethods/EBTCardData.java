@@ -2,6 +2,7 @@ package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.CvnPresenceIndicator;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.utils.StringUtils;
 
 public class EBTCardData extends EBT implements ICardData {
     private String approvalCode;
@@ -67,5 +68,8 @@ public class EBTCardData extends EBT implements ICardData {
     }
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+    public String getShortExpiry() {
+        return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
     }
 }

@@ -58,7 +58,7 @@ public class RealexHppClient {
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
         config.setSharedSecret(sharedSecret);
         
-        ServicesContainer.configure(config);
+        ServicesContainer.configure(config, "realexResponder");
 
         // gather additional information
         String shippingCode = json.getString("SHIPPING_CODE");
@@ -80,21 +80,27 @@ public class RealexHppClient {
             else gatewayRequest = card.authorize(StringUtils.toAmount(amount));
         }
 
-        Address billing = new Address();
-        billing.setPostalCode(billingCode);
-        billing.setCountry(billingCountry);
+        Address billing = null;
+        if(billingCode != null || billingCountry != null) {
+            billing = new Address();
+            billing.setPostalCode(billingCode);
+            billing.setCountry(billingCountry);
+        }
         
-        Address shipping = new Address();
-        shipping.setPostalCode(shippingCode);
-        shipping.setCountry(shippingCountry);
-        
-        Transaction gatewayResponse = gatewayRequest.withCurrency(currency)
-                .withOrderId(orderId)
-                .withTimestamp(timestamp)
-                .withAddress(billing)
-                .withAddress(shipping, AddressType.Shipping)
-                .execute();
+        Address shipping = null;
+        if(shippingCode != null || shippingCountry != null) {
+            shipping = new Address();
+            shipping.setPostalCode(shippingCode);
+            shipping.setCountry(shippingCountry);
+        }
 
+        gatewayRequest.withCurrency(currency).withOrderId(orderId).withTimestamp(timestamp);
+        if(billing != null)
+            gatewayRequest.withAddress(billing);
+        if(shipping != null)
+            gatewayRequest.withAddress(shipping, AddressType.Shipping);
+
+        Transaction gatewayResponse = gatewayRequest.execute("realexResponder");
         if (gatewayResponse.getResponseCode().equals("00"))
             return convertResponse(json, gatewayResponse);
         else throw new ApiException(gatewayResponse.getResponseMessage());

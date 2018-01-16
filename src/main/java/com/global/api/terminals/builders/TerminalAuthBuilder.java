@@ -21,6 +21,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private boolean allowDuplicates;
     private BigDecimal amount;
     private String authCode;
+    private BigDecimal cashbackAmount;
     private CurrencyType currency;
     private String customerCode;
     private BigDecimal gratuity;
@@ -46,6 +47,9 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getAuthCode();
         return null;
+    }
+    public BigDecimal getCashbackAmount() {
+        return cashbackAmount;
     }
     public CurrencyType getCurrency() {
         return currency;
@@ -100,6 +104,10 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setAuthCode(value);
         this.authCode = value;
+        return this;
+    }
+    public TerminalAuthBuilder withCashBack(BigDecimal value) {
+        this.cashbackAmount = value;
         return this;
     }
     public TerminalAuthBuilder withCurrency(CurrencyType value) {
@@ -164,10 +172,10 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         super(type, paymentType);
     }
 
-    public TerminalResponse execute() throws ApiException {
-        super.execute();
+    public TerminalResponse execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        DeviceController device = ServicesContainer.getInstance().getDeviceController();
+        DeviceController device = ServicesContainer.getInstance().getDeviceController(configName);
         return device.processTransaction(this);
     }
 
@@ -184,5 +192,14 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .check("authCode").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
         this.validations.of(TransactionType.AddValue).check("amount").isNotNull();
+
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Balance)
+                .when("currency").isNotNull()
+                .check("currency").isNotEqual(CurrencyType.Voucher);
+        this.validations.of(TransactionType.BenefitWithdrawal)
+                .when("currency").isNotNull()
+                .check("currency").isEqualTo(CurrencyType.CashBenefits);
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund).check("allowDuplicates").isEqualTo(false);
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates").isEqualTo(false);
     }
 }

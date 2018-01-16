@@ -65,10 +65,10 @@ public class RecurringBuilder<TResult> extends TransactionBuilder<TResult> {
         }
     }
 
-    public TResult execute() throws ApiException {
-        super.execute();
+    public TResult execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        IRecurringGateway client = ServicesContainer.getInstance().getRecurring();
+        IRecurringGateway client = ServicesContainer.getInstance().getRecurring(configName);
         return client.processRecurring(this, clazz);
     }
 

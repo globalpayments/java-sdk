@@ -3,7 +3,7 @@ package com.global.api.paymentMethods;
 import com.global.api.entities.enums.EntryMethod;
 
 public class DebitTrackData extends Debit implements ITrackData {
-    private EntryMethod entryMethod;
+    private EntryMethod entryMethod = EntryMethod.Swipe;
     private String value;
 
     public EntryMethod getEntryMethod() {

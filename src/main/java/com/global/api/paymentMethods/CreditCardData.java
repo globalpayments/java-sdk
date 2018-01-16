@@ -1,8 +1,17 @@
 package com.global.api.paymentMethods;
 
+import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.ManagementBuilder;
+import com.global.api.entities.MerchantDataCollection;
+import com.global.api.entities.ThreeDSecure;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.CvnPresenceIndicator;
+import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -18,6 +27,7 @@ public class CreditCardData extends Credit implements ICardData {
 
     private String cardHolderName;
     private boolean cardPresent = false;
+    private String cardType = "Unknown";
     private String cvn;
     private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
     private Integer expMonth;
@@ -32,23 +42,9 @@ public class CreditCardData extends Credit implements ICardData {
     public void setCardHolderName(String cardHolderName) {
         this.cardHolderName = cardHolderName;
     }
-    public String getCardType() {
-        String cardType = "Unknown";
-
-        try {
-            String cardNum = number.replace(" ", "").replace("-", "");
-            for (Map.Entry<String, Pattern> kvp : regexMap.entrySet()) {
-                if (kvp.getValue().matcher(cardNum).find()) {
-                    cardType = kvp.getKey();
-                    break;
-                }
-            }
-
-        } catch (Exception e) {
-            cardType = "Unknown";
-        }
-
-        return cardType;
+    public String getCardType() { return cardType; }
+    public void setCardType(String value) {
+        cardType = value;
     }
     public boolean isCardPresent() {
         return cardPresent;
@@ -88,6 +84,18 @@ public class CreditCardData extends Credit implements ICardData {
     }
     public void setNumber(String number) {
         this.number = number;
+        try {
+            String cardNum = number.replace(" ", "").replace("-", "");
+            for (Map.Entry<String, Pattern> kvp : regexMap.entrySet()) {
+                if (kvp.getValue().matcher(cardNum).find()) {
+                    cardType = kvp.getKey();
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            cardType = "Unknown";
+        }
     }
     public String getShortExpiry() {
         return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
@@ -112,5 +120,88 @@ public class CreditCardData extends Credit implements ICardData {
     public CreditCardData(String token) {
         this();
         this.setToken(token);
+    }
+
+    public boolean verifyEnrolled(BigDecimal amount, String currency) throws ApiException {
+        return verifyEnrolled(amount, currency, null, "default");
+    }
+    public boolean verifyEnrolled(BigDecimal amount, String currency, String orderId) throws ApiException {
+        return verifyEnrolled(amount, currency, orderId, "default");
+    }
+    public boolean verifyEnrolled(BigDecimal amount, String currency, String orderId, String configName) throws ApiException {
+        Transaction response;
+        try{
+            response = new AuthorizationBuilder(TransactionType.VerifyEnrolled, this)
+                    .withAmount(amount)
+                    .withCurrency(currency)
+                    .withOrderId(orderId)
+                    .execute(configName);
+
+        }
+        catch (GatewayException exc) {
+            if(exc.getResponseCode().equals("110"))
+                return false;
+            throw exc;
+        }
+
+        ThreeDSecure secureEcom = response.getThreeDsecure();
+        if(secureEcom != null && secureEcom.isEnrolled()) {
+            this.threeDSecure = secureEcom;
+            this.threeDSecure.setAmount(amount);
+            this.threeDSecure.setCurrency(currency);
+            this.threeDSecure.setOrderId(response.getOrderId());
+            return true;
+        }
+        return false;
+    }
+
+    public boolean verifySignature(String authorizationResponse, BigDecimal amount, String currency, String orderId) throws ApiException {
+        return verifySignature(authorizationResponse, amount, currency, orderId, "default");
+    }
+    public boolean verifySignature(String authorizationResponse, BigDecimal amount, String currency, String orderId, String configName) throws ApiException {
+        // ensure we have an object
+        if(this.threeDSecure == null)
+            this.threeDSecure = new ThreeDSecure();
+
+        this.threeDSecure.setAmount(amount);
+        this.threeDSecure.setCurrency(currency);
+        this.threeDSecure.setOrderId(orderId);
+
+        return verifySignature(authorizationResponse, null, configName);
+    }
+    public boolean verifySignature(String authorizationResponse) throws ApiException {
+        return verifySignature(authorizationResponse, null, "default");
+    }
+    public boolean verifySignature(String authorizationResponse, MerchantDataCollection merchantData) throws ApiException {
+        return verifySignature(authorizationResponse, merchantData, "default");
+    }
+    public boolean verifySignature(String authorizationResponse, MerchantDataCollection merchantData, String configName) throws ApiException {
+        // ensure we have an object
+        if(this.threeDSecure == null)
+            this.threeDSecure = new ThreeDSecure();
+
+        // if we have merchant data use it
+        if(merchantData != null)
+            this.threeDSecure.setMerchantData(merchantData);
+
+        TransactionReference ref = new TransactionReference();
+        ref.setOrderId(threeDSecure.getOrderId());
+
+        Transaction response = new ManagementBuilder(TransactionType.VerifySignature)
+                .withAmount(threeDSecure.getAmount())
+                .withCurrency(threeDSecure.getCurrency())
+                .withPayerAuthenticationResponse(authorizationResponse)
+                .withPaymentMethod(ref)
+                .execute(configName);
+
+        if(response.getResponseCode().equals("00")) {
+            this.threeDSecure.setStatus(response.getThreeDsecure().getStatus());
+            this.threeDSecure.setEci(response.getThreeDsecure().getEci());
+            this.threeDSecure.setCavv(response.getThreeDsecure().getCavv());
+            this.threeDSecure.setAlgorithm(response.getThreeDsecure().getAlgorithm());
+            this.threeDSecure.setStatus(response.getThreeDsecure().getXid());
+            return true;
+        }
+        return false;
     }
 }

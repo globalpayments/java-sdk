@@ -20,7 +20,10 @@ public class ServerListResponse extends TableServiceResponse {
     }
 
     public ServerListResponse(String json) throws ApiException {
-        super(json);
+        this(json, "default");
+    }
+    public ServerListResponse(String json, String configName) throws ApiException {
+        super(json, configName);
         expectedAction = "getServerList";
     }
 

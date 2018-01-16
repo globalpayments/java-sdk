@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
+    private AccountType accountType;
     private String alias;
     private AliasAction aliasAction;
     private boolean allowDuplicates;
@@ -36,21 +37,26 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String description;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
+    private EmvChipCondition emvChipCondition;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
     private String invoiceNumber;
     private boolean level2Request;
+    private String messageAuthenticationCode;
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
+    private String posSequenceNumber;
     private String productId;
     private RecurringSequence recurringSequence;
     private RecurringType recurringType;
     private boolean requestMultiUseToken;
     private GiftCard replacementCard;
+    private ReversalReasonCode reversalReasonCode;
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
+    private String tagData;
     private String timestamp;
 
     public String getAlias() {
@@ -138,6 +144,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public GiftCard getReplacementCard() {
         return replacementCard;
     }
+    public ReversalReasonCode getReversalReasonCode() {
+        return reversalReasonCode;
+    }
     public String getScheduleId() { return scheduleId; }
     public Address getShippingAddress() {
         return shippingAddress;
@@ -151,15 +160,36 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getShippingAmount() {
         return shippingAmount;
     }
+    public AccountType getAccountType() {
+        return accountType;
+    }
+    public EmvChipCondition getEmvChipCondition() {
+        return emvChipCondition;
+    }
+    public String getMessageAuthenticationCode() {
+        return messageAuthenticationCode;
+    }
+    public String getPosSequenceNumber() {
+        return posSequenceNumber;
+    }
+    public String getTagData() {
+        return tagData;
+    }
 
+    public AuthorizationBuilder withAccountType(AccountType value) {
+        this.accountType = value;
+        return this;
+    }
     public AuthorizationBuilder withAddress(Address value) {
         return withAddress(value, AddressType.Billing);
     }
     public AuthorizationBuilder withAddress(Address value, AddressType type) {
-        value.setType(type);
-        if(type == AddressType.Billing)
-            this.billingAddress = value;
-        else this.shippingAddress = value;
+        if(value != null) {
+            value.setType(type);
+            if (type == AddressType.Billing)
+                this.billingAddress = value;
+            else this.shippingAddress = value;
+        }
         return this;
     }
     public AuthorizationBuilder withAlias(AliasAction action, String value) {
@@ -192,6 +222,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.transactionModifier = TransactionModifier.CashBack;
         return this;
     }
+    public AuthorizationBuilder withChipCondition(EmvChipCondition value) {
+        this.emvChipCondition = value;
+        return this;
+    }
     public AuthorizationBuilder withClientTransactionId(String value) {
         if(transactionType == TransactionType.Reversal || transactionType == TransactionType.Refund) {
             if(paymentMethod instanceof TransactionReference)
@@ -203,6 +237,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
             }
         }
         else clientTransactionId = value;
+        return this;
+    }
+    public AuthorizationBuilder withCommercialRequest(boolean value) {
+        this.level2Request = value;
         return this;
     }
     public AuthorizationBuilder withConvenienceAmt(BigDecimal value) {
@@ -242,19 +280,15 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withHostedPaymentData(HostedPaymentData value) throws ApiException {
-        IPaymentGateway client = ServicesContainer.getInstance().getGateway();
-        if(client.supportsHostedPayments()) {
-            this.hostedPaymentData = value;
-            return this;
-        }
-        throw new UnsupportedTransactionException("You current gateway does not support hosted payments.");
+        this.hostedPaymentData = value;
+        return this;
     }
     public AuthorizationBuilder withInvoiceNumber(String value) {
         this.invoiceNumber = value;
         return this;
     }
-    public AuthorizationBuilder withCommercialRequest(boolean value) {
-        this.level2Request = value;
+    public AuthorizationBuilder withMessageAuthenticationCode(String value) {
+        this.messageAuthenticationCode = value;
         return this;
     }
     public AuthorizationBuilder withOfflineAuthCode(String value) {
@@ -269,6 +303,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withOrderId(String value) {
         this.orderId = value;
+        return this;
+    }
+    public AuthorizationBuilder withPosSequenceNumber(String value) {
+        this.posSequenceNumber = value;
         return this;
     }
     public AuthorizationBuilder withProductId(String value) {
@@ -292,6 +330,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withReplacementCard(GiftCard value) {
         this.replacementCard = value;
+        return this;
+    }
+    public AuthorizationBuilder withReversalReasonCode(ReversalReasonCode value) {
+        this.reversalReasonCode = value;
         return this;
     }
     public AuthorizationBuilder withTransactionId(String value) {
@@ -321,6 +363,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.timestamp = value;
         return this;
     }
+    public AuthorizationBuilder withTagData(String value) {
+        this.tagData = value;
+        return this;
+    }
 
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);
@@ -329,19 +375,21 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         super(type, paymentMethod);
     }
 
-    @Override
-    public Transaction execute() throws ApiException {
-        super.execute();
+    public Transaction execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        IPaymentGateway client = ServicesContainer.getInstance().getGateway();
+        IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
         return client.processAuthorization(this);
     }
 
     public String serialize() throws ApiException {
+        return serialize("default");
+    }
+    public String serialize(String configName) throws ApiException {
         transactionModifier = TransactionModifier.HostedRequest;
-        super.execute();
+        super.execute(configName);
 
-        IPaymentGateway client = ServicesContainer.getInstance().getGateway();
+        IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
         if(client.supportsHostedPayments())
             return client.serializeRequest(this);
         throw new UnsupportedTransactionException("Your current gateway does not support hosted payments.");
@@ -385,5 +433,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(TransactionType.Replace).check("replacementCard").isNotNull();
 
         this.validations.of(PaymentMethodType.ACH).check("billingAddress").isNotNull();
+
+        this.validations.of(PaymentMethodType.Debit)
+                .when("reversalReasonCode").isNotNull()
+                .check("transactionType").isEqualTo(TransactionType.Reversal);
+
+        this.validations.of(EnumSet.of(PaymentMethodType.Debit, PaymentMethodType.Credit))
+                .when("emvChipCondition").isNotNull().check("tagData").isNull();
+        this.validations.of(EnumSet.of(PaymentMethodType.Debit, PaymentMethodType.Credit))
+                .when("tagData").isNotNull().check("emvChipCondition").isNull();
     }
 }

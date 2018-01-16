@@ -6,11 +6,10 @@ import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.utils.IOUtils;
 import org.apache.commons.codec.binary.Base64;
-import sun.misc.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -36,6 +35,9 @@ public class PaxHttpInterface implements IDeviceCommInterface {
     }
 
     public byte[] send(IDeviceMessage message) throws ApiException {
+        if(onMessageSent != null)
+            onMessageSent.messageSent(message.toString());
+
         String payload = Base64.encodeBase64String(message.getSendBuffer()).replace("\r", "").replace("\n", "");
 
         String endpoint = String.format("http://%s:%d?%s", _settings.getIpAddress(), _settings.getPort(), payload);
@@ -51,11 +53,8 @@ public class PaxHttpInterface implements IDeviceCommInterface {
             _client.setRequestMethod("GET");
             _client.addRequestProperty("Content-Type", "text/xml; charset=UTF-8");
 
-            if(onMessageSent != null)
-                onMessageSent.messageSent(message.toString());
-
             InputStream responseStream = _client.getInputStream();
-            return IOUtils.readFully(responseStream, _client.getContentLength(), true);
+            return IOUtils.readFully(responseStream).getBytes();
         } catch(IOException e){
             throw new MessageException("Failed to send message. Check inner exception for more details.", e);
         }

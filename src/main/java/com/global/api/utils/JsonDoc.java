@@ -152,9 +152,12 @@ public class JsonDoc {
         return null;
     }
     public Date getDate(String name) {
+        return getDate(name, "hh:MM:ss");
+    }
+    public Date getDate(String name, String formatString) {
         String value = getString(name);
         if(value != null) {
-            SimpleDateFormat format = new SimpleDateFormat("hh:MM:ss");
+            SimpleDateFormat format = new SimpleDateFormat(formatString);
             try {
                 return format.parse(value);
             }

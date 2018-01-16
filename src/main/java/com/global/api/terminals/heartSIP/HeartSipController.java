@@ -1,9 +1,6 @@
 package com.global.api.terminals.heartSIP;
 
-import com.global.api.entities.enums.ConnectionModes;
-import com.global.api.entities.enums.HsipMsgId;
-import com.global.api.entities.enums.MessageFormat;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -89,6 +86,10 @@ public class HeartSipController extends DeviceController implements IDisposable 
         if (builder.getGratuity() != null)
             et.subElement(request, "TipAmount").text(StringUtils.toNumeric(builder.getGratuity()));
         else et.subElement(request, "TipAmount").text("0");
+
+        // EBT amount
+        if(builder.getPaymentMethodType() == PaymentMethodType.EBT)
+            et.subElement(request, "EBTAmount").text(StringUtils.toNumeric(builder.getAmount()));
 
         // total
         et.subElement(request, "TotalAmount").text(StringUtils.toNumeric(builder.getAmount()));

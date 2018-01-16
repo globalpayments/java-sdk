@@ -142,6 +142,30 @@ class PaxInterface implements IDeviceInterface {
     //</editor-fold>
 
     //<editor-fold desc="EBT MESSAGES">
+    public TerminalAuthBuilder ebtBalance(int referenceNumber) {
+        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.EBT).withReferenceNumber(referenceNumber);
+    }
+
+    public TerminalAuthBuilder ebtPurchase(int referenceNumber) {
+        return ebtPurchase(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtPurchase(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder ebtRefund(int referenceNumber) {
+        return ebtRefund(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtRefund(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber) {
+        return ebtWithdrawal(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.BenefitWithdrawal, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    }
     //</editor-fold>
 
     //<editor-fold desc="GIFT MESSAGES">

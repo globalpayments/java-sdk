@@ -3,6 +3,7 @@ package com.global.api.terminals.pax;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.UnsupportedConnectionModeException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.GiftCard;
@@ -21,10 +22,10 @@ import com.global.api.terminals.pax.interfaces.PaxHttpInterface;
 import com.global.api.terminals.pax.interfaces.PaxTcpInterface;
 import com.global.api.terminals.pax.responses.CreditResponse;
 import com.global.api.terminals.pax.responses.DebitResponse;
+import com.global.api.terminals.pax.responses.EbtResponse;
 import com.global.api.terminals.pax.responses.GiftResponse;
 import com.global.api.terminals.pax.subgroups.*;
 import com.global.api.utils.StringUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 
@@ -60,10 +61,9 @@ public class PaxController extends DeviceController {
                 break;
             case SERIAL:
             case SSL_TCP:
-                throw new NotImplementedException();
+                throw new UnsupportedConnectionModeException();
         }
 
-        _interface.connect();
         _interface.setMessageSentHandler(new IMessageSentInterface() {
             public void messageSent(String message) {
                 if (onMessageSent != null)
@@ -87,6 +87,7 @@ public class PaxController extends DeviceController {
 
         // amounts sub group
         amounts.setTransactionAmount(StringUtils.toNumeric(builder.getAmount()));
+        amounts.setCashBackAmount(StringUtils.toNumeric(builder.getCashbackAmount()));
         amounts.setTipAmount(StringUtils.toNumeric(builder.getGratuity()));
         amounts.setTaxAmount(StringUtils.toNumeric(builder.getTaxAmount()));
 
@@ -147,6 +148,10 @@ public class PaxController extends DeviceController {
             case Gift:
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
                 return doGift(messageId, transType, amounts, account, trace, cashier, extData);
+            case EBT:
+                if(builder.getCurrency() != null)
+                    account.setEbtType(builder.getCurrency().getValue().substring(0, 1));
+                return doEbt(transType, amounts, account, trace, cashier);
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -183,6 +188,8 @@ public class PaxController extends DeviceController {
             case Gift:
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
                 return doGift(messageId, transType, amounts, account, trace, new CashierSubGroup(), extData);
+            case EBT:
+                return doEbt(transType, amounts, account, trace, new CashierSubGroup());
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -209,6 +216,10 @@ public class PaxController extends DeviceController {
                 return requestToken ? PaxTxnType.TOKENIZE : PaxTxnType.VERIFY;
             case Void:
                 return PaxTxnType.VOID;
+            case BenefitWithdrawal:
+                return PaxTxnType.WITHDRAWAL;
+            case Reversal:
+                return PaxTxnType.REVERSAL;
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -245,6 +256,11 @@ public class PaxController extends DeviceController {
     public DebitResponse doDebit(PaxTxnType transactionType, AmountRequest amounts, AccountRequest accounts, TraceRequest trace, CashierSubGroup cashier, ExtDataSubGroup extData) throws ApiException {
         byte[] response = doTransaction(PaxMsgId.T02_DO_DEBIT, transactionType, amounts, accounts, trace, cashier, extData);
         return new DebitResponse(response);
+    }
+
+    public EbtResponse doEbt(PaxTxnType transactionType, AmountRequest amounts, AccountRequest accounts, TraceRequest trace, CashierSubGroup cashier) throws ApiException {
+        byte[] response = doTransaction(PaxMsgId.T04_DO_EBT, transactionType, amounts, accounts, trace, cashier, new ExtDataSubGroup());
+        return new EbtResponse(response);
     }
     //</editor-fold>
 }

@@ -6,29 +6,44 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.abstractions.IDisposable;
 import com.global.api.terminals.heartSIP.HeartSipController;
 import com.global.api.terminals.pax.PaxController;
 import com.global.api.utils.StringUtils;
 
-public class ServicesContainer {
-    private IPaymentGateway gateway;
-    private IRecurringGateway recurring;
-    private IDeviceInterface device;
-    private DeviceController deviceController;
-    private TableServiceConnector tableServiceConnector;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+
+public class ServicesContainer implements IDisposable {
+    private HashMap<String, ConfiguredServices> configurations;
     private static ServicesContainer instance;
 
-    public IDeviceInterface getDeviceInterface() {
-        return this.device;
+    public IDeviceInterface getDeviceInterface(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getDeviceInterface();
+        return null;
     }
-    public DeviceController getDeviceController() {
-        return this.deviceController;
+    public DeviceController getDeviceController(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getDeviceController();
+        return null;
     }
-    public IPaymentGateway getGateway() {
-        return gateway;
+    public IPaymentGateway getGateway(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getGatewayConnector();
+        return null;
     }
-    public IRecurringGateway getRecurring() { return recurring; }
-    public TableServiceConnector getTableService() { return tableServiceConnector; }
+    public IRecurringGateway getRecurring(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getRecurringConnector();
+        return null;
+    }
+    public TableServiceConnector getTableService(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getReservationConnector();
+        return null;
+    }
 
     public static ServicesContainer getInstance() throws ApiException {
         if(instance != null)
@@ -37,32 +52,33 @@ public class ServicesContainer {
     }
 
     public static void configure(ServicesConfig config) throws ConfigurationException {
+        configure(config, "default");
+    }
+    public static void configure(ServicesConfig config, String configName) throws ConfigurationException {
         config.validate();
 
+        ConfiguredServices cs = new ConfiguredServices();
+
         // configure devices
-        IDeviceInterface deviceInterface = null;
-        DeviceController deviceController = null;
         if(config.getDeviceConnectionConfig() != null) {
             switch(config.getDeviceConnectionConfig().getDeviceType()) {
                 case PAX_S300:
-                    deviceController = new PaxController(config.getDeviceConnectionConfig());
-                    deviceInterface = deviceController.configureInterface();
+                    cs.setDeviceController(new PaxController(config.getDeviceConnectionConfig()));
                     break;
                 case HSIP_ISC250:
-                    deviceController = new HeartSipController(config.getDeviceConnectionConfig());
-                    deviceInterface = deviceController.configureInterface();
+                    cs.setDeviceController(new HeartSipController(config.getDeviceConnectionConfig()));
                 default:
                     break;
             }
         }
 
         // configure table service
-        TableServiceConnector tableServiceConnector = null;
         if(config.getTableServiceProvider() != null) {
             if(config.getTableServiceProvider().equals(TableServiceProviders.FreshTxt)) {
-                tableServiceConnector = new TableServiceConnector();
+                TableServiceConnector tableServiceConnector = new TableServiceConnector();
                 tableServiceConnector.setServiceUrl("https://www.freshtxt.com/api31/");
                 tableServiceConnector.setTimeout(config.getTimeout());
+                cs.setReservationConnector(tableServiceConnector);
             }
         }
 
@@ -78,7 +94,8 @@ public class ServicesContainer {
             gateway.setServiceUrl(config.getServiceUrl());
             gateway.setHostedPaymentConfig(config.getHostedPaymentConfig());
 
-            instance = new ServicesContainer(gateway, gateway, deviceController, deviceInterface, tableServiceConnector);
+            cs.setGatewayConnector(gateway);
+            cs.setRecurringConnector(gateway);
         }
         else {
             PorticoConnector gateway = new PorticoConnector();
@@ -92,21 +109,34 @@ public class ServicesContainer {
             gateway.setVersionNumber(config.getVersionNumber());
             gateway.setTimeout(config.getTimeout());
             gateway.setServiceUrl(config.getServiceUrl() + "/Hps.Exchange.PosGateway/PosGatewayService.asmx");
+            cs.setGatewayConnector(gateway);
 
             PayPlanConnector payplan = new PayPlanConnector();
             payplan.setSecretApiKey(config.getSecretApiKey());
             payplan.setTimeout(config.getTimeout());
             payplan.setServiceUrl(config.getServiceUrl() + "/Portico.PayPlan.v2/");
 
-            instance = new ServicesContainer(gateway, payplan, deviceController, deviceInterface, tableServiceConnector);
+            cs.setRecurringConnector(payplan);
         }
+
+        if(instance == null)
+            instance = new ServicesContainer();
+
+        instance.addConfiguration(configName, cs);
     }
 
-    private ServicesContainer(IPaymentGateway gateway, IRecurringGateway recurring, DeviceController deviceController, IDeviceInterface deviceInterface, TableServiceConnector tableServiceConnector) {
-        this.gateway = gateway;
-        this.recurring = recurring;
-        this.deviceController = deviceController;
-        this.device = deviceInterface;
-        this.tableServiceConnector = tableServiceConnector;
+    private ServicesContainer() {
+        configurations = new HashMap<String, ConfiguredServices>();
+    }
+
+    private void addConfiguration(String configName, ConfiguredServices cs) {
+        if(configurations.containsKey(configName))
+            configurations.remove(configName);
+        configurations.put(configName, cs);
+    }
+
+    public void dispose() {
+        for(ConfiguredServices cs : configurations.values())
+            cs.dispose();
     }
 }

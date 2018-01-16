@@ -30,10 +30,10 @@ public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
         this.clazz = clazz;
     }
 
-    public TResult execute() throws ApiException {
-        super.execute();
+    public TResult execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        IPaymentGateway client = ServicesContainer.getInstance().getGateway();
+        IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
         return client.processReport(this, clazz);
     }
 }

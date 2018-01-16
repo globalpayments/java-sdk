@@ -136,12 +136,25 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
             Element manualEntry = et.subElement(cardData, hasToken ? "TokenData" : "ManualEntry");
             et.subElement(manualEntry, hasToken ? "TokenValue" : "CardNbr").text(tokenValue != null ? tokenValue : card.getNumber());
-            et.subElement(manualEntry, "ExpMonth").text(card.getExpMonth().toString());
-            et.subElement(manualEntry, "ExpYear").text(card.getExpYear().toString());
+            et.subElement(manualEntry, "ExpMonth", card.getExpMonth() != null ? card.getExpMonth().toString() : null);
+            et.subElement(manualEntry, "ExpYear", card.getExpYear() != null ? card.getExpYear().toString() : null);
             et.subElement(manualEntry, "CVV2", card.getCvn());
             et.subElement(manualEntry, "ReaderPresent", card.isReaderPresent() ? "Y" : "N");
             et.subElement(manualEntry, "CardPresent", card.isCardPresent() ? "Y" : "N");
             block1.append(cardData);
+
+            // secure 3d
+            if(card instanceof CreditCardData) {
+                ThreeDSecure secureEcom = ((CreditCardData)card).getThreeDSecure();
+                if(secureEcom != null) {
+                    Element secureEcommerce = et.subElement(block1, "SecureECommerce");
+                    et.subElement(secureEcommerce, "PaymentDataSource", secureEcom.getPaymentDataSource());
+                    et.subElement(secureEcommerce, "TypeOfPaymentData", secureEcom.getPaymentDataType());
+                    et.subElement(secureEcommerce, "PaymentData", secureEcom.getCavv());
+                    et.subElement(secureEcommerce, "ECommerceIndicator", secureEcom.getEci());
+                    et.subElement(secureEcommerce, "XID", secureEcom.getXid());
+                }
+            }
 
             // recurring data
             if(builder.getTransactionModifier().equals(TransactionModifier.Recurring)) {
@@ -156,10 +169,30 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             Element trackData = et.subElement(cardData, hasToken ? "TokenData" : "TrackData");
             if (!hasToken) {
                 trackData.text(track.getValue());
-                if (paymentType != PaymentMethodType.Debit) {
-                    trackData.set("method", track.getEntryMethod());
-                    block1.append(cardData);
+                trackData.set("method", track.getEntryMethod());
+                if (paymentType == PaymentMethodType.Credit) {
+                   // tag data
+                    if(!StringUtils.isNullOrEmpty(builder.getTagData())) {
+                        Element tagData = et.subElement(block1, "EMVData");
+                        et.subElement(tagData, "EMVTagData", builder.getTagData());
+                    }
                 }
+                if (paymentType == PaymentMethodType.Debit) {
+                    String chipCondition = null;
+                    if(builder.getEmvChipCondition() != null)
+                        chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
+
+                    et.subElement(block1, "AccountType", builder.getAccountType());
+                    et.subElement(block1, "EMVChipCondition", chipCondition);
+                    et.subElement(block1, "MessageAuthenticationCode", builder.getMessageAuthenticationCode());
+                    et.subElement(block1, "PosSequenceNbr", builder.getPosSequenceNumber());
+                    et.subElement(block1, "ReversalReasonCode", builder.getReversalReasonCode());
+                    if(!StringUtils.isNullOrEmpty(builder.getTagData())){
+                        Element tagData = et.subElement(block1, "TagData");
+                        et.subElement(tagData, "TagValues", builder.getTagData()).set("source", "chip");
+                    }
+                }
+                else block1.append(cardData);
             }
             else et.subElement(trackData, "TokenValue").text(tokenValue);
         }
@@ -169,7 +202,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             // currency
             et.subElement(block1, "Currency", builder.getCurrency());
 
-            // if it's replace add the new card and change the card data name to be old card data
+            // if it's replace put the new card and change the card data name to be old card data
             if (type.equals(TransactionType.Replace)) {
                 GiftCard replacement = builder.getReplacementCard();
                 Element newCardData = et.subElement(block1, "NewCardData");
@@ -290,15 +323,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 et.subElement(direct, "DirectMktShipDay").text(ecom.getShipDay().toString());
                 et.subElement(direct, "DirectMktShipMonth").text(ecom.getShipMonth().toString());
             }
-
-            if(!StringUtils.isNullOrEmpty(ecom.getCavv()) || !StringUtils.isNullOrEmpty(ecom.getEci()) || !StringUtils.isNullOrEmpty(ecom.getXid())) {
-                Element secureEcommerce = et.subElement(block1, "SecureECommerce");
-                et.subElement(secureEcommerce, "PaymentDataSource", ecom.getPaymentDataSource());
-                et.subElement(secureEcommerce, "TypeOfPaymentData", ecom.getPaymentDataType());
-                et.subElement(secureEcommerce, "PaymentData", ecom.getCavv());
-                et.subElement(secureEcommerce, "ECommerceIndicator", ecom.getEci());
-                et.subElement(secureEcommerce, "XID", ecom.getXid());
-            }
         }
 
         // dynamic descriptor
@@ -405,6 +429,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         et.subElement(header, "VersionNumber", versionNumber);
         et.subElement(header, "ClientTxnId", clientTransactionId);
 
+        String date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(new Date());
+        et.subElement(header, "PosReqDT", date);
+
         // Transaction
         Element trans = et.subElement(version1, "Transaction");
         trans.append(transaction);
@@ -455,6 +482,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             result.setResponseCode(responseCode != null ? responseCode : gatewayRspCode);
             result.setResponseMessage(responseText != null ? responseText : gatewayRspText);
             result.setTransactionDescriptor(root.getString("TxnDescriptor"));
+            result.setHostResponseDate(root.getDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"), "HostRspDT"));
 
             if (paymentMethod != null) {
                 TransactionReference reference = new TransactionReference();
@@ -487,6 +515,21 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 summary.setTotalAmount(root.getDecimal("TotalAmt"));
                 summary.setSequenceNumber(root.getString("BatchSeqNbr"));
                 result.setBatchSummary(summary);
+            }
+
+            // debit mac
+            if(root.has("DebitMac")) {
+                DebitMac debitMac = new DebitMac();
+                debitMac.setTransactionCode(root.getString("TransactionCode"));
+                debitMac.setTransmissionNumber(root.getString("TransmissionNumber"));
+                debitMac.setBankResponseCode(root.getString("BankResponseCode"));
+                debitMac.setMacKey(root.getString("MacKey"));
+                debitMac.setPinKey(root.getString("PinKey"));
+                debitMac.setFieldKey(root.getString("FieldKey"));
+                debitMac.setTraceNumber(root.getString("TraceNumber"));
+                debitMac.setMessageAuthenticationCode(root.getString("MessageAuthenticationCode"));
+
+                result.setDebitMac(debitMac);
             }
         }
         return result;

@@ -31,7 +31,10 @@ public class LoginResponse extends TableServiceResponse {
     }
 
     public LoginResponse(String json) throws ApiException {
-        super(json);
+        this(json, "default");
+    }
+    public LoginResponse(String json, String configName) throws ApiException {
+        super(json, configName);
         expectedAction = "login";
     }
 

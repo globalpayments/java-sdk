@@ -52,7 +52,7 @@ public class RealexHppRequestTests {
         assertNotNull(json);
 
         String response = _client.sendRequest(json);
-        Transaction parsedResponse = _service.parseResponse(response);
+        Transaction parsedResponse = _service.parseResponse(response, true);
         assertNotNull(response);
         assertEquals("00", parsedResponse.getResponseCode());
     }
@@ -70,7 +70,7 @@ public class RealexHppRequestTests {
         assertNotNull(json);
 
         String response = _client.sendRequest(json);
-        Transaction parsedResponse = _service.parseResponse(response);
+        Transaction parsedResponse = _service.parseResponse(response, true);
         assertNotNull(response);
         assertEquals("00", parsedResponse.getResponseCode());
     }
@@ -88,7 +88,7 @@ public class RealexHppRequestTests {
         assertNotNull(json);
 
         String response = _client.sendRequest(json);
-        Transaction parsedResponse = _service.parseResponse(response);
+        Transaction parsedResponse = _service.parseResponse(response, true);
         assertNotNull(response);
         assertEquals("00", parsedResponse.getResponseCode());
     }

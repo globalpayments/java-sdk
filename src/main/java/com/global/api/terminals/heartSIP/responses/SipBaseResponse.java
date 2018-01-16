@@ -64,4 +64,8 @@ public class SipBaseResponse extends TerminalResponse {
             return "00";
         return response;
     }
+
+    public String toString() {
+        return response;
+    }
 }

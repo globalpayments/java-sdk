@@ -4,6 +4,9 @@ import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.AccountType;
+import com.global.api.entities.enums.EmvChipCondition;
+import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -86,5 +89,77 @@ public class PorticoDebitTests {
     @Test(expected = UnsupportedTransactionException.class)
     public void debitReverseFromTransactionId() throws ApiException {
         Transaction.fromId("1234567890", PaymentMethodType.Debit).reverse().execute();
+    }
+
+    @Test
+    public void debitInteracPosNumber() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withPosSequenceNumber("1")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracAccountTypeChecking() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAccountType(AccountType.Checking)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracAccountTypeSavings() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAccountType(AccountType.Savings)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracMessageAuthenticationCode() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withMessageAuthenticationCode("AuthCode")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracChipConditionFailed() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracChipConditionFailedTwice() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withChipCondition(EmvChipCondition.ChipFailPreviousFail)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

@@ -15,7 +15,10 @@ public class ServerAssignmentResponse extends TableServiceResponse {
     }
 
     public ServerAssignmentResponse(String json) throws ApiException {
-        super(json);
+        this(json, "default");
+    }
+    public ServerAssignmentResponse(String json, String configName) throws ApiException {
+        super(json, configName);
         expectedAction = "getServerAssignment";
     }
 

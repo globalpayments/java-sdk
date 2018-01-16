@@ -16,6 +16,7 @@ import com.global.api.utils.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway {
     private String merchantId;
@@ -85,6 +86,16 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(cvnElement, "number", card.getCvn());
                 et.subElement(cvnElement, "presind", card.getCvnPresenceIndicator().getValue());
             }
+
+            // mpi
+            ThreeDSecure secureEcom = card.getThreeDSecure();
+            if(secureEcom != null) {
+                Element mpi = et.subElement(request, "mpi");
+                et.subElement(mpi, "cavv", secureEcom.getCavv());
+                et.subElement(mpi, "xid", secureEcom.getXid());
+                et.subElement(mpi, "eci", secureEcom.getEci());
+            }
+
             // issueno
             String hash;
             if(builder.getTransactionType() == TransactionType.Verify)
@@ -153,15 +164,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 tssInfo.append(buildAddress(et, builder.getBillingAddress()));
             if(builder.getShippingAddress() != null)
                 tssInfo.append(buildAddress(et, builder.getShippingAddress()));
-        }
-
-        // TODO: mpi
-        if(builder.getEcommerceInfo() != null) {
-            EcommerceInfo ecom = builder.getEcommerceInfo();
-            Element mpi = et.subElement(request, "mpi");
-            et.subElement(mpi, "cavv", ecom.getCavv());
-            et.subElement(mpi, "xid", ecom.getXid());
-            et.subElement(mpi, "eci", ecom.getEci());
         }
 
         //et.SubElement(request, "mobile");
@@ -279,6 +281,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if(builder.getAmount() != null)
             et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
 
+        // payer authentication response
+        if(builder.getTransactionType().equals(TransactionType.VerifySignature))
+            et.subElement(request, "pares", builder.getPayerAuthenticationResponse());
+
         if(builder.getTransactionType() == TransactionType.Refund) {
             et.subElement(request, "authcode").text(builder.getAuthorizationCode());
             et.subElement(request, "refundhash", GenerationUtils.generateHash(rebatePassword));
@@ -351,6 +357,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 Element cardElement = et.subElement(request, "card");
                 et.subElement(cardElement, "ref").text(payment.getKey());
                 et.subElement(cardElement, "payerref").text(payment.getCustomerKey());
+
+                String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey() == null ? payment.getId() : payment.getKey());
+                et.subElement(request, "sha1hash").text(sha1hash);
             }
         }
 
@@ -368,12 +377,34 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         result.setCvnResponseCode(root.getString("cvnresult"));
         result.setAvsResponseCode(root.getString("avspostcoderesponse"));
         result.setTimestamp(root.getAttributeString("timestamp"));
+
         TransactionReference transReference = new TransactionReference();
         transReference.setAuthCode(root.getString("authcode"));
         transReference.setOrderId(root.getString("orderid"));
         transReference.setPaymentMethodType(PaymentMethodType.Credit);
         transReference.setTransactionId(root.getString("pasref"));
         result.setTransactionReference(transReference);
+
+        // 3d secure enrolled
+        if(root.has("enrolled")) {
+            ThreeDSecure secureEcom = new ThreeDSecure();
+            secureEcom.setEnrolled(root.getString("enrolled").equals("Y"));
+            secureEcom.setPayerAuthenticationRequest(root.getString("pareq"));
+            secureEcom.setXid(root.getString("xid"));
+            secureEcom.setIssuerAcsUrl(root.getString("url"));
+            result.setThreeDsecure(secureEcom);
+        }
+
+        // three d secure
+        if(root.has("threedsecure")) {
+            ThreeDSecure secureEcom = new ThreeDSecure();
+            secureEcom.setStatus(root.getString("status"));
+            secureEcom.setEci(root.getString("eci"));
+            secureEcom.setXid(root.getString("xid"));
+            secureEcom.setCavv(root.getString("cavv"));
+            secureEcom.setAlgorithm(root.getInt("algorithm"));
+            result.setThreeDsecure(secureEcom);
+        }
 
         return result;
     }
@@ -433,6 +464,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 if(payment instanceof Credit)
                     return "credit";
                 else return "payment-out";
+            case VerifyEnrolled:
+                return "3ds-verifyenrolled";
             case Reversal:
                 throw new UnsupportedTransactionException();
             default:
@@ -453,6 +486,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             case Void:
             case Reversal:
                 return "void";
+            case VerifySignature:
+                return "3ds-verifysig";
             default:
                 return "unknown";
         }
@@ -503,7 +538,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(address, "postcode", addy.getPostalCode());
             Element country = et.subElement(address, "country", customer.getAddress().getCountry());
             if (country != null)
-                country.set("code", "GB"); // TODO: I need a mapping for this somehow
+                country.set("code", customer.getAddress().getCountryCode());
         }
 
         Element phone = et.subElement(payer, "phonenumbers");
@@ -519,9 +554,25 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     }
 
     private Element buildAddress(ElementTree et, Address address) {
-        String code = String.format("%s|%s", address.getPostalCode(), address.getStreetAddress1());
-        if(address.getCountry().equals("GB"))
-            code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
+        if(address == null)
+            return null;
+
+        String code = address.getPostalCode();
+        if(!StringUtils.isNullOrEmpty(code) && !code.contains("|")) {
+            if (address.getStreetAddress1() != null) {
+                code = String.format("%s|%s", address.getPostalCode(), address.getStreetAddress1());
+            }
+            else{
+                code = String.format("%s|", address.getPostalCode());
+            }
+           if (address.isCountry("GB"))
+               if (address.getStreetAddress1() != null) {
+                  code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
+               }
+               else{
+                  code = String.format("%s|", address.getPostalCode().replaceAll("[^0-9]", ""));
+               }
+        }
 
         Element addressNode = et.element("address").set("type", address.getType().equals(AddressType.Billing) ? "billing" : "shipping");
         et.subElement(addressNode, "code").text(code);

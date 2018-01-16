@@ -8,7 +8,7 @@ public interface IRecurringEntity<T> {
     String getKey();
     void setKey(String value);
 
-    T create() throws ApiException;
+    T create(String configName) throws ApiException;
     void delete() throws ApiException;
     void delete(boolean force) throws ApiException;
     void saveChanges() throws ApiException;

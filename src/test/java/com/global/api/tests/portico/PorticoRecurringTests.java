@@ -255,14 +255,6 @@ public class PorticoRecurringTests {
         paymentMethod.saveChanges();
     }
 
-    @Test(expected = UnsupportedTransactionException.class)
-    public void Test_004c_EditPaymentMethodsMethod() throws ApiException {
-        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
-        assertNotNull(paymentMethod);
-
-        paymentMethod.setPaymentMethod(new CreditCardData());
-    }
-
     @Test
     public void Test_004d_EditSchedule() throws ApiException {
         Schedule schedule = Schedule.find(paymentId("Credit"));

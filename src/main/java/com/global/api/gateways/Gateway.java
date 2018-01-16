@@ -1,15 +1,11 @@
 package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
-import com.sun.xml.internal.messaging.saaj.soap.MultipartDataContentHandler;
+import com.global.api.utils.IOUtils;
 import org.apache.http.entity.mime.MultipartEntity;
-import sun.misc.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -81,7 +77,7 @@ abstract class Gateway {
             else System.out.println("Request: " + endpoint);
 
             InputStream responseStream = conn.getInputStream();
-            String rawResponse = new String(IOUtils.readFully(responseStream, conn.getContentLength(), true));
+            String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
             System.out.println("Response: " + rawResponse);
 
@@ -93,7 +89,6 @@ abstract class Gateway {
         catch(Exception exc) {
             throw new GatewayException("Error occurred while communicating with gateway.", exc);
         }
-        finally { }
     }
     protected GatewayResponse sendRequest(String endpoint, MultipartEntity content) throws GatewayException {
         HttpsURLConnection conn;
@@ -114,7 +109,7 @@ abstract class Gateway {
             out.close();
 
             InputStream responseStream = conn.getInputStream();
-            String rawResponse = new String(IOUtils.readFully(responseStream, conn.getContentLength(), true));
+            String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
             System.out.println("Response: " + rawResponse);
 

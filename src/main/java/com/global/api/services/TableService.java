@@ -14,23 +14,29 @@ import java.util.Date;
 import java.util.Enumeration;
 
 public class TableService {
+    private String configName = "default";
+
     public String[] getBumpStatuses() throws ApiException {
-        return ServicesContainer.getInstance().getTableService().getBumpStatusCollection().getKeys();
+        return ServicesContainer.getInstance().getTableService(configName).getBumpStatusCollection().getKeys();
     }
 
     public TableService(ServicesConfig config) throws ApiException {
-        ServicesContainer.configure(config);
+        this(config, "default");
+    }
+    public TableService(ServicesConfig config, String configName) throws ApiException {
+        this.configName = configName;
+        ServicesContainer.configure(config, configName);
     }
 
     private <T extends TableServiceResponse> T sendRequest(Class<T> clazz, String endpoint, MultipartForm formData) throws ApiException {
-        TableServiceConnector connector = ServicesContainer.getInstance().getTableService();
+        TableServiceConnector connector = ServicesContainer.getInstance().getTableService(configName);
         if(!connector.isConfigured() && !endpoint.equals("user/login"))
             throw new ConfigurationException("Reservation service has not been configured properly. Please ensure you have logged in first.");
 
         String response = connector.call(endpoint, formData);
         try {
-            Constructor<T> instance = clazz.getConstructor(String.class);
-            return instance.newInstance(response);
+            Constructor<T> instance = clazz.getConstructor(String.class, String.class);
+            return instance.newInstance(response, configName);
         }
         catch(Exception exc) {
             throw new ApiException(exc.getMessage(), exc);
@@ -45,7 +51,7 @@ public class TableService {
         LoginResponse response = sendRequest(LoginResponse.class, "user/login", content);
 
         // configure the connector
-        TableServiceConnector connector = ServicesContainer.getInstance().getTableService();
+        TableServiceConnector connector = ServicesContainer.getInstance().getTableService(configName);
         connector.setLocationId(response.getLocationId());
         connector.setSecurityToken(response.getToken());
         connector.setSessionId(response.getSessionId());

@@ -59,10 +59,7 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
         return paymentMethod;
     }
     public void setPaymentMethod(IPaymentMethod paymentMethod) throws ApiException {
-        IRecurringGateway client = ServicesContainer.getInstance().getRecurring();
-        if(client.supportsUpdatePaymentDetails())
-            this.paymentMethod = paymentMethod;
-        else throw new UnsupportedTransactionException();
+        this.paymentMethod = paymentMethod;
     }
     public PaymentMethodType getPaymentMethodType() {
         return PaymentMethodType.Recurring;
@@ -130,6 +127,9 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
 
     public RecurringPaymentMethod create() throws ApiException {
+        return create("default");
+    }
+    public RecurringPaymentMethod create(String configName) throws ApiException {
         return RecurringService.create(this, RecurringPaymentMethod.class);
     }
 
@@ -146,7 +146,10 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
 
     public static RecurringPaymentMethod find(String id) throws ApiException {
-        checkSupportsRetrieval();
+        return find(id, "default");
+    }
+    public static RecurringPaymentMethod find(String id, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
 
         List<RecurringPaymentMethod> response = RecurringService.search(RecurringPaymentMethodCollection.class)
                 .addSearchCriteria("paymentMethodIdentifier", id)
@@ -160,12 +163,18 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
 
     public static List<RecurringPaymentMethod> findAll() throws ApiException {
-        checkSupportsRetrieval();
+        return findAll("default");
+    }
+    public static List<RecurringPaymentMethod> findAll(String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.search(RecurringPaymentMethodCollection.class).execute();
     }
 
     public static RecurringPaymentMethod get(String key) throws ApiException {
-        checkSupportsRetrieval();
+        return get(key, "default");
+    }
+    public static RecurringPaymentMethod get(String key, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.get(key, RecurringPaymentMethod.class);
     }
 

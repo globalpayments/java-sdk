@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class SSLSocketFactoryEx extends SSLSocketFactory
+public class SSLSocketFactoryEx extends SSLSocketFactory
 {
     public SSLSocketFactoryEx() throws NoSuchAlgorithmException, KeyManagementException
     {

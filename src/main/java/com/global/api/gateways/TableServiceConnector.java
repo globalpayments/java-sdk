@@ -54,7 +54,7 @@ public class TableServiceConnector extends Gateway {
 
             GatewayResponse response = sendRequest(endpoint, content.getContent());
             if(response.getStatusCode() != 200) {
-                // TODO: add some error handling here
+                // TODO: put some error handling here
             }
             return response.getRawResponse();
         }

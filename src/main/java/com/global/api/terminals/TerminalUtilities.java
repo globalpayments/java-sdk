@@ -68,7 +68,7 @@ public class TerminalUtilities {
             buffer.add((byte)message.length());
         }
 
-        // add message
+        // put message
         buffer.addRange(message.getBytes());
 
         // ending sentinel
@@ -88,8 +88,12 @@ public class TerminalUtilities {
     }
 
     public static byte calculateLRC(byte[] buffer) {
+        int length = buffer.length;
+        if(buffer[buffer.length - 1] != ControlCodes.ETX.getByte())
+            length--;
+
         byte lrc = (byte)0x00;
-        for (int i = 1; i < buffer.length; i++)
+        for (int i = 1; i < length; i++)
             lrc = (byte)(lrc ^ buffer[i]);
         return lrc;
     }

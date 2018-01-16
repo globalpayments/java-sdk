@@ -50,7 +50,7 @@ public class RetailCertification {
             System.out.println(String.format("Sequence Number: %s", response.getSequenceNumber()));
         }
         catch (GatewayException exc) {
-            if (exc.getResponseText().contains("Transaction was rejected because it requires a batch to be open."))
+            if (!exc.getResponseText().contains("Transaction was rejected because it requires a batch to be open."))
                 Assert.fail(exc.getMessage());
         }
     }

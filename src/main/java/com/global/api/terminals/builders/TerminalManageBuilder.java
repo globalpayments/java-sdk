@@ -57,10 +57,10 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         super(type, paymentType);
     }
 
-    public TerminalResponse execute() throws ApiException {
-        super.execute();
+    public TerminalResponse execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        DeviceController device = ServicesContainer.getInstance().getDeviceController();
+        DeviceController device = ServicesContainer.getInstance().getDeviceController(configName);
         return device.manageTransaction(this);
     }
 

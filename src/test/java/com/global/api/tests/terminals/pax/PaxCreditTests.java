@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.pax;
 
 import com.global.api.ServicesConfig;
 import com.global.api.entities.Address;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
@@ -27,7 +28,7 @@ public class PaxCreditTests {
     public PaxCreditTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_S300);
-        deviceConfig.setConnectionMode(ConnectionModes.HTTP);
+        deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);
 
@@ -135,6 +136,41 @@ public class PaxCreditTests {
         assertEquals("00", response.getResponseCode());
 
         rec_message = String.format("[STX]T00[FS]1.35[FS]04[FS]1200[FS][FS]2[FS][FS][FS][FS][FS]HREF=%s[ETX]", response.getTransactionId());
+        TerminalResponse captureResponse = device.creditCapture(2, new BigDecimal("12"))
+                .withTransactionId(response.getTransactionId())
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthCaptureManual() throws ApiException {
+        rec_message = "";
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+                assertTrue(message.startsWith(rec_message));
+            }
+        });
+
+        CreditCardData card = new CreditCardData();
+        card.setNumber("4005554444444460");
+        card.setExpMonth(12);
+        card.setExpYear(17);
+        card.setCvn("123");
+
+        Address address = new Address();
+        address.setStreetAddress1("1 Heartland Way");
+        address.setPostalCode("95124");
+
+        TerminalResponse response = device.creditAuth(1, new BigDecimal("12"))
+                .withPaymentMethod(card)
+                .withAddress(address)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
         TerminalResponse captureResponse = device.creditCapture(2, new BigDecimal("12"))
                 .withTransactionId(response.getTransactionId())
                 .execute();

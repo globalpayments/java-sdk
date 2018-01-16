@@ -30,8 +30,12 @@ public abstract class RecurringEntity<TResult extends IRecurringEntity> implemen
 
     protected RecurringEntity() {}
 
-    protected static void checkSupportsRetrieval() throws ApiException {
-        IRecurringGateway client = ServicesContainer.getInstance().getRecurring();
+    public TResult create() throws ApiException {
+        return create("default");
+    }
+
+    protected static void checkSupportsRetrieval(String configName) throws ApiException {
+        IRecurringGateway client = ServicesContainer.getInstance().getRecurring(configName);
         if(!client.supportsRetrieval())
             throw new UnsupportedTransactionException();
     }

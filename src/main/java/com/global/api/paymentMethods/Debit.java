@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable, IReversable, IChargable, IEncryptable, IPinProtected {
     private EncryptionData encryptionData;
+    private PaymentMethodType paymentMethodType = PaymentMethodType.Debit;
     private String pinBlock;
 
     public EncryptionData getEncryptionData() {
@@ -23,7 +24,7 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     public void setPinBlock(String pinBlock) {
         this.pinBlock = pinBlock;
     }
-    public PaymentMethodType getPaymentMethodType() { return PaymentMethodType.Debit; }
+    public PaymentMethodType getPaymentMethodType() { return paymentMethodType; }
 
     public AuthorizationBuilder addValue() { return addValue(null); }
     public AuthorizationBuilder addValue(BigDecimal amount) {

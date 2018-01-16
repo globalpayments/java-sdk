@@ -23,4 +23,6 @@ public interface ICardData {
 
     boolean isReaderPresent();
     void setReaderPresent(boolean readerPresent);
+
+    String getShortExpiry();
 }

@@ -25,6 +25,7 @@ public class Customer extends RecurringEntity<Customer> {
     private String comments;
     private String department;
     private String status;
+    private List<RecurringPaymentMethod> paymentMethods;
 
     public String getTitle() {
         return title;
@@ -104,6 +105,12 @@ public class Customer extends RecurringEntity<Customer> {
     public void setStatus(String status) {
         this.status = status;
     }
+    public List<RecurringPaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+    public void setPaymentMethods(List<RecurringPaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
+    }
 
     public Customer() {
         //super(Customer.class);
@@ -113,6 +120,9 @@ public class Customer extends RecurringEntity<Customer> {
     }
 
     public Customer create() throws ApiException {
+        return create("default");
+    }
+    public Customer create(String configName) throws ApiException {
         return RecurringService.create(this, Customer.class);
     }
 
@@ -129,7 +139,10 @@ public class Customer extends RecurringEntity<Customer> {
     }
 
     public static Customer find(String id) throws ApiException {
-        checkSupportsRetrieval();
+        return find(id, "default");
+    }
+    public static Customer find(String id, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
 
         List<Customer> response = RecurringService.search(CustomerCollection.class)
                 .addSearchCriteria("customerIdentifier", id)
@@ -143,12 +156,18 @@ public class Customer extends RecurringEntity<Customer> {
     }
 
     public static List<Customer> findAll() throws ApiException {
-        checkSupportsRetrieval();
+        return findAll("default");
+    }
+    public static List<Customer> findAll(String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.search(CustomerCollection.class).execute();
     }
 
     public static Customer get(String key) throws ApiException {
-        checkSupportsRetrieval();
+        return get(key, "default");
+    }
+    public static Customer get(String key, String configName) throws ApiException {
+        checkSupportsRetrieval(configName);
         return RecurringService.get(key, Customer.class);
     }
 

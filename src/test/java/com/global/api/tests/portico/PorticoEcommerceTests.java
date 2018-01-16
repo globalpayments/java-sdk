@@ -3,6 +3,7 @@ package com.global.api.tests.portico;
 import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EcommerceInfo;
+import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EcommerceChannel;
 import com.global.api.entities.exceptions.ApiException;
@@ -90,14 +91,14 @@ public class PorticoEcommerceTests {
 
     @Test
     public void ecomWithSecureEcommerce() throws ApiException {
-        EcommerceInfo ecom = new EcommerceInfo();
+        ThreeDSecure ecom = new ThreeDSecure();
         ecom.setPaymentDataSource("ApplePay");
         ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
         ecom.setEci("5");
+        card.setThreeDSecure(ecom);
 
         Transaction response = card.charge(new BigDecimal("10"))
                 .withCurrency("USD")
-                .withEcommerceInfo(ecom)
                 .withInvoiceNumber("1234567890")
                 .withAllowDuplicates(true)
                 .execute();

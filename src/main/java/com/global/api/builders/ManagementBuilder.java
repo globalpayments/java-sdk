@@ -20,6 +20,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String currency;
     private String description;
     private BigDecimal gratuity;
+    private String orderId;
+    private String payerAuthenticationResponse;
     private String poNumber;
     private ReasonCode reasonCode;
     private BigDecimal taxAmount;
@@ -54,6 +56,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getOrderId();
         return null;
+    }
+    public String getPayerAuthenticationResponse() {
+        return payerAuthenticationResponse;
     }
     public String getPoNumber() {
         return poNumber;
@@ -93,8 +98,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.gratuity = value;
         return this;
     }
+    public ManagementBuilder withPayerAuthenticationResponse(String value) {
+        payerAuthenticationResponse = value;
+        return this;
+    }
     public ManagementBuilder withPaymentMethod(IPaymentMethod value) {
         this.paymentMethod = value;
+        if(paymentMethod instanceof TransactionReference)
+            this.orderId = ((TransactionReference) paymentMethod).getOrderId();
         return this;
     }
     public ManagementBuilder withPoNumber(String value) {
@@ -126,10 +137,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
 
     @Override
-    public Transaction execute() throws ApiException {
-        super.execute();
+    public Transaction execute(String configName) throws ApiException {
+        super.execute(configName);
 
-        IPaymentGateway gateway = ServicesContainer.getInstance().getGateway();
+        IPaymentGateway gateway = ServicesContainer.getInstance().getGateway(configName);
         return gateway.manageTransaction(this);
     }
 
@@ -144,5 +155,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(TransactionType.Refund)
                 .when("amount").isNotNull()
                 .check("currency").isNotNull();
+
+        this.validations.of(TransactionType.VerifySignature)
+                .check("payerAuthenticationResponse").isNotNull()
+                .check("amount").isNotNull()
+                .check("currency").isNotNull()
+                .check("orderId").isNotNull();
     }
 }

@@ -4,7 +4,6 @@ import com.global.api.builders.RecurringBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.DateUtils;
@@ -390,6 +389,16 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
                 ((Customer)customer).setMobilePhone(response.getString("phoneMobile"));
                 ((Customer)customer).setFax(response.getString("fax"));
                 ((Customer)customer).setAddress(address);
+
+                if(response.has("paymentMethods")) {
+                    List<RecurringPaymentMethod> paymentMethods = new ArrayList<RecurringPaymentMethod>();
+                    for(JsonDoc paymentResponse : response.getEnumerator("paymentMethods")) {
+                        RecurringPaymentMethod paymentMethod = hydratePaymentMethod(paymentResponse, RecurringPaymentMethod.class);
+                        if(paymentMethod != null)
+                            paymentMethods.add(paymentMethod);
+                    }
+                    ((Customer)customer).setPaymentMethods(paymentMethods);
+                }
                 return customer;
             }
             return null;

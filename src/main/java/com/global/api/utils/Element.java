@@ -121,12 +121,14 @@ public class Element {
     }
 
     public Date getDate(String... tagNames) {
+        return getDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"), tagNames);
+    }
+    public Date getDate(SimpleDateFormat formater, String... tagNames) {
         for(String tagName: tagNames) {
             org.w3c.dom.Element element = (org.w3c.dom.Element)this.element.getElementsByTagName(tagName).item(0);
             if(element != null) {
                 try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS");
-                    return sdf.parse(element.getTextContent());
+                    return formater.parse(element.getTextContent());
                 }
                 catch (ParseException e) {
                     return null;

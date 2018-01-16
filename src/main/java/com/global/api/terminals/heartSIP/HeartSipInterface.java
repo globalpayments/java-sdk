@@ -144,6 +144,31 @@ public class HeartSipInterface implements IDeviceInterface {
         return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withCurrency(CurrencyType.Currency);
     }
 
+    public TerminalAuthBuilder ebtBalance(int referenceNumber) {
+        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.EBT).withReferenceNumber(referenceNumber);
+    }
+
+    public TerminalAuthBuilder ebtPurchase(int referenceNumber) {
+        return ebtPurchase(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtPurchase(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder ebtRefund(int referenceNumber) {
+        return ebtRefund(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtRefund(int referenceNumber, BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber) throws ApiException {
+        return ebtWithdrawal(referenceNumber, null);
+    }
+    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber, BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
     public void dispose() {
         try { closeLane(); }
         catch(ApiException e) { /* NOM NOM */ }
