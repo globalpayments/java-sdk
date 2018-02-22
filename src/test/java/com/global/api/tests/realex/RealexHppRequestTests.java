@@ -1030,4 +1030,38 @@ public class RealexHppRequestTests {
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"1384392a30abbd7a1993e33c308bf9a2bd354d48\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"654|123\", \"SHIPPING_CO\": \"GB\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\", \"CARD_PAYMENT_BUTTON\": \"Place Order\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"DCC_ENABLE\": \"1\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"HPP_LANG\": \"EN\", \"RETURN_TSS\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"CUST_NUM\": \"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\", \"PROD_ID\": \"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
+
+    @Test
+	public void basicChargeAlertnativePayment() throws ApiException {
+
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+		hostedConfig.setVersion(HppVersion.Version2);
+
+		ServicesConfig config = new ServicesConfig();
+		config.setMerchantId("MerchantId");
+		config.setAccountId("internet");
+		config.setSharedSecret("secret");
+		config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+		config.setHostedPaymentConfig(hostedConfig);
+
+		HostedService service = new HostedService(config);
+
+		HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+		testHostedPaymentData.setCustomerCountry("DE");
+		testHostedPaymentData.setCustomerFirstName("James");
+		testHostedPaymentData.setCustomerLastName("Mason");
+		testHostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+		testHostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+		testHostedPaymentData.setPresetPaymentMethods(AlternativePaymentType.ASTROPAY_DIRECT, AlternativePaymentType.AURA, AlternativePaymentType.BALOTO_CASH, AlternativePaymentType.BANAMEX);
+
+		String hppJson = service.charge(new BigDecimal("19.99"))
+				.withCurrency("EUR")
+				.withTimestamp("20170725154824")
+				.withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+				.withHostedPaymentData(testHostedPaymentData)
+				.serialize();
+
+		String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\",\"HPP_CUSTOMER_COUNTRY\": \"DE\",\"HPP_CUSTOMER_FIRSTNAME\": \"James\",\"HPP_CUSTOMER_LASTNAME\": \"Mason\",\"MERCHANT_RESPONSE_URL\": \"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\": \"https://www.example.com/statusUrl\",\"PM_METHODS\": \"astropaydirect|aura|baloto|banamex\"}";
+		assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+	}
 }

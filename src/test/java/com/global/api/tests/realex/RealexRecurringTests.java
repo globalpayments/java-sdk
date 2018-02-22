@@ -187,5 +187,32 @@ public class RealexRecurringTests {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         paymentMethod.delete();
     }
+
+    // Negative Test Cases
+    @Test(expected = ApiException.class)
+    public void Test_007_EditPaymentMethod_Invalid_Name() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        CreditCardData newCard = new CreditCardData();
+        newCard.setNumber("5425230000004415");
+        newCard.setExpMonth(1000);
+        newCard.setExpYear(2020);
+        newCard.setCardHolderName(null);
+
+        paymentMethod.setPaymentMethod(newCard);
+        paymentMethod.saveChanges();
+    }
+
+    @Test(expected = ApiException.class)
+    public void Test_008_EditPaymentMethod_Invalid_Card() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        CreditCardData newCard = new CreditCardData();
+        newCard.setNumber("542523");
+        newCard.setExpMonth(1000);
+        newCard.setExpYear(2020);
+        newCard.setCardHolderName("Philip Marlowe");
+
+        paymentMethod.setPaymentMethod(newCard);
+        paymentMethod.saveChanges();
+    }
 }
 

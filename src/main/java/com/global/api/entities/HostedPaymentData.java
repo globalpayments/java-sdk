@@ -2,16 +2,24 @@ package com.global.api.entities;
 
 import java.util.HashMap;
 
+import com.global.api.entities.enums.AlternativePaymentType;
+
 public class HostedPaymentData {
     private Boolean customerExists;
     private String customerKey;
     private String customerNumber;
+    private String customerCountry;
+    private String customerFirstName;
+    private String customerLastName;
+    private String merchantResponseUrl;
     private Boolean offerToSaveCard;
     private String paymentKey;
     private String productId;
+    private AlternativePaymentType[] presetPaymentMethods;
     private HashMap<String, String> supplementaryData;
+    private String transactionStatusUrl;
 
-    public Boolean isCustomerExists() {
+	public Boolean isCustomerExists() {
         return customerExists;
     }
     public void setCustomerExists(boolean customerExists) {
@@ -29,6 +37,30 @@ public class HostedPaymentData {
     public void setCustomerNumber(String customerNumber) {
         this.customerNumber = customerNumber;
     }
+    public String getCustomerCountry() {
+		return customerCountry;
+	}
+	public void setCustomerCountry(String customerCountry) {
+		this.customerCountry = customerCountry;
+	}
+	public String getCustomerFirstName() {
+		return customerFirstName;
+	}
+	public void setCustomerFirstName(String customerFirstName) {
+		this.customerFirstName = customerFirstName;
+	}
+	public String getCustomerLastName() {
+		return customerLastName;
+	}
+	public void setCustomerLastName(String customerLastName) {
+		this.customerLastName = customerLastName;
+	}
+	public String getMerchantResponseUrl() {
+		return merchantResponseUrl;
+	}
+	public void setMerchantResponseUrl(String merchantResponseUrl) {
+		this.merchantResponseUrl = merchantResponseUrl;
+	}
     public Boolean isOfferToSaveCard() {
         return offerToSaveCard;
     }
@@ -47,14 +79,25 @@ public class HostedPaymentData {
     public void setProductId(String productId) {
         this.productId = productId;
     }
-    public HashMap<String, String> getSupplementaryData() {
+	public AlternativePaymentType[] getPresetPaymentMethods() {
+		return presetPaymentMethods;
+	}
+	public void setPresetPaymentMethods(AlternativePaymentType ... paymentTypes) {
+		this.presetPaymentMethods = paymentTypes;
+	}
+	public HashMap<String, String> getSupplementaryData() {
         return supplementaryData;
     }
     public void setSupplimentaryData(HashMap<String, String> supplementaryData) {
         this.supplementaryData = supplementaryData;
     }
-
-    public HostedPaymentData() {
+    public String getTransactionStatusUrl() {
+		return transactionStatusUrl;
+	}
+	public void setTransactionStatusUrl(String transactionStatusUrl) {
+		this.transactionStatusUrl = transactionStatusUrl;
+	}
+	public HostedPaymentData() {
         supplementaryData = new HashMap<String, String>();
     }
 }

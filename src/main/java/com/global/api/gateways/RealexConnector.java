@@ -206,6 +206,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("DCC_ENABLE", hostedPaymentConfig.isDynamicCurrencyConversionEnabled() ? "1" : "0");
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
+			AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
+			AlternativePaymentType paymentTypesValues;
+			StringBuffer paymentValues = new StringBuffer();
+			if (paymentTypesKey != null)
+				for (int arr = 0; arr < paymentTypesKey.length; arr++) {
+					paymentTypesValues = paymentTypesKey[arr];
+					paymentValues.append(paymentTypesValues.getValue());
+					if (arr != paymentTypesKey.length - 1) {
+						paymentValues.append("|");
+					}
+				}
             request.set("CUST_NUM", paymentData.getCustomerNumber());
             if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null)
                 request.set("HPP_SELECT_STORED_CARD", paymentData.getCustomerKey());
@@ -217,6 +228,12 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 request.set("PAYER_REF", paymentData.getCustomerKey());
             request.set("PMT_REF", paymentData.getPaymentKey());
             request.set("PROD_ID", paymentData.getProductId());
+            request.set("HPP_CUSTOMER_COUNTRY", paymentData.getCustomerCountry());
+            request.set("HPP_CUSTOMER_FIRSTNAME", paymentData.getCustomerFirstName());
+            request.set("HPP_CUSTOMER_LASTNAME", paymentData.getCustomerLastName());
+            request.set("MERCHANT_RESPONSE_URL", paymentData.getMerchantResponseUrl());
+            request.set("HPP_TX_STATUS_URL", paymentData.getTransactionStatusUrl());
+            request.set("PM_METHODS", paymentValues.toString());
         }
         if (builder.getShippingAddress() != null) {
             request.set("SHIPPING_CODE", builder.getShippingAddress().getPostalCode());
@@ -580,4 +597,5 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         return addressNode;
     }
+
 }
