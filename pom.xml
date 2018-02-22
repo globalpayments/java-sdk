@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.heartlandpaymentsystems</groupId>
     <artifactId>globalpayments-sdk</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>2.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>GlobalPayments API</name>
     <description>API for processing payments through Global Payments</description>
