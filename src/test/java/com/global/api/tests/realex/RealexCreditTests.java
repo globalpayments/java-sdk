@@ -171,4 +171,25 @@ public class RealexCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
+    @Test
+    public void creditSettleWithoutAmountCurrency() throws ApiException {
+       Transaction response = card.authorize(new BigDecimal("99.99"))
+               .withCurrency("EUR")
+               .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        String orderId = response.getOrderId();
+        String paymentsReference = response.getTransactionId();
+
+        Transaction settle = Transaction.fromId(paymentsReference, orderId);
+
+        Transaction responseSettle = settle.capture()
+               .execute();
+        assertNotNull(responseSettle);
+        assertEquals(orderId, responseSettle.getOrderId());
+        assertEquals("00", responseSettle.getResponseCode());
+        assertEquals("000000", responseSettle.getAuthorizationCode());
+    }
 }

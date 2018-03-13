@@ -289,23 +289,22 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         Element request = et.element("request")
                 .set("timestamp", timestamp)
-                .set("type", mapManageRequestType(builder.getTransactionType()));
+                .set("type", mapManageRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
+        if(builder.getAmount() != null)
+            et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
         et.subElement(request, "pasref", builder.getTransactionId());
-        if(builder.getAmount() != null)
-            et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
+
+        // payment method for APM
+        if(builder.getAlternativePaymentType() != null)
+            et.subElement(request, "paymentmethod", builder.getAlternativePaymentType().getValue());
 
         // payer authentication response
         if(builder.getTransactionType().equals(TransactionType.VerifySignature))
             et.subElement(request, "pares", builder.getPayerAuthenticationResponse());
-
-        if(builder.getTransactionType() == TransactionType.Refund) {
-            et.subElement(request, "authcode").text(builder.getAuthorizationCode());
-            et.subElement(request, "refundhash", GenerationUtils.generateHash(rebatePassword));
-        }
 
         // reason code
         if(builder.getReasonCode() != null)
@@ -317,7 +316,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
 
-        et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), ""));
+		et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), builder.getAlternativePaymentType() != null ? builder.getAlternativePaymentType().getValue() : null));
+
+        if(builder.getTransactionType() == TransactionType.Refund) {
+			if (builder.getAuthorizationCode() != null) {
+				et.subElement(request, "authcode").text(builder.getAuthorizationCode());
+			}
+			et.subElement(request, "refundhash", GenerationUtils.generateHash(builder.getAlternativePaymentType() != null ? refundPassword : rebatePassword));
+        }
 
         String response = doTransaction(et.toString(request));
         return mapResponse(response);
@@ -400,6 +406,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setOrderId(root.getString("orderid"));
         transReference.setPaymentMethodType(PaymentMethodType.Credit);
         transReference.setTransactionId(root.getString("pasref"));
+        transReference.setAlternativePaymentType(root.getString("paymentmethod"));
         result.setTransactionReference(transReference);
 
         // 3d secure enrolled
@@ -490,13 +497,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
     }
 
-    private String mapManageRequestType(TransactionType trans) {
+    private String mapManageRequestType(ManagementBuilder builder) {
+        TransactionType trans = builder.getTransactionType();
+
         switch(trans) {
             case Capture:
                 return "settle";
             case Hold:
                 return "hold";
             case Refund:
+                 if (builder.getAlternativePaymentType() != null)
+                   return "payment-credit";
                 return "rebate";
             case Release:
                 return "release";

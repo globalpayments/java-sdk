@@ -1,6 +1,7 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ReasonCode;
 import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.Transaction;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
+	private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
     private String currency;
@@ -27,7 +29,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal taxAmount;
     private TaxType taxType;
 
-    public BigDecimal getAmount() {
+    public AlternativePaymentType getAlternativePaymentType() {
+		return alternativePaymentType;
+	}
+	public BigDecimal getAmount() {
         return amount;
     }
     public BigDecimal getAuthAmount() {
@@ -78,6 +83,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return null;
     }
 
+	public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
+		this.alternativePaymentType = value;
+		return this;
+	}
     public ManagementBuilder withAmount(BigDecimal value) {
         this.amount = value;
         return this;
