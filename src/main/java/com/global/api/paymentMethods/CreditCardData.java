@@ -2,10 +2,13 @@ package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.MerchantDataCollection;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.CvnPresenceIndicator;
+import com.global.api.entities.enums.DccProcessor;
+import com.global.api.entities.enums.DccRateType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -121,6 +124,27 @@ public class CreditCardData extends Credit implements ICardData {
         this();
         this.setToken(token);
     }
+
+    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp) throws ApiException {
+		Transaction response = new AuthorizationBuilder(TransactionType.DccRateLookup, this)
+				.withAmount(amount)
+				.withCurrency(currency)
+				.withDccRateType(dccRateType)
+				.withDccProcessor(ccp)
+				.withDccType("1")
+				.execute();
+
+		DccRateData dccValues = new DccRateData();
+		dccValues.setOredrId(response.getOrderId());
+		dccValues.setDccProcessor(ccp.getValue());
+		dccValues.setDccType("1");
+		dccValues.setDccRateType(dccRateType.getValue());
+		dccValues.setDccRate(response.getDccResponseResult().getCardHolderRate());
+		dccValues.setCurrency(response.getDccResponseResult().getCardHolderCurrency());
+		dccValues.setAmount(response.getDccResponseResult().getCardHolderAmount());
+
+		return dccValues;
+	}
 
     public boolean verifyEnrolled(BigDecimal amount, String currency) throws ApiException {
         return verifyEnrolled(amount, currency, null, "default");

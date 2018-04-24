@@ -1,6 +1,5 @@
 package com.global.api.tests;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -8,6 +7,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.eCheck;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.ReportingService;
 import org.junit.Test;
 
@@ -18,11 +18,11 @@ public class BuilderValidationTests {
     CreditCardData card;
     
     public BuilderValidationTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com/Hps.Exchange.PosGateway/PosGatewayService.asmx");
         
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
         
         card = new CreditCardData();
         card.setNumber("4111111111111111");

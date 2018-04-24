@@ -15,7 +15,8 @@ public enum TransactionModifier implements IFlag {
     Voucher,
     Secure3D,
     HostedRequest,
-    Recurring;
+    Recurring,
+    EncryptedMobile;
 
     public long getLongValue() {
         return 1 << this.ordinal();

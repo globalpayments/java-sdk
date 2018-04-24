@@ -1,12 +1,10 @@
 package com.global.api.tests.terminals.pax;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.CurrencyType;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
@@ -31,12 +29,7 @@ public class PaxEbtTests {
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);
 
-        ServicesConfig config = new ServicesConfig();
-        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
-        config.setServiceUrl("https://cert.api2.heartlandportico.com");
-        config.setDeviceConnectionConfig(deviceConfig);
-
-        device = DeviceService.create(config);
+        device = DeviceService.create(deviceConfig);
         assertNotNull(device);
     }
 

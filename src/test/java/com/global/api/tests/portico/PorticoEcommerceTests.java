@@ -1,6 +1,5 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EcommerceInfo;
 import com.global.api.entities.ThreeDSecure;
@@ -8,6 +7,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EcommerceChannel;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Test;
 
@@ -16,15 +16,14 @@ import java.math.BigDecimal;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-
 public class PorticoEcommerceTests {
     private CreditCardData card;
 
     public PorticoEcommerceTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         card = TestCards.VisaManual();
     }

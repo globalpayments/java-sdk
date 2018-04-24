@@ -8,6 +8,8 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
@@ -16,11 +18,11 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 
 public class HostedService {
-    ServicesConfig _config;
+    GatewayConfig _config;
 
-    public HostedService(ServicesConfig config) throws ApiException {
+    public HostedService(GatewayConfig config) throws ApiException {
         _config = config;
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     public AuthorizationBuilder authorize() {
@@ -78,6 +80,7 @@ public class HostedService {
 
         Transaction trans = new Transaction();
         trans.setAuthorizedAmount(response.getDecimal("AMOUNT"));
+        trans.setMultiCapture(response.getString("AUTO_SETTLE_FLAG"));
         trans.setCvnResponseCode(response.getString("CVNRESULT"));
         trans.setResponseCode(result);
         trans.setResponseMessage(message);

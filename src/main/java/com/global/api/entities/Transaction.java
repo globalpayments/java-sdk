@@ -23,9 +23,11 @@ public class Transaction {
     private String commercialIndicator;
     private String cvnResponseCode;
     private String cvnResponseMessage;
+    private DccResponseResult dccResponseResult;
     private DebitMac debitMac;
     private String emvIssuerResponse;
     private Date hostResponseDate;
+    private String multiCapture;
     private BigDecimal pointsBalanceAmount;
     private String recurringDataCode;
     private String referenceNumber;
@@ -128,7 +130,13 @@ public class Transaction {
     public void setCvnResponseMessage(String cvnResponseMessage) {
         this.cvnResponseMessage = cvnResponseMessage;
     }
-    public DebitMac getDebitMac() {
+    public DccResponseResult getDccResponseResult() {
+		return dccResponseResult;
+	}
+	public void setDccResponseResult(DccResponseResult dccResponseResult) {
+		this.dccResponseResult = dccResponseResult;
+	}
+	public DebitMac getDebitMac() {
         return debitMac;
     }
     public void setDebitMac(DebitMac debitMac) {
@@ -140,7 +148,13 @@ public class Transaction {
     public void setHostResponseDate(Date hostResponseDate) {
         this.hostResponseDate = hostResponseDate;
     }
-    public HashMap<String, String> getResponseValues() {
+    public String getMultiCapture() {
+		return multiCapture;
+	}
+	public void setMultiCapture(String multiCapture) {
+		this.multiCapture = multiCapture;
+	}
+	public HashMap<String, String> getResponseValues() {
         return responseValues;
     }
     public void setResponseValues(HashMap<String, String> responseValues) {

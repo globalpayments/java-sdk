@@ -1,14 +1,18 @@
 package com.global.api.tests.realex;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.DccProcessor;
+import com.global.api.entities.enums.DccRateType;
+import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.RecurringSequence;
 import com.global.api.entities.enums.RecurringType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -20,7 +24,7 @@ public class RealexCreditTests {
     private CreditCardData card;
     
     public RealexCreditTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");
         config.setSharedSecret("secret");
@@ -28,7 +32,7 @@ public class RealexCreditTests {
         config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -192,4 +196,95 @@ public class RealexCreditTests {
         assertEquals("00", responseSettle.getResponseCode());
         assertEquals("000000", responseSettle.getAuthorizationCode());
     }
+
+    @Test
+	public void creditAuthorization_WithMultiAutoSettle() throws ApiException {
+		Transaction response = card.authorize(new BigDecimal("14"))
+				.withCurrency("USD")
+				.withMultiCapture(true)
+				.execute();
+		assertNotNull(response);
+		assertEquals("00", response.getResponseCode());
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditDccRateLookup_ChargeNotEnabledAccount() throws ApiException {
+		DccRateData dccRateData = card.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+		card.charge(new BigDecimal("10.01"))
+				.withCurrency("EUR")
+				.withOrderId(dccRateData.getOredrId())
+				.withDccRateData(dccRateData)
+				.execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditDccRateLookup_AuthNotEnabledAccount() throws ApiException {
+		DccRateData dccRateData = card.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+		card.authorize(new BigDecimal("10.01"))
+		        .withCurrency("EUR")
+				.withOrderId(dccRateData.getOredrId())
+				.withDccRateData(dccRateData)
+				.execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditChargeGooglePay_InvalidToken() throws ApiException {
+		String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+
+		card = new CreditCardData();
+		card.setToken(token);
+		card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+
+		card.charge(new BigDecimal("15"))
+		        .withCurrency("EUR")
+				.execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditChargeGooglePay_WithoutToken() throws ApiException {
+		card = new CreditCardData();
+		card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+
+		card.charge(new BigDecimal("15"))
+		        .withCurrency("EUR")
+				.execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditChargeGooglePay_WithoutAmountCurrency() throws ApiException {
+        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+
+        card = new CreditCardData();
+		card.setToken(token);
+		card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+
+		card.charge().execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditChargeApplePay_InvalidToken() throws ApiException {
+		String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+
+		card = new CreditCardData();
+		card.setToken(token);
+		card.setMobileType(MobilePaymentMethodType.APPLEPAY);
+
+		card.charge().execute();
+
+	}
+
+	@Test(expected = ApiException.class)
+	public void creditChargeApplePay_WithoutToken() throws ApiException {
+		card = new CreditCardData();
+		card.setMobileType(MobilePaymentMethodType.APPLEPAY);
+
+		card.charge().execute();
+
+	}
+
 }

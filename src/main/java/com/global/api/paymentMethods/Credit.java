@@ -5,6 +5,7 @@ import com.global.api.entities.EncryptionData;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.InquiryType;
+import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 
 public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizable, IChargable, IAuthable, IRefundable, IReversable, IVerifiable, IPrePayable, IBalanceable, ISecure3d {
     private EncryptionData encryptionData;
+    private MobilePaymentMethodType mobileType;
     private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
     protected ThreeDSecure threeDSecure;
     private String token;
@@ -23,7 +25,13 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public void setEncryptionData(EncryptionData encryptionData) {
         this.encryptionData = encryptionData;
     }
-    public PaymentMethodType getPaymentMethodType() { return paymentMethodType; }
+    public MobilePaymentMethodType getMobileType() {
+		return mobileType;
+	}
+	public void setMobileType(MobilePaymentMethodType mobileType) {
+		this.mobileType = mobileType;
+	}
+	public PaymentMethodType getPaymentMethodType() { return paymentMethodType; }
     public ThreeDSecure getThreeDSecure() {
         return threeDSecure;
     }

@@ -1,12 +1,12 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.eCheck;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -19,11 +19,11 @@ public class PorticoAchTests {
     private Address address;
     
     public PorticoAchTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         check = new eCheck();
         check.setAccountNumber("24413815");
@@ -71,5 +71,22 @@ public class PorticoAchTests {
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void checkNewCryptoURL() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+
+        ServicesContainer.configureService(config);
+        Transaction response = check.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAddress(address)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
     }
 }

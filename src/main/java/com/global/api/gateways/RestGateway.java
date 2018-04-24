@@ -6,7 +6,7 @@ import com.global.api.utils.JsonDoc;
 import java.util.HashMap;
 
 class RestGateway extends Gateway {
-    public RestGateway() {
+    RestGateway() {
         super("application/json");
     }
 
@@ -18,6 +18,9 @@ class RestGateway extends Gateway {
     }
     public String doTransaction(String verb, String endpoint, String data, HashMap<String, String> queryStringParams) throws GatewayException {
         GatewayResponse response = sendRequest(verb, endpoint, data, queryStringParams);
+        return handleResponse(response);
+    }
+    protected String handleResponse(GatewayResponse response) throws GatewayException {
         if(response.getStatusCode() != 200 && response.getStatusCode() != 204) {
             JsonDoc parsed = JsonDoc.parse(response.getRawResponse());
             if(parsed.has("error")) {

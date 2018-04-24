@@ -1,10 +1,10 @@
 package com.global.api.tests.services;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.CreditService;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class CreditServiceTests {
     private CreditCardData card;
 
     public CreditServiceTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         service = new CreditService(config);

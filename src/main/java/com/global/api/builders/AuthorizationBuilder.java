@@ -2,12 +2,14 @@ package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.EcommerceInfo;
 import com.global.api.entities.HostedPaymentData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IPaymentGateway;
+import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -34,6 +36,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String customerId;
     private String customerIpAddress;
     private String cvn;
+    private DccRateData dccRateData;
+    private DccProcessor dccProcessor;
+    private DccRateType dccRateType;
+    private String dccType;
     private String description;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
@@ -43,6 +49,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String invoiceNumber;
     private boolean level2Request;
     private String messageAuthenticationCode;
+    private boolean multiCapture;
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
@@ -101,7 +108,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getCvn() {
         return cvn;
     }
-    public String getDescription() {
+    public DccRateData getDccRateData() {
+		return dccRateData;
+	}
+	public DccProcessor getDccProcessor() {
+		return dccProcessor;
+	}
+	public DccRateType getDccRateType() {
+		return dccRateType;
+	}
+	public String getDccType() {
+		return dccType;
+	}
+	public String getDescription() {
         return description;
     }
     public String getDynamicDescriptor() {
@@ -169,7 +188,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getMessageAuthenticationCode() {
         return messageAuthenticationCode;
     }
-    public String getPosSequenceNumber() {
+    public boolean isMultiCapture() {
+		return multiCapture;
+	}
+	public String getPosSequenceNumber() {
         return posSequenceNumber;
     }
     public String getTagData() {
@@ -263,6 +285,22 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.cvn = value;
         return this;
     }
+    public AuthorizationBuilder withDccRateData(DccRateData value) {
+        this.dccRateData = value;
+        return this;
+    }
+    public AuthorizationBuilder withDccProcessor(DccProcessor value) {
+        this.dccProcessor = value;
+        return this;
+    }
+    public AuthorizationBuilder withDccRateType(DccRateType value) {
+        this.dccRateType = value;
+        return this;
+    }
+    public AuthorizationBuilder withDccType(String value) {
+        this.dccType = value;
+        return this;
+    }
     public AuthorizationBuilder withDescription(String value) {
         this.description = value;
         return this;
@@ -291,6 +329,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.messageAuthenticationCode = value;
         return this;
     }
+    public AuthorizationBuilder withMultiCapture(Boolean value) {
+        this.multiCapture = value;
+        return this;
+    }
     public AuthorizationBuilder withOfflineAuthCode(String value) {
         this.offlineAuthCode = value;
         this.transactionModifier = TransactionModifier.Offline;
@@ -317,6 +359,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.paymentMethod = value;
         if (value instanceof EBTCardData && ((EBTCardData)value).getSerialNumber() != null)
             this.transactionModifier = TransactionModifier.Voucher;
+		if (value instanceof CreditCardData && ((CreditCardData) value).getMobileType() != null)
+            this.transactionModifier = TransactionModifier.EncryptedMobile;
         return this;
     }
     public AuthorizationBuilder withRecurringInfo(RecurringType type, RecurringSequence sequence) {
@@ -372,7 +416,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this(type, null);
     }
     public AuthorizationBuilder(TransactionType type, IPaymentMethod paymentMethod) {
-        super(type, paymentMethod);
+        super(type);
+        withPaymentMethod(paymentMethod);
     }
 
     public Transaction execute(String configName) throws ApiException {
@@ -442,5 +487,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
                 .when("emvChipCondition").isNotNull().check("tagData").isNull();
         this.validations.of(EnumSet.of(PaymentMethodType.Debit, PaymentMethodType.Credit))
                 .when("tagData").isNotNull().check("emvChipCondition").isNull();
+        this.validations.of(EnumSet.of(TransactionType.Auth, TransactionType.Sale))
+		        .with(TransactionModifier.EncryptedMobile).check("paymentMethod").isNotNull();
+
     }
 }

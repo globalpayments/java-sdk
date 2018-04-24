@@ -22,7 +22,7 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     }
 
     TerminalBuilder(TransactionType type, PaymentMethodType paymentType) {
-        super(type, null);
+        super(type);
         paymentMethodType = paymentType;
     }
 }

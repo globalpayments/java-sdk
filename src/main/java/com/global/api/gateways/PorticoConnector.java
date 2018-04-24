@@ -584,6 +584,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                     return "OverrideFraudDecline";
                 throw new UnsupportedTransactionException();
             case Verify:
+                if(modifier.equals(TransactionModifier.EncryptedMobile))
+                    throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 return "CreditAccountVerify";
             case Capture:
                 return "CreditAddToBatch";
@@ -597,6 +599,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                         return "CreditOfflineAuth";
                     else if(modifier.equals(TransactionModifier.Recurring))
                         return "RecurringBillingAuth";
+                    else if(modifier.equals(TransactionModifier.EncryptedMobile))
+                         throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                     return "CreditAuth";
                 }
                 else if(paymentMethodType.equals(PaymentMethodType.Recurring))
@@ -608,6 +612,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                         return "CreditOfflineSale";
                     else if(modifier.equals(TransactionModifier.Recurring))
                         return "RecurringBilling";
+                    else if(modifier.equals(TransactionModifier.EncryptedMobile))
+                        throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                     else return "CreditSale";
                 }
                 else if (paymentMethodType.equals(PaymentMethodType.Recurring)) {
@@ -701,6 +707,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             default:
                 throw new UnsupportedTransactionException();
         }
+
     }
 
     private String mapReportType(ReportType type) throws UnsupportedTransactionException {

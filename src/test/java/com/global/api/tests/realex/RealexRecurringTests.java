@@ -1,10 +1,12 @@
 package com.global.api.tests.realex;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.DccProcessor;
+import com.global.api.entities.enums.DccRateType;
 import com.global.api.entities.enums.RecurringSequence;
 import com.global.api.entities.enums.RecurringType;
 import com.global.api.entities.exceptions.ApiException;
@@ -12,6 +14,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -36,14 +39,14 @@ public class RealexRecurringTests {
     }
 
     public RealexRecurringTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");
         config.setSharedSecret("secret");
         config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
         
         Address address = new Address();
         address.setStreetAddress1("Flat 123");
@@ -214,5 +217,37 @@ public class RealexRecurringTests {
         paymentMethod.setPaymentMethod(newCard);
         paymentMethod.saveChanges();
     }
+
+    @Test(expected = ApiException.class)
+	public void Test_009_DccRateLookup_AuthNotEnabledAccount() throws ApiException {
+		String customerId = "038cb8bc-0289-48cf-a5ad-8bfbe54e204a";
+		String paymentId = "fe1bb177-0a35-421c-9b0e-c7623712387c";
+
+		RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId, paymentId);
+		DccRateData dccRateData = paymentMethod.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+
+		paymentMethod.authorize(new BigDecimal("10.01"))
+		        .withCurrency("EUR")
+		        .withOrderId(dccRateData.getOredrId())
+		        .withDccRateData(dccRateData)
+				.execute();
+
+	}
+
+    @Test(expected = ApiException.class)
+	public void Test_010_DccRateLookup_ChargeNotEnabledAccount() throws ApiException {
+		String customerId = "038cb8bc-0289-48cf-a5ad-8bfbe54e204a";
+		String paymentId = "fe1bb177-0a35-421c-9b0e-c7623712387c";
+
+		RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId, paymentId);
+		DccRateData dccRateData = paymentMethod.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+
+		paymentMethod.charge(new BigDecimal("10.01"))
+		        .withCurrency("EUR")
+		        .withOrderId(dccRateData.getOredrId())
+		        .withDccRateData(dccRateData)
+				.execute();
+
+	}
 }
 

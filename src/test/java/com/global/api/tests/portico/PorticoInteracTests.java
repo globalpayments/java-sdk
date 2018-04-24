@@ -1,6 +1,5 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AccountType;
@@ -9,6 +8,7 @@ import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.DebitTrackData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ public class PorticoInteracTests {
     private String tagData;
 
     public PorticoInteracTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setLicenseId(124964);
         config.setSiteId(124992);
         config.setDeviceId(145);
@@ -28,7 +28,7 @@ public class PorticoInteracTests {
         config.setPassword("$Test1234");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         track = new DebitTrackData();
         track.setValue(";4024720012345671=18125025432198712345?");

@@ -1,17 +1,20 @@
 package com.global.api.terminals;
 
+import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.heartSIP.HeartSipController;
+import com.global.api.terminals.pax.PaxController;
 import com.global.api.utils.StringUtils;
 
-public class ConnectionConfig implements ITerminalConfiguration {
+public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
     private ConnectionModes connectionMode;
     private BaudRate baudRate;
     private Parity parity;
     private StopBits stopBits;
     private DataBits dataBits;
-    private int timeout;
     private String ipAddress;
     private int port;
     private DeviceType deviceType;
@@ -46,12 +49,6 @@ public class ConnectionConfig implements ITerminalConfiguration {
     public void setDataBits(DataBits dataBits) {
         this.dataBits = dataBits;
     }
-    public int getTimeout() {
-        return timeout;
-    }
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
     public String getIpAddress() {
         return ipAddress;
     }
@@ -72,7 +69,19 @@ public class ConnectionConfig implements ITerminalConfiguration {
     }
 
     public ConnectionConfig(){
-        setTimeout(30000);
+        timeout = 30000;
+    }
+
+    public void configureContainer(ConfiguredServices services) throws ConfigurationException {
+        switch (deviceType) {
+            case PAX_S300:
+                services.setDeviceController(new PaxController(this));
+                break;
+            case HSIP_ISC250:
+                services.setDeviceController(new HeartSipController(this));
+            default:
+                break;
+        }
     }
 
     public void validate() throws ConfigurationException {

@@ -1,6 +1,5 @@
 package com.global.api.tests.certifications;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
@@ -9,6 +8,7 @@ import com.global.api.entities.enums.CheckType;
 import com.global.api.entities.enums.SecCode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.eCheck;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.tests.testdata.TestChecks;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -25,11 +25,11 @@ public class CheckCertification {
     private Address address;
 
     public CheckCertification() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         address = new Address();
         address.setStreetAddress1("123 Main St.");

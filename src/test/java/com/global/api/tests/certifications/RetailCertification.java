@@ -1,6 +1,5 @@
 package com.global.api.tests.certifications;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
@@ -11,6 +10,7 @@ import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.*;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
 import junit.framework.TestCase;
@@ -34,11 +34,11 @@ public class RetailCertification {
     private String amex_token;
     
     public RetailCertification() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     @Test

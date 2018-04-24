@@ -1,6 +1,5 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
@@ -9,6 +8,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.EBTTrackData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -20,11 +20,11 @@ public class PorticoEbtTests {
     private EBTTrackData track;
     
     public PorticoEbtTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
         
         card = new EBTCardData();
         card.setNumber("4012002000060016");

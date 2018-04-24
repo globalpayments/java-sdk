@@ -8,6 +8,7 @@ import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.ReportingService;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,11 +23,11 @@ public class PorticoCreditTests {
     private CreditTrackData track;
 
     public PorticoCreditTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -292,5 +293,28 @@ public class PorticoCreditTests {
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditTestWithNewCryptoURL() throws ApiException {
+         GatewayConfig config = new GatewayConfig();
+         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+
+         ServicesContainer.configureService(config);
+
+         card = new CreditCardData();
+         card.setNumber("4111111111111111");
+         card.setExpMonth(12);
+         card.setExpYear(2025);
+         card.setCvn("123");
+
+         Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+         assertNotNull(response);
+         assertEquals("00", response.getResponseCode());
+
     }
 }

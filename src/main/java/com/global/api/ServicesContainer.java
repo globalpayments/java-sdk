@@ -4,51 +4,59 @@ import com.global.api.entities.enums.TableServiceProviders;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
+import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
 import com.global.api.terminals.heartSIP.HeartSipController;
 import com.global.api.terminals.pax.PaxController;
-import com.global.api.utils.StringUtils;
 
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 public class ServicesContainer implements IDisposable {
     private HashMap<String, ConfiguredServices> configurations;
     private static ServicesContainer instance;
 
-    public IDeviceInterface getDeviceInterface(String configName) {
+    public IDeviceInterface getDeviceInterface(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getDeviceInterface();
-        return null;
+        throw new ApiException("The specified configuration has not been configured for terminal interaction.");
     }
-    public DeviceController getDeviceController(String configName) {
+    public DeviceController getDeviceController(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getDeviceController();
-        return null;
+        throw new ApiException("The specified configuration has not been configured for terminal interaction.");
     }
-    public IPaymentGateway getGateway(String configName) {
+    public IPaymentGateway getGateway(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getGatewayConnector();
-        return null;
+        throw new ApiException("The specified configuration has not been configured for card processing.");
     }
-    public IRecurringGateway getRecurring(String configName) {
+    public IRecurringGateway getRecurring(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getRecurringConnector();
-        return null;
+        throw new ApiException("The specified configuration has not been configured for recurring processing.");
     }
-    public TableServiceConnector getTableService(String configName) {
+    public TableServiceConnector getTableService(String configName) throws ApiException {
         if(configurations.containsKey(configName))
-            return configurations.get(configName).getReservationConnector();
-        return null;
+            return configurations.get(configName).getTableServiceConnector();
+        throw new ApiException("The specified configuration has not been configured for payroll.");
+    }
+//    public OnlineBoardingConnector getBoarding(String configName) {
+//        if(configurations.containsKey(configName))
+//            return configurations.get(configName).getBoardingConnector();
+//        return null;
+//    }
+    public PayrollConnector getPayroll(String configName) throws ApiException {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getPayrollConnector();
+        throw new ApiException("The specified configuration has not been configured for payroll.");
     }
 
-    public static ServicesContainer getInstance() throws ApiException {
-        if(instance != null)
-            return instance;
-        else throw new ApiException("Services container not configured.");
+    public static ServicesContainer getInstance() {
+        if(instance == null)
+            instance = new ServicesContainer();
+        return instance;
     }
 
     public static void configure(ServicesConfig config) throws ConfigurationException {
@@ -57,76 +65,50 @@ public class ServicesContainer implements IDisposable {
     public static void configure(ServicesConfig config, String configName) throws ConfigurationException {
         config.validate();
 
+        // configure devices
+        configureService(config.getDeviceConnectionConfig(), configName);
+
+        // configure table service
+        configureService(config.getTableServiceConfig(), configName);
+
+        // configure payroll
+        configureService(config.getPayrollConfig(), configName);
+
+        // configure gateways
+        configureService(config.getGatewayConfig(), configName);
+
         ConfiguredServices cs = new ConfiguredServices();
 
         // configure devices
         if(config.getDeviceConnectionConfig() != null) {
-            switch(config.getDeviceConnectionConfig().getDeviceType()) {
-                case PAX_S300:
-                    cs.setDeviceController(new PaxController(config.getDeviceConnectionConfig()));
-                    break;
-                case HSIP_ISC250:
-                    cs.setDeviceController(new HeartSipController(config.getDeviceConnectionConfig()));
-                default:
-                    break;
-            }
+
         }
+    }
 
-        // configure table service
-        if(config.getTableServiceProvider() != null) {
-            if(config.getTableServiceProvider().equals(TableServiceProviders.FreshTxt)) {
-                TableServiceConnector tableServiceConnector = new TableServiceConnector();
-                tableServiceConnector.setServiceUrl("https://www.freshtxt.com/api31/");
-                tableServiceConnector.setTimeout(config.getTimeout());
-                cs.setReservationConnector(tableServiceConnector);
-            }
-        }
+    public static <T extends Configuration> void configureService(T config) throws ConfigurationException {
+        configureService(config, "default");
+    }
+    public static <T extends Configuration> void configureService(T config, String configName) throws ConfigurationException {
+        if(config == null)
+            return;
 
-        if(!StringUtils.isNullOrEmpty(config.getMerchantId())) {
-            RealexConnector gateway = new RealexConnector();
-            gateway.setMerchantId(config.getMerchantId());
-            gateway.setAccountId(config.getAccountId());
-            gateway.setSharedSecret(config.getSharedSecret());
-            gateway.setChannel(config.getChannel());
-            gateway.setRebatePassword(config.getRebatePassword());
-            gateway.setRefundPassword(config.getRefundPassword());
-            gateway.setTimeout(config.getTimeout());
-            gateway.setServiceUrl(config.getServiceUrl());
-            gateway.setHostedPaymentConfig(config.getHostedPaymentConfig());
+        if(!config.isValidated())
+            config.validate();
 
-            cs.setGatewayConnector(gateway);
-            cs.setRecurringConnector(gateway);
-        }
-        else {
-            PorticoConnector gateway = new PorticoConnector();
-            gateway.setSiteId(config.getSiteId());
-            gateway.setLicenseId(config.getLicenseId());
-            gateway.setDeviceId(config.getDeviceId());
-            gateway.setUsername(config.getUsername());
-            gateway.setPassword(config.getPassword());
-            gateway.setSecretApiKey(config.getSecretApiKey());
-            gateway.setDeveloperId(config.getDeveloperId());
-            gateway.setVersionNumber(config.getVersionNumber());
-            gateway.setTimeout(config.getTimeout());
-            gateway.setServiceUrl(config.getServiceUrl() + "/Hps.Exchange.PosGateway/PosGatewayService.asmx");
-            cs.setGatewayConnector(gateway);
+        ConfiguredServices cs = getInstance().getConfiguration(configName);
+        config.configureContainer(cs);
 
-            PayPlanConnector payplan = new PayPlanConnector();
-            payplan.setSecretApiKey(config.getSecretApiKey());
-            payplan.setTimeout(config.getTimeout());
-            payplan.setServiceUrl(config.getServiceUrl() + "/Portico.PayPlan.v2/");
-
-            cs.setRecurringConnector(payplan);
-        }
-
-        if(instance == null)
-            instance = new ServicesContainer();
-
-        instance.addConfiguration(configName, cs);
+        getInstance().addConfiguration(configName, cs);
     }
 
     private ServicesContainer() {
         configurations = new HashMap<String, ConfiguredServices>();
+    }
+
+    private ConfiguredServices getConfiguration(String configName) {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName);
+        return new ConfiguredServices();
     }
 
     private void addConfiguration(String configName, ConfiguredServices cs) {

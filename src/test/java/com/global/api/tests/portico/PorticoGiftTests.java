@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.GiftCard;
+import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -18,11 +19,11 @@ public class PorticoGiftTests {
     private GiftCard track;
     
     public PorticoGiftTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
         
         card = new GiftCard();
         card.setNumber("5022440000000000007");

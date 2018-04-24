@@ -1,4 +1,4 @@
-package com.global.api;
+package com.global.api.serviceConfigs;
 
 import com.global.api.entities.enums.FraudFilterMode;
 import com.global.api.entities.enums.HppVersion;

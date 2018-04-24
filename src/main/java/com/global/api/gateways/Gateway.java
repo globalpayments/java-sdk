@@ -121,7 +121,6 @@ abstract class Gateway {
         catch(Exception exc) {
             throw new GatewayException("Error occurred while communicating with gateway.", exc);
         }
-        finally { }
     }
 
     private String buildQueryString(HashMap<String, String> queryStringParams) throws UnsupportedEncodingException {

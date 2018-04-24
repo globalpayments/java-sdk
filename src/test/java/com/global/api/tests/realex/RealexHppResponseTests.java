@@ -1,7 +1,7 @@
 package com.global.api.tests.realex;
 
-import com.global.api.HostedPaymentConfig;
-import com.global.api.ServicesConfig;
+import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.HostedService;
@@ -21,7 +21,7 @@ public class RealexHppResponseTests {
         hostedConfig.setLanguage("GB");
         hostedConfig.setResponseUrl("http://requestb.in/10q2bjb1");
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");
@@ -218,6 +218,23 @@ public class RealexHppResponseTests {
         Transaction response = _service.parseResponse(responseJson, false);
 
         assertEquals("12345", response.getAuthorizationCode());
+        assertEquals(new BigDecimal("1999"), response.getAuthorizedAmount());
+        assertEquals("M", response.getAvsResponseCode());
+        assertEquals("GTI5Yxb0SumL_TkDMCAxQA", response.getOrderId());
+        assertEquals("00", response.getResponseCode());
+        assertEquals("[ test system ] Authorised", response.getResponseMessage());
+        assertEquals("15011597872195765", response.getTransactionId());
+        assertEquals("M", response.getCvnResponseCode());
+        assertEquals("20170725154824", response.getTimestamp());
+    }
+
+    @Test
+    public void standardResponseWithMultiAutoSettle() throws ApiException {
+        String responseJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"843680654f377bfa845387fdbace35acc9d95778\", \"RESULT\": \"00\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"AUTHCODE\": \"12345\", \"SHIPPING_CODE\": \"654|123\", \"SHIPPING_CO\": \"GB\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\", \"CARD_PAYMENT_BUTTON\": \"Place Order\", \"AVSADDRESSRESULT\": \"M\", \"AVSPOSTCODERESULT\": \"M\", \"BATCHID\": \"445196\", \"DCC_ENABLE\": \"1\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"HPP_LANG\": \"EN\", \"MESSAGE\": \"[ test system ] Authorised\", \"PASREF\": \"15011597872195765\", \"CVNRESULT\": \"M\", \"HPP_FRAUDFILTER_RESULT\": \"PASS\", \"COMMENT1\": \"Mobile Channel\", \"COMMENT2\": \"Down Payment\", \"ECI\": \"5\", \"XID\": \"vJ9NXpFueXsAqeb4iAbJJbe+66s=\", \"CAVV\": \"AAACBUGDZYYYIgGFGYNlAAAAAAA=\", \"CARDDIGITS\": \"424242xxxx4242\", \"CARDTYPE\": \"VISA\", \"EXPDATE\": \"1025\", \"CHNAME\": \"James Mason\", \"AUTO_SETTLE_FLAG\": \"MULTI\"}";
+        Transaction response = _service.parseResponse(responseJson, false);
+
+        assertEquals("12345", response.getAuthorizationCode());
+        assertEquals("MULTI", response.getMultiCapture());
         assertEquals(new BigDecimal("1999"), response.getAuthorizedAmount());
         assertEquals("M", response.getAvsResponseCode());
         assertEquals("GTI5Yxb0SumL_TkDMCAxQA", response.getOrderId());

@@ -1,10 +1,10 @@
 package com.global.api.tests.tableservice;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.enums.TableServiceProviders;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.entities.tableservice.*;
+import com.global.api.serviceConfigs.TableServiceConfig;
 import com.global.api.services.TableService;
 import com.global.api.utils.StringUtils;
 import org.junit.Before;
@@ -23,7 +23,7 @@ public class TableServiceTests {
     private TableService _service;
 
     public TableServiceTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        TableServiceConfig config = new TableServiceConfig();
         config.setTableServiceProvider(TableServiceProviders.FreshTxt);
 
         _service = new TableService(config);

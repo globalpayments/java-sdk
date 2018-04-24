@@ -1,7 +1,7 @@
 package com.global.api.tests.realex;
 
-import com.global.api.HostedPaymentConfig;
-import com.global.api.ServicesConfig;
+import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Address;
 import com.global.api.entities.HostedPaymentData;
 import com.global.api.entities.Transaction;
@@ -28,8 +28,8 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setLanguage("GB");
         hostedConfig.setResponseUrl("http://requestb.in/10q2bjb1");
-        
-        ServicesConfig config = new ServicesConfig();
+
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");
@@ -128,8 +128,8 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
-        
-        ServicesConfig config = new ServicesConfig();
+
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -154,8 +154,8 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
-        
-        ServicesConfig config = new ServicesConfig();
+
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -184,7 +184,7 @@ public class RealexHppRequestTests {
         hostedConfig.setLanguage("EN");
         hostedConfig.setPaymentButtonText("Place Order");
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -218,7 +218,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -249,7 +249,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -281,7 +281,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -313,7 +313,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -346,7 +346,7 @@ public class RealexHppRequestTests {
         hostedConfig .setVersion(HppVersion.Version2);
         hostedConfig .setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -377,7 +377,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -409,7 +409,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -441,7 +441,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -474,7 +474,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDisplaySavedCards(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -506,7 +506,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDisplaySavedCards(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -538,7 +538,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -568,7 +568,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -598,7 +598,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -634,7 +634,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -660,7 +660,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Off);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -686,7 +686,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.None);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -712,7 +712,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDynamicCurrencyConversionEnabled(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -738,7 +738,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDynamicCurrencyConversionEnabled(false);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -764,7 +764,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setRequestTransactionStabilityScore(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -790,7 +790,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setRequestTransactionStabilityScore(false);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -815,7 +815,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -863,7 +863,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -895,7 +895,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -926,7 +926,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -957,7 +957,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.None);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -993,7 +993,7 @@ public class RealexHppRequestTests {
         hostedConfig.setPaymentButtonText("Place Order");
         hostedConfig.setRequestTransactionStabilityScore(true);
 
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1037,7 +1037,7 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
 		hostedConfig.setVersion(HppVersion.Version2);
 
-		ServicesConfig config = new ServicesConfig();
+		GatewayConfig config = new GatewayConfig();
 		config.setMerchantId("MerchantId");
 		config.setAccountId("internet");
 		config.setSharedSecret("secret");
@@ -1064,4 +1064,58 @@ public class RealexHppRequestTests {
 		String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\",\"HPP_CUSTOMER_COUNTRY\": \"DE\",\"HPP_CUSTOMER_FIRSTNAME\": \"James\",\"HPP_CUSTOMER_LASTNAME\": \"Mason\",\"MERCHANT_RESPONSE_URL\": \"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\": \"https://www.example.com/statusUrl\",\"PM_METHODS\": \"astropaydirect|aura|baloto|banamex\"}";
 		assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
 	}
+
+    @Test
+    public void creditAuth_MultiAutoSettle() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedService service = new HostedService(config);
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withTimestamp("20170725154824")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withMultiCapture(true)
+                .serialize();
+
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"100\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"34160bd973fd1d8abb295a12c7c734ffd839d66a\", \"AUTO_SETTLE_FLAG\": \"MULTI\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\",\"HPP_VERSION\": \"2\"}";
+        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+
+    }
+
+    @Test
+    public void creditAuth_AutoSettle() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedService service = new HostedService(config);
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withTimestamp("20170725154824")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withMultiCapture(false)
+                .serialize();
+
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"100\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"34160bd973fd1d8abb295a12c7c734ffd839d66a\", \"AUTO_SETTLE_FLAG\": \"0\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\",\"HPP_VERSION\": \"2\"}";
+        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+
+    }
 }

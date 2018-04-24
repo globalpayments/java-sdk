@@ -1,6 +1,5 @@
 package com.global.api.tests.certifications;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
@@ -10,6 +9,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.GiftCard;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Assert;
@@ -33,11 +33,11 @@ public class EcomCertification {
     private String amex_token;
 
     public EcomCertification() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class EcomCertification {
 
         Transaction response = card.verify()
             .withAddress(new Address("75024"))
-            .withRequestMultiUseToken(useTokens)
+            //.withRequestMultiUseToken(useTokens)
             .execute();
 
         assertNotNull(response);

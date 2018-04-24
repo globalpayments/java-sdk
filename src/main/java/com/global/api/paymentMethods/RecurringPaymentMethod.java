@@ -3,6 +3,8 @@ package com.global.api.paymentMethods;
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.*;
+import com.global.api.entities.enums.DccProcessor;
+import com.global.api.entities.enums.DccRateType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
@@ -100,6 +102,27 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
         this.key = paymentId;
         paymentType = "Credit Card";
     }
+
+    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp) throws ApiException {
+		Transaction response = new AuthorizationBuilder(TransactionType.DccRateLookup, this)
+				.withAmount(amount)
+				.withCurrency(currency)
+				.withDccRateType(dccRateType)
+				.withDccProcessor(ccp)
+				.withDccType("1")
+				.execute();
+
+		DccRateData dccValues = new DccRateData();
+		dccValues.setOredrId(response.getOrderId());
+		dccValues.setDccProcessor(ccp.getValue());
+		dccValues.setDccType("1");
+		dccValues.setDccRateType(dccRateType.getValue());
+		dccValues.setDccRate(response.getDccResponseResult().getCardHolderRate());
+		dccValues.setAmount(response.getDccResponseResult().getCardHolderAmount());
+		dccValues.setCurrency(response.getDccResponseResult().getCardHolderCurrency());
+
+		return dccValues;
+	}
 
     public AuthorizationBuilder authorize() {
         return authorize(null);

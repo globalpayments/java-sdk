@@ -1,6 +1,5 @@
 package com.global.api.tests.terminals.heartsip.vrf;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
@@ -22,18 +21,13 @@ public class HsipVerificationTests {
     private IDeviceInterface _device;
 
     public HsipVerificationTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
-        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
-        config.setServiceUrl("https://cert.api2.heartlandportico.com");
-
         ConnectionConfig connectionConfig = new ConnectionConfig();
         connectionConfig.setDeviceType(DeviceType.HSIP_ISC250);
         connectionConfig.setConnectionMode(ConnectionModes.TCP_IP);
         connectionConfig.setIpAddress("10.12.220.130");
         connectionConfig.setPort(12345);
-        config.setDeviceConnectionConfig(connectionConfig);
 
-        _device = DeviceService.create(config);
+        _device = DeviceService.create(connectionConfig);
         assertNotNull(_device);
         _device.openLane();
     }

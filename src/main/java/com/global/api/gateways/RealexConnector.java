@@ -1,6 +1,6 @@
 package com.global.api.gateways;
 
-import com.global.api.HostedPaymentConfig;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.RecurringBuilder;
@@ -8,6 +8,7 @@ import com.global.api.builders.ReportBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.*;
@@ -16,7 +17,6 @@ import com.global.api.utils.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway {
     private String merchantId;
@@ -58,6 +58,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         String timestamp = GenerationUtils.generateTimestamp(builder.getTimestamp());
         String orderId = GenerationUtils.generateOrderId(builder.getOrderId());
 
+        // amount and currency are required for googlePay
+		if (builder.getPaymentMethod() instanceof CreditCardData) {
+			CreditCardData card = (CreditCardData) builder.getPaymentMethod();
+			if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
+				if (card.getToken() == null) {
+					throw new BuilderException("Token can not be null");
+				}
+				if (card.getMobileType() == MobilePaymentMethodType.GOOGLEPAY && (builder.getAmount() == null || builder.getCurrency() == null)) {
+					throw new BuilderException("Amount and Currency cannot be null for capture");
+				}
+			}
+		}
+
         // Build Request
         Element request = et.element("request")
                 .set("timestamp", timestamp)
@@ -75,6 +88,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if (builder.getPaymentMethod() instanceof CreditCardData) {
             CreditCardData card = (CreditCardData)builder.getPaymentMethod();
 
+            // for google-pay & apple-pay
+			if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
+				et.subElement(request, "mobile", card.getMobileType().getValue());
+				et.subElement(request, "token", card.getToken());
+            }
+
+			else {
             Element cardElement = et.subElement(request, "card");
             et.subElement(cardElement, "number", card.getNumber());
             et.subElement(cardElement, "expdate", card.getShortExpiry());
@@ -87,6 +107,25 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(cvnElement, "presind", card.getCvnPresenceIndicator().getValue());
             }
 
+			// For DCC rate lookup
+			if (builder.getTransactionType() == TransactionType.DccRateLookup) {
+				Element dccinfo = et.subElement(request, "dccinfo");
+				et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
+				et.subElement(dccinfo, "type", builder.getDccType());
+				et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
+			}
+
+			// For DCC charge/auth
+			DccRateData dccValues = builder.getDccRateData();
+			if (dccValues != null) {
+				Element dccinfo = et.subElement(request, "dccinfo");
+				et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
+				et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
+				et.subElement(dccinfo, "type", dccValues.getDccType());
+				et.subElement(dccinfo, "rate", dccValues.getDccRate());
+				et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
+			}
+
             // mpi
             ThreeDSecure secureEcom = card.getThreeDSecure();
             if(secureEcom != null) {
@@ -94,13 +133,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(mpi, "cavv", secureEcom.getCavv());
                 et.subElement(mpi, "xid", secureEcom.getXid());
                 et.subElement(mpi, "eci", secureEcom.getEci());
-            }
+             }
+			}
 
             // issueno
             String hash;
             if(builder.getTransactionType() == TransactionType.Verify)
                 hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, card.getNumber());
-            else hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getNumber());
+			else {
+				if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile)
+					hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency() != null ? builder.getCurrency() : "", card.getToken());
+				else
+					hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getNumber());
+			}
             et.subElement(request, "sha1hash", hash);
         }
         else if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
@@ -108,10 +153,29 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(request, "payerref").text(recurring.getCustomerKey());
             et.subElement(request, "paymentmethod").text(recurring.getKey());
 
-            if(!StringUtils.isNullOrEmpty(builder.getCvn())) {
-                Element paymentData = et.subElement(request, "paymentdata");
-                Element cvn = et.subElement(paymentData, "cvn");
-                et.subElement(cvn, "number").text(builder.getCvn());
+			// For DCC rate lookup
+			if (builder.getTransactionType() == TransactionType.DccRateLookup) {
+				Element dccinfo = et.subElement(request, "dccinfo");
+				et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
+				et.subElement(dccinfo, "type", builder.getDccType());
+				et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
+			}
+
+			// For DCC charge/auth
+			DccRateData dccValues = builder.getDccRateData();
+			if (dccValues != null) {
+				Element dccinfo = et.subElement(request, "dccinfo");
+				et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
+				et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
+				et.subElement(dccinfo, "type", dccValues.getDccType());
+				et.subElement(dccinfo, "rate", dccValues.getDccRate());
+				et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
+			}
+
+			if (!StringUtils.isNullOrEmpty(builder.getCvn())) {
+				Element paymentData = et.subElement(request, "paymentdata");
+				Element cvn = et.subElement(paymentData, "cvn");
+				et.subElement(cvn, "number").text(builder.getCvn());
             }
 
             String hash;
@@ -135,7 +199,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // This needs to be figured out based on txn type and set to 0, 1 or MULTI
         if (builder.getTransactionType() == TransactionType.Sale || builder.getTransactionType() == TransactionType.Auth) {
-            String autoSettle = builder.getTransactionType() == TransactionType.Sale ? "1" : "0";
+            String autoSettle = builder.getTransactionType() == TransactionType.Sale ? "1" : builder.isMultiCapture() ? "MULTI" : "0";
             et.subElement(request, "autosettle").set("flag", autoSettle);
         }
 
@@ -197,7 +261,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("CURRENCY", builder.getCurrency());
         request.set("TIMESTAMP", timestamp);
         //request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null, builder.getCurrency()));
-        request.set("AUTO_SETTLE_FLAG", (builder.getTransactionType() == TransactionType.Sale) ? "1" : "0");
+        request.set("AUTO_SETTLE_FLAG", (builder.getTransactionType() == TransactionType.Sale) ? "1" : builder.isMultiCapture() ? "MULTI" : "0");
         request.set("COMMENT1", builder.getDescription());
         // request.set("COMMENT2", );
         if(hostedPaymentConfig.isRequestTransactionStabilityScore() != null)
@@ -409,6 +473,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setAlternativePaymentType(root.getString("paymentmethod"));
         result.setTransactionReference(transReference);
 
+		// dccinfo
+		if (root.has("dccinfo")) {
+			DccResponseResult dccResponseResult = new DccResponseResult();
+			dccResponseResult.setCardHolderCurrency(root.getString("cardholdercurrency"));
+			dccResponseResult.setCardHolderAmount(root.getDecimal("cardholderamount"));
+			dccResponseResult.setCardHolderRate(root.getDecimal("cardholderrate"));
+			dccResponseResult.setMerchantCurrency(root.getString("merchantcurrency"));
+			dccResponseResult.setMerchantAmount(root.getDecimal("merchantamount"));
+			result.setDccResponseResult(dccResponseResult);
+		}
+
         // 3d secure enrolled
         if(root.has("enrolled")) {
             ThreeDSecure secureEcom = new ThreeDSecure();
@@ -471,6 +546,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                             return "manual";
                         return "offline";
                     }
+                    else if (builder.getTransactionModifier().equals(TransactionModifier.EncryptedMobile)) {
+                        return "auth-mobile";
+                    }
                     return "auth";
                 }
                 else return "receipt-in";
@@ -488,6 +566,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 if(payment instanceof Credit)
                     return "credit";
                 else return "payment-out";
+            case DccRateLookup:
+                if(payment instanceof Credit)
+                    return "dccrate";
+                 return "realvault-dccrate";
             case VerifyEnrolled:
                 return "3ds-verifyenrolled";
             case Reversal:

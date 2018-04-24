@@ -11,7 +11,7 @@ import java.util.*;
 public class JsonDoc {
     private HashMap<String, Object> dict;
     private IRequestEncoder encoder;
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     public Set<String> getKeys() {
         return dict.keySet();
@@ -192,6 +192,14 @@ public class JsonDoc {
             return parseObject(parsed.getAsJsonObject(), encoder);
         }
         return null;
+    }
+
+    public static String parseSingleValue(String json, String name) {
+        return parseSingleValue(json, name, null);
+    }
+    public static String parseSingleValue(String json, String name, IRequestEncoder encoder) {
+        JsonDoc doc = parse(json);
+        return doc.getString("name");
     }
 
     private static JsonDoc parseObject(JsonObject obj, IRequestEncoder encoder) {

@@ -8,6 +8,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AddressType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
@@ -52,13 +53,13 @@ public class RealexHppClient {
         }
 
         // configure the container
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId(merchantId);
         config.setAccountId(account);
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
         config.setSharedSecret(sharedSecret);
         
-        ServicesContainer.configure(config, "realexResponder");
+        ServicesContainer.configureService(config, "realexResponder");
 
         // gather additional information
         String shippingCode = json.getString("SHIPPING_CODE");

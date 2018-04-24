@@ -8,12 +8,13 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.serviceConfigs.GatewayConfig;
 
 import java.math.BigDecimal;
 
 public class CreditService {
-    public CreditService(ServicesConfig config) throws ApiException {
-        ServicesContainer.configure(config);
+    public CreditService(GatewayConfig config) throws ApiException {
+        ServicesContainer.configureService(config);
     }
 
     public AuthorizationBuilder authorize() {

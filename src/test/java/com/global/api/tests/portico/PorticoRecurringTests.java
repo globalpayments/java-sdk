@@ -1,19 +1,16 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
-import com.global.api.services.RecurringService;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.utils.DateUtils;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -35,10 +32,10 @@ public class PorticoRecurringTests {
     }
     
     public PorticoRecurringTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     private void sleepOne() {
@@ -420,5 +417,22 @@ public class PorticoRecurringTests {
         assertNotNull(customer);
         customer.delete();
         sleepOne();
+    }
+
+    @Test
+    public void Test_008g_CreditCharge_WithNewCryptoURL() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+        ServicesContainer.configureService(config);
+
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("10.08"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("51", response.getResponseCode());
     }
 }

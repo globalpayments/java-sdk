@@ -1,17 +1,16 @@
 package com.global.api.services;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.tableservice.*;
 import com.global.api.gateways.TableServiceConnector;
+import com.global.api.serviceConfigs.TableServiceConfig;
 import com.global.api.utils.MultipartForm;
 import com.global.api.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.Date;
-import java.util.Enumeration;
 
 public class TableService {
     private String configName = "default";
@@ -20,12 +19,12 @@ public class TableService {
         return ServicesContainer.getInstance().getTableService(configName).getBumpStatusCollection().getKeys();
     }
 
-    public TableService(ServicesConfig config) throws ApiException {
+    public TableService(TableServiceConfig config) throws ApiException {
         this(config, "default");
     }
-    public TableService(ServicesConfig config, String configName) throws ApiException {
+    public TableService(TableServiceConfig config, String configName) throws ApiException {
         this.configName = configName;
-        ServicesContainer.configure(config, configName);
+        ServicesContainer.configureService(config, configName);
     }
 
     private <T extends TableServiceResponse> T sendRequest(Class<T> clazz, String endpoint, MultipartForm formData) throws ApiException {

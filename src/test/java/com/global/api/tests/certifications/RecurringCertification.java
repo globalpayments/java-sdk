@@ -1,6 +1,5 @@
 package com.global.api.tests.certifications;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.AccountType;
@@ -12,6 +11,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.BatchService;
 import com.global.api.utils.DateUtils;
 import org.junit.FixMethodOrder;
@@ -53,10 +53,10 @@ public class RecurringCertification {
     }
 
     public RecurringCertification() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     @Test @Ignore

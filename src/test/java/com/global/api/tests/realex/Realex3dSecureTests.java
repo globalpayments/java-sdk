@@ -1,6 +1,5 @@
 package com.global.api.tests.realex;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.MerchantDataCollection;
 import com.global.api.entities.ThreeDSecure;
@@ -9,6 +8,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.tests.AcsResponse;
 import com.global.api.tests.TestEncoder;
 import com.global.api.tests.ThreeDSecureAcsClient;
@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 public class Realex3dSecureTests {
     public Realex3dSecureTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("3dsecure");
         config.setSharedSecret("secret");
@@ -31,7 +31,7 @@ public class Realex3dSecureTests {
         config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
 
-        ServicesContainer.configure(config);
+        ServicesContainer.configureService(config);
     }
 
     @Test

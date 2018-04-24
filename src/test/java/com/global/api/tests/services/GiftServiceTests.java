@@ -1,9 +1,9 @@
 package com.global.api.tests.services;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.GiftCard;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.services.GiftService;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class GiftServiceTests {
     private GiftCard replacement;
 
     public GiftServiceTests() throws ApiException {
-        ServicesConfig config = new ServicesConfig();
+        GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         service = new GiftService(config);
