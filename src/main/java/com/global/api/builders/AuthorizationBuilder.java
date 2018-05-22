@@ -1,10 +1,7 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.DccRateData;
-import com.global.api.entities.EcommerceInfo;
-import com.global.api.entities.HostedPaymentData;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -14,7 +11,6 @@ import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
-import com.global.api.entities.Transaction;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -27,6 +23,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private boolean allowPartialAuth;
     private BigDecimal amount;
     private BigDecimal authAmount;
+    private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
     private BigDecimal cashBackAmount;
@@ -83,6 +80,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getAuthAmount() {
         return authAmount;
+    }
+    public AutoSubstantiation getAutoSubstantiation() {
+        return autoSubstantiation;
     }
     public InquiryType getBalanceInquiryType() {
         return balanceInquiryType;
@@ -233,6 +233,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withAuthAmount(BigDecimal value) {
         this.authAmount = value;
+        return this;
+    }
+    public AuthorizationBuilder withAutoSubstantiation(AutoSubstantiation value) {
+        this.autoSubstantiation = value;
         return this;
     }
     public AuthorizationBuilder withBalanceInquiryType(InquiryType value) {

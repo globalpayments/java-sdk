@@ -7,6 +7,12 @@ import com.global.api.entities.enums.PaxMsgId;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.utils.MessageWriter;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public class TerminalUtilities {
     private static final String version = "1.35";
 
@@ -96,5 +102,59 @@ public class TerminalUtilities {
         for (int i = 1; i < length; i++)
             lrc = (byte)(lrc ^ buffer[i]);
         return lrc;
+    }
+
+    public static byte[] buildSignatureImage(String pathData) {
+        String[] coordinates = pathData.split("\\^");
+
+        BufferedImage bmp = new BufferedImage(150, 100, BufferedImage.TYPE_INT_RGB);
+        Graphics2D gfx = bmp.createGraphics();
+        gfx.setColor(Color.WHITE);
+        gfx.fillRect(0, 0, 150, 100);
+        gfx.setColor(Color.BLACK);
+
+        int index = 0;
+        String coordinate = coordinates[index++];
+        do{
+            if(coordinate.equals("0[COMMA]65535"))
+                coordinate = coordinates[index++];
+            Point start = toPoint(coordinate);
+
+            coordinate = coordinates[index++];
+            if(coordinate.equals("0[COMMA]65535")) {
+                gfx.fillRect(start.x, start.y, 1, 1);
+            }
+            else {
+                Point end = toPoint(coordinate);
+                gfx.drawLine(start.x, start.y, end.x, end.y);
+            }
+        }
+        while(!coordinates[index].equals("~"));
+        gfx.dispose();
+
+        // save to a memory stream and return the byte array
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            ImageIO.write(bmp, "bmp", buffer);
+            buffer.flush();
+
+            byte[] rvalue = buffer.toByteArray();
+            buffer.close();
+
+            return rvalue;
+        }
+        catch(IOException exc) {
+            return null;
+        }
+    }
+
+    private static Point toPoint(String coordinate) {
+        String[] xy = coordinate.split("\\[COMMA]");
+
+        Point rvalue = new Point();
+        rvalue.x = Integer.parseInt(xy[0]);
+        rvalue.y = Integer.parseInt(xy[1]);
+
+        return rvalue;
     }
 }

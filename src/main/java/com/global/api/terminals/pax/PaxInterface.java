@@ -5,16 +5,14 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.IBatchCloseResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.terminals.abstractions.IInitializeResponse;
+import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.pax.responses.BatchCloseResponse;
 import com.global.api.terminals.pax.responses.InitializeResponse;
 import com.global.api.terminals.pax.responses.PaxDeviceResponse;
+import com.global.api.terminals.pax.responses.SignatureResponse;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -45,6 +43,12 @@ class PaxInterface implements IDeviceInterface {
         return new InitializeResponse(response);
     }
 
+    // A08 - GET SIGNATURE
+    public ISignatureResponse getSignatureFile() throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A08_GET_SIGNATURE, 0, ControlCodes.FS));
+        return new SignatureResponse(response);
+    }
+
     // A14 - CANCEL
     public void cancel() throws ApiException {
         if(controller.getConnectionMode() == ConnectionModes.HTTP)
@@ -56,6 +60,23 @@ class PaxInterface implements IDeviceInterface {
     public IDeviceResponse reset() throws ApiException {
         byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A16_RESET));
         return new PaxDeviceResponse(response, PaxMsgId.A17_RSP_RESET);
+    }
+
+    // A20 - DO SIGNATURE
+    public ISignatureResponse promptForSignature() throws ApiException {
+        return promptForSignature(null);
+    }
+    public ISignatureResponse promptForSignature(String transactionId) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A20_DO_SIGNATURE,
+                (transactionId != null) ? 1: 0, ControlCodes.FS,
+                (transactionId != null) ? transactionId : "", ControlCodes.FS,
+                (transactionId != null) ? "00" : "", ControlCodes.FS,
+                300));
+        SignatureResponse signatureResponse = new SignatureResponse(response);
+        if(signatureResponse.getDeviceResponseCode() == "000000") {
+            return getSignatureFile();
+        }
+        return signatureResponse;
     }
 
     // A26 - REBOOT

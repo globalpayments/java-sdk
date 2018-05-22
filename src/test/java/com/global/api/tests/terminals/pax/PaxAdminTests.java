@@ -1,6 +1,5 @@
 package com.global.api.tests.terminals.pax;
 
-import com.global.api.ServicesConfig;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
@@ -10,9 +9,11 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IInitializeResponse;
+import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
@@ -83,5 +84,35 @@ public class PaxAdminTests {
         IDeviceResponse response = device.reboot();
         assertNotNull(response);
         assertEquals("OK", response.getDeviceResponseText());
+    }
+
+    @Test
+    public void getSignature() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+                assertTrue(message.startsWith("[STX]A08[FS]1.35[FS]0[FS][ETX]"));
+            }
+        });
+
+        ISignatureResponse response = device.getSignatureFile();
+        assertNotNull(response);
+        assertEquals("OK", response.getDeviceResponseText());
+        assertNotNull(response.getSignatureData());
+    }
+
+    @Test
+    public void promptForSignature() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+                assertTrue(message.startsWith("[STX]A20"));
+            }
+        });
+
+        ISignatureResponse response = device.promptForSignature();
+        assertNotNull(response);
+        assertEquals("OK", response.getDeviceResponseText());
+        assertNotNull(response.getSignatureData());
     }
 }

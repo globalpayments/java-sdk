@@ -5,6 +5,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.utils.Element;
 import com.global.api.utils.StringUtils;
+import org.apache.commons.codec.binary.Base64;
 
 public class SipDeviceResponse extends SipBaseResponse implements IDeviceResponse {
     public SipDeviceResponse(byte[] buffer, String... messageIds) throws ApiException {
@@ -47,5 +48,11 @@ public class SipDeviceResponse extends SipBaseResponse implements IDeviceRespons
         }
         customerVerificationMethod = response.getString("EMV_TSI");
         terminalVerificationResults = response.getString("EMV_TVR");
+
+        // SIGNATURE
+        String attachmentData = response.getString("AttachmentData");
+        if(attachmentData != null) {
+            signatureData = Base64.decodeBase64(attachmentData);
+        }
     }
 }

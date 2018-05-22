@@ -18,6 +18,9 @@ public interface IDeviceInterface extends IDisposable {
     void cancel() throws ApiException;
     IDeviceResponse openLane() throws ApiException;
     IDeviceResponse closeLane() throws ApiException;
+    ISignatureResponse getSignatureFile() throws ApiException;
+    ISignatureResponse promptForSignature() throws ApiException;
+    ISignatureResponse promptForSignature(String transactionId) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

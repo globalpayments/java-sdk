@@ -20,6 +20,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String terminalRefNumber;
     protected String token;
     protected String signatureStatus;
+    protected byte[] signatureData;
 
     // Transactional
     protected String transactionType;
@@ -140,6 +141,14 @@ public abstract class TerminalResponse implements IDeviceResponse {
 
     public void setSignatureStatus(String signatureStatus) {
         this.signatureStatus = signatureStatus;
+    }
+
+    public byte[] getSignatureData() {
+        return signatureData;
+    }
+
+    public void setSignatureData(byte[] signatureData) {
+        this.signatureData = signatureData;
     }
 
     public String getTransactionType() {

@@ -26,7 +26,7 @@ public class PayrollTests {
         config.setUsername("testapiuser.russell");
         config.setPassword("payroll2!");
         config.setApiKey("iGF9UtaLc526poWWNgUpiCoO3BckcZUKNF3nhyKul8A=");
-        config.setServiceUrl("https://taapi.heartlandpayrollonlinetest.com");
+        config.setServiceUrl("https://taapi.heartlandpayrollonlinetest.com/PosWebUI/Test/Test");
         config.setTimeout(0);
 
         _service = new PayrollService(config);

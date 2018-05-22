@@ -4,17 +4,21 @@ import com.global.api.builders.*;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
 import com.global.api.utils.StringUtils;
+import javafx.util.Builder;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class PorticoConnector extends XmlGateway implements IPaymentGateway {
     private int siteId;
@@ -329,6 +333,26 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         et.subElement(block1, "TxnDescriptor", builder.getDynamicDescriptor());
 
         // auto substantiation
+        if(builder.getAutoSubstantiation() != null) {
+            Element autoSub = et.subElement(block1, "AutoSubstantiation");
+
+            int index = 0;
+            String[] fieldNames = new String[] {"First", "Second", "Third", "Fourth"};
+            for(Map.Entry<String, BigDecimal> amount: builder.getAutoSubstantiation().getAmounts().entrySet()) {
+                if(amount.getValue() != null && !amount.getValue().equals(new BigDecimal("0"))) {
+                    if(index > 3) {
+                        throw new BuilderException("You may only specify three different subtotals in a single transaction.");
+                    }
+
+                    Element amountNode = et.subElement(autoSub, fieldNames[index++] + "AdditionalAmtInfo");
+                    et.subElement(amountNode, "AmtType", amount.getKey());
+                    et.subElement(amountNode, "Amt", StringUtils.toNumeric(amount.getValue()));
+                }
+            }
+
+            et.subElement(autoSub, "MerchantVerificationValue", builder.getAutoSubstantiation().getMerchantVerificationValue());
+            et.subElement(autoSub, "RealTimeSubstantiation", builder.getAutoSubstantiation().isRealTimeSubstantiation() ? "Y" : "N");
+        }
 
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));
         return mapResponse(response, builder.getPaymentMethod());
@@ -537,6 +561,23 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
     @SuppressWarnings("unchecked")
     private <TResult> TResult mapReportResponse(String rawResponse, ReportType reportType, Class<TResult> clazz) throws ApiException {
+        Element response = ElementTree.parse(rawResponse).get("PosResponse");
+        ArrayList<String> acceptedCodes = new ArrayList<String>();
+        acceptedCodes.add("00");
+        acceptedCodes.add("0");
+
+        // check gateway responses
+        String gatewayRspCode = normalizeResponse(response.getString("GatewayRspCode"));
+        String gatewayRspText = response.getString("GatewayRspMsg");
+
+        if (!acceptedCodes.contains(gatewayRspCode)) {
+            throw new GatewayException(
+                    String.format("Unexpected Gateway Response: %s - %s", gatewayRspCode, gatewayRspText),
+                    gatewayRspCode,
+                    gatewayRspText
+            );
+        }
+
         Element doc = ElementTree.parse(rawResponse).get(mapReportType(reportType));
 
         try {

@@ -15,7 +15,8 @@ public enum HsipMsgId implements IStringConstant {
     BALANCE("BalanceInquiry"),
     ADD_VALUE("AddValue"),
     TIP_ADJUST("TipAdjust"),
-    GET_INFO_REPORT("GetAppInfoReport");
+    GET_INFO_REPORT("GetAppInfoReport"),
+    SIGNATURE_FORM("SIGNATUREFORM");
 
     String value;
     HsipMsgId(String value) { this.value = value; }

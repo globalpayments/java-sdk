@@ -13,6 +13,7 @@ import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.heartSIP.responses.SipBatchResponse;
 import com.global.api.terminals.heartSIP.responses.SipBaseResponse;
 import com.global.api.terminals.heartSIP.responses.SipInitializeResponse;
+import com.global.api.terminals.heartSIP.responses.SipSignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 
 import java.math.BigDecimal;
@@ -61,6 +62,17 @@ public class HeartSipInterface implements IDeviceInterface {
 
     public IDeviceResponse reset() throws ApiException {
         return _controller.sendMessage(SipBaseResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reset</Request></SIP>", HsipMsgId.RESET.getValue());
+    }
+
+    public ISignatureResponse getSignatureFile() throws ApiException {
+        throw new UnsupportedTransactionException("Signature data for this device type is automatically returned in the terminal response.");
+    }
+
+    public ISignatureResponse promptForSignature() throws ApiException {
+        return promptForSignature(null);
+    }
+    public ISignatureResponse promptForSignature(String transactionId) throws ApiException {
+        return _controller.sendMessage(SipSignatureResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>SignatureForm</Request><FormText>PLEASE SIGN YOUR NAME</FormText></SIP>", HsipMsgId.SIGNATURE_FORM.getValue());
     }
 
     public IBatchCloseResponse batchClose() throws ApiException {

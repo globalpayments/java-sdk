@@ -3,17 +3,20 @@ package com.global.api.tests.terminals.heartsip;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
-import com.global.api.terminals.abstractions.IBatchCloseResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.abstractions.*;
 
-import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.terminals.abstractions.IInitializeResponse;
+import com.global.api.terminals.heartSIP.responses.SipSignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +30,7 @@ public class HsipAdminTests {
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
         deviceConfig.setIpAddress("10.12.220.130");
         deviceConfig.setPort(12345);
-        deviceConfig.setTimeout(10000);
+        deviceConfig.setTimeout(60000);
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -104,5 +107,34 @@ public class HsipAdminTests {
         IBatchCloseResponse response = device.batchClose();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
+    }
+
+    @Test(expected = UnsupportedTransactionException.class)
+    public void getSignatureDirect() throws ApiException {
+        device.getSignatureFile();
+    }
+
+    @Test
+    public void getSignatureIndirect() throws ApiException {
+        TerminalResponse response = device.creditSale(1, new BigDecimal("120"))
+                .withSignatureCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("0", response.getSignatureStatus());
+        assertNotNull(response.getSignatureData());
+    }
+
+    @Test
+    public void promptForSignature() throws ApiException {
+        device.openLane();
+
+        ISignatureResponse response = device.promptForSignature();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertNotNull(response.getSignatureData());
+
+        device.reset();
+        device.closeLane();
     }
 }
