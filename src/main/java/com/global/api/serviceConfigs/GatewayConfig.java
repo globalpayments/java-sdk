@@ -8,7 +8,11 @@ import com.global.api.gateways.RealexConnector;
 import com.global.api.utils.StringUtils;
 
 public class GatewayConfig extends Configuration {
-    // portico
+
+    // portico & realex
+    private boolean enableLogging;
+
+	// portico
     private int siteId;
     private int licenseId;
     private int deviceId;
@@ -81,7 +85,13 @@ public class GatewayConfig extends Configuration {
     public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
-    public String getMerchantId() {
+	public boolean isEnableLogging() {
+		return enableLogging;
+	}
+	public void setEnableLogging(boolean enableLogging) {
+		this.enableLogging = enableLogging;
+	}
+	public String getMerchantId() {
         return merchantId;
     }
     public void setMerchantId(String merchantId) {
@@ -130,6 +140,7 @@ public class GatewayConfig extends Configuration {
             gateway.setTimeout(timeout);
             gateway.setServiceUrl(serviceUrl);
             gateway.setHostedPaymentConfig(hostedPaymentConfig);
+            gateway.setEnableLogging(enableLogging);
 
             services.setGatewayConnector(gateway);
             services.setRecurringConnector(gateway);
@@ -146,9 +157,11 @@ public class GatewayConfig extends Configuration {
             gateway.setVersionNumber(versionNumber);
             gateway.setTimeout(timeout);
             gateway.setServiceUrl(serviceUrl + "/Hps.Exchange.PosGateway/PosGatewayService.asmx");
+            gateway.setEnableLogging(enableLogging);
             services.setGatewayConnector(gateway);
 
             PayPlanConnector payplan = new PayPlanConnector();
+            payplan.setEnableLogging(enableLogging);
             payplan.setSecretApiKey(secretApiKey);
             payplan.setTimeout(timeout);
             payplan.setServiceUrl(serviceUrl + "/Portico.PayPlan.v2/");

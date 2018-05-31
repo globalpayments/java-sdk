@@ -2,6 +2,8 @@ package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.IOUtils;
+import com.global.api.utils.StringUtils;
+
 import org.apache.http.entity.mime.MultipartEntity;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -13,11 +15,15 @@ import java.util.Map;
 
 abstract class Gateway {
     private String contentType;
+    private boolean enableLogging;
     protected HashMap<String, String> headers;
     protected int timeout;
     protected String serviceUrl;
 
-    public HashMap<String, String> getHeaders() {
+    public void setEnableLogging(boolean enableLogging) {
+		this.enableLogging = enableLogging;
+	}
+	public HashMap<String, String> getHeaders() {
         return headers;
     }
     public void setHeaders(HashMap<String, String> headers) {
@@ -68,18 +74,23 @@ abstract class Gateway {
                 conn.setDoOutput(true);
                 conn.addRequestProperty("Content-Length", String.valueOf(request.length));
 
-                System.out.println("Request: " + data);
+				if (this.enableLogging)
+					System.out.println("Request: " + StringUtils.mask(data));
                 DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream());
                 requestStream.write(request);
                 requestStream.flush();
                 requestStream.close();
             }
-            else System.out.println("Request: " + endpoint);
+            else {
+				if (this.enableLogging)
+					System.out.println("Request: " + endpoint);
+            }
 
             InputStream responseStream = conn.getInputStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
-            System.out.println("Response: " + rawResponse);
+			if (this.enableLogging)
+				System.out.println("Response: " + rawResponse);
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
@@ -103,7 +114,8 @@ abstract class Gateway {
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
             OutputStream out = conn.getOutputStream();
-            System.out.println("Request: " + content);
+			if (this.enableLogging)
+				System.out.println("Request: " + content);
             content.writeTo(out);
             out.flush();
             out.close();
@@ -111,7 +123,8 @@ abstract class Gateway {
             InputStream responseStream = conn.getInputStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
-            System.out.println("Response: " + rawResponse);
+			if (this.enableLogging)
+				System.out.println("Response: " + rawResponse);
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
