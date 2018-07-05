@@ -9,9 +9,7 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.*;
 
-import com.global.api.terminals.heartSIP.responses.SipSignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;

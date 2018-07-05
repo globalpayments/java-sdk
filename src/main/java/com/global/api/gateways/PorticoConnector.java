@@ -11,13 +11,11 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
 import com.global.api.utils.StringUtils;
-import javafx.util.Builder;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 public class PorticoConnector extends XmlGateway implements IPaymentGateway {
@@ -449,8 +447,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         et.subElement(header, "DeviceId", deviceId);
         et.subElement(header, "UserName", username);
         et.subElement(header, "Password", password);
-        et.subElement(header, "DeveloperId", developerId);
-        et.subElement(header, "VersionNumber", versionNumber);
+        et.subElement(header, "DeveloperID", developerId);
+        et.subElement(header, "VersionNbr", versionNumber);
         et.subElement(header, "ClientTxnId", clientTransactionId);
 
         String date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(new Date());
