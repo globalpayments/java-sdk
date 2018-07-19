@@ -113,27 +113,6 @@ public class BuilderValidationTests {
     }
 
     @Test(expected = BuilderException.class)
-    public void ReportTransactionDetailWithDeviceId() throws ApiException {
-        ReportingService.transactionDetail("123456789")
-                .withDeviceId("123456")
-                .execute();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void ReportTransactionDetailWithStartDate() throws ApiException {
-        ReportingService.transactionDetail("123456789")
-                .withStartDate(new Date())
-                .execute();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void ReportTransactionDetailWithEndDate() throws ApiException {
-        ReportingService.transactionDetail("123456789")
-                .withEndDate(new Date())
-                .execute();
-    }
-
-    @Test(expected = BuilderException.class)
     public void ReportActivityWithTransactionId() throws ApiException {
         ReportingService.activity()
                 .withTransactionId("1234567890")

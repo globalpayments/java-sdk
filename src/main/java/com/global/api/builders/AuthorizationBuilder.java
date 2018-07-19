@@ -14,6 +14,7 @@ import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
+import java.util.HashMap;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AccountType accountType;
@@ -60,6 +61,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
+    private HashMap<String, String[]> supplementaryData;
     private String tagData;
     private String timestamp;
 
@@ -178,6 +180,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getShippingAmount() {
         return shippingAmount;
+    }
+    public HashMap<String, String[]> getSupplementaryData() {
+        return supplementaryData;
     }
     public AccountType getAccountType() {
         return accountType;
@@ -405,6 +410,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withShippingAmt(BigDecimal value) {
         this.shippingAmount = value;
+        return this;
+    }
+    public AuthorizationBuilder withSupplementaryData(String type, String... value) {
+        if (this.supplementaryData == null) {
+            supplementaryData = new HashMap<String, String[]>();
+        }
+        this.supplementaryData.put(type, value);
         return this;
     }
     public AuthorizationBuilder withTimestamp(String value) {

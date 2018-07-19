@@ -1,6 +1,8 @@
 package com.global.api.builders;
 
 import com.global.api.entities.enums.ReportType;
+import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.SearchCriteriaBuilder;
 
 import java.util.Date;
 
@@ -9,18 +11,22 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     private Date endDate;
     private Date startDate;
     private String transactionId;
+    private SearchCriteriaBuilder<TResult> _searchBuilder;
 
     public String getDeviceId() {
-        return deviceId;
+        return getSearchBuilder().getUniqueDeviceId();
     }
     public Date getEndDate() {
-        return endDate;
+        return getSearchBuilder().getEndDate();
     }
     public Date getStartDate() {
-        return startDate;
+        return getSearchBuilder().getStartDate();
     }
     public String getTransactionId() {
         return transactionId;
+    }
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
     public TransactionReportBuilder<TResult> withDeviceId(String value) {
@@ -44,12 +50,20 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         super(type, clazz);
     }
 
+    public SearchCriteriaBuilder<TResult> getSearchBuilder() {
+        if (_searchBuilder == null) {
+            _searchBuilder = new SearchCriteriaBuilder<TResult>(this);
+        }
+        return _searchBuilder;
+    }
+
+    public <T> SearchCriteriaBuilder<TResult> where(SearchCriteria criteria, T value) {
+        return getSearchBuilder().and(criteria, value);
+    }
+
     public void setupValidations() {
         this.validations.of(ReportType.TransactionDetail)
-                .check("transactionId").isNotNull()
-                .check("deviceId").isNull()
-                .check("startDate").isNull()
-                .check("endDate").isNull();
+                .check("transactionId").isNotNull();
 
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
     }

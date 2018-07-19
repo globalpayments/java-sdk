@@ -7,6 +7,9 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.reporting.AltPaymentData;
+import com.global.api.entities.reporting.CheckData;
+import com.global.api.entities.reporting.LodgingData;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
@@ -414,12 +417,46 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         et.subElement(transaction, "TzConversion", builder.getTimeZoneConversion());
         if(builder instanceof TransactionReportBuilder) {
             TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>)builder;
-            et.subElement(transaction, "DeviceId", trb.getDeviceId());
-            if(trb.getStartDate() != null)
-                et.subElement(transaction, "RptStartUtcDT", formatDate(trb.getStartDate()));
-            if(trb.getEndDate() != null)
-                et.subElement(transaction, "RptEndUtcDT", formatDate(trb.getStartDate()));
-            et.subElement(transaction, "TxnId", trb.getTransactionId());
+            if (trb.getTransactionId() != null) {
+                et.subElement(transaction, "TxnId", trb.getTransactionId());
+            }
+            else{
+                Element criteria = et.subElement(transaction, "Criteria");
+                et.subElement(criteria, "StartUtcDT", trb.getStartDate() == null ? null : formatDate(trb.getStartDate()));
+                et.subElement(criteria, "EndUtcDT", trb.getEndDate() == null ? null : formatDate(trb.getEndDate()));
+                et.subElement(criteria, "AuthCode", trb.getSearchBuilder().getAuthCode());
+                et.subElement(criteria, "CardHolderLastName", trb.getSearchBuilder().getCardHolderLastName());
+                et.subElement(criteria, "CardHolderFirtName", trb.getSearchBuilder().getCardHolderFirstName());
+                et.subElement(criteria, "CardNbrFirstSix", trb.getSearchBuilder().getCardNumberFirstSix());
+                et.subElement(criteria, "CardNbrLastFour", trb.getSearchBuilder().getCardNumberLastFour());
+                et.subElement(criteria, "InvoiceNbr", trb.getSearchBuilder().getInvoiceNumber());
+                et.subElement(criteria, "CardHolderPONbr", trb.getSearchBuilder().getCardHolderPoNumber());
+                et.subElement(criteria, "CustomerID", trb.getSearchBuilder().getCustomerId());
+                et.subElement(criteria, "IssuerResult", trb.getSearchBuilder().getIssuerTransactionId());
+                et.subElement(criteria, "SettlementAmount", trb.getSearchBuilder().getSettlementAmount());
+                et.subElement(criteria, "IssTxnId", trb.getSearchBuilder().getIssuerTransactionId());
+                et.subElement(criteria, "RefNbr", trb.getSearchBuilder().getReferenceNumber());
+                et.subElement(criteria, "UserName", trb.getSearchBuilder().getUsername());
+                et.subElement(criteria, "ClerkID", trb.getSearchBuilder().getClerkId());
+                et.subElement(criteria, "BatchSeqNbr", trb.getSearchBuilder().getBatchSequenceNumber());
+                et.subElement(criteria, "BatchId", trb.getSearchBuilder().getBatchId());
+                et.subElement(criteria, "SiteTrace", trb.getSearchBuilder().getSiteTrace());
+                et.subElement(criteria, "DisplayName", trb.getSearchBuilder().getDisplayName());
+                et.subElement(criteria, "ClientTxnId", trb.getSearchBuilder().getClientTransactionId());
+                et.subElement(criteria, "UniqueDeviceId", trb.getSearchBuilder().getUniqueDeviceId());
+                et.subElement(criteria, "AcctNbrLastFour", trb.getSearchBuilder().getAccountNumberLastFour());
+                et.subElement(criteria, "BankRountingNbr", trb.getSearchBuilder().getBankRoutingNumber());
+                et.subElement(criteria, "CheckNbr", trb.getSearchBuilder().getCheckNumber());
+                et.subElement(criteria, "CheckFirstName", trb.getSearchBuilder().getCheckFirstName());
+                et.subElement(criteria, "CheckLastName", trb.getSearchBuilder().getCheckLastName());
+                et.subElement(criteria, "CheckName", trb.getSearchBuilder().getCheckName());
+                et.subElement(criteria, "GiftCurrency", trb.getSearchBuilder().getGiftCurrency());
+                et.subElement(criteria, "GiftMaskedAlias", trb.getSearchBuilder().getGiftMaskedAlias());
+                et.subElement(criteria, "PaymentMethodKey", trb.getSearchBuilder().getPaymentMethodKey());
+                et.subElement(criteria, "ScheduleID", trb.getSearchBuilder().getScheduleId());
+                et.subElement(criteria, "BuyerEmailAddress", trb.getSearchBuilder().getBuyerEmailAddress());
+                et.subElement(criteria, "AltPaymentStatus", trb.getSearchBuilder().getAltPaymentStatus());
+            }
         }
 
         String response = doTransaction(buildEnvelope(et, transaction));
@@ -580,7 +617,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
         try {
             TResult rvalue = clazz.newInstance();
-            if(reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail)) {
+            if(reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail)) {
                 // Activity
                 if (rvalue instanceof ActivityReport){
                     ActivityReport list = new ActivityReport();
@@ -752,9 +789,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
     private String mapReportType(ReportType type) throws UnsupportedTransactionException {
         switch(type) {
             case Activity:
-                return "ReportActivity";
             case TransactionDetail:
-                return "ReportTxnDetail";
+            case FindTransactions:
+                return "FindTransactions";
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -777,25 +814,94 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
     private TransactionSummary hydrateTransactionSummary(Element root) {
         TransactionSummary summary = new TransactionSummary();
+        summary.setAccountDataSource(root.getString("AccDataSrc"));
         summary.setAmount(root.getDecimal("Amt"));
         summary.setAuthorizedAmount(root.getDecimal("AuthAmt"));
         summary.setAuthCode(root.getString("AuthCode"));
+        summary.setBatchCloseDate(root.getDate("BatchCloseDT"));
+        summary.setBatchSequenceNumber(root.getString("BatchSeqNbr"));
+        summary.setCardSwiped(root.getString("CardSwiped"));
+        summary.setCardType(root.getString("CardType"));
+        summary.setClerkId(root.getString("ClerkID"));
         summary.setClientTransactionId(root.getString("ClientTxnId"));
-        summary.setDeviceId(root.getInt("DeviceId"));
+        summary.setConvenienceAmount(root.getDecimal("ConvenienceAmtInfo"));
+        summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
+        summary.setGratuityAmount(root.getDecimal("GratuityAmtInfo"));
         summary.setIssuerResponseCode(root.getString("IssuerRspCode", "RspCode"));
         summary.setIssuerResponseMessage(root.getString("IssuerRspText", "RspText"));
+        summary.setIssuerTransactionId(root.getString("IssTxnId"));
         summary.setMaskedCardNumber(root.getString("MaskedCardNbr"));
-        summary.setOriginalTransactionId(root.getString("OriginalGatewayTxnId"));
         summary.setGatewayResponseCode(normalizeResponse(root.getString("GatewayRspCode")));
         summary.setGatewayResponseMessage(root.getString("GatewayRspMsg"));
+        summary.setOriginalTransactionId(root.getString("OriginalGatewayTxnId"));
+        summary.setPaymentType(root.getString("PaymentType"));
+        summary.setPoNumber(root.getString("CardHolderPONbr"));
         summary.setReferenceNumber(root.getString("RefNbr"));
+        summary.setResponseDate(root.getDate("RspDT"));
         summary.setServiceName(root.getString("ServiceName"));
         summary.setSettlementAmount(root.getDecimal("SettlementAmt"));
-        summary.setStatus(root.getString("Status", "TxnStatus"));
-        summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
-        summary.setTransactionId(root.getString("GatewayTxnId"));
-        summary.setConvenienceAmount(root.getDecimal("ConvenienceAmtInfo"));
         summary.setShippingAmount(root.getDecimal("ShippingAmtInfo"));
+        summary.setStatus(root.getString("Status", "TxnStatus"));
+        summary.setTransactionDate(root.getDate("TaxAmt", "TaxAmtInfo"));
+        summary.setTaxType(root.getString("TaxType"));
+        summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
+        summary.setGatewayResponseCode(root.getString("GatewayTxnId"));
+        summary.setTransactionStatus(root.getString("TxnStatus"));
+        summary.setUsername(root.getString("UserName"));
+        summary.setDescription(root.getString("Description"));
+        summary.setInvoiceNumber(root.getString("InvoiceNbr"));
+        summary.setCustomerId(root.getString("CustomerID"));
+        summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
+        summary.setTransactionDescriptor(root.getString("TxnDescriptor"));
+        summary.setGiftCurrency(root.getString("GiftCurrency"));
+        summary.setMaskedAlias(root.getString("GiftMaskedAlias"));
+        summary.setPaymentMethodKey(root.getString("PaymentMethodKey"));
+        summary.setScheduleId(root.getString("ScheduleID"));
+        summary.setOneTimePayment(root.getString("OneTime") == "1");
+        summary.setRecurringDataCode(root.getString("RecurringDataCode"));
+        summary.setSurchargeAmount(root.getDecimal("SurchargeAmtInfo"));
+        summary.setFraudRuleInfo(root.getString("FraudInfoRule"));
+        summary.setEmvChipCondition(root.getString("EMVChipCondition"));
+        summary.setHasEmvTags(root.getString("HasEMVTag") == "1");
+        summary.setHasEcomPaymentData(root.getString("HasEComPaymentData") == "1");
+        summary.setCavvResponseCode(root.getString("CAVVResultCode"));
+        summary.setTokenPanLastFour(root.getString("TokenPANLast4"));
+        summary.setCompanyName(root.getString("Company"));
+        summary.setCustomerFirstName(root.getString("CustomerFirstname"));
+        summary.setCustomerLastName(root.getString("CustomerLastname"));
+        summary.setDebtRepaymentIndicator(root.getString("DebtRepaymentIndicator") == "1");
+        summary.setCaptureAmount(root.getDecimal("CaptureAmtInfo"));
+        summary.setFullyCaptured(root.getString("FullyCapturedInd") == "1");
+
+        // lodging data
+        if (root.has("LodgingData")) {
+            LodgingData lodgingData = new LodgingData();
+            lodgingData.setAdvancedDepositType(root.getString("AdvancedDepositType"));
+            lodgingData.setLodgingDataEdit(root.getString("LodgingDataEdit"));
+            summary.setLodgingData(lodgingData);
+        }
+
+        // check data
+        if (root.has("CheckData")) {
+            CheckData checkData = new CheckData();
+            checkData.setAccountInfo(root.getString("AccountInfo"));
+            checkData.setCheckAction(root.getString("CheckAction"));
+            checkData.setCheckType(root.getString("CheckType"));
+            checkData.setConsumerInfo(root.getString("ConsumerInfo"));
+            checkData.setDataEntryMode(root.getString("DataEntryMode"));
+            checkData.setSecCode(root.getString("SECCode"));
+            summary.setCheckData(checkData);
+        }
+
+        // alt payment data
+        if (root.has("AltPaymentData")) {
+            AltPaymentData altPaymentData = new AltPaymentData();
+            altPaymentData.setBuyerEmailAddress(root.getString("BuyerEmailAddress"));
+            altPaymentData.setStateDate(root.getDate("StatusDT"));
+            altPaymentData.setStatus(root.getString("Status"));
+            altPaymentData.setStatusMessage(root.getString("StatusMsg"));
+            summary.setAltPaymentData(altPaymentData);
+        }
 
         return summary;
     }

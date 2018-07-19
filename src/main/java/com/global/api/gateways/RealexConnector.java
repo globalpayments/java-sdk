@@ -17,6 +17,7 @@ import com.global.api.utils.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
 
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway {
     private String merchantId;
@@ -135,6 +136,20 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(mpi, "eci", secureEcom.getEci());
              }
 			}
+
+            // data supplementry
+            if (builder.getSupplementaryData() != null) {
+                Element supplementarydata = et.subElement(request, "supplementarydata");
+                HashMap<String, String[]> suppData = builder.getSupplementaryData();
+
+                for (String key : suppData.keySet()) {
+                    Element item = et.subElement(supplementarydata, "item").set("type", key);
+                    String str[] = suppData.get(key);
+                    for (int i = 1; i <= suppData.get(key).length; i++) {
+                        et.subElement(item, "field" + StringUtils.padLeft("" + i, 2, '0'), str[i - 1]);
+                    }
+                }
+            }
 
             // issueno
             String hash;

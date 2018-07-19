@@ -287,4 +287,28 @@ public class RealexCreditTests {
 
 	}
 
+    @Test
+    public void creditAuthorizationWithSupplementaryData() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("129.99"))
+                .withCurrency("EUR")
+                .withSupplementaryData("taxInfo", "VATREF", "763637283332")
+                .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSaleWithSupplementaryData() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("129.99"))
+                .withCurrency("EUR")
+                .withSupplementaryData("taxInfo", "VATREF", "763637283332")
+                .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
 }
