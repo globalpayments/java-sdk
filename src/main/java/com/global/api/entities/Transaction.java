@@ -293,6 +293,15 @@ public class Transaction {
         return new ManagementBuilder(TransactionType.Hold).withPaymentMethod(transactionReference);
     }
 
+    public ManagementBuilder increment() {
+        return increment(null);
+    }
+    public ManagementBuilder increment(BigDecimal amount) {
+        return new ManagementBuilder(TransactionType.Increment)
+                .withAmount(amount)
+                .withPaymentMethod(transactionReference);
+    }
+
     public ManagementBuilder refund() {
         return refund(null);
     }

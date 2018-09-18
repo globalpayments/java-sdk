@@ -56,6 +56,11 @@ public class ElementTree {
             return null;
         return subElement(parent, tagName).text(value + "");
     }
+    public Element subElement(Element parent, String tagName, Integer value) {
+        if(value == null)
+            return null;
+        return subElement(parent, tagName).text(value + "");
+    }
     public Element subElement(Element parent, String tagName, BigDecimal value) {
         if(value == null)
             return null;

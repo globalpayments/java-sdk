@@ -9,10 +9,10 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
-import com.global.api.entities.reporting.LodgingData;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
+import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -355,6 +355,36 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             et.subElement(autoSub, "RealTimeSubstantiation", builder.getAutoSubstantiation().isRealTimeSubstantiation() ? "Y" : "N");
         }
 
+        // lodging data
+        if(builder.getLodgingData() != null) {
+            LodgingData lodging = builder.getLodgingData();
+
+            Element lodgingElement = et.subElement(block1, "LodgingData");
+            et.subElement(lodgingElement, "PrestigiousPropertyLimit", lodging.getPrestigiousPropertyLimit());
+            et.subElement(lodgingElement, "NoShow", lodging.isNoShow() ? "Y" : "N");
+            et.subElement(lodgingElement, "AdvancedDepositType", lodging.getAdvancedDepositType());
+            et.subElement(lodgingElement, "PreferredCustomer", lodging.isPreferredCustomer() ? "Y" : "N");
+            if(lodging.getFolioNumber() != null || lodging.getStayDuration() != null || lodging.getCheckInDate() != null || lodging.getCheckOutDate() != null || lodging.getRate() != null || lodging.getExtraCharges() != null) {
+                Element lodgingDataEdit = et.subElement(lodgingElement, "LodgingDataEdit");
+                et.subElement(lodgingDataEdit, "FolioNumber", lodging.getFolioNumber());
+                et.subElement(lodgingDataEdit, "Duration", lodging.getStayDuration());
+                if(lodging.getCheckInDate() != null) {
+                    et.subElement(lodgingDataEdit, "CheckInDate", lodging.getCheckInDate().toString("mm/DD/YYYY"));
+                }
+                if(lodging.getCheckOutDate() != null) {
+                    et.subElement(lodgingDataEdit, "CheckOutDate", lodging.getCheckOutDate().toString("mm/DD/YYYY"));
+                }
+                et.subElement(lodgingDataEdit, "Rate", lodging.getRate());
+                if(lodging.getExtraCharges() != null) {
+                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
+                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
+                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
+                    }
+                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
+                }
+            }
+        }
+
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));
         return mapResponse(response, builder.getPaymentMethod());
     }
@@ -378,7 +408,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             if (type.equals(TransactionType.Reversal)
                     || type.equals(TransactionType.Refund)
                     || paymentType.equals(PaymentMethodType.Gift)
-                    || paymentType.equals(PaymentMethodType.ACH))
+                    || paymentType.equals(PaymentMethodType.ACH)
+                    || type.equals(TransactionType.Increment))
                 root = et.subElement(transaction, "Block1");
             else root = transaction;
 
@@ -403,6 +434,22 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 et.subElement(cpc, "CardHolderPONbr", builder.getPoNumber());
                 et.subElement(cpc, "TaxType", builder.getTaxType());
                 et.subElement(cpc, "TaxAmt", builder.getTaxAmount());
+            }
+
+            // lodging data
+            if(builder.getLodgingData() != null) {
+                LodgingData lodging = builder.getLodgingData();
+
+                //Element lodgingElement = et.subElement(root, "LodgingData");
+                if(lodging.getExtraCharges() != null) {
+                    Element lodgingDataEdit = et.subElement(root, "LodgingDataEdit");
+
+                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
+                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
+                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
+                    }
+                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
+                }
             }
         }
 
@@ -780,6 +827,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 return "GiftCardReplace";
             case Reward:
                 return "GiftCardReward";
+            case Increment:
+                return "CreditIncrementalAuth";
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -876,7 +925,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         // lodging data
         if (root.has("LodgingData")) {
             LodgingData lodgingData = new LodgingData();
-            lodgingData.setAdvancedDepositType(root.getString("AdvancedDepositType"));
+
+            String advancedDepositType = root.getString("AdvancedDepositType");
+            ReverseStringEnumMap<AdvancedDepositType> map = new ReverseStringEnumMap<AdvancedDepositType>(AdvancedDepositType.class);
+            lodgingData.setAdvancedDepositType(map.get(advancedDepositType));
             lodgingData.setLodgingDataEdit(root.getString("LodgingDataEdit"));
             summary.setLodgingData(lodgingData);
         }

@@ -1,6 +1,7 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.LodgingData;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ReasonCode;
 import com.global.api.entities.enums.TaxType;
@@ -22,6 +23,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String currency;
     private String description;
     private BigDecimal gratuity;
+    private LodgingData lodgingData;
     private String orderId;
     private String payerAuthenticationResponse;
     private String poNumber;
@@ -56,6 +58,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getGratuity() {
         return gratuity;
+    }
+    public LodgingData getLodgingData() {
+        return lodgingData;
     }
     public String getOrderId() {
         if(paymentMethod instanceof TransactionReference)
@@ -105,6 +110,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withGratuity(BigDecimal value) {
         this.gratuity = value;
+        return this;
+    }
+    public ManagementBuilder withLodgingData(LodgingData value) {
+        this.lodgingData = value;
         return this;
     }
     public ManagementBuilder withPayerAuthenticationResponse(String value) {

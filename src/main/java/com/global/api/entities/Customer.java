@@ -1,9 +1,6 @@
 package com.global.api.entities;
 
-import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.gateways.IRecurringGateway;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.services.RecurringService;
@@ -16,6 +13,10 @@ public class Customer extends RecurringEntity<Customer> {
     private String firstName;
     private String lastName;
     private String company;
+    private String customerPassword;
+    private String dateOfBirth;
+    private String domainName;
+    private String deviceFingerPrint;
     private Address address;
     private String homePhone;
     private String workPhone;
@@ -50,6 +51,30 @@ public class Customer extends RecurringEntity<Customer> {
     }
     public void setCompany(String company) {
         this.company = company;
+    }
+    public String getCustomerPassword() {
+        return customerPassword;
+    }
+    public void setCustomerPassword(String customerPassword) {
+        this.customerPassword = customerPassword;
+    }
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+    public String getDomainName() {
+        return domainName;
+    }
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+    public String getDeviceFingerPrint() {
+        return deviceFingerPrint;
+    }
+    public void setDeviceFingerPrint(String deviceFingerPrint) {
+        this.deviceFingerPrint = deviceFingerPrint;
     }
     public Address getAddress() {
         return address;

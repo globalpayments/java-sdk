@@ -26,6 +26,9 @@ public class PorticoCreditTests {
         GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setDeveloperId("002914");
+        config.setVersionNumber("3026");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 

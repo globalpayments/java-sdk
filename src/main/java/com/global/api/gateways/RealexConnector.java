@@ -60,17 +60,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         String orderId = GenerationUtils.generateOrderId(builder.getOrderId());
 
         // amount and currency are required for googlePay
-		if (builder.getPaymentMethod() instanceof CreditCardData) {
-			CreditCardData card = (CreditCardData) builder.getPaymentMethod();
-			if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
-				if (card.getToken() == null) {
-					throw new BuilderException("Token can not be null");
-				}
-				if (card.getMobileType() == MobilePaymentMethodType.GOOGLEPAY && (builder.getAmount() == null || builder.getCurrency() == null)) {
-					throw new BuilderException("Amount and Currency cannot be null for capture");
-				}
-			}
-		}
+        if (builder.getPaymentMethod() instanceof CreditCardData) {
+            CreditCardData card = (CreditCardData) builder.getPaymentMethod();
+            if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
+                if (card.getToken() == null) {
+                    throw new BuilderException("Token can not be null");
+                }
+                if (card.getMobileType() == MobilePaymentMethodType.GOOGLEPAY && (builder.getAmount() == null || builder.getCurrency() == null)) {
+                    throw new BuilderException("Amount and Currency cannot be null for capture");
+                }
+            }
+        }
 
         // Build Request
         Element request = et.element("request")
@@ -90,52 +90,111 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             CreditCardData card = (CreditCardData)builder.getPaymentMethod();
 
             // for google-pay & apple-pay
-			if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
-				et.subElement(request, "mobile", card.getMobileType().getValue());
-				et.subElement(request, "token", card.getToken());
+            if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
+                et.subElement(request, "mobile", card.getMobileType().getValue());
+                et.subElement(request, "token", card.getToken());
             }
 
-			else {
-            Element cardElement = et.subElement(request, "card");
-            et.subElement(cardElement, "number", card.getNumber());
-            et.subElement(cardElement, "expdate", card.getShortExpiry());
-            et.subElement(cardElement, "chname").text(card.getCardHolderName());
-            et.subElement(cardElement, "type", card.getCardType().toUpperCase());
+            else {
+                Element cardElement = et.subElement(request, "card");
+                et.subElement(cardElement, "number", card.getNumber());
+                et.subElement(cardElement, "expdate", card.getShortExpiry());
+                et.subElement(cardElement, "chname").text(card.getCardHolderName());
+                et.subElement(cardElement, "type", card.getCardType().toUpperCase());
 
-            if (card.getCvn() != null) {
-                Element cvnElement = et.subElement(cardElement, "cvn");
-                et.subElement(cvnElement, "number", card.getCvn());
-                et.subElement(cvnElement, "presind", card.getCvnPresenceIndicator().getValue());
+                if (card.getCvn() != null) {
+                    Element cvnElement = et.subElement(cardElement, "cvn");
+                    et.subElement(cvnElement, "number", card.getCvn());
+                    et.subElement(cvnElement, "presind", card.getCvnPresenceIndicator().getValue());
+                }
+                // fraud data submission
+                if (builder.getFraudFilterMode() == FraudFilterMode.Passive){
+                    et.subElement(request, "fraudfilter").set("mode", builder.getFraudFilterMode().getValue());
+                }
+                // fraud Decision Manager
+                if (builder.getCustomerData() != null) {
+                    Customer customerValue = builder.getCustomerData();
+                    Element customer = et.subElement(request, "customer");
+                    et.subElement(customer, "customerid", customerValue.getId());
+                    et.subElement(customer, "firstname", customerValue.getFirstName());
+                    et.subElement(customer, "lastname", customerValue.getLastName());
+                    et.subElement(customer, "dateofbirth", customerValue.getDateOfBirth());
+                    et.subElement(customer, "customerpassword", customerValue.getCustomerPassword());
+                    et.subElement(customer, "email", customerValue.getEmail());
+                    et.subElement(customer, "domainname", customerValue.getDomainName());
+                    et.subElement(customer, "devicefingerprint", customerValue.getDeviceFingerPrint());
+                    et.subElement(customer, "phonenumber", customerValue.getHomePhone());
+                }
+                if (builder.getProductData() != null) {
+                    ArrayList<String[]> productValues = builder.getProductData();
+                    Element products = et.subElement(request, "products");
+                    String str[] = { "productid", "productname", "quantity", "unitprice", "gift", "type", "risk" };
+                    for (String[] values : productValues) {
+                        Element product = et.subElement(products, "product");
+                        for (int x = 0; x < values.length; x++) {
+                            et.subElement(product, str[x], values[x].toString());
+                        }
+                    }
+                }
+                if (builder.getDecisionManager() != null) {
+                    DecisionManager dmValues = builder.getDecisionManager();
+                    Element fraud = et.subElement(request, "fraud");
+                    Element dm = et.subElement(fraud, "dm");
+                    et.subElement(dm, "billtohostname", dmValues.getBillToHostName());
+                    et.subElement(dm, "billtohttpbrowsercookiesaccepted", dmValues.isBillToHttpBrowserCookiesAccepted()!=true?"false":"true");
+                    et.subElement(dm, "billtohttpbrowseremail", dmValues.getBillToHttpBrowserEmail());
+                    et.subElement(dm, "billtohttpbrowsertype", dmValues.getBillToHttpBrowserType());
+                    et.subElement(dm, "billtoipnetworkaddress", dmValues.getBillToIpNetworkAddress());
+                    et.subElement(dm, "businessrulesscorethreshold", dmValues.getBusinessRulessCoreThresHold());
+                    et.subElement(dm, "billtopersonalid", dmValues.getBillToPersonalId());
+                    et.subElement(dm, "invoiceheadertendertype", dmValues.getInvoiceHeaderTenderType());
+                    et.subElement(dm, "invoiceheaderisgift", dmValues.isInvoiceHeaderIsGift()!=true?"false":"true");
+                    et.subElement(dm, "decisionmanagerprofile", dmValues.getDecisionManagerProfile());
+                    et.subElement(dm, "invoiceheaderreturnsaccepted",dmValues.isInvoiceHeaderReturnsAccepted()!=true?"false":"true");
+                    et.subElement(dm, "itemhosthedge", dmValues.getItemHostHedge().getValue());
+                    et.subElement(dm, "itemnonsensicalhedge", dmValues.getItemNonsensicalHedge().getValue());
+                    et.subElement(dm, "itemobscenitieshedge", dmValues.getItemObscenitiesHedge().getValue());
+                    et.subElement(dm, "itemphonehedge", dmValues.getItemPhoneFedge().getValue());
+                    et.subElement(dm, "itemtimehedge", dmValues.getItemTimeFedge().getValue());
+                    et.subElement(dm, "itemvelocityhedge", dmValues.getItemVelocityHedge().getValue());
+                }
+                if (builder.getCustomData() != null) {
+                    Element custom = et.subElement(request, "custom");
+                    ArrayList<String[]> customValues = builder.getCustomData();
+                    for (String[] values : customValues) {
+                        for (int i = 1; i <= values.length; i++) {
+                            et.subElement(custom, "field" + StringUtils.padLeft("" + i, 2, '0'), values[i - 1]);
+                        }
+                    }
+                }
+                // For DCC rate lookup
+                if (builder.getTransactionType() == TransactionType.DccRateLookup) {
+                    Element dccinfo = et.subElement(request, "dccinfo");
+                    et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
+                    et.subElement(dccinfo, "type", builder.getDccType());
+                    et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
+                }
+
+                // For DCC charge/auth
+                DccRateData dccValues = builder.getDccRateData();
+                if (dccValues != null) {
+                    Element dccinfo = et.subElement(request, "dccinfo");
+                    et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
+                    et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
+                    et.subElement(dccinfo, "type", dccValues.getDccType());
+                    et.subElement(dccinfo, "rate", dccValues.getDccRate());
+                    et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
+                }
+
+                // mpi
+                ThreeDSecure secureEcom = card.getThreeDSecure();
+                if(secureEcom != null) {
+                    Element mpi = et.subElement(request, "mpi");
+                    et.subElement(mpi, "cavv", secureEcom.getCavv());
+                    et.subElement(mpi, "xid", secureEcom.getXid());
+                    et.subElement(mpi, "eci", secureEcom.getEci());
+                }
             }
-
-			// For DCC rate lookup
-			if (builder.getTransactionType() == TransactionType.DccRateLookup) {
-				Element dccinfo = et.subElement(request, "dccinfo");
-				et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
-				et.subElement(dccinfo, "type", builder.getDccType());
-				et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
-			}
-
-			// For DCC charge/auth
-			DccRateData dccValues = builder.getDccRateData();
-			if (dccValues != null) {
-				Element dccinfo = et.subElement(request, "dccinfo");
-				et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
-				et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
-				et.subElement(dccinfo, "type", dccValues.getDccType());
-				et.subElement(dccinfo, "rate", dccValues.getDccRate());
-				et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
-			}
-
-            // mpi
-            ThreeDSecure secureEcom = card.getThreeDSecure();
-            if(secureEcom != null) {
-                Element mpi = et.subElement(request, "mpi");
-                et.subElement(mpi, "cavv", secureEcom.getCavv());
-                et.subElement(mpi, "xid", secureEcom.getXid());
-                et.subElement(mpi, "eci", secureEcom.getEci());
-             }
-			}
 
             // data supplementry
             if (builder.getSupplementaryData() != null) {
@@ -155,12 +214,12 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             String hash;
             if(builder.getTransactionType() == TransactionType.Verify)
                 hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, card.getNumber());
-			else {
-				if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile)
-					hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency() != null ? builder.getCurrency() : "", card.getToken());
-				else
-					hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getNumber());
-			}
+            else {
+                if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile)
+                    hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency() != null ? builder.getCurrency() : "", card.getToken());
+                else
+                    hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getNumber());
+            }
             et.subElement(request, "sha1hash", hash);
         }
         else if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
@@ -168,29 +227,29 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(request, "payerref").text(recurring.getCustomerKey());
             et.subElement(request, "paymentmethod").text(recurring.getKey());
 
-			// For DCC rate lookup
-			if (builder.getTransactionType() == TransactionType.DccRateLookup) {
-				Element dccinfo = et.subElement(request, "dccinfo");
-				et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
-				et.subElement(dccinfo, "type", builder.getDccType());
-				et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
-			}
+            // For DCC rate lookup
+            if (builder.getTransactionType() == TransactionType.DccRateLookup) {
+                Element dccinfo = et.subElement(request, "dccinfo");
+                et.subElement(dccinfo, "ccp", builder.getDccProcessor().getValue());
+                et.subElement(dccinfo, "type", builder.getDccType());
+                et.subElement(dccinfo, "ratetype", builder.getDccRateType().getValue());
+            }
 
-			// For DCC charge/auth
-			DccRateData dccValues = builder.getDccRateData();
-			if (dccValues != null) {
-				Element dccinfo = et.subElement(request, "dccinfo");
-				et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
-				et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
-				et.subElement(dccinfo, "type", dccValues.getDccType());
-				et.subElement(dccinfo, "rate", dccValues.getDccRate());
-				et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
-			}
+            // For DCC charge/auth
+            DccRateData dccValues = builder.getDccRateData();
+            if (dccValues != null) {
+                Element dccinfo = et.subElement(request, "dccinfo");
+                et.subElement(dccinfo, "amount", dccValues.getAmount()).set("currency", dccValues.getCurrency());
+                et.subElement(dccinfo, "ccp", dccValues.getDccProcessor());
+                et.subElement(dccinfo, "type", dccValues.getDccType());
+                et.subElement(dccinfo, "rate", dccValues.getDccRate());
+                et.subElement(dccinfo, "ratetype", dccValues.getDccRateType());
+            }
 
-			if (!StringUtils.isNullOrEmpty(builder.getCvn())) {
-				Element paymentData = et.subElement(request, "paymentdata");
-				Element cvn = et.subElement(paymentData, "cvn");
-				et.subElement(cvn, "number").text(builder.getCvn());
+            if (!StringUtils.isNullOrEmpty(builder.getCvn())) {
+                Element paymentData = et.subElement(request, "paymentdata");
+                Element cvn = et.subElement(paymentData, "cvn");
+                et.subElement(cvn, "number").text(builder.getCvn());
             }
 
             String hash;
@@ -227,8 +286,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         // fraudfilter
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             et.subElement(request, "recurring")
-                .set("type", builder.getRecurringType().getValue().toLowerCase())
-                .set("sequence", builder.getRecurringSequence().getValue().toLowerCase());
+                    .set("type", builder.getRecurringType().getValue().toLowerCase())
+                    .set("sequence", builder.getRecurringSequence().getValue().toLowerCase());
         }
 
         // tssinfo
@@ -251,7 +310,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         String response = doTransaction(et.toString(request));
         return mapResponse(response);
     }
-    
+
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {
         // check for hpp config
         if (hostedPaymentConfig == null)
@@ -285,17 +344,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("DCC_ENABLE", hostedPaymentConfig.isDynamicCurrencyConversionEnabled() ? "1" : "0");
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
-			AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
-			AlternativePaymentType paymentTypesValues;
-			StringBuffer paymentValues = new StringBuffer();
-			if (paymentTypesKey != null)
-				for (int arr = 0; arr < paymentTypesKey.length; arr++) {
-					paymentTypesValues = paymentTypesKey[arr];
-					paymentValues.append(paymentTypesValues.getValue());
-					if (arr != paymentTypesKey.length - 1) {
-						paymentValues.append("|");
-					}
-				}
+            AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
+            AlternativePaymentType paymentTypesValues;
+            StringBuffer paymentValues = new StringBuffer();
+            if (paymentTypesKey != null)
+                for (int arr = 0; arr < paymentTypesKey.length; arr++) {
+                    paymentTypesValues = paymentTypesKey[arr];
+                    paymentValues.append(paymentTypesValues.getValue());
+                    if (arr != paymentTypesKey.length - 1) {
+                        paymentValues.append("|");
+                    }
+                }
             request.set("CUST_NUM", paymentData.getCustomerNumber());
             if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null)
                 request.set("HPP_SELECT_STORED_CARD", paymentData.getCustomerKey());
@@ -395,13 +454,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
 
-		et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), builder.getAlternativePaymentType() != null ? builder.getAlternativePaymentType().getValue() : null));
+        et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), builder.getAlternativePaymentType() != null ? builder.getAlternativePaymentType().getValue() : null));
 
         if(builder.getTransactionType() == TransactionType.Refund) {
-			if (builder.getAuthorizationCode() != null) {
-				et.subElement(request, "authcode").text(builder.getAuthorizationCode());
-			}
-			et.subElement(request, "refundhash", GenerationUtils.generateHash(builder.getAlternativePaymentType() != null ? refundPassword : rebatePassword));
+            if (builder.getAuthorizationCode() != null) {
+                et.subElement(request, "authcode").text(builder.getAuthorizationCode());
+            }
+            et.subElement(request, "refundhash", GenerationUtils.generateHash(builder.getAlternativePaymentType() != null ? refundPassword : rebatePassword));
         }
 
         String response = doTransaction(et.toString(request));
@@ -488,16 +547,16 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setAlternativePaymentType(root.getString("paymentmethod"));
         result.setTransactionReference(transReference);
 
-		// dccinfo
-		if (root.has("dccinfo")) {
-			DccResponseResult dccResponseResult = new DccResponseResult();
-			dccResponseResult.setCardHolderCurrency(root.getString("cardholdercurrency"));
-			dccResponseResult.setCardHolderAmount(root.getDecimal("cardholderamount"));
-			dccResponseResult.setCardHolderRate(root.getDecimal("cardholderrate"));
-			dccResponseResult.setMerchantCurrency(root.getString("merchantcurrency"));
-			dccResponseResult.setMerchantAmount(root.getDecimal("merchantamount"));
-			result.setDccResponseResult(dccResponseResult);
-		}
+        // dccinfo
+        if (root.has("dccinfo")) {
+            DccResponseResult dccResponseResult = new DccResponseResult();
+            dccResponseResult.setCardHolderCurrency(root.getString("cardholdercurrency"));
+            dccResponseResult.setCardHolderAmount(root.getDecimal("cardholderamount"));
+            dccResponseResult.setCardHolderRate(root.getDecimal("cardholderrate"));
+            dccResponseResult.setMerchantCurrency(root.getString("merchantcurrency"));
+            dccResponseResult.setMerchantAmount(root.getDecimal("merchantamount"));
+            result.setDccResponseResult(dccResponseResult);
+        }
 
         // 3d secure enrolled
         if(root.has("enrolled")) {
@@ -584,7 +643,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             case DccRateLookup:
                 if(payment instanceof Credit)
                     return "dccrate";
-                 return "realvault-dccrate";
+                return "realvault-dccrate";
             case VerifyEnrolled:
                 return "3ds-verifyenrolled";
             case Reversal:
@@ -603,8 +662,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             case Hold:
                 return "hold";
             case Refund:
-                 if (builder.getAlternativePaymentType() != null)
-                   return "payment-credit";
+                if (builder.getAlternativePaymentType() != null)
+                    return "payment-credit";
                 return "rebate";
             case Release:
                 return "release";
@@ -690,13 +749,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             else{
                 code = String.format("%s|", address.getPostalCode());
             }
-           if (address.isCountry("GB"))
-               if (address.getStreetAddress1() != null) {
-                  code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
-               }
-               else{
-                  code = String.format("%s|", address.getPostalCode().replaceAll("[^0-9]", ""));
-               }
+            if (address.isCountry("GB"))
+                if (address.getStreetAddress1() != null) {
+                    code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
+                }
+                else{
+                    code = String.format("%s|", address.getPostalCode().replaceAll("[^0-9]", ""));
+                }
         }
 
         Element addressNode = et.element("address").set("type", address.getType().equals(AddressType.Billing) ? "billing" : "shipping");
@@ -705,5 +764,4 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         return addressNode;
     }
-
 }

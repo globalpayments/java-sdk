@@ -28,6 +28,7 @@ public class CheckCertification {
         GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 

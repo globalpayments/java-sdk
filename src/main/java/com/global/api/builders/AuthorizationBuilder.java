@@ -13,6 +13,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
@@ -32,6 +33,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal convinienceAmount;
     private String currency;
     private String customerId;
+    private Customer customerData;
+    private ArrayList<String[]> customData;
     private String customerIpAddress;
     private String cvn;
     private DccRateData dccRateData;
@@ -39,13 +42,16 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private DccRateType dccRateType;
     private String dccType;
     private String description;
+    private DecisionManager decisionManager;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
     private EmvChipCondition emvChipCondition;
+    private FraudFilterMode fraudFilterMode;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
     private String invoiceNumber;
     private boolean level2Request;
+    private LodgingData lodgingData;
     private String messageAuthenticationCode;
     private boolean multiCapture;
     private String offlineAuthCode;
@@ -53,6 +59,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     private String posSequenceNumber;
     private String productId;
+    private ArrayList<String[]> productData;
     private RecurringSequence recurringSequence;
     private RecurringType recurringType;
     private boolean requestMultiUseToken;
@@ -107,29 +114,41 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getCustomerIpAddress() {
         return customerIpAddress;
     }
+    public Customer getCustomerData() {
+        return customerData;
+    }
+    public ArrayList<String[]> getCustomData() {
+        return customData;
+    }
     public String getCvn() {
         return cvn;
     }
     public DccRateData getDccRateData() {
-		return dccRateData;
-	}
-	public DccProcessor getDccProcessor() {
-		return dccProcessor;
-	}
-	public DccRateType getDccRateType() {
-		return dccRateType;
-	}
-	public String getDccType() {
-		return dccType;
-	}
-	public String getDescription() {
+        return dccRateData;
+    }
+    public DccProcessor getDccProcessor() {
+        return dccProcessor;
+    }
+    public DccRateType getDccRateType() {
+        return dccRateType;
+    }
+    public String getDccType() {
+        return dccType;
+    }
+    public String getDescription() {
         return description;
+    }
+    public DecisionManager getDecisionManager() {
+        return decisionManager;
     }
     public String getDynamicDescriptor() {
         return dynamicDescriptor;
     }
     public EcommerceInfo getEcommerceInfo() {
         return ecommerceInfo;
+    }
+    public FraudFilterMode getFraudFilterMode() {
+        return fraudFilterMode;
     }
     public BigDecimal getGratuity() {
         return gratuity;
@@ -142,6 +161,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public boolean isLevel2Request() {
         return level2Request;
+    }
+    public LodgingData getLodgingData() {
+        return lodgingData;
     }
     public String getOfflineAuthCode() {
         return offlineAuthCode;
@@ -194,10 +216,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return messageAuthenticationCode;
     }
     public boolean isMultiCapture() {
-		return multiCapture;
-	}
-	public String getPosSequenceNumber() {
+        return multiCapture;
+    }
+    public String getPosSequenceNumber() {
         return posSequenceNumber;
+    }
+    public ArrayList<String[]> getProductData() {
+        return productData;
     }
     public String getTagData() {
         return tagData;
@@ -264,6 +289,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
             else {
                 TransactionReference ref = new TransactionReference();
                 ref.setClientTransactionId(value);
+                if(this.paymentMethod != null) {
+                    ref.setPaymentMethodType(this.paymentMethod.getPaymentMethodType());
+                }
+
                 this.paymentMethod = ref;
             }
         }
@@ -290,6 +319,17 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.customerIpAddress = value;
         return this;
     }
+    public AuthorizationBuilder withCustomerData(Customer value) {
+        this.customerData = value;
+        return this;
+    }
+    public AuthorizationBuilder withCustomData(String... value) {
+        if (this.customData == null) {
+            customData = new ArrayList<String[]>();
+        }
+        this.customData.add(value);
+        return this;
+    }
     public AuthorizationBuilder withCvn(String value) {
         this.cvn = value;
         return this;
@@ -314,12 +354,20 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.description = value;
         return this;
     }
+    public AuthorizationBuilder withDecisionManager(DecisionManager value) {
+        this.decisionManager = value;
+        return this;
+    }
     public AuthorizationBuilder withDynamicDescriptor(String value) {
         this.dynamicDescriptor = value;
         return this;
     }
     public AuthorizationBuilder withEcommerceInfo(EcommerceInfo value) {
         this.ecommerceInfo = value;
+        return this;
+    }
+    public AuthorizationBuilder withFraudFilter(FraudFilterMode value) {
+        this.fraudFilterMode = value;
         return this;
     }
     public AuthorizationBuilder withGratuity(BigDecimal value) {
@@ -332,6 +380,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withInvoiceNumber(String value) {
         this.invoiceNumber = value;
+        return this;
+    }
+    public AuthorizationBuilder withLodgingData(LodgingData value) {
+        this.lodgingData = value;
         return this;
     }
     public AuthorizationBuilder withMessageAuthenticationCode(String value) {
@@ -360,6 +412,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.posSequenceNumber = value;
         return this;
     }
+    public AuthorizationBuilder withProductData(String ... value) {
+        if (this.productData == null) {
+            productData = new ArrayList<String[]>();
+        }
+        this.productData.add(value);
+        return this;
+    }
     public AuthorizationBuilder withProductId(String value) {
         this.productId = value;
         return this;
@@ -368,7 +427,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.paymentMethod = value;
         if (value instanceof EBTCardData && ((EBTCardData)value).getSerialNumber() != null)
             this.transactionModifier = TransactionModifier.Voucher;
-		if (value instanceof CreditCardData && ((CreditCardData) value).getMobileType() != null)
+        if (value instanceof CreditCardData && ((CreditCardData) value).getMobileType() != null)
             this.transactionModifier = TransactionModifier.EncryptedMobile;
         return this;
     }
@@ -504,7 +563,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(EnumSet.of(PaymentMethodType.Debit, PaymentMethodType.Credit))
                 .when("tagData").isNotNull().check("emvChipCondition").isNull();
         this.validations.of(EnumSet.of(TransactionType.Auth, TransactionType.Sale))
-		        .with(TransactionModifier.EncryptedMobile).check("paymentMethod").isNotNull();
+                .with(TransactionModifier.EncryptedMobile).check("paymentMethod").isNotNull();
 
     }
 }

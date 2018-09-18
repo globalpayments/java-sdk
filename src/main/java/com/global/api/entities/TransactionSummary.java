@@ -6,7 +6,7 @@ import java.util.Date;
 import com.global.api.entities.Address;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
-import com.global.api.entities.reporting.LodgingData;
+import com.global.api.entities.LodgingData;
 
 public class TransactionSummary {
 	private String accountDataSource;
