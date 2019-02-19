@@ -672,6 +672,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                         list.add(hydrateTransactionSummary(detail));
                     }
                 }
+                else if(rvalue instanceof TransactionSummaryList) {
+                	for(Element transaction: doc.getAll("Transactions")) {
+                        ((TransactionSummaryList) rvalue).add(hydrateTransactionSummary(transaction));
+                    }
+                }
                 else{
                     rvalue = (TResult) hydrateTransactionSummary(doc);
                 }

@@ -11,6 +11,7 @@ import com.global.api.terminals.builders.TerminalManageBuilder;
 public abstract class DeviceController implements IDisposable {
     protected ITerminalConfiguration settings;
     protected IDeviceCommInterface _interface;
+    public IRequestIdProvider requestIdProvider;
 
     public ConnectionModes getConnectionModes() {
         if(settings != null)
@@ -26,6 +27,7 @@ public abstract class DeviceController implements IDisposable {
     public DeviceController(ITerminalConfiguration settings) throws ConfigurationException {
         settings.validate();
         this.settings = settings;
+        this.requestIdProvider = settings.getRequestIdProvider();
     }
 
     public byte[] send(IDeviceMessage message) throws ApiException {

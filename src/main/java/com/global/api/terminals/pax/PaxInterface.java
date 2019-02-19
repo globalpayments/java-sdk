@@ -109,110 +109,109 @@ class PaxInterface implements IDeviceInterface {
     //</editor-fold>
 
     //<editor-fold desc="CREDIT MESSAGES">
-    public TerminalAuthBuilder creditAuth(int referenceNumber) throws ApiException {
-        return creditAuth(referenceNumber, null);
+    public TerminalAuthBuilder creditAuth() throws ApiException {
+        return creditAuth(null);
     }
-    public TerminalAuthBuilder creditAuth(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit).withReferenceNumber(referenceNumber).withAmount(amount);
-    }
-
-    public TerminalManageBuilder creditCapture(int referenceNumber) throws ApiException {
-        return creditCapture(referenceNumber, null);
-    }
-    public TerminalManageBuilder creditCapture(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit).withAmount(amount);
     }
 
-    public TerminalAuthBuilder creditRefund(int referenceNumber) throws ApiException {
-        return creditRefund(referenceNumber, null);
+    public TerminalManageBuilder creditCapture() throws ApiException {
+        return creditCapture(null);
     }
-    public TerminalAuthBuilder creditRefund(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit).withReferenceNumber(referenceNumber).withAmount(amount);
-    }
-
-    public TerminalAuthBuilder creditSale(int referenceNumber) throws ApiException {
-        return creditSale(referenceNumber, null);
-    }
-    public TerminalAuthBuilder creditSale(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Credit).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withAmount(amount);
     }
 
-    public TerminalAuthBuilder creditVerify(int referenceNumber) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Verify, PaymentMethodType.Credit).withReferenceNumber(referenceNumber);
+    public TerminalAuthBuilder creditRefund() throws ApiException {
+        return creditRefund(null);
+    }
+    public TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit).withAmount(amount);
     }
 
-    public TerminalManageBuilder creditVoid(int referenceNumber) throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit).withReferenceNumber(referenceNumber);
+    public TerminalAuthBuilder creditSale() throws ApiException {
+        return creditSale(null);
+    }
+    public TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Credit).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder creditVerify() throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Verify, PaymentMethodType.Credit);
+    }
+
+    public TerminalManageBuilder creditVoid() throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
     }
     //</editor-fold>
 
     //<editor-fold desc="DEBIT MESSAGES">
-    public TerminalAuthBuilder debitRefund(int referenceNumber) throws ApiException {
-        return debitRefund(referenceNumber, null);
+    public TerminalAuthBuilder debitRefund() throws ApiException {
+        return debitRefund(null);
     }
-    public TerminalAuthBuilder debitRefund(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit).withAmount(amount);
     }
 
-    public TerminalAuthBuilder debitSale(int referenceNumber) throws ApiException {
-        return debitSale(referenceNumber, null);
+    public TerminalAuthBuilder debitSale() throws ApiException {
+        return debitSale(null);
     }
-    public TerminalAuthBuilder debitSale(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit).withAmount(amount);
     }
     //</editor-fold>
 
     //<editor-fold desc="EBT MESSAGES">
-    public TerminalAuthBuilder ebtBalance(int referenceNumber) {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.EBT).withReferenceNumber(referenceNumber);
+    public TerminalAuthBuilder ebtBalance() {
+        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.EBT);
     }
 
-    public TerminalAuthBuilder ebtPurchase(int referenceNumber) {
-        return ebtPurchase(referenceNumber, null);
+    public TerminalAuthBuilder ebtPurchase() {
+        return ebtPurchase(null);
     }
-    public TerminalAuthBuilder ebtPurchase(int referenceNumber, BigDecimal amount) {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
-    }
-
-    public TerminalAuthBuilder ebtRefund(int referenceNumber) {
-        return ebtRefund(referenceNumber, null);
-    }
-    public TerminalAuthBuilder ebtRefund(int referenceNumber, BigDecimal amount) {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalAuthBuilder ebtPurchase(BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT).withAmount(amount);
     }
 
-    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber) {
-        return ebtWithdrawal(referenceNumber, null);
+    public TerminalAuthBuilder ebtRefund() {
+        return ebtRefund(null);
     }
-    public TerminalAuthBuilder ebtWithdrawal(int referenceNumber, BigDecimal amount) {
-        return new TerminalAuthBuilder(TransactionType.BenefitWithdrawal, PaymentMethodType.EBT).withReferenceNumber(referenceNumber).withAmount(amount);
+    public TerminalAuthBuilder ebtRefund(BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT).withAmount(amount);
+    }
+
+    public TerminalAuthBuilder ebtWithdrawal() {
+        return ebtWithdrawal(null);
+    }
+    public TerminalAuthBuilder ebtWithdrawal(BigDecimal amount) {
+        return new TerminalAuthBuilder(TransactionType.BenefitWithdrawal, PaymentMethodType.EBT).withAmount(amount);
     }
     //</editor-fold>
 
     //<editor-fold desc="GIFT MESSAGES">
-    public TerminalAuthBuilder giftSale(int referenceNumber) throws ApiException {
-        return giftSale(referenceNumber, null);
+    public TerminalAuthBuilder giftSale() throws ApiException {
+        return giftSale(null);
     }
-    public TerminalAuthBuilder giftSale(int referenceNumber, BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withAmount(amount).withCurrency(CurrencyType.Currency);
+    public TerminalAuthBuilder giftSale(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Gift).withAmount(amount).withCurrency(CurrencyType.Currency);
     }
 
-    public TerminalAuthBuilder giftAddValue(int referenceNumber) throws ApiException {
-        return giftAddValue(referenceNumber, null);
+    public TerminalAuthBuilder giftAddValue() throws ApiException {
+        return giftAddValue(null);
     }
-    public TerminalAuthBuilder giftAddValue(int referenceNumber, BigDecimal amount) throws ApiException {
+    public TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift)
-                .withReferenceNumber(referenceNumber)
                 .withCurrency(CurrencyType.Currency)
                 .withAmount(amount);
     }
 
-    public TerminalManageBuilder giftVoid(int referenceNumber) throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withCurrency(CurrencyType.Currency);
+    public TerminalManageBuilder giftVoid() throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Gift).withCurrency(CurrencyType.Currency);
     }
 
-    public TerminalAuthBuilder giftBalance(int referenceNumber) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Gift).withReferenceNumber(referenceNumber).withCurrency(CurrencyType.Currency);
+    public TerminalAuthBuilder giftBalance() throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Gift).withCurrency(CurrencyType.Currency);
     }
     //</editor-fold>
 

@@ -8,6 +8,8 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.tests.terminals.hpa.RequestIdProvider;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -23,6 +25,7 @@ public class PaxBatchTests {
         deviceConfig.setConnectionMode(ConnectionModes.HTTP);
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);
+        deviceConfig.setRequestIdProvider(new RequestIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);

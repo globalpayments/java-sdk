@@ -5,7 +5,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
-import com.global.api.terminals.heartSIP.HeartSipController;
+import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.pax.PaxController;
 import com.global.api.utils.StringUtils;
 
@@ -18,6 +18,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private String ipAddress;
     private int port;
     private DeviceType deviceType;
+    private IRequestIdProvider requestIdProvider;
 
     public ConnectionModes getConnectionMode() {
         return connectionMode;
@@ -67,6 +68,12 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void setDeviceType(DeviceType deviceType) {
         this.deviceType = deviceType;
     }
+    public IRequestIdProvider getRequestIdProvider() {
+		return requestIdProvider;
+	}
+    public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
+		this.requestIdProvider = requestIdProvider;
+	}
 
     public ConnectionConfig(){
         timeout = 30000;
@@ -77,8 +84,8 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
             case PAX_S300:
                 services.setDeviceController(new PaxController(this));
                 break;
-            case HSIP_ISC250:
-                services.setDeviceController(new HeartSipController(this));
+            case HPA_ISC250:
+                services.setDeviceController(new HpaController(this));
             default:
                 break;
         }

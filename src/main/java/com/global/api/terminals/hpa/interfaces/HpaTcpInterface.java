@@ -1,4 +1,4 @@
-package com.global.api.terminals.heartSIP.interfaces;
+package com.global.api.terminals.hpa.interfaces;
 
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
@@ -17,7 +17,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HeartSipTcpInterface implements IDeviceCommInterface {
+public class HpaTcpInterface implements IDeviceCommInterface {
     private Socket client;
     private DataOutputStream out;
     private InputStream in;
@@ -32,7 +32,7 @@ public class HeartSipTcpInterface implements IDeviceCommInterface {
         this.onMessageSent = onMessageSent;
     }
 
-    public HeartSipTcpInterface(ITerminalConfiguration settings) {
+    public HpaTcpInterface(ITerminalConfiguration settings) {
         this.settings = settings;
         this.await = new AutoResetEvent(false);
 

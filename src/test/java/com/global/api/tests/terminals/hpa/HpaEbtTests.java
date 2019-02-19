@@ -1,14 +1,16 @@
-package com.global.api.tests.terminals.heartsip;
+package com.global.api.tests.terminals.hpa;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+
 import org.junit.After;
 import org.junit.Test;
 
@@ -17,17 +19,18 @@ import java.math.BigDecimal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class HsipDebitTests {
-    private static IDeviceInterface device;
+public class HpaEbtTests {
+    private IDeviceInterface device;
     private String expectedMessage = "";
 
-    public HsipDebitTests() throws ApiException {
+    public HpaEbtTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
-        deviceConfig.setDeviceType(DeviceType.HSIP_ISC250);
+        deviceConfig.setDeviceType(DeviceType.HPA_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("10.12.220.130");
+        deviceConfig.setIpAddress("10.12.220.39");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(30000);
+        deviceConfig.setRequestIdProvider(new RequestIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -48,28 +51,35 @@ public class HsipDebitTests {
     }
 
     @Test
-    public void debitSale() throws ApiException {
-        TerminalResponse response = device.debitSale(5, new BigDecimal("10"))
+    public void ebtPurchase() throws ApiException {
+        TerminalResponse response = device.ebtPurchase(new BigDecimal("10"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test(expected = BuilderException.class)
-    public void debitSaleNoAmount() throws ApiException {
-        device.debitSale(5).execute();
+    @Test
+    public void ebtBalanceInquiry() throws ApiException {
+        TerminalResponse response = device.ebtBalance().execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
-    public void debitRefund() throws ApiException {
-        TerminalResponse response = device.debitRefund(6, new BigDecimal("10")).execute();
+    public void ebtRefund() throws ApiException {
+        TerminalResponse response = device.ebtRefund(new BigDecimal("10")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
     @Test(expected = BuilderException.class)
-    public void debitRefund_NoAmount() throws ApiException {
-        device.debitRefund(5).execute();
+    public void ebtRefundAllowDup() throws ApiException {
+    	device.ebtRefund().withAllowDuplicates(true).execute();
+    }
+
+    @Test(expected = UnsupportedTransactionException.class)
+    public void ebtCashBenefitWithdrawal() throws ApiException {
+    	device.ebtWithdrawal(new BigDecimal("10")).execute();
     }
 }

@@ -8,6 +8,7 @@ import com.global.api.terminals.TerminalResponse;
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
     protected Integer referenceNumber;
+    protected Integer requestId;
 
     public PaymentMethodType getPaymentMethodType() {
         return paymentMethodType;
@@ -19,6 +20,10 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     public T withReferenceNumber(Integer value) {
         this.referenceNumber = value;
         return (T)this;
+    }
+    
+    public Integer getRequestId() {
+        return requestId;
     }
 
     TerminalBuilder(TransactionType type, PaymentMethodType paymentType) {

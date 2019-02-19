@@ -1,4 +1,4 @@
-package com.global.api.terminals.heartSIP;
+package com.global.api.terminals.hpa;
 
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -9,20 +9,20 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
-import com.global.api.terminals.heartSIP.responses.SipBaseResponse;
-import com.global.api.terminals.heartSIP.responses.SipDeviceResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
-import com.global.api.terminals.heartSIP.interfaces.HeartSipTcpInterface;
+import com.global.api.terminals.hpa.interfaces.HpaTcpInterface;
+import com.global.api.terminals.hpa.responses.SipBaseResponse;
+import com.global.api.terminals.hpa.responses.SipDeviceResponse;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
 import com.global.api.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 
-public class HeartSipController extends DeviceController implements IDisposable {
+public class HpaController extends DeviceController implements IDisposable {
     IDeviceInterface _device;
 
     private IMessageSentInterface onMessageSent;
@@ -32,21 +32,21 @@ public class HeartSipController extends DeviceController implements IDisposable 
 
     public MessageFormat getFormat() {
         if(settings != null)
-            return getConnectionModes() == ConnectionModes.TCP_IP ? MessageFormat.HeartSIP : MessageFormat.Visa2nd;
+            return getConnectionModes() == ConnectionModes.TCP_IP ? MessageFormat.HPA : MessageFormat.Visa2nd;
         return MessageFormat.Visa2nd;
     }
 
     public IDeviceInterface configureInterface() throws ConfigurationException {
         if(_device == null)
-            _device = new HeartSipInterface(this);
+            _device = new HpaInterface(this);
         return _device;
     }
 
-    public HeartSipController(ITerminalConfiguration settings) throws ConfigurationException {
+    public HpaController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
         switch(settings.getConnectionMode()) {
             case TCP_IP:
-                _interface = new HeartSipTcpInterface(settings);
+                _interface = new HpaTcpInterface(settings);
                 break;
             default:
                 throw new ConfigurationException("Specified connection method not supported for HeartSIP.");
@@ -74,12 +74,16 @@ public class HeartSipController extends DeviceController implements IDisposable 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
         ElementTree et = new ElementTree();
         String transactionType = mapTransactionType(builder.getTransactionType());
+        Integer requestId = builder.getRequestId();
+        if(requestId == null && requestIdProvider != null) {
+            requestId = requestIdProvider.getRequestId();
+        }
 
         Element request = et.element("SIP");
         et.subElement(request, "Version").text("1.0");
         et.subElement(request, "ECRId").text("1004");
         et.subElement(request, "Request").text(transactionType);
-        et.subElement(request, "RequestId", builder.getReferenceNumber());
+        et.subElement(request, "RequestId", requestId);
         et.subElement(request, "CardGroup", builder.getPaymentMethodType());
         et.subElement(request, "ConfirmAmount").text("0");
         et.subElement(request, "BaseAmount").text(StringUtils.toNumeric(builder.getAmount()));
@@ -100,13 +104,18 @@ public class HeartSipController extends DeviceController implements IDisposable 
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
         ElementTree et = new ElementTree();
         String transactionType = mapTransactionType(builder.getTransactionType());
+        Integer requestId = builder.getRequestId();
+        if(requestId == null && requestIdProvider != null) {
+            requestId = requestIdProvider.getRequestId();
+        }
 
         Element request = et.element("SIP");
         et.subElement(request, "Version").text("1.0");
         et.subElement(request, "ECRId").text("1004");
         et.subElement(request, "Request").text(mapTransactionType(builder.getTransactionType()));
         et.subElement(request, "TransactionId", builder.getTransactionId());
-
+        et.subElement(request, "RequestId" , requestId);
+        
         if (builder.getGratuity() != null)
             et.subElement(request, "TipAmount").text(StringUtils.toNumeric(builder.getGratuity()));
 
@@ -116,21 +125,21 @@ public class HeartSipController extends DeviceController implements IDisposable 
     private String mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
         switch (type) {
             case Sale:
-                return HsipMsgId.CREDIT_SALE.getValue();
+                return HpaMsgId.CREDIT_SALE.getValue();
             case Verify:
-                return HsipMsgId.CARD_VERIFY.getValue();
+                return HpaMsgId.CARD_VERIFY.getValue();
             case Refund:
-                return HsipMsgId.CREDIT_REFUND.getValue();
+                return HpaMsgId.CREDIT_REFUND.getValue();
             case Void:
-                return HsipMsgId.CREDIT_VOID.getValue();
+                return HpaMsgId.CREDIT_VOID.getValue();
             case Balance:
-                return HsipMsgId.BALANCE.getValue();
+                return HpaMsgId.BALANCE.getValue();
             case AddValue:
-                return HsipMsgId.ADD_VALUE.getValue();
+                return HpaMsgId.ADD_VALUE.getValue();
             case Auth:
-                return HsipMsgId.CREDIT_AUTH.getValue();
+                return HpaMsgId.CREDIT_AUTH.getValue();
             case Edit:
-                return HsipMsgId.TIP_ADJUST.getValue();
+                return HpaMsgId.TIP_ADJUST.getValue();
             default:
                 throw new UnsupportedTransactionException();
         }

@@ -1,6 +1,6 @@
 package com.global.api.entities.enums;
 
-public enum HsipMsgId implements IStringConstant {
+public enum HpaMsgId implements IStringConstant {
     LANE_OPEN("LaneOpen"),
     LANE_CLOSE("LaneClose"),
     RESET("Reset"),
@@ -19,7 +19,7 @@ public enum HsipMsgId implements IStringConstant {
     SIGNATURE_FORM("SIGNATUREFORM");
 
     String value;
-    HsipMsgId(String value) { this.value = value; }
+    HpaMsgId(String value) { this.value = value; }
     public byte[] getBytes() { return value.getBytes(); }
     public String getValue() { return value; }
 }

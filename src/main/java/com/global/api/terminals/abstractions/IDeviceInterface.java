@@ -26,37 +26,37 @@ public interface IDeviceInterface extends IDisposable {
     IBatchCloseResponse batchClose() throws ApiException;
 
     // credit calls
-    TerminalAuthBuilder creditAuth(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalManageBuilder creditCapture(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder creditRefund(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder creditSale(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder creditAuth(int referenceNumber) throws ApiException;
-    TerminalManageBuilder creditCapture(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder creditRefund(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder creditSale(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder creditVerify(int referenceNumber) throws ApiException;
-    TerminalManageBuilder creditVoid(int referenceNumber) throws ApiException;
+    TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException;
+    TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder creditAuth() throws ApiException;
+    TerminalManageBuilder creditCapture() throws ApiException;
+    TerminalAuthBuilder creditRefund() throws ApiException;
+    TerminalAuthBuilder creditSale() throws ApiException;
+    TerminalAuthBuilder creditVerify() throws ApiException;
+    TerminalManageBuilder creditVoid() throws ApiException;
 
     // debit calls
-    TerminalAuthBuilder debitSale(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder debitRefund(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder debitSale(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder debitRefund(int referenceNumber) throws ApiException;
+    TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder debitSale() throws ApiException;
+    TerminalAuthBuilder debitRefund() throws ApiException;
 
     // gift calls
-    TerminalAuthBuilder giftSale(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder giftSale(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder giftAddValue(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder giftAddValue(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalManageBuilder giftVoid(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder giftBalance(int referenceNumber) throws ApiException;
+    TerminalAuthBuilder giftSale(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder giftSale() throws ApiException;
+    TerminalAuthBuilder giftAddValue() throws ApiException;
+    TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException;
+    TerminalManageBuilder giftVoid() throws ApiException;
+    TerminalAuthBuilder giftBalance() throws ApiException;
 
     // ebt calls
-    TerminalAuthBuilder ebtBalance(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder ebtPurchase(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder ebtPurchase(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder ebtRefund(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder ebtRefund(int referenceNumber, BigDecimal amount) throws ApiException;
-    TerminalAuthBuilder ebtWithdrawal(int referenceNumber) throws ApiException;
-    TerminalAuthBuilder ebtWithdrawal(int referenceNumber, BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder ebtBalance() throws ApiException;
+    TerminalAuthBuilder ebtPurchase() throws ApiException;
+    TerminalAuthBuilder ebtPurchase(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder ebtRefund() throws ApiException;
+    TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder ebtWithdrawal() throws ApiException;
+    TerminalAuthBuilder ebtWithdrawal(BigDecimal amount) throws ApiException;
 }

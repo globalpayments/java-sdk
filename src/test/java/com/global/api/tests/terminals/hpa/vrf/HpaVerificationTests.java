@@ -1,4 +1,4 @@
-package com.global.api.tests.terminals.heartsip.vrf;
+package com.global.api.tests.terminals.hpa.vrf;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
@@ -9,6 +9,8 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.tests.terminals.hpa.RequestIdProvider;
+
 import org.junit.After;
 import org.junit.Test;
 
@@ -17,15 +19,16 @@ import java.math.BigDecimal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class HsipVerificationTests {
+public class HpaVerificationTests {
     private IDeviceInterface _device;
 
-    public HsipVerificationTests() throws ApiException {
+    public HpaVerificationTests() throws ApiException {
         ConnectionConfig connectionConfig = new ConnectionConfig();
-        connectionConfig.setDeviceType(DeviceType.HSIP_ISC250);
+        connectionConfig.setDeviceType(DeviceType.HPA_ISC250);
         connectionConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        connectionConfig.setIpAddress("10.12.220.130");
+        connectionConfig.setIpAddress("10.12.220.39");
         connectionConfig.setPort(12345);
+        connectionConfig.setRequestIdProvider(new RequestIdProvider());
 
         _device = DeviceService.create(connectionConfig);
         assertNotNull(_device);
@@ -65,7 +68,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase01() throws ApiException {
-        TerminalResponse response = _device.creditSale(1, new BigDecimal("23"))
+        TerminalResponse response = _device.creditSale(new BigDecimal("23"))
                 .withSignatureCapture(true)
                 .withAllowDuplicates(true)
                 .execute();
@@ -102,7 +105,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase03() throws ApiException {
-        TerminalResponse response = _device.creditSale(2, new BigDecimal("25"))
+        TerminalResponse response = _device.creditSale(new BigDecimal("25"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -125,7 +128,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase04() throws ApiException {
-        TerminalResponse response = _device.creditSale(2, new BigDecimal("90.08"))
+        TerminalResponse response = _device.creditSale(new BigDecimal("90.08"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -149,7 +152,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase05() throws ApiException {
-        TerminalResponse response = _device.creditSale(2, new BigDecimal("155"))
+        TerminalResponse response = _device.creditSale(new BigDecimal("155"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -170,13 +173,13 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase06() throws ApiException {
-        TerminalResponse response = _device.creditSale(2, new BigDecimal("10"))
+        TerminalResponse response = _device.creditSale(new BigDecimal("10"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        TerminalResponse voidResponse = _device.creditVoid(2)
+        TerminalResponse voidResponse = _device.creditVoid()
                 .withTransactionId(response.getTransactionId())
                 .execute();
         assertNotNull(voidResponse);
@@ -209,7 +212,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase09() throws ApiException {
-        TerminalResponse response = _device.creditRefund(1, new BigDecimal("9"))
+        TerminalResponse response = _device.creditRefund(new BigDecimal("9"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -239,7 +242,7 @@ public class HsipVerificationTests {
     */
     @Test
     public void testCase10a() throws ApiException {
-        TerminalResponse response = _device.giftBalance(1).execute();
+        TerminalResponse response = _device.giftBalance().execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         assertEquals(new BigDecimal("10"), response.getBalanceAmount());
@@ -250,7 +253,7 @@ public class HsipVerificationTests {
 
     @Test
     public void testCase10b() throws ApiException {
-        TerminalResponse response = _device.giftAddValue(1, new BigDecimal("8")).execute();
+        TerminalResponse response = _device.giftAddValue(new BigDecimal("8")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -260,7 +263,7 @@ public class HsipVerificationTests {
 
     @Test
     public void testCase10c() throws ApiException {
-        TerminalResponse response = _device.giftSale(1, new BigDecimal("1"))
+        TerminalResponse response = _device.giftSale(new BigDecimal("1"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);

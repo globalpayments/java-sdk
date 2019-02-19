@@ -8,7 +8,7 @@ import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
-import com.global.api.terminals.heartSIP.HeartSipController;
+import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.pax.PaxController;
 
 import java.util.HashMap;

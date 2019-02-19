@@ -1,4 +1,4 @@
-package com.global.api.terminals.heartSIP.responses;
+package com.global.api.terminals.hpa.responses;
 
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;

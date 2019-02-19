@@ -4,6 +4,7 @@ import com.global.api.entities.ActivityReport;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.builders.TransactionReportBuilder;
+import com.global.api.entities.TransactionSummaryList;
 
 public class ReportingService {
     public static TransactionReportBuilder<ActivityReport> activity() {
@@ -15,8 +16,8 @@ public class ReportingService {
                 .withTransactionId(transactionId);
     }
 
-    public static TransactionReportBuilder<TransactionSummary> findTransactions() {
-        return new TransactionReportBuilder<TransactionSummary>(ReportType.FindTransactions, TransactionSummary.class);
+    public static TransactionReportBuilder<TransactionSummaryList> findTransactions() {
+        return new TransactionReportBuilder<TransactionSummaryList>(ReportType.FindTransactions, TransactionSummaryList.class);
     }
 
     public static TransactionReportBuilder<TransactionSummary> findTransactions(String transactionId) {

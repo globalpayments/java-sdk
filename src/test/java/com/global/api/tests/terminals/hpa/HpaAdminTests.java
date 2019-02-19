@@ -1,4 +1,4 @@
-package com.global.api.tests.terminals.heartsip;
+package com.global.api.tests.terminals.hpa;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
@@ -15,20 +15,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-
 import static org.junit.Assert.*;
 
-public class HsipAdminTests {
+public class HpaAdminTests {
     private IDeviceInterface device;
     private String expectedMessage = "";
 
-    public HsipAdminTests() throws ApiException {
+    public HpaAdminTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
-        deviceConfig.setDeviceType(DeviceType.HSIP_ISC250);
+        deviceConfig.setDeviceType(DeviceType.HPA_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("10.12.220.130");
+        deviceConfig.setIpAddress("10.12.220.39");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(60000);
+        deviceConfig.setRequestIdProvider(new RequestIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -40,7 +40,7 @@ public class HsipAdminTests {
             }
         });
     }
-
+    
     @After
     public void tearDown() throws ApiException {
         this.expectedMessage = "";
@@ -49,14 +49,11 @@ public class HsipAdminTests {
 
     @Test
     public void cancel() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reset</Request></SIP>";
         device.cancel();
     }
 
     @Test
     public void initialize() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>GetAppInfoReport</Request></SIP>";
-
         IInitializeResponse response = device.initialize();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -65,8 +62,6 @@ public class HsipAdminTests {
 
     @Test
     public void openLane() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>LaneOpen</Request></SIP>";
-
         IDeviceResponse response = device.openLane();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -74,8 +69,6 @@ public class HsipAdminTests {
 
     @Test
     public void closeLane() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>LaneClose</Request></SIP>";
-
         IDeviceResponse response = device.closeLane();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -83,8 +76,6 @@ public class HsipAdminTests {
 
     @Test
     public void reset() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reset</Request></SIP>";
-
         IDeviceResponse response = device.reset();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -92,16 +83,13 @@ public class HsipAdminTests {
 
     @Test @Ignore
     public void reboot() throws ApiException {
-        this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reboot</Request></SIP>";
         device.reboot();
     }
 
     @Test
     public void batchClose() throws ApiException {
         device.closeLane();
-
         this.expectedMessage = "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>CloseBatch</Request></SIP>";
-
         IBatchCloseResponse response = device.batchClose();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -114,7 +102,7 @@ public class HsipAdminTests {
 
     @Test
     public void getSignatureIndirect() throws ApiException {
-        TerminalResponse response = device.creditSale(1, new BigDecimal("120"))
+        TerminalResponse response = device.creditSale(new BigDecimal("120"))
                 .withSignatureCapture(true)
                 .execute();
         assertNotNull(response);
@@ -126,7 +114,6 @@ public class HsipAdminTests {
     @Test
     public void promptForSignature() throws ApiException {
         device.openLane();
-
         ISignatureResponse response = device.promptForSignature();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());

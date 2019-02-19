@@ -74,12 +74,16 @@ public class PaxController extends DeviceController {
 
     //<editor-fold desc="OVERRIDES">
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
+        Integer requestId = builder.getRequestId();
+        if(requestId == null && requestIdProvider != null) {
+            requestId = requestIdProvider.getRequestId();
+        }
         // create sub groups
         AmountRequest amounts = new AmountRequest();
         AccountRequest account = new AccountRequest();
         AvsRequest avs = new AvsRequest();
         TraceRequest trace = new TraceRequest();
-        trace.setReferenceNumber(builder.getReferenceNumber().toString());
+        trace.setReferenceNumber(requestId.toString());
         CashierSubGroup cashier = new CashierSubGroup();
         CommercialRequest commercial = new CommercialRequest();
         EcomSubGroup ecom = new EcomSubGroup();
@@ -158,10 +162,14 @@ public class PaxController extends DeviceController {
     }
 
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
+        Integer requestId = builder.getRequestId();
+        if(requestId == null && requestIdProvider != null) {
+            requestId = requestIdProvider.getRequestId();
+        }
         AmountRequest amounts = new AmountRequest();
         AccountRequest account = new AccountRequest();
         TraceRequest trace = new TraceRequest();
-        trace.setReferenceNumber(builder.getReferenceNumber().toString());
+        trace.setReferenceNumber(requestId.toString());
         ExtDataSubGroup extData = new ExtDataSubGroup();
 
         // amounts
