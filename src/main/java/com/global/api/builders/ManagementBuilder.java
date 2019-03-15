@@ -15,6 +15,7 @@ import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
+import java.util.HashMap;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
 	private AlternativePaymentType alternativePaymentType;
@@ -30,6 +31,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private ReasonCode reasonCode;
     private BigDecimal taxAmount;
     private TaxType taxType;
+    private HashMap<String, String[]> supplementaryData;
 
     public AlternativePaymentType getAlternativePaymentType() {
 		return alternativePaymentType;
@@ -75,6 +77,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ReasonCode getReasonCode() {
         return reasonCode;
+    }
+    public HashMap<String, String[]> getSupplementaryData() {
+        return supplementaryData;
     }
     public BigDecimal getTaxAmount() {
         return taxAmount;
@@ -133,6 +138,13 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withReasonCode(ReasonCode value) {
         this.reasonCode = value;
+        return this;
+    }
+    public ManagementBuilder withSupplementaryData(String type, String... value) {
+        if (this.supplementaryData == null) {
+            supplementaryData = new HashMap<String, String[]>();
+        }
+        this.supplementaryData.put(type, value);
         return this;
     }
     public ManagementBuilder withTaxAmount(BigDecimal value) {
