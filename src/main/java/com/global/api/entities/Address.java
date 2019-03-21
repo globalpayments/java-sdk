@@ -9,6 +9,7 @@ public class Address {
     private String streetAddress2;
     private String streetAddress3;
     private String city;
+    private String name;
     private String province;
     private String postalCode;
     private String country;
@@ -43,6 +44,12 @@ public class Address {
     }
     public void setCity(String city) {
         this.city = city;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
     }
     public String getProvince() {
         return province;

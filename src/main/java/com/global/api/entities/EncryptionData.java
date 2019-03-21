@@ -41,7 +41,7 @@ public class EncryptionData {
     }
     public static EncryptionData version2(String ktb, String trackNumber) {
         EncryptionData rvalue = new EncryptionData();
-        rvalue.setVersion("01");
+        rvalue.setVersion("02");
         rvalue.setTrackNumber(trackNumber);
         rvalue.setKtb(ktb);
         return rvalue;

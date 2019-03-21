@@ -1,6 +1,7 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.CvnPresenceIndicator;
+import com.global.api.entities.enums.EbtCardType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.utils.StringUtils;
 
@@ -71,5 +72,10 @@ public class EBTCardData extends EBT implements ICardData {
     }
     public String getShortExpiry() {
         return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+    }
+
+    public EBTCardData() {}
+    public EBTCardData(EbtCardType cardType) {
+        ebtCardType = cardType;
     }
 }

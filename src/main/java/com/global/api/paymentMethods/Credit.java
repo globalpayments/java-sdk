@@ -9,6 +9,7 @@ import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.utils.CardUtils;
 
 import java.math.BigDecimal;
 
@@ -18,7 +19,15 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
     protected ThreeDSecure threeDSecure;
     private String token;
+    protected String cardType = "Unknown";
+    protected boolean fleetCard;
 
+    public String getCardType() {
+        return cardType;
+    }
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
+    }
     public EncryptionData getEncryptionData() {
         return encryptionData;
     }
@@ -44,13 +53,20 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public void setToken(String token) {
         this.token = token;
     }
+    public boolean isFleet() {
+        return fleetCard;
+    }
 
-    public AuthorizationBuilder authorize() { return authorize(null); }
+    public AuthorizationBuilder authorize() { return authorize(null, false); }
     public AuthorizationBuilder authorize(BigDecimal amount) {
+        return authorize(amount, false);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
         return new AuthorizationBuilder(TransactionType.Auth, this)
                 .withAmount(amount != null ? amount : threeDSecure != null ? threeDSecure.getAmount() : null)
                 .withCurrency(threeDSecure != null ? threeDSecure.getCurrency() : null)
-                .withOrderId(threeDSecure != null ? threeDSecure.getOrderId() : null);
+                .withOrderId(threeDSecure != null ? threeDSecure.getOrderId() : null)
+                .withAmountEstimated(isEstimated);
     }
 
     public AuthorizationBuilder charge() { return charge(null); }

@@ -1,14 +1,28 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.TransactionType;
+import com.global.api.network.entities.NtsData;
+
+import java.math.BigDecimal;
 
 public class TransactionReference implements IPaymentMethod {
 	private String alternativePaymentType;
+	private String acquiringInstitutionId;
     private String authCode;
-    private String orderId;
-    private PaymentMethodType paymentMethodType;
-    private String transactionId;
+    private int batchNumber;
     private String clientTransactionId;
+    private String messageTypeIndicator;
+    private NtsData ntsData;
+    private String orderId;
+    private BigDecimal originalAmount;
+    private IPaymentMethod originalPaymentMethod;
+    private String originalProcessingCode;
+    private String originalTransactionTime;
+    private PaymentMethodType paymentMethodType;
+    private int sequenceNumber;
+    private String systemTraceAuditNumber;
+    private String transactionId;
 
     public String getAlternativePaymentType() {
 		return alternativePaymentType;
@@ -17,11 +31,49 @@ public class TransactionReference implements IPaymentMethod {
 		this.alternativePaymentType = alternativePaymentType;
 	}
 
+    public String getAcquiringInstitutionId() {
+        return acquiringInstitutionId;
+    }
+    public void setAcquiringInstitutionId(String acquiringInstitutionId) {
+        this.acquiringInstitutionId = acquiringInstitutionId;
+    }
+
     public String getAuthCode() {
         return authCode;
     }
     public void setAuthCode(String authCode) {
         this.authCode = authCode;
+    }
+
+    public int getBatchNumber() {
+        return batchNumber;
+    }
+    public void setBatchNumber(int batchNumber) {
+        this.batchNumber = batchNumber;
+    }
+
+    public String getClientTransactionId() {
+        return clientTransactionId;
+    }
+    public void setClientTransactionId(String clientTransactionId) {
+        this.clientTransactionId = clientTransactionId;
+    }
+
+    public String getMessageTypeIndicator() {
+        return messageTypeIndicator;
+    }
+    public void setMessageTypeIndicator(String messageTypeIndicator) {
+        this.messageTypeIndicator = messageTypeIndicator;
+    }
+
+    public NtsData getNtsData() {
+        return ntsData;
+    }
+    public void setNtsData(NtsData ntsData) {
+        this.ntsData = ntsData;
+    }
+    public void setNtsData(String ntsData) {
+        this.ntsData = NtsData.fromString(ntsData);
     }
 
     public String getOrderId() {
@@ -31,11 +83,56 @@ public class TransactionReference implements IPaymentMethod {
         this.orderId = orderId;
     }
 
+    public BigDecimal getOriginalAmount() {
+        return originalAmount;
+    }
+    public void setOriginalAmount(BigDecimal originalAmount) {
+        this.originalAmount = originalAmount;
+    }
+
+    public IPaymentMethod getOriginalPaymentMethod() {
+        return originalPaymentMethod;
+    }
+    public void setOriginalPaymentMethod(IPaymentMethod originalPaymentMethod) {
+        this.originalPaymentMethod = originalPaymentMethod;
+    }
+
+    public String getOriginalProcessingCode() {
+        return originalProcessingCode;
+    }
+    public void setOriginalProcessingCode(String originalProcessingCode) {
+        this.originalProcessingCode = originalProcessingCode;
+    }
+
+    public String getOriginalTransactionTime() {
+        return originalTransactionTime;
+    }
+    public void setOriginalTransactionTime(String originalTransactionTime) {
+        this.originalTransactionTime = originalTransactionTime;
+    }
+
     public PaymentMethodType getPaymentMethodType() {
+        if(originalPaymentMethod != null) {
+            return originalPaymentMethod.getPaymentMethodType();
+        }
         return paymentMethodType;
     }
     public void setPaymentMethodType(PaymentMethodType paymentMethodType) {
         this.paymentMethodType = paymentMethodType;
+    }
+
+    public int getSequenceNumber() {
+        return sequenceNumber;
+    }
+    public void setSequenceNumber(int sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
+
+    public String getSystemTraceAuditNumber() {
+        return systemTraceAuditNumber;
+    }
+    public void setSystemTraceAuditNumber(String systemTraceAuditNumber) {
+        this.systemTraceAuditNumber = systemTraceAuditNumber;
     }
 
     public String getTransactionId() {
@@ -43,12 +140,5 @@ public class TransactionReference implements IPaymentMethod {
     }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
-    }
-
-    public String getClientTransactionId() {
-        return clientTransactionId;
-    }
-    public void setClientTransactionId(String clientTransactionId) {
-        this.clientTransactionId = clientTransactionId;
     }
 }

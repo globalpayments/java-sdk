@@ -81,16 +81,16 @@ abstract class Gateway {
                 requestStream.flush();
                 requestStream.close();
             }
-            else {
-				if (this.enableLogging)
-					System.out.println("Request: " + endpoint);
+            else if (this.enableLogging) {
+                    System.out.println("Request: " + endpoint);
             }
 
             InputStream responseStream = conn.getInputStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
-			if (this.enableLogging)
-				System.out.println("Response: " + rawResponse);
+			if (this.enableLogging) {
+                System.out.println("Response: " + rawResponse);
+            }
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
@@ -114,8 +114,9 @@ abstract class Gateway {
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
             OutputStream out = conn.getOutputStream();
-			if (this.enableLogging)
-				System.out.println("Request: " + content);
+			if (this.enableLogging) {
+                System.out.println("Request: " + content);
+            }
             content.writeTo(out);
             out.flush();
             out.close();
@@ -123,8 +124,9 @@ abstract class Gateway {
             InputStream responseStream = conn.getInputStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
-			if (this.enableLogging)
-				System.out.println("Response: " + rawResponse);
+			if (this.enableLogging) {
+                System.out.println("Response: " + rawResponse);
+            }
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
@@ -137,8 +139,10 @@ abstract class Gateway {
     }
 
     private String buildQueryString(HashMap<String, String> queryStringParams) throws UnsupportedEncodingException {
-        if(queryStringParams == null)
+        if(queryStringParams == null) {
             return "";
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("?");
         for (Map.Entry<String, String> entry : queryStringParams.entrySet()) {

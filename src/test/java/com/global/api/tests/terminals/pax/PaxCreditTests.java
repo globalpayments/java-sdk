@@ -65,7 +65,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(25);
         card.setCvn("123");
 
         Address address = new Address();
@@ -152,7 +152,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(25);
         card.setCvn("123");
 
         Address address = new Address();
@@ -306,7 +306,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(25);
         card.setCvn("123");
 
         Address address = new Address();
@@ -316,6 +316,7 @@ public class PaxCreditTests {
         TerminalResponse response = device.creditVerify()
                 .withPaymentMethod(card)
                 .withAddress(address)
+                .withRequestMultiUseToken(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());

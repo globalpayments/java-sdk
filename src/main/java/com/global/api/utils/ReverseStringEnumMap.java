@@ -17,4 +17,9 @@ public class ReverseStringEnumMap<V extends Enum<V> & IStringConstant> {
     public V get(String value) {
         return map.get(value);
     }
+
+    public static <TResult extends Enum<TResult> & IStringConstant> TResult parse(String value, Class<TResult> clazz) {
+        ReverseStringEnumMap<TResult> mapper = new ReverseStringEnumMap<TResult>(clazz);
+        return mapper.get(value);
+    }
 }

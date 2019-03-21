@@ -50,6 +50,14 @@ public class PayrollEncoder implements IRequestEncoder {
         };
     }
 
+    public PayrollEncoder() {
+        this(null,null);
+    }
+    public PayrollEncoder(String username, String apiKey) {
+        this.username = username;
+        this.apiKey = apiKey;
+    }
+
     public String encode(Object value) {
         if (value == null)
             return null;

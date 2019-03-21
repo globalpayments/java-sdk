@@ -136,7 +136,7 @@ public class PaxTcpInterface implements IDeviceCommInterface {
     private int awaitResponse(InputStream in, byte[] buffer) throws IOException {
         long t = System.currentTimeMillis();
         do {
-            if(in.available() > -1) {
+            if(in.available() > 0) {
                 return in.read(buffer);
             }
 

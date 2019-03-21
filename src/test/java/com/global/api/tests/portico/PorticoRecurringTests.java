@@ -35,6 +35,7 @@ public class PorticoRecurringTests {
         GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
         ServicesContainer.configureService(config);
     }
 
@@ -120,10 +121,13 @@ public class PorticoRecurringTests {
         Customer customer = Customer.find(customerId());
         assertNotNull(customer);
         
+//        CreditCardData card = new CreditCardData();
+//        card.setNumber("4111111111111111");
+//        card.setExpMonth(12);
+//        card.setExpYear(2025);
+
         CreditCardData card = new CreditCardData();
-        card.setNumber("4111111111111111");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setToken("supt_KlCVOPmzDmpQl7cqeZaaS2g7");
 
         RecurringPaymentMethod payment = customer.addPaymentMethod(paymentId("Credit"), card).create();
         assertNotNull(payment);

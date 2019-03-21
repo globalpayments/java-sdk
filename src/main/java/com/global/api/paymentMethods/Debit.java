@@ -7,11 +7,18 @@ import com.global.api.entities.enums.TransactionType;
 
 import java.math.BigDecimal;
 
-public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable, IReversable, IChargable, IEncryptable, IPinProtected {
+public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable, IReversable, IChargable, IEncryptable, IPinProtected, IAuthable {
     private EncryptionData encryptionData;
     private PaymentMethodType paymentMethodType = PaymentMethodType.Debit;
     private String pinBlock;
+    protected String cardType = "Unknown";
 
+    public String getCardType() {
+        return cardType;
+    }
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
+    }
     public EncryptionData getEncryptionData() {
         return encryptionData;
     }
@@ -29,6 +36,16 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     public AuthorizationBuilder addValue() { return addValue(null); }
     public AuthorizationBuilder addValue(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.AddValue, this).withAmount(amount);
+    }
+
+    public AuthorizationBuilder authorize() { return authorize(null, true); }
+    public AuthorizationBuilder authorize(BigDecimal amount) {
+        return authorize(amount, true);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
+        return new AuthorizationBuilder(TransactionType.Auth, this)
+                .withAmount(amount)
+                .withAmountEstimated(true);
     }
 
     public AuthorizationBuilder charge() { return charge(null); }

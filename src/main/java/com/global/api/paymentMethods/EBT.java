@@ -1,21 +1,39 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.entities.enums.EbtCardType;
 import com.global.api.entities.enums.InquiryType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 
 import java.math.BigDecimal;
 
-public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, IRefundable, IPinProtected {
+public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, IRefundable, IPinProtected, IAuthable {
+    protected EbtCardType ebtCardType;
     private String pinBlock;
 
+    public EbtCardType getEbtCardType() {
+        return ebtCardType;
+    }
+    public void setEbtCardType(EbtCardType ebtCardType) {
+        this.ebtCardType = ebtCardType;
+    }
     public PaymentMethodType getPaymentMethodType() { return PaymentMethodType.EBT; }
     public String getPinBlock() {
         return pinBlock;
     }
     public void setPinBlock(String pinBlock) {
         this.pinBlock = pinBlock;
+    }
+
+    public AuthorizationBuilder authorize() { return authorize(null, false); }
+    public AuthorizationBuilder authorize(BigDecimal amount) {
+        return authorize(amount, false);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
+        return new AuthorizationBuilder(TransactionType.Auth, this)
+                .withAmount(amount)
+                .withAmountEstimated(isEstimated);
     }
 
     public AuthorizationBuilder charge() { return charge(null); }

@@ -1,22 +1,27 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.entities.enums.AliasAction;
-import com.global.api.entities.enums.InquiryType;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.Transaction;
+import com.global.api.utils.CardUtils;
+import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable {
+public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable {
     private String alias;
+    private String cardType;
+    private String expiry;
     private String number;
+    private String pan;
     private String pin;
     private String token;
     private String trackData;
+    private TrackNumber trackNumber;
     private String value;
     private String valueType;
 
@@ -29,18 +34,44 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
         this.valueType = "Alias";
     }
 
+    public String getCardType() {
+        return cardType;
+    }
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
+    }
+
+    public String getExpiry() {
+        return expiry;
+    }
+    public void setExpiry(String value) {
+        expiry = value;
+    }
+
     public String getNumber() {
         return number;
     }
     public void setNumber(String number) {
-        this.number = number;
-        this.value = number;
-        this.valueType = "CardNbr";
+        if(StringUtils.isNullOrEmpty(value)) {
+            setValue(number);
+        }
+        else {
+            this.number = number;
+            this.valueType = "CardNbr";
+        }
+    }
+
+    public String getPan() {
+        return pan;
+    }
+    public void setPan(String value) {
+        pan = value;
     }
 
     public PaymentMethodType getPaymentMethodType() {
         return PaymentMethodType.Gift;
     }
+
     public String getPin() {
         return pin;
     }
@@ -61,12 +92,36 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
         return trackData;
     }
     public void setTrackData(String trackData) {
-        this.trackData = trackData;
-        this.value = trackData;
-        this.valueType = "TrackData";
+        if(StringUtils.isNullOrEmpty(value)) {
+            setValue(trackData);
+        }
+        else {
+            this.trackData = trackData;
+            this.valueType = "TrackData";
+        }
     }
 
-    public String getValue() { return this.value; }
+    public TrackNumber getTrackNumber() {
+        return trackNumber;
+    }
+    public void setTrackNumber(TrackNumber trackNumber) {
+        this.trackNumber = trackNumber;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
+    public void setValue(String value) {
+        this.value = value;
+
+        CardUtils.parseTrackData(this);
+        if(StringUtils.isNullOrEmpty(trackData)) {
+            setNumber(value);
+            setPan(value);
+        }
+        cardType = CardUtils.mapCardType(pan);
+    }
+
     public String getValueType() { return this.valueType; }
 
     public AuthorizationBuilder addAlias(String phoneNumber) {
@@ -85,11 +140,27 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
         return new AuthorizationBuilder(TransactionType.AddValue, this).withAmount(amount);
     }
 
+    public AuthorizationBuilder authorize() {
+        return authorize(null, false);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount) {
+        return authorize(amount, false);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimate) {
+        return new AuthorizationBuilder(TransactionType.Auth, this)
+                .withAmount(amount)
+                .withAmountEstimated(isEstimate);
+    }
+
     public AuthorizationBuilder balanceInquiry() {
         return balanceInquiry(null);
     }
     public AuthorizationBuilder balanceInquiry(InquiryType inquiry) {
         return new AuthorizationBuilder(TransactionType.Balance, this).withBalanceInquiryType(inquiry);
+    }
+
+    public AuthorizationBuilder cashOut() {
+        return new AuthorizationBuilder(TransactionType.CashOut, this);
     }
 
     public AuthorizationBuilder charge() { return charge(null); }
@@ -99,6 +170,14 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
 
     public AuthorizationBuilder deactivate() {
         return new AuthorizationBuilder(TransactionType.Deactivate, this);
+    }
+
+    public AuthorizationBuilder refund() {
+        return refund(null);
+    }
+    public AuthorizationBuilder refund(BigDecimal amount) {
+        return new AuthorizationBuilder(TransactionType.Refund, this)
+                .withAmount(amount);
     }
 
     public AuthorizationBuilder removeAlias(String phoneNumber) {

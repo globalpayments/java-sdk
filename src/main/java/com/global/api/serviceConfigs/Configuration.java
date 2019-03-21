@@ -4,8 +4,10 @@ import com.global.api.ConfiguredServices;
 import com.global.api.entities.exceptions.ConfigurationException;
 
 public abstract class Configuration {
-    protected int timeout = 65000;
+    protected boolean enableLogging = false;
+    protected boolean forceGatewayTimeout = false;
     protected String serviceUrl;
+    protected int timeout = 65000;
     protected boolean validated;
 
     public int getTimeout() {
@@ -20,6 +22,20 @@ public abstract class Configuration {
     }
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
+    }
+
+    public boolean isEnableLogging() {
+        return enableLogging;
+    }
+    public void setEnableLogging(boolean enableLogging) {
+        this.enableLogging = enableLogging;
+    }
+
+    public boolean isForceGatewayTimeout() {
+        return forceGatewayTimeout;
+    }
+    public void setForceGatewayTimeout(boolean forceGatewayTimeout) {
+        this.forceGatewayTimeout = forceGatewayTimeout;
     }
 
     public boolean isValidated() {

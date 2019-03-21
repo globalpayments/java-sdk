@@ -128,14 +128,26 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
         return authorize(null);
     }
     public AuthorizationBuilder authorize(BigDecimal amount) {
-        return new AuthorizationBuilder(TransactionType.Auth, this).withAmount(amount).withOneTimePayment(true);
+        return authorize(amount, false);
+    }
+    public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
+        return new AuthorizationBuilder(TransactionType.Auth, this)
+                .withAmount(amount)
+                .withOneTimePayment(true)
+                .withAmountEstimated(isEstimated);
     }
 
     public AuthorizationBuilder charge() {
         return charge(null);
     }
     public AuthorizationBuilder charge(BigDecimal amount) {
-        return new AuthorizationBuilder(TransactionType.Sale, this).withAmount(amount).withOneTimePayment(true);
+        return charge(amount, false);
+    }
+    public AuthorizationBuilder charge(BigDecimal amount, boolean isEstimated) {
+        return new AuthorizationBuilder(TransactionType.Sale, this)
+                .withAmount(amount)
+                .withAmountEstimated(isEstimated)
+                .withOneTimePayment(true);
     }
 
     public AuthorizationBuilder refund() {

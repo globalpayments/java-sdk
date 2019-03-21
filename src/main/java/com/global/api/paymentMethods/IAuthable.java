@@ -7,4 +7,5 @@ import java.math.BigDecimal;
 public interface IAuthable {
     AuthorizationBuilder authorize();
     AuthorizationBuilder authorize(BigDecimal amount);
+    AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated);
 }

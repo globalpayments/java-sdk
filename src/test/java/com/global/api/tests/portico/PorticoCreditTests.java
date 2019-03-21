@@ -2,6 +2,7 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;

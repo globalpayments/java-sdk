@@ -25,7 +25,6 @@ public class MessageReader {
 
     public ControlCodes readCode(){
         return readEnum(ControlCodes.class);
-        //return ControlCode.convert(buffer[position++]);
     }
 
     public <T extends Enum<T> & IByteConstant> T readEnum(Class<T> enumType){

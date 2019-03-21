@@ -373,8 +373,8 @@ public class RealexCreditTests {
                 .withAddress(shippingAddress, AddressType.Shipping)
                 .withDecisionManager(decisionManager)
                 .withCustomerData(customer)
-                .withProductData("SKU251584", "Magazine Subscription", "12", "1200", "true", "subscription", "Low")
-                .withProductData("SKU8884784", "Charger", "10", "1200", "false", "electronic_good", "High")
+                .withMiscProductData("SKU251584", "Magazine Subscription", "12", "1200", "true", "subscription", "Low")
+                .withMiscProductData("SKU8884784", "Charger", "10", "1200", "false", "electronic_good", "High")
                 .withCustomData("fieldValue01", "fieldValue02", "fieldValue03", "fieldValue04")
                 .execute();
         assertNotNull(response);

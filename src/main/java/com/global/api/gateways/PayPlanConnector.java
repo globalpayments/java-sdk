@@ -200,7 +200,7 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
             buildAddress(request, payment.getAddress());
 
             if (type == TransactionType.Create) {
-                String tokenValue = getToken(payment);
+                String tokenValue = getToken(payment.getPaymentMethod());
                 boolean hasToken = tokenValue != null;
                 JsonDoc paymentInfo = null;
                 if (payment.getPaymentMethod() instanceof ICardData) {
@@ -220,8 +220,8 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
                 }
                 else if (payment.getPaymentMethod() instanceof eCheck) {
                     eCheck check = (eCheck)payment.getPaymentMethod();
-                    request.set("achType", StringUtils.toInititalCase(check.getAccountType()))
-                            .set("accountType", StringUtils.toInititalCase(check.getCheckType()))
+                    request.set("achType", StringUtils.toInitialCase(check.getAccountType()))
+                            .set("accountType", StringUtils.toInitialCase(check.getCheckType()))
                             .set("telephoneIndicator", (check.getSecCode().equals(SecCode.Ccd) || check.getSecCode().equals(SecCode.Ppd)) ? false : true)
                             .set("routingNumber", check.getRoutingNumber())
                             .set("accountNumber", check.getAccountNumber())

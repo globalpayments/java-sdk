@@ -2,16 +2,19 @@ package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.LodgingData;
-import com.global.api.entities.enums.AlternativePaymentType;
-import com.global.api.entities.enums.ReasonCode;
-import com.global.api.entities.enums.TaxType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
+import com.global.api.network.entities.FleetData;
+import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.ProductData;
+import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.FallbackCode;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -21,6 +24,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 	private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
+    private BatchCloseType batchCloseType;
+    private String cardIssuerReferenceNumber;
+    private BigDecimal cashBackAmount;
+    private String clerkId;
+    private String clientTransactionId;
     private String currency;
     private String description;
     private BigDecimal gratuity;
@@ -29,9 +37,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String payerAuthenticationResponse;
     private String poNumber;
     private ReasonCode reasonCode;
+    private String shiftNumber;
+    private HashMap<String, String[]> supplementaryData;
     private BigDecimal taxAmount;
     private TaxType taxType;
-    private HashMap<String, String[]> supplementaryData;
+    private Integer transactionCount;
+    private String transportData;
+    private BigDecimal totalCredits;
+    private BigDecimal totalDebits;
 
     public AlternativePaymentType getAlternativePaymentType() {
 		return alternativePaymentType;
@@ -47,9 +60,25 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
             return ((TransactionReference)paymentMethod).getAuthCode();
         return null;
     }
+    public BatchCloseType getBatchCloseType() {
+        return batchCloseType;
+    }
+    public String getCardIssuerReferenceNumber() {
+        return cardIssuerReferenceNumber;
+    }
+    public BigDecimal getCashBackAmount() {
+        return cashBackAmount;
+    }
+    public String getClerkId() {
+        return clerkId;
+    }
     public String getClientTransactionId() {
-        if(paymentMethod instanceof TransactionReference)
-            return ((TransactionReference)paymentMethod).getClientTransactionId();
+        if(!StringUtils.isNullOrEmpty(clientTransactionId)) {
+            return clientTransactionId;
+        }
+        else if(paymentMethod instanceof TransactionReference) {
+            return ((TransactionReference) paymentMethod).getClientTransactionId();
+        }
         return null;
     }
     public String getCurrency() {
@@ -78,9 +107,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public ReasonCode getReasonCode() {
         return reasonCode;
     }
-    public HashMap<String, String[]> getSupplementaryData() {
-        return supplementaryData;
+    public String getShiftNumber() {
+        return shiftNumber;
     }
+    public HashMap<String, String[]> getSupplementaryData() { return supplementaryData; }
     public BigDecimal getTaxAmount() {
         return taxAmount;
     }
@@ -92,8 +122,20 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
             return ((TransactionReference)paymentMethod).getTransactionId();
         return null;
     }
+    public String getTransportData() {
+        return transportData;
+    }
+    public Integer getTransactionCount() {
+        return transactionCount;
+    }
+    public BigDecimal getTotalCredits() {
+        return totalCredits;
+    }
+    public BigDecimal getTotalDebits() {
+        return totalDebits;
+    }
 
-	public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
+    public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
 		this.alternativePaymentType = value;
 		return this;
 	}
@@ -105,6 +147,41 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.authAmount = value;
         return this;
     }
+    public ManagementBuilder withBatchCloseType(BatchCloseType value) {
+        batchCloseType = value;
+        return this;
+    }
+    public ManagementBuilder withBatchNumber(int batchNumber) {
+        return withBatchNumber(batchNumber, 0);
+    }
+    public ManagementBuilder withBatchNumber(int batchNumber, int sequenceNumber) {
+        this.batchNumber = batchNumber;
+        this.sequenceNumber = sequenceNumber;
+        return this;
+    }
+    public ManagementBuilder withBatchTotals(int transactionCount, BigDecimal totalDebits, BigDecimal totalCredits) {
+        this.transactionCount = transactionCount;
+        this.totalDebits = totalDebits;
+        this.totalCredits = totalCredits;
+
+        return this;
+    }
+    public ManagementBuilder withCardIssuerReferenceNumber(String value) {
+        this.cardIssuerReferenceNumber = value;
+        return this;
+    }
+    public ManagementBuilder withCashBackAmount(BigDecimal value) {
+        cashBackAmount = value;
+        return this;
+    }
+    public ManagementBuilder withClerkId(String value) {
+        clerkId = value;
+        return this;
+    }
+    public ManagementBuilder withClientTransactionId(String value) {
+        clientTransactionId = value;
+        return this;
+    }
     public ManagementBuilder withCurrency(String value) {
         this.currency = value;
         return this;
@@ -113,8 +190,20 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.description = value;
         return this;
     }
+    public ManagementBuilder withFleetData(FleetData value) {
+        fleetData = value;
+        return this;
+    }
+    public ManagementBuilder withForceGatewayTimeout(boolean value) {
+        this.forceGatewayTimeout = value;
+        return this;
+    }
     public ManagementBuilder withGratuity(BigDecimal value) {
         this.gratuity = value;
+        return this;
+    }
+    public ManagementBuilder withIssuerData(DE62_CardIssuerEntryTag tag, String value) {
+        issuerData.put(tag, value);
         return this;
     }
     public ManagementBuilder withLodgingData(LodgingData value) {
@@ -136,13 +225,25 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.poNumber = value;
         return this;
     }
+    public ManagementBuilder withPriorMessageInformation(PriorMessageInformation value) {
+        this.priorMessageInformation = value;
+        return this;
+    }
+    public ManagementBuilder withProductData(ProductData value) {
+        productData = value;
+        return this;
+    }
     public ManagementBuilder withReasonCode(ReasonCode value) {
         this.reasonCode = value;
         return this;
     }
+    public ManagementBuilder withShiftNumber(String value) {
+        shiftNumber = value;
+        return this;
+    }
     public ManagementBuilder withSupplementaryData(String type, String... value) {
         if (this.supplementaryData == null) {
-            supplementaryData = new HashMap<String, String[]>();
+            this.supplementaryData = new HashMap<String, String[]>();
         }
         this.supplementaryData.put(type, value);
         return this;
@@ -159,6 +260,24 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     private ManagementBuilder withModifier(TransactionModifier value) {
         this.transactionModifier = value;
+        return this;
+    }
+    public ManagementBuilder withTransportData(String value) {
+        transportData = value;
+        return this;
+    }
+    public ManagementBuilder withUniqueDeviceId(String value) {
+        uniqueDeviceId = value;
+        return this;
+    }
+
+    // network fields
+    public ManagementBuilder withSystemTraceAuditNumber(int value) {
+        systemTraceAuditNumber = value;
+        return this;
+    }
+    public ManagementBuilder withTransactionMatchingData(TransactionMatchingData value) {
+        transactionMatchingData = value;
         return this;
     }
 

@@ -31,7 +31,9 @@ public enum TransactionType implements IFlag {
     VerifyEnrolled,
     VerifySignature,
     DccRateLookup,
-    Increment;
+    Increment,
+    CashOut,
+    DataCollect;
 
     public long getLongValue() {
         return 1 << this.ordinal();

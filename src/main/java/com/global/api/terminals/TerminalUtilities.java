@@ -1,9 +1,6 @@
 package com.global.api.terminals;
 
-import com.global.api.entities.enums.ControlCodes;
-import com.global.api.entities.enums.IStringConstant;
-import com.global.api.entities.enums.MessageFormat;
-import com.global.api.entities.enums.PaxMsgId;
+import com.global.api.entities.enums.*;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.utils.MessageWriter;
 
@@ -16,21 +13,27 @@ import java.io.IOException;
 public class TerminalUtilities {
     private static final String version = "1.35";
 
-    private static String getElementString(Object[] elements) {
+    public static String getElementString(Object... elements) {
         StringBuilder sb = new StringBuilder();
         for(Object element: elements){
-            if(element instanceof ControlCodes)
-                sb.append((char)((ControlCodes) element).getByte());
-            else if(element instanceof IRequestSubGroup)
+            if(element instanceof ControlCodes) {
+                sb.append((char) ((ControlCodes) element).getByte());
+            }
+            else if(element instanceof IRequestSubGroup) {
                 sb.append(((IRequestSubGroup) element).getElementString());
-            else if(element instanceof String[]){
+            }
+            else if(element instanceof String[]) {
                 for(String sub_element: (String[])element){
                     sb.append(ControlCodes.FS.getByte());
                     sb.append(sub_element);
                 }
             }
-            else if(element instanceof IStringConstant)
+            else if(element instanceof IStringConstant) {
                 sb.append(((IStringConstant) element).getValue());
+            }
+            else if(element instanceof IByteConstant) {
+                sb.append(((IByteConstant) element).getByte());
+            }
             else sb.append(element);
         }
 
@@ -93,14 +96,34 @@ public class TerminalUtilities {
         return buildMessage(messageId, message);
     }
 
+    public static DeviceMessage buildRequest(byte[] message) {
+        MessageWriter buffer = new MessageWriter();
+
+        // beginning sentinel
+        buffer.add(ControlCodes.STX);
+
+        // put message
+        buffer.addRange(message);
+
+        // ending sentinel
+        buffer.add(ControlCodes.ETX);
+
+        byte lrc = calculateLRC(buffer.toArray());
+        buffer.add(lrc);
+
+        return new DeviceMessage(buffer.toArray());
+    }
+
     public static byte calculateLRC(byte[] buffer) {
         int length = buffer.length;
-        if(buffer[buffer.length - 1] != ControlCodes.ETX.getByte())
+        if(buffer[buffer.length - 1] != ControlCodes.ETX.getByte()) {
             length--;
+        }
 
         byte lrc = (byte)0x00;
-        for (int i = 1; i < length; i++)
-            lrc = (byte)(lrc ^ buffer[i]);
+        for (int i = 1; i < length; i++) {
+            lrc = (byte) (lrc ^ buffer[i]);
+        }
         return lrc;
     }
 

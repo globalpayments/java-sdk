@@ -76,7 +76,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         }
         et.subElement(block1, "Amt", builder.getAmount());
         et.subElement(block1, "GratuityAmtInfo", builder.getGratuity());
-        et.subElement(block1, "ConvenienceAmtInfo", builder.getConvinienceAmount());
+        et.subElement(block1, "ConvenienceAmtInfo", builder.getConvenienceAmount());
         et.subElement(block1, "ShippingAmtInfo", builder.getShippingAmount());
 
         // because plano...
@@ -121,8 +121,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                     et.subElement(identity, "DOBYear", check.getBirthYear());
                 }
             }
-            else {
-                // TODO: card holder name
+            else if (builder.getPaymentMethod() instanceof CreditCardData) {
+                CreditCardData card = (CreditCardData) builder.getPaymentMethod();
+                if (!StringUtils.isNullOrEmpty(card.getCardHolderName())) {
+                    String[] names = card.getCardHolderName().split(" ", 2);
+                    et.subElement(holder, "CardHolderFirstName", names[0]);
+                    et.subElement(holder, "CardHolderLastName", names[1]);
+                }
             }
         }
 
@@ -357,32 +362,32 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
         // lodging data
         if(builder.getLodgingData() != null) {
-            LodgingData lodging = builder.getLodgingData();
-
-            Element lodgingElement = et.subElement(block1, "LodgingData");
-            et.subElement(lodgingElement, "PrestigiousPropertyLimit", lodging.getPrestigiousPropertyLimit());
-            et.subElement(lodgingElement, "NoShow", lodging.isNoShow() ? "Y" : "N");
-            et.subElement(lodgingElement, "AdvancedDepositType", lodging.getAdvancedDepositType());
-            et.subElement(lodgingElement, "PreferredCustomer", lodging.isPreferredCustomer() ? "Y" : "N");
-            if(lodging.getFolioNumber() != null || lodging.getStayDuration() != null || lodging.getCheckInDate() != null || lodging.getCheckOutDate() != null || lodging.getRate() != null || lodging.getExtraCharges() != null) {
-                Element lodgingDataEdit = et.subElement(lodgingElement, "LodgingDataEdit");
-                et.subElement(lodgingDataEdit, "FolioNumber", lodging.getFolioNumber());
-                et.subElement(lodgingDataEdit, "Duration", lodging.getStayDuration());
-                if(lodging.getCheckInDate() != null) {
-                    et.subElement(lodgingDataEdit, "CheckInDate", lodging.getCheckInDate().toString("mm/DD/YYYY"));
-                }
-                if(lodging.getCheckOutDate() != null) {
-                    et.subElement(lodgingDataEdit, "CheckOutDate", lodging.getCheckOutDate().toString("mm/DD/YYYY"));
-                }
-                et.subElement(lodgingDataEdit, "Rate", lodging.getRate());
-                if(lodging.getExtraCharges() != null) {
-                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
-                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
-                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
-                    }
-                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
-                }
-            }
+//            LodgingData lodging = builder.getLodgingData();
+//
+//            Element lodgingElement = et.subElement(block1, "LodgingData");
+//            et.subElement(lodgingElement, "PrestigiousPropertyLimit", lodging.getPrestigiousPropertyLimit());
+//            et.subElement(lodgingElement, "NoShow", lodging.isNoShow() ? "Y" : "N");
+//            et.subElement(lodgingElement, "AdvancedDepositType", lodging.getAdvancedDepositType());
+//            et.subElement(lodgingElement, "PreferredCustomer", lodging.isPreferredCustomer() ? "Y" : "N");
+//            if(lodging.getFolioNumber() != null || lodging.getStayDuration() != null || lodging.getCheckInDate() != null || lodging.getCheckOutDate() != null || lodging.getRate() != null || lodging.getExtraCharges() != null) {
+//                Element lodgingDataEdit = et.subElement(lodgingElement, "LodgingDataEdit");
+//                et.subElement(lodgingDataEdit, "FolioNumber", lodging.getFolioNumber());
+//                et.subElement(lodgingDataEdit, "Duration", lodging.getStayDuration());
+//                if(lodging.getCheckInDate() != null) {
+//                    et.subElement(lodgingDataEdit, "CheckInDate", lodging.getCheckInDate().toString("mm/DD/YYYY"));
+//                }
+//                if(lodging.getCheckOutDate() != null) {
+//                    et.subElement(lodgingDataEdit, "CheckOutDate", lodging.getCheckOutDate().toString("mm/DD/YYYY"));
+//                }
+//                et.subElement(lodgingDataEdit, "Rate", lodging.getRate());
+//                if(lodging.getExtraCharges() != null) {
+//                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
+//                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
+//                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
+//                    }
+//                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
+//                }
+//            }
         }
 
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));
@@ -870,62 +875,60 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         TransactionSummary summary = new TransactionSummary();
         summary.setAccountDataSource(root.getString("AccDataSrc"));
         summary.setAmount(root.getDecimal("Amt"));
-        summary.setAuthorizedAmount(root.getDecimal("AuthAmt"));
         summary.setAuthCode(root.getString("AuthCode"));
+        summary.setAuthorizedAmount(root.getDecimal("AuthAmt"));
         summary.setBatchCloseDate(root.getDate("BatchCloseDT"));
         summary.setBatchSequenceNumber(root.getString("BatchSeqNbr"));
+        summary.setCaptureAmount(root.getDecimal("CaptureAmtInfo"));
         summary.setCardSwiped(root.getString("CardSwiped"));
         summary.setCardType(root.getString("CardType"));
+        summary.setCavvResponseCode(root.getString("CAVVResultCode"));
         summary.setClerkId(root.getString("ClerkID"));
         summary.setClientTransactionId(root.getString("ClientTxnId"));
+        summary.setCompanyName(root.getString("Company"));
         summary.setConvenienceAmount(root.getDecimal("ConvenienceAmtInfo"));
-        summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
+        summary.setCustomerFirstName(root.getString("CustomerFirstname"));
+        summary.setCustomerId(root.getString("CustomerID"));
+        summary.setCustomerLastName(root.getString("CustomerLastname"));
+        summary.setDebtRepaymentIndicator(root.getString("DebtRepaymentIndicator") == "1");
+        summary.setDescription(root.getString("Description"));
+        summary.setEmvChipCondition(root.getString("EMVChipCondition"));
+        summary.setFraudRuleInfo(root.getString("FraudInfoRule"));
+        summary.setFullyCaptured(root.getString("FullyCapturedInd") == "1");
+        summary.setGatewayResponseCode(normalizeResponse(root.getString("GatewayRspCode")));
+        summary.setGatewayResponseMessage(root.getString("GatewayRspMsg"));
+        summary.setGiftCurrency(root.getString("GiftCurrency"));
         summary.setGratuityAmount(root.getDecimal("GratuityAmtInfo"));
+        summary.setHasEmvTags(root.getString("HasEMVTag") == "1");
+        summary.setHasEcomPaymentData(root.getString("HasEComPaymentData") == "1");
+        summary.setInvoiceNumber(root.getString("InvoiceNbr"));
         summary.setIssuerResponseCode(root.getString("IssuerRspCode", "RspCode"));
         summary.setIssuerResponseMessage(root.getString("IssuerRspText", "RspText"));
         summary.setIssuerTransactionId(root.getString("IssTxnId"));
+        summary.setMaskedAlias(root.getString("GiftMaskedAlias"));
         summary.setMaskedCardNumber(root.getString("MaskedCardNbr"));
-        summary.setGatewayResponseCode(normalizeResponse(root.getString("GatewayRspCode")));
-        summary.setGatewayResponseMessage(root.getString("GatewayRspMsg"));
+        summary.setOneTimePayment(root.getString("OneTime") == "1");
         summary.setOriginalTransactionId(root.getString("OriginalGatewayTxnId"));
+        summary.setPaymentMethodKey(root.getString("PaymentMethodKey"));
         summary.setPaymentType(root.getString("PaymentType"));
         summary.setPoNumber(root.getString("CardHolderPONbr"));
+        summary.setRecurringDataCode(root.getString("RecurringDataCode"));
         summary.setReferenceNumber(root.getString("RefNbr"));
         summary.setResponseDate(root.getDate("RspDT"));
+        summary.setScheduleId(root.getString("ScheduleID"));
         summary.setServiceName(root.getString("ServiceName"));
         summary.setSettlementAmount(root.getDecimal("SettlementAmt"));
         summary.setShippingAmount(root.getDecimal("ShippingAmtInfo"));
         summary.setStatus(root.getString("Status", "TxnStatus"));
-        summary.setTransactionDate(root.getDate("TaxAmt", "TaxAmtInfo"));
-        summary.setTaxType(root.getString("TaxType"));
-        summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
-        summary.setGatewayResponseCode(root.getString("GatewayTxnId"));
-        summary.setTransactionStatus(root.getString("TxnStatus"));
-        summary.setUsername(root.getString("UserName"));
-        summary.setDescription(root.getString("Description"));
-        summary.setInvoiceNumber(root.getString("InvoiceNbr"));
-        summary.setCustomerId(root.getString("CustomerID"));
-        summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
-        summary.setTransactionDescriptor(root.getString("TxnDescriptor"));
-        summary.setGiftCurrency(root.getString("GiftCurrency"));
-        summary.setMaskedAlias(root.getString("GiftMaskedAlias"));
-        summary.setPaymentMethodKey(root.getString("PaymentMethodKey"));
-        summary.setScheduleId(root.getString("ScheduleID"));
-        summary.setOneTimePayment(root.getString("OneTime") == "1");
-        summary.setRecurringDataCode(root.getString("RecurringDataCode"));
         summary.setSurchargeAmount(root.getDecimal("SurchargeAmtInfo"));
-        summary.setFraudRuleInfo(root.getString("FraudInfoRule"));
-        summary.setEmvChipCondition(root.getString("EMVChipCondition"));
-        summary.setHasEmvTags(root.getString("HasEMVTag") == "1");
-        summary.setHasEcomPaymentData(root.getString("HasEComPaymentData") == "1");
-        summary.setCavvResponseCode(root.getString("CAVVResultCode"));
+        summary.setTaxType(root.getString("TaxType"));
         summary.setTokenPanLastFour(root.getString("TokenPANLast4"));
-        summary.setCompanyName(root.getString("Company"));
-        summary.setCustomerFirstName(root.getString("CustomerFirstname"));
-        summary.setCustomerLastName(root.getString("CustomerLastname"));
-        summary.setDebtRepaymentIndicator(root.getString("DebtRepaymentIndicator") == "1");
-        summary.setCaptureAmount(root.getDecimal("CaptureAmtInfo"));
-        summary.setFullyCaptured(root.getString("FullyCapturedInd") == "1");
+        summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
+        summary.setTransactionDescriptor(root.getString("TxnDescriptor"));
+        summary.setTransactionId(root.getString("GatewayTxnId"));
+        summary.setTransactionStatus(root.getString("TxnStatus"));
+        summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
+        summary.setUsername(root.getString("UserName"));
 
         // lodging data
         if (root.has("LodgingData")) {
@@ -958,6 +961,18 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             altPaymentData.setStatus(root.getString("Status"));
             altPaymentData.setStatusMessage(root.getString("StatusMsg"));
             summary.setAltPaymentData(altPaymentData);
+        }
+
+        // card holder data
+        if (root.has("CardHolderData")) {
+            summary.setCardHolderFirstName(root.getString("CardHolderFirstName"));
+            summary.setCardHolderLastName(root.getString("CardHolderLastName"));
+            Address address = new Address();
+            address.setStreetAddress1(root.getString("CardHolderAddr"));
+            address.setCity(root.getString("CardHolderCity"));
+            address.setState(root.getString("CardHolderState"));
+            address.setPostalCode(root.getString("CardHolderZip"));
+            summary.setBillingAddress(address);
         }
 
         return summary;

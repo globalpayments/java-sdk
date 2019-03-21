@@ -84,7 +84,7 @@ public class Realex3dSecureTests {
             assertNull(merchantData.get("_currecy"));
             assertNull(merchantData.get("_orderid"));
 
-            // add some additional values
+            // put some additional values
             for (int i = 0; i < 3; i++) {
                 merchantData.put("Key" + i, "Value" + i);
 

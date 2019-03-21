@@ -1,0 +1,21 @@
+language: java
+
+sudo: false
+branches:
+  only:
+    - master
+
+install:
+ - mvn install -DskipTests=true -B -V
+
+script:
+  - mvn javadoc:javadoc
+
+deploy:
+  local-dir: target/site/apidocs
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep-history: true
+  on:
+    branch: master

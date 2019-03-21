@@ -6,6 +6,12 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IPaymentGateway;
+import com.global.api.network.entities.FleetData;
+import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.ProductData;
+import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.FeeType;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.GiftCard;
@@ -16,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AccountType accountType;
@@ -24,13 +31,15 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private boolean allowDuplicates;
     private boolean allowPartialAuth;
     private BigDecimal amount;
+    private boolean amountEstimated;
     private BigDecimal authAmount;
     private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
     private BigDecimal cashBackAmount;
+    private String clerkId;
     private String clientTransactionId;
-    private BigDecimal convinienceAmount;
+    private BigDecimal convenienceAmount;
     private String currency;
     private String customerId;
     private Customer customerData;
@@ -59,7 +68,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     private String posSequenceNumber;
     private String productId;
-    private ArrayList<String[]> productData;
+    private ArrayList<String[]> miscProductData;
     private RecurringSequence recurringSequence;
     private RecurringType recurringType;
     private boolean requestMultiUseToken;
@@ -71,6 +80,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, String[]> supplementaryData;
     private String tagData;
     private String timestamp;
+
+    // network fields
+    private BigDecimal feeAmount;
+    private FeeType feeType;
+    private String shiftNumber;
+    private String transportData;
 
     public String getAlias() {
         return alias;
@@ -87,6 +102,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getAmount() {
         return amount;
     }
+    public boolean isAmountEstimated() {
+        return amountEstimated;
+    }
     public BigDecimal getAuthAmount() {
         return authAmount;
     }
@@ -101,6 +119,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getCashBackAmount() {
         return cashBackAmount;
+    }
+    public String getClerkId() {
+        return clerkId;
     }
     public String getClientTransactionId() {
         return clientTransactionId;
@@ -197,8 +218,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getTimestamp() {
         return timestamp;
     }
-    public BigDecimal getConvinienceAmount() {
-        return convinienceAmount;
+    public BigDecimal getConvenienceAmount() {
+        return convenienceAmount;
     }
     public BigDecimal getShippingAmount() {
         return shippingAmount;
@@ -221,11 +242,25 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getPosSequenceNumber() {
         return posSequenceNumber;
     }
-    public ArrayList<String[]> getProductData() {
-        return productData;
+    public ArrayList<String[]> getMiscProductData() {
+        return miscProductData;
     }
     public String getTagData() {
         return tagData;
+    }
+
+    // network getters
+    public BigDecimal getFeeAmount() {
+        return feeAmount;
+    }
+    public FeeType getFeeType() {
+        return feeType;
+    }
+    public String getShiftNumber() {
+        return shiftNumber;
+    }
+    public String getTransportData() {
+        return transportData;
     }
 
     public AuthorizationBuilder withAccountType(AccountType value) {
@@ -261,6 +296,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.amount = value;
         return this;
     }
+    public AuthorizationBuilder withAmountEstimated(boolean value) {
+        amountEstimated = value;
+        return this;
+    }
     public AuthorizationBuilder withAuthAmount(BigDecimal value) {
         this.authAmount = value;
         return this;
@@ -280,6 +319,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withChipCondition(EmvChipCondition value) {
         this.emvChipCondition = value;
+        return this;
+    }
+    public AuthorizationBuilder withClerkId(String value) {
+        clerkId = value;
         return this;
     }
     public AuthorizationBuilder withClientTransactionId(String value) {
@@ -304,7 +347,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withConvenienceAmt(BigDecimal value) {
-        this.convinienceAmount = value;
+        this.convenienceAmount = value;
         return this;
     }
     public AuthorizationBuilder withCurrency(String value) {
@@ -366,6 +409,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.ecommerceInfo = value;
         return this;
     }
+    public AuthorizationBuilder withForceGatewayTimeout(boolean value) {
+        this.forceGatewayTimeout = value;
+        return this;
+    }
     public AuthorizationBuilder withFraudFilter(FraudFilterMode value) {
         this.fraudFilterMode = value;
         return this;
@@ -412,11 +459,15 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.posSequenceNumber = value;
         return this;
     }
-    public AuthorizationBuilder withProductData(String ... value) {
-        if (this.productData == null) {
-            productData = new ArrayList<String[]>();
+    public AuthorizationBuilder withMiscProductData(String ... value) {
+        if (this.miscProductData == null) {
+            miscProductData = new ArrayList<String[]>();
         }
-        this.productData.add(value);
+        this.miscProductData.add(value);
+        return this;
+    }
+    public AuthorizationBuilder withProductData(ProductData value) {
+        productData = value;
         return this;
     }
     public AuthorizationBuilder withProductId(String value) {
@@ -429,6 +480,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
             this.transactionModifier = TransactionModifier.Voucher;
         if (value instanceof CreditCardData && ((CreditCardData) value).getMobileType() != null)
             this.transactionModifier = TransactionModifier.EncryptedMobile;
+        return this;
+    }
+    public AuthorizationBuilder withPriorMessageInformation(PriorMessageInformation value) {
+        this.priorMessageInformation = value;
         return this;
     }
     public AuthorizationBuilder withRecurringInfo(RecurringType type, RecurringSequence sequence) {
@@ -484,6 +539,54 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withTagData(String value) {
         this.tagData = value;
+        return this;
+    }
+
+    // network with statements
+    public AuthorizationBuilder withBatchNumber(int batchNumber) {
+        return withBatchNumber(batchNumber, 0);
+    }
+    public AuthorizationBuilder withBatchNumber(int batchNumber, int sequenceNumber) {
+        this.batchNumber = batchNumber;
+        this.sequenceNumber = sequenceNumber;
+        return this;
+    }
+    public AuthorizationBuilder withFee(FeeType feeType, BigDecimal feeAmount) {
+        this.feeType = feeType;
+        this.feeAmount = feeAmount;
+
+        return this;
+    }
+    public AuthorizationBuilder withFleetData(FleetData value) {
+        fleetData = value;
+        return this;
+    }
+    public AuthorizationBuilder withIssuerData(DE62_CardIssuerEntryTag tag, String value) {
+        if(issuerData == null) {
+            issuerData = new LinkedHashMap<DE62_CardIssuerEntryTag, String>();
+        }
+        issuerData.put(tag, value);
+
+        return this;
+    }
+    public AuthorizationBuilder withShiftNumber(String value) {
+        shiftNumber = value;
+        return this;
+    }
+    public AuthorizationBuilder withSystemTraceAuditNumber(int value) {
+        systemTraceAuditNumber = value;
+        return this;
+    }
+    public AuthorizationBuilder withTransportData(String value) {
+        transportData = value;
+        return this;
+    }
+    public AuthorizationBuilder withTransactionMatchingData(TransactionMatchingData value) {
+        transactionMatchingData = value;
+        return this;
+    }
+    public AuthorizationBuilder withUniqueDeviceId(String value) {
+        uniqueDeviceId = value;
         return this;
     }
 
@@ -565,5 +668,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(EnumSet.of(TransactionType.Auth, TransactionType.Sale))
                 .with(TransactionModifier.EncryptedMobile).check("paymentMethod").isNotNull();
 
+        // TODO: I need to be able to identify a network transaction and validate certain fields appropriately
+        // System Trace Audit Number
+        // BatchNumber
     }
 }

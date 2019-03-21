@@ -13,6 +13,6 @@ public class BoardingConfig extends Configuration {
     }
 
     public void configureContainer(ConfiguredServices services) {
-        // TODO: add this when completing the online boarding work
+        // TODO: put this when completing the online boarding work
     }
 }

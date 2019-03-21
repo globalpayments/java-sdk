@@ -126,7 +126,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                     et.subElement(customer, "phonenumber", customerValue.getHomePhone());
                 }
                 if (builder.getProductData() != null) {
-                    ArrayList<String[]> productValues = builder.getProductData();
+                    ArrayList<String[]> productValues = builder.getMiscProductData();
                     Element products = et.subElement(request, "products");
                     String str[] = { "productid", "productname", "quantity", "unitprice", "gift", "type", "risk" };
                     for (String[] values : productValues) {
@@ -453,14 +453,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             Element comments = et.subElement(request, "comments");
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
-        
-        // data supplementry
-        if (builder.getSupplementaryData() != null) {
-            Element supplementarydata = et.subElement(request, "supplementarydata");
+
+        if(builder.getSupplementaryData() != null) {
+            Element supplementaryData = et.subElement(request, "supplementarydata");
             HashMap<String, String[]> suppData = builder.getSupplementaryData();
 
             for (String key : suppData.keySet()) {
-                Element item = et.subElement(supplementarydata, "item").set("type", key);
+                Element item = et.subElement(supplementaryData, "item").set("type", key);
                 String str[] = suppData.get(key);
                 for (int i = 1; i <= suppData.get(key).length; i++) {
                     et.subElement(item, "field" + StringUtils.padLeft("" + i, 2, '0'), str[i - 1]);

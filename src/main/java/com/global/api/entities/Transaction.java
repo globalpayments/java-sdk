@@ -3,12 +3,17 @@ package com.global.api.entities;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.gateways.events.IGatewayEvent;
+import com.global.api.network.entities.NtsData;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.paymentMethods.GiftCard;
+import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Transaction {
     private BigDecimal authorizedAmount;
@@ -26,7 +31,9 @@ public class Transaction {
     private DccResponseResult dccResponseResult;
     private DebitMac debitMac;
     private String emvIssuerResponse;
+    private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
+    private PriorMessageInformation messageInformation;
     private String multiCapture;
     private BigDecimal pointsBalanceAmount;
     private String recurringDataCode;
@@ -37,10 +44,23 @@ public class Transaction {
     private ThreeDSecure threeDsecure;
     private String timestamp;
     private String transactionDescriptor;
+    private String transactionToken;
     private String token;
     private GiftCard giftCard;
     private TransactionReference transactionReference;
 
+    public String getAcquiringInstitutionId() {
+        if(transactionReference != null) {
+            return transactionReference.getAcquiringInstitutionId();
+        }
+        return null;
+    }
+    public void setAcquiringInstitutionId(String value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setAcquiringInstitutionId(value);
+    }
     public BigDecimal getAuthorizedAmount() {
         return authorizedAmount;
     }
@@ -118,6 +138,9 @@ public class Transaction {
     public String getCommercialIndicator() {
         return commercialIndicator;
     }
+    public void setCommercialIndicator(String commercialIndicator) {
+        this.commercialIndicator = commercialIndicator;
+    }
     public String getCvnResponseCode() {
         return cvnResponseCode;
     }
@@ -142,11 +165,35 @@ public class Transaction {
     public void setDebitMac(DebitMac debitMac) {
         this.debitMac = debitMac;
     }
+    public LinkedList<IGatewayEvent> getGatewayEvents() {
+        return gatewayEvents;
+    }
+    public void setGatewayEvents(LinkedList<IGatewayEvent> gatewayEvents) {
+        this.gatewayEvents = gatewayEvents;
+    }
     public Date getHostResponseDate() {
         return hostResponseDate;
     }
     public void setHostResponseDate(Date hostResponseDate) {
         this.hostResponseDate = hostResponseDate;
+    }
+    public PriorMessageInformation getMessageInformation() {
+        return this.messageInformation;
+    }
+    public void setMessageInformation(PriorMessageInformation value) {
+        this.messageInformation = value;
+    }
+    public String getMessageTypeIndicator() {
+        if(transactionReference != null) {
+            return transactionReference.getMessageTypeIndicator();
+        }
+        return null;
+    }
+    public void setMessageTypeIndicator(String value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setMessageTypeIndicator(value);
     }
     public String getMultiCapture() {
 		return multiCapture;
@@ -166,6 +213,18 @@ public class Transaction {
     public void setEmvIssuerResponse(String emvIssuerResponse) {
         this.emvIssuerResponse = emvIssuerResponse;
     }
+    public NtsData getNtsData() {
+        if(transactionReference != null) {
+            return transactionReference.getNtsData();
+        }
+        return null;
+    }
+    public void setNtsData(NtsData value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setNtsData(value);
+    }
     public String getOrderId() {
         if(transactionReference != null)
             return transactionReference.getOrderId();
@@ -175,6 +234,18 @@ public class Transaction {
         if(transactionReference == null)
             transactionReference = new TransactionReference();
         transactionReference.setOrderId(value);
+    }
+    public String getOriginalTransactionTime() {
+        if(transactionReference != null) {
+            return transactionReference.getOriginalTransactionTime();
+        }
+        return null;
+    }
+    public void setOriginalTransactionTime(String value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setOriginalTransactionTime(value);
     }
     public PaymentMethodType getPaymentMethodType() {
         if(transactionReference != null)
@@ -186,14 +257,23 @@ public class Transaction {
             transactionReference = new TransactionReference();
         transactionReference.setPaymentMethodType(value);
     }
-    public void setCommercialIndicator(String commercialIndicator) {
-        this.commercialIndicator = commercialIndicator;
-    }
     public BigDecimal getPointsBalanceAmount() {
         return pointsBalanceAmount;
     }
     public void setPointsBalanceAmount(BigDecimal pointsBalanceAmount) {
         this.pointsBalanceAmount = pointsBalanceAmount;
+    }
+    public String getProcessingCode() {
+        if(transactionReference != null) {
+            return transactionReference.getOriginalProcessingCode();
+        }
+        return null;
+    }
+    public void setProcessingCode(String value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setOriginalProcessingCode(value);
     }
     public String getRecurringDataCode() {
         return recurringDataCode;
@@ -219,6 +299,18 @@ public class Transaction {
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
     }
+    public String getSystemTraceAuditNumber() {
+        if(transactionReference != null) {
+            return transactionReference.getSystemTraceAuditNumber();
+        }
+        return null;
+    }
+    public void setSystemTraceAuditNumber(String value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setSystemTraceAuditNumber(value);
+    }
     public ThreeDSecure getThreeDsecure() {
         return threeDsecure;
     }
@@ -236,6 +328,12 @@ public class Transaction {
     }
     public void setTransactionDescriptor(String transactionDescriptor) {
         this.transactionDescriptor = transactionDescriptor;
+    }
+    public String getTransactionToken() {
+        return transactionToken;
+    }
+    public void setTransactionToken(String transactionToken) {
+        this.transactionToken = transactionToken;
     }
     public String getTransactionId() {
         if(transactionReference != null)
@@ -342,6 +440,36 @@ public class Transaction {
         reference.setTransactionId(transactionId);
         reference.setOrderId(orderId);
         reference.setPaymentMethodType(paymentMethodType);
+
+        Transaction trans = new Transaction();
+        trans.setTransactionReference(reference);
+
+        return trans;
+    }
+
+    public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod) {
+        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null, null, null, null);
+    }
+    public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String originalProcessingCode) {
+        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null, null, null, originalProcessingCode);
+    }
+    public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime) {
+        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, messageTypeIndicator, stan, originalTransactionTime, null);
+    }
+    public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime, String originalProcessingCode) {
+        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, messageTypeIndicator, stan, originalTransactionTime, originalProcessingCode, null);
+    }
+    public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime, String originalProcessingCode, String acquirerId) {
+        TransactionReference reference = new TransactionReference();
+        reference.setOriginalAmount(amount);
+        reference.setAcquiringInstitutionId(acquirerId);
+        reference.setAuthCode(authCode);
+        reference.setMessageTypeIndicator(messageTypeIndicator);
+        reference.setNtsData(originalNtsCode);
+        reference.setOriginalPaymentMethod(originalPaymentMethod);
+        reference.setOriginalTransactionTime(originalTransactionTime);
+        reference.setSystemTraceAuditNumber(stan);
+        reference.setOriginalProcessingCode(originalProcessingCode);
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);
