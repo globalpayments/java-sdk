@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 public class VapsConnector extends NetworkGateway implements IPaymentGateway {
     private AcceptorConfig acceptorConfig;
@@ -1110,6 +1109,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                         // card issuer data
                         if (cardIssuerData != null) {
                             reference.setNtsData(cardIssuerData.get("NTS"));
+                            result.setReferenceNumber(cardIssuerData.get("IRR"));
                         }
 
                         // authorization builder
@@ -1505,6 +1505,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             }
         }
         else if(transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)) {
+            boolean partial = false;
+            if(builder.getAmount() != null && paymentMethod != null) {
+                partial = !builder.getAmount().equals(paymentMethod.getOriginalAmount());
+            }
+
             if(fallbackCode != null) {
                 switch (fallbackCode) {
                     case Received_IssuerTimeout:
@@ -1515,14 +1520,29 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                     case Received_SystemMalfunction: {
                         reasonCode = DE25_MessageReasonCode.SystemTimeout_Malfunction;
                     } break;
-                    // TODO: case "Partial Approval"
-                    default:
-                        reasonCode = DE25_MessageReasonCode.MerchantInitiatedReversal;
+                    default: {
+                        if(builder.isCustomerInitiated()) {
+                            reasonCode = partial ? DE25_MessageReasonCode.CustomerInitiated_PartialApproval : DE25_MessageReasonCode.CustomerInitiatedReversal;
+                        }
+                        else if(builder.isForcedReversal()) {
+                            reasonCode = partial ? DE25_MessageReasonCode.ForceVoid_PartialApproval : DE25_MessageReasonCode.ForceVoid_ApprovedTransaction;
+                        }
+                        else {
+                            reasonCode = DE25_MessageReasonCode.MerchantInitiatedReversal;
+                        }
+                    }
                 }
             }
             else {
-                // TODO: case "Partial Approval"
-                reasonCode = DE25_MessageReasonCode.MerchantInitiatedReversal;
+                if(builder.isCustomerInitiated()) {
+                    reasonCode = partial ? DE25_MessageReasonCode.CustomerInitiated_PartialApproval : DE25_MessageReasonCode.CustomerInitiatedReversal;
+                }
+                else if(builder.isForcedReversal()) {
+                    reasonCode = partial ? DE25_MessageReasonCode.ForceVoid_PartialApproval : DE25_MessageReasonCode.ForceVoid_ApprovedTransaction;
+                }
+                else {
+                    reasonCode = DE25_MessageReasonCode.MerchantInitiatedReversal;
+                }
             }
         }
         else if(transactionType.equals(TransactionType.Refund) && (originalPaymentMethod instanceof Debit || originalPaymentMethod instanceof EBT)) {
@@ -1774,8 +1794,8 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             ManagementBuilder mb = (ManagementBuilder)builder;
 
             // IRR Issuer Reference Number
-            if(!StringUtils.isNullOrEmpty(mb.getCardIssuerReferenceNumber())) {
-                cardIssuerData.add(DE62_CardIssuerEntryTag.RetrievalReferenceNumber, mb.getCardIssuerReferenceNumber());
+            if(!StringUtils.isNullOrEmpty(mb.getReferenceNumber())) {
+                cardIssuerData.add(DE62_CardIssuerEntryTag.RetrievalReferenceNumber, mb.getReferenceNumber());
             }
 
             if(mb.getPaymentMethod() instanceof TransactionReference) {
@@ -1941,10 +1961,16 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
                     // DE_062 Card Issuer Data
                     DE62_CardIssuerData requestIssuerData = request.getDataElement(DataElementId.DE_062, DE62_CardIssuerData.class);
+                    if(requestIssuerData == null) {
+                        requestIssuerData = new DE62_CardIssuerData();
+                    }
+
                     DE62_CardIssuerData responseIssuerData = response.getDataElement(DataElementId.DE_062, DE62_CardIssuerData.class);
                     if(responseIssuerData != null) {
                         String ntsData = responseIssuerData.get(DE62_CardIssuerEntryTag.NTS_System);
-                        requestIssuerData.add(DE62_CardIssuerEntryTag.NTS_System, ntsData);
+                        if(ntsData != null) {
+                            requestIssuerData.add(DE62_CardIssuerEntryTag.NTS_System, ntsData);
+                        }
                     }
 
                     // DE_002 / DE_014 - PAN / EXP DATE
@@ -2143,6 +2169,24 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             if(transactionType.equals(TransactionType.Reversal)) {
                 if(StringUtils.isNullOrEmpty(reference.getOriginalProcessingCode())) {
                     throw new BuilderException("The original processing code should be specified when performing a reversal.");
+                }
+
+                // IRR for fleet reversals
+                if(paymentMethod instanceof Credit) {
+                    if(((Credit) paymentMethod).isFleet() && StringUtils.isNullOrEmpty(mb.getReferenceNumber())) {
+                        if(reference.getNtsData() != null && reference.getNtsData().getFallbackCode().equals(FallbackCode.None)) {
+                            throw new BuilderException("Reference Number is required for fleet voids/reversals.");
+                        }
+                    }
+                }
+            }
+
+            if(transactionType.equals(TransactionType.Void)){
+                // IRR for fleet reversals
+                if(paymentMethod instanceof Credit) {
+                    if(((Credit) paymentMethod).isFleet() && StringUtils.isNullOrEmpty(((ManagementBuilder) builder).getReferenceNumber())) {
+                        throw new BuilderException("Reference Number is required for fleet voids/reversals.");
+                    }
                 }
             }
         }

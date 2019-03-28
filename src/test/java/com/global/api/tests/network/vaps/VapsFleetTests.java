@@ -59,7 +59,7 @@ public class VapsFleetTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");
@@ -78,8 +78,8 @@ public class VapsFleetTests {
 //        track = TestCards.MasterCardFleetSwipe();
 
         // VOYAGER FLEET
-        card = TestCards.VoyagerManual(true, true);
-        track = TestCards.VoyagerSwipe();
+//        card = TestCards.VoyagerManual(true, true);
+//        track = TestCards.VoyagerSwipe();
 
         fleetData = new FleetData();
         fleetData.setServicePrompt("00");
@@ -88,8 +88,8 @@ public class VapsFleetTests {
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         // VISA
-//        card = TestCards.VisaFleetManual(true, true);
-//        track = TestCards.VisaFleetSwipe();
+        card = TestCards.VisaFleetManual(true, true);
+        track = TestCards.VisaFleetSwipe();
     }
 
     @Test
@@ -233,8 +233,10 @@ public class VapsFleetTests {
                 .execute();
         assertNotNull(sale);
         assertEquals("000", sale.getResponseCode());
+        assertNotNull(sale.getReferenceNumber());
 
         Transaction response = sale.voidTransaction()
+                .withReferenceNumber(sale.getReferenceNumber())
                 .execute();
         assertNotNull(response);
 
@@ -284,20 +286,20 @@ public class VapsFleetTests {
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
         // partial approval cancellation
-//        Transaction reversal = response.voidTransaction()
-//                .execute();
-//        assertNotNull(reversal);
-//
-//        pmi = reversal.getMessageInformation();
-//        assertEquals("1420", pmi.getMessageTransactionIndicator());
-//        assertEquals("000900", pmi.getProcessingCode());
-//        assertEquals("441", pmi.getFunctionCode());
-//        assertEquals("4355", pmi.getMessageReasonCode());
-//
-//        assertEquals(reversal.getResponseMessage(), "400", reversal.getResponseCode());
+        Transaction reversal = response.cancel()
+                .execute();
+        assertNotNull(reversal);
+
+        pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4352", pmi.getMessageReasonCode());
+
+        assertEquals(reversal.getResponseMessage(), "400", reversal.getResponseCode());
 
         // test_009
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+/*        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction captureResponse = response.capture(new BigDecimal(12))
@@ -315,7 +317,7 @@ public class VapsFleetTests {
         assertEquals("202", pmi.getFunctionCode());
 
         // check response
-        assertEquals("000", captureResponse.getResponseCode());
+        assertEquals("000", captureResponse.getResponseCode());*/
     }
 
     @Test

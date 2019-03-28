@@ -11,7 +11,6 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.DE62_CardIssuerEntryTag;
-import com.global.api.network.enums.FallbackCode;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
@@ -25,12 +24,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal amount;
     private BigDecimal authAmount;
     private BatchCloseType batchCloseType;
-    private String cardIssuerReferenceNumber;
+    private String referenceNumber;
     private BigDecimal cashBackAmount;
     private String clerkId;
     private String clientTransactionId;
     private String currency;
+    private boolean customerInitiated;
     private String description;
+    private boolean forcedReversal;
     private BigDecimal gratuity;
     private LodgingData lodgingData;
     private String orderId;
@@ -63,8 +64,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public BatchCloseType getBatchCloseType() {
         return batchCloseType;
     }
-    public String getCardIssuerReferenceNumber() {
-        return cardIssuerReferenceNumber;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
     public BigDecimal getCashBackAmount() {
         return cashBackAmount;
@@ -84,8 +85,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public String getCurrency() {
         return currency;
     }
+    public boolean isCustomerInitiated() {
+        return customerInitiated;
+    }
     public String getDescription() {
         return description;
+    }
+    public boolean isForcedReversal() {
+        return forcedReversal;
     }
     public BigDecimal getGratuity() {
         return gratuity;
@@ -166,8 +173,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
         return this;
     }
-    public ManagementBuilder withCardIssuerReferenceNumber(String value) {
-        this.cardIssuerReferenceNumber = value;
+    public ManagementBuilder withReferenceNumber(String value) {
+        this.referenceNumber = value;
         return this;
     }
     public ManagementBuilder withCashBackAmount(BigDecimal value) {
@@ -186,6 +193,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.currency = value;
         return this;
     }
+    public ManagementBuilder withCustomerInitiated(boolean value) {
+        customerInitiated = value;
+        return this;
+    }
     public ManagementBuilder withDescription(String value) {
         this.description = value;
         return this;
@@ -196,6 +207,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withForceGatewayTimeout(boolean value) {
         this.forceGatewayTimeout = value;
+        return this;
+    }
+    public ManagementBuilder withForcedReversal(boolean value) {
+        forcedReversal = value;
         return this;
     }
     public ManagementBuilder withGratuity(BigDecimal value) {

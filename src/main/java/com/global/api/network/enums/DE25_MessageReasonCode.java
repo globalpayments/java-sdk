@@ -9,6 +9,8 @@ public enum DE25_MessageReasonCode implements IStringConstant {
     PinDebit_EBT_Acknowledgement("1379"),
     TimeoutWaitingForResponse("4021"),
     MerchantInitiatedReversal("4351"),
+    CustomerInitiatedReversal("4352"),
+    CustomerInitiated_PartialApproval("4353"),
     SystemTimeout_Malfunction("4354"),
     ForceVoid_PartialApproval("4355"),
     ForceVoid_ApprovedTransaction("4356");

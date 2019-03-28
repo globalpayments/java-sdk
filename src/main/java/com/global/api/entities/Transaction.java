@@ -382,6 +382,12 @@ public class Transaction {
                 .withAmount(amount);
     }
 
+    public ManagementBuilder cancel() {
+        return new ManagementBuilder(TransactionType.Void)
+                .withPaymentMethod(transactionReference)
+                .withCustomerInitiated(true);
+    }
+
     public ManagementBuilder edit() {
         return new ManagementBuilder(TransactionType.Edit)
                 .withPaymentMethod(transactionReference);
@@ -423,7 +429,19 @@ public class Transaction {
     }
 
     public ManagementBuilder voidTransaction() {
-        return new ManagementBuilder(TransactionType.Void).withPaymentMethod(transactionReference);
+        return voidTransaction(null, false);
+    }
+    public ManagementBuilder voidTransaction(BigDecimal amount) {
+        return voidTransaction(amount, false);
+    }
+    public ManagementBuilder voidTransaction(boolean force) {
+        return voidTransaction(null, force);
+    }
+    public ManagementBuilder voidTransaction(BigDecimal amount, boolean force) {
+        return new ManagementBuilder(TransactionType.Void)
+                .withAmount(amount)
+                .withPaymentMethod(transactionReference)
+                .withForcedReversal(force);
     }
 
     public static Transaction fromId(String transactionId) {
@@ -448,7 +466,7 @@ public class Transaction {
     }
 
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod) {
-        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null, null, null, null);
+        return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null);
     }
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String originalProcessingCode) {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null, null, null, originalProcessingCode);

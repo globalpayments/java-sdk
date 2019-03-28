@@ -1,10 +1,7 @@
 package com.global.api.gateways;
 
+import com.global.api.builders.*;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
-import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.builders.ManagementBuilder;
-import com.global.api.builders.RecurringBuilder;
-import com.global.api.builders.ReportBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -480,8 +477,27 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         return mapResponse(response);
     }
 
-    public <T> T processReport(ReportBuilder<T> builder, Class<T> clazz) throws ApiException {
-        throw new UnsupportedTransactionException("Reporting functionality is not supported through this gateway.");
+    public <TResult> TResult processReport(ReportBuilder<TResult> builder, Class<TResult> clazz) throws ApiException {
+        ElementTree et = new ElementTree();
+        String timestamp = GenerationUtils.generateTimestamp();
+
+        // build request
+        Element request = et.element("request")
+                .set("type", mapReportType(builder.getReportType()))
+                .set("timestamp", timestamp);
+        et.subElement(request, "merchantid").text(merchantId);
+        et.subElement(request, "account", accountId);
+
+        if(builder instanceof TransactionReportBuilder) {
+            TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>)builder;
+            et.subElement(request,"orderid", trb.getTransactionId());
+
+            String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, trb.getTransactionId(), "", "", "");
+            et.subElement(request, "sha1hash").text(sha1hash);
+        }
+
+        String response = doTransaction(et.toString(request));
+        return mapReportResponse(response, builder.getReportType(), clazz);
     }
 
     public <TResult> TResult processRecurring(RecurringBuilder<TResult> builder, Class<TResult> clazz) throws ApiException {
@@ -596,6 +612,45 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     }
 
     @SuppressWarnings("unchecked")
+    private <TResult> TResult mapReportResponse(String rawResponse, ReportType reportType, Class<TResult> clazz) throws ApiException {
+        Element response = ElementTree.parse(rawResponse).get("response");
+        checkResponse(response);
+
+        try {
+            TResult rvalue = clazz.newInstance();
+            if(reportType.equals(ReportType.TransactionDetail)) {
+                TransactionSummary summary = new TransactionSummary();
+                summary.setTransactionId(response.getString("pasref"));
+                summary.setClientTransactionId(response.getString("orderid"));
+                summary.setAuthCode(response.getString("authcode"));
+                summary.setMaskedCardNumber(response.getString("cardnumber"));
+                summary.setAvsResponseCode(response.getString("avspostcoderesponse"));
+                summary.setCvnResponseCode(response.getString("cvnresult"));
+                summary.setGatewayResponseCode(response.getString("result"));
+                summary.setGatewayResponseMessage(response.getString("message"));
+                summary.setBatchId(response.getString("batchid"));
+
+                if(response.has("fraudresponse")) {
+                    Element fraud = response.get("fraudresponse");
+                    summary.setFraudRuleInfo(fraud.getString("result"));
+                }
+
+                if(response.has("threedsecure")) {
+                    summary.setCavvResponseCode(response.getString("cavv"));
+                    summary.setEciIndicator(response.getString("eci"));
+                    summary.setXid(response.getString("xid"));
+                }
+
+                rvalue = (TResult)summary;
+            }
+            return rvalue;
+        }
+        catch(Exception e) {
+            throw new ApiException(e.getMessage(), e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private <TResult> TResult mapRecurringResponse(String rawResponse, RecurringBuilder<TResult> builder) throws ApiException {
         Element root = ElementTree.parse(rawResponse).get("response");
 
@@ -687,6 +742,15 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 return "3ds-verifysig";
             default:
                 return "unknown";
+        }
+    }
+
+    private String mapReportType(ReportType reportType) throws ApiException {
+        switch (reportType) {
+//            case TransactionDetail:
+//                return "query";
+            default:
+                throw new UnsupportedTransactionException("This reporting call is not supported by your currently configured gateway.");
         }
     }
 

@@ -14,7 +14,9 @@ public class TransactionSummary {
 	private BigDecimal amount;
 	private BigDecimal authorizedAmount;
 	private String authCode;
+	private String avsResponseCode;
 	private Date batchCloseDate;
+	private String batchId;
 	private String batchSequenceNumber;
 	private Address billingAddress;
 	private BigDecimal captureAmount;
@@ -31,9 +33,11 @@ public class TransactionSummary {
 	private String customerFirstName;
 	private String customerId;
 	private String customerLastName;
+	private String cvnResponseCode;
 	private boolean debtRepaymentIndicator;
 	private String description;
 	private int deviceId;
+	private String eciIndicator;
 	private String emvChipCondition;
 	private String fraudRuleInfo;
 	private boolean fullyCaptured;
@@ -75,6 +79,7 @@ public class TransactionSummary {
 	private String transactionId;
 	private String uniqueDeviceId;
 	private String username;
+	private String xid;
 	
 	public String getAccountDataSource() {
 		return accountDataSource;
@@ -106,13 +111,25 @@ public class TransactionSummary {
 	public void setAuthCode(String authCode) {
 		this.authCode = authCode;
 	}
-	public Date getBatchCloseDate() {
+    public String getAvsResponseCode() {
+        return avsResponseCode;
+    }
+    public void setAvsResponseCode(String avsResponseCode) {
+        this.avsResponseCode = avsResponseCode;
+    }
+    public Date getBatchCloseDate() {
 		return batchCloseDate;
 	}
 	public void setBatchCloseDate(Date batchCloseDate) {
 		this.batchCloseDate = batchCloseDate;
 	}
-	public String getBatchSequenceNumber() {
+    public String getBatchId() {
+        return batchId;
+    }
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+    public String getBatchSequenceNumber() {
 		return batchSequenceNumber;
 	}
 	public void setBatchSequenceNumber(String batchSequenceNumber) {
@@ -208,7 +225,13 @@ public class TransactionSummary {
 	public void setCustomerLastName(String customerLastName) {
 		this.customerLastName = customerLastName;
 	}
-	public boolean isDebtRepaymentIndicator() {
+    public String getCvnResponseCode() {
+        return cvnResponseCode;
+    }
+    public void setCvnResponseCode(String cvnResponseCode) {
+        this.cvnResponseCode = cvnResponseCode;
+    }
+    public boolean isDebtRepaymentIndicator() {
 		return debtRepaymentIndicator;
 	}
 	public void setDebtRepaymentIndicator(boolean debtRepaymentIndicator) {
@@ -225,6 +248,12 @@ public class TransactionSummary {
 	}
 	public void setDeviceId(int deviceId) {
 		this.deviceId = deviceId;
+	}
+	public String getEciIndicator() {
+		return eciIndicator;
+	}
+	public void setEciIndicator(String eciIndicator) {
+		this.eciIndicator = eciIndicator;
 	}
 	public String getEmvChipCondition() {
 		return emvChipCondition;
@@ -327,6 +356,12 @@ public class TransactionSummary {
 	}
 	public void setOneTimePayment(boolean oneTimePayment) {
 		this.oneTimePayment = oneTimePayment;
+	}
+	public String getOrderId() {
+	    return this.clientTransactionId;
+    }
+    public void setOrderId(String value) {
+		this.clientTransactionId = value;
 	}
 	public String getOriginalTransactionId() {
 		return originalTransactionId;
@@ -471,5 +506,11 @@ public class TransactionSummary {
 	}
 	public void setUsername(String username) {
 		this.username = username;
+	}
+	public String getXid() {
+		return xid;
+	}
+	public void setXid(String xid) {
+		this.xid = xid;
 	}
 }

@@ -121,7 +121,12 @@ public class NetworkGateway {
                     events.add(connectionEvent);
 
                     if(connectionFaults++ != 3) {
-                        connect(endpoint.equals(primaryEndpoint) ? secondaryEndpoint : primaryEndpoint, port.equals(primaryPort) ? secondaryPort : primaryPort);
+                        if(endpoint.equals(primaryEndpoint) && secondaryEndpoint != null) {
+                            connect(secondaryEndpoint, secondaryPort);
+                        }
+                        else {
+                            connect(primaryEndpoint, primaryPort);
+                        }
                     }
                     else {
                         throw new IOException("Failed to connect to primary or secondary processing endpoints.");

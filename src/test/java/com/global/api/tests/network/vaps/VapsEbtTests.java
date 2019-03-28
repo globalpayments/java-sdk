@@ -5,6 +5,7 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.DebitAuthorizerCode;
 import com.global.api.entities.enums.EbtCardType;
 import com.global.api.entities.enums.InquiryType;
 import com.global.api.entities.exceptions.ApiException;
@@ -39,11 +40,11 @@ public class VapsEbtTests {
 
     public VapsEbtTests() throws ApiException {
         Address address = new Address();
-        address.setName("7-ELEVEN");
-        address.setStreetAddress1("8002 SOUTH STATE");
-        address.setCity("MIDVALE");
-        address.setPostalCode("840473293");
-        address.setState("UT");
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
         address.setCountry("USA");
 
         AcceptorConfig acceptorConfig = new AcceptorConfig();
@@ -68,7 +69,7 @@ public class VapsEbtTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");
@@ -426,7 +427,7 @@ public class VapsEbtTests {
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
-                new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
+                new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized, DebitAuthorizerCode.UnknownAuthorizer),
                 foodCard,
                 "1200",
                 "001931",
@@ -434,7 +435,7 @@ public class VapsEbtTests {
         );
 
         Transaction response = transaction.capture()
-                .withCardIssuerReferenceNumber("123456789012345")
+                .withReferenceNumber("123456789012345")
                 .execute();
         assertNotNull(response);
 

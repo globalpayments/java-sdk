@@ -27,7 +27,9 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
     }
 
     public void add(DE62_2_CardIssuerEntry entry) {
-        cardIssuerEntries.add(entry);
+        if(!StringUtils.isNullOrEmpty(entry.getIssuerEntry())) {
+            cardIssuerEntries.add(entry);
+        }
     }
     public void add(DE62_CardIssuerEntryTag tag, String value) {
         DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, value);

@@ -36,6 +36,7 @@ public class RealexCreditTests {
         config.setRebatePassword("rebate");
         config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 

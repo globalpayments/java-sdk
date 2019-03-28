@@ -33,11 +33,11 @@ public class VapsDebitTests {
 
     public VapsDebitTests() throws ApiException {
         Address address = new Address();
-        address.setName("7-ELEVEN");
-        address.setStreetAddress1("8002 SOUTH STATE");
-        address.setCity("MIDVALE");
-        address.setPostalCode("840473293");
-        address.setState("UT");
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
         address.setCountry("USA");
 
         AcceptorConfig acceptorConfig = new AcceptorConfig();
@@ -62,7 +62,7 @@ public class VapsDebitTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");
@@ -167,33 +167,6 @@ public class VapsDebitTests {
 
         // check response
         assertEquals("000", response.getResponseCode());
-    }
-
-    @Test
-    public void refund_by_transaction() throws ApiException {
-//        Transaction sale = track.charge(new BigDecimal(10))
-//                .withCurrency("USD")
-//                .execute("ICR");
-//        assertNotNull(sale);
-//        assertEquals("000", sale.getResponseCode());
-
-        Transaction trans = Transaction.fromNetwork(
-            new BigDecimal(60),
-            "TYPE04",
-                new NtsData(FallbackCode.None, AuthorizerCode.Interchange_Authorized, "59"),
-            track,
-            "1200",
-            "000791",
-            "190211054340"
-        );
-
-        Transaction refund = trans.refund(new BigDecimal(60))
-                .withCurrency("USD")
-                .withSystemTraceAuditNumber(792)
-                .withBatchNumber(1, 10)
-                .execute("ICR");
-        assertNotNull(refund);
-        assertEquals("000", refund.getResponseCode());
     }
 
     @Test

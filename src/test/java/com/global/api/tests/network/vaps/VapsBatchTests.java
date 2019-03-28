@@ -17,24 +17,27 @@ import com.global.api.services.BatchService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsBatchTests {
     private String configName = "default";
     private BatchProvider batchProvider;
 
     public VapsBatchTests() throws ApiException {
         Address address = new Address();
-        address.setName("7-ELEVEN");
-        address.setStreetAddress1("8002 SOUTH STATE");
-        address.setCity("MIDVALE");
-        address.setPostalCode("840473293");
-        address.setState("UT");
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
         address.setCountry("USA");
 
         AcceptorConfig acceptorConfig = new AcceptorConfig();

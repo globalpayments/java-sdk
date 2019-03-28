@@ -49,7 +49,7 @@ public class VapsCvnTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");

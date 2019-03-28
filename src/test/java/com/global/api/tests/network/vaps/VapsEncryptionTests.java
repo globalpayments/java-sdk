@@ -35,11 +35,11 @@ public class VapsEncryptionTests {
 
     public VapsEncryptionTests() throws ApiException {
         Address address = new Address();
-        address.setName("7-ELEVEN");
-        address.setStreetAddress1("8002 SOUTH STATE");
-        address.setCity("MIDVALE");
-        address.setPostalCode("840473293");
-        address.setState("UT");
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
         address.setCountry("USA");
 
         AcceptorConfig acceptorConfig = new AcceptorConfig();
@@ -65,7 +65,7 @@ public class VapsEncryptionTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");

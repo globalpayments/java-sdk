@@ -57,7 +57,7 @@ public class VapsCreditTests {
         NetworkGatewayConfig config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.7eleven.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0001126198308");
@@ -532,7 +532,7 @@ public class VapsCreditTests {
 
         PriorMessageInformation pmi = response.getMessageInformation();
         assertEquals("1100", pmi.getMessageTransactionIndicator());
-        assertEquals("313000", pmi.getProcessingCode());
+        assertEquals("303000", pmi.getProcessingCode());
         assertEquals("108", pmi.getFunctionCode());
 
         assertEquals("000", response.getResponseCode());
