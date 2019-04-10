@@ -17,6 +17,9 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
 	private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
@@ -31,7 +34,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private ReasonCode reasonCode;
     private BigDecimal taxAmount;
     private TaxType taxType;
-    private HashMap<String, String[]> supplementaryData;
+    private MultiValuedMap<String, String[]> supplementaryData;
 
     public AlternativePaymentType getAlternativePaymentType() {
 		return alternativePaymentType;
@@ -78,7 +81,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public ReasonCode getReasonCode() {
         return reasonCode;
     }
-    public HashMap<String, String[]> getSupplementaryData() {
+    public MultiValuedMap<String, String[]> getSupplementaryData() {
         return supplementaryData;
     }
     public BigDecimal getTaxAmount() {
@@ -142,7 +145,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withSupplementaryData(String type, String... value) {
         if (this.supplementaryData == null) {
-            supplementaryData = new HashMap<String, String[]>();
+            supplementaryData = new ArrayListValuedHashMap<String, String[]>();
         }
         this.supplementaryData.put(type, value);
         return this;

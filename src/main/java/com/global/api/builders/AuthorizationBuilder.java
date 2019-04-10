@@ -12,10 +12,14 @@ import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 
+import java.awt.font.MultipleMaster;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AccountType accountType;
@@ -68,7 +72,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
-    private HashMap<String, String[]> supplementaryData;
+    private MultiValuedMap<String, String[]> supplementaryData;
     private String tagData;
     private String timestamp;
 
@@ -203,7 +207,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getShippingAmount() {
         return shippingAmount;
     }
-    public HashMap<String, String[]> getSupplementaryData() {
+    public MultiValuedMap<String, String[]> getSupplementaryData() {
         return supplementaryData;
     }
     public AccountType getAccountType() {
@@ -473,7 +477,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withSupplementaryData(String type, String... value) {
         if (this.supplementaryData == null) {
-            supplementaryData = new HashMap<String, String[]>();
+            supplementaryData = new ArrayListValuedHashMap<String, String[]>();
         }
         this.supplementaryData.put(type, value);
         return this;
