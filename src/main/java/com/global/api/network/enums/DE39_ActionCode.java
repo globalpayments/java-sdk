@@ -1,6 +1,7 @@
 package com.global.api.network.enums;
 
 import com.global.api.entities.enums.IStringConstant;
+import com.global.api.utils.StringUtils;
 
 public enum DE39_ActionCode implements IStringConstant {
     ;
@@ -15,7 +16,11 @@ public enum DE39_ActionCode implements IStringConstant {
     }
 
     public static String getDescription(String actionCode) {
-        int code = Integer.parseInt(actionCode);
+        int code = -1;
+        if(!StringUtils.isNullOrEmpty(actionCode)) {
+            code =Integer.parseInt(actionCode);
+        }
+
         switch (code) {
             case 0: return "Approved";
             case 1: return "Honor w/identification";

@@ -19,10 +19,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AccountType accountType;
@@ -77,7 +74,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
-    private HashMap<String, String[]> supplementaryData;
+    private HashMap<String, ArrayList<String[]>> supplementaryData;
     private String tagData;
     private String timestamp;
 
@@ -224,7 +221,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getShippingAmount() {
         return shippingAmount;
     }
-    public HashMap<String, String[]> getSupplementaryData() {
+    public HashMap<String, ArrayList<String[]>> getSupplementaryData() {
         return supplementaryData;
     }
     public AccountType getAccountType() {
@@ -526,11 +523,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.shippingAmount = value;
         return this;
     }
-    public AuthorizationBuilder withSupplementaryData(String type, String... value) {
-        if (this.supplementaryData == null) {
-            supplementaryData = new HashMap<String, String[]>();
+    public AuthorizationBuilder withSupplementaryData(String type, String... values) {
+        // create the dictionary if needed
+        if (supplementaryData == null) {
+            supplementaryData = new HashMap<String, ArrayList<String[]>>();
         }
-        this.supplementaryData.put(type, value);
+
+        // add the type if needed
+        if(!supplementaryData.containsKey(type)) {
+            supplementaryData.put(type, new ArrayList<String[]>());
+        }
+
+        // add the values to it
+        supplementaryData.get(type).add(values);
         return this;
     }
     public AuthorizationBuilder withTimestamp(String value) {

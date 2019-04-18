@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.hpa;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -9,6 +10,7 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -29,7 +31,7 @@ public class HpaCreditTests {
         deviceConfig.setIpAddress("10.12.220.39");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(30000);
-        deviceConfig.setRequestIdProvider(new RequestIdProvider());
+        deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -38,7 +40,7 @@ public class HpaCreditTests {
             public void messageSent(String message) {
                 if(!expectedMessage.equals(""))
                     assertEquals(expectedMessage, message);
-            }
+                }
         });
         device.openLane();
     }
@@ -143,5 +145,30 @@ public class HpaCreditTests {
     @Test(expected = BuilderException.class)
     public void creditVoidNoTransactionId() throws ApiException {
     	device.creditVoid().execute();
+    }
+    
+    @Test
+    public void lostTransactionRecovery() throws ApiException {
+        int requestId = new RandomIdProvider().getRequestId();
+        TerminalResponse response = device.creditSale(new BigDecimal("10"))
+                .withRequestId(requestId)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        waitAndReset();
+        
+        TerminalResponse duplicateResponse = device.creditSale(new BigDecimal("10"))
+                .withRequestId(requestId)
+                .execute();
+        assertNotNull(duplicateResponse);
+        assertEquals("00", duplicateResponse.getResponseCode());
+        assertEquals(response.getAuthorizationCode(), duplicateResponse.getAuthorizationCode());
+    }
+
+    @Test
+    public void creditStartCard() throws ApiException {
+        IDeviceResponse response = device.startCard(PaymentMethodType.Credit);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
     }
 }

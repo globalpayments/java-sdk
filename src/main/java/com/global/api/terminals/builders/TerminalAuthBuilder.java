@@ -21,7 +21,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private boolean allowDuplicates;
     private BigDecimal amount;
     private String authCode;
-    private BigDecimal cashbackAmount;
+    private BigDecimal cashBackAmount;
     private CurrencyType currency;
     private String customerCode;
     private BigDecimal gratuity;
@@ -48,8 +48,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             return ((TransactionReference)paymentMethod).getAuthCode();
         return null;
     }
-    public BigDecimal getCashbackAmount() {
-        return cashbackAmount;
+    public BigDecimal getCashBackAmount() {
+        return cashBackAmount;
     }
     public CurrencyType getCurrency() {
         return currency;
@@ -107,7 +107,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return this;
     }
     public TerminalAuthBuilder withCashBack(BigDecimal value) {
-        this.cashbackAmount = value;
+        this.cashBackAmount = value;
         return this;
     }
     public TerminalAuthBuilder withCurrency(CurrencyType value) {

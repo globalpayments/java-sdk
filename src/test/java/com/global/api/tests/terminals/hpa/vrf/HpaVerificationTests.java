@@ -9,7 +9,7 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.tests.terminals.hpa.RequestIdProvider;
+import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.After;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class HpaVerificationTests {
         connectionConfig.setConnectionMode(ConnectionModes.TCP_IP);
         connectionConfig.setIpAddress("10.12.220.39");
         connectionConfig.setPort(12345);
-        connectionConfig.setRequestIdProvider(new RequestIdProvider());
+        connectionConfig.setRequestIdProvider(new RandomIdProvider());
 
         _device = DeviceService.create(connectionConfig);
         assertNotNull(_device);

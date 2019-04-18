@@ -193,16 +193,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 }
             }
 
-            // data supplementry
+            // data supplementary
             if (builder.getSupplementaryData() != null) {
-                Element supplementarydata = et.subElement(request, "supplementarydata");
-                HashMap<String, String[]> suppData = builder.getSupplementaryData();
+                Element supplementaryData = et.subElement(request, "supplementarydata");
+                HashMap<String, ArrayList<String[]>> suppData = builder.getSupplementaryData();
 
                 for (String key : suppData.keySet()) {
-                    Element item = et.subElement(supplementarydata, "item").set("type", key);
-                    String str[] = suppData.get(key);
-                    for (int i = 1; i <= suppData.get(key).length; i++) {
-                        et.subElement(item, "field" + StringUtils.padLeft("" + i, 2, '0'), str[i - 1]);
+                    ArrayList<String[]> dataSets = suppData.get(key);
+
+                    for(String[] data: dataSets) {
+                        Element item = et.subElement(supplementaryData, "item").set("type", key);
+                        for(int i = 1; i< data.length; i++) {
+                            et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
+                        }
                     }
                 }
             }

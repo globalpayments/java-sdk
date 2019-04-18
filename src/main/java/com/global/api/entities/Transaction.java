@@ -383,9 +383,13 @@ public class Transaction {
     }
 
     public ManagementBuilder cancel() {
+        return cancel(null);
+    }
+    public ManagementBuilder cancel(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Void)
                 .withPaymentMethod(transactionReference)
-                .withCustomerInitiated(true);
+                .withCustomerInitiated(true)
+                .withAmount(amount);
     }
 
     public ManagementBuilder edit() {

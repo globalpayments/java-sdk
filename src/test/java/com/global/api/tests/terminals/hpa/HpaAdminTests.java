@@ -28,7 +28,7 @@ public class HpaAdminTests {
         deviceConfig.setIpAddress("10.12.220.39");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(60000);
-        deviceConfig.setRequestIdProvider(new RequestIdProvider());
+        deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -42,7 +42,7 @@ public class HpaAdminTests {
     }
     
     @After
-    public void tearDown() throws ApiException {
+    public void tearDown() {
         this.expectedMessage = "";
         //device.reset();
     }
@@ -121,5 +121,19 @@ public class HpaAdminTests {
 
         device.reset();
         device.closeLane();
+    }
+    
+    @Test
+    public void addLineItem() throws ApiException {
+        IDeviceResponse response = device.addLineItem("Green Beans", null, null, null);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+    
+    @Test
+    public void addLineItemWithParams() throws ApiException {
+        IDeviceResponse response = device.addLineItem("Green Beans", "$0.59", "TOTAL", "$1.19");
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
     }
 }

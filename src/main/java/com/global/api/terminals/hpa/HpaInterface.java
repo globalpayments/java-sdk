@@ -5,16 +5,18 @@ import com.global.api.entities.enums.HpaMsgId;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
 import com.global.api.terminals.hpa.responses.SipBatchResponse;
 import com.global.api.terminals.hpa.responses.SipInitializeResponse;
 import com.global.api.terminals.hpa.responses.SipSignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.utils.StringUtils;
+
 import java.math.BigDecimal;
 
 public class HpaInterface implements IDeviceInterface {
@@ -25,7 +27,7 @@ public class HpaInterface implements IDeviceInterface {
         this.onMessageSent = onMessageSent;
     }
 
-    public HpaInterface(HpaController controller) throws ConfigurationException {
+    HpaInterface(HpaController controller) {
         _controller = controller;
         _controller.setMessageSentHandler(new IMessageSentInterface() {
             public void messageSent(String message) {
@@ -40,26 +42,27 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     public IDeviceResponse disableHostResponseBeep() throws ApiException {
-        throw new UnsupportedTransactionException("Function is not supported by HeartSIP.");
+        throw new UnsupportedTransactionException("Function is not supported by the Heartland Payment Application.");
     }
 
     public IDeviceResponse closeLane() throws ApiException {
-        return _controller.sendMessage(SipBaseResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>LaneClose</Request><RequestId>"+ _controller.requestIdProvider.getRequestId() +"</RequestId></SIP>", HpaMsgId.LANE_CLOSE.getValue());
+        return _controller.sendAdminMessage(SipBaseResponse.class, new HpaAdminBuilder(HpaMsgId.LANE_CLOSE.getValue()));
     }
 
     public IInitializeResponse initialize() throws ApiException {
-        return _controller.sendMessage(SipInitializeResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>GetAppInfoReport</Request><RequestId>"+ _controller.requestIdProvider.getRequestId() +"</RequestId></SIP>", HpaMsgId.GET_INFO_REPORT.getValue());
+        return _controller.sendAdminMessage(SipInitializeResponse.class, new HpaAdminBuilder(HpaMsgId.GET_INFO_REPORT.getValue()));
     }
+
     public IDeviceResponse openLane() throws ApiException {
-    	return _controller.sendMessage(SipBaseResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>LaneOpen</Request><RequestId>"+ _controller.requestIdProvider.getRequestId() +"</RequestId></SIP>", HpaMsgId.LANE_OPEN.getValue());
+        return _controller.sendAdminMessage(SipBaseResponse.class, new HpaAdminBuilder(HpaMsgId.LANE_OPEN.getValue()));
     }
 
     public IDeviceResponse reboot() throws ApiException {
-        return _controller.sendMessage(SipBaseResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reboot</Request><RequestId>"+ _controller.requestIdProvider.getRequestId() +"</RequestId></SIP>", HpaMsgId.REBOOT.getValue());
+        return _controller.sendAdminMessage(SipBaseResponse.class, new HpaAdminBuilder(HpaMsgId.REBOOT.getValue()));
     }
 
     public IDeviceResponse reset() throws ApiException {
-        return _controller.sendMessage(SipBaseResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>Reset</Request><RequestId>"+ _controller.requestIdProvider.getRequestId() +"</RequestId></SIP>", HpaMsgId.RESET.getValue());
+        return _controller.sendAdminMessage(SipBaseResponse.class, new HpaAdminBuilder(HpaMsgId.RESET.getValue()));
     }
 
     public ISignatureResponse getSignatureFile() throws ApiException {
@@ -70,24 +73,45 @@ public class HpaInterface implements IDeviceInterface {
         return promptForSignature(null);
     }
     public ISignatureResponse promptForSignature(String transactionId) throws ApiException {
-        return _controller.sendMessage(SipSignatureResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>SignatureForm</Request><FormText>PLEASE SIGN YOUR NAME</FormText></SIP>", HpaMsgId.SIGNATURE_FORM.getValue());
+        HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.SIGNATURE_FORM.getValue())
+                .set("FormText", "PLEASE SIGN YOUR NAME");
+        return _controller.sendAdminMessage(SipSignatureResponse.class, builder);
     }
 
     public IBatchCloseResponse batchClose() throws ApiException {
-        return _controller.sendMessage(SipBatchResponse.class, "<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>CloseBatch</Request></SIP>", HpaMsgId.BATCH_CLOSE.getValue(), HpaMsgId.GET_BATCH_REPORT.getValue());
+        return _controller.sendAdminMessage(SipBatchResponse.class, new HpaAdminBuilder(HpaMsgId.BATCH_CLOSE.getValue(), HpaMsgId.GET_BATCH_REPORT.getValue()));
+    }
+    
+    public IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException {
+        HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.START_CARD.getValue())
+                .set("CardGroup", paymentMethodType.toString());
+        return _controller.sendAdminMessage(SipBaseResponse.class, builder);
     }
 
-    public TerminalAuthBuilder creditAuth() throws ApiException {
+    public IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException {
+        if(StringUtils.isNullOrEmpty(leftText)) {
+            throw new ApiException("You need to provide at least the left text.");
+        }
+
+        HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.LINE_ITEM.getValue())
+                .set("LineItemTextLeft", leftText)
+                .set("LineItemTextRight", rightText)
+                .set("LineItemRunningTextLeft", runningLeftText)
+                .set("LineItemRunningTextRight", runningRightText);
+        return _controller.sendAdminMessage(SipBaseResponse.class, builder);
+    }
+
+    public TerminalAuthBuilder creditAuth() {
         return creditAuth(null);
     }
     public TerminalAuthBuilder creditAuth(BigDecimal amount) {
         return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit).withAmount(amount);
     }
 
-    public TerminalManageBuilder creditCapture() throws ApiException {
+    public TerminalManageBuilder creditCapture() {
         return creditCapture(null);
     }
-    public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
+    public TerminalManageBuilder creditCapture(BigDecimal amount) {
         return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withAmount(amount);
     }
 

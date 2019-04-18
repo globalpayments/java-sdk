@@ -15,6 +15,7 @@ public class NetworkGatewayConfig extends Configuration {
     private ConnectionType connectionType = ConnectionType.ISDN;
     private String merchantType;
     private MessageType messageType = MessageType.Heartland_POS_8583;
+    private String nodeIdentification;
     private Integer primaryPort;
     private ProtocolType protocolType = ProtocolType.TCP_IP;
     private String secondaryEndpoint;
@@ -58,6 +59,15 @@ public class NetworkGatewayConfig extends Configuration {
     }
     public void setMessageType(MessageType messageType) {
         this.messageType = messageType;
+    }
+    public String getNodeIdentification() {
+        if(!StringUtils.isNullOrEmpty(nodeIdentification)) {
+            return nodeIdentification;
+        }
+        return "    ";
+    }
+    public void setNodeIdentification(String nodeIdentification) {
+        this.nodeIdentification = nodeIdentification;
     }
     public String getPrimaryEndpoint() { return serviceUrl; }
     public void setPrimaryEndpoint(String value) { this.serviceUrl = value; }
@@ -119,6 +129,7 @@ public class NetworkGatewayConfig extends Configuration {
         gateway.setCompanyId(companyId);
         gateway.setConnectionType(connectionType);
         gateway.setMessageType(messageType);
+        gateway.setNodeIdentification(getNodeIdentification());
         gateway.setProtocolType(protocolType);
         gateway.setTerminalId(terminalId);
         gateway.setMerchantType(merchantType);
@@ -171,6 +182,11 @@ public class NetworkGatewayConfig extends Configuration {
         // terminal id
         if(StringUtils.isNullOrEmpty(terminalId)) {
             throw new ConfigurationException("You must provide a terminal id.");
+        }
+
+        // node identification
+        if(!StringUtils.isNullOrEmpty(nodeIdentification) && nodeIdentification.length() != 4) {
+            throw new ConfigurationException("Node identification must only be 4 characters in length.");
         }
     }
 }

@@ -9,7 +9,7 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.tests.terminals.hpa.RequestIdProvider;
+import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class PaxLevel2Tests {
         deviceConfig.setConnectionMode(ConnectionModes.HTTP);
         deviceConfig.setIpAddress("10.12.220.172");
         deviceConfig.setPort(10009);
-        deviceConfig.setRequestIdProvider(new RequestIdProvider());
+        deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);

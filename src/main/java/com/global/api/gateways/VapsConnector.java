@@ -40,6 +40,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
     private ConnectionType connectionType;
     private String merchantType;
     private MessageType messageType;
+    private String nodeIdentification;
     private ProtocolType protocolType;
     private IRequestEncoder requestEncoder;
     private IStanProvider stanProvider;
@@ -65,6 +66,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
     }
     public void setMessageType(MessageType messageType) {
         this.messageType = messageType;
+    }
+    public void setNodeIdentification(String nodeIdentification) {
+        this.nodeIdentification = nodeIdentification;
     }
     public void setConnectionType(ConnectionType connectionType) {
         this.connectionType = connectionType;
@@ -907,7 +911,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
         // rest of the header
         buffer.append(connectionType) // EH.10: Connection Type
-                .append("    ") // EH.11: Node Identification
+                .append(nodeIdentification) // EH.11: Node Identification
                 .append(orgCorr1) // EH.12: Origin Correlation 1 (2 Bytes)
                 .append(companyId) // EH.13: Company ID
                 .append(orgCorr2) // EH.14: Origin Correlation 2 (8 bytes)
@@ -1796,6 +1800,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             // IRR Issuer Reference Number
             if(!StringUtils.isNullOrEmpty(mb.getReferenceNumber())) {
                 cardIssuerData.add(DE62_CardIssuerEntryTag.RetrievalReferenceNumber, mb.getReferenceNumber());
+            }
+
+            // NTE Terminal Error
+            if(mb.getTransactionType().equals(TransactionType.BatchClose) && mb.getBatchCloseType().equals(BatchCloseType.Forced)) {
+                cardIssuerData.add(DE62_CardIssuerEntryTag.TerminalError, "Y");
             }
 
             if(mb.getPaymentMethod() instanceof TransactionReference) {

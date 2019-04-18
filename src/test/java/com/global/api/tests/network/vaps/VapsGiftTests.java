@@ -62,11 +62,14 @@ public class VapsGiftTests {
         config.setMerchantType("5542");
         ServicesContainer.configureService(config, "ICR");
 
+        config.setNodeIdentification("VLK2");
+        ServicesContainer.configureService(config, "ValueLink");
+
         // VALUE LINK
-        //giftCard = TestCards.ValueLinkManual();
+        giftCard = TestCards.ValueLinkManual();
 
         // SVS
-        giftCard = TestCards.SvsSwipe();
+        //giftCard = TestCards.SvsSwipe();
     }
 
     @Test
@@ -114,7 +117,7 @@ public class VapsGiftTests {
     public void giftCard_sale() throws ApiException {
         Transaction response = giftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
-                .execute();
+                .execute("ValueLink");
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }

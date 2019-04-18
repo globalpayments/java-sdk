@@ -1,5 +1,6 @@
 package com.global.api.terminals.abstractions;
 
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -21,6 +22,8 @@ public interface IDeviceInterface extends IDisposable {
     ISignatureResponse getSignatureFile() throws ApiException;
     ISignatureResponse promptForSignature() throws ApiException;
     ISignatureResponse promptForSignature(String transactionId) throws ApiException;
+    IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
+    IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

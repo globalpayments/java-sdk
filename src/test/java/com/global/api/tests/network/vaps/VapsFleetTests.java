@@ -287,6 +287,7 @@ public class VapsFleetTests {
 
         // partial approval cancellation
         Transaction reversal = response.cancel()
+                .withReferenceNumber(response.getReferenceNumber())
                 .execute();
         assertNotNull(reversal);
 

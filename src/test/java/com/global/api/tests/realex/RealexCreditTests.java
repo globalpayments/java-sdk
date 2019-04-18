@@ -454,4 +454,15 @@ public class RealexCreditTests {
         assertNotNull(fraudResponse);
         assertEquals("00", fraudResponse.getResponseCode());
     }
+
+    @Test
+    public void test_supplementaryData() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("GBP")
+                .withSupplementaryData("leg", "value1", "value2", "value3")
+                .withSupplementaryData("leg", "value1", "value2", "value3")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 }

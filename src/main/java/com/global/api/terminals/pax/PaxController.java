@@ -91,7 +91,7 @@ public class PaxController extends DeviceController {
 
         // amounts sub group
         amounts.setTransactionAmount(StringUtils.toNumeric(builder.getAmount()));
-        amounts.setCashBackAmount(StringUtils.toNumeric(builder.getCashbackAmount()));
+        amounts.setCashBackAmount(StringUtils.toNumeric(builder.getCashBackAmount()));
         amounts.setTipAmount(StringUtils.toNumeric(builder.getGratuity()));
         amounts.setTaxAmount(StringUtils.toNumeric(builder.getTaxAmount()));
 

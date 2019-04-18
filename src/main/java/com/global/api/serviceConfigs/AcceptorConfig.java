@@ -209,16 +209,11 @@ public class AcceptorConfig {
     }
 
     public void validate() throws ConfigurationException {
-        if(!StringUtils.isNullOrEmpty(hardwareLevel) && hardwareLevel.length() > 4) {
-            throw new ConfigurationException("Hardware Level must be no more than 8 characters.");
-        }
-
-        if(!StringUtils.isNullOrEmpty(softwareLevel) && softwareLevel.length() > 8) {
-            throw new ConfigurationException("Software Level must be no more than 8 characters.");
-        }
-
-        if(!StringUtils.isNullOrEmpty(operatingSystemLevel) && operatingSystemLevel.length() > 8) {
-            throw new ConfigurationException("Operating System Level must be no more than 8 characters.");
+        String hardwareLevel = (getHardwareLevel() == null) ? "" : getHardwareLevel();
+        String softwareLevel = (getSoftwareLevel() == null) ? "" : getSoftwareLevel();
+        String operatingSystemLevel = (getOperatingSystemLevel() == null) ? "" : getOperatingSystemLevel();
+        if(hardwareLevel.concat(softwareLevel).concat(operatingSystemLevel).length() > 20) {
+            throw new ConfigurationException("The values for Hardware, Software and Operating System Level cannot exceed a combined length of 20 characters.");
         }
 
         if(address != null) {
