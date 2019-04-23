@@ -96,11 +96,16 @@ public class CreditCardData extends Credit implements ICardData {
     }
 
     public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp) throws ApiException {
+    	return getDccRate(dccRateType, amount, currency, ccp, null);
+	}
+    
+    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp, String orderId) throws ApiException {
 		Transaction response = new AuthorizationBuilder(TransactionType.DccRateLookup, this)
 				.withAmount(amount)
 				.withCurrency(currency)
 				.withDccRateType(dccRateType)
 				.withDccProcessor(ccp)
+				.withOrderId(orderId)
 				.withDccType("1")
 				.execute();
 
@@ -112,7 +117,6 @@ public class CreditCardData extends Credit implements ICardData {
 		dccValues.setDccRate(response.getDccResponseResult().getCardHolderRate());
 		dccValues.setCurrency(response.getDccResponseResult().getCardHolderCurrency());
 		dccValues.setAmount(response.getDccResponseResult().getCardHolderAmount());
-
 		return dccValues;
 	}
 
