@@ -330,18 +330,20 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("ACCOUNT", accountId);
         request.set("CHANNEL", channel);
         request.set("ORDER_ID", orderId);
-        if(builder.getAmount() != null)
+        if(builder.getAmount() != null) {
             request.set("AMOUNT", StringUtils.toNumeric(builder.getAmount()));
+        }
         request.set("CURRENCY", builder.getCurrency());
         request.set("TIMESTAMP", timestamp);
-        //request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null, builder.getCurrency()));
         request.set("AUTO_SETTLE_FLAG", (builder.getTransactionType() == TransactionType.Sale) ? "1" : builder.isMultiCapture() ? "MULTI" : "0");
         request.set("COMMENT1", builder.getDescription());
         // request.set("COMMENT2", );
-        if(hostedPaymentConfig.isRequestTransactionStabilityScore() != null)
+        if(hostedPaymentConfig.isRequestTransactionStabilityScore() != null) {
             request.set("RETURN_TSS", hostedPaymentConfig.isRequestTransactionStabilityScore() ? "1" : "0");
-        if(hostedPaymentConfig.isDynamicCurrencyConversionEnabled() != null)
+        }
+        if(hostedPaymentConfig.isDynamicCurrencyConversionEnabled() != null) {
             request.set("DCC_ENABLE", hostedPaymentConfig.isDynamicCurrencyConversionEnabled() ? "1" : "0");
+        }
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
             AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
@@ -356,14 +358,18 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                     }
                 }
             request.set("CUST_NUM", paymentData.getCustomerNumber());
-            if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null)
+            if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null) {
                 request.set("HPP_SELECT_STORED_CARD", paymentData.getCustomerKey());
-            if(paymentData.isOfferToSaveCard() != null)
+            }
+            if(paymentData.isOfferToSaveCard() != null) {
                 request.set("OFFER_SAVE_CARD", paymentData.isOfferToSaveCard() ? "1" : "0");
-            if(paymentData.isCustomerExists() != null)
+            }
+            if(paymentData.isCustomerExists() != null) {
                 request.set("PAYER_EXIST", paymentData.isCustomerExists() ? "1" : "0");
-            if(hostedPaymentConfig.isDisplaySavedCards() == null)
+            }
+            if(hostedPaymentConfig.isDisplaySavedCards() == null) {
                 request.set("PAYER_REF", paymentData.getCustomerKey());
+            }
             request.set("PMT_REF", paymentData.getPaymentKey());
             request.set("PROD_ID", paymentData.getProductId());
             request.set("HPP_CUSTOMER_COUNTRY", paymentData.getCustomerCountry());
@@ -372,26 +378,61 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("MERCHANT_RESPONSE_URL", paymentData.getMerchantResponseUrl());
             request.set("HPP_TX_STATUS_URL", paymentData.getTransactionStatusUrl());
             request.set("PM_METHODS", paymentValues.toString());
+
+            // 3DSv2
+            request.set("HPP_CUSTOMER_EMAIL", paymentData.getCustomerEmail());
+            request.set("HPP_CUSTOMER_PHONENUMBER_MOBILE", paymentData.getCustomerPhoneMobile());
+            request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequest());
+            if(paymentData.getAddressesMatch() != null) {
+                request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
+            }
         }
+
         if (builder.getShippingAddress() != null) {
+            // FRAUD VALUES
             request.set("SHIPPING_CODE", builder.getShippingAddress().getPostalCode());
             request.set("SHIPPING_CO", builder.getShippingAddress().getCountry());
+
+            // 3DS2 VALUES
+            request.set("HPP_SHIPPING_STREET1", builder.getShippingAddress().getStreetAddress1());
+            request.set("HPP_SHIPPING_STREET2", builder.getShippingAddress().getStreetAddress2());
+            request.set("HPP_SHIPPING_STREET3", builder.getShippingAddress().getStreetAddress3());
+            request.set("HPP_SHIPPING_CITY", builder.getShippingAddress().getCity());
+            request.set("HPP_SHIPPING_STATE", builder.getShippingAddress().getState());
+            request.set("HPP_SHIPPING_POSTALCODE", builder.getShippingAddress().getPostalCode());
+            request.set("HPP_SHIPPING_COUNTRY", builder.getShippingAddress().getCountry());
         }
+        // HPP_ADDRESS_MATCH_INDICATOR (is shipping same as billing)
+
         if (builder.getBillingAddress() != null) {
+            // FRAUD VALUES
             request.set("BILLING_CODE", builder.getBillingAddress().getPostalCode());
             request.set("BILLING_CO", builder.getBillingAddress().getCountry());
+
+            // 3DS2 VALUES
+            request.set("HPP_BILLING_STREET1", builder.getBillingAddress().getStreetAddress1());
+            request.set("HPP_BILLING_STREET2", builder.getBillingAddress().getStreetAddress2());
+            request.set("HPP_BILLING_STREET3", builder.getBillingAddress().getStreetAddress3());
+            request.set("HPP_BILLING_CITY", builder.getBillingAddress().getCity());
+            request.set("HPP_BILLING_STATE", builder.getBillingAddress().getState());
+            request.set("HPP_BILLING_POSTALCODE", builder.getBillingAddress().getPostalCode());
+            request.set("HPP_BILLING_COUNTRY", builder.getBillingAddress().getCountry());
         }
+
         request.set("CUST_NUM", builder.getCustomerId());
         request.set("VAR_REF", builder.getClientTransactionId());
         request.set("HPP_LANG", hostedPaymentConfig.getLanguage());
         request.set("MERCHANT_RESPONSE_URL", hostedPaymentConfig.getResponseUrl());
         request.set("CARD_PAYMENT_BUTTON", hostedPaymentConfig.getPaymentButtonText());
-        if(hostedPaymentConfig.isCardStorageEnabled() != null)
+        if(hostedPaymentConfig.isCardStorageEnabled() != null) {
             request.set("CARD_STORAGE_ENABLE", hostedPaymentConfig.isCardStorageEnabled() ? "1" : "0");
-        if (builder.getTransactionType() == TransactionType.Verify)
+        }
+        if (builder.getTransactionType() == TransactionType.Verify) {
             request.set("VALIDATE_CARD_ONLY", builder.getTransactionType() == TransactionType.Verify ? "1" : "0");
-        if(!hostedPaymentConfig.getFraudFilterMode().equals(FraudFilterMode.None))
+        }
+        if(!hostedPaymentConfig.getFraudFilterMode().equals(FraudFilterMode.None)) {
             request.set("HPP_FRAUDFILTER_MODE", hostedPaymentConfig.getFraudFilterMode());
+        }
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             request.set("RECURRING_TYPE", builder.getRecurringType().getValue().toLowerCase());
             request.set("RECURRING_SEQUENCE", builder.getRecurringSequence().getValue().toLowerCase());
@@ -454,15 +495,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
 
-        if(builder.getSupplementaryData() != null) {
+        // data supplementary
+        if (builder.getSupplementaryData() != null) {
             Element supplementaryData = et.subElement(request, "supplementarydata");
-            HashMap<String, String[]> suppData = builder.getSupplementaryData();
+            HashMap<String, ArrayList<String[]>> suppData = builder.getSupplementaryData();
 
             for (String key : suppData.keySet()) {
-                Element item = et.subElement(supplementaryData, "item").set("type", key);
-                String str[] = suppData.get(key);
-                for (int i = 1; i <= suppData.get(key).length; i++) {
-                    et.subElement(item, "field" + StringUtils.padLeft("" + i, 2, '0'), str[i - 1]);
+                ArrayList<String[]> dataSets = suppData.get(key);
+
+                for(String[] data: dataSets) {
+                    Element item = et.subElement(supplementaryData, "item").set("type", key);
+                    for(int i = 1; i< data.length; i++) {
+                        et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
+                    }
                 }
             }
         }

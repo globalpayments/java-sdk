@@ -16,6 +16,7 @@ import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
@@ -39,7 +40,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String poNumber;
     private ReasonCode reasonCode;
     private String shiftNumber;
-    private HashMap<String, String[]> supplementaryData;
+    private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal taxAmount;
     private TaxType taxType;
     private Integer transactionCount;
@@ -117,7 +118,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public String getShiftNumber() {
         return shiftNumber;
     }
-    public HashMap<String, String[]> getSupplementaryData() { return supplementaryData; }
+    public HashMap<String, ArrayList<String[]>> getSupplementaryData() { return supplementaryData; }
     public BigDecimal getTaxAmount() {
         return taxAmount;
     }
@@ -256,11 +257,19 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         shiftNumber = value;
         return this;
     }
-    public ManagementBuilder withSupplementaryData(String type, String... value) {
-        if (this.supplementaryData == null) {
-            this.supplementaryData = new HashMap<String, String[]>();
+    public ManagementBuilder withSupplementaryData(String type, String... values) {
+        // create the dictionary if needed
+        if (supplementaryData == null) {
+            supplementaryData = new HashMap<String, ArrayList<String[]>>();
         }
-        this.supplementaryData.put(type, value);
+
+        // add the type if needed
+        if(!supplementaryData.containsKey(type)) {
+            supplementaryData.put(type, new ArrayList<String[]>());
+        }
+
+        // add the values to it
+        supplementaryData.get(type).add(values);
         return this;
     }
     public ManagementBuilder withTaxAmount(BigDecimal value) {

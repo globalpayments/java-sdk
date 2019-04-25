@@ -226,4 +226,16 @@ public class VapsGiftTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
+
+    @Test
+    public void value_link_card_type_test() throws ApiException {
+        GiftCard card = new GiftCard();
+        card.setValue("6010567085878703=25010004000070779628");
+
+        Transaction response = card.authorize(new BigDecimal(1.00), true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
 }

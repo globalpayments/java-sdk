@@ -5,6 +5,7 @@ import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.TransactionSummaryList;
+import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
@@ -24,6 +25,7 @@ public class PorticoReportingTests {
         GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
         
         ServicesContainer.configureService(config);
     }
@@ -113,6 +115,7 @@ public class PorticoReportingTests {
         assertEquals("00", trResponse.getResponseCode());
 
         TransactionSummary response = ReportingService.findTransactions(trResponse.getTransactionId())
+                .withTimeZoneConversion(TimeZoneConversion.Merchant)
                 .execute();
         assertNotNull(response);
         assertNotNull(response.getCardHolderFirstName());

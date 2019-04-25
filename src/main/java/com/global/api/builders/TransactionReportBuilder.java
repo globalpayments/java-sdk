@@ -1,6 +1,7 @@
 package com.global.api.builders;
 
 import com.global.api.entities.enums.ReportType;
+import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.SearchCriteriaBuilder;
 
@@ -43,6 +44,10 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     }
     public TransactionReportBuilder<TResult> withTransactionId(String value) {
         this.transactionId = value;
+        return this;
+    }
+    public TransactionReportBuilder<TResult> withTimeZoneConversion(TimeZoneConversion value) {
+        setTimeZoneConversion(value);
         return this;
     }
 

@@ -3,14 +3,19 @@ package com.global.api.entities;
 import java.util.HashMap;
 
 import com.global.api.entities.enums.AlternativePaymentType;
+import com.global.api.entities.enums.ChallengeRequest;
 
 public class HostedPaymentData {
+    private Boolean addressesMatch;
+    private ChallengeRequest challengeRequest;
     private Boolean customerExists;
+    private String customerEmail;
     private String customerKey;
     private String customerNumber;
     private String customerCountry;
     private String customerFirstName;
     private String customerLastName;
+    private String customerPhoneMobile;
     private String merchantResponseUrl;
     private Boolean offerToSaveCard;
     private String paymentKey;
@@ -19,7 +24,25 @@ public class HostedPaymentData {
     private HashMap<String, String> supplementaryData;
     private String transactionStatusUrl;
 
-	public Boolean isCustomerExists() {
+    public Boolean getAddressesMatch() {
+        return addressesMatch;
+    }
+    public void setAddressesMatch(Boolean addressesMatch) {
+        this.addressesMatch = addressesMatch;
+    }
+    public ChallengeRequest getChallengeRequest() {
+        return challengeRequest;
+    }
+    public void setChallengeRequest(ChallengeRequest challengeRequest) {
+        this.challengeRequest = challengeRequest;
+    }
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+    public Boolean isCustomerExists() {
         return customerExists;
     }
     public void setCustomerExists(boolean customerExists) {
@@ -55,7 +78,13 @@ public class HostedPaymentData {
 	public void setCustomerLastName(String customerLastName) {
 		this.customerLastName = customerLastName;
 	}
-	public String getMerchantResponseUrl() {
+    public String getCustomerPhoneMobile() {
+        return customerPhoneMobile;
+    }
+    public void setCustomerPhoneMobile(String customerPhoneMobile) {
+        this.customerPhoneMobile = customerPhoneMobile;
+    }
+    public String getMerchantResponseUrl() {
 		return merchantResponseUrl;
 	}
 	public void setMerchantResponseUrl(String merchantResponseUrl) {

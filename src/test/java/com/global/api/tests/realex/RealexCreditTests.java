@@ -457,12 +457,19 @@ public class RealexCreditTests {
 
     @Test
     public void test_supplementaryData() throws ApiException {
-        Transaction response = card.charge(new BigDecimal(10))
+        Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("GBP")
                 .withSupplementaryData("leg", "value1", "value2", "value3")
                 .withSupplementaryData("leg", "value1", "value2", "value3")
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+
+        Transaction captureResponse = response.capture()
+                .withSupplementaryData("leg", "value1", "value2", "value3")
+                .withSupplementaryData("leg", "value1", "value2", "value3")
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getResponseCode());
     }
 }

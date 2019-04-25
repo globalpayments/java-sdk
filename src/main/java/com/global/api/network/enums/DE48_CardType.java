@@ -201,7 +201,7 @@ public enum DE48_CardType implements IStringConstant {
     Voyager_VAPS("VC"),
     ValueAmerica("VE"),
     Voyager("VF"),
-    ValuelinkStoredValue("VG"),
+    ValueLinkStoredValue("VG"),
     Visa("VI"),
     Valvoline("VL"),
     VistaMarketing("VM"),

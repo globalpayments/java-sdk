@@ -1900,7 +1900,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             GiftCard card = (GiftCard)paymentMethod;
 
             if(card.getCardType().equals("ValueLink")) {
-                return DE48_CardType.ValuelinkStoredValue;
+                return DE48_CardType.ValueLinkStoredValue;
             }
             else if(card.getCardType().equals("StoredValue")) {
                 return DE48_CardType.SVSStoredValue;
