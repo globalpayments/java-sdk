@@ -27,7 +27,7 @@ public class HpaAdminTests {
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
         deviceConfig.setIpAddress("10.12.220.39");
         deviceConfig.setPort(12345);
-        deviceConfig.setTimeout(60000);
+        deviceConfig.setTimeout(20000);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
         device = DeviceService.create(deviceConfig);
@@ -35,8 +35,9 @@ public class HpaAdminTests {
 
         device.setOnMessageSent(new IMessageSentInterface() {
             public void messageSent(String message) {
-                if(!expectedMessage.equals(""))
+                if(!expectedMessage.equals("")) {
                     assertEquals(expectedMessage, message);
+                }
             }
         });
     }
@@ -44,7 +45,10 @@ public class HpaAdminTests {
     @After
     public void tearDown() {
         this.expectedMessage = "";
-        //device.reset();
+        try {
+            device.reset();
+        }
+        catch(ApiException exc) { /* NOM NOM */ }
     }
 
     @Test
@@ -133,6 +137,20 @@ public class HpaAdminTests {
     @Test
     public void addLineItemWithParams() throws ApiException {
         IDeviceResponse response = device.addLineItem("Green Beans", "$0.59", "TOTAL", "$1.19");
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+    
+    @Test
+    public void sendStoreAndForward() throws ApiException {
+        ISAFResponse response = device.sendStoreAndForward();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+    
+    @Test
+    public void enableStoreAndForwardMode() throws ApiException {
+        IDeviceResponse response = device.setStoreAndForwardMode(true);
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
     }

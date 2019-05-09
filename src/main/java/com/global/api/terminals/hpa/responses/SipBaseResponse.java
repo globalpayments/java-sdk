@@ -50,7 +50,9 @@ public class SipBaseResponse extends TerminalResponse {
             this.deviceResponseCode = normalizeResponse(root.getString("Result"));
             this.deviceResponseText = root.getString("ResultText");
 
-            mapResponse(root);
+            if(this.deviceResponseCode.equals("00")) {
+                mapResponse(root);
+            }
         }
         finalizeResponse();
     }

@@ -51,14 +51,12 @@ public class HpaCreditTests {
     }
 
     @After
-    public void waitAndReset() throws ApiException {
+    public void waitAndReset() {
         try {
             Thread.sleep(3000);
             device.reset();
         }
-        catch(Exception e) {
-            // nom nom
-        }
+        catch(Exception e) { /* NOM NOM */ }
     }
 
     @Test

@@ -18,7 +18,10 @@ public enum HpaMsgId implements IStringConstant {
     GET_INFO_REPORT("GetAppInfoReport"),
     SIGNATURE_FORM("SIGNATUREFORM"),
     START_CARD("StartCard"),
-    LINE_ITEM("LineItem");
+    LINE_ITEM("LineItem"),
+    SEND_SAF("SendSAF"),
+    GET_PARAMETER_REPORT("GetParameterReport"),
+    SET_PARAMETER("SetParameter");
 
     String value;
     HpaMsgId(String value) { this.value = value; }

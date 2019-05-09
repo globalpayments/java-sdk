@@ -13,6 +13,7 @@ import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
 import com.global.api.terminals.hpa.responses.SipBatchResponse;
 import com.global.api.terminals.hpa.responses.SipInitializeResponse;
+import com.global.api.terminals.hpa.responses.SipSAFResponse;
 import com.global.api.terminals.hpa.responses.SipSignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.StringUtils;
@@ -98,6 +99,18 @@ public class HpaInterface implements IDeviceInterface {
                 .set("LineItemTextRight", rightText)
                 .set("LineItemRunningTextLeft", runningLeftText)
                 .set("LineItemRunningTextRight", runningRightText);
+        return _controller.sendAdminMessage(SipBaseResponse.class, builder);
+    }
+    
+    public ISAFResponse sendStoreAndForward() throws ApiException {
+    	return _controller.sendAdminMessage(SipSAFResponse.class, new HpaAdminBuilder(HpaMsgId.SEND_SAF.getValue()));
+    }
+    
+    public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
+    	HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.SET_PARAMETER.getValue())
+                .set("FieldCount", "1")
+                .set("Key", "STORMD")
+                .set("Value", enabled ? "1" : "0");
         return _controller.sendAdminMessage(SipBaseResponse.class, builder);
     }
 

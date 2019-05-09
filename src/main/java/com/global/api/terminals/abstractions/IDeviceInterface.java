@@ -24,6 +24,8 @@ public interface IDeviceInterface extends IDisposable {
     ISignatureResponse promptForSignature(String transactionId) throws ApiException;
     IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
+    ISAFResponse sendStoreAndForward() throws ApiException;
+    IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

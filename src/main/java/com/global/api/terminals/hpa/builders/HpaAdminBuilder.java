@@ -1,6 +1,5 @@
 package com.global.api.terminals.hpa.builders;
 
-import com.global.api.entities.enums.HpaMsgId;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.utils.StringUtils;
 

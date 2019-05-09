@@ -80,6 +80,10 @@ public class TransactionSummary {
 	private String uniqueDeviceId;
 	private String username;
 	private String xid;
+	private String transactionType;
+	private String cardEntryMethod;
+	private BigDecimal amountDue;
+	private boolean hostTimeOut;
 	
 	public String getAccountDataSource() {
 		return accountDataSource;
@@ -512,5 +516,29 @@ public class TransactionSummary {
 	}
 	public void setXid(String xid) {
 		this.xid = xid;
+	}
+	public String getTransactionType() {
+		return transactionType;
+	}
+	public void setTransactionType(String transactionType) {
+		this.transactionType = transactionType;
+	}
+	public String getCardEntryMethod() {
+		return cardEntryMethod;
+	}
+	public void setCardEntryMethod(String cardEntryMethod) {
+		this.cardEntryMethod = cardEntryMethod;
+	}
+	public BigDecimal getAmountDue() {
+		return amountDue;
+	}
+	public void setAmountDue(BigDecimal amountDue) {
+		this.amountDue = amountDue;
+	}
+	public boolean isHostTimeOut() {
+		return hostTimeOut;
+	}
+	public void setHostTimeOut(boolean hostTimeOut) {
+		this.hostTimeOut = hostTimeOut;
 	}
 }
