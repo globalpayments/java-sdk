@@ -43,6 +43,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal taxAmount;
     private TaxType taxType;
+    private String timestamp;
     private Integer transactionCount;
     private String transportData;
     private BigDecimal totalCredits;
@@ -122,6 +123,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getTaxAmount() {
         return taxAmount;
     }
+    public String getTimestamp() { return timestamp; }
     public TaxType getTaxType() {
         return taxType;
     }
@@ -282,6 +284,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.taxType = value;
         return this;
     }
+    public ManagementBuilder withTimestamp(String value) {
+        this.timestamp = value;
+        return this;
+    }
     private ManagementBuilder withModifier(TransactionModifier value) {
         this.transactionModifier = value;
         return this;
@@ -296,6 +302,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
 
     // network fields
+    public ManagementBuilder withCompanyId(String companyId) {
+        this.companyId = companyId;
+        return this;
+    }
     public ManagementBuilder withSystemTraceAuditNumber(int value) {
         systemTraceAuditNumber = value;
         return this;

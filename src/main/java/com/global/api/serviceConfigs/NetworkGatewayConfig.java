@@ -174,11 +174,6 @@ public class NetworkGatewayConfig extends Configuration {
             acceptorConfig.validate();acceptorConfig.validate();
         }
 
-        // company id
-        if(StringUtils.isNullOrEmpty(companyId)) {
-            throw new ConfigurationException("You must provide a company id.");
-        }
-
         // terminal id
         if(StringUtils.isNullOrEmpty(terminalId)) {
             throw new ConfigurationException("You must provide a terminal id.");

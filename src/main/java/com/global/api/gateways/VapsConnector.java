@@ -241,7 +241,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         request.set(DataElementId.DE_011, StringUtils.padLeft(stan, 6, '0'));
 
         // DE 12: Date and Time, Transaction - n12 (YYMMDDhhmmss)
-        request.set(DataElementId.DE_012, DateTime.now(DateTimeZone.UTC).toString("yyMMddhhmmss"));
+        String timestamp = builder.getTimestamp();
+        if(StringUtils.isNullOrEmpty(timestamp)) {
+            timestamp = DateTime.now(DateTimeZone.UTC).toString("yyMMddhhmmss");
+        }
+        request.set(DataElementId.DE_012, timestamp);
 
         // DE 15: Date, Settlement - n6 (YYMMDD) // C
         // DE 17: Date, Capture - n4 (MMDD) // C
@@ -299,7 +303,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         // DE 39: Action Code - n3
 
         // DE 41: Card Acceptor Terminal Identification Code - ans8
-        request.set(DataElementId.DE_041, StringUtils.padRight(companyId, 8, ' '));
+        String companyIdValue = builder.getCustomerId();
+        if(StringUtils.isNullOrEmpty(companyIdValue)) {
+            companyIdValue = companyId;
+        }
+        request.set(DataElementId.DE_041, StringUtils.padRight(companyIdValue, 8, ' '));
 
         // DE 42: Card Acceptor Identification Code - ans15
         request.set(DataElementId.DE_042, StringUtils.padRight(terminalId, 15, ' '));
@@ -594,7 +602,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         request.set(DataElementId.DE_011, StringUtils.padLeft(stan, 6, '0'));
 
         // DE 12: Date and Time, Transaction - n12 (YYMMDDhhmmss)
-        request.set(DataElementId.DE_012, DateTime.now(DateTimeZone.UTC).toString("yyMMddhhmmss"));
+        String timestamp = builder.getTimestamp();
+        if(StringUtils.isNullOrEmpty(timestamp)) {
+            timestamp = DateTime.now(DateTimeZone.UTC).toString("yyMMddhhmmss");
+        }
+        request.set(DataElementId.DE_012, timestamp);
 
         // DE 15: Date, Settlement - n6 (YYMMDD) // C
         // DE 17: Date, Capture - n4 (MMDD) // C
@@ -670,7 +682,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         // DE 39: Action Code - n3
 
         // DE 41: Card Acceptor Terminal Identification Code - ans8
-        request.set(DataElementId.DE_041, StringUtils.padRight(companyId, 8, ' '));
+        String companyIdValue = builder.getCompanyId();
+        if(StringUtils.isNullOrEmpty(companyIdValue)) {
+            companyIdValue = companyId;
+        }
+        request.set(DataElementId.DE_041, StringUtils.padRight(companyIdValue, 8, ' '));
 
         // DE 42: Card Acceptor Identification Code - ans15
         request.set(DataElementId.DE_042, StringUtils.padRight(terminalId, 15, ' '));

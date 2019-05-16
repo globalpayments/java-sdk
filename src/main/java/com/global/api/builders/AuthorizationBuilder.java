@@ -556,6 +556,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.sequenceNumber = sequenceNumber;
         return this;
     }
+    public AuthorizationBuilder withCompanyId(String companyId) {
+        this.companyId = companyId;
+        return this;
+    }
     public AuthorizationBuilder withFee(FeeType feeType, BigDecimal feeAmount) {
         this.feeType = feeType;
         this.feeAmount = feeAmount;

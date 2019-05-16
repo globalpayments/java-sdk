@@ -19,6 +19,7 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     // network fields
     protected int batchNumber;
+    protected String companyId;
     protected FleetData fleetData;
     protected LinkedHashMap<DE62_CardIssuerEntryTag, String> issuerData;
     protected PriorMessageInformation priorMessageInformation;
@@ -52,6 +53,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     // network fields
     public int getBatchNumber() { return batchNumber; }
+    public String getCompanyId() {
+        return companyId;
+    }
     public FleetData getFleetData() {
         return fleetData;
     }
