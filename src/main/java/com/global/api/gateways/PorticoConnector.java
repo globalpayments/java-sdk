@@ -422,6 +422,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             if (builder.getAmount() != null)
                 et.subElement(root, "Amt").text(builder.getAmount().toString());
 
+            // auth amount
+            if (builder.getAuthAmount() != null)
+                et.subElement(root, "AuthAmt").text(builder.getAuthAmount().toString());
+
             // gratuity
             if (builder.getGratuity() != null)
                 et.subElement(root, "GratuityAmtInfo").text(builder.getGratuity().toString());
@@ -485,7 +489,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 et.subElement(criteria, "CardHolderPONbr", trb.getSearchBuilder().getCardHolderPoNumber());
                 et.subElement(criteria, "CustomerID", trb.getSearchBuilder().getCustomerId());
                 et.subElement(criteria, "IssuerResult", trb.getSearchBuilder().getIssuerTransactionId());
-                et.subElement(criteria, "SettlementAmount", trb.getSearchBuilder().getSettlementAmount());
+                et.subElement(criteria, "SettlementAmt", trb.getSearchBuilder().getSettlementAmount());
                 et.subElement(criteria, "IssTxnId", trb.getSearchBuilder().getIssuerTransactionId());
                 et.subElement(criteria, "RefNbr", trb.getSearchBuilder().getReferenceNumber());
                 et.subElement(criteria, "UserName", trb.getSearchBuilder().getUsername());

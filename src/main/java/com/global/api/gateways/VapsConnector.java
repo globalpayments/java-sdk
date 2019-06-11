@@ -984,6 +984,10 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 throw exc;
             }
 
+            // add the MTI and ProcessingCode from the original transaction to the timeout
+            exc.setMessageTypeIndicator(request.getMessageTypeIndicator());
+            exc.setProcessingCode(request.getString(DataElementId.DE_003));
+
             BigDecimal amount = null;
             BigDecimal cashBackAmount = null;
             IPaymentMethod paymentMethod = null;

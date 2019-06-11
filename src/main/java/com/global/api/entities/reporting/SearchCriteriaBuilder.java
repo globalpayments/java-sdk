@@ -6,6 +6,7 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -379,8 +380,32 @@ public class SearchCriteriaBuilder<TResult> {
 	public <T> SearchCriteriaBuilder<TResult> and(SearchCriteria criteria, T value) {
 		String criteriaValue = criteria.toString();
 		if (criteriaValue != null) {
-			value.toString();
+			set(this, criteriaValue, value);
 		}
 		return this;
+	}
+
+	// https://stackoverflow.com/questions/14374878/using-reflection-to-set-an-object-property/14374995
+	private static <T> boolean set(Object object, String fieldName, T fieldValue) {
+		Class<?> clazz = object.getClass();
+
+		// https://stackoverflow.com/questions/4052840/most-efficient-way-to-make-the-first-character-of-a-string-lower-case
+		char c[] = fieldName.toCharArray();
+		c[0] = Character.toLowerCase(c[0]);
+		fieldName = new String(c);
+
+		while (clazz != null) {
+			try {
+				Field field = clazz.getDeclaredField(fieldName);
+				field.setAccessible(true);
+				field.set(object, fieldValue);
+				return true;
+			} catch (NoSuchFieldException e) {
+				clazz = clazz.getSuperclass();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		return false;
 	}
 }

@@ -83,11 +83,61 @@ public class PorticoReportingTests {
 
     @Test
     public void ReportFindTransactionWithCriteria() throws ApiException {
+        CreditCardData creditCardData = new CreditCardData();
+        creditCardData.setCardHolderName("John Doe");
+        creditCardData.setNumber("4242424242429876");
+        creditCardData.setExpMonth(12);
+        creditCardData.setExpYear(2025);
+        creditCardData.setCvn("123");
+
+        creditCardData.charge(new BigDecimal(15))
+            .withCurrency("usd")
+            .withInvoiceNumber("11115")
+            .withAllowDuplicates(true)
+            .execute();
+
+        creditCardData.charge(new BigDecimal(10))
+            .withCurrency("usd")
+            .withInvoiceNumber("776655")
+            .withAllowDuplicates(true)
+            .execute();
+
+        creditCardData.charge(new BigDecimal(10))
+            .withCurrency("usd")
+            .withInvoiceNumber("776655")
+            .withAllowDuplicates(true)
+            .execute();
+
         TransactionSummaryList summary = ReportingService.findTransactions()
-                .where(SearchCriteria.StartDate, DateUtils.addDays(new Date(), -7))
-                .and(SearchCriteria.EndDate, DateUtils.addDays(new Date(), -1))
-                .execute();
+            .where(SearchCriteria.CardNumberLastFour, "9876")
+            .execute();
+
         assertNotNull(summary);
+
+        if( (summary.size() % 3) != 0 ) {
+            fail(String.format("Test should have produced 3 results. %s transactions were found.", summary.size()));
+        }
+
+        TransactionSummaryList summary2 = ReportingService.findTransactions()
+            .where(SearchCriteria.SettlementAmount, new BigDecimal(10))
+            .and(SearchCriteria.InvoiceNumber, "776655")
+            .execute();
+
+        assertNotNull(summary2);
+
+        if( (summary2.size() % 2) != 0 ) {
+            fail(String.format("Test should have produced 2 results. %s transactions were found.", summary2.size()));
+        }
+
+        TransactionSummaryList summary3 = ReportingService.findTransactions()
+            .where(SearchCriteria.InvoiceNumber, "11115")
+            .execute();
+
+        assertNotNull(summary3);
+
+        if( (summary3.size() % 1) != 0 ) {
+            fail(String.format("Test should have produced 1 result. %s transactions were found.", summary3.size()));
+        }
     }
 
     @Test

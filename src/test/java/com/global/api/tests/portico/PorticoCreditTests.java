@@ -169,11 +169,39 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        response = card.reverse(new BigDecimal(18))
+        Transaction reversal = card.reverse(new BigDecimal(18))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("00", reversal.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId())
+                .execute();
+        assertEquals("R", report.getStatus());
+    }
+
+    @Test
+    public void creditPartialReverse() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("18.00"))
+                .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+
+        Transaction reversal = Transaction.fromId(response.getTransactionId())
+                .reverse(new BigDecimal("18.00"))
+                .withAuthAmount(new BigDecimal("10.00"))
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("00", reversal.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId())
+                .execute();
+        TransactionSummary report2 = ReportingService.transactionDetail(reversal.getTransactionId())
+                .execute();
+        assertEquals("A", report.getStatus());
+        assertEquals(new BigDecimal("10.00"), report2.getAuthorizedAmount());
     }
 
     @Test
