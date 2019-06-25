@@ -193,7 +193,7 @@ public class CreditCardData extends Credit implements ICardData {
             this.threeDSecure.setEci(response.getThreeDsecure().getEci());
             this.threeDSecure.setCavv(response.getThreeDsecure().getCavv());
             this.threeDSecure.setAlgorithm(response.getThreeDsecure().getAlgorithm());
-            this.threeDSecure.setStatus(response.getThreeDsecure().getXid());
+            this.threeDSecure.setXid(response.getThreeDsecure().getXid());
             return true;
         }
         return false;
