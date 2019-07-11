@@ -30,10 +30,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String clerkId;
     private String clientTransactionId;
     private String currency;
+    private String customerId;
     private boolean customerInitiated;
     private String description;
     private boolean forcedReversal;
     private BigDecimal gratuity;
+    private String invoiceNumber;
     private LodgingData lodgingData;
     private String orderId;
     private String payerAuthenticationResponse;
@@ -87,6 +89,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public String getCurrency() {
         return currency;
     }
+    public String getCustomerId() {
+        return customerId;
+    }
     public boolean isCustomerInitiated() {
         return customerInitiated;
     }
@@ -98,6 +103,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getGratuity() {
         return gratuity;
+    }
+    public String getInvoiceNumber() {
+        return invoiceNumber;
     }
     public LodgingData getLodgingData() {
         return lodgingData;
@@ -196,6 +204,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.currency = value;
         return this;
     }
+    public ManagementBuilder withCustomerId(String value) {
+        this.customerId = value;
+        return this;
+    }
     public ManagementBuilder withCustomerInitiated(boolean value) {
         customerInitiated = value;
         return this;
@@ -218,6 +230,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withGratuity(BigDecimal value) {
         this.gratuity = value;
+        return this;
+    }
+    public ManagementBuilder withInvoiceNumber(String value) {
+        this.invoiceNumber = value;
         return this;
     }
     public ManagementBuilder withIssuerData(DE62_CardIssuerEntryTag tag, String value) {

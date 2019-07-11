@@ -460,6 +460,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                     et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
                 }
             }
+
+            // details
+            if (!StringUtils.isNullOrEmpty(builder.getCustomerId()) || !StringUtils.isNullOrEmpty(builder.getDescription()) || !StringUtils.isNullOrEmpty(builder.getInvoiceNumber())) {
+                Element addons = et.subElement(root, "AdditionalTxnFields");
+                et.subElement(addons, "CustomerID", builder.getCustomerId());
+                et.subElement(addons, "Description", builder.getDescription());
+                et.subElement(addons, "InvoiceNbr", builder.getInvoiceNumber());
+            }
         }
 
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));

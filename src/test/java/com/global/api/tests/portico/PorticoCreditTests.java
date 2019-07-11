@@ -152,12 +152,22 @@ public class PorticoCreditTests {
 
     @Test
     public void creditRefund() throws ApiException {
+        String invoiceNumber = Long.toString(System.currentTimeMillis());
         Transaction response = card.refund(new BigDecimal(16))
                 .withCurrency("USD")
+                .withInvoiceNumber(invoiceNumber)
+                .withCustomerId("Customer7766")
+                .withDescription("This is a good description")
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+
+        TransactionSummary report = ReportingService.transactionDetail(response.getTransactionId())
+                .execute();
+        assertEquals(invoiceNumber, report.getInvoiceNumber());
+        assertEquals("Customer7766", report.getCustomerId());
+        assertEquals("This is a good description", report.getDescription());
     }
 
     @Test
