@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
-	private AlternativePaymentType alternativePaymentType;
+    private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
     private BatchCloseType batchCloseType;
@@ -50,11 +50,13 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String transportData;
     private BigDecimal totalCredits;
     private BigDecimal totalDebits;
+    private Integer estimatedNumTxn;
+    private boolean isFinal;
 
     public AlternativePaymentType getAlternativePaymentType() {
-		return alternativePaymentType;
-	}
-	public BigDecimal getAmount() {
+        return alternativePaymentType;
+    }
+    public BigDecimal getAmount() {
         return amount;
     }
     public BigDecimal getAuthAmount() {
@@ -151,6 +153,13 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public BigDecimal getTotalDebits() {
         return totalDebits;
+    }
+    
+    public Integer getEstimatedNumTxn(){
+        return estimatedNumTxn;
+    }
+    public boolean getIsFinal(){
+        return isFinal;
     }
 
     public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
@@ -328,6 +337,16 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withTransactionMatchingData(TransactionMatchingData value) {
         transactionMatchingData = value;
+        return this;
+    }
+    
+    public ManagementBuilder withEstimatedTransactions(Integer estNumTxn) {
+        this.estimatedNumTxn = estNumTxn;
+        return this;
+    }
+    
+    public ManagementBuilder isFinal(boolean isFinal) {
+        this.isFinal = isFinal;
         return this;
     }
 

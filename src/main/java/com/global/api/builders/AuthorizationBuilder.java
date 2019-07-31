@@ -77,6 +77,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private String tagData;
     private String timestamp;
+    private Integer estimatedNumTxn;
 
     // network fields
     private BigDecimal feeAmount;
@@ -86,6 +87,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public String getAlias() {
         return alias;
+    }
+    public Integer getEstimatedNumTxn(){
+        return estimatedNumTxn;
     }
     public AliasAction getAliasAction() {
         return aliasAction;
@@ -596,6 +600,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withUniqueDeviceId(String value) {
         uniqueDeviceId = value;
+        return this;
+    }
+    
+    public AuthorizationBuilder withEstimatedTransactions(Integer estNumTxn) {
+        this.estimatedNumTxn = estNumTxn;
         return this;
     }
 

@@ -198,8 +198,8 @@ public class Transaction {
     public String getMultiCapture() {
 		return multiCapture;
 	}
-	public void setMultiCapture(String multiCapture) {
-		this.multiCapture = multiCapture;
+    public void setMultiCapture(String multiCapture) {
+    	this.multiCapture = multiCapture;
 	}
 	public HashMap<String, String> getResponseValues() {
         return responseValues;
@@ -381,7 +381,13 @@ public class Transaction {
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
     }
-
+    
+    public ManagementBuilder multicapture(BigDecimal amount) {
+        return new ManagementBuilder(TransactionType.Multicapture)
+                .withPaymentMethod(transactionReference)
+                .withAmount(amount);
+    }
+    
     public ManagementBuilder cancel() {
         return cancel(null);
     }
