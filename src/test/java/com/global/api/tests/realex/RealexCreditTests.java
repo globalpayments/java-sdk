@@ -212,6 +212,71 @@ public class RealexCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+    
+    @Test
+    public void creditAuthorization_WithMultiAutoSettle_WithEstNumTxn() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("14"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction rebate = response.multicapture(new BigDecimal("17"))
+                .withAmount(new BigDecimal("5.00"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(rebate);
+        assertEquals("00", rebate.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle_WithEstNumTxn() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction rebate = response.multicapture(new BigDecimal("17"))
+                .withEstimatedTransactions(3)
+                .withAmount(new BigDecimal("5.00"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(rebate);
+        assertEquals("00", rebate.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle_WithFinalFlag() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction rebate = response.multicapture(new BigDecimal("17"))
+                .withAmount(new BigDecimal("5.00"))
+                .isFinal(true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(rebate);
+        assertEquals("00", rebate.getResponseCode());
+    }
 
     @Test(expected = ApiException.class)
     public void creditDccRateLookup_ChargeNotEnabledAccount() throws ApiException {
