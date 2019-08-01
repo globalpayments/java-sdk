@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
-	private AlternativePaymentType alternativePaymentType;
+    private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
     private BatchCloseType batchCloseType;
@@ -40,6 +40,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     private String payerAuthenticationResponse;
     private String poNumber;
+    private String productId;
     private ReasonCode reasonCode;
     private String shiftNumber;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
@@ -52,9 +53,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal totalDebits;
 
     public AlternativePaymentType getAlternativePaymentType() {
-		return alternativePaymentType;
-	}
-	public BigDecimal getAmount() {
+        return alternativePaymentType;
+    }
+    public BigDecimal getAmount() {
         return amount;
     }
     public BigDecimal getAuthAmount() {
@@ -153,10 +154,18 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return totalDebits;
     }
 
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(final String productId) {
+        this.productId = productId;
+    }
+
     public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
-		this.alternativePaymentType = value;
-		return this;
-	}
+        this.alternativePaymentType = value;
+        return this;
+    }
     public ManagementBuilder withAmount(BigDecimal value) {
         this.amount = value;
         return this;
@@ -182,6 +191,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.totalDebits = totalDebits;
         this.totalCredits = totalCredits;
 
+        return this;
+    }
+
+    public ManagementBuilder withProductId(String productId){
+        this.productId = productId;
         return this;
     }
     public ManagementBuilder withReferenceNumber(String value) {
@@ -346,19 +360,19 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Override
     public void setupValidations() {
         this.validations.of(EnumSet.of(TransactionType.Capture, TransactionType.Edit, TransactionType.Hold, TransactionType.Release))
-                .check("paymentMethod").isClass(TransactionReference.class);
+            .check("paymentMethod").isClass(TransactionReference.class);
 
         this.validations.of(TransactionType.Edit).with(TransactionModifier.LevelII)
-                .check("taxType").isNotNull();
+            .check("taxType").isNotNull();
 
         this.validations.of(TransactionType.Refund)
-                .when("amount").isNotNull()
-                .check("currency").isNotNull();
+            .when("amount").isNotNull()
+            .check("currency").isNotNull();
 
         this.validations.of(TransactionType.VerifySignature)
-                .check("payerAuthenticationResponse").isNotNull()
-                .check("amount").isNotNull()
-                .check("currency").isNotNull()
-                .check("orderId").isNotNull();
+            .check("payerAuthenticationResponse").isNotNull()
+            .check("amount").isNotNull()
+            .check("currency").isNotNull()
+            .check("orderId").isNotNull();
     }
 }
