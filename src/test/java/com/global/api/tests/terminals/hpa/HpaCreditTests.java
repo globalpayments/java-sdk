@@ -28,7 +28,8 @@ public class HpaCreditTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.HPA_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("10.12.220.39");
+        //deviceConfig.setIpAddress("10.12.220.39");
+        deviceConfig.setIpAddress("192.168.0.94");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(30000);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());

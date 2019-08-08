@@ -1,6 +1,9 @@
 package com.global.api.utils;
 
 import com.global.api.entities.enums.IStringConstant;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -133,6 +136,22 @@ public class Element {
                 catch (ParseException e) {
                     return null;
                 }
+            }
+        }
+        return null;
+    }
+
+    public DateTime getDateTime(String... tagNames) {
+        return getDateTime(null, tagNames);
+    }
+    private DateTime getDateTime(String format, String... tagNames) {
+        for(String tagName: tagNames) {
+            org.w3c.dom.Element element = (org.w3c.dom.Element)this.element.getElementsByTagName(tagName).item(0);
+            if(element != null) {
+                if(StringUtils.isNullOrEmpty(format)) {
+                    return DateTime.parse(element.getTextContent());
+                }
+                return DateTime.parse(element.getTextContent(), DateTimeFormat.forPattern(format));
             }
         }
         return null;

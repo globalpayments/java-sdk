@@ -26,6 +26,7 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
+    IEODResponse endOfDay() throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

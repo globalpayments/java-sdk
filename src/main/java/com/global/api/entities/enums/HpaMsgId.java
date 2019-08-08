@@ -5,7 +5,7 @@ public enum HpaMsgId implements IStringConstant {
     LANE_CLOSE("LaneClose"),
     RESET("Reset"),
     REBOOT("Reboot"),
-    BATCH_CLOSE("CloseBatch"),
+    BATCH_CLOSE("BatchClose"),
     GET_BATCH_REPORT("GetBatchReport"),
     CREDIT_SALE("Sale"),
     CREDIT_REFUND("Refund"),
@@ -21,7 +21,15 @@ public enum HpaMsgId implements IStringConstant {
     LINE_ITEM("LineItem"),
     SEND_SAF("SendSAF"),
     GET_PARAMETER_REPORT("GetParameterReport"),
-    SET_PARAMETER("SetParameter");
+    SET_PARAMETER("SetParameter"),
+    END_OF_DAY("EOD"),
+    REVERSAL("Reversal"),
+    EMV_OFFLINE_DECLINE("EMVOfflineDecline"),
+    TRANSACTION_CERTIFICATE("TransactionCertificate"),
+    ATTACHMENT("Attachment"),
+    HEARTBEAT("Heartbeat"),
+    EMV_PARAMETER_DOWNLOAD("EMVPDL"),
+    EMV_TC("EMVTC");
 
     String value;
     HpaMsgId(String value) { this.value = value; }

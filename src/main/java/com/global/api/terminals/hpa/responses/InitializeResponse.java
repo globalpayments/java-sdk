@@ -8,7 +8,7 @@ import com.global.api.utils.StringUtils;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-public class SipInitializeResponse extends SipBaseResponse implements IInitializeResponse {
+public class InitializeResponse extends SipBaseResponse implements IInitializeResponse {
     private Dictionary<String, Dictionary<String, String>> _params;
     private String serialNumber;
     private String lastCategory;
@@ -20,7 +20,7 @@ public class SipInitializeResponse extends SipBaseResponse implements IInitializ
         this.serialNumber = serialNumber;
     }
 
-    public SipInitializeResponse(byte[] buffer, String... messageIds) throws ApiException {
+    public InitializeResponse(byte[] buffer, String... messageIds) throws ApiException {
         super(buffer, messageIds);
     }
 

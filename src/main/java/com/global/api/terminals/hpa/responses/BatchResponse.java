@@ -4,7 +4,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.utils.Element;
 
-public class SipBatchResponse extends SipBaseResponse implements IBatchCloseResponse {
+@Deprecated
+public class BatchResponse extends SipBaseResponse implements IBatchCloseResponse {
     private String totalCount;
     private String totalAmount;
     private String sequenceNumber;
@@ -28,7 +29,7 @@ public class SipBatchResponse extends SipBaseResponse implements IBatchCloseResp
         this.sequenceNumber = sequenceNumber;
     }
 
-    public SipBatchResponse(byte[] buffer, String... messageIds) throws ApiException {
+    public BatchResponse(byte[] buffer, String... messageIds) throws ApiException {
         super(buffer, messageIds);
     }
 

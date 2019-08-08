@@ -11,10 +11,11 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
-import com.global.api.terminals.hpa.responses.SipBatchResponse;
-import com.global.api.terminals.hpa.responses.SipInitializeResponse;
-import com.global.api.terminals.hpa.responses.SipSAFResponse;
-import com.global.api.terminals.hpa.responses.SipSignatureResponse;
+import com.global.api.terminals.hpa.responses.BatchResponse;
+import com.global.api.terminals.hpa.responses.EODResponse;
+import com.global.api.terminals.hpa.responses.InitializeResponse;
+import com.global.api.terminals.hpa.responses.SAFResponse;
+import com.global.api.terminals.hpa.responses.SignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.StringUtils;
 
@@ -51,7 +52,7 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     public IInitializeResponse initialize() throws ApiException {
-        return _controller.sendAdminMessage(SipInitializeResponse.class, new HpaAdminBuilder(HpaMsgId.GET_INFO_REPORT.getValue()));
+        return _controller.sendAdminMessage(InitializeResponse.class, new HpaAdminBuilder(HpaMsgId.GET_INFO_REPORT.getValue()));
     }
 
     public IDeviceResponse openLane() throws ApiException {
@@ -76,11 +77,15 @@ public class HpaInterface implements IDeviceInterface {
     public ISignatureResponse promptForSignature(String transactionId) throws ApiException {
         HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.SIGNATURE_FORM.getValue())
                 .set("FormText", "PLEASE SIGN YOUR NAME");
-        return _controller.sendAdminMessage(SipSignatureResponse.class, builder);
+        return _controller.sendAdminMessage(SignatureResponse.class, builder);
     }
 
+    /*
+    * @Deprecated Replaced by {@link #endOfDay()}
+     */
+    @Deprecated
     public IBatchCloseResponse batchClose() throws ApiException {
-        return _controller.sendAdminMessage(SipBatchResponse.class, new HpaAdminBuilder(HpaMsgId.BATCH_CLOSE.getValue(), HpaMsgId.GET_BATCH_REPORT.getValue()));
+        return _controller.sendAdminMessage(BatchResponse.class, new HpaAdminBuilder(HpaMsgId.BATCH_CLOSE.getValue(), HpaMsgId.GET_BATCH_REPORT.getValue()));
     }
     
     public IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException {
@@ -103,7 +108,7 @@ public class HpaInterface implements IDeviceInterface {
     }
     
     public ISAFResponse sendStoreAndForward() throws ApiException {
-    	return _controller.sendAdminMessage(SipSAFResponse.class, new HpaAdminBuilder(HpaMsgId.SEND_SAF.getValue()));
+    	return _controller.sendAdminMessage(SAFResponse.class, new HpaAdminBuilder(HpaMsgId.SEND_SAF.getValue()));
     }
     
     public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
@@ -112,6 +117,22 @@ public class HpaInterface implements IDeviceInterface {
                 .set("Key", "STORMD")
                 .set("Value", enabled ? "1" : "0");
         return _controller.sendAdminMessage(SipBaseResponse.class, builder);
+    }
+
+    public IEODResponse endOfDay() throws ApiException {
+        return _controller.sendAdminMessage(EODResponse.class, new HpaAdminBuilder(
+                HpaMsgId.END_OF_DAY.getValue(),
+                HpaMsgId.REVERSAL.getValue(),
+                HpaMsgId.EMV_OFFLINE_DECLINE.getValue(),
+                HpaMsgId.EMV_TC.getValue(),
+                HpaMsgId.ATTACHMENT.getValue(),
+                HpaMsgId.SEND_SAF.getValue(),
+                HpaMsgId.GET_BATCH_REPORT.getValue(),
+                HpaMsgId.HEARTBEAT.getValue(),
+                HpaMsgId.BATCH_CLOSE.getValue(),
+                HpaMsgId.EMV_PARAMETER_DOWNLOAD.getValue(),
+                HpaMsgId.TRANSACTION_CERTIFICATE.getValue())
+        );
     }
 
     public TerminalAuthBuilder creditAuth() {

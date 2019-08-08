@@ -5,8 +5,8 @@ import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.utils.Element;
 import org.apache.commons.codec.binary.Base64;
 
-public class SipSignatureResponse extends SipBaseResponse implements ISignatureResponse {
-    public SipSignatureResponse(byte[] response, String... messageIds) throws ApiException {
+public class SignatureResponse extends SipBaseResponse implements ISignatureResponse {
+    public SignatureResponse(byte[] response, String... messageIds) throws ApiException {
         super(response, messageIds);
     }
 

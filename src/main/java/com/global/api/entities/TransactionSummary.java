@@ -1,91 +1,90 @@
 package com.global.api.entities;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
-import com.global.api.entities.Address;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
-import com.global.api.entities.LodgingData;
+import org.joda.time.DateTime;
 
 public class TransactionSummary {
-	private String accountDataSource;
-	private AltPaymentData altPaymentData;
-	private BigDecimal amount;
-	private BigDecimal authorizedAmount;
-	private String authCode;
-	private String avsResponseCode;
-	private Date batchCloseDate;
-	private String batchId;
-	private String batchSequenceNumber;
-	private Address billingAddress;
-	private BigDecimal captureAmount;
-	private String cardHolderFirstName;
-	private String cardHolderLastName;
-	private String cardSwiped;
-	private String cardType;
-	private String cavvResponseCode;
-	private CheckData checkData;
-	private String clerkId;
-	private String clientTransactionId;
-	private String companyName;
-	private BigDecimal convenienceAmount;
-	private String customerFirstName;
-	private String customerId;
-	private String customerLastName;
-	private String cvnResponseCode;
-	private boolean debtRepaymentIndicator;
-	private String description;
-	private int deviceId;
-	private String eciIndicator;
-	private String emvChipCondition;
-	private String fraudRuleInfo;
-	private boolean fullyCaptured;
-	private BigDecimal gratuityAmount;
-	private boolean hasEcomPaymentData;
-	private boolean hasEmvTags;
-	private String invoiceNumber;
-	private String issuerResponseCode;
-	private String issuerResponseMessage;
-	private String issuerTransactionId;
-	private String gatewayResponseCode;
-	private String gatewayResponseMessage;
-	private String giftCurrency;
-	private LodgingData lodgingData;
-	private String maskedAlias;
-	private String maskedCardNumber;
-	private boolean oneTimePayment;
-	private String originalTransactionId;
-	private String paymentMethodKey;
-	private String paymentType;
-	private String poNumber;
-	private String recurringDataCode;
-	private String referenceNumber;
-	private int repeatCount;
-	private Date responseDate;
-	private String scheduleId;
-	private String serviceName;
-	private BigDecimal settlementAmount;
-	private BigDecimal shippingAmount;
-	private String siteTrace;
-	private String status;
-	private BigDecimal surchargeAmount;
-	private BigDecimal taxAmount;
-	private String taxType;
-	private String tokenPanLastFour;
-	private Date transactionDate;
-	private String transactionDescriptor;
-	private String transactionStatus;
-	private String transactionId;
-	private String uniqueDeviceId;
-	private String username;
-	private String xid;
-	private String transactionType;
-	private String cardEntryMethod;
-	private BigDecimal amountDue;
-	private boolean hostTimeOut;
-	
-	public String getAccountDataSource() {
+    private String accountDataSource;
+    private AltPaymentData altPaymentData;
+    private BigDecimal amount;
+    private BigDecimal amountDue;
+    private BigDecimal authorizedAmount;
+    private String authCode;
+    private String avsResponseCode;
+    private DateTime batchCloseDate;
+    private String batchId;
+    private String batchSequenceNumber;
+    private Address billingAddress;
+    private BigDecimal captureAmount;
+    private String cardEntryMethod;
+    private String cardHolderFirstName;
+    private String cardHolderLastName;
+    private String cardSwiped;
+    private String cardType;
+    private BigDecimal cashBackAmount;
+    private String cavvResponseCode;
+    private CheckData checkData;
+    private String clerkId;
+    private String clientTransactionId;
+    private String companyName;
+    private BigDecimal convenienceAmount;
+    private String customerFirstName;
+    private String customerId;
+    private String customerLastName;
+    private String cvnResponseCode;
+    private boolean debtRepaymentIndicator;
+    private String description;
+    private int deviceId;
+    private String eciIndicator;
+    private String emvChipCondition;
+    private String fraudRuleInfo;
+    private boolean fullyCaptured;
+    private BigDecimal gratuityAmount;
+    private boolean hasEcomPaymentData;
+    private boolean hasEmvTags;
+    private Boolean hostTimeOut;
+    private String invoiceNumber;
+    private String issuerResponseCode;
+    private String issuerResponseMessage;
+    private String issuerTransactionId;
+    private String gatewayResponseCode;
+    private String gatewayResponseMessage;
+    private String giftCurrency;
+    private LodgingData lodgingData;
+    private String maskedAlias;
+    private String maskedCardNumber;
+    private boolean oneTimePayment;
+    private String originalTransactionId;
+    private String paymentMethodKey;
+    private String paymentType;
+    private String poNumber;
+    private String recurringDataCode;
+    private String referenceNumber;
+    private int repeatCount;
+    private DateTime responseDate;
+    private String scheduleId;
+    private String serviceName;
+    private BigDecimal settlementAmount;
+    private BigDecimal shippingAmount;
+    private String siteTrace;
+    private String status;
+    private BigDecimal surchargeAmount;
+    private BigDecimal taxAmount;
+    private String taxType;
+    private String tokenPanLastFour;
+    private DateTime transactionDate;
+    private String transactionDescriptor;
+    private String transactionId;
+    private String transactionStatus;
+    private String transactionType;
+    private String uniqueDeviceId;
+    private String username;
+    private String xid;
+
+    public String getAccountDataSource() {
 		return accountDataSource;
 	}
 	public void setAccountDataSource(String accountDataSource) {
@@ -103,7 +102,13 @@ public class TransactionSummary {
 	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
-	public BigDecimal getAuthorizedAmount() {
+    public BigDecimal getAmountDue() {
+        return amountDue;
+    }
+    public void setAmountDue(BigDecimal amountDue) {
+        this.amountDue = amountDue;
+    }
+    public BigDecimal getAuthorizedAmount() {
 		return authorizedAmount;
 	}
 	public void setAuthorizedAmount(BigDecimal authorizedAmount) {
@@ -121,10 +126,10 @@ public class TransactionSummary {
     public void setAvsResponseCode(String avsResponseCode) {
         this.avsResponseCode = avsResponseCode;
     }
-    public Date getBatchCloseDate() {
+    public DateTime getBatchCloseDate() {
 		return batchCloseDate;
 	}
-	public void setBatchCloseDate(Date batchCloseDate) {
+	public void setBatchCloseDate(DateTime batchCloseDate) {
 		this.batchCloseDate = batchCloseDate;
 	}
     public String getBatchId() {
@@ -151,7 +156,13 @@ public class TransactionSummary {
 	public void setCaptureAmount(BigDecimal captureAmount) {
 		this.captureAmount = captureAmount;
 	}
-	public String getCardHolderFirstName() {
+    public String getCardEntryMethod() {
+        return cardEntryMethod;
+    }
+    public void setCardEntryMethod(String cardEntryMethod) {
+        this.cardEntryMethod = cardEntryMethod;
+    }
+    public String getCardHolderFirstName() {
 		return cardHolderFirstName;
 	}
 	public void setCardHolderFirstName(String cardHolderFirstName) {
@@ -175,7 +186,13 @@ public class TransactionSummary {
 	public void setCardType(String cardType) {
 		this.cardType = cardType;
 	}
-	public String getCavvResponseCode() {
+    public BigDecimal getCashBackAmount() {
+        return cashBackAmount;
+    }
+    public void setCashBackAmount(BigDecimal cashBackAmount) {
+        this.cashBackAmount = cashBackAmount;
+    }
+    public String getCavvResponseCode() {
 		return cavvResponseCode;
 	}
 	public void setCavvResponseCode(String cavvResponseCode) {
@@ -295,7 +312,13 @@ public class TransactionSummary {
 	public void setHasEmvTags(boolean hasEmvTags) {
 		this.hasEmvTags = hasEmvTags;
 	}
-	public String getInvoiceNumber() {
+    public Boolean getHostTimeOut() {
+        return hostTimeOut;
+    }
+    public void setHostTimeOut(Boolean hostTimeOut) {
+        this.hostTimeOut = hostTimeOut;
+    }
+    public String getInvoiceNumber() {
 		return invoiceNumber;
 	}
 	public void setInvoiceNumber(String invoiceNumber) {
@@ -409,10 +432,10 @@ public class TransactionSummary {
 	public void setRepeatCount(int repeatCount) {
 		this.repeatCount = repeatCount;
 	}
-	public Date getResponseDate() {
+	public DateTime getResponseDate() {
 		return responseDate;
 	}
-	public void setResponseDate(Date responseDate) {
+	public void setResponseDate(DateTime responseDate) {
 		this.responseDate = responseDate;
 	}
 	public String getScheduleId() {
@@ -475,10 +498,10 @@ public class TransactionSummary {
 	public void setTokenPanLastFour(String tokenPanLastFour) {
 		this.tokenPanLastFour = tokenPanLastFour;
 	}
-	public Date getTransactionDate() {
+	public DateTime getTransactionDate() {
 		return transactionDate;
 	}
-	public void setTransactionDate(Date transactionDate) {
+	public void setTransactionDate(DateTime transactionDate) {
 		this.transactionDate = transactionDate;
 	}
 	public String getTransactionDescriptor() {
@@ -499,7 +522,13 @@ public class TransactionSummary {
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
 	}
-	public String getUniqueDeviceId() {
+    public String getTransactionType() {
+        return transactionType;
+    }
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
+    }
+    public String getUniqueDeviceId() {
 		return uniqueDeviceId;
 	}
 	public void setUniqueDeviceId(String uniqueDeviceId) {
@@ -516,29 +545,5 @@ public class TransactionSummary {
 	}
 	public void setXid(String xid) {
 		this.xid = xid;
-	}
-	public String getTransactionType() {
-		return transactionType;
-	}
-	public void setTransactionType(String transactionType) {
-		this.transactionType = transactionType;
-	}
-	public String getCardEntryMethod() {
-		return cardEntryMethod;
-	}
-	public void setCardEntryMethod(String cardEntryMethod) {
-		this.cardEntryMethod = cardEntryMethod;
-	}
-	public BigDecimal getAmountDue() {
-		return amountDue;
-	}
-	public void setAmountDue(BigDecimal amountDue) {
-		this.amountDue = amountDue;
-	}
-	public boolean isHostTimeOut() {
-		return hostTimeOut;
-	}
-	public void setHostTimeOut(boolean hostTimeOut) {
-		this.hostTimeOut = hostTimeOut;
 	}
 }

@@ -889,7 +889,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         summary.setAmount(root.getDecimal("Amt"));
         summary.setAuthCode(root.getString("AuthCode"));
         summary.setAuthorizedAmount(root.getDecimal("AuthAmt"));
-        summary.setBatchCloseDate(root.getDate("BatchCloseDT"));
+        summary.setBatchCloseDate(root.getDateTime("BatchCloseDT"));
         summary.setBatchSequenceNumber(root.getString("BatchSeqNbr"));
         summary.setCaptureAmount(root.getDecimal("CaptureAmtInfo"));
         summary.setCardSwiped(root.getString("CardSwiped"));
@@ -926,7 +926,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         summary.setPoNumber(root.getString("CardHolderPONbr"));
         summary.setRecurringDataCode(root.getString("RecurringDataCode"));
         summary.setReferenceNumber(root.getString("RefNbr"));
-        summary.setResponseDate(root.getDate("RspDT"));
+        summary.setResponseDate(root.getDateTime("RspDT"));
         summary.setScheduleId(root.getString("ScheduleID"));
         summary.setServiceName(root.getString("ServiceName"));
         summary.setSettlementAmount(root.getDecimal("SettlementAmt"));
@@ -935,7 +935,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         summary.setSurchargeAmount(root.getDecimal("SurchargeAmtInfo"));
         summary.setTaxType(root.getString("TaxType"));
         summary.setTokenPanLastFour(root.getString("TokenPANLast4"));
-        summary.setTransactionDate(root.getDate("TxnUtcDT", "ReqUtcDT"));
+        summary.setTransactionDate(root.getDateTime("TxnUtcDT", "ReqUtcDT"));
         summary.setTransactionDescriptor(root.getString("TxnDescriptor"));
         summary.setTransactionId(root.getString("GatewayTxnId"));
         summary.setTransactionStatus(root.getString("TxnStatus"));

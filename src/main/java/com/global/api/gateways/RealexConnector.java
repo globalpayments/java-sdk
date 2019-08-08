@@ -622,6 +622,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setPaymentMethodType(PaymentMethodType.Credit);
         transReference.setTransactionId(root.getString("pasref"));
         transReference.setAlternativePaymentType(root.getString("paymentmethod"));
+        transReference.setBatchNumber(root.getInt("batchid"));
         result.setTransactionReference(transReference);
 
         // dccinfo

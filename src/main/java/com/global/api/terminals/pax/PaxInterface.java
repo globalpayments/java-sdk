@@ -125,6 +125,10 @@ class PaxInterface implements IDeviceInterface {
     public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
         throw new UnsupportedTransactionException();
     }
+    
+    public IEODResponse endOfDay() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
     //</editor-fold>
 
     //<editor-fold desc="CREDIT MESSAGES">
