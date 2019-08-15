@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 
-public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway {
+public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider {
     private String merchantId;
     private String accountId;
     private String rebatePassword;
@@ -24,6 +24,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     private String sharedSecret;
     private String channel;
     private HostedPaymentConfig hostedPaymentConfig;
+
+    public Secure3dVersion getVersion() { return Secure3dVersion.ONE; }
 
     public void setMerchantId(String merchantId) {
         this.merchantId = merchantId;
@@ -187,9 +189,12 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 ThreeDSecure secureEcom = card.getThreeDSecure();
                 if(secureEcom != null) {
                     Element mpi = et.subElement(request, "mpi");
+                    et.subElement(mpi, "eci", secureEcom.getEci());
                     et.subElement(mpi, "cavv", secureEcom.getCavv());
                     et.subElement(mpi, "xid", secureEcom.getXid());
-                    et.subElement(mpi, "eci", secureEcom.getEci());
+                    et.subElement(mpi, "ds_trans_id", secureEcom.getDirectoryServerTransactionId());
+                    et.subElement(mpi, "authentication_value", secureEcom.getAuthenticationValue());
+                    et.subElement(mpi, "message_version", secureEcom.getMessageVersion());
                 }
             }
 
@@ -304,6 +309,15 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 tssInfo.append(buildAddress(et, builder.getShippingAddress()));
         }
 
+        // stored credential
+        if(builder.getStoredCredential() != null) {
+            Element storedCredentialElement = et.subElement(request, "storedcredential");
+            et.subElement(storedCredentialElement, "type", builder.getStoredCredential().getType());
+            et.subElement(storedCredentialElement, "initiator", builder.getStoredCredential().getInitiator());
+            et.subElement(storedCredentialElement, "sequence", builder.getStoredCredential().getSequence());
+            et.subElement(storedCredentialElement, "srd", builder.getStoredCredential().getSchemeId());
+        }
+
         //et.SubElement(request, "mobile");
         //et.SubElement(request, "token", token);
 
@@ -328,7 +342,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         request.set("MERCHANT_ID", merchantId);
         request.set("ACCOUNT", accountId);
-        request.set("CHANNEL", channel);
+        request.set("HPP_CHANNEL", channel);
         request.set("ORDER_ID", orderId);
         if(builder.getAmount() != null) {
             request.set("AMOUNT", StringUtils.toNumeric(builder.getAmount()));
@@ -495,6 +509,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
 
+        // tssinfo
+        if (builder.getCustomerId() != null || builder.getClientTransactionId() != null) {
+            Element tssInfo = et.subElement(request, "tssinfo");
+            et.subElement(tssInfo, "custnum", builder.getCustomerId());
+            et.subElement(tssInfo, "varref", builder.getClientTransactionId());
+        }
+
         // data supplementary
         if (builder.getSupplementaryData() != null) {
             Element supplementaryData = et.subElement(request, "supplementarydata");
@@ -605,6 +626,34 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         return mapRecurringResponse(response, builder);
     }
 
+    public  Transaction processSecure3d(Secure3dBuilder builder) throws ApiException {
+        TransactionType transType = builder.getTransactionType();
+        if(transType.equals(TransactionType.VerifyEnrolled)) {
+            AuthorizationBuilder authBuilder = new AuthorizationBuilder(transType, builder.getPaymentMethod())
+                    .withAmount(builder.getAmount())
+                    .withCurrency(builder.getCurrency())
+                    .withOrderId(builder.getOrderId());
+
+            return processAuthorization(authBuilder);
+        }
+        else if(transType.equals(TransactionType.VerifySignature)) {
+            // get our three d secure object
+            ThreeDSecure secureEcom = builder.getThreeDSecure();
+
+            // create our transaction reference
+            TransactionReference reference = new TransactionReference();
+            reference.setOrderId(secureEcom.getOrderId());
+
+            ManagementBuilder managementBuilder = new ManagementBuilder(transType)
+                    .withAmount(secureEcom.getAmount())
+                    .withCurrency(secureEcom.getCurrency())
+                    .withPayerAuthenticationResponse(builder.getPayerAuthenticationResponse())
+                    .withPaymentMethod(reference);
+            return manageTransaction(managementBuilder);
+        }
+        throw new UnsupportedTransactionException(String.format("Unknown transaction type %s", transType));
+    }
+
     private Transaction mapResponse(String rawResponse) throws ApiException {
         Element root = ElementTree.parse(rawResponse).get("response");
 
@@ -656,6 +705,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             secureEcom.setAlgorithm(root.getInt("algorithm"));
             result.setThreeDsecure(secureEcom);
         }
+
+        // stored credential
+        result.setSchemeId(root.getString("srd"));
 
         return result;
     }

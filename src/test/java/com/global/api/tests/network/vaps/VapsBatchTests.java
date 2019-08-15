@@ -67,8 +67,8 @@ public class VapsBatchTests {
         config.setPrimaryPort(15031);
         config.setPrimaryEndpoint("test.7eleven.secureexchange.net");
         config.setSecondaryPort(15031);
-        config.setCompanyId("0017");
-        config.setTerminalId("0000123456701");
+        config.setCompanyId("0044");
+        config.setTerminalId("0000912197711");
         config.setUniqueDeviceId("0001");
         config.setMerchantType("5541");
         config.setAcceptorConfig(acceptorConfig);
@@ -98,8 +98,10 @@ public class VapsBatchTests {
         debitSale(30);
         debitAuth(50);
 
-        BatchSummary summary = BatchService.closeBatch(1, new BigDecimal(30), new BigDecimal(80));
-        assertNotNull(summary);
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(30), new BigDecimal(80))
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
     }
 
     @Test
@@ -118,13 +120,15 @@ public class VapsBatchTests {
         Transaction debitAuth = debitAuth(50);
         assertNotNull(debitAuth.getTransactionToken());
 
-        BatchSummary summary = BatchService.closeBatch(
+        Transaction response = BatchService.closeBatch(
                 batchProvider.getBatchNumber(),
                 batchProvider.getSequenceNumber(),
                 new BigDecimal(30),
-                new BigDecimal(80),
-                configName
-        );
+                new BigDecimal(80)
+        ).execute(configName);
+        assertNotNull(response);
+
+        BatchSummary summary = response.getBatchSummary();
         assertNotNull(summary);
         assertNotNull(summary.getTransactionToken());
 
@@ -157,9 +161,11 @@ public class VapsBatchTests {
         debitSale(5);
         debitSale(10);
 
-        BatchSummary response = BatchService.closeBatch(BatchCloseType.EndOfShift);
+        Transaction response = BatchService.closeBatch(BatchCloseType.EndOfShift)
+                .execute(configName);
         assertNotNull(response);
-        assertTrue(response.isBalanced());
+        assertNotNull(response.getBatchSummary());
+        assertTrue(response.getBatchSummary().isBalanced());
     }
 
     private Transaction creditAuth(double amount) throws ApiException {

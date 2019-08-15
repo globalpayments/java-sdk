@@ -6,10 +6,7 @@ import com.global.api.entities.DccRateData;
 import com.global.api.entities.MerchantDataCollection;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.CvnPresenceIndicator;
-import com.global.api.entities.enums.DccProcessor;
-import com.global.api.entities.enums.DccRateType;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.CardUtils;
@@ -79,7 +76,10 @@ public class CreditCardData extends Credit implements ICardData {
         }
     }
     public String getShortExpiry() {
-        return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+        if(expMonth != null && expYear != null) {
+            return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+        }
+        return null;
     }
     public boolean isReaderPresent() {
         return readerPresent;
@@ -96,12 +96,16 @@ public class CreditCardData extends Credit implements ICardData {
     }
 
     public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp) throws ApiException {
+        return getDccRate(dccRateType, amount, currency, ccp, null);
+    }
+    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp, String orderId) throws ApiException {
 		Transaction response = new AuthorizationBuilder(TransactionType.DccRateLookup, this)
 				.withAmount(amount)
 				.withCurrency(currency)
 				.withDccRateType(dccRateType)
 				.withDccProcessor(ccp)
 				.withDccType("1")
+                .withOrderId(orderId)
 				.execute();
 
 		DccRateData dccValues = new DccRateData();
@@ -133,8 +137,9 @@ public class CreditCardData extends Credit implements ICardData {
 
         }
         catch (GatewayException exc) {
-            if(exc.getResponseCode().equals("110"))
+            if(exc.getResponseCode().equals("110")) {
                 return false;
+            }
             throw exc;
         }
 
@@ -146,6 +151,7 @@ public class CreditCardData extends Credit implements ICardData {
             this.threeDSecure.setOrderId(response.getOrderId());
             return true;
         }
+
         return false;
     }
 
@@ -171,12 +177,14 @@ public class CreditCardData extends Credit implements ICardData {
     }
     public boolean verifySignature(String authorizationResponse, MerchantDataCollection merchantData, String configName) throws ApiException {
         // ensure we have an object
-        if(this.threeDSecure == null)
-            this.threeDSecure = new ThreeDSecure();
+        if(threeDSecure == null) {
+            threeDSecure = new ThreeDSecure();
+        }
 
         // if we have merchant data use it
-        if(merchantData != null)
+        if(merchantData != null) {
             this.threeDSecure.setMerchantData(merchantData);
+        }
 
         TransactionReference ref = new TransactionReference();
         ref.setOrderId(threeDSecure.getOrderId());
@@ -193,7 +201,7 @@ public class CreditCardData extends Credit implements ICardData {
             this.threeDSecure.setEci(response.getThreeDsecure().getEci());
             this.threeDSecure.setCavv(response.getThreeDsecure().getCavv());
             this.threeDSecure.setAlgorithm(response.getThreeDsecure().getAlgorithm());
-            this.threeDSecure.setStatus(response.getThreeDsecure().getXid());
+            this.threeDSecure.setXid(response.getThreeDsecure().getXid());
             return true;
         }
         return false;

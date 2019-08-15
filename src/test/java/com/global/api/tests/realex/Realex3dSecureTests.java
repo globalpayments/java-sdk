@@ -4,16 +4,17 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.MerchantDataCollection;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.services.Secure3dService;
 import com.global.api.tests.AcsResponse;
 import com.global.api.tests.TestEncoder;
 import com.global.api.tests.ThreeDSecureAcsClient;
 import com.global.api.utils.GenerationUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -27,9 +28,8 @@ public class Realex3dSecureTests {
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("3dsecure");
         config.setSharedSecret("secret");
-        config.setRebatePassword("rebate");
-        config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
     }
@@ -129,7 +129,7 @@ public class Realex3dSecureTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4012001037141112");
         card.setExpMonth(12);
-        card.setExpYear(2018);
+        card.setExpYear(2025);
         card.setCardHolderName("John Smith");
         
         boolean enrolled = card.verifyEnrolled(new BigDecimal("1"), "USD");
@@ -207,7 +207,7 @@ public class Realex3dSecureTests {
         card.setCardHolderName("John Smith");
 
         boolean enrolled = card.verifyEnrolled(new BigDecimal("1"), "USD");
-        Assert.assertTrue(enrolled);
+        assertTrue(enrolled);
         assertNotNull(card.getThreeDSecure());
         assertNotNull(card.getThreeDSecure().getPayerAuthenticationRequest());
         assertNotNull(card.getThreeDSecure().getIssuerAcsUrl());
@@ -239,7 +239,6 @@ public class Realex3dSecureTests {
         assertTrue(result);
         assertNotNull(card.getThreeDSecure().getCavv());
         assertNotNull(card.getThreeDSecure().getStatus());
-        assertNotNull(card.getThreeDSecure().getAlgorithm());
         assertNotNull(card.getThreeDSecure().getEci());
     }
 
@@ -269,7 +268,7 @@ public class Realex3dSecureTests {
     }
 
     @Test
-    public void Authorize3dSecure() throws ApiException {
+    public void authorize3dSecure() throws ApiException {
         ThreeDSecure secureEcom = new ThreeDSecure();
         secureEcom.setCavv("AAACBllleHchZTBWIGV4AAAAAAA=");
         secureEcom.setXid("crqAeMwkEL9r4POdxpByWJ1/wYg=");

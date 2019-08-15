@@ -1,22 +1,11 @@
 package com.global.api.tests.realex;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.Customer;
-import com.global.api.entities.DccRateData;
-import com.global.api.entities.DecisionManager;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.AddressType;
-import com.global.api.entities.enums.DccProcessor;
-import com.global.api.entities.enums.DccRateType;
-import com.global.api.entities.enums.FraudFilterMode;
-import com.global.api.entities.enums.MobilePaymentMethodType;
-import com.global.api.entities.enums.ReasonCode;
-import com.global.api.entities.enums.RecurringSequence;
-import com.global.api.entities.enums.RecurringType;
-import com.global.api.entities.enums.Risk;
+import com.global.api.entities.*;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
 import org.junit.Test;
 
@@ -317,7 +306,7 @@ public class RealexCreditTests {
         assertEquals("00", response.getResponseCode());
     }
     @Test
-    public void creditfraudManagementDecisionManager() throws ApiException {
+    public void creditFraudManagementDecisionManager() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
         billingAddress.setStreetAddress2("House 456");
@@ -456,7 +445,7 @@ public class RealexCreditTests {
     }
 
     @Test
-    public void test_supplementaryData() throws ApiException {
+    public void supplementaryData() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("GBP")
                 .withSupplementaryData("leg", "value1", "value2", "value3")
@@ -471,5 +460,77 @@ public class RealexCreditTests {
                 .execute();
         assertNotNull(captureResponse);
         assertEquals("00", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void storedCredential_Sale() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.OneOff);
+        storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
+        storedCredential.setSequence(StoredCredentialSequence.First);
+
+        Transaction response = card.charge(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withStoredCredential(storedCredential)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    public void storedCredential_OTB() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.OneOff);
+        storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
+        storedCredential.setSequence(StoredCredentialSequence.First);
+
+        Transaction response = card.verify()
+                .withAllowDuplicates(true)
+                .withStoredCredential(storedCredential)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    public void storedCredential_ReceiptIn() throws ApiException {
+        RecurringPaymentMethod storedCard = new RecurringPaymentMethod("20190729-GlobalApi", "20190729-GlobalApi-Credit");
+
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setSchemeId("MMC0F00YE4000000715");
+
+        Transaction response = storedCard.authorize(new BigDecimal("15.15"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withStoredCredential(storedCredential)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    public void storedCredential_ReceiptIn_OTB() throws ApiException {
+        RecurringPaymentMethod storedCard = new RecurringPaymentMethod("20190729-GlobalApi", "20190729-GlobalApi-Credit");
+
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setSchemeId("MMC0F00YE4000000715");
+
+        Transaction response = storedCard.verify()
+                .withAllowDuplicates(true)
+                .withStoredCredential(storedCredential)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
     }
 }

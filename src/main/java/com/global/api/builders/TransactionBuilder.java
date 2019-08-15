@@ -6,7 +6,7 @@ import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
-import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
 
 import java.util.LinkedHashMap;
@@ -21,7 +21,7 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected int batchNumber;
     protected String companyId;
     protected FleetData fleetData;
-    protected LinkedHashMap<DE62_CardIssuerEntryTag, String> issuerData;
+    protected LinkedHashMap<CardIssuerEntryTag, String> issuerData;
     protected PriorMessageInformation priorMessageInformation;
     protected ProductData productData;
     protected int sequenceNumber;
@@ -59,7 +59,7 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public FleetData getFleetData() {
         return fleetData;
     }
-    public LinkedHashMap<DE62_CardIssuerEntryTag, String> getIssuerData() {
+    public LinkedHashMap<CardIssuerEntryTag, String> getIssuerData() {
         return issuerData;
     }
     public PriorMessageInformation getPriorMessageInformation() {

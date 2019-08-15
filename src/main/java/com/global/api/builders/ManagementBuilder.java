@@ -10,7 +10,7 @@ import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
-import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
@@ -19,13 +19,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
 	private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
     private BatchCloseType batchCloseType;
-    private String referenceNumber;
     private BigDecimal cashBackAmount;
     private String clerkId;
     private String clientTransactionId;
@@ -41,10 +41,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String payerAuthenticationResponse;
     private String poNumber;
     private ReasonCode reasonCode;
+    private String referenceNumber;
     private String shiftNumber;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal taxAmount;
     private TaxType taxType;
+    private boolean terminalError;
     private String timestamp;
     private Integer transactionCount;
     private String transportData;
@@ -131,9 +133,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getTaxAmount() {
         return taxAmount;
     }
-    public String getTimestamp() { return timestamp; }
     public TaxType getTaxType() {
         return taxType;
+    }
+    public boolean isTerminalError() {
+        return terminalError;
+    }
+    public String getTimestamp() {
+        return timestamp;
     }
     public String getTransactionId() {
         if(paymentMethod instanceof TransactionReference)
@@ -236,7 +243,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.invoiceNumber = value;
         return this;
     }
-    public ManagementBuilder withIssuerData(DE62_CardIssuerEntryTag tag, String value) {
+    public ManagementBuilder withIssuerData(CardIssuerEntryTag tag, String value) {
+        if(issuerData == null) {
+            issuerData = new LinkedHashMap<CardIssuerEntryTag, String>();
+        }
+
         issuerData.put(tag, value);
         return this;
     }
@@ -301,7 +312,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public ManagementBuilder withTimestamp(String value) {
-        this.timestamp = value;
+        timestamp = value;
         return this;
     }
     private ManagementBuilder withModifier(TransactionModifier value) {
@@ -324,6 +335,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withSystemTraceAuditNumber(int value) {
         systemTraceAuditNumber = value;
+        return this;
+    }
+    public ManagementBuilder withTerminalError(boolean value) {
+        terminalError = value;
         return this;
     }
     public ManagementBuilder withTransactionMatchingData(TransactionMatchingData value) {

@@ -121,13 +121,10 @@ public class PorticoRecurringTests {
         Customer customer = Customer.find(customerId());
         assertNotNull(customer);
         
-//        CreditCardData card = new CreditCardData();
-//        card.setNumber("4111111111111111");
-//        card.setExpMonth(12);
-//        card.setExpYear(2025);
-
         CreditCardData card = new CreditCardData();
-        card.setToken("supt_KlCVOPmzDmpQl7cqeZaaS2g7");
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
 
         RecurringPaymentMethod payment = customer.addPaymentMethod(paymentId("Credit"), card).create();
         assertNotNull(payment);

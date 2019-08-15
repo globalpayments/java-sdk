@@ -15,7 +15,7 @@ import com.global.api.services.RecurringService;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMethod> implements  IPaymentMethod, IChargable, IAuthable, IVerifiable, IRefundable  {
+public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMethod> implements  IPaymentMethod, IChargable, IAuthable, IVerifiable, IRefundable, ISecure3d  {
     private Address address;
     private String commercialIndicator;
     private String customerKey;
@@ -26,6 +26,7 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     private boolean preferredPayment;
     private String status;
     private String taxType;
+    private ThreeDSecure threeDSecure;
 
     public Address getAddress() {
         return address;
@@ -89,6 +90,12 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
     public void setTaxType(String taxType) {
         this.taxType = taxType;
+    }
+    public ThreeDSecure getThreeDSecure() {
+        return threeDSecure;
+    }
+    public void setThreeDSecure(ThreeDSecure threeDSecure) {
+        this.threeDSecure = threeDSecure;
     }
 
     public RecurringPaymentMethod() {

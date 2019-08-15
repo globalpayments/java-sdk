@@ -1,62 +1,76 @@
 package com.global.api;
 
+import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.gateways.IPaymentGateway;
-import com.global.api.gateways.IRecurringGateway;
-import com.global.api.gateways.PayrollConnector;
-import com.global.api.gateways.TableServiceConnector;
+import com.global.api.gateways.*;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
+
+import java.util.HashMap;
 
 public class ConfiguredServices implements IDisposable {
     private IPaymentGateway gatewayConnector;
     private IRecurringGateway recurringConnector;
     private IDeviceInterface deviceInterface;
     private DeviceController deviceController;
-//    private OnlineBoardingConnector boardingConnector;
     private TableServiceConnector tableServiceConnector;
     private PayrollConnector payrollConnector;
+    private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
 
-    public IPaymentGateway getGatewayConnector() {
+    IPaymentGateway getGatewayConnector() {
         return gatewayConnector;
     }
     public void setGatewayConnector(IPaymentGateway gatewayConnector) {
         this.gatewayConnector = gatewayConnector;
     }
-    public IRecurringGateway getRecurringConnector() {
+    IRecurringGateway getRecurringConnector() {
         return recurringConnector;
     }
     public void setRecurringConnector(IRecurringGateway recurringConnector) {
         this.recurringConnector = recurringConnector;
     }
-    public IDeviceInterface getDeviceInterface() {
+    IDeviceInterface getDeviceInterface() {
         return deviceInterface;
     }
-    public DeviceController getDeviceController() {
+    DeviceController getDeviceController() {
         return deviceController;
     }
     public void setDeviceController(DeviceController deviceController) throws ConfigurationException {
         this.deviceController = deviceController;
         deviceInterface = deviceController.configureInterface();
     }
-//    public OnlineBoardingConnector getBoardingConnector() {
-//        return boardingConnector;
-//    }
-//    public void setBoardingConnector(OnlineBoardingConnector boardingConnector) {
-//        this.boardingConnector = boardingConnector;
-//    }
-    public TableServiceConnector getTableServiceConnector() {
+    TableServiceConnector getTableServiceConnector() {
         return tableServiceConnector;
     }
     public void setTableServiceConnector(TableServiceConnector tableServiceConnector) {
         this.tableServiceConnector = tableServiceConnector;
     }
-    public PayrollConnector getPayrollConnector() {
+    PayrollConnector getPayrollConnector() {
         return payrollConnector;
     }
     public void setPayrollConnector(PayrollConnector payrollConnector) {
         this.payrollConnector = payrollConnector;
+    }
+    public ISecure3dProvider getSecure3dProvider(Secure3dVersion version) {
+        if(secure3dProviders.containsKey(version)) {
+            return secure3dProviders.get(version);
+        }
+        else if(version.equals(Secure3dVersion.ANY)) {
+            ISecure3dProvider provider = secure3dProviders.get(Secure3dVersion.TWO);
+            if(provider == null) {
+                provider = secure3dProviders.get(Secure3dVersion.ONE);
+            }
+            return provider;
+        }
+        return null;
+    }
+    public void setSecure3dProvider(Secure3dVersion version, ISecure3dProvider provider) {
+        secure3dProviders.put(version, provider);
+    }
+
+    public ConfiguredServices() {
+        secure3dProviders = new HashMap<Secure3dVersion, ISecure3dProvider>();
     }
 
     public void dispose() {

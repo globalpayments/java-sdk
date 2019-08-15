@@ -292,6 +292,8 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             30.2 ORIGINAL AMOUNT, RECONCILIATION n12 A copy of amount, reconciliation (DE 5) from the original transaction. Since DE 5 is not used, this element will contain all zeros.
          */
         // DE 32: Acquiring Institution Identification Code - LLVAR n.. 11
+        request.set(DataElementId.DE_032, acceptorConfig.getAcquiringInstitutionIdentificationCode());
+
         // DE 34: Primary Account Number, Extended - LLVAR ns.. 28
 
         // DE 37: Retrieval Reference Number - anp12
@@ -610,8 +612,22 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
         // DE 15: Date, Settlement - n6 (YYMMDD) // C
         // DE 17: Date, Capture - n4 (MMDD) // C
-        if(transactionType.equals(TransactionType.Capture)) {
-            request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+        if(transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion)) {
+            if(paymentMethod instanceof TransactionReference) {
+                TransactionReference reference = (TransactionReference) paymentMethod;
+                if(reference.getOriginalPaymentMethod() instanceof GiftCard) {
+                    String cardType = ((GiftCard) reference.getOriginalPaymentMethod()).getCardType();
+                    if (!cardType.equals("ValueLink")) {
+                        request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+                    }
+                }
+                else {
+                    request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+                }
+            }
+            else {
+                request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+            }
         }
 
         // DE 18: Merchant Type - n4 // C 1100, 1200, 1220, 1300, 1320, 1420 (Same as MCC Code - Add to config since will be same for all transactions)
@@ -642,6 +658,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         dataCode.setCardDataOutputCapability(acceptorConfig.getCardDataOutputCapability());
         dataCode.setTerminalOutputCapability(acceptorConfig.getTerminalOutputCapability());
         dataCode.setPinCaptureCapability(acceptorConfig.getPinCaptureCapability());
+        // TODO: Do not add for batch close
         request.set(DataElementId.DE_022, dataCode);
 
         // DE 23: Card Sequence Number - n3 // C 1100, 1120, 1200, 1220, 1420 (Applies to EMV cards if the sequence number is returned from the terminal)
@@ -671,6 +688,8 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         }
 
         // DE 32: Acquiring Institution Identification Code - LLVAR n.. 11
+        request.set(DataElementId.DE_032, acceptorConfig.getAcquiringInstitutionIdentificationCode());
+
         // DE 34: Primary Account Number, Extended - LLVAR ns.. 28
 
         // DE 37: Retrieval Reference Number - anp12
@@ -944,9 +963,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             System.out.println("Request Breakdown:\r\n" + request.toString());
         }
         IDeviceMessage message = buildMessage(sendBuffer, orgCorr1, orgCorr2);
+        TransactionType transactionType = null;
 
         try {
             if(builder != null) {
+                transactionType = builder.getTransactionType();
                 this.setForceGatewayTimeout(builder.isForceGatewayTimeout());
             }
             byte[] responseBuffer = send(message);
@@ -977,16 +998,42 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             if(batchProvider != null) {
                 batchProvider.setPriorMessageData(priorMessageInformation);
             }
+
+            // was this a pre-auth completion
+            if(messageReasonCode != null && paymentMethod != null && transactionType != null) {
+                // get the original payment method
+                IPaymentMethod originalPaymentMethod = paymentMethod;
+                if(originalPaymentMethod instanceof TransactionReference) {
+                    originalPaymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
+                }
+
+                // check for debit or EBT
+                if(originalPaymentMethod instanceof Debit || originalPaymentMethod instanceof EBT) {
+                    // check for the right MRC
+                    if(messageReasonCode.equals(DE25_MessageReasonCode.AuthCapture.getValue())) {
+                        // make sure it's a capture and not a preAuthCompletion
+                        if(transactionType.equals(TransactionType.Capture)) {
+                            request.set(DataElementId.DE_025, DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement);
+                            Transaction dataCollectResponse = sendRequest(request, builder, orgCorr1, orgCorr2);
+                            dataCollectResponse.setPreAuthCompletion(response);
+                            return dataCollectResponse;
+                        }
+                    }
+                }
+            }
+
             return response;
         }
         catch(GatewayTimeoutException exc) {
-            if(builder == null || builder.getTransactionType().equals(TransactionType.Reversal)) {
+            if(builder == null || builder.getTransactionType().equals(TransactionType.Reversal)){
+                exc.setTransmissionTime(request.getString(DataElementId.DE_007));
                 throw exc;
             }
 
             // add the MTI and ProcessingCode from the original transaction to the timeout
             exc.setMessageTypeIndicator(request.getMessageTypeIndicator());
             exc.setProcessingCode(request.getString(DataElementId.DE_003));
+            exc.setTransmissionTime(request.getString(DataElementId.DE_007));
 
             BigDecimal amount = null;
             BigDecimal cashBackAmount = null;
@@ -999,6 +1046,14 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             else if(builder instanceof ManagementBuilder){
                 amount = ((ManagementBuilder) builder).getAmount();
                 paymentMethod = builder.getPaymentMethod();
+            }
+
+            // check if it's a pre-auth and not debit
+            if(builder.getTransactionType().equals(TransactionType.Auth) && !(paymentMethod instanceof Debit)) {
+                throw exc;
+            }
+            else if(builder.getTransactionType().equals(TransactionType.Capture) || builder.getTransactionType().equals(TransactionType.PreAuthCompletion)) {
+                throw exc;
             }
 
             // create transaction reference
@@ -1092,11 +1147,19 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 String responseText = DE39_ActionCode.getDescription(responseCode);
                 if(!StringUtils.isNullOrEmpty(responseCode)) {
                     if(additionalResponseData != null) {
+                        result.setAdditionalResponseCode(additionalResponseData.getActionReasonCode().toString());
                         responseText += String.format(" - %s: %s", additionalResponseData.getActionReasonCode().toString(), additionalResponseData.getTextMessage());
                     }
 
                     result.setResponseCode(responseCode);
                     result.setResponseMessage(responseText);
+
+                    // Issuer Data
+                    if(cardIssuerData != null) {
+                        for (DE62_2_CardIssuerEntry entry : cardIssuerData.getCardIssuerEntries()) {
+                            result.setIssuerData(entry.getIssuerTag(), entry.getIssuerEntry());
+                        }
+                    }
 
                     if(builder != null) {
                         String transactionToken = checkResponse(responseCode, request, message, builder);
@@ -1123,7 +1186,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                         reference.setOriginalProcessingCode(request.getString(DataElementId.DE_003));
                         reference.setSystemTraceAuditNumber(request.getString(DataElementId.DE_011));
                         reference.setOriginalTransactionTime(request.getString(DataElementId.DE_012));
-                        // TODO: revisit this, reference.setAcquiringInstitutionId();
+                        reference.setAcquiringInstitutionId(request.getString(DataElementId.DE_032));
 
                         // message control fields
                         if (messageControl != null) {
@@ -1227,6 +1290,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case AddValue:
             case BenefitWithdrawal:
             case Capture:
+            case PreAuthCompletion:
             case CashOut:
             case Refund:
             case Sale: {
@@ -1254,6 +1318,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         switch (builder.getTransactionType()) {
             case BatchClose:
             case Capture:
+            case PreAuthCompletion:
             case Reversal:
             case Void: {
                 mtiValue += "2";
@@ -1415,6 +1480,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case Sale: {
                 return "200";
             }
+            case PreAuthCompletion:
             case Capture: {
                 ManagementBuilder managementBuilder = (ManagementBuilder)builder;
 
@@ -1513,20 +1579,16 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                         reasonCode = DE25_MessageReasonCode.StandInCapture;
                     } break;
                     default: {
-                        if(originalPaymentMethod instanceof Debit || originalPaymentMethod instanceof EBT) {
-                            reasonCode = DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement;
-                        }
-                        else reasonCode = DE25_MessageReasonCode.AuthCapture;
+                        reasonCode = DE25_MessageReasonCode.AuthCapture;
                     }
                 }
             }
             else {
-//                if((originalPaymentMethod instanceof Debit || originalPaymentMethod instanceof EBT)) {
-//                    reasonCode = DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement;
-//                }
-//                else reasonCode = DE25_MessageReasonCode.AuthCapture;
                 reasonCode = DE25_MessageReasonCode.AuthCapture;
             }
+        }
+        if(transactionType.equals(TransactionType.PreAuthCompletion)) {
+            reasonCode = DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement;
         }
         else if(transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)) {
             boolean partial = false;
@@ -1779,15 +1841,15 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
         // unique device id
         if(!StringUtils.isNullOrEmpty(builder.getUniqueDeviceId())) {
-            cardIssuerData.add(DE62_CardIssuerEntryTag.UniqueDeviceId, builder.getUniqueDeviceId());
+            cardIssuerData.add(CardIssuerEntryTag.UniqueDeviceId, builder.getUniqueDeviceId());
         }
         else if(!StringUtils.isNullOrEmpty(uniqueDeviceId)) {
-            cardIssuerData.add(DE62_CardIssuerEntryTag.UniqueDeviceId, uniqueDeviceId);
+            cardIssuerData.add(CardIssuerEntryTag.UniqueDeviceId, uniqueDeviceId);
         }
 
         // pos config
         if(acceptorConfig.hasPosConfiguration_IssuerData()) {
-            cardIssuerData.add(DE62_CardIssuerEntryTag.NTS_POS_Capability, acceptorConfig.getPosConfigForIssuerData());
+            cardIssuerData.add(CardIssuerEntryTag.NTS_POS_Capability, acceptorConfig.getPosConfigForIssuerData());
         }
 
         // wex support
@@ -1798,17 +1860,17 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             }
 
             if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("WexFleet")) {
-                cardIssuerData.add(DE62_CardIssuerEntryTag.FleetCards, "F00", "0202");
+                cardIssuerData.add(CardIssuerEntryTag.FleetCards, "F00", "0202");
                 if(builder.getTransactionType().equals(TransactionType.Refund)) {
-                    cardIssuerData.add(DE62_CardIssuerEntryTag.IssuerSpecificTransactionMatchData, builder.getTransactionMatchingData().getElementData());
+                    cardIssuerData.add(CardIssuerEntryTag.IssuerSpecificTransactionMatchData, builder.getTransactionMatchingData().getElementData());
                 }
 
                 // purchase device sequence number
                 if(builder.getFleetData() != null && builder.getFleetData().getPurchaseDeviceSequenceNumber() != null) {
-                    cardIssuerData.add(DE62_CardIssuerEntryTag.FleetCards, "F01", builder.getFleetData().getPurchaseDeviceSequenceNumber());
+                    cardIssuerData.add(CardIssuerEntryTag.FleetCards, "F01", builder.getFleetData().getPurchaseDeviceSequenceNumber());
                 }
                 else if(paymentMethod instanceof CreditTrackData) {
-                    cardIssuerData.add(DE62_CardIssuerEntryTag.FleetCards, "F01", ((CreditTrackData) paymentMethod).getPurchaseDeviceSequenceNumber());
+                    cardIssuerData.add(CardIssuerEntryTag.FleetCards, "F01", ((CreditTrackData) paymentMethod).getPurchaseDeviceSequenceNumber());
                 }
             }
         }
@@ -1819,32 +1881,37 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
             // IRR Issuer Reference Number
             if(!StringUtils.isNullOrEmpty(mb.getReferenceNumber())) {
-                cardIssuerData.add(DE62_CardIssuerEntryTag.RetrievalReferenceNumber, mb.getReferenceNumber());
+                cardIssuerData.add(CardIssuerEntryTag.RetrievalReferenceNumber, mb.getReferenceNumber());
             }
 
             // NTE Terminal Error
-            if(mb.getTransactionType().equals(TransactionType.BatchClose) && mb.getBatchCloseType().equals(BatchCloseType.Forced)) {
-                cardIssuerData.add(DE62_CardIssuerEntryTag.TerminalError, "Y");
+            if(mb.isTerminalError()) {
+                cardIssuerData.add(CardIssuerEntryTag.TerminalError, "Y");
             }
 
+            if(mb.getTransactionType().equals(TransactionType.BatchClose) && mb.getBatchCloseType().equals(BatchCloseType.Forced)) {
+                cardIssuerData.add(CardIssuerEntryTag.TerminalError, "Y");
+            }
+
+            // Transaction reference
             if(mb.getPaymentMethod() instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference)mb.getPaymentMethod();
 
                 // NTS Specific Data
                 if(reference.getNtsData() != null) {
-                    cardIssuerData.add(DE62_CardIssuerEntryTag.NTS_System, reference.getNtsData().toString());
+                    cardIssuerData.add(CardIssuerEntryTag.NTS_System, reference.getNtsData().toString());
                 }
 
                 // original payment method
                 if(reference.getOriginalPaymentMethod() != null) {
                     if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
-                        cardIssuerData.add(DE62_CardIssuerEntryTag.SwipeIndicator, "NSI", "0");
+                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "0");
                     }
                     else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
                         ITrackData track = (ITrackData)reference.getOriginalPaymentMethod();
 
                         String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
-                        cardIssuerData.add(DE62_CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
                     }
                 }
             }
@@ -1852,14 +1919,14 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         else {
             AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
             if(authBuilder.getEmvChipCondition() != null) {
-                cardIssuerData.add(DE62_CardIssuerEntryTag.ChipConditionCode, mapChipCondition(authBuilder.getEmvChipCondition()));
+                cardIssuerData.add(CardIssuerEntryTag.ChipConditionCode, mapChipCondition(authBuilder.getEmvChipCondition()));
             }
         }
 
         // catch all
         if(builder.getIssuerData() != null) {
-            LinkedHashMap<DE62_CardIssuerEntryTag,String> issuerData = builder.getIssuerData();
-            for(DE62_CardIssuerEntryTag tag: issuerData.keySet()) {
+            LinkedHashMap<CardIssuerEntryTag,String> issuerData = builder.getIssuerData();
+            for(CardIssuerEntryTag tag: issuerData.keySet()) {
                 cardIssuerData.add(tag, issuerData.get(tag));
             }
         }
@@ -1996,9 +2063,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
                     DE62_CardIssuerData responseIssuerData = response.getDataElement(DataElementId.DE_062, DE62_CardIssuerData.class);
                     if(responseIssuerData != null) {
-                        String ntsData = responseIssuerData.get(DE62_CardIssuerEntryTag.NTS_System);
+                        String ntsData = responseIssuerData.get(CardIssuerEntryTag.NTS_System);
                         if(ntsData != null) {
-                            requestIssuerData.add(DE62_CardIssuerEntryTag.NTS_System, ntsData);
+                            requestIssuerData.add(CardIssuerEntryTag.NTS_System, ntsData);
                         }
                     }
 
@@ -2006,19 +2073,19 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                     if(request.has(DataElementId.DE_002)) {
                         impliedCapture.set(DataElementId.DE_002, request.getString(DataElementId.DE_002));
                         impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
-                        requestIssuerData.add(DE62_CardIssuerEntryTag.SwipeIndicator, "NSI", "0");
+                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "0");
                     }
                     else if(request.has(DataElementId.DE_035)) {
                         CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_035));
                         impliedCapture.set(DataElementId.DE_002, track.getPan());
                         impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-                        requestIssuerData.add(DE62_CardIssuerEntryTag.SwipeIndicator, "NSI", "2");
+                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "2");
                     }
                     else {
                         CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_045));
                         impliedCapture.set(DataElementId.DE_002, track.getPan());
                         impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-                        requestIssuerData.add(DE62_CardIssuerEntryTag.SwipeIndicator, "NSI", "1");
+                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "1");
                     }
                     impliedCapture.set(DataElementId.DE_062, requestIssuerData);
 

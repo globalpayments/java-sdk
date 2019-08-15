@@ -23,9 +23,7 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsDebitTests {
@@ -65,7 +63,7 @@ public class VapsDebitTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0001126198308");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -129,6 +127,20 @@ public class VapsDebitTests {
 
         // check response
         assertEquals("000", response.getResponseCode());
+
+        // sale data-collect
+        Transaction capture = response.preAuthCompletion(new BigDecimal(10))
+                .execute();
+        assertNotNull(capture);
+        assertNull(capture.getPreAuthCompletion());
+
+        // check message data
+        pmi = capture.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("1379", pmi.getMessageReasonCode());
+        assertEquals("201", pmi.getFunctionCode());
     }
 
     @Test
@@ -275,8 +287,17 @@ public class VapsDebitTests {
         Transaction capture = response.capture(new BigDecimal(12))
                 .execute("ICR");
         assertNotNull(capture);
+        assertNotNull(capture.getPreAuthCompletion());
 
-        // check message data
+        // check the pre-auth completion
+        pmi = capture.getPreAuthCompletion().getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
+
+        // check data-collect
         pmi = capture.getMessageInformation();
         assertNotNull(pmi);
         assertEquals("1220", pmi.getMessageTransactionIndicator());

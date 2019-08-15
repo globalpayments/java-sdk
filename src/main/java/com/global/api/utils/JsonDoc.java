@@ -2,6 +2,7 @@ package com.global.api.utils;
 
 import com.global.api.entities.enums.IStringConstant;
 import com.google.gson.*;
+import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -58,6 +59,16 @@ public class JsonDoc {
             return set(key, value.getValue(), force);
         return this;
     }
+    public JsonDoc set(String key, IStringConstant[] values) {
+        if(values != null) {
+            ArrayList<String> strValues = new ArrayList<String>();
+            for (IStringConstant value : values) {
+                strValues.add(value.getValue());
+            }
+            dict.put(key, strValues);
+        }
+        return this;
+    }
     public JsonDoc set(String key, Integer value) {
         return set(key, value, false);
     }
@@ -73,6 +84,30 @@ public class JsonDoc {
         if(encoder != null)
             dict.put(key, encoder.encode(value));
         else dict.put(key, value);
+        return this;
+    }
+    public JsonDoc set(String key, Boolean value) {
+        if(value != null) {
+            return set(key, (boolean)value);
+        }
+        return this;
+    }
+    public JsonDoc set(String key, JsonDoc value) {
+        if(value != null) {
+            dict.put(key, value);
+        }
+        return this;
+    }
+    public JsonDoc set(String key, DateTime date, String pattern) {
+        if(date != null) {
+            return set(key, date.toString(pattern));
+        }
+        return this;
+    }
+    public JsonDoc set(String key, BigDecimal amount) {
+        if(amount != null) {
+            return set(key, StringUtils.toNumeric(amount));
+        }
         return this;
     }
 
@@ -123,6 +158,15 @@ public class JsonDoc {
         return converter.call(null);
     }
 
+    public String getString(String... names) {
+        for(String name: names) {
+            String value = getString(name);
+            if(value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
     public String getString(String name) {
         if(dict.containsKey(name)) {
             Object value = dict.get(name);

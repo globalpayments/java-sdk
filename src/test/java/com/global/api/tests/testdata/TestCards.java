@@ -514,7 +514,7 @@ public class TestCards {
     }
     public static GiftCard ValueLinkSwipe() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue("6010567085878703=25010004000070779628");
+        rvalue.setValue("6010561234567890123=25010004000070779628");
         return rvalue;
     }
 

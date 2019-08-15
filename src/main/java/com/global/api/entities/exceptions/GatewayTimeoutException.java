@@ -7,6 +7,7 @@ public class GatewayTimeoutException extends GatewayException {
     private int reversalCount = 0;
     private String reversalResponseCode;
     private String reversalResponseText;
+    private String transmissionTime;
 
     public String getHost() {
         return host;
@@ -43,6 +44,12 @@ public class GatewayTimeoutException extends GatewayException {
     }
     public void setReversalResponseText(String reversalResponseText) {
         this.reversalResponseText = reversalResponseText;
+    }
+    public String getTransmissionTime() {
+        return transmissionTime;
+    }
+    public void setTransmissionTime(String transmissionTime) {
+        this.transmissionTime = transmissionTime;
     }
 
     public GatewayTimeoutException() {

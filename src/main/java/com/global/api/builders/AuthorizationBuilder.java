@@ -10,7 +10,7 @@ import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
-import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTCardData;
@@ -74,6 +74,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
+    private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private String tagData;
     private String timestamp;
@@ -211,6 +212,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getScheduleId() { return scheduleId; }
     public Address getShippingAddress() {
         return shippingAddress;
+    }
+    public StoredCredential getStoredCredential() {
+        return storedCredential;
     }
     public String getTimestamp() {
         return timestamp;
@@ -523,6 +527,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.shippingAmount = value;
         return this;
     }
+    public AuthorizationBuilder withStoredCredential(StoredCredential value) {
+        this.storedCredential = value;
+        return this;
+    }
     public AuthorizationBuilder withSupplementaryData(String type, String... values) {
         // create the dictionary if needed
         if (supplementaryData == null) {
@@ -570,9 +578,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         fleetData = value;
         return this;
     }
-    public AuthorizationBuilder withIssuerData(DE62_CardIssuerEntryTag tag, String value) {
+    public AuthorizationBuilder withIssuerData(CardIssuerEntryTag tag, String value) {
         if(issuerData == null) {
-            issuerData = new LinkedHashMap<DE62_CardIssuerEntryTag, String>();
+            issuerData = new LinkedHashMap<CardIssuerEntryTag, String>();
         }
         issuerData.put(tag, value);
 

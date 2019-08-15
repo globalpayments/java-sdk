@@ -52,10 +52,11 @@ public class DE56_OriginalDataElements implements IDataElement<DE56_OriginalData
             .concat(transactionDateTime);
 
         // put the acquirer id if present
-        if(!StringUtils.isNullOrEmpty(acquiringInstitutionId)) {
-            rvalue = rvalue.concat(StringUtils.padLeft(acquiringInstitutionId.length(), 2, '0'))
-                    .concat(acquiringInstitutionId);
+        if(acquiringInstitutionId == null) {
+            acquiringInstitutionId = "";
         }
+        rvalue = rvalue.concat(StringUtils.padLeft(acquiringInstitutionId.length(), 2, '0'))
+                .concat(acquiringInstitutionId);
 
         return rvalue.getBytes();
     }

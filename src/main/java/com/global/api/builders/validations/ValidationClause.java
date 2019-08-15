@@ -94,6 +94,29 @@ public class ValidationClause {
         return parent.of(target.getType()).with(target.getConstraint());
     }
 
+    public ValidationTarget isInstanceOf(Class clazz) {
+        return isInstanceOf(clazz, null);
+    }
+    public ValidationTarget isInstanceOf(Class clazz, String message) {
+        final Class checkClass = clazz;
+        callback = new MyCallable() {
+            public Boolean call(Object builder) throws Exception {
+                try {
+                    Field f = getField(builder.getClass(), propertyName);
+                    Object value = f.get(builder);
+                    return checkClass.isAssignableFrom(value.getClass());
+                }
+                catch(NoSuchFieldException exc) {
+                    return false;
+                }
+            }
+        };
+        this.message = (message != null) ? message : String.format("%s must be an instance of the %s class.", propertyName, clazz.getName());
+        if(precondition)
+            return target;
+        return parent.of(target.getType()).with(target.getConstraint());
+    }
+
     public ValidationTarget isEqualTo(final Object expected) {
         return isEqualTo(expected, null);
     }

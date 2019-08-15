@@ -33,7 +33,10 @@ public enum TransactionType implements IFlag {
     DccRateLookup,
     Increment,
     CashOut,
-    DataCollect;
+    DataCollect,
+    VerifyAuthentication,
+    PreAuthCompletion,
+    InitiateAuthentication;
 
     public long getLongValue() {
         return 1 << this.ordinal();

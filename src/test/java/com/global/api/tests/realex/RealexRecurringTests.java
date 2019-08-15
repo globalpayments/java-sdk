@@ -74,7 +74,7 @@ public class RealexRecurringTests {
         card = new CreditCardData();
         card.setNumber("4263970000005262");
         card.setExpMonth(5);
-        card.setExpYear(2019);
+        card.setExpYear(2025);
         card.setCardHolderName("James Mason");
     }
 
@@ -118,7 +118,7 @@ public class RealexRecurringTests {
         CreditCardData newCard = new CreditCardData();
         newCard.setNumber("5425230000004415");
         newCard.setExpMonth(10);
-        newCard.setExpYear(2020);
+        newCard.setExpYear(2025);
         newCard.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(newCard);

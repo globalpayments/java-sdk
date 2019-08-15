@@ -6,6 +6,7 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Transaction {
+    private String additionalResponseCode;
     private BigDecimal authorizedAmount;
     private BigDecimal availableBalance;
     private String avsResponseCode;
@@ -33,14 +35,17 @@ public class Transaction {
     private String emvIssuerResponse;
     private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
+    private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     private String multiCapture;
     private BigDecimal pointsBalanceAmount;
+    private Transaction preAuthCompletion;
     private String recurringDataCode;
     private String referenceNumber;
     private String responseCode;
     private String responseMessage;
     private HashMap<String, String> responseValues;
+    private String schemeId;
     private ThreeDSecure threeDsecure;
     private String timestamp;
     private String transactionDescriptor;
@@ -49,6 +54,12 @@ public class Transaction {
     private GiftCard giftCard;
     private TransactionReference transactionReference;
 
+    public String getAdditionalResponseCode() {
+        return additionalResponseCode;
+    }
+    public void setAdditionalResponseCode(String additionalResponseCode) {
+        this.additionalResponseCode = additionalResponseCode;
+    }
     public String getAcquiringInstitutionId() {
         if(transactionReference != null) {
             return transactionReference.getAcquiringInstitutionId();
@@ -177,6 +188,15 @@ public class Transaction {
     public void setHostResponseDate(Date hostResponseDate) {
         this.hostResponseDate = hostResponseDate;
     }
+    public HashMap<CardIssuerEntryTag, String> getIssuerData() {
+        return issuerData;
+    }
+    public void setIssuerData(CardIssuerEntryTag tag, String value) {
+        if(issuerData == null) {
+            issuerData = new HashMap<CardIssuerEntryTag, String>();
+        }
+        this.issuerData.put(tag, value);
+    }
     public PriorMessageInformation getMessageInformation() {
         return this.messageInformation;
     }
@@ -257,6 +277,12 @@ public class Transaction {
             transactionReference = new TransactionReference();
         transactionReference.setPaymentMethodType(value);
     }
+    public Transaction getPreAuthCompletion() {
+        return preAuthCompletion;
+    }
+    public void setPreAuthCompletion(Transaction preAuthCompletion) {
+        this.preAuthCompletion = preAuthCompletion;
+    }
     public BigDecimal getPointsBalanceAmount() {
         return pointsBalanceAmount;
     }
@@ -298,6 +324,12 @@ public class Transaction {
     }
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
+    }
+    public String getSchemeId() {
+        return schemeId;
+    }
+    public void setSchemeId(String schemeId) {
+        this.schemeId = schemeId;
     }
     public String getSystemTraceAuditNumber() {
         if(transactionReference != null) {
@@ -408,6 +440,15 @@ public class Transaction {
         return new ManagementBuilder(TransactionType.Increment)
                 .withAmount(amount)
                 .withPaymentMethod(transactionReference);
+    }
+
+    public ManagementBuilder preAuthCompletion() {
+        return preAuthCompletion(null);
+    }
+    public ManagementBuilder preAuthCompletion(BigDecimal amount) {
+        return new ManagementBuilder(TransactionType.PreAuthCompletion)
+                .withPaymentMethod(transactionReference)
+                .withAmount(amount);
     }
 
     public ManagementBuilder refund() {

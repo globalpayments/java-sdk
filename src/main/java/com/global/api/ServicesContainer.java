@@ -1,6 +1,6 @@
 package com.global.api;
 
-import com.global.api.entities.enums.TableServiceProviders;
+import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
@@ -8,8 +8,6 @@ import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
-import com.global.api.terminals.hpa.HpaController;
-import com.global.api.terminals.pax.PaxController;
 
 import java.util.HashMap;
 
@@ -32,24 +30,29 @@ public class ServicesContainer implements IDisposable {
             return configurations.get(configName).getGatewayConnector();
         throw new ApiException("The specified configuration has not been configured for card processing.");
     }
+    public PayrollConnector getPayroll(String configName) throws ApiException {
+        if(configurations.containsKey(configName))
+            return configurations.get(configName).getPayrollConnector();
+        throw new ApiException("The specified configuration has not been configured for payroll.");
+    }
     public IRecurringGateway getRecurring(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getRecurringConnector();
         throw new ApiException("The specified configuration has not been configured for recurring processing.");
     }
+    public ISecure3dProvider getSecure3d(String configName, Secure3dVersion version) throws ApiException {
+        if(configurations.containsKey(configName)) {
+            ISecure3dProvider provider = configurations.get(configName).getSecure3dProvider(version);
+            if(provider != null) {
+                return provider;
+            }
+            throw new ConfigurationException(String.format("Secure 3d is not configured for %s", version.toString()));
+        }
+        throw new ConfigurationException("Secure 3d is not configured on the connector");
+    }
     public TableServiceConnector getTableService(String configName) throws ApiException {
         if(configurations.containsKey(configName))
             return configurations.get(configName).getTableServiceConnector();
-        throw new ApiException("The specified configuration has not been configured for payroll.");
-    }
-//    public OnlineBoardingConnector getBoarding(String configName) {
-//        if(configurations.containsKey(configName))
-//            return configurations.get(configName).getBoardingConnector();
-//        return null;
-//    }
-    public PayrollConnector getPayroll(String configName) throws ApiException {
-        if(configurations.containsKey(configName))
-            return configurations.get(configName).getPayrollConnector();
         throw new ApiException("The specified configuration has not been configured for payroll.");
     }
 

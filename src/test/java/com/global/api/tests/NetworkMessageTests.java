@@ -212,7 +212,7 @@ public class NetworkMessageTests {
 
         // DE62 - First Entry
         DE62_2_CardIssuerEntry cardIssuerEntry = cardIssuerData.getCardIssuerEntries().get(0);
-        assertEquals(DE62_CardIssuerEntryTag.UniqueDeviceId, cardIssuerEntry.getIssuerTag());
+        assertEquals(CardIssuerEntryTag.UniqueDeviceId, cardIssuerEntry.getIssuerTag());
         assertEquals("0001", cardIssuerEntry.getIssuerEntry());
     }
 
@@ -644,11 +644,11 @@ public class NetworkMessageTests {
         assertEquals(2, element.getCardIssuerEntries().size());
 
         DE62_2_CardIssuerEntry entry = element.getCardIssuerEntries().get(0);
-        assertEquals(DE62_CardIssuerEntryTag.OriginalResponse_ActionCode, entry.getIssuerTag());
+        assertEquals(CardIssuerEntryTag.OriginalResponse_ActionCode, entry.getIssuerTag());
         assertEquals("05", entry.getIssuerEntry());
 
         entry = element.getCardIssuerEntries().get(1);
-        assertEquals(DE62_CardIssuerEntryTag.DisplayText, entry.getIssuerTag());
+        assertEquals(CardIssuerEntryTag.DisplayText, entry.getIssuerTag());
         assertEquals("APPROVED", entry.getIssuerEntry());
 
         byte[] buffer = element.toByteArray();

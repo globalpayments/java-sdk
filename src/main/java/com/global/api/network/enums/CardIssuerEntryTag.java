@@ -2,7 +2,7 @@ package com.global.api.network.enums;
 
 import com.global.api.entities.enums.IStringConstant;
 
-public enum DE62_CardIssuerEntryTag implements IStringConstant {
+public enum CardIssuerEntryTag implements IStringConstant {
     StoredValueCards("1xx"),
     LoyaltyCards("2xx"),
     PrivateLabelCards("3xx"),
@@ -11,6 +11,7 @@ public enum DE62_CardIssuerEntryTag implements IStringConstant {
     Bank_CreditCards("Bxx"),
     Checks("Cxx"),
     PIN_DebitCards("Dxx"),
+    PIN_DebitAuthorizer("D00"),
     ElectronicBenefitsTransfer("Exx"),
     FleetCards("Fxx"),
     PrepaidServiceSystem("Gxx"),
@@ -39,8 +40,8 @@ public enum DE62_CardIssuerEntryTag implements IStringConstant {
     Alternate_DE42("I42"),
     DialError("NDE"),
     DiscoverNetworkReferenceId("ND2"),
-    NTS_MastercardBanknet_ReferenceNumber("NM1"),
-    NTS_MastercardBanknet_SettlementDate("NM2"),
+    NTS_MastercardBankNet_ReferenceNumber("NM1"),
+    NTS_MastercardBankNet_SettlementDate("NM2"),
     NTS_POS_Capability("NPC"),
     PetroleumSwitch("NPS"),
     SwipeIndicator("NSI"),
@@ -49,7 +50,7 @@ public enum DE62_CardIssuerEntryTag implements IStringConstant {
     VisaTransactionId("NV1");
 
     private final String value;
-    DE62_CardIssuerEntryTag(String value) { this.value = value; }
+    CardIssuerEntryTag(String value) { this.value = value; }
     public String getValue() {
         return value;
     }
@@ -57,7 +58,7 @@ public enum DE62_CardIssuerEntryTag implements IStringConstant {
         return value.getBytes();
     }
 
-    public static DE62_CardIssuerEntryTag findPartial(String value) {
+    public static CardIssuerEntryTag findPartial(String value) {
         switch(value.toCharArray()[0]) {
             case '1':
                 return StoredValueCards;

@@ -1,25 +1,66 @@
 package com.global.api.entities;
 
+import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.utils.ReverseStringEnumMap;
 
 import java.math.BigDecimal;
 
 public class ThreeDSecure {
+    private String acsTransactionId;
+    private String acsEndVersion;
+    private String acsStartVersion;
     private int algorithm;
     private BigDecimal amount;
+    private String authenticationSource;
+    private String authenticationType;
+    private String authenticationValue;
+    private String cardHolderResponseInfo;
     private String cavv;
+    private boolean challengeMandated;
+    private String criticalityIndicator;
     private String currency;
+    private String directoryServerTransactionId;
+    private String directoryServerEndVersion;
+    private String directoryServerStartVersion;
     private String eci;
     private boolean enrolled;
     private String issuerAcsUrl;
     private MerchantDataCollection merchantData;
+    private String messageCategory;
+    private String messageExtensionId;
+    private String messageExtensionName;
+    private String messageVersion;
     private String orderId;
     private String payerAuthenticationRequest;
     private String paymentDataSource;
     private String paymentDataType;
+    private String sdkInterface;
+    private String sdkUiType;
+    private String serverTransactionId;
     private String status;
+    private String statusReason;
+    private Secure3dVersion version;
     private String xid;
 
+    public String getAcsTransactionId() {
+        return acsTransactionId;
+    }
+    public void setAcsTransactionId(String acsTransactionId) {
+        this.acsTransactionId = acsTransactionId;
+    }
+    public String getAcsEndVersion() {
+        return acsEndVersion;
+    }
+    public void setAcsEndVersion(String acsEndVersion) {
+        this.acsEndVersion = acsEndVersion;
+    }
+    public String getAcsStartVersion() {
+        return acsStartVersion;
+    }
+    public void setAcsStartVersion(String acsStartVersion) {
+        this.acsStartVersion = acsStartVersion;
+    }
     public int getAlgorithm() {
         return algorithm;
     }
@@ -33,11 +74,47 @@ public class ThreeDSecure {
         this.amount = amount;
         getMerchantData().put("_amount", amount != null ? amount.toString() : null, false);
     }
+    public String getAuthenticationSource() {
+        return authenticationSource;
+    }
+    public void setAuthenticationSource(String authenticationSource) {
+        this.authenticationSource = authenticationSource;
+    }
+    public String getAuthenticationType() {
+        return authenticationType;
+    }
+    public void setAuthenticationType(String authenticationType) {
+        this.authenticationType = authenticationType;
+    }
+    public String getAuthenticationValue() {
+        return authenticationValue;
+    }
+    public void setAuthenticationValue(String authenticationValue) {
+        this.authenticationValue = authenticationValue;
+    }
+    public String getCardHolderResponseInfo() {
+        return cardHolderResponseInfo;
+    }
+    public void setCardHolderResponseInfo(String cardHolderResponseInfo) {
+        this.cardHolderResponseInfo = cardHolderResponseInfo;
+    }
     public String getCavv() {
         return cavv;
     }
     public void setCavv(String cavv) {
         this.cavv = cavv;
+    }
+    public boolean isChallengeMandated() {
+        return challengeMandated;
+    }
+    public void setChallengeMandated(boolean challengeMandated) {
+        this.challengeMandated = challengeMandated;
+    }
+    public String getCriticalityIndicator() {
+        return criticalityIndicator;
+    }
+    public void setCriticalityIndicator(String criticalityIndicator) {
+        this.criticalityIndicator = criticalityIndicator;
     }
     public String getCurrency() {
         return currency;
@@ -45,6 +122,24 @@ public class ThreeDSecure {
     public void setCurrency(String currency) throws ApiException {
         this.currency = currency;
         getMerchantData().put("_currency", currency, false);
+    }
+    public String getDirectoryServerTransactionId() {
+        return directoryServerTransactionId;
+    }
+    public void setDirectoryServerTransactionId(String directoryServerTransactionId) {
+        this.directoryServerTransactionId = directoryServerTransactionId;
+    }
+    public String getDirectoryServerEndVersion() {
+        return directoryServerEndVersion;
+    }
+    public void setDirectoryServerEndVersion(String directoryServerEndVersion) {
+        this.directoryServerEndVersion = directoryServerEndVersion;
+    }
+    public String getDirectoryServerStartVersion() {
+        return directoryServerStartVersion;
+    }
+    public void setDirectoryServerStartVersion(String directoryServerStartVersion) {
+        this.directoryServerStartVersion = directoryServerStartVersion;
     }
     public String getEci() {
         return eci;
@@ -74,12 +169,42 @@ public class ThreeDSecure {
             merchantData.mergeHidden(this.merchantData);
 
         this.merchantData = merchantData;
-        if(merchantData.hasKey("_amount"))
+        if(merchantData.hasKey("_amount")) {
             this.amount = merchantData.getDecimal("_amount");
-        if(merchantData.hasKey("_currency"))
+        }
+        if(merchantData.hasKey("_currency")) {
             this.currency = merchantData.getString("_currency");
-        if(merchantData.hasKey("_orderId"))
+        }
+        if(merchantData.hasKey("_orderId")) {
             this.orderId = merchantData.getString("_orderId");
+        }
+        if(merchantData.hasKey("_version")) {
+            this.version = ReverseStringEnumMap.parse(merchantData.getString("_version"), Secure3dVersion.class);
+        }
+    }
+    public String getMessageCategory() {
+        return messageCategory;
+    }
+    public void setMessageCategory(String messageCategory) {
+        this.messageCategory = messageCategory;
+    }
+    public String getMessageExtensionId() {
+        return messageExtensionId;
+    }
+    public void setMessageExtensionId(String messageExtensionId) {
+        this.messageExtensionId = messageExtensionId;
+    }
+    public String getMessageExtensionName() {
+        return messageExtensionName;
+    }
+    public void setMessageExtensionName(String messageExtensionName) {
+        this.messageExtensionName = messageExtensionName;
+    }
+    public String getMessageVersion() {
+        return messageVersion;
+    }
+    public void setMessageVersion(String messageVersion) {
+        this.messageVersion = messageVersion;
     }
     public String getOrderId() {
         return orderId;
@@ -106,11 +231,42 @@ public class ThreeDSecure {
     public void setPaymentDataType(String paymentDataType) {
         this.paymentDataType = paymentDataType;
     }
+    public String getSdkInterface() {
+        return sdkInterface;
+    }
+    public void setSdkInterface(String sdkInterface) {
+        this.sdkInterface = sdkInterface;
+    }
+    public String getSdkUiType() {
+        return sdkUiType;
+    }
+    public void setSdkUiType(String sdkUiType) {
+        this.sdkUiType = sdkUiType;
+    }
+    public String getServerTransactionId() {
+        return serverTransactionId;
+    }
+    public void setServerTransactionId(String serverTransactionId) {
+        this.serverTransactionId = serverTransactionId;
+    }
     public String getStatus() {
         return status;
     }
     public void setStatus(String status) {
         this.status = status;
+    }
+    public String getStatusReason() {
+        return statusReason;
+    }
+    public void setStatusReason(String statusReason) {
+        this.statusReason = statusReason;
+    }
+    public Secure3dVersion getVersion() {
+        return version;
+    }
+    public void setVersion(Secure3dVersion version) throws ApiException {
+        this.version = version;
+        getMerchantData().put("_version", version.getValue(), false);
     }
     public String getXid() {
         return xid;
@@ -121,5 +277,53 @@ public class ThreeDSecure {
 
     public ThreeDSecure() {
         this.paymentDataType = "3DSecure";
+    }
+
+    public void merge(ThreeDSecure secureEcom) {
+        if(secureEcom != null) {
+            this.acsTransactionId = mergeValue(acsTransactionId, secureEcom.getAcsTransactionId());
+            this.acsEndVersion = mergeValue(acsEndVersion, secureEcom.getAcsEndVersion());
+            this.acsStartVersion = mergeValue(acsStartVersion, secureEcom.getAcsStartVersion());
+            this.algorithm = mergeValue(algorithm, secureEcom.getAlgorithm());
+            this.amount = mergeValue(amount, secureEcom.getAmount());
+            this.authenticationSource = mergeValue(authenticationSource, secureEcom.getAuthenticationSource());
+            this.authenticationType = mergeValue(authenticationType, secureEcom.getAuthenticationType());
+            this.authenticationValue = mergeValue(authenticationValue, secureEcom.getAuthenticationValue());
+            this.cardHolderResponseInfo = mergeValue(cardHolderResponseInfo, secureEcom.getCardHolderResponseInfo());
+            this.cavv = mergeValue(cavv, secureEcom.getCavv());
+            this.challengeMandated = mergeValue(challengeMandated, secureEcom.isChallengeMandated());
+            this.criticalityIndicator = mergeValue(criticalityIndicator, secureEcom.getCriticalityIndicator());
+            this.currency = mergeValue(currency, secureEcom.getCurrency());
+            this.directoryServerTransactionId = mergeValue(directoryServerTransactionId, secureEcom.getDirectoryServerTransactionId());
+            this.directoryServerEndVersion = mergeValue(directoryServerEndVersion, secureEcom.getDirectoryServerEndVersion());
+            this.directoryServerStartVersion = mergeValue(directoryServerStartVersion, secureEcom.getDirectoryServerStartVersion());
+            this.eci = mergeValue(eci, secureEcom.getEci());
+            this.enrolled = mergeValue(enrolled, secureEcom.isEnrolled());
+            this.issuerAcsUrl = mergeValue(issuerAcsUrl, secureEcom.getIssuerAcsUrl());
+            this.messageCategory = mergeValue(messageCategory, secureEcom.getMessageCategory());
+            this.messageExtensionId = mergeValue(messageExtensionId, secureEcom.getMessageExtensionId());
+            this.messageExtensionName = mergeValue(messageExtensionName, secureEcom.getMessageExtensionName());
+            this.messageVersion = mergeValue(messageVersion, secureEcom.getMessageVersion());
+            this.orderId = mergeValue(orderId, secureEcom.getOrderId());
+            this.payerAuthenticationRequest = mergeValue(payerAuthenticationRequest, secureEcom.getPayerAuthenticationRequest());
+            this.paymentDataSource = mergeValue(paymentDataSource, secureEcom.getPaymentDataSource());
+            this.paymentDataType = mergeValue(paymentDataType, secureEcom.getPaymentDataType());
+            this.sdkInterface = mergeValue(sdkInterface, secureEcom.getSdkInterface());
+            this.sdkUiType = mergeValue(sdkUiType, secureEcom.getSdkUiType());
+            this.serverTransactionId = mergeValue(serverTransactionId, secureEcom.getServerTransactionId());
+            this.status = mergeValue(status, secureEcom.getStatus());
+            this.statusReason = mergeValue(statusReason, secureEcom.getStatusReason());
+            this.version = mergeValue(version, secureEcom.getVersion());
+            this.xid = mergeValue(xid, secureEcom.getXid());
+
+            //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());
+        }
+    }
+
+    private <T> T mergeValue(T currentValue, T mergeValue) {
+        if(mergeValue == null) {
+            return currentValue;
+        }
+        return mergeValue;
     }
 }

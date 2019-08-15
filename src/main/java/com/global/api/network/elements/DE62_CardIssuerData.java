@@ -1,7 +1,7 @@
 package com.global.api.network.elements;
 
 import com.global.api.network.abstractions.IDataElement;
-import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
@@ -31,16 +31,16 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
             cardIssuerEntries.add(entry);
         }
     }
-    public void add(DE62_CardIssuerEntryTag tag, String value) {
+    public void add(CardIssuerEntryTag tag, String value) {
         DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, value);
         add(entry);
     }
-    public void add(DE62_CardIssuerEntryTag tag, String tagValue, String value) {
+    public void add(CardIssuerEntryTag tag, String tagValue, String value) {
         DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, tagValue, value);
         add(entry);
     }
 
-    public String get(DE62_CardIssuerEntryTag tag) {
+    public String get(CardIssuerEntryTag tag) {
         for(DE62_2_CardIssuerEntry entry: cardIssuerEntries) {
             if(entry.getIssuerTag().equals(tag)) {
                 return entry.getIssuerEntry();
@@ -63,9 +63,9 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
         int numEntries = sp.readInt(2);
         for(int i = 0; i < numEntries; i++) {
             String tagValue = sp.readString(3);
-            DE62_CardIssuerEntryTag tag = ReverseStringEnumMap.parse(tagValue, DE62_CardIssuerEntryTag.class);
+            CardIssuerEntryTag tag = ReverseStringEnumMap.parse(tagValue, CardIssuerEntryTag.class);
             if(tag == null) { // find one of the other values
-                tag = DE62_CardIssuerEntryTag.findPartial(tagValue);
+                tag = CardIssuerEntryTag.findPartial(tagValue);
             }
             String issuerEntryData = sp.readLLVAR();
 

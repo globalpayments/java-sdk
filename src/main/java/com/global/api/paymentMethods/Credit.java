@@ -56,6 +56,9 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public boolean isFleet() {
         return fleetCard;
     }
+    public void setFleetCard(boolean fleetCard) {
+        this.fleetCard = fleetCard;
+    }
 
     public AuthorizationBuilder authorize() { return authorize(null, false); }
     public AuthorizationBuilder authorize(BigDecimal amount) {

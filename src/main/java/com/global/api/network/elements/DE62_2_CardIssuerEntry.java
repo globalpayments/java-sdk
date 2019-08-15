@@ -1,16 +1,16 @@
 package com.global.api.network.elements;
 
-import com.global.api.network.enums.DE62_CardIssuerEntryTag;
+import com.global.api.network.enums.CardIssuerEntryTag;
 
 public class DE62_2_CardIssuerEntry {
-    private DE62_CardIssuerEntryTag issuerTag;
+    private CardIssuerEntryTag issuerTag;
     private String issuerTagValue;
     private String issuerEntry;
 
-    public DE62_CardIssuerEntryTag getIssuerTag() {
+    public CardIssuerEntryTag getIssuerTag() {
         return issuerTag;
     }
-    public void setIssuerTag(DE62_CardIssuerEntryTag issuerTag) {
+    public void setIssuerTag(CardIssuerEntryTag issuerTag) {
         this.issuerTag = issuerTag;
     }
     public String getIssuerTagValue() {
@@ -29,10 +29,10 @@ public class DE62_2_CardIssuerEntry {
     public DE62_2_CardIssuerEntry() {
         this(null, null);
     }
-    public DE62_2_CardIssuerEntry(DE62_CardIssuerEntryTag tag, String entry) {
+    public DE62_2_CardIssuerEntry(CardIssuerEntryTag tag, String entry) {
         this(tag, null, entry);
     }
-    public DE62_2_CardIssuerEntry(DE62_CardIssuerEntryTag tag, String tagValue, String entry) {
+    public DE62_2_CardIssuerEntry(CardIssuerEntryTag tag, String tagValue, String entry) {
         this.issuerTag = tag;
         this.issuerTagValue = tagValue;
         this.issuerEntry = entry;

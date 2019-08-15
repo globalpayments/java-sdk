@@ -6,9 +6,6 @@ import com.global.api.network.enums.*;
 import com.global.api.utils.StringUtils;
 
 public class AcceptorConfig {
-    // DE??
-    private Address address;
-
     // DE22 - POS DATA CODE
     private CardDataInputCapability cardDataInputCapability = CardDataInputCapability.MagStripe_KeyEntrty;
     private CardHolderAuthenticationCapability cardHolderAuthenticationCapability = CardHolderAuthenticationCapability.None;
@@ -18,6 +15,9 @@ public class AcceptorConfig {
     private CardDataOutputCapability cardDataOutputCapability = CardDataOutputCapability.None;
     private TerminalOutputCapability terminalOutputCapability = TerminalOutputCapability.None;
     private PinCaptureCapability pinCaptureCapability = PinCaptureCapability.TwelveCharacters;
+
+    // DE32 - Acquiring Institution Identification Code
+    private String acquiringInstitutionIdentificationCode;
 
     // DE48_2 - HARDWARE SOFTWARE CONFIG
     private String hardwareLevel;
@@ -35,10 +35,21 @@ public class AcceptorConfig {
     private Boolean supportsAvsCnvVoidReferrals;
     private Boolean supportsEmvPin;
 
+    // DE48_40 - DE48_49
+    private Address address;
+
+    // DE32 - Acquiring Institution Identification Code
+    public String getAcquiringInstitutionIdentificationCode() {
+        return acquiringInstitutionIdentificationCode;
+    }
+    public void setAcquiringInstitutionIdentificationCode(String acquiringInstitutionIdentificationCode) {
+        this.acquiringInstitutionIdentificationCode = acquiringInstitutionIdentificationCode;
+    }
+
     // DE127 - FORWARDING DATA
     private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
 
-    // DE??
+    // DE48-40
     public Address getAddress() {
         return address;
     }
@@ -209,9 +220,9 @@ public class AcceptorConfig {
     }
 
     public void validate() throws ConfigurationException {
-        String hardwareLevel = (getHardwareLevel() == null) ? "" : getHardwareLevel();
-        String softwareLevel = (getSoftwareLevel() == null) ? "" : getSoftwareLevel();
-        String operatingSystemLevel = (getOperatingSystemLevel() == null) ? "" : getOperatingSystemLevel();
+        String hardwareLevel = StringUtils.isNullOrEmpty(getHardwareLevel()) ? "    " : StringUtils.padRight(getHardwareLevel(), 4, ' ');
+        String softwareLevel = StringUtils.isNullOrEmpty(getSoftwareLevel()) ? "        " : StringUtils.padRight(getSoftwareLevel(), 8, ' ');
+        String operatingSystemLevel = StringUtils.isNullOrEmpty(getOperatingSystemLevel()) ? "        " : StringUtils.padRight(getOperatingSystemLevel(), 8, ' ');
         if(hardwareLevel.concat(softwareLevel).concat(operatingSystemLevel).length() > 20) {
             throw new ConfigurationException("The values for Hardware, Software and Operating System Level cannot exceed a combined length of 20 characters.");
         }

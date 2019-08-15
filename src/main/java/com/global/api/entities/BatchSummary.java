@@ -4,6 +4,7 @@ import com.global.api.builders.ResubmitBuilder;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.network.entities.PriorMessageInformation;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
@@ -12,6 +13,15 @@ import java.util.List;
 
 public class BatchSummary {
     private Integer batchId;
+    private Transaction resentBatchClose;
+    private LinkedList<Transaction> resentTransactions;
+    private String responseCode;
+    private String sequenceNumber;
+    private Integer transactionCount;
+    private BigDecimal totalAmount;
+    private String transactionToken;
+
+    // TODO: Additional totals are missing from the summary response
     private String closeTransactionId;
     private Integer closeCount;
     private BigDecimal creditAmount;

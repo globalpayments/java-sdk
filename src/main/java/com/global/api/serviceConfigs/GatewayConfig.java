@@ -1,15 +1,15 @@
 package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
+import com.global.api.entities.enums.Environment;
+import com.global.api.entities.enums.Secure3dVersion;
+import com.global.api.entities.enums.ServiceEndpoints;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.gateways.PayPlanConnector;
-import com.global.api.gateways.PorticoConnector;
-import com.global.api.gateways.RealexConnector;
+import com.global.api.gateways.*;
 import com.global.api.utils.StringUtils;
 
 public class GatewayConfig extends Configuration {
-
-    // portico & realex
+    // portico & gp-ecom
     private boolean enableLogging;
 
 	// portico
@@ -22,7 +22,7 @@ public class GatewayConfig extends Configuration {
     private String versionNumber;
     private String secretApiKey;
 
-    // realex
+    // gp-ecom
     private String accountId;
     private String merchantId;
     private String rebatePassword;
@@ -30,6 +30,12 @@ public class GatewayConfig extends Configuration {
     private String sharedSecret;
     private String channel;
     private HostedPaymentConfig hostedPaymentConfig;
+
+    // 3DS
+    private String challengeNotificationUrl;
+    private String merchantContactUrl;
+    private String methodNotificationUrl;
+    private Secure3dVersion secure3dVersion;
 
     public int getSiteId() {
         return siteId;
@@ -128,8 +134,41 @@ public class GatewayConfig extends Configuration {
         this.hostedPaymentConfig = hostedPaymentConfig;
     }
 
+    // 3DS
+    public String getChallengeNotificationUrl() {
+        return challengeNotificationUrl;
+    }
+    public void setChallengeNotificationUrl(String challengeNotificationUrl) {
+        this.challengeNotificationUrl = challengeNotificationUrl;
+    }
+    public String getMerchantContactUrl() {
+        return merchantContactUrl;
+    }
+    public void setMerchantContactUrl(String merchantContactUrl) {
+        this.merchantContactUrl = merchantContactUrl;
+    }
+    public String getMethodNotificationUrl() {
+        return methodNotificationUrl;
+    }
+    public void setMethodNotificationUrl(String methodNotificationUrl) {
+        this.methodNotificationUrl = methodNotificationUrl;
+    }
+    public Secure3dVersion getSecure3dVersion() {
+        return secure3dVersion;
+    }
+    public void setSecure3dVersion(Secure3dVersion secure3dVersion) {
+        this.secure3dVersion = secure3dVersion;
+    }
+
     public void configureContainer(ConfiguredServices services) {
         if(!StringUtils.isNullOrEmpty(merchantId)) {
+            if(StringUtils.isNullOrEmpty(serviceUrl)) {
+                if(environment.equals(Environment.TEST)) {
+                    serviceUrl = ServiceEndpoints.GLOBAL_ECOM_TEST.getValue();
+                }
+                else serviceUrl = ServiceEndpoints.GLOBAL_ECOM_PRODUCTION.getValue();
+            }
+
             RealexConnector gateway = new RealexConnector();
             gateway.setMerchantId(merchantId);
             gateway.setAccountId(accountId);
@@ -144,8 +183,40 @@ public class GatewayConfig extends Configuration {
 
             services.setGatewayConnector(gateway);
             services.setRecurringConnector(gateway);
+
+            // set default
+            if(secure3dVersion == null) {
+                secure3dVersion = Secure3dVersion.ONE;
+            }
+
+            // secure 3d v1
+            if(secure3dVersion.equals(Secure3dVersion.ONE) || secure3dVersion.equals(Secure3dVersion.ANY)) {
+                services.setSecure3dProvider(Secure3dVersion.ONE, gateway);
+            }
+
+            // secure 3d v2
+            if(secure3dVersion.equals(Secure3dVersion.TWO) || secure3dVersion.equals(Secure3dVersion.ANY)) {
+                Gp3DSProvider secure3d2 = new Gp3DSProvider();
+                secure3d2.setMerchantId(merchantId);
+                secure3d2.setAccountId(accountId);
+                secure3d2.setSharedSecret(sharedSecret);
+                secure3d2.setServiceUrl(environment.equals(Environment.TEST) ? ServiceEndpoints.THREE_DS_AUTH_TEST.getValue() : ServiceEndpoints.THREE_DS_AUTH_PRODUCTION.getValue());
+                secure3d2.setMerchantContactUrl(merchantContactUrl);
+                secure3d2.setMethodNotificationUrl(methodNotificationUrl);
+                secure3d2.setChallengeNotificationUrl(challengeNotificationUrl);
+                secure3d2.setEnableLogging(enableLogging);
+
+                services.setSecure3dProvider(Secure3dVersion.TWO, secure3d2);
+            }
         }
         else {
+            if(StringUtils.isNullOrEmpty(serviceUrl)) {
+                if(environment.equals(Environment.TEST)) {
+                    serviceUrl = ServiceEndpoints.PORTICO_TEST.getValue();
+                }
+                else serviceUrl = ServiceEndpoints.PORTICO_PRODUCTION.getValue();
+            }
+
             PorticoConnector gateway = new PorticoConnector();
             gateway.setSiteId(siteId);
             gateway.setLicenseId(licenseId);
@@ -192,9 +263,18 @@ public class GatewayConfig extends Configuration {
                 throw new ConfigurationException("Shared Secret and MerchantId should both have a values for this configuration.");
         }
 
-        // service url
-        if (StringUtils.isNullOrEmpty(getServiceUrl()) && (!StringUtils.isNullOrEmpty(secretApiKey) || !StringUtils.isNullOrEmpty(sharedSecret))) {
-            throw new ConfigurationException("Service URL could not be determined from the credentials provided. Please specify an endpoint.");
+        // secure 3d
+        if(secure3dVersion != null) {
+            // ensure we have the fields we need
+            if(secure3dVersion.equals(Secure3dVersion.TWO) || secure3dVersion.equals(Secure3dVersion.ANY)) {
+                if(StringUtils.isNullOrEmpty(challengeNotificationUrl)) {
+                    throw new ConfigurationException("The challenge notification URL is required for 3DS v2 processing.");
+                }
+
+                if(StringUtils.isNullOrEmpty(methodNotificationUrl)) {
+                    throw new ConfigurationException("The method notification URL is required for 3DS v2 processing.");
+                }
+            }
         }
     }
 }

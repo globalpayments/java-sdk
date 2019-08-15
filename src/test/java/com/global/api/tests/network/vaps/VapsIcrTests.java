@@ -68,8 +68,10 @@ public class VapsIcrTests {
 
     @Test
     public void test_000_batch_close() throws ApiException {
-        BatchSummary summary = BatchService.closeBatch(BatchCloseType.Forced);
-        assertNotNull(summary);
+        Transaction response = BatchService.closeBatch(BatchCloseType.Forced)
+                .execute();
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
         //assertTrue(summary.isBalanced());
     }
 
