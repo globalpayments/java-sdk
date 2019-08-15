@@ -308,6 +308,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             if(builder.getShippingAddress() != null)
                 tssInfo.append(buildAddress(et, builder.getShippingAddress()));
         }
+        
+        if (builder.getEstimatedNumTxn() != null) {
+                et.subElement(request, "estnumtxn").text(Integer.toString(builder.getEstimatedNumTxn()));
+        }
 
         // stored credential
         if(builder.getStoredCredential() != null) {
@@ -320,7 +324,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         //et.SubElement(request, "mobile");
         //et.SubElement(request, "token", token);
-
+        
         String response = doTransaction(et.toString(request));
         return mapResponse(response);
     }
@@ -490,6 +494,25 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
         et.subElement(request, "pasref", builder.getTransactionId());
+        
+        if (builder.getAuthorizationCode() != null) {
+            et.subElement(request, "authcode").text(builder.getAuthorizationCode());
+        }
+        
+        if (builder.getEstimatedNumTxn() != null) {
+                et.subElement(request, "estnumtxn").text(Integer.toString(builder.getEstimatedNumTxn()));
+        }
+        
+        if(builder.getTransactionType() == TransactionType.Multicapture){
+            if (builder.getIsFinal()) {
+                Element txnseq = et.subElement(request, "txnseq");
+                et.subElement(txnseq, "final").set("flag", "1");
+            }else {
+                Element txnseq = et.subElement(request, "txnseq");
+                et.subElement(txnseq, "final").set("flag", "0");
+            }
+        }
+   
 
         // payment method for APM
         if(builder.getAlternativePaymentType() != null)
@@ -541,7 +564,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             }
             et.subElement(request, "refundhash", GenerationUtils.generateHash(builder.getAlternativePaymentType() != null ? refundPassword : rebatePassword));
         }
-
+        
         String response = doTransaction(et.toString(request));
         return mapResponse(response);
     }
@@ -797,6 +820,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 else return "receipt-in";
             case Capture:
                 return "settle";
+            case Multicapture:
+                return "multisettle";
             case Verify:
                 if(payment instanceof Credit)
                     return "otb";
@@ -828,6 +853,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         switch(trans) {
             case Capture:
                 return "settle";
+            case Multicapture:
+                return "multisettle";
             case Hold:
                 return "hold";
             case Refund:

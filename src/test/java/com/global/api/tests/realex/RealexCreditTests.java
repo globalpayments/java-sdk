@@ -98,6 +98,27 @@ public class RealexCreditTests {
         assertNotNull(rebate);
         assertEquals("00", rebate.getResponseCode());
     }
+    
+    @Test
+    public void creditRebateCapture() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Transaction capture = response.capture(new BigDecimal("14"))
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+
+        Transaction rebate = capture.refund(new BigDecimal("17"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(rebate);
+        assertEquals("00", rebate.getResponseCode());
+    }
 
     @Test
     public void creditVoid() throws ApiException {
@@ -200,6 +221,257 @@ public class RealexCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+    
+    @Test
+    public void creditAuthorization_WithMultiAutoSettle_WithEstNumTxn() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("14"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        assertEquals("00", multicapture.getResponseCode());
+    }
+    
+    @Test
+    public void creditSettleWithMultiSettleParam() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction singlecapture = response.capture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .isFinal(true)
+                .execute();
+        assertNotNull(singlecapture);
+        assertEquals("00", singlecapture.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle_WithEstNumTxn() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction multicapture = response.multicapture(new BigDecimal("5"))
+                .withEstimatedTransactions(3)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        assertEquals("00", multicapture.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle_WithFinalFlag() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("17"))
+                .withCurrency("USD")
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction multicapture = response.multicapture(new BigDecimal("5"))
+                .isFinal(true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        assertEquals("00", multicapture.getResponseCode());
+    }
+    
+    @Test
+    public void creditMultisettle_EqualEstNumTxn_EqualAmount() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Integer result = 0;
+        Transaction multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        //assertEquals("00", multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        //assertEquals("00", multicapture02.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        assertEquals("0", result.toString());
+    }
+    
+    @Test(expected = ApiException.class)
+    public void creditMultisettle_EqualEstNumTxn_AboveAmount() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Integer result = 0;
+        Transaction multicapture;
+        multicapture = response.multicapture(new BigDecimal("10"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("5"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        assertEquals("508", result.toString());
+    }
+    
+    @Test
+    public void creditMultisettle_EqualEstNumTxn_BelowAmount() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Integer result = 0;
+        Transaction multicapture = response.multicapture(new BigDecimal("3"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("3"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("3"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        assertEquals("0", result.toString());
+    }
+    
+    @Test(expected = ApiException.class)    // Sandbox does not check EstNumTxn. Production would generate a 508 response code
+    public void creditMultisettle_ImplicitFinal_BelowAmount() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Integer result = 0;
+        Transaction multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        assertEquals("508", result.toString());
+    }
+    
+    @Test(expected = ApiException.class)    // Sandbox does not check Final flag. Production would generate a 508 response code
+    public void creditMultisettle_ExplicitFinal_BelowAmount() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withEstimatedTransactions(3)
+                .withMultiCapture(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        
+        Integer result = 0;
+        Transaction multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .isFinal(true)
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        
+        multicapture = response.multicapture(new BigDecimal("2"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(multicapture);
+        result += Integer.parseInt(multicapture.getResponseCode());
+        assertEquals("508", result.toString());
     }
 
     @Test(expected = ApiException.class)

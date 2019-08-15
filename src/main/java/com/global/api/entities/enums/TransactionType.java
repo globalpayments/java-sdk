@@ -7,6 +7,7 @@ public enum TransactionType implements IFlag {
     Decline,
     Verify,
     Capture,
+    Multicapture,
     Auth,
     Refund,
     Reversal,
