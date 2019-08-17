@@ -73,15 +73,15 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // Build Request
         Element request = et.element("request")
-                .set("timestamp", timestamp)
-                .set("type", mapAuthRequestType(builder));
+            .set("timestamp", timestamp)
+            .set("type", mapAuthRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
         if(builder.getAmount() != null) {
             et.subElement(request, "amount").text(StringUtils.toNumeric(builder.getAmount()))
-                    .set("currency", builder.getCurrency());
+                .set("currency", builder.getCurrency());
         }
 
         // Hydrate the payment data fields
@@ -208,7 +208,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
                     for(String[] data: dataSets) {
                         Element item = et.subElement(supplementaryData, "item").set("type", key);
-                        for(int i = 1; i< data.length; i++) {
+                        for(int i = 1; i<= data.length; i++) {
                             et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
                         }
                     }
@@ -291,8 +291,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         // fraudfilter
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             et.subElement(request, "recurring")
-                    .set("type", builder.getRecurringType().getValue().toLowerCase())
-                    .set("sequence", builder.getRecurringSequence().getValue().toLowerCase());
+                .set("type", builder.getRecurringType().getValue().toLowerCase())
+                .set("sequence", builder.getRecurringSequence().getValue().toLowerCase());
         }
 
         // tssinfo
@@ -456,9 +456,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("HPP_POST_RESPONSE", hostedPaymentConfig.getPostResponse());
 
         List<String> toHash = new ArrayList<String>(Arrays.asList(
-                timestamp, merchantId, orderId,
-                (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null,
-                builder.getCurrency()));
+            timestamp, merchantId, orderId,
+            (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null,
+            builder.getCurrency()));
 
         if(builder.getHostedPaymentData() != null) {
             if (hostedPaymentConfig.isCardStorageEnabled() != null || builder.getHostedPaymentData().isOfferToSaveCard() != null || hostedPaymentConfig.isDisplaySavedCards() != null) {
@@ -481,8 +481,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         String orderId = builder.getOrderId() != null ? builder.getOrderId() : GenerationUtils.generateOrderId();
 
         Element request = et.element("request")
-                .set("timestamp", timestamp)
-                .set("type", mapManageRequestType(builder));
+            .set("timestamp", timestamp)
+            .set("type", mapManageRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
         if(builder.getAmount() != null)
@@ -526,7 +526,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
                 for(String[] data: dataSets) {
                     Element item = et.subElement(supplementaryData, "item").set("type", key);
-                    for(int i = 1; i< data.length; i++) {
+                    for(int i = 1; i<= data.length; i++) {
                         et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
                     }
                 }
@@ -542,6 +542,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(request, "refundhash", GenerationUtils.generateHash(builder.getAlternativePaymentType() != null ? refundPassword : rebatePassword));
         }
 
+        // tssinfo
+        if (builder.getCustomerId() != null || builder.getProductId() != null  || builder.getClientTransactionId() != null) {
+            Element tssInfo = et.subElement(request, "tssinfo");
+            et.subElement(tssInfo, "custnum", builder.getCustomerId());
+            et.subElement(tssInfo, "prodid", builder.getProductId());
+            et.subElement(tssInfo, "varref", builder.getClientTransactionId());
+        }
+
         String response = doTransaction(et.toString(request));
         return mapResponse(response);
     }
@@ -552,8 +560,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // build request
         Element request = et.element("request")
-                .set("type", mapReportType(builder.getReportType()))
-                .set("timestamp", timestamp);
+            .set("type", mapReportType(builder.getReportType()))
+            .set("timestamp", timestamp);
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
 
@@ -576,8 +584,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // Build Request
         Element request = et.element("request")
-                .set("type", mapRecurringRequestType(builder))
-                .set("timestamp", timestamp);
+            .set("type", mapRecurringRequestType(builder))
+            .set("timestamp", timestamp);
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
         et.subElement(request, "orderid", orderId);
@@ -882,8 +890,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
     private Element buildCustomer(ElementTree et, Customer customer) {
         Element payer = et.element("payer")
-                .set("ref", GenerationUtils.generateRecurringKey(customer.getKey()))
-                .set("type", "Retail");
+            .set("ref", GenerationUtils.generateRecurringKey(customer.getKey()))
+            .set("type", "Retail");
         et.subElement(payer, "title", customer.getTitle());
         et.subElement(payer, "firstname", customer.getFirstName());
         et.subElement(payer, "surname", customer.getLastName());
