@@ -24,6 +24,7 @@ public class HpaTcpInterface implements IDeviceCommInterface {
     private AutoResetEvent await;
     private ITerminalConfiguration settings;
     private List<Byte> messageQueue;
+    private String lastConnectionError;
 
     private IMessageSentInterface onMessageSent;
     private IMessageReceivedInterface onMessageReceived;
@@ -114,7 +115,7 @@ public class HpaTcpInterface implements IDeviceCommInterface {
                 }
             }
             catch(IOException e) {
-                // failed to connect
+                lastConnectionError = e.getMessage();
             }
         }
     }
@@ -141,26 +142,28 @@ public class HpaTcpInterface implements IDeviceCommInterface {
     public byte[] send(IDeviceMessage message) throws MessageException {
         connect();
 
-        if(!client.isConnected()) {
-            throw new MessageException("Could not connect to the device.");
+        if(client == null || !client.isConnected()) {
+            throw new MessageException(String.format("Could not connect to the device. %s", lastConnectionError));
         }
 
         String strMessage = message.toString();
         messageQueue = new ArrayList<Byte>();
         try{
             byte[] buffer = message.getSendBuffer();
-            if(onMessageSent != null)
-                onMessageSent.messageSent(strMessage.substring(2));
 
             if(out != null) {
                 out.write(buffer, 0, buffer.length);
                 out.flush();
 
-                await.waitOne(settings.getTimeout());
-                if(messageQueue.size() == 0)
-                    throw new MessageException("Device did not response within the timeout");
+                if(message.isAwaitResponse()) {
+                    await.waitOne(settings.getTimeout());
+                    if(messageQueue.size() == 0) {
+                        throw new MessageException("Device did not response within the timeout");
+                    }
 
-                return convertBytes(messageQueue.toArray(new Byte[messageQueue.size()]));
+                    return convertBytes(messageQueue.toArray(new Byte[messageQueue.size()]));
+                }
+                else return null;
             }
             else throw new MessageException("Device not connected");
         }
@@ -168,7 +171,13 @@ public class HpaTcpInterface implements IDeviceCommInterface {
             throw new MessageException("Failed to send message see inner exception for more details", exc);
         }
         finally {
-            disconnect();
+            if(onMessageSent != null) {
+                onMessageSent.messageSent(strMessage.substring(2));
+            }
+
+            if(message.isKeepAlive()) {
+                disconnect();
+            }
         }
     }
 

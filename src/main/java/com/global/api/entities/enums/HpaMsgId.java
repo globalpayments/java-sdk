@@ -29,7 +29,8 @@ public enum HpaMsgId implements IStringConstant {
     ATTACHMENT("Attachment"),
     HEARTBEAT("Heartbeat"),
     EMV_PARAMETER_DOWNLOAD("EMVPDL"),
-    EMV_TC("EMVTC");
+    EMV_TC("EMVTC"),
+    SEND_FILE("SendFile");
 
     String value;
     HpaMsgId(String value) { this.value = value; }

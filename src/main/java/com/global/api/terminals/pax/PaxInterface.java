@@ -91,7 +91,16 @@ class PaxInterface implements IDeviceInterface {
                 ControlCodes.FS,
                 "hostRspBeep",
                 ControlCodes.FS,
-                "N"
+                "N",
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS
         ));
         return new PaxDeviceResponse(response, PaxMsgId.A05_RSP_SET_VARIABLE);
     }
@@ -119,15 +128,19 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public ISAFResponse sendStoreAndForward() throws ApiException {
-        throw new UnsupportedTransactionException();
+        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
 
     public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
-        throw new UnsupportedTransactionException();
+        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
     
     public IEODResponse endOfDay() throws ApiException {
         throw new UnsupportedTransactionException();
+    }
+
+    public IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException {
+        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
     //</editor-fold>
 

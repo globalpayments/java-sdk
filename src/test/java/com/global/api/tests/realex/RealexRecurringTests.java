@@ -220,34 +220,48 @@ public class RealexRecurringTests {
 
     @Test(expected = ApiException.class)
 	public void Test_009_DccRateLookup_AuthNotEnabledAccount() throws ApiException {
-		String customerId = "038cb8bc-0289-48cf-a5ad-8bfbe54e204a";
-		String paymentId = "fe1bb177-0a35-421c-9b0e-c7623712387c";
+		RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
+                "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
+                "fe1bb177-0a35-421c-9b0e-c7623712387c"
+        );
 
-		RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId, paymentId);
-		DccRateData dccRateData = paymentMethod.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+		Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                .withAmount(new BigDecimal("10.01"))
+                .withCurrency("EUR")
+                .execute();
+		assertNotNull(dccResponse);
+		assertEquals("00", dccResponse.getResponseCode());
 
-		paymentMethod.authorize(new BigDecimal("10.01"))
+		Transaction response = paymentMethod.authorize(new BigDecimal("10.01"))
 		        .withCurrency("EUR")
-		        .withOrderId(dccRateData.getOredrId())
-		        .withDccRateData(dccRateData)
+		        .withOrderId(dccResponse.getOrderId())
+		        .withDccRateData(dccResponse.getDccRateData())
 				.execute();
-
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
 	}
 
     @Test(expected = ApiException.class)
 	public void Test_010_DccRateLookup_ChargeNotEnabledAccount() throws ApiException {
-		String customerId = "038cb8bc-0289-48cf-a5ad-8bfbe54e204a";
-		String paymentId = "fe1bb177-0a35-421c-9b0e-c7623712387c";
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
+                "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
+                "fe1bb177-0a35-421c-9b0e-c7623712387c"
+        );
 
-		RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId, paymentId);
-		DccRateData dccRateData = paymentMethod.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
+        Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                .withAmount(new BigDecimal("10.01"))
+                .withCurrency("EUR")
+                .execute();
+        assertNotNull(dccResponse);
+        assertEquals("00", dccResponse.getResponseCode());
 
-		paymentMethod.charge(new BigDecimal("10.01"))
-		        .withCurrency("EUR")
-		        .withOrderId(dccRateData.getOredrId())
-		        .withDccRateData(dccRateData)
-				.execute();
-
+        Transaction response = paymentMethod.charge(new BigDecimal("10.01"))
+                .withCurrency("EUR")
+                .withOrderId(dccResponse.getOrderId())
+                .withDccRateData(dccResponse.getDccRateData())
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
 	}
 }
 

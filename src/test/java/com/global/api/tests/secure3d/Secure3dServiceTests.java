@@ -718,4 +718,27 @@ public class Secure3dServiceTests {
                 .execute(Secure3dVersion.ANY);
         assertNotNull(secureEcom);
     }
+
+    @Test
+    public void recurringTest() throws ApiException {
+        // customer initiated - add SCA (3D Secure 2) data
+        ThreeDSecure threeDSecureData = new ThreeDSecure();
+        threeDSecureData.setAuthenticationValue("ODQzNjgwNjU0ZjM3N2JmYTg0NTM=");
+        threeDSecureData.setDirectoryServerTransactionId("c272b04f-6e7b-43a2-bb78-90f4fb94aa25");
+        threeDSecureData.setEci("05");
+        threeDSecureData.setMessageVersion("2.1.0");
+
+        // add the 3D Secure 2 data to the card object
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
+                "e193c21a-ce64-4820-b5b6-8f46715de931",
+                "10c3e089-fa98-4352-bc4e-4b37f7dcf108"
+        );
+        paymentMethod.setThreeDSecure(threeDSecureData);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("10.01"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 }

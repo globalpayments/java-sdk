@@ -8,6 +8,7 @@ import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.IDisposable;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
@@ -62,14 +63,25 @@ public class HpaController extends DeviceController implements IDisposable {
     }
 
     private <T extends SipBaseResponse> T sendMessage(Class<T> clazz, String message, String... messageIds) throws ApiException {
-        byte[] response = _interface.send(TerminalUtilities.buildRequest(message, getFormat()));
-        try {
-            Constructor<T> instance = clazz.getConstructor(byte[].class, String[].class);
-            return instance.newInstance(response, messageIds);
+        return sendMessage(clazz, message, false, true, messageIds);
+    }
+
+    private <T extends SipBaseResponse> T sendMessage(Class<T> clazz, String message, boolean keepAlive, boolean awaitResponse, String... messageIds) throws ApiException {
+        IDeviceMessage deviceMessage = TerminalUtilities.buildRequest(message, getFormat());
+        deviceMessage.setKeepAlive(keepAlive);
+        deviceMessage.setAwaitResponse(awaitResponse);
+
+        byte[] response = _interface.send(deviceMessage);
+        if(awaitResponse) {
+            try {
+                Constructor<T> instance = clazz.getConstructor(byte[].class, String[].class);
+                return instance.newInstance(response, messageIds);
+            }
+            catch(Exception e) {
+                throw new ApiException("Failed to convert message to requested type.", e);
+            }
         }
-        catch(Exception e) {
-            throw new ApiException("Failed to convert message to requested type.", e);
-        }
+        else return null;
     }
 
     <T extends SipBaseResponse> T sendAdminMessage(Class<T> clazz, HpaAdminBuilder builder) throws ApiException {
@@ -78,7 +90,7 @@ public class HpaController extends DeviceController implements IDisposable {
             requestId = requestIdProvider.getRequestId();
         }
         builder.set("RequestId", requestId);
-        return sendMessage(clazz, builder.buildMessage(), builder.getMessageIds());
+        return sendMessage(clazz, builder.buildMessage(), builder.isKeepAlive(), builder.isAwaitResponse(), builder.getMessageIds());
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
@@ -131,7 +143,7 @@ public class HpaController extends DeviceController implements IDisposable {
 
         return sendMessage(SipDeviceResponse.class, et.toString(request), transactionType);
     }
-
+    
     private String mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
         switch (type) {
             case Sale:

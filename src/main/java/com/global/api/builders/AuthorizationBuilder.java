@@ -44,9 +44,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String customerIpAddress;
     private String cvn;
     private DccRateData dccRateData;
-    private DccProcessor dccProcessor;
-    private DccRateType dccRateType;
-    private String dccType;
+//    private DccProcessor dccProcessor;
+//    private DccRateType dccRateType;
     private String description;
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
@@ -142,18 +141,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getCvn() {
         return cvn;
     }
-    public DccRateData getDccRateData() {
-        return dccRateData;
-    }
-    public DccProcessor getDccProcessor() {
-        return dccProcessor;
-    }
-    public DccRateType getDccRateType() {
-        return dccRateType;
-    }
-    public String getDccType() {
-        return dccType;
-    }
+    public DccRateData getDccRateData() { return dccRateData; }
+//    public DccProcessor getDccProcessor() {
+//        return dccProcessor;
+//    }
+//    public DccRateType getDccRateType() {
+//        return dccRateType;
+//    }
     public String getDescription() {
         return description;
     }
@@ -378,20 +372,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.cvn = value;
         return this;
     }
-    public AuthorizationBuilder withDccRateData(DccRateData value) {
-        this.dccRateData = value;
-        return this;
-    }
-    public AuthorizationBuilder withDccProcessor(DccProcessor value) {
-        this.dccProcessor = value;
-        return this;
-    }
-    public AuthorizationBuilder withDccRateType(DccRateType value) {
-        this.dccRateType = value;
-        return this;
-    }
-    public AuthorizationBuilder withDccType(String value) {
-        this.dccType = value;
+    public AuthorizationBuilder withDccRateData(DccRateData dccRateData) {
+        this.dccRateData = dccRateData;
         return this;
     }
     public AuthorizationBuilder withDescription(String value) {
@@ -685,8 +667,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(EnumSet.of(TransactionType.Auth, TransactionType.Sale))
                 .with(TransactionModifier.EncryptedMobile).check("paymentMethod").isNotNull();
 
-        // TODO: I need to be able to identify a network transaction and validate certain fields appropriately
-        // System Trace Audit Number
-        // BatchNumber
+        this.validations.of(TransactionType.DccRateLookup)
+                .check("dccRateData").isNotNull();
     }
 }

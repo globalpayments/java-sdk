@@ -112,6 +112,10 @@ public class Element {
     public Integer getInt(String tagName) {
         org.w3c.dom.Element element = (org.w3c.dom.Element)this.element.getElementsByTagName(tagName).item(0);
         if(element != null) {
+            String value = element.getTextContent();
+            if(StringUtils.isNullOrEmpty(value)) {
+                return null;
+            }
             return Integer.parseInt(element.getTextContent());
         } return null;
     }
@@ -144,14 +148,14 @@ public class Element {
     public DateTime getDateTime(String... tagNames) {
         return getDateTime(null, tagNames);
     }
-    private DateTime getDateTime(String format, String... tagNames) {
+    public DateTime getDateTime(DateTimeFormatter format, String... tagNames) {
         for(String tagName: tagNames) {
             org.w3c.dom.Element element = (org.w3c.dom.Element)this.element.getElementsByTagName(tagName).item(0);
             if(element != null) {
-                if(StringUtils.isNullOrEmpty(format)) {
+                if(format == null) {
                     return DateTime.parse(element.getTextContent());
                 }
-                return DateTime.parse(element.getTextContent(), DateTimeFormat.forPattern(format));
+                return DateTime.parse(element.getTextContent(), format);
             }
         }
         return null;

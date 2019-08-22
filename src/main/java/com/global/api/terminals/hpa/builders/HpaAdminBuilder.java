@@ -7,8 +7,27 @@ public class HpaAdminBuilder {
     private StringBuilder messageBuilder;
     private String[] messageIds;
 
+    private boolean keepAlive;
+    private boolean awaitResponse;
+
     public String[] getMessageIds() {
         return messageIds;
+    }
+
+    public boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public boolean isAwaitResponse() {
+        return awaitResponse;
+    }
+
+    public void setAwaitResponse(boolean awaitResponse) {
+        this.awaitResponse = awaitResponse;
     }
 
     public HpaAdminBuilder(String... messageIds) throws BuilderException {
@@ -19,6 +38,8 @@ public class HpaAdminBuilder {
         messageBuilder = new StringBuilder();
         messageBuilder.append(String.format("<SIP><Version>1.0</Version><ECRId>1004</ECRId><Request>%s</Request>", messageIds[0]));
         this.messageIds = messageIds;
+        this.keepAlive = false;
+        this.awaitResponse = true;
     }
 
     public HpaAdminBuilder set(String tagName, Integer value) {

@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.hpa;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
@@ -27,10 +28,10 @@ public class HpaAdminTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.HPA_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        //deviceConfig.setIpAddress("10.12.220.39");
-        deviceConfig.setIpAddress("192.168.0.94");
+        deviceConfig.setIpAddress("10.12.220.39");
+        //deviceConfig.setIpAddress("192.168.0.94");
         deviceConfig.setPort(12345);
-        deviceConfig.setTimeout(20000);
+        deviceConfig.setTimeout(120000);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
         device = DeviceService.create(deviceConfig);
@@ -48,10 +49,6 @@ public class HpaAdminTests {
     @After
     public void tearDown() {
         this.expectedMessage = "";
-        try {
-            device.reset();
-        }
-        catch(ApiException exc) { /* NOM NOM */ }
     }
 
     @Test
@@ -154,6 +151,13 @@ public class HpaAdminTests {
     @Test
     public void enableStoreAndForwardMode() throws ApiException {
         IDeviceResponse response = device.setStoreAndForwardMode(true);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+    
+    @Test
+    public void sendFile() throws ApiException {
+        IDeviceResponse response = device.sendFile(SendFileType.Logo,"C:\\temp\\IDLELOGO.jpg");
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
     }

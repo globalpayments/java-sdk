@@ -3,6 +3,7 @@ package com.global.api.terminals.hpa;
 import com.global.api.entities.enums.CurrencyType;
 import com.global.api.entities.enums.HpaMsgId;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -11,6 +12,7 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
+import com.global.api.terminals.hpa.responses.SipSendFileResponse;
 import com.global.api.terminals.hpa.responses.BatchResponse;
 import com.global.api.terminals.hpa.responses.EODResponse;
 import com.global.api.terminals.hpa.responses.InitializeResponse;
@@ -20,10 +22,10 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
 
 public class HpaInterface implements IDeviceInterface {
     private HpaController _controller;
-
     private IMessageSentInterface onMessageSent;
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
@@ -117,6 +119,46 @@ public class HpaInterface implements IDeviceInterface {
                 .set("Key", "STORMD")
                 .set("Value", enabled ? "1" : "0");
         return _controller.sendAdminMessage(SipBaseResponse.class, builder);
+    }
+    
+    public IDeviceResponse sendFile(SendFileType imageType, String filePath) throws ApiException {
+        if(filePath == null) {
+            throw new ApiException("Filename is required for SendFile");
+        }
+
+        //Load the File
+        HpaFileUpload fileUpload = new HpaFileUpload(imageType, filePath);
+
+        //Build the initial message
+        HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.SEND_FILE.getValue()) {{ setKeepAlive(true); }}
+                .set("FileName", fileUpload.getFileName())
+                .set("FileSize", fileUpload.getFileSize())
+                .set("MultipleMessage", "1");
+
+        SipSendFileResponse response = _controller.sendAdminMessage(SipSendFileResponse.class, builder);
+        if(response.getDeviceResponseCode().equals("00")) {
+            LinkedList<String> fileParts = fileUpload.getFileParts(response.getMaxDataSize() / 5);
+            String lastElement = fileParts.getLast();
+
+            for(String filePart: fileParts) {
+                final String multipleMessage = filePart.equals(lastElement) ? "0" : "1";
+
+                SipSendFileResponse dataResponse = _controller.sendAdminMessage(SipSendFileResponse.class,
+                        new HpaAdminBuilder(HpaMsgId.SEND_FILE.getValue()) {{
+                            setKeepAlive(multipleMessage.equals("1"));
+                            setAwaitResponse(multipleMessage.equals("0"));
+                        }}
+                        .set("FileData", filePart)
+                        .set("MultipleMessage", multipleMessage)
+                    );
+
+                if (dataResponse != null) {
+                    response = dataResponse;
+                }
+            }
+            return response;
+        }
+        else throw new ApiException(String.format("Failed to upload file: %s", response.getDeviceResponseText()));
     }
 
     public IEODResponse endOfDay() throws ApiException {

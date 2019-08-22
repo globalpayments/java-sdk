@@ -30,7 +30,7 @@ public class Transaction {
     private String commercialIndicator;
     private String cvnResponseCode;
     private String cvnResponseMessage;
-    private DccResponseResult dccResponseResult;
+    private DccRateData dccRateData;
     private DebitMac debitMac;
     private String emvIssuerResponse;
     private LinkedList<IGatewayEvent> gatewayEvents;
@@ -164,11 +164,11 @@ public class Transaction {
     public void setCvnResponseMessage(String cvnResponseMessage) {
         this.cvnResponseMessage = cvnResponseMessage;
     }
-    public DccResponseResult getDccResponseResult() {
-		return dccResponseResult;
+    public DccRateData getDccRateData() {
+		return dccRateData;
 	}
-	public void setDccResponseResult(DccResponseResult dccResponseResult) {
-		this.dccResponseResult = dccResponseResult;
+	public void setDccRateData(DccRateData dccRateData) {
+		this.dccRateData = dccRateData;
 	}
 	public DebitMac getDebitMac() {
         return debitMac;

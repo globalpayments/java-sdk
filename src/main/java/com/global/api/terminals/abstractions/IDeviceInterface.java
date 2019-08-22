@@ -1,6 +1,7 @@
 package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -27,6 +28,7 @@ public interface IDeviceInterface extends IDisposable {
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
     IEODResponse endOfDay() throws ApiException;
+    IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

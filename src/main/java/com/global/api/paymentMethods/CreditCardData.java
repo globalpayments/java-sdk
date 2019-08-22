@@ -95,30 +95,14 @@ public class CreditCardData extends Credit implements ICardData {
         this.setToken(token);
     }
 
-    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp) throws ApiException {
-        return getDccRate(dccRateType, amount, currency, ccp, null);
+    public AuthorizationBuilder getDccRate(DccRateType dccRateType, DccProcessor dccProcessor) {
+        DccRateData dccRateData = new DccRateData();
+        dccRateData.setDccRateType(dccRateType);
+        dccRateData.setDccProcessor(dccProcessor);
+
+        return new AuthorizationBuilder(TransactionType.DccRateLookup, this)
+                .withDccRateData(dccRateData);
     }
-    public DccRateData getDccRate(DccRateType dccRateType, BigDecimal amount, String currency, DccProcessor ccp, String orderId) throws ApiException {
-		Transaction response = new AuthorizationBuilder(TransactionType.DccRateLookup, this)
-				.withAmount(amount)
-				.withCurrency(currency)
-				.withDccRateType(dccRateType)
-				.withDccProcessor(ccp)
-				.withDccType("1")
-                .withOrderId(orderId)
-				.execute();
-
-		DccRateData dccValues = new DccRateData();
-		dccValues.setOredrId(response.getOrderId());
-		dccValues.setDccProcessor(ccp.getValue());
-		dccValues.setDccType("1");
-		dccValues.setDccRateType(dccRateType.getValue());
-		dccValues.setDccRate(response.getDccResponseResult().getCardHolderRate());
-		dccValues.setCurrency(response.getDccResponseResult().getCardHolderCurrency());
-		dccValues.setAmount(response.getDccResponseResult().getCardHolderAmount());
-
-		return dccValues;
-	}
 
     public boolean verifyEnrolled(BigDecimal amount, String currency) throws ApiException {
         return verifyEnrolled(amount, currency, null, "default");

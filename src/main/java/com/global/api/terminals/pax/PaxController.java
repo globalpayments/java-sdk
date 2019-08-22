@@ -101,7 +101,7 @@ public class PaxController extends DeviceController {
                 CreditCardData card = (CreditCardData)builder.getPaymentMethod();
                 if (StringUtils.isNullOrEmpty(card.getToken())) {
                     account.setAccountNumber(card.getNumber());
-                    account.setExpd(String.format("%s%s", card.getExpMonth(), card.getExpYear()));
+                    account.setExpd(card.getShortExpiry());
                     if (builder.getTransactionType() != TransactionType.Verify && builder.getTransactionType() != TransactionType.Refund)
                         account.setCvvCode(card.getCvn());
                 }

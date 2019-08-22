@@ -7,13 +7,16 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RealexCreditTests {
     private CreditCardData card;
 
@@ -172,7 +175,7 @@ public class RealexCreditTests {
     }
 
     @Test
-    public void creditSettleWithoutAmountCurrency() throws ApiException {
+    public void creditSettle_WithoutAmountCurrency() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("99.99"))
                 .withCurrency("EUR")
                 .execute();
@@ -203,29 +206,41 @@ public class RealexCreditTests {
     }
 
     @Test(expected = ApiException.class)
-    public void creditDccRateLookup_ChargeNotEnabledAccount() throws ApiException {
-        DccRateData dccRateData = card.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
-        card.charge(new BigDecimal("10.01"))
+    public void dccRateLookup_ChargeNotEnabledAccount() throws ApiException {
+        Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .withOrderId(dccRateData.getOredrId())
-                .withDccRateData(dccRateData)
                 .execute();
+        assertNotNull(dccResponse);
+        assertEquals("00", dccResponse.getResponseCode());
 
+        Transaction saleResponse = card.charge()
+                .withDccRateData(dccResponse.getDccRateData())
+                .execute();
+        assertNotNull(saleResponse);
+        assertEquals("00", saleResponse.getResponseCode());
     }
 
     @Test(expected = ApiException.class)
-    public void creditDccRateLookup_AuthNotEnabledAccount() throws ApiException {
-        DccRateData dccRateData = card.getDccRate(DccRateType.Sale, new BigDecimal("10.01"), "EUR", DccProcessor.Fexco);
-        card.authorize(new BigDecimal("10.01"))
+    public void dccRateLookup_AuthNotEnabledAccount() throws ApiException {
+        Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .withOrderId(dccRateData.getOredrId())
-                .withDccRateData(dccRateData)
                 .execute();
+        assertNotNull(dccResponse);
+        assertEquals("00", dccResponse.getResponseCode());
 
+        Transaction authResponse = card.authorize(new BigDecimal("10.01"))
+                .withCurrency("EUR")
+                .withOrderId(dccResponse.getOrderId())
+                .withDccRateData(dccResponse.getDccRateData())
+                .execute();
+        assertNotNull(authResponse);
+        assertEquals("00", authResponse.getResponseCode());
     }
 
     @Test(expected = ApiException.class)
-    public void creditChargeGooglePay_InvalidToken() throws ApiException {
+    public void googlePay_InvalidToken() throws ApiException {
         String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
         card = new CreditCardData();
@@ -239,7 +254,7 @@ public class RealexCreditTests {
     }
 
     @Test(expected = ApiException.class)
-    public void creditChargeGooglePay_WithoutToken() throws ApiException {
+    public void googlePay_NoToken() throws ApiException {
         card = new CreditCardData();
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
@@ -250,19 +265,34 @@ public class RealexCreditTests {
     }
 
     @Test(expected = ApiException.class)
-    public void creditChargeGooglePay_WithoutAmountCurrency() throws ApiException {
+    public void googlePay_Charge_NoAmount() throws ApiException {
         String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
         card = new CreditCardData();
         card.setToken(token);
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
-        card.charge().execute();
+        card.charge()
+                .withCurrency("USD")
+                .execute();
 
     }
 
     @Test(expected = ApiException.class)
-    public void creditChargeApplePay_InvalidToken() throws ApiException {
+    public void googlePay_Charge_NoCurrency() throws ApiException {
+        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+
+        card = new CreditCardData();
+        card.setToken(token);
+        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+
+        card.charge(new BigDecimal(10))
+                .execute();
+
+    }
+
+    @Test(expected = ApiException.class)
+    public void applePay_InvalidToken() throws ApiException {
         String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
         card = new CreditCardData();
@@ -274,7 +304,7 @@ public class RealexCreditTests {
     }
 
     @Test(expected = ApiException.class)
-    public void creditChargeApplePay_WithoutToken() throws ApiException {
+    public void applePay_Charge_WithoutToken() throws ApiException {
         card = new CreditCardData();
         card.setMobileType(MobilePaymentMethodType.APPLEPAY);
 
@@ -283,7 +313,7 @@ public class RealexCreditTests {
     }
 
     @Test
-    public void creditAuthorizationWithSupplementaryData() throws ApiException {
+    public void supplementaryData_Authorize() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("129.99"))
                 .withCurrency("EUR")
                 .withSupplementaryData("taxInfo", "VATREF", "763637283332")
@@ -295,7 +325,7 @@ public class RealexCreditTests {
     }
 
     @Test
-    public void creditSaleWithSupplementaryData() throws ApiException {
+    public void supplementaryData_Charge() throws ApiException {
         Transaction response = card.charge(new BigDecimal("129.99"))
                 .withCurrency("EUR")
                 .withSupplementaryData("taxInfo", "VATREF", "763637283332")
@@ -305,8 +335,9 @@ public class RealexCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
     @Test
-    public void creditFraudManagementDecisionManager() throws ApiException {
+    public void fraudManagement_DecisionManager() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
         billingAddress.setStreetAddress2("House 456");
@@ -344,7 +375,7 @@ public class RealexCreditTests {
         decisionManager.setBillToHttpBrowserEmail("jamesmason@example.com");
         decisionManager.setBillToHttpBrowserType("Mozilla");
         decisionManager.setBillToIpNetworkAddress("123.123.123.123");
-        decisionManager.setBusinessRulessCoreThresHold("40");
+        decisionManager.setBusinessRulesCoreThreshold("40");
         decisionManager.setBillToPersonalId("741258963");
         decisionManager.setInvoiceHeaderTenderType("consumer");
         decisionManager.setInvoiceHeaderIsGift(true);
@@ -353,8 +384,8 @@ public class RealexCreditTests {
         decisionManager.setItemHostHedge(Risk.HIGH);
         decisionManager.setItemNonsensicalHedge(Risk.HIGH);
         decisionManager.setItemObscenitiesHedge(Risk.HIGH);
-        decisionManager.setItemPhoneFedge(Risk.HIGH);
-        decisionManager.setItemTimeFedge(Risk.HIGH);
+        decisionManager.setItemPhoneHedge(Risk.HIGH);
+        decisionManager.setItemTimeHedge(Risk.HIGH);
         decisionManager.setItemVelocityHedge(Risk.HIGH);
 
         Transaction response = card.charge(new BigDecimal("199.99"))
@@ -370,8 +401,9 @@ public class RealexCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
     @Test
-    public void creditFraudManagementHold() throws ApiException {
+    public void fraudManagement_Hold() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("199.99"))
                 .withCurrency("EUR")
                 .execute();
@@ -386,8 +418,9 @@ public class RealexCreditTests {
         assertNotNull(holdResponse);
         assertEquals("00", holdResponse.getResponseCode());
     }
+
     @Test
-    public void creditFraudManagementRelease() throws ApiException {
+    public void fraudManagement_Release() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("199.99"))
                 .withCurrency("EUR")
                 .execute();
@@ -408,8 +441,9 @@ public class RealexCreditTests {
         assertNotNull(releaseResponse);
         assertEquals("00", releaseResponse.getResponseCode());
     }
+
     @Test
-    public void creditFraudFilterDataSubmission() throws ApiException {
+    public void fraudManagement_Filter() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
         billingAddress.setStreetAddress2("House 456");

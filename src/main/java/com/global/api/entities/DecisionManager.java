@@ -8,15 +8,15 @@ public class DecisionManager {
 	private String billToHttpBrowserEmail;
 	private String billToHttpBrowserType;
 	private String billToIpNetworkAddress;
-	private String businessRulessCoreThresHold;
+	private String businessRulesCoreThreshold;
 	private String billToPersonalId;
 	private String decisionManagerProfile;
 	private String invoiceHeaderTenderType;
 	private Risk itemHostHedge;
 	private Risk itemNonsensicalHedge;
 	private Risk itemObscenitiesHedge;
-	private Risk itemPhoneFedge;
-	private Risk itemTimeFedge;
+	private Risk itemPhoneHedge;
+	private Risk itemTimeHedge;
 	private Risk itemVelocityHedge;
 	private boolean invoiceHeaderIsGift;
 	private boolean invoiceHeaderReturnsAccepted;
@@ -51,11 +51,11 @@ public class DecisionManager {
 	public void setBillToIpNetworkAddress(String billToIpNetworkAddress) {
 		this.billToIpNetworkAddress = billToIpNetworkAddress;
 	}
-	public String getBusinessRulessCoreThresHold() {
-		return businessRulessCoreThresHold;
+	public String getBusinessRulesCoreThreshold() {
+		return businessRulesCoreThreshold;
 	}
-	public void setBusinessRulessCoreThresHold(String businessRulessCoreThresHold) {
-		this.businessRulessCoreThresHold = businessRulessCoreThresHold;
+	public void setBusinessRulesCoreThreshold(String businessRulesCoreThreshold) {
+		this.businessRulesCoreThreshold = businessRulesCoreThreshold;
 	}
 	public String getBillToPersonalId() {
 		return billToPersonalId;
@@ -93,17 +93,17 @@ public class DecisionManager {
 	public void setItemObscenitiesHedge(Risk itemObscenitiesHedge) {
 		this.itemObscenitiesHedge = itemObscenitiesHedge;
 	}
-	public Risk getItemPhoneFedge() {
-		return itemPhoneFedge;
+	public Risk getItemPhoneHedge() {
+		return itemPhoneHedge;
 	}
-	public void setItemPhoneFedge(Risk itemPhoneFedge) {
-		this.itemPhoneFedge = itemPhoneFedge;
+	public void setItemPhoneHedge(Risk itemPhoneHedge) {
+		this.itemPhoneHedge = itemPhoneHedge;
 	}
-	public Risk getItemTimeFedge() {
-		return itemTimeFedge;
+	public Risk getItemTimeHedge() {
+		return itemTimeHedge;
 	}
-	public void setItemTimeFedge(Risk itemTimeFedge) {
-		this.itemTimeFedge = itemTimeFedge;
+	public void setItemTimeHedge(Risk itemTimeHedge) {
+		this.itemTimeHedge = itemTimeHedge;
 	}
 	public Risk getItemVelocityHedge() {
 		return itemVelocityHedge;

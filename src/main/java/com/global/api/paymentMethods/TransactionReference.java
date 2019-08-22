@@ -10,7 +10,7 @@ public class TransactionReference implements IPaymentMethod {
 	private String alternativePaymentType;
 	private String acquiringInstitutionId;
     private String authCode;
-    private int batchNumber;
+    private Integer batchNumber;
     private String clientTransactionId;
     private String messageTypeIndicator;
     private NtsData ntsData;
@@ -45,10 +45,10 @@ public class TransactionReference implements IPaymentMethod {
         this.authCode = authCode;
     }
 
-    public int getBatchNumber() {
+    public Integer getBatchNumber() {
         return batchNumber;
     }
-    public void setBatchNumber(int batchNumber) {
+    public void setBatchNumber(Integer batchNumber) {
         this.batchNumber = batchNumber;
     }
 

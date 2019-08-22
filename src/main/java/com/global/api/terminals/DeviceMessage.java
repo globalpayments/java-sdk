@@ -6,12 +6,30 @@ import com.global.api.utils.EnumUtils;
 
 public class DeviceMessage implements IDeviceMessage {
     byte[] buffer;
+    boolean keepAlive;
+    boolean awaitResponse;
 
     public DeviceMessage(byte[] buffer){
         this.buffer = buffer;
     }
 
     public byte[] getSendBuffer() { return this.buffer; }
+
+    public boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    public boolean isAwaitResponse() {
+        return awaitResponse;
+    }
+
+    public void setAwaitResponse(boolean awaitResponse) {
+        this.awaitResponse = awaitResponse;
+    }
 
     @Override
     public String toString(){

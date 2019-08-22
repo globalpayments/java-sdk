@@ -32,19 +32,12 @@ public class BatchSummary {
     private String merchantName;
     private DateTime openTime;
     private String openTransactionId;
-    private Transaction resentBatchClose;
-    private LinkedList<Transaction> resentTransactions;
-    private String responseCode;
     private BigDecimal returnAmount;
     private Integer returnCount;
     private BigDecimal saleAmount;
     private Integer saleCount;
-    private String sequenceNumber;
     private String siteId;
     private String status;
-    private BigDecimal totalAmount;
-    private Integer transactionCount;
-    private String transactionToken;
 
     public boolean isBalanced() {
         if(responseCode != null) {

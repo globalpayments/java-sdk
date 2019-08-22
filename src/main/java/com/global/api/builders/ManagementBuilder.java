@@ -1,6 +1,7 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.LodgingData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.Transaction;
@@ -32,6 +33,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String currency;
     private String customerId;
     private boolean customerInitiated;
+    private DccRateData dccRateData;
     private String description;
     private boolean forcedReversal;
     private BigDecimal gratuity;
@@ -40,6 +42,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     private String payerAuthenticationResponse;
     private String poNumber;
+    private String productId;
     private ReasonCode reasonCode;
     private String referenceNumber;
     private String shiftNumber;
@@ -97,6 +100,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public boolean isCustomerInitiated() {
         return customerInitiated;
     }
+    public DccRateData getDccRateData() {
+        return dccRateData;
+    }
     public String getDescription() {
         return description;
     }
@@ -122,6 +128,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public String getPoNumber() {
         return poNumber;
+    }
+    public String getProductId() {
+        return productId;
     }
     public ReasonCode getReasonCode() {
         return reasonCode;
@@ -191,10 +200,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
         return this;
     }
-    public ManagementBuilder withReferenceNumber(String value) {
-        this.referenceNumber = value;
-        return this;
-    }
     public ManagementBuilder withCashBackAmount(BigDecimal value) {
         cashBackAmount = value;
         return this;
@@ -217,6 +222,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withCustomerInitiated(boolean value) {
         customerInitiated = value;
+        return this;
+    }
+    public ManagementBuilder withDccRateData(DccRateData value) {
+        this.dccRateData = value;
         return this;
     }
     public ManagementBuilder withDescription(String value) {
@@ -278,8 +287,16 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         productData = value;
         return this;
     }
+    public ManagementBuilder withProductId(String value) {
+        this.productId = value;
+        return this;
+    }
     public ManagementBuilder withReasonCode(ReasonCode value) {
         this.reasonCode = value;
+        return this;
+    }
+    public ManagementBuilder withReferenceNumber(String value) {
+        this.referenceNumber = value;
         return this;
     }
     public ManagementBuilder withShiftNumber(String value) {
