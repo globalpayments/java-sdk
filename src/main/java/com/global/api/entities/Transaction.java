@@ -112,6 +112,12 @@ public class Transaction {
     public void setBalanceAmount(BigDecimal balanceAmount) {
         this.balanceAmount = balanceAmount;
     }
+    public Integer getBatchId() {
+        if(transactionReference != null) {
+            return transactionReference.getBatchNumber();
+        }
+        return null;
+    }
     public BatchSummary getBatchSummary() {
         return batchSummary;
     }

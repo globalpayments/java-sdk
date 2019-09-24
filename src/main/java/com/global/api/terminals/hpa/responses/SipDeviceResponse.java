@@ -19,7 +19,7 @@ public class SipDeviceResponse extends SipBaseResponse implements IDeviceRespons
         amountDue = StringUtils.toAmount(response.getString("BalanceDueAmount"));
         avsResponseCode = response.getString("AVS");
         avsResponseText = response.getString("AVSRsltText", "AVSResultText");
-        transactionType = response.getString("CardGroup");
+        transactionType = response.getString("Response");
         balanceAmount = StringUtils.toAmount(response.getString("AvailableBalance", "BalanceReturned"));
         cardHolderName = response.getString("CardHolderName");
         cvvResponseCode = response.getString("CVV");

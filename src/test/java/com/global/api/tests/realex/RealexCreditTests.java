@@ -32,6 +32,9 @@ public class RealexCreditTests {
 
         ServicesContainer.configureService(config);
 
+        config.setAccountId("apidcc");
+        ServicesContainer.configureService(config, "dcc");
+
         card = new CreditCardData();
         card.setNumber("4111111111111111");
         card.setExpMonth(12);
@@ -205,28 +208,30 @@ public class RealexCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test(expected = ApiException.class)
-    public void dccRateLookup_ChargeNotEnabledAccount() throws ApiException {
+    @Test
+    public void dccRateLookup_Charge() throws ApiException {
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .execute();
+                .execute("dcc");
         assertNotNull(dccResponse);
         assertEquals("00", dccResponse.getResponseCode());
 
-        Transaction saleResponse = card.charge()
+        Transaction saleResponse = card.charge(new BigDecimal("10.01"))
+                .withCurrency("EUR")
                 .withDccRateData(dccResponse.getDccRateData())
-                .execute();
+                .withOrderId(dccResponse.getOrderId())
+                .execute("dcc");
         assertNotNull(saleResponse);
         assertEquals("00", saleResponse.getResponseCode());
     }
 
-    @Test(expected = ApiException.class)
-    public void dccRateLookup_AuthNotEnabledAccount() throws ApiException {
+    @Test
+    public void dccRateLookup_Auth() throws ApiException {
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .execute();
+                .execute("dcc");
         assertNotNull(dccResponse);
         assertEquals("00", dccResponse.getResponseCode());
 
@@ -234,7 +239,7 @@ public class RealexCreditTests {
                 .withCurrency("EUR")
                 .withOrderId(dccResponse.getOrderId())
                 .withDccRateData(dccResponse.getDccRateData())
-                .execute();
+                .execute("dcc");
         assertNotNull(authResponse);
         assertEquals("00", authResponse.getResponseCode());
     }
@@ -566,5 +571,34 @@ public class RealexCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    public void optionalFields() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal("14"))
+                .withCurrency("USD")
+                .withCustomerId("E8953893489")
+                .withProductId("SID9838383")
+                .withClientTransactionId("Car Part HV")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction captureResponse = response.capture()
+                .withCustomerId("E8953893489")
+                .withProductId("SID9838383")
+                .withClientTransactionId("Car Part HV")
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getResponseCode());
+
+        Transaction refundResponse = response.refund(new BigDecimal("14"))
+                .withCustomerId("E8953893489")
+                .withProductId("SID9838383")
+                .withClientTransactionId("Car Part HV")
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(refundResponse);
+        assertEquals("00", refundResponse.getResponseCode());
     }
 }

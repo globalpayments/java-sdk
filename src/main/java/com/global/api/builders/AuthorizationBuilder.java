@@ -142,12 +142,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return cvn;
     }
     public DccRateData getDccRateData() { return dccRateData; }
-//    public DccProcessor getDccProcessor() {
-//        return dccProcessor;
-//    }
-//    public DccRateType getDccRateType() {
-//        return dccRateType;
-//    }
     public String getDescription() {
         return description;
     }

@@ -416,7 +416,7 @@ public class Secure3dServiceTests {
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
 
                     // optionals
-                    .withGiftCardCount(1)
+                    //.withGiftCardCount(1)
                     .withGiftCardCurrency("USD")
                     .withGiftCardAmount(new BigDecimal("250.00"))
                     .withDeliveryEmail("james.mason@example.com")

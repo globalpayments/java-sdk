@@ -3,12 +3,13 @@ package com.global.api.tests.terminals.hpa.vrf;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
-import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.abstractions.IEODResponse;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.After;
@@ -133,8 +134,12 @@ public class HpaVerificationTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
-        assertEquals("Y", response.getAvsResponseCode());
-        assertEquals("M", response.getCvvResponseCode());
+        //assertEquals("Y", response.getAvsResponseCode());
+        //assertEquals("M", response.getCvvResponseCode());
+        assertEquals("Zip and address match.", response.getAvsResponseText());
+        assertEquals("M", response.getAvsResponseCode());
+        assertEquals("Not Processed.", response.getCvvResponseText());
+        assertEquals("U", response.getAvsResponseCode());
 
         System.out.println("Response: " + response.toString());
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
@@ -274,26 +279,121 @@ public class HpaVerificationTests {
     }
 
     /*
-        TEST CASE #13 – Batch Close
-        (Mandatory if Conditional Test Cases are ran)
-        Objective	Close the batch, ensuring all approved transactions (offline or online) are settled.
-        Integrators are automatically provided accounts with auto-close enabled, so if manual batch transmission will not be performed in the production environment then it does not need to be tested.
-        Test Card	N/A
-        Procedure	Initiate a Batch Close command
-        Pass Criteria	Batch submission must be successful.
-        Batch Sequence #:
-        References	HeartSIP Specifications.
+        TEST CASE #11 – EBT Food Stamp
+        Objective Transactions: Food Stamp Purchase, Food Stamp Return and Food Stamp Balance Inquiry
+        Test Card   Card #4 – MSD only Visa
+        1.Food Stamp Purchase (EBTFSPurchase):
+        a.  Initiate an EBT sale transaction and swipe Test Card #4
+        b.  Select EBT Food Stamp if prompted.
+        c.  Enter $101.01 as the amount
+        2.Food Stamp Return (EBTFSReturn):
+        a.  Intitiate an EBT return and manually enter Test Card #4
+        b.  Select EBT Food Stamp if prompted
+        c.  Enter $104.01 as the amount
+        3.Food Stamp Balance Inquiry (EBTBalanceInquiry):
+        a.  Initiate an EBT blance inquiry transaction and swipe Test Card #4 Settle all transactions.
+     */
+    @Test
+    public void testCase11a() throws ApiException {
+        TerminalResponse response = _device.ebtPurchase(new BigDecimal("101.01"))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    @Test
+    public void testCase11b() throws ApiException {
+        TerminalResponse response = _device.ebtRefund(new BigDecimal("104.01")).execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    @Test
+    public void testCase11c() throws ApiException {
+        TerminalResponse response = _device.ebtBalance().execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    /*
+        TEST CASE #12 – EBT Cash Benefits
+        Objective   Transactions: EBT Cash Benefits with Cash Back, EBT Cash Benefits Balance Inquiry and EBT Cash Benefits Withdraw
+        Test Card   Card #4 – MSD only Visa
+        EBT Cash Benefits w Cash Back (EBTCashBackPurchase):
+        a.  Initiate an EBT sale transaction and swipe Test Card #4
+        b.  Select EBT Cash Benefits if prompted
+        c.  Enter $101.01 as the amount
+        d.  Enter $5.00 as the cash back amount
+        e.  The settlement amount is $106.01
+        2. EBT Cash Benefits Balance Inquiry (EBTBalanceInquiry):
+        a.    Initiate an EBT cash benefit balance inquiry transaction and
+        swipe Test Card #4
     */
+    @Test
+    public void testCase12a() throws ApiException {
+        TerminalResponse response = _device.ebtPurchase(new BigDecimal("101.01"))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    @Test
+    public void testCase12b() throws ApiException {
+        TerminalResponse response = _device.ebtBalance().execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    @Test(expected = UnsupportedTransactionException.class)
+    public void testCase12c() throws ApiException {
+        TerminalResponse response = _device.ebtWithdrawal(new BigDecimal("10")).execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        System.out.println("Response: " + response.toString());
+        System.out.println("Gateway Txn ID: " + response.getTransactionId());
+    }
+
+    /*
+        TEST CASE #13 – Batch Close
+       Objective End of Day, ensuring all approved transactions (offline or online) are settled. 
+          Supported transactions: Reversal, Offline Decline, Transaction Certificate, Add Attachment, SendSAF, Batch Close, EMV PDL and Heartbeat
+          Procedure	Initiate a End of Day command
+          Pass Criteria	EOD submission must be successful.
+          References		HPA Specifications.    */
     @Test
     public void testCase13() throws ApiException {
         _device.closeLane();
         _device.reset();
 
-        IBatchCloseResponse response = _device.batchClose();
+        IEODResponse response = _device.endOfDay();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
 
-        System.out.println("Response: " + response.toString());
-        System.out.println("Sequence #: " + response.getSequenceNumber());
+        System.out.println("Reversal Response: " + response.getReversalResponse().toString());
+        System.out.println("Offline Decline Response: " + response.getEmvOfflineDeclineResponse().toString());
+        System.out.println("TransactionCertificate Response: " + response.getEmvTransactionCertificateResponse().toString());
+        System.out.println("Add Attachment Response: " + response.getAttachmentResponse().toString());
+        System.out.println("SendSAF Response: " + response.getSAFResponse().toString());
+        System.out.println("Batch Close Response: " + response.getBatchCloseResponse().toString());
+        System.out.println("EmvPDL Response: " + response.getEmvPDLResponse().toString());
+        System.out.println("Heartbeat Response:" + response.getHeartBeatResponse().toString());
     }
 }

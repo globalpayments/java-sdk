@@ -118,7 +118,6 @@ public class CreditCardData extends Credit implements ICardData {
                     .withCurrency(currency)
                     .withOrderId(orderId)
                     .execute(configName);
-
         }
         catch (GatewayException exc) {
             if(exc.getResponseCode().equals("110")) {

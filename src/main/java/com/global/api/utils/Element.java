@@ -152,10 +152,14 @@ public class Element {
         for(String tagName: tagNames) {
             org.w3c.dom.Element element = (org.w3c.dom.Element)this.element.getElementsByTagName(tagName).item(0);
             if(element != null) {
-                if(format == null) {
-                    return DateTime.parse(element.getTextContent());
+                String value = element.getTextContent();
+                if(!StringUtils.isNullOrEmpty(value)) {
+                    if (format == null) {
+                        return DateTime.parse(value);
+                    }
+                    return DateTime.parse(value, format);
                 }
-                return DateTime.parse(element.getTextContent(), format);
+                return null;
             }
         }
         return null;

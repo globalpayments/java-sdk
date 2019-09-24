@@ -69,7 +69,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             else if(paymentMethod instanceof RecurringPaymentMethod) {
                 RecurringPaymentMethod storedCard = (RecurringPaymentMethod)paymentMethod;
                 request.set("payer_reference", storedCard.getCustomerKey())
-                        .set("payment_reference", storedCard.getKey());
+                        .set("payment_method_reference", storedCard.getKey());
                 hashValue = storedCard.getCustomerKey();
             }
 

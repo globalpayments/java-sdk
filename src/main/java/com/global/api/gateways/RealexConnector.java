@@ -261,7 +261,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         //</editor-fold>
 
         //<editor-fold desc="PRODUCT DATA">
-        if (builder.getProductData() != null) {
+        if (builder.getMiscProductData() != null) {
             ArrayList<String[]> productValues = builder.getMiscProductData();
             Element products = et.subElement(request, "products");
             String str[] = { "productid", "productname", "quantity", "unitprice", "gift", "type", "risk" };
@@ -327,7 +327,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         //</editor-fold>
 
         String response = doTransaction(et.toString(request));
-        return mapResponse(response);
+        return mapResponse(response, builder);
     }
 
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {
@@ -490,8 +490,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 .set("type", mapManageRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
-        if(builder.getAmount() != null)
+        if(builder.getAmount() != null) {
             et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
+        }
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
         et.subElement(request, "pasref", builder.getTransactionId());
@@ -571,7 +572,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         String response = doTransaction(et.toString(request));
-        return mapResponse(response);
+        return mapResponse(response, builder);
     }
 
     public <TResult> TResult processReport(ReportBuilder<TResult> builder, Class<TResult> clazz) throws ApiException {
@@ -682,7 +683,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         throw new UnsupportedTransactionException(String.format("Unknown transaction type %s", transType));
     }
 
-    private Transaction mapResponse(String rawResponse) throws ApiException {
+    private Transaction mapResponse(String rawResponse, TransactionBuilder<Transaction> builder) throws ApiException {
         Element root = ElementTree.parse(rawResponse).get("response");
 
         checkResponse(root);
@@ -705,6 +706,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         // dccinfo
         if (root.has("dccinfo")) {
             DccRateData dccRateData = new DccRateData();
+            if(builder instanceof AuthorizationBuilder && ((AuthorizationBuilder) builder).getDccRateData() != null) {
+                dccRateData = ((AuthorizationBuilder) builder).getDccRateData();
+            }
+
             dccRateData.setCardHolderCurrency(root.getString("cardholdercurrency"));
             dccRateData.setCardHolderAmount(root.getDecimal("cardholderamount"));
             dccRateData.setCardHolderRate(root.getString("cardholderrate"));
@@ -814,11 +819,12 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         switch(trans) {
             case Sale:
-            case Auth:
-                if(payment instanceof Credit) {
+            case Auth: {
+                if (payment instanceof Credit) {
                     if (builder.getTransactionModifier().equals(TransactionModifier.Offline)) {
-                        if(builder.getPaymentMethod() != null)
+                        if (builder.getPaymentMethod() != null) {
                             return "manual";
+                        }
                         return "offline";
                     }
                     else if (builder.getTransactionModifier().equals(TransactionModifier.EncryptedMobile)) {
@@ -826,31 +832,41 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                     }
                     return "auth";
                 }
-                else return "receipt-in";
-            case Capture:
+                return "receipt-in";
+            }
+            case Capture: {
                 return "settle";
-            case Verify:
-                if(payment instanceof Credit)
-                    return "otb";
-                else {
-                    if(builder.getTransactionModifier().equals(TransactionModifier.Secure3D))
-                        return "realvault-3ds-verifyenrolled";
-                    else return "receipt-in-otb";
+            }
+            case Verify: {
+                if(payment instanceof RecurringPaymentMethod) {
+                    return "receipt-in-otb";
                 }
-            case Refund:
-                if(payment instanceof Credit)
-                    return "credit";
-                else return "payment-out";
-            case DccRateLookup:
-                if(payment instanceof Credit)
-                    return "dccrate";
-                return "realvault-dccrate";
-            case VerifyEnrolled:
+                return "otb";
+            }
+            case Refund: {
+                if (payment instanceof RecurringPaymentMethod) {
+                    return "payment-out";
+                }
+                return "credit";
+            }
+            case DccRateLookup: {
+                if(payment instanceof RecurringPaymentMethod) {
+                    return "realvault-dccrate";
+                }
+                return "dccrate";
+            }
+            case VerifyEnrolled: {
+                if(payment instanceof RecurringPaymentMethod) {
+                    return "realvault-3ds-verifyenrolled";
+                }
                 return "3ds-verifyenrolled";
-            case Reversal:
+            }
+            case Reversal: {
                 throw new UnsupportedTransactionException();
-            default:
+            }
+            default: {
                 return "unknown";
+            }
         }
     }
 
