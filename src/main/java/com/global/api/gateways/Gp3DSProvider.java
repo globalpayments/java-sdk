@@ -170,7 +170,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                         .set("line2", shippingAddress.getStreetAddress2())
                         .set("line3", shippingAddress.getStreetAddress3())
                         .set("city", shippingAddress.getCity())
-                        .set("post_code", shippingAddress.getPostalCode())
+                        .set("postal_code", shippingAddress.getPostalCode())
                         .set("state", shippingAddress.getState())
                         .set("country", shippingAddress.getCountryCode());
             }
@@ -248,7 +248,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                         .set("line2", billingAddress.getStreetAddress2())
                         .set("line3", billingAddress.getStreetAddress3())
                         .set("city", billingAddress.getCity())
-                        .set("post_code", billingAddress.getPostalCode())
+                        .set("postal_code", billingAddress.getPostalCode())
                         .set("state", billingAddress.getState())
                         .set("country", billingAddress.getCountryCode());
             }
