@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.pax;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.SafMode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.services.DeviceService;
@@ -117,5 +118,12 @@ public class PaxAdminTests {
         assertNotNull(response);
         assertEquals("OK", response.getDeviceResponseText());
         assertNotNull(response.getSignatureData());
+    }
+    
+    @Test
+    public void enableStoreAndForwardMode() throws ApiException {
+        IDeviceResponse response = device.setStoreAndForwardMode(SafMode.STAY_OFFLINE);
+        assertNotNull(response);
+        assertEquals("000000", response.getDeviceResponseCode());
     }
 }

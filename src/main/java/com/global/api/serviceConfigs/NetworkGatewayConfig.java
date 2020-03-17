@@ -1,6 +1,7 @@
 package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
+import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.enums.*;
@@ -13,6 +14,7 @@ public class NetworkGatewayConfig extends Configuration {
     private IBatchProvider batchProvider;
     private String companyId;
     private ConnectionType connectionType = ConnectionType.ISDN;
+    private IGatewayEventHandler gatewayEventHandler;
     private String merchantType;
     private MessageType messageType = MessageType.Heartland_POS_8583;
     private String nodeIdentification;
@@ -23,6 +25,7 @@ public class NetworkGatewayConfig extends Configuration {
     private IStanProvider stanProvider;
     private String terminalId;
     private String uniqueDeviceId;
+    private Boolean persistentConnection = false;
 
     public AcceptorConfig getAcceptorConfig() {
         return acceptorConfig;
@@ -47,6 +50,12 @@ public class NetworkGatewayConfig extends Configuration {
     }
     public void setConnectionType(ConnectionType connectionType) {
         this.connectionType = connectionType;
+    }
+    public IGatewayEventHandler getGatewayEventHandler() {
+        return gatewayEventHandler;
+    }
+    public void setGatewayEventHandler(IGatewayEventHandler gatewayEventHandler) {
+        this.gatewayEventHandler = gatewayEventHandler;
     }
     public String getMerchantType() {
         return merchantType;
@@ -113,7 +122,13 @@ public class NetworkGatewayConfig extends Configuration {
     public void setUniqueDeviceId(String uniqueDeviceId) {
         this.uniqueDeviceId = uniqueDeviceId;
     }
-
+    public Boolean isPersistentConnection() {
+        return persistentConnection;
+    }
+    public void setPersistentConnection(Boolean persistentConnection) {
+        this.persistentConnection = persistentConnection;
+    }
+    
     public void configureContainer(ConfiguredServices services) {
         VapsConnector gateway = new VapsConnector();
         // connection fields
@@ -134,7 +149,8 @@ public class NetworkGatewayConfig extends Configuration {
         gateway.setTerminalId(terminalId);
         gateway.setMerchantType(merchantType);
         gateway.setUniqueDeviceId(uniqueDeviceId);
-
+        gateway.setProcessingFlag(persistentConnection ? NetworkProcessingFlag.PersistentConnection : NetworkProcessingFlag.NonPersistentConnection);
+        
         // acceptor config
         if(acceptorConfig == null) {
             acceptorConfig = new AcceptorConfig();
@@ -146,6 +162,9 @@ public class NetworkGatewayConfig extends Configuration {
 
         // batch provider
         gateway.setBatchProvider(batchProvider);
+
+        // event handler
+        gateway.setGatewayEventHandler(gatewayEventHandler);
 
         services.setGatewayConnector(gateway);
     }

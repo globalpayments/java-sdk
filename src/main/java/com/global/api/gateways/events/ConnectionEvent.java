@@ -10,7 +10,6 @@ public class ConnectionEvent extends GatewayEvent {
     private DateTime connectionCompleted;
     private int connectionAttempts;
     private DateTime connectionFailOver;
-    private boolean sslNavigation;
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
@@ -33,32 +32,14 @@ public class ConnectionEvent extends GatewayEvent {
     public void setConnectionFailOver(DateTime connectionFailover) {
         this.connectionFailOver = connectionFailover;
     }
-    public void setSslNavigation(boolean sslNavigation) {
-        this.sslNavigation = sslNavigation;
-    }
 
-    private long getConnectionTime() {
-        DateTime d1 = connectionCompleted != null ? connectionCompleted : connectionFailOver;
-
-        if (d1 != null) {
-            return d1.getMillis() - connectionStarted.getMillis();
-        }
-        else {
-            return 0;
-        }
-    }
     public String getEventMessage() {
         String rvalue = super.getEventMessage();
-        return rvalue.concat(String.format("Connecting to %s host (%s:%s); started: %s; ssl success: %s; completed: %s; fail over: %s; attempts: %s; connection time (milliseconds): %sms.",
+        return rvalue.concat(String.format("Connecting to %s host (%s:%s): %s",
                 host,
                 endpoint,
                 port,
-                connectionStarted.toString("hh:mm:ss.SSS"),
-                sslNavigation,
-                connectionCompleted != null ? connectionCompleted.toString("hh:mm:ss.SSS") : "null",
-                connectionFailOver != null ? connectionFailOver.toString("hh:mm:ss.SSS") : "null",
-                connectionAttempts + 1,
-                getConnectionTime()
+                connectionStarted.toString("hh:mm:ss.SSS")
         ));
     }
 

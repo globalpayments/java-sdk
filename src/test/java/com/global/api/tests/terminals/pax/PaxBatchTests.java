@@ -2,12 +2,18 @@ package com.global.api.tests.terminals.pax;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.SafDelete;
+import com.global.api.entities.enums.SafReportSummary;
+import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.pax.responses.SAFDeleteResponse;
+import com.global.api.terminals.pax.responses.SAFSummaryReport;
+import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.Test;
@@ -45,5 +51,26 @@ public class PaxBatchTests {
         assertEquals("OK", response.getDeviceResponseText());
         assertNotNull(response.getTotalCount());
         assertNotNull(response.getTotalAmount());
+    }
+    
+    @Test
+    public void safUpload() throws ApiException{
+        SAFUploadResponse response = device.safUpload(SafUpload.ALL_TRANSACTION);
+        assertNotNull(response);
+        assertEquals("OK", response.getDeviceResponseText());
+    }
+    
+    @Test
+    public void safDelete() throws ApiException{
+        SAFDeleteResponse response = device.safDelete(SafDelete.FAILED_TRANSACTION_RECORD);
+        assertNotNull(response);
+        assertEquals("OK", response.getDeviceResponseText());
+    }
+    
+    @Test
+    public void safSummaryReport() throws ApiException{
+        SAFSummaryReport response = device.safSummaryReport(SafReportSummary.ALL_REPORT);
+        assertNotNull(response);
+        assertEquals("OK", response.getDeviceResponseText());
     }
 }

@@ -23,9 +23,7 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsCreditTests {
@@ -527,6 +525,26 @@ public class VapsCreditTests {
     }
 
     @Test
+    public void test_025_EMV_credit_online_pin() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("5413330089010434=22122019882803290000");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .withTagData("4F07A0000000041010500A4D61737465724361726457135413330089010434D22122019882803290000F5A085413330089010434820238008407A00000000410108E0A00000000000000001F00950500008080009A031901099B02E8009C01405F201A546573742F4361726420313020202020202020202020202020205F24032212315F25030401015F2A0208405F300202015F3401009F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FF009F090200029F0D05B8508000009F0E0500000000009F0F05B8708098009F10120110A0800F22000065C800000000000000FF9F120A4D6173746572436172649F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030710109F26080631450565A30B759F2701809F330360F0C89F34033F00019F3501219F360200049F3704C6B1A04F9F3901059F4005F000A0B0019F4104000000869F4C0865C862608A23945A9F4E0D54657374204D65726368616E74")
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "002", response.getResponseCode());
+
+        Transaction capture = response.capture(response.getAuthorizedAmount())
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(capture);
+        assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
+    @Test
     public void test_026_balance_inquiry() throws ApiException {
         Transaction response = track.balanceInquiry()
                 .execute();
@@ -538,5 +556,26 @@ public class VapsCreditTests {
         assertEquals("108", pmi.getFunctionCode());
 
         assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_tor_on_stand_in_capture() throws ApiException {
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(1),
+                "TYPE04",
+                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Host_Authorized),
+                track
+        );
+
+        try {
+            transaction.capture(new BigDecimal(10))
+                    .withCurrency("USD")
+                    .withForceGatewayTimeout(true)
+                    .execute("ICR");
+            fail("No timeout exception thrown");
+        }
+        catch(GatewayTimeoutException exc) {
+            assertEquals(0, exc.getReversalCount());
+        }
     }
 }

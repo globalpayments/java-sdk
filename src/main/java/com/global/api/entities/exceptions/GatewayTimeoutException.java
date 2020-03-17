@@ -53,9 +53,9 @@ public class GatewayTimeoutException extends GatewayException {
     }
 
     public GatewayTimeoutException() {
-        super("The gateway did not response with given timeout.");
+        super("The gateway did not respond within the given timeout.");
     }
     public GatewayTimeoutException(Exception innerException) {
-        super("The gateway did not response with given timeout.", innerException);
+        super("The gateway did not respond within the given timeout.", innerException);
     }
 }

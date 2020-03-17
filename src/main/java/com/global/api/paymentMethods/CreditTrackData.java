@@ -4,11 +4,12 @@ import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.utils.CardUtils;
 
-public class CreditTrackData extends Credit implements ITrackData {
+public class CreditTrackData extends Credit implements ITrackData, IPinProtected {
     private String discretionaryData;
     private EntryMethod entryMethod = EntryMethod.Swipe;
     private String expiry;
     private String pan;
+    private String pinBlock;
     private String purchaseDeviceSequenceNumber;
     private TrackNumber trackNumber = TrackNumber.Unknown;
     private String trackData;
@@ -40,6 +41,13 @@ public class CreditTrackData extends Credit implements ITrackData {
     }
     public void setPan(String value) {
         pan = value;
+    }
+
+    public String getPinBlock() {
+        return pinBlock;
+    }
+    public void setPinBlock(String pinBlock) {
+        this.pinBlock = pinBlock;
     }
 
     public String getPurchaseDeviceSequenceNumber() {

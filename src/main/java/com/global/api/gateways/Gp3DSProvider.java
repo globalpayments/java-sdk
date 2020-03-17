@@ -139,7 +139,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 hashValue = storedCard.getCustomerKey();
 
                 cardDetailElement.set("payer_reference", storedCard.getCustomerKey())
-                        .set("payment_reference", storedCard.getKey());
+                        .set("payment_method_reference", storedCard.getKey());
             }
 
             // order details

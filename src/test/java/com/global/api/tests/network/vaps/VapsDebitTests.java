@@ -127,12 +127,10 @@ public class VapsDebitTests {
 
         // check response
         assertEquals("000", response.getResponseCode());
+        assertNotNull(response.getPreAuthCompletion());
 
-        // sale data-collect
-        Transaction capture = response.preAuthCompletion(new BigDecimal(10))
-                .execute();
-        assertNotNull(capture);
-        assertNull(capture.getPreAuthCompletion());
+        // check the completion
+        Transaction capture = response.getPreAuthCompletion();
 
         // check message data
         pmi = capture.getMessageInformation();
@@ -140,7 +138,7 @@ public class VapsDebitTests {
         assertEquals("1220", pmi.getMessageTransactionIndicator());
         assertEquals("000800", pmi.getProcessingCode());
         assertEquals("1379", pmi.getMessageReasonCode());
-        assertEquals("201", pmi.getFunctionCode());
+        assertEquals("200", pmi.getFunctionCode());
     }
 
     @Test

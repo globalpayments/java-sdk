@@ -2,6 +2,10 @@ package com.global.api.terminals.hpa;
 
 import com.global.api.entities.enums.CurrencyType;
 import com.global.api.entities.enums.HpaMsgId;
+import com.global.api.entities.enums.SafDelete;
+import com.global.api.entities.enums.SafMode;
+import com.global.api.entities.enums.SafReportSummary;
+import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
@@ -19,6 +23,9 @@ import com.global.api.terminals.hpa.responses.InitializeResponse;
 import com.global.api.terminals.hpa.responses.SAFResponse;
 import com.global.api.terminals.hpa.responses.SignatureResponse;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.pax.responses.SAFDeleteResponse;
+import com.global.api.terminals.pax.responses.SAFSummaryReport;
+import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -283,5 +290,29 @@ public class HpaInterface implements IDeviceInterface {
         finally {
             _controller.dispose();
         }
+    }
+
+    public IDeviceResponse setStoreAndForwardMode(SafMode mode) throws ApiException {
+    	if(mode == SafMode.STAY_ONLINE || mode == SafMode.STAY_OFFLINE) {
+    		HpaAdminBuilder builder = new HpaAdminBuilder(HpaMsgId.SET_PARAMETER.getValue())
+    				.set("FieldCount", "1")
+    				.set("Key", "STORMD")
+    				.set("Value", mode.getValue());
+    		return _controller.sendAdminMessage(SipBaseResponse.class, builder);
+    	} else {
+    		throw new UnsupportedTransactionException("HPA only supports STAY_ONLINE or STAY_OFFLINE.");
+    	}
+    }
+    
+    public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+    
+    public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+    
+    public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
 }

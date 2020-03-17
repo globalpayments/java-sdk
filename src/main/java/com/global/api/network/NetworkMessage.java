@@ -31,7 +31,10 @@ public class NetworkMessage {
             return true;
         }
         else if (messageTypeIndicator.equals("1220") || messageTypeIndicator.equals("1221")) {
-            if (functionCode.equals("201") || functionCode.equals("202")) {
+            if(functionCode.equals("200")) {
+                return (paymentMethodType != null && paymentMethodType.equals(PaymentMethodType.Credit));
+            }
+            else if (functionCode.equals("201") || functionCode.equals("202")) {
                 if(paymentMethodType != null && (paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT))) {
                     return reasonCode.equals("1379");
                 }

@@ -12,6 +12,9 @@ import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.pax.responses.BatchCloseResponse;
 import com.global.api.terminals.pax.responses.InitializeResponse;
 import com.global.api.terminals.pax.responses.PaxDeviceResponse;
+import com.global.api.terminals.pax.responses.SAFDeleteResponse;
+import com.global.api.terminals.pax.responses.SAFSummaryReport;
+import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.pax.responses.SignatureResponse;
 
 import java.math.BigDecimal;
@@ -271,5 +274,43 @@ class PaxInterface implements IDeviceInterface {
 
     public void dispose() {
         // not used
+    }
+
+    // SAF
+    public IDeviceResponse setStoreAndForwardMode(SafMode mode) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A54_SET_SAF_PARAMETERS,
+                mode,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,           
+                ControlCodes.FS,
+                ControlCodes.FS,
+                ControlCodes.FS,                
+                ControlCodes.FS,
+                ControlCodes.FS));
+        return new PaxDeviceResponse(response, PaxMsgId.A55_RSP_SET_SAF_PARAMETERS);
+    }
+
+    public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.B08_SAF_UPLOAD,
+                safUploadIndicator));
+        SAFUploadResponse uploadResponse = new SAFUploadResponse(response);
+        return uploadResponse;
+    }
+
+    public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.B10_DELETE_SAF_FILE,
+                safDeleteIndicator));
+        SAFDeleteResponse deleteResponse = new SAFDeleteResponse(response);
+        return deleteResponse;
+    }
+
+    public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.R10_SAF_SUMMARY_REPORT,
+                safReportIndicator));
+        SAFSummaryReport summaryResponse = new SAFSummaryReport(response);
+        return summaryResponse;
     }
 }

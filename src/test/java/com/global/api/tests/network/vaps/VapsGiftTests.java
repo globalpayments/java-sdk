@@ -27,7 +27,7 @@ public class VapsGiftTests {
         AcceptorConfig acceptorConfig = new AcceptorConfig();
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.MagStripe_KeyEntrty);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.MagStripe_KeyEntry);
         acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
         acceptorConfig.setCardDataOutputCapability(CardDataOutputCapability.Unknown);
@@ -51,7 +51,7 @@ public class VapsGiftTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0001126198308");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -66,10 +66,10 @@ public class VapsGiftTests {
         ServicesContainer.configureService(config, "ValueLink");
 
         // VALUE LINK
-        giftCard = TestCards.ValueLinkManual();
+        //giftCard = TestCards.ValueLinkManual();
 
         // SVS
-        //giftCard = TestCards.SvsSwipe();
+        giftCard = TestCards.SvsManual();
     }
 
     @Test
@@ -161,7 +161,7 @@ public class VapsGiftTests {
                 .withCurrency("USD")
                 .execute("ICR");
         assertNotNull(response);
-        assertEquals("000", response.getResponseCode());
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(50),
@@ -177,7 +177,7 @@ public class VapsGiftTests {
                 .withCurrency("USD")
                 .execute();
         assertNotNull(captureResponse);
-        assertEquals("000", captureResponse.getResponseCode());
+        assertEquals(captureResponse.getResponseMessage(), "000", captureResponse.getResponseCode());
     }
 
     @Test

@@ -1,11 +1,18 @@
 package com.global.api.terminals.abstractions;
 
+import com.global.api.entities.enums.SafDelete;
+import com.global.api.entities.enums.SafMode;
+import com.global.api.entities.enums.SafReportSummary;
+import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.pax.responses.SAFDeleteResponse;
+import com.global.api.terminals.pax.responses.SAFSummaryReport;
+import com.global.api.terminals.pax.responses.SAFUploadResponse;
 
 import java.math.BigDecimal;
 
@@ -27,11 +34,14 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
+    IDeviceResponse setStoreAndForwardMode(SafMode safMode) throws ApiException;
     IEODResponse endOfDay() throws ApiException;
     IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;
+    SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException;
+    SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException;
 
     // credit calls
     TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException;
@@ -67,4 +77,7 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException;
     TerminalAuthBuilder ebtWithdrawal() throws ApiException;
     TerminalAuthBuilder ebtWithdrawal(BigDecimal amount) throws ApiException;
+    
+    // report calls
+    SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException;
 }

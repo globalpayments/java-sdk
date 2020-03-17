@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
 import org.joda.time.format.DateTimeFormat;
@@ -994,5 +995,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(addressNode, "country").text(address.getCountry());
 
         return addressNode;
+    }
+    
+    public NetworkMessageHeader sendKeepAlive() throws ApiException {
+    	throw new ApiException("Realex does not support KeepAlive.");
     }
 }

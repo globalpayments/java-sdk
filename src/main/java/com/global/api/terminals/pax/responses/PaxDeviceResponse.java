@@ -3,7 +3,9 @@ package com.global.api.terminals.pax.responses;
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.enums.PaxExtData;
 import com.global.api.entities.enums.PaxMsgId;
+import com.global.api.entities.enums.PaxTxnType;
 import com.global.api.entities.exceptions.MessageException;
+import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringUtils;
 
 public class PaxDeviceResponse extends PaxBaseResponse {
@@ -93,31 +95,30 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setTerminalVerificationResults(extDataResponse.get(PaxExtData.TERMINAL_VERIFICATION_RESULTS));
         }
 
-        setTransactionType(xlateTransactionType(Integer.parseInt(getTransactionType())));
+        PaxTxnType transType = ReverseStringEnumMap.parse(getTransactionType(), PaxTxnType.class);
+        setTransactionType(mapTransactionType(transType));
     }
-
-    protected String xlateTransactionType(int transType) {
-        switch(transType) {
-            case 0:
-                return "MENU";
-            case 1:
-                return "SALE";
-            case 2:
-                return "RETURN";
-            case 3:
-                return "AUTH";
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-                return "VOID";
-            default:
-                return "UNKNOWN";
-        }
-    }
+    
+    protected String mapTransactionType(PaxTxnType transType) {
+		switch (transType) {
+		case SALE_REDEEM:
+		    return "SALE";
+		case MENU:
+		case RETURN:
+		case AUTH:
+		    return transType.name();
+		case VOID:
+		case V_SALE:
+		case V_RTRN:
+		case V_AUTH:
+		case V_POST:
+		case V_FRCD:
+		case V_WITHDRAW:
+			return "VOID";
+		default:
+			return "UNKNOWN";
+		}
+	}
 
     private String normalizeResponse(String input) {
         if(input.equals("0") || input.equals("85"))

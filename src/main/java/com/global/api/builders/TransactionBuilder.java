@@ -28,6 +28,7 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected int systemTraceAuditNumber;
     protected String uniqueDeviceId;
     protected TransactionMatchingData transactionMatchingData;
+    protected boolean terminalError;
 
     public TransactionType getTransactionType() {
         return transactionType;
@@ -82,6 +83,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     }
     public TransactionMatchingData getTransactionMatchingData() {
         return transactionMatchingData;
+    }
+    public boolean isTerminalError() {
+        return terminalError;
     }
 
     public TransactionBuilder(TransactionType type) {
