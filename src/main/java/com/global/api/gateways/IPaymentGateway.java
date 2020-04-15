@@ -5,13 +5,11 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.ReportBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.network.NetworkMessageHeader;
 
 public interface IPaymentGateway {
     Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException;
     Transaction manageTransaction(ManagementBuilder builder) throws ApiException;
     <T> T processReport(ReportBuilder<T> builder, Class<T> clazz) throws ApiException;
     String serializeRequest(AuthorizationBuilder builder) throws ApiException;
-    NetworkMessageHeader sendKeepAlive() throws ApiException;
     boolean supportsHostedPayments();
 }

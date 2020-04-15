@@ -25,8 +25,8 @@ public class SignatureResponse extends PaxBaseResponse implements ISignatureResp
         this.responseLength = responseLength;
     }
 
-    public SignatureResponse(byte[] response) throws ApiException {
-        super(response, PaxMsgId.A09_RSP_GET_SIGNATURE, PaxMsgId.A21_RSP_DO_SIGNATURE);
+    public SignatureResponse(byte[] response, PaxMsgId... messageIds) throws ApiException {
+        super(response, messageIds);
     }
 
     @Override
@@ -40,4 +40,48 @@ public class SignatureResponse extends PaxBaseResponse implements ISignatureResp
             signatureData = TerminalUtilities.buildSignatureImage(mr.readToCode(ControlCodes.ETX));
         }
     }
+	public String getStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setStatus(String status) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getCommand() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setCommand(String command) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setVersion(String version) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseCode() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseCode(String deviceResponseCode) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseText(String deviceResponseMessage) {
+		// TODO Auto-generated method stub
+		
+	}
+	public byte[] getSignatureData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

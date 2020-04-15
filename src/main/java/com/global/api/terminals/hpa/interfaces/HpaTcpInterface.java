@@ -4,6 +4,7 @@ import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.AutoResetEvent;
@@ -18,190 +19,187 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HpaTcpInterface implements IDeviceCommInterface {
-    private Socket client;
-    private DataOutputStream out;
-    private InputStream in;
-    private AutoResetEvent await;
-    private ITerminalConfiguration settings;
-    private List<Byte> messageQueue;
-    private String lastConnectionError;
+	private Socket client;
+	private DataOutputStream out;
+	private InputStream in;
+	private AutoResetEvent await;
+	private ITerminalConfiguration settings;
+	private List<Byte> messageQueue;
+	private String lastConnectionError;
 
-    private IMessageSentInterface onMessageSent;
-    private IMessageReceivedInterface onMessageReceived;
+	private IMessageSentInterface onMessageSent;
+	private IMessageReceivedInterface onMessageReceived;
 
-    public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
+	public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
+		this.onMessageSent = onMessageSent;
+	}
 
-    public HpaTcpInterface(ITerminalConfiguration settings) {
-        this.settings = settings;
-        this.await = new AutoResetEvent(false);
+	public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
+		// not required for this connection mode
+	}
 
-        onMessageReceived = new IMessageReceivedInterface() {
-            public void messageReceived(byte[] message) {
-                if(messageQueue == null)
-                    messageQueue = new ArrayList<Byte>();
+	public HpaTcpInterface(ITerminalConfiguration settings) {
+		this.settings = settings;
+		this.await = new AutoResetEvent(false);
 
-                for(byte b: message)
-                    messageQueue.add(b);
+		onMessageReceived = new IMessageReceivedInterface() {
+			public void messageReceived(byte[] message) {
+				if (messageQueue == null)
+					messageQueue = new ArrayList<Byte>();
 
-                try {
-                    Element msg = ElementTree.parse(message).get("SIP");
-                    int multiMessage = msg.getInt("MultipleMessage");
-                    if(multiMessage == 0)
-                        await.set();
-                    else messageQueue.add((byte)'\r'); // delimiter
-                }
-                catch(Exception e) {
-                    // this should never cause a failure
-                    messageQueue.add((byte)'\r'); // delimiter
-                }
-            }
-        };
-    }
+				for (byte b : message)
+					messageQueue.add(b);
 
-    private void beginReceiveThread() {
-        Thread receiveThread = new Thread() {
-            public void run() {
-                while(true) {
-                    try {
-                        if(in.available() > 0) {
-                            do {
-                                int length = getLength();
-                                if (length > 0) {
-                                    byte[] buffer = new byte[8192];
+				try {
+					Element msg = ElementTree.parse(message).get("SIP");
+					int multiMessage = msg.getInt("MultipleMessage");
+					if (multiMessage == 0)
+						await.set();
+					else
+						messageQueue.add((byte) '\r'); // delimiter
+				} catch (Exception e) {
+					// this should never cause a failure
+					messageQueue.add((byte) '\r'); // delimiter
+				}
+			}
+		};
+	}
 
-                                    boolean incomplete = true;
-                                    int offset = 0;
-                                    int tempLength = length;
-                                    do {
-                                        int bytesReceived = in.read(buffer, offset, tempLength);
-                                        if (bytesReceived != tempLength) {
-                                            offset += bytesReceived;
-                                            tempLength -= bytesReceived;
-                                            sleep(10);
-                                        } else incomplete = false;
-                                    }
-                                    while (incomplete);
+	private void beginReceiveThread() {
+		Thread receiveThread = new Thread() {
+			public void run() {
+				while (true) {
+					try {
+						if (in.available() > 0) {
+							do {
+								int length = getLength();
+								if (length > 0) {
+									byte[] buffer = new byte[8192];
 
-                                    byte[] readBuffer = new byte[length];
-                                    System.arraycopy(buffer, 0, readBuffer, 0, length);
-                                    onMessageReceived.messageReceived(readBuffer);
-                                }
-                                else break;
-                            }
-                            while(true);
-                        }
-                        sleep(300);
-                    } catch (Exception e) {
-                        // This never needs to fail
-                    }
-                }
-            }
-        };
-        receiveThread.start();
-    }
+									boolean incomplete = true;
+									int offset = 0;
+									int tempLength = length;
+									do {
+										int bytesReceived = in.read(buffer, offset, tempLength);
+										if (bytesReceived != tempLength) {
+											offset += bytesReceived;
+											tempLength -= bytesReceived;
+											sleep(10);
+										} else
+											incomplete = false;
+									} while (incomplete);
 
-    public void connect() {
-        if(client == null) {
-            try {
-                client = new Socket(settings.getIpAddress(), settings.getPort());
+									byte[] readBuffer = new byte[length];
+									System.arraycopy(buffer, 0, readBuffer, 0, length);
+									onMessageReceived.messageReceived(readBuffer);
+								} else
+									break;
+							} while (true);
+						}
+						sleep(300);
+					} catch (Exception e) {
+						// This never needs to fail
+					}
+				}
+			}
+		};
+		receiveThread.start();
+	}
 
-                if(client.isConnected()) {
-                    out = new DataOutputStream(client.getOutputStream());
-                    in = client.getInputStream();
+	public void connect() {
+		if (client == null) {
+			try {
+				client = new Socket(settings.getIpAddress(), Integer.parseInt(settings.getPort()));
 
-                    beginReceiveThread();
-                }
-            }
-            catch(IOException e) {
-                lastConnectionError = e.getMessage();
-            }
-        }
-    }
+				if (client.isConnected()) {
+					out = new DataOutputStream(client.getOutputStream());
+					in = client.getInputStream();
 
-    public void disconnect() {
-        try {
-            if (!client.isClosed()) {
-                in.close();
-                out.close();
-                client.close();
-            }
-            messageQueue = null;
-        }
-        catch(IOException e) {
-            // Eating the close exception
-        }
-        finally {
-            in = null;
-            out = null;
-            client = null;
-        }
-    }
+					beginReceiveThread();
+				}
+			} catch (IOException e) {
+				lastConnectionError = e.getMessage();
+			}
+		}
+	}
 
-    public byte[] send(IDeviceMessage message) throws MessageException {
-        connect();
+	public void disconnect() {
+		try {
+			if (!client.isClosed()) {
+				in.close();
+				out.close();
+				client.close();
+			}
+			messageQueue = null;
+		} catch (IOException e) {
+			// Eating the close exception
+		} finally {
+			in = null;
+			out = null;
+			client = null;
+		}
+	}
 
-        if(client == null || !client.isConnected()) {
-            throw new MessageException(String.format("Could not connect to the device. %s", lastConnectionError));
-        }
+	public byte[] send(IDeviceMessage message) throws MessageException {
+		connect();
 
-        String strMessage = message.toString();
-        messageQueue = new ArrayList<Byte>();
-        try{
-            byte[] buffer = message.getSendBuffer();
+		if (client == null || !client.isConnected()) {
+			throw new MessageException(String.format("Could not connect to the device. %s", lastConnectionError));
+		}
 
-            if(out != null) {
-                out.write(buffer, 0, buffer.length);
-                out.flush();
+		String strMessage = message.toString();
+		messageQueue = new ArrayList<Byte>();
+		try {
+			byte[] buffer = message.getSendBuffer();
 
-                if(message.isAwaitResponse()) {
-                    await.waitOne(settings.getTimeout());
-                    if(messageQueue.size() == 0) {
-                        throw new MessageException("Device did not response within the timeout");
-                    }
+			if (out != null) {
+				out.write(buffer, 0, buffer.length);
+				out.flush();
 
-                    return convertBytes(messageQueue.toArray(new Byte[messageQueue.size()]));
-                }
-                else return null;
-            }
-            else throw new MessageException("Device not connected");
-        }
-        catch(Exception exc) {
-            throw new MessageException("Failed to send message see inner exception for more details", exc);
-        }
-        finally {
-            if(onMessageSent != null) {
-                onMessageSent.messageSent(strMessage.substring(2));
-            }
+				if (message.isAwaitResponse()) {
+					await.waitOne(settings.getTimeout());
+					if (messageQueue.size() == 0) {
+						throw new MessageException("Device did not response within the timeout");
+					}
 
-            if(message.isKeepAlive()) {
-                disconnect();
-            }
-        }
-    }
+					return convertBytes(messageQueue.toArray(new Byte[messageQueue.size()]));
+				} else
+					return null;
+			} else
+				throw new MessageException("Device not connected");
+		} catch (Exception exc) {
+			throw new MessageException("Failed to send message see inner exception for more details", exc);
+		} finally {
+			if (onMessageSent != null) {
+				onMessageSent.messageSent(strMessage.substring(2));
+			}
 
-    private int getLength() {
-        try {
-            byte[] lengthBuffer = new byte[2];
-            int byteCount = in.read(lengthBuffer, 0, 2);
+			if (message.isKeepAlive()) {
+				disconnect();
+			}
+		}
+	}
 
-            if(byteCount != 2)
-                return 0;
-            return (short)(((lengthBuffer[0] & 0xFF) << 8) | (lengthBuffer[1] & 0xFF));
-        }
-        catch(IOException e) {
-            return 0;
-        }
-    }
+	private int getLength() {
+		try {
+			byte[] lengthBuffer = new byte[2];
+			int byteCount = in.read(lengthBuffer, 0, 2);
 
-    private byte[] convertBytes(Byte[] buffer) {
-        byte[] returnBuffer = new byte[buffer.length];
+			if (byteCount != 2)
+				return 0;
+			return (short) (((lengthBuffer[0] & 0xFF) << 8) | (lengthBuffer[1] & 0xFF));
+		} catch (IOException e) {
+			return 0;
+		}
+	}
 
-        int index = 0;
-        for(Byte b: buffer)
-            returnBuffer[index++] = b;
+	private byte[] convertBytes(Byte[] buffer) {
+		byte[] returnBuffer = new byte[buffer.length];
 
-        return returnBuffer;
-    }
+		int index = 0;
+		for (Byte b : buffer)
+			returnBuffer[index++] = b;
+
+		return returnBuffer;
+	}
 }

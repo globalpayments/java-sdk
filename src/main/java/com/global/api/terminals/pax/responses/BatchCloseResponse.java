@@ -56,4 +56,44 @@ public class BatchCloseResponse extends PaxDeviceResponse implements IBatchClose
         if(this.hostResponse != null)
             this.batchNumber = this.hostResponse.getBatchNumber();
     }
+	public String getStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setStatus(String status) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getCommand() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setCommand(String command) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setVersion(String version) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseCode() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseCode(String deviceResponseCode) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseText(String deviceResponseMessage) {
+		// TODO Auto-generated method stub
+		
+	}
 }

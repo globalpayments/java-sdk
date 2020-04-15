@@ -13,6 +13,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.math.BigInteger;
+import java.util.LinkedList;
 
 public class NetworkGateway {
     private SSLSocket client;
@@ -32,7 +33,7 @@ public class NetworkGateway {
     private int timeout;
 
     private String connectorName = "NetworkGateway";
-    private IGatewayEventHandler gatewayEventHandler;
+    protected LinkedList<IGatewayEvent> events;
 
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
@@ -76,7 +77,6 @@ public class NetworkGateway {
     public void setForceGatewayTimeout(boolean forceGatewayTimeout) {
         this.forceGatewayTimeout = forceGatewayTimeout;
     }
-    public void setGatewayEventHandler(IGatewayEventHandler eventHandler) { this.gatewayEventHandler = eventHandler; }
 
     // establish connection
     private void connect(String endpoint, Integer port) throws ApiException {
@@ -88,28 +88,27 @@ public class NetworkGateway {
         connectionEvent.setPort(port.toString());
         connectionEvent.setHost(currentEndpoint);
         connectionEvent.setConnectionAttempts(connectionFaults);
-        raiseGatewayEvent(connectionEvent);
 
-        DateTime connectionStarted = DateTime.now(DateTimeZone.UTC);
         if(client == null) {
             try {
                 // connection started
-                connectionEvent.setConnectionStarted(connectionStarted);
+                connectionEvent.setConnectionStarted(DateTime.now(DateTimeZone.UTC));
 
                 try {
                     SSLSocketFactory factory = new SSLSocketFactoryEx();
                     client = (SSLSocket) factory.createSocket(endpoint, port);
                     client.startHandshake();
 
-                    raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
+                    connectionEvent.setSslNavigation(true);
                 }
                 catch(Exception exc) {
-                    raiseGatewayEvent(new SslHandshakeEvent(connectorName, exc));
+                    connectionEvent.setSslNavigation(false);
                 }
 
                 if(client != null && client.isConnected()) {
                     // connection completed
-                    raiseGatewayEvent(new ConnectionCompleteEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)));
+                    connectionEvent.setConnectionCompleted(DateTime.now(DateTimeZone.UTC));
+                    events.add(connectionEvent);
 
                     out = new DataOutputStream(client.getOutputStream());
                     in = client.getInputStream();
@@ -118,7 +117,8 @@ public class NetworkGateway {
                 }
                 else {
                     // connection fail over
-                    raiseGatewayEvent(new FailOverEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)));
+                    connectionEvent.setConnectionFailOver(DateTime.now(DateTimeZone.UTC));
+                    events.add(connectionEvent);
 
                     if(connectionFaults++ != 3) {
                         if(endpoint.equals(primaryEndpoint) && secondaryEndpoint != null) {
@@ -134,7 +134,9 @@ public class NetworkGateway {
                 }
             }
             catch(Exception exc) {
-                throw new GatewayException(exc.getMessage(), exc);
+                GatewayException gatewayException = new GatewayException(exc.getMessage(), exc);
+                gatewayException.setGatewayEvents(events);
+                throw gatewayException;
             }
         }
     }
@@ -155,49 +157,55 @@ public class NetworkGateway {
     }
 
     public byte[] send(IDeviceMessage message) throws ApiException {
+        events = new LinkedList<IGatewayEvent>();
         boolean timedOut = false;
         connect(getPrimaryEndpoint(), getPrimaryPort());
 
         byte[] buffer = message.getSendBuffer();
         try {
             for(int i = 0; i < 2; i++) {
-                raiseGatewayEvent(new RequestSentEvent(connectorName));
+                events.add(new RequestSentEvent(connectorName));
                 DateTime requestSent = DateTime.now(DateTimeZone.UTC);
                 out.write(buffer);
 
                 byte[] rvalue = getGatewayResponse();
                 if (rvalue != null && !isForceGatewayTimeout()) {
-                    raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
+                    events.add(new ResponseReceivedEvent(connectorName, requestSent));
                     return rvalue;
                 }
 
                 // did not get a response, switch endpoints and try again
                 timedOut = true;
                 if(!currentEndpoint.equals("secondary") && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
-                    raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
+                    events.add(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
 
                     disconnect();
                     connect(getSecondaryEndpoint(), getSecondaryPort());
                 }
             }
 
-            raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.Timeout));
+            events.add(new TimeoutEvent(connectorName, GatewayEventType.Timeout));
             throw new GatewayTimeoutException();
         }
         catch(GatewayTimeoutException exc) {
+            exc.setGatewayEvents(events);
             throw exc;
         }
         catch(Exception exc) {
             if(timedOut) {
-                throw new GatewayTimeoutException(exc);
+                GatewayTimeoutException gatewayException = new GatewayTimeoutException(exc);
+                gatewayException.setGatewayEvents(events);
+                throw gatewayException;
             }
             else {
-                throw new GatewayException(exc.getMessage(), exc);
+                GatewayException gatewayException = new GatewayException(exc.getMessage(), exc);
+                gatewayException.setGatewayEvents(events);
+                throw gatewayException;
             }
         }
         finally {
             disconnect();
-            raiseGatewayEvent(new DisconnectEvent(connectorName));
+            events.add(new DisconnectEvent(connectorName));
 
             // remove the force timeout
             if(isForceGatewayTimeout()) {
@@ -246,15 +254,5 @@ public class NetworkGateway {
         while((System.currentTimeMillis() - t) <= 20000);
 
         throw new GatewayTimeoutException();
-    }
-
-    private void raiseGatewayEvent(final IGatewayEvent event) {
-        new Thread(new Runnable() {
-            public void run() {
-                if(gatewayEventHandler != null) {
-                    gatewayEventHandler.eventRaised(event);
-                }
-            }
-        }).start();
     }
 }

@@ -1,6 +1,7 @@
 package com.global.api.entities.enums;
 
 public enum BaudRate {
+	r9600(9600),
     r38400(38400),
     r57600(57600),
     r19200(19200),

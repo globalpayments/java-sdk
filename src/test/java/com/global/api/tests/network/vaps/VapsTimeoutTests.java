@@ -1,22 +1,21 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
+import com.global.api.gateways.events.GatewayEvent;
 import com.global.api.gateways.events.IGatewayEvent;
-import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class VapsTimeoutTests {
     public VapsTimeoutTests() throws ApiException {
@@ -36,11 +35,6 @@ public class VapsTimeoutTests {
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
         config.setEnableLogging(true);
-        config.setGatewayEventHandler(new IGatewayEventHandler() {
-            public void eventRaised(IGatewayEvent event) {
-                System.out.print(event.getEventMessage() + "\r\n");
-            }
-        });
 
         ServicesContainer.configureService(config);
     }
@@ -51,13 +45,26 @@ public class VapsTimeoutTests {
         track.setValue("4012002000060016=25121011803939600000");
 
         try {
-            track.charge(new BigDecimal("10"))
+            track.authorize(new BigDecimal("10"))
                     .withCurrency("USD")
                     .withForceGatewayTimeout(true)
                     .execute();
+            Assert.fail("No timeout detected");
         }
         catch(GatewayTimeoutException exc) {
-                assertEquals(3, exc.getReversalCount());
+            Assert.assertEquals(1, exc.getReversalCount());
+            Assert.assertNotNull("primary", exc.getHost());
+            Assert.assertEquals("400", exc.getReversalResponseCode());
+            Assert.assertEquals("Accepted", exc.getReversalResponseText());
+
+            StringBuilder sb = new StringBuilder();
+            for(IGatewayEvent event: exc.getGatewayEvents()) {
+                sb.append(event.getEventMessage()).append("\r\n");
+            }
+            System.out.print(sb.toString());
+        }
+        catch(GatewayException exc) {
+            Assert.assertNotNull(exc.getGatewayEvents());
         }
     }
 }

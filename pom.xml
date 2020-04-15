@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.heartlandpaymentsystems</groupId>
     <artifactId>globalpayments-sdk</artifactId>
-    <version>6.1.23-SNAPSHOT</version>
+    <version>6.1.17-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Heartland &amp; Global Payments SDK</name>
     <description>API for processing payments through Global Payments</description>
@@ -134,6 +134,15 @@
             <artifactId>joda-time</artifactId>
             <version>2.9.9</version>
         </dependency>
+		<dependency>
+		<groupId>comms2</groupId>
+		<artifactId>comms2</artifactId>
+		<scope>system</scope>
+		<version>1.0</version>
+		<systemPath>${basedir}/libs/jSerialComm-2.6.0.jar</systemPath>
+		<classifier>native-comms</classifier>
+		<optional>true</optional>
+		</dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

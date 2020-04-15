@@ -12,6 +12,10 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.abstractions.ITerminalResponse;
+import com.global.api.terminals.ingenico.variables.ExtendedDataTags;
+import com.global.api.terminals.ingenico.variables.PaymentMode;
+import com.global.api.terminals.ingenico.variables.ReportTypes;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -33,6 +37,13 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private String taxExempt;
     private String taxExemptId;
     private String transactionId;
+    
+    // ingenico properties
+    private String currencyCode;
+    private String tableNumber;
+    private PaymentMode paymentMode;
+    private ExtendedDataTags extendedDataTags;
+    private ReportTypes reportType;
 
     public Address getAddress() {
         return address;
@@ -86,6 +97,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     public String getTaxExemptId() {
         return taxExemptId;
     }
+    
+    public String getTableNumber() {
+    	return tableNumber;
+    }
+    
+    public String getCurrencyCode() {
+    	return currencyCode;
+    }
+    
+    public PaymentMode getPaymentMode() {
+    	return paymentMode;
+    }
+    
+    public ExtendedDataTags getExtendedDataTag() {
+    	return extendedDataTags;
+    }
+    
+    public ReportTypes getReportType() {
+    	return reportType;
+    }
 
     public TerminalAuthBuilder withAddress(Address address) {
         this.address = address;
@@ -104,10 +135,12 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setAuthCode(value);
         this.authCode = value;
+        extendedDataTags = extendedDataTags.AUTHCODE;
         return this;
     }
     public TerminalAuthBuilder withCashBack(BigDecimal value) {
         this.cashBackAmount = value;
+        extendedDataTags = ExtendedDataTags.CASHB;
         return this;
     }
     public TerminalAuthBuilder withCurrency(CurrencyType value) {
@@ -167,12 +200,34 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.transactionId = value;
         return this;
     }
+    
+    // ingenico methods
+    public TerminalAuthBuilder withCurrencyCode(String value) {
+    	this.currencyCode = value;
+    	return this;
+    }
+    
+    public TerminalAuthBuilder withTableNumber(String value) {
+    	this.tableNumber = value;
+    	extendedDataTags = extendedDataTags.TABLE_NUMBER;
+    	return this;
+    }
+    
+    public TerminalAuthBuilder withPaymentMode(PaymentMode value) {
+    	this.paymentMode = value;
+    	return this;
+    }
+    
+    public TerminalAuthBuilder withReportType(ReportTypes value) {
+    	this.reportType = value;
+    	return this;
+    }
 
     public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }
 
-    public TerminalResponse execute(String configName) throws ApiException {
+    public ITerminalResponse execute(String configName) throws ApiException {
         super.execute(configName);
 
         DeviceController device = ServicesContainer.getInstance().getDeviceController(configName);

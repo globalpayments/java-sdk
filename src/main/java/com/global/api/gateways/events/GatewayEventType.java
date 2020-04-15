@@ -6,7 +6,5 @@ public enum GatewayEventType {
     RequestSent,
     ResponseReceived,
     Timeout,
-    TimeoutFailOver,
-    SslHandshake,
-    FailOver
+    TimeoutFailOver
 }

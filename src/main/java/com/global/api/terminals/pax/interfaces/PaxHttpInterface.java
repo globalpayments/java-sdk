@@ -4,6 +4,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.utils.IOUtils;
@@ -21,6 +22,10 @@ public class PaxHttpInterface implements IDeviceCommInterface {
     public void setMessageSentHandler(IMessageSentInterface messageInterface) {
         this.onMessageSent = messageInterface;
     }
+    
+    public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
+        // not required for this connection mode
+	}
 
     public PaxHttpInterface(ITerminalConfiguration settings) {
         this._settings = settings;

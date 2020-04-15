@@ -3,6 +3,7 @@ package com.global.api.services;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.ConnectionConfig;
+//import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 
 public class DeviceService {

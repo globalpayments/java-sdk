@@ -11,17 +11,22 @@ import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.terminals.DeviceInterface;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
 import com.global.api.terminals.hpa.responses.SipSendFileResponse;
+import com.global.api.terminals.ingenico.variables.ReceiptType;
+import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.hpa.responses.BatchResponse;
 import com.global.api.terminals.hpa.responses.EODResponse;
 import com.global.api.terminals.hpa.responses.InitializeResponse;
 import com.global.api.terminals.hpa.responses.SAFResponse;
 import com.global.api.terminals.hpa.responses.SignatureResponse;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
@@ -31,25 +36,15 @@ import com.global.api.utils.StringUtils;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-public class HpaInterface implements IDeviceInterface {
+public class HpaInterface extends DeviceInterface<HpaController> implements IDeviceInterface {
     private HpaController _controller;
-    private IMessageSentInterface onMessageSent;
-    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
 
     HpaInterface(HpaController controller) {
-        _controller = controller;
-        _controller.setMessageSentHandler(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if(onMessageSent != null)
-                    onMessageSent.messageSent(message);
-            }
-        });
+    	super(controller);
     }
-
-    public void cancel() throws ApiException {
-        reset();
+    
+    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
+        this.onMessageSent = onMessageSent;
     }
 
     public IDeviceResponse disableHostResponseBeep() throws ApiException {
@@ -315,4 +310,48 @@ public class HpaInterface implements IDeviceInterface {
     public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
+
+	public void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived) {
+		
+	}
+
+	public IDeviceResponse cancel() throws ApiException {
+		return reset();
+	}
+
+	public TerminalAuthBuilder authorize(BigDecimal amount) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalManageBuilder capture(BigDecimal amount) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalAuthBuilder refund(BigDecimal amount) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalAuthBuilder sale(BigDecimal amount) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalAuthBuilder verify() throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalReportBuilder getReport(ReportTypes reportTypes) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalReportBuilder getLastReceipt(ReceiptType receiptType) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public IDeviceResponse duplicate() throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
+
+	public TerminalManageBuilder reverse(BigDecimal amount) throws ApiException {
+		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	}
 }

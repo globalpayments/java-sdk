@@ -9,7 +9,6 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
-import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
@@ -182,17 +181,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 trackData.text(track.getValue());
                 trackData.set("method", track.getEntryMethod());
                 if (paymentType == PaymentMethodType.Credit) {
-                    // tag data
+                   // tag data
                     if(!StringUtils.isNullOrEmpty(builder.getTagData())) {
-                        Element tagData = et.subElement(block1, "TagData");
-                        Element tagValues = et.subElement(tagData, "TagValues", builder.getTagData());
-                        tagValues.set("source", "chip");
-                    }
-
-                    if (builder.getEmvChipCondition() != null) {
-                        String chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
-                        Element emvData = et.subElement(block1, "EMVData");
-                        et.subElement(emvData, "EMVChipCondition", chipCondition);
+                        Element tagData = et.subElement(block1, "EMVData");
+                        et.subElement(tagData, "EMVTagData", builder.getTagData());
                     }
                 }
                 if (paymentType == PaymentMethodType.Debit) {
@@ -996,9 +988,5 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         }
 
         return summary;
-    }
-    
-    public NetworkMessageHeader sendKeepAlive() throws ApiException {
-    	throw new ApiException("Portico does not support KeepAlive.");
     }
 }
