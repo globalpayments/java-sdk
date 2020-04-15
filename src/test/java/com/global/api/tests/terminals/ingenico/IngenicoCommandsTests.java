@@ -18,6 +18,7 @@ import com.global.api.terminals.abstractions.ITerminalResponse;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
+import com.global.api.terminals.ingenico.variables.TaxFreeType;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 
@@ -80,6 +81,46 @@ public class IngenicoCommandsTests {
 		} catch (ApiException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void taxFreeCashRefund() throws ApiException {
+		device.setOnMessageSent(new IMessageSentInterface() {
+			public void messageSent(String message) {
+				assertNotNull(message);
+			}
+		});
+
+		device.setOnBroadcastMessageReceived(new IBroadcastMessageInterface() {
+			public void broadcastReceived(String code, String message) {
+				assertNotNull(code, message);
+			}
+		});
+
+		ITerminalResponse response = device.refund(new BigDecimal("15")).withPaymentMode(PaymentMode.MAILORDER)
+				.withReferenceNumber(01).withCurrencyCode("826").withTaxFree(TaxFreeType.CASH).execute();
+
+		assertNotNull(response);
+	}
+	
+	@Test
+	public void taxFreeCreditRefund() throws ApiException {
+		device.setOnMessageSent(new IMessageSentInterface() {
+			public void messageSent(String message) {
+				assertNotNull(message);
+			}
+		});
+
+		device.setOnBroadcastMessageReceived(new IBroadcastMessageInterface() {
+			public void broadcastReceived(String code, String message) {
+				assertNotNull(code, message);
+			}
+		});
+
+		ITerminalResponse response = device.refund(new BigDecimal("15")).withPaymentMode(PaymentMode.MAILORDER)
+				.withReferenceNumber(01).withCurrencyCode("826").withTaxFree(TaxFreeType.CREDIT).execute();
+
+		assertNotNull(response);
 	}
 
 	@Test

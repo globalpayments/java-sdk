@@ -7,22 +7,17 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
-import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
-import com.global.api.terminals.ingenico.variables.ExtendedDataTags;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 
 public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder> {
     private BigDecimal amount;
     private CurrencyType currency;
     private BigDecimal gratuity;
-    private String transactionId;
     private String currencyCode;
     private PaymentMode paymentMode;
-    private ExtendedDataTags extendedDataTag;
     private String authCode;
     private String tableNumber;
     
@@ -36,10 +31,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     
     public PaymentMode getPaymentMode() {
     	return paymentMode;
-    }
-    
-    public ExtendedDataTags getExtendedDataTag() {
-    	return extendedDataTag;
     }
     
     public String getAuthCode() {
@@ -68,7 +59,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     
     public TerminalManageBuilder withTableNumber(String value) {
     	this.tableNumber = value;
-    	extendedDataTag = ExtendedDataTags.TABLE_NUMBER;
     	return this;
     }
     
@@ -76,8 +66,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     	if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setAuthCode(value);
-        this.authCode = value;
-        extendedDataTag = ExtendedDataTags.AUTHCODE;
         return this;
     }
 
@@ -97,7 +85,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setTransactionId(value);
-        this.transactionId = value;
         return this;
     }
 

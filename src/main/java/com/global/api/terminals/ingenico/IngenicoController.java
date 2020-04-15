@@ -20,9 +20,10 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalReceiptRespon
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalReportResponse;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
-import com.global.api.terminals.ingenico.variables.ExtendedDataTags;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
+import com.global.api.terminals.ingenico.variables.PaymentType;
+import com.global.api.terminals.ingenico.variables.TaxFreeType;
 import com.global.api.utils.Extensions;
 
 import java.math.BigDecimal;
@@ -95,84 +96,98 @@ public class IngenicoController extends DeviceController {
 	}
 
 	private IDeviceMessage buildManageTransaction(TerminalManageBuilder builder) throws BuilderException {
-		DecimalFormat decimalFormat = new DecimalFormat("00000000");
-
-		Integer _referenceNumber = builder.getReferenceNumber();
-		BigDecimal _amount = validateAmount(builder.getAmount());
-		Integer _returnRep = 1;
-		Integer _paymentMode = 0;
-		Integer _paymentType = ((IngenicoInterface) _device).getPaymentMethod() == null ? 0
-				: ((IngenicoInterface) _device).getPaymentMethod().getPaymentType();
-		String _currencyCode = "826";
-		String _privateData = "EXT0100000";
-		Integer _immediateAnswer = 0;
-		Integer _forceOnline = 0;
-		String _extendedData = "0000000000";
+		Integer referenceNumber = builder.getReferenceNumber();
+		BigDecimal amount = validateAmount(builder.getAmount());
+		Integer returnRep = 1;
+		Integer paymentMode = 0;
+		Integer paymentType = ((IngenicoInterface) _device).getPaymentMethod() == null ? 0
+				: ((IngenicoInterface) _device).getPaymentMethod().getValue();
+		String currencyCode = "826";
+		String privateData = "EXT0100000";
+		Integer immediateAnswer = 0;
+		Integer forceOnline = 0;
+		String extendedData = "0000000000";
 
 		if (!isObjectNullOrEmpty(builder.getAuthCode())) {
-			_extendedData = validateExtendedData(builder.getAuthCode(), builder.getExtendedDataTag());
-		} else if (!isObjectNullOrEmpty(builder.getTableNumber())) {
-			_extendedData = validateExtendedData(builder.getTableNumber(), builder.getExtendedDataTag());
-		} else if (builder.getTransactionId() != null && builder.getTransactionType() == TransactionType.Reversal) {
-			_extendedData = validateExtendedData(builder.getTransactionId(), ExtendedDataTags.TXN_COMMANDS_PARAMS);
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().AUTHCODE, builder.getAuthCode());
+		} else if (!isObjectNullOrEmpty(builder.getTransactionId())
+				&& builder.getTransactionType() == TransactionType.Reversal) {
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().REVERSE_WITH_ID, builder.getTransactionId());
 		} else {
-			_extendedData = validateExtendedData(builder.getTransactionType().toString(),
-					ExtendedDataTags.TXN_COMMANDS);
+			extendedData = new INGENICO_REQ_CMD().REVERSE;
 		}
 
-		String message = String.format("%s%s%s%s%s%s%sA01%sB01%s%s", String.format("%02d", _referenceNumber),
-				decimalFormat.format(_amount), _returnRep, _paymentMode, _paymentType, _currencyCode, _privateData,
-				_immediateAnswer, _forceOnline, _extendedData);
+		DecimalFormat decimalFormat = new DecimalFormat("00000000");
+		StringBuilder message = new StringBuilder();
+		message.append(String.format("%02d", referenceNumber));
+		message.append(decimalFormat.format(amount));
+		message.append(returnRep);
+		message.append(paymentMode);
+		message.append(paymentType);
+		message.append(currencyCode);
+		message.append(privateData);
+		message.append(immediateAnswer);
+		message.append(forceOnline);
+		message.append(extendedData);
 
-		return TerminalUtilities.buildIngenicoRequest(message, settings.getConnectionMode());
+		return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
 	}
 
 	private IDeviceMessage buildRequestMessage(TerminalAuthBuilder builder) throws BuilderException {
-		String message = "";
-		DecimalFormat decimalFormat = new DecimalFormat("00000000");
+		Integer referenceNumber = builder.getReferenceNumber();
+		BigDecimal amount = builder.getAmount();
+		Integer returnRep = 1;
+		Integer paymentMode = 0;
+		Integer paymentType = ((IngenicoInterface) _device).getPaymentMethod().getValue();
+		String currencyCode = "826";
+		String privateData = "EXT0100000";
+		Integer immediateAnswer = 0;
+		Integer forceOnline = 0;
+		String extendedData = "0000000000";
 
-		Integer _referenceNumber = builder.getReferenceNumber();
-		BigDecimal _amount = builder.getAmount();
-		Integer _returnRep = 1;
-		Integer _paymentMode = 0;
-		Integer _paymentType = ((IngenicoInterface) _device).getPaymentMethod().getPaymentType();
-		String _currencyCode = "826";
-		String _privateData = "EXT0100000";
-		Integer _immediateAnswer = 0;
-		Integer _forceOnline = 0;
-		String _extendedData = "0000000000";
-
-		BigDecimal _cashbackAmount = builder.getCashBackAmount();
-		String _authCode = builder.getAuthCode();
+		BigDecimal cashbackAmount = builder.getCashBackAmount();
+		String authCode = builder.getAuthCode();
 		String tableId = builder.getTableNumber();
 
-		if (!isObjectNullOrEmpty(builder.getReportType())) {
-			message = String.format(new INGENICO_REQ_CMD().REPORT, builder.getReportType());
-		} else {
-			_amount = validateAmount(_amount);
-			_paymentMode = validatePaymentMode(builder.getPaymentMode());
-			_currencyCode = (isObjectNullOrEmpty(builder.getCurrencyCode()) ? _currencyCode
-					: builder.getCurrencyCode());
-
-			if (!isObjectNullOrEmpty(tableId)) {
-				boolean validateTableId = validateTableReference(tableId);
-				if (validateTableId) {
-					_extendedData = validateExtendedData(tableId, builder.getExtendedDataTag());
-				}
-			}
-
-			if (!isObjectNullOrEmpty(_cashbackAmount)) {
-				_extendedData = validateExtendedData(_cashbackAmount.toString(), builder.getExtendedDataTag());
-			} else if (!isObjectNullOrEmpty(_authCode)) {
-				_extendedData = validateExtendedData(_authCode, builder.getExtendedDataTag());
-			}
-
-			message = String.format("%s%s%s%s%s%s%sA01%sB01%s%s", String.format("%02d", _referenceNumber),
-					decimalFormat.format(_amount), _returnRep, _paymentMode, _paymentType, _currencyCode, _privateData,
-					_immediateAnswer, _forceOnline, _extendedData);
+		if (referenceNumber.getClass() == Integer.class && requestIdProvider() != null) {
+			referenceNumber = requestIdProvider().getRequestId();
 		}
 
-		return TerminalUtilities.buildIngenicoRequest(message, settings.getConnectionMode());
+		if (!isObjectNullOrEmpty(builder.getTaxFreeType())) {
+			Integer taxFree = builder.getTaxFreeType().toInteger();
+			PaymentType type = PaymentType.getEnumName(taxFree);
+			paymentType = type.getValue();
+		}
+
+		amount = validateAmount(amount);
+		paymentMode = validatePaymentMode(builder.getPaymentMode());
+		currencyCode = (!isObjectNullOrEmpty(builder.getCurrencyCode()) ? builder.getCurrencyCode() : currencyCode);
+
+		if (!isObjectNullOrEmpty(tableId)) {
+			validateTableReference(tableId);
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().TABLE_WITH_ID, tableId);
+		} else if (!isObjectNullOrEmpty(authCode)) {
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().AUTHCODE, authCode);
+		} else if (!isObjectNullOrEmpty(cashbackAmount)) {
+			validateCashbackAmount(cashbackAmount);
+			cashbackAmount.multiply(new BigDecimal("100"));
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().CASHBACK, cashbackAmount);
+		}
+
+		DecimalFormat decimalFormat = new DecimalFormat("00000000");
+		StringBuilder message = new StringBuilder();
+		message.append(String.format("%02d", referenceNumber));
+		message.append(decimalFormat.format(amount));
+		message.append(returnRep);
+		message.append(paymentMode);
+		message.append(paymentType);
+		message.append(currencyCode);
+		message.append(privateData);
+		message.append(immediateAnswer);
+		message.append(forceOnline);
+		message.append(extendedData);
+
+		return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
 	}
 
 	private static boolean isObjectNullOrEmpty(Object value) {
@@ -187,87 +202,43 @@ public class IngenicoController extends DeviceController {
 		return response;
 	}
 
-	private static boolean validateTableReference(String value) throws BuilderException {
-		boolean response = false;
-
-		if (!(value.equals(null)) && value.length() <= 8) {
-			response = true;
-		} else {
+	private static void validateTableReference(String value) throws BuilderException {
+		if (value.length() <= 8) {
 			throw new BuilderException("Table number must not be less than or equal 0 or greater than 8 numerics.");
 		}
-
-		return response;
 	}
 
-	private static int validatePaymentMode(PaymentMode _paymentMode) {
-		if (_paymentMode == null) {
-			_paymentMode = PaymentMode.APPLICATION;
+	private static Integer validatePaymentMode(PaymentMode paymentMode) {
+		if (paymentMode == null) {
+			paymentMode = PaymentMode.APPLICATION;
 		}
 
-		return _paymentMode.getPaymentMode();
+		return paymentMode.getValue();
 	}
 
-	private static String validateExtendedData(String value, ExtendedDataTags tags) throws BuilderException {
-		String extendedData = "";
-
-		if (!isObjectNullOrEmpty(value))
-			switch (tags) {
-			case CASHB:
-				BigDecimal cashbackAmount = new BigDecimal(value);
-				Integer iValue = Integer.parseInt(value);
-
-				if (iValue > 0 && iValue < 1000000) {
-					cashbackAmount = cashbackAmount.multiply(new BigDecimal("100"));
-				} else if (iValue <= 0) {
-					throw new BuilderException("Cashback Amount must not be in less than or equal 0 value.");
-				} else {
-					throw new BuilderException("Cashback Amount exceed.");
-				}
-
-				extendedData = Extensions.formatWith("CASHB=%s;", cashbackAmount);
-				break;
-			case AUTHCODE:
-				extendedData = Extensions.formatWith("AUTHCODE=%s;", value);
-				break;
-			case TABLE_NUMBER:
-				extendedData = Extensions.formatWith("CMD=ID%s;", value);
-				break;
-			case TXN_COMMANDS:
-				TransactionType transType = TransactionType.valueOf(value);
-				switch (transType) {
-				case Cancel:
-					extendedData = new INGENICO_REQ_CMD().CANCEL;
-					break;
-				case Duplicate:
-					extendedData = new INGENICO_REQ_CMD().DUPLICATE;
-					break;
-				case Reversal:
-					extendedData = new INGENICO_REQ_CMD().REVERSE;
-					break;
-				}
-				break;
-			case TXN_COMMANDS_PARAMS:
-				extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().REVERSE_WITH_ID, value);
-				break;
-			}
-
-		return extendedData;
+	private static void validateCashbackAmount(BigDecimal value) throws BuilderException {
+		Integer cashback = Integer.parseInt(value.toString());
+		if (cashback >= 1000000) {
+			throw new BuilderException("Cashback amount exceed.");
+		} else if (cashback < 0) {
+			throw new BuilderException("Cashback amount must not be less than zero.");
+		}
 	}
 
-	private static BigDecimal validateAmount(BigDecimal _amount) throws BuilderException {
+	private static BigDecimal validateAmount(BigDecimal amount) throws BuilderException {
 		BigDecimal amount1mil = new BigDecimal("1000000");
 
-		if (_amount == null) {
+		if (amount == null) {
 			throw new BuilderException("Amount can not be null.");
-		} else if ((_amount.compareTo(BigDecimal.ZERO) > 0) && (_amount.compareTo(amount1mil) < 0)) {
-			_amount = _amount.multiply(new BigDecimal("100"));
-		} else if ((_amount.compareTo(amount1mil) == 0) && (_amount.compareTo(amount1mil) > 0)) {
+		} else if ((amount.compareTo(BigDecimal.ZERO) > 0) && (amount.compareTo(amount1mil) < 0)) {
+			amount = amount.multiply(new BigDecimal("100"));
+		} else if ((amount.compareTo(amount1mil) == 0) && (amount.compareTo(amount1mil) > 0)) {
 			throw new BuilderException("Amount exceed.");
 		} else {
 			throw new BuilderException("Invalid input amount.");
 		}
 
-		return _amount;
+		return amount;
 	}
 
 	public ITerminalConfiguration getConfiguration() {

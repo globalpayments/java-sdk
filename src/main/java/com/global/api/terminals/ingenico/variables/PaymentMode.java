@@ -18,11 +18,11 @@ public enum PaymentMode {
 			map.put(_mode.mode, _mode);
 	}
 
-	public static PaymentMode getEnumName(int val) {
+	public static PaymentMode getEnumName(Integer val) {
 		return (PaymentMode) map.get(val);
 	}
 
-	public int getPaymentMode() {
+	public int getValue() {
 		return this.mode;
 	}
 }
