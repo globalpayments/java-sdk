@@ -96,6 +96,8 @@ public class IngenicoController extends DeviceController {
 	}
 
 	private IDeviceMessage buildManageTransaction(TerminalManageBuilder builder) throws BuilderException {
+		// 0100000618100826EXT0100000A010B010CMD=REV1234
+		// 0100000618100826EXT010000000CMD=REV1234
 		Integer referenceNumber = builder.getReferenceNumber();
 		BigDecimal amount = validateAmount(builder.getAmount());
 		Integer returnRep = 1;
@@ -104,8 +106,8 @@ public class IngenicoController extends DeviceController {
 				: ((IngenicoInterface) _device).getPaymentMethod().getValue();
 		String currencyCode = "826";
 		String privateData = "EXT0100000";
-		Integer immediateAnswer = 0;
-		Integer forceOnline = 0;
+		String immediateAnswer = "A010";
+		String forceOnline = "B010";
 		String extendedData = "0000000000";
 
 		if (!isObjectNullOrEmpty(builder.getAuthCode())) {
@@ -141,22 +143,28 @@ public class IngenicoController extends DeviceController {
 		Integer paymentType = ((IngenicoInterface) _device).getPaymentMethod().getValue();
 		String currencyCode = "826";
 		String privateData = "EXT0100000";
-		Integer immediateAnswer = 0;
-		Integer forceOnline = 0;
+		String immediateAnswer = "A010";
+		String forceOnline = "B010";
 		String extendedData = "0000000000";
 
 		BigDecimal cashbackAmount = builder.getCashBackAmount();
 		String authCode = builder.getAuthCode();
 		String tableId = builder.getTableNumber();
 
-		if (referenceNumber.getClass() == Integer.class && requestIdProvider() != null) {
+		if (!isObjectNullOrEmpty(requestIdProvider())) {
 			referenceNumber = requestIdProvider().getRequestId();
 		}
 
 		if (!isObjectNullOrEmpty(builder.getTaxFreeType())) {
 			Integer taxFree = builder.getTaxFreeType().toInteger();
-			PaymentType type = PaymentType.getEnumName(taxFree);
-			paymentType = type.getValue();
+			PaymentType[] type = PaymentType.values();
+			for (PaymentType p : type) {
+				Integer typeValue = p.ordinal();
+				if (typeValue == taxFree) {
+					paymentType = typeValue;
+					break;
+				}
+			}
 		}
 
 		amount = validateAmount(amount);
@@ -203,8 +211,8 @@ public class IngenicoController extends DeviceController {
 	}
 
 	private static void validateTableReference(String value) throws BuilderException {
-		if (value.length() <= 8) {
-			throw new BuilderException("Table number must not be less than or equal 0 or greater than 8 numerics.");
+		if (value.length() > 8) {
+			throw new BuilderException("The maximum length of table number is 8.");
 		}
 	}
 

@@ -58,6 +58,30 @@ public class IngenicoCommandsTests {
 
 		assertNotNull(response);
 	}
+	
+	@Test
+	public void reverse() {
+		try {
+			device.setOnMessageSent(new IMessageSentInterface() {
+				public void messageSent(String message) {
+					assertNotNull(message);
+				}
+			});
+
+			device.setOnBroadcastMessageReceived(new IBroadcastMessageInterface() {
+				public void broadcastReceived(String code, String message) {
+					assertNotNull(code, message);
+				}
+			});
+
+			 IDeviceResponse response = device.reverse(new BigDecimal("6.18"))
+				.withReferenceNumber(1).withTransactionId("1234").execute();
+
+			assertNotNull(response);
+		} catch (ApiException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Test
 	public void completion() {
@@ -97,7 +121,7 @@ public class IngenicoCommandsTests {
 			}
 		});
 
-		ITerminalResponse response = device.refund(new BigDecimal("15")).withPaymentMode(PaymentMode.MAILORDER)
+		ITerminalResponse response = device.refund(new BigDecimal("30")).withPaymentMode(PaymentMode.APPLICATION)
 				.withReferenceNumber(01).withCurrencyCode("826").withTaxFree(TaxFreeType.CASH).execute();
 
 		assertNotNull(response);
@@ -117,7 +141,7 @@ public class IngenicoCommandsTests {
 			}
 		});
 
-		ITerminalResponse response = device.refund(new BigDecimal("15")).withPaymentMode(PaymentMode.MAILORDER)
+		ITerminalResponse response = device.refund(new BigDecimal("30")).withPaymentMode(PaymentMode.APPLICATION)
 				.withReferenceNumber(01).withCurrencyCode("826").withTaxFree(TaxFreeType.CREDIT).execute();
 
 		assertNotNull(response);

@@ -20,6 +20,7 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     private PaymentMode paymentMode;
     private String authCode;
     private String tableNumber;
+    private String transactionId;
     
     public String getTableNumber() {
     	return tableNumber;
@@ -66,6 +67,7 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     	if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setAuthCode(value);
+        this.authCode = value;
         return this;
     }
 
@@ -85,6 +87,7 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setTransactionId(value);
+        this.transactionId = value;
         return this;
     }
 
