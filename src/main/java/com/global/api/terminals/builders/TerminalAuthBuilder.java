@@ -33,6 +33,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 	private BigDecimal taxAmount;
 	private String taxExempt;
 	private String taxExemptId;
+	private String transactionId;
+	private String authCode;
 
 	// ingenico properties
 	private String currencyCode;
@@ -143,6 +145,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 		if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
 			paymentMethod = new TransactionReference();
 		((TransactionReference) paymentMethod).setAuthCode(value);
+		this.authCode = value;
 		return this;
 	}
 
@@ -222,6 +225,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 		if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
 			paymentMethod = new TransactionReference();
 		((TransactionReference) paymentMethod).setTransactionId(value);
+		this.transactionId = value;
 		return this;
 	}
 
