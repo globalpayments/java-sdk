@@ -99,7 +99,7 @@ public class IngenicoCommandsTests {
 			});
 
 			ITerminalResponse response = device.capture(new BigDecimal("15")).withReferenceNumber(01)
-					.withCurrencyCode("826").withAuthCode("026935").execute();
+					.withCurrencyCode("826").withAuthCode("").execute();
 
 			assertNotNull(response);
 		} catch (ApiException e) {

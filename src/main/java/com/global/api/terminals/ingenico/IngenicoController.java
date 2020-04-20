@@ -115,7 +115,7 @@ public class IngenicoController extends DeviceController {
 		} else if (!isObjectNullOrEmpty(builder.getTransactionId())
 				&& builder.getTransactionType() == TransactionType.Reversal) {
 			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().REVERSE_WITH_ID, builder.getTransactionId());
-		} else {
+		} else if (builder.getTransactionType() == TransactionType.Reversal) {
 			extendedData = new INGENICO_REQ_CMD().REVERSE;
 		}
 
