@@ -1,10 +1,13 @@
 package com.global.api.gateways;
 
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.logging.RequestFileLogger;
+import com.global.api.utils.Element;
+import com.global.api.utils.ElementTree;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
@@ -127,7 +130,13 @@ public abstract class Gateway {
                 logEntry.append("Request Params: ").append(queryString).append(lSChar);
             }
 
-            InputStream responseStream = conn.getInputStream();
+            InputStream responseStream;
+            if (conn.getResponseCode() == 200) {
+                responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
+            }
+
             String rawResponse = getRawResponse(responseStream);
             responseStream.close();
 
@@ -140,6 +149,10 @@ public abstract class Gateway {
                 }
 
                 generateResponseLog();
+            }
+
+            if (conn.getResponseCode() != 200) {
+                throw new GatewayException(rawResponse, Integer.toString(conn.getResponseCode()), rawResponse);
             }
 
             GatewayResponse response = new GatewayResponse();
@@ -225,7 +238,7 @@ public abstract class Gateway {
             conn.addRequestProperty("Content-Type", content.getContentType().getValue());
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
-            try(InputStream responseStream = conn.getInputStream();
+            try(InputStream responseStream = conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream();
                 OutputStream out = conn.getOutputStream();) {
 
                 if (this.enableLogging || this.requestLogger != null) {
@@ -241,6 +254,11 @@ public abstract class Gateway {
                     logEntry.append(content).append(lSChar);
 
                     generateResponseLog();
+                }
+
+                if (conn.getResponseCode() != 200) {
+                    String error = parseErrorMessage(rawResponse);
+                    throw new GatewayException(error, Integer.toString(conn.getResponseCode()), error);
                 }
 
                 GatewayResponse response = new GatewayResponse();
@@ -271,6 +289,14 @@ public abstract class Gateway {
         }
         return sb.toString();
     }
+    
+    private String parseErrorMessage(String rawResponse) throws ApiException {
+        ElementTree tree = ElementTree.parse(rawResponse);
+        Element root = tree.get("soap:Fault");
+        String error = root.getString("soap:Reason");
+        return error;
+    }
+    
 
     private void setRequestMethod(final HttpURLConnection c, final String value) {
         try {
