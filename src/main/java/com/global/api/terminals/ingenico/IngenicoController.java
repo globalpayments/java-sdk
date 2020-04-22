@@ -178,7 +178,7 @@ public class IngenicoController extends DeviceController {
 			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().AUTHCODE, authCode);
 		} else if (!isObjectNullOrEmpty(cashbackAmount)) {
 			validateCashbackAmount(cashbackAmount);
-			cashbackAmount.multiply(new BigDecimal("100"));
+			cashbackAmount = cashbackAmount.multiply(new BigDecimal("100"));
 			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().CASHBACK, cashbackAmount);
 		}
 

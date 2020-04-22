@@ -53,8 +53,8 @@ public class IngenicoCommandsTests {
 			}
 		});
 
-		ITerminalResponse response = device.sale(new BigDecimal("15")).withPaymentMode(PaymentMode.MAILORDER)
-				.withReferenceNumber(01).withCurrencyCode("826").execute();
+		ITerminalResponse response = device.sale(new BigDecimal("100")).withPaymentMode(PaymentMode.MAILORDER)
+				.withReferenceNumber(01).withCurrencyCode("826").withCashBack(new BigDecimal("90")).execute();
 
 		assertNotNull(response);
 	}
