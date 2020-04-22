@@ -1,6 +1,10 @@
 package com.global.api.gateways;
 
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.NetworkException;
+import com.global.api.utils.Element;
+import com.global.api.utils.ElementTree;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.StringUtils;
 
@@ -85,20 +89,25 @@ abstract class Gateway {
                     System.out.println("Request: " + endpoint);
             }
 
-            InputStream responseStream = conn.getInputStream();
+            InputStream responseStream = conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
 			if (this.enableLogging) {
                 System.out.println("Response: " + rawResponse);
             }
 
+			if (conn.getResponseCode() != 200) {
+				throw new GatewayException(rawResponse, Integer.toString(conn.getResponseCode()), rawResponse);
+			}
+
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
             response.setRawResponse(rawResponse);
             return response;
-        }
-        catch(Exception exc) {
-            throw new GatewayException("Error occurred while communicating with gateway.", exc);
+        } catch (GatewayException e) {
+        	throw e;
+        } catch(Exception exc) {
+            throw new NetworkException("Error occurred while communicating with gateway.", exc);
         }
     }
     protected GatewayResponse sendRequest(String endpoint, MultipartEntity content) throws GatewayException {
@@ -121,20 +130,27 @@ abstract class Gateway {
             out.flush();
             out.close();
 
-            InputStream responseStream = conn.getInputStream();
+            InputStream responseStream = conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream();
+
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
 			if (this.enableLogging) {
                 System.out.println("Response: " + rawResponse);
             }
 
+			if (conn.getResponseCode() != 200) {
+				String error = parseErrorMessage(rawResponse);
+				throw new GatewayException(error, Integer.toString(conn.getResponseCode()), error);
+			}
+
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
             response.setRawResponse(rawResponse);
             return response;
-        }
-        catch(Exception exc) {
-            throw new GatewayException("Error occurred while communicating with gateway.", exc);
+        } catch (GatewayException e) {
+        	throw e;
+        } catch(Exception exc) {
+            throw new NetworkException("Error occurred while communicating with gateway.", exc);
         }
     }
 
@@ -153,4 +169,12 @@ abstract class Gateway {
         }
         return sb.toString();
     }
+    
+    private String parseErrorMessage(String rawResponse) throws ApiException {
+    	ElementTree tree = ElementTree.parse(rawResponse);
+        Element root = tree.get("soap:Fault");
+        String error = root.getString("soap:Reason");
+        return error;
+    }
+    
 }
