@@ -89,23 +89,29 @@ abstract class Gateway {
                     System.out.println("Request: " + endpoint);
             }
 
-            InputStream responseStream = conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream();
+            InputStream responseStream;
+            if (conn.getResponseCode() == 200) {
+                responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
+            }
+            
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
 			if (this.enableLogging) {
                 System.out.println("Response: " + rawResponse);
             }
 
-			if (conn.getResponseCode() != 200) {
-				throw new GatewayException(rawResponse, Integer.toString(conn.getResponseCode()), rawResponse);
-			}
+            if (conn.getResponseCode() != 200) {
+                throw new GatewayException(rawResponse, Integer.toString(conn.getResponseCode()), rawResponse);
+            }
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
             response.setRawResponse(rawResponse);
             return response;
         } catch (GatewayException e) {
-        	throw e;
+            throw e;
         } catch(Exception exc) {
             throw new NetworkException("Error occurred while communicating with gateway.", exc);
         }
@@ -130,25 +136,30 @@ abstract class Gateway {
             out.flush();
             out.close();
 
-            InputStream responseStream = conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream();
-
+            InputStream responseStream;
+            if (conn.getResponseCode() == 200) {
+                responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
+            }
+            
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
 			if (this.enableLogging) {
                 System.out.println("Response: " + rawResponse);
             }
 
-			if (conn.getResponseCode() != 200) {
-				String error = parseErrorMessage(rawResponse);
-				throw new GatewayException(error, Integer.toString(conn.getResponseCode()), error);
-			}
+            if (conn.getResponseCode() != 200) {
+                String error = parseErrorMessage(rawResponse);
+                throw new GatewayException(error, Integer.toString(conn.getResponseCode()), error);
+            }
 
             GatewayResponse response = new GatewayResponse();
             response.setStatusCode(conn.getResponseCode());
             response.setRawResponse(rawResponse);
             return response;
         } catch (GatewayException e) {
-        	throw e;
+            throw e;
         } catch(Exception exc) {
             throw new NetworkException("Error occurred while communicating with gateway.", exc);
         }
@@ -171,7 +182,7 @@ abstract class Gateway {
     }
     
     private String parseErrorMessage(String rawResponse) throws ApiException {
-    	ElementTree tree = ElementTree.parse(rawResponse);
+        ElementTree tree = ElementTree.parse(rawResponse);
         Element root = tree.get("soap:Fault");
         String error = root.getString("soap:Reason");
         return error;
