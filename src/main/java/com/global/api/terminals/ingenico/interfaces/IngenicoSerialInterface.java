@@ -96,7 +96,13 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 	public void connect() throws ConfigurationException {
 
 		// Get Host Port Number *to be adjusted for Linux
-		String portname = "COM";
+		String OS = System.getProperty("os.name");
+		String portname = "";
+		if (OS.startsWith("Windows"))
+			portname = "COM";
+		else
+			portname = "ttyS";
+		
 		portname += _settings.getPort();
 		_serialportEnum = _serialport.getCommPorts();
 		for (SerialPort portemp : _serialportEnum) {

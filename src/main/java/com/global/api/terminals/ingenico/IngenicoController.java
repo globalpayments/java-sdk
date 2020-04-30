@@ -96,8 +96,6 @@ public class IngenicoController extends DeviceController {
 	}
 
 	private IDeviceMessage buildManageTransaction(TerminalManageBuilder builder) throws BuilderException {
-		// 0100000618100826EXT0100000A010B010CMD=REV1234
-		// 0100000618100826EXT010000000CMD=REV1234
 		Integer referenceNumber = builder.getReferenceNumber();
 		BigDecimal amount = validateAmount(builder.getAmount());
 		Integer returnRep = 1;
