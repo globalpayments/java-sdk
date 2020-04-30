@@ -7,17 +7,37 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
-import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.abstractions.ITerminalResponse;
+import com.global.api.terminals.ingenico.variables.PaymentMode;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 
 public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder> {
     private BigDecimal amount;
     private CurrencyType currency;
     private BigDecimal gratuity;
+    private String currencyCode;
+    private PaymentMode paymentMode;
+    private String authCode;
+    private String tableNumber;
     private String transactionId;
+    
+    public String getTableNumber() {
+    	return tableNumber;
+    }
 
+    public String getCurrencyCode() {
+    	return currencyCode;
+    }
+    
+    public PaymentMode getPaymentMode() {
+    	return paymentMode;
+    }
+    
+    public String getAuthCode() {
+    	return authCode;
+    }
+    
     public BigDecimal getAmount() {
         return amount;
     }
@@ -31,6 +51,24 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getTransactionId();
         return null;
+    }
+    
+    public TerminalManageBuilder withCurrencyCode(String value) {
+    	this.currencyCode = value;
+    	return this;
+    }
+    
+    public TerminalManageBuilder withTableNumber(String value) {
+    	this.tableNumber = value;
+    	return this;
+    }
+    
+    public TerminalManageBuilder withAuthCode(String value) {
+    	if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
+            paymentMethod = new TransactionReference();
+        ((TransactionReference)paymentMethod).setAuthCode(value);
+        this.authCode = value;
+        return this;
     }
 
     public TerminalManageBuilder withAmount(BigDecimal value) {
@@ -57,7 +95,8 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         super(type, paymentType);
     }
 
-    public TerminalResponse execute(String configName) throws ApiException {
+    @Override
+    public ITerminalResponse execute(String configName) throws ApiException {
         super.execute(configName);
 
         DeviceController device = ServicesContainer.getInstance().getDeviceController(configName);
@@ -65,7 +104,9 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     }
 
     public void setupValidations() {
-        this.validations.of(EnumSet.of(TransactionType.Capture, TransactionType.Void)).check("transactionId").isNotNull();
+    	this.validations.of(TransactionType.Capture).when("authCode").isNull().check("transactionId").isNotNull();
+        this.validations.of(TransactionType.Void).check("transactionId").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
+        this.validations.of(TransactionType.Cancel).check("amount").isNotNull();
     }
 }

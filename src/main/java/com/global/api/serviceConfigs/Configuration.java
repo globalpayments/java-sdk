@@ -9,7 +9,7 @@ public abstract class Configuration {
     protected Environment environment = Environment.TEST;
     protected boolean forceGatewayTimeout = false;
     protected String serviceUrl;
-    protected int timeout = 30000;
+    protected int timeout = 65000;
     protected boolean validated;
 
     public int getTimeout() {

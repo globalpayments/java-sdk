@@ -5,8 +5,9 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
-import com.global.api.terminals.hpa.HpaController;
-import com.global.api.terminals.pax.PaxController;
+import com.global.api.terminals.ingenico.IngenicoController;
+//import com.global.api.terminals.hpa.HpaController;
+//import com.global.api.terminals.pax.PaxController;
 import com.global.api.utils.StringUtils;
 
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
@@ -16,7 +17,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private StopBits stopBits;
     private DataBits dataBits;
     private String ipAddress;
-    private int port;
+    private String port;
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
 
@@ -56,10 +57,10 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
-    public int getPort() {
+    public String getPort() {
         return port;
     }
-    public void setPort(int port) {
+    public void setPort(String port) {
         this.port = port;
     }
     public DeviceType getDeviceType() {
@@ -82,10 +83,12 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
         switch (deviceType) {
             case PAX_S300:
-                services.setDeviceController(new PaxController(this));
+//                services.setDeviceController(new PaxController(this));
                 break;
             case HPA_ISC250:
-                services.setDeviceController(new HpaController(this));
+//                services.setDeviceController(new HpaController(this));
+            case INGENICO:
+            	services.setDeviceController(new IngenicoController(this));
             default:
                 break;
         }
@@ -95,7 +98,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
         if(connectionMode == ConnectionModes.TCP_IP || connectionMode == ConnectionModes.HTTP) {
             if(StringUtils.isNullOrEmpty(ipAddress))
                 throw new ConfigurationException("IpAddress is required for TCP or HTTP communication modes.");
-            if(port == 0)
+            if(port.isEmpty())
                 throw new ConfigurationException("Port is required for TCP or HTTP communication modes.");
         }
     }

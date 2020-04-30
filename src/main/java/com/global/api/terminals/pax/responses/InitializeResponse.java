@@ -25,4 +25,44 @@ public class InitializeResponse extends PaxDeviceResponse implements IInitialize
         super.parseResponse(mr);
         setSerialNumber(mr.readToCode(ControlCodes.ETX));
     }
+	public String getStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setStatus(String status) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getCommand() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setCommand(String command) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setVersion(String version) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseCode() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseCode(String deviceResponseCode) {
+		// TODO Auto-generated method stub
+		
+	}
+	public String getDeviceResponseText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public void setDeviceResponseText(String deviceResponseMessage) {
+		// TODO Auto-generated method stub
+		
+	}
 }

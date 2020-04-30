@@ -4,6 +4,7 @@ import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.EnumUtils;
 
@@ -25,6 +26,10 @@ public class PaxTcpInterface implements IDeviceCommInterface {
     public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
     }
+    
+	public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
+        // not required for this connection mode
+	}
 
     public PaxTcpInterface(ITerminalConfiguration settings) {
         this.settings = settings;
@@ -33,7 +38,7 @@ public class PaxTcpInterface implements IDeviceCommInterface {
     public void connect() {
         if(client == null) {
             try {
-                client = new Socket(settings.getIpAddress(), settings.getPort());
+                client = new Socket(settings.getIpAddress(), Integer.parseInt(settings.getPort()));
                 if(client.isConnected()) {
                     out = new DataOutputStream(client.getOutputStream());
                     in = client.getInputStream();

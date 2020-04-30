@@ -10,8 +10,8 @@ public interface ITerminalConfiguration {
     void setConnectionMode(ConnectionModes connectionMode);
     String getIpAddress();
     void setIpAddress(String ipAddress);
-    int getPort();
-    void setPort(int port);
+    String getPort();
+    void setPort(String port);
     BaudRate getBaudRate();
     void setBaudRate(BaudRate baudRate);
     Parity getParity();

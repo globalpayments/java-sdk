@@ -1,14 +1,17 @@
 package com.global.api.terminals.abstractions;
 
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.SafDelete;
-import com.global.api.entities.enums.SafMode;
 import com.global.api.entities.enums.SafReportSummary;
 import com.global.api.entities.enums.SafUpload;
-import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.variables.ReceiptType;
+import com.global.api.terminals.ingenico.variables.ReportTypes;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
@@ -18,13 +21,14 @@ import java.math.BigDecimal;
 
 public interface IDeviceInterface extends IDisposable {
     void setOnMessageSent(IMessageSentInterface onMessageSent);
+    void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived);
 
     // admin calls
     IDeviceResponse disableHostResponseBeep() throws ApiException;
     IInitializeResponse initialize() throws ApiException;
     IDeviceResponse reboot() throws ApiException;
     IDeviceResponse reset() throws ApiException;
-    void cancel() throws ApiException;
+    IDeviceResponse cancel() throws ApiException;
     IDeviceResponse openLane() throws ApiException;
     IDeviceResponse closeLane() throws ApiException;
     ISignatureResponse getSignatureFile() throws ApiException;
@@ -34,7 +38,6 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
-    IDeviceResponse setStoreAndForwardMode(SafMode safMode) throws ApiException;
     IEODResponse endOfDay() throws ApiException;
     IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
 
@@ -80,4 +83,19 @@ public interface IDeviceInterface extends IDisposable {
     
     // report calls
     SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException;
+    
+    // generic calls
+    TerminalAuthBuilder authorize(BigDecimal amount) throws ApiException;
+    TerminalManageBuilder capture(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder refund(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder sale(BigDecimal amount) throws ApiException;
+    TerminalAuthBuilder verify() throws ApiException;
+    
+    // reporting
+    TerminalReportBuilder getReport(ReportTypes reportTypes) throws ApiException;
+    TerminalReportBuilder getLastReceipt(ReceiptType receiptType) throws ApiException;
+    
+    // transaction management
+    IDeviceResponse duplicate() throws ApiException;
+    TerminalManageBuilder reverse(BigDecimal amount) throws ApiException;
 }

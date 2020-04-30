@@ -5,7 +5,7 @@ import com.global.api.network.enums.*;
 import com.global.api.utils.StringParser;
 
 public class DE22_PosDataCode implements IDataElement<DE22_PosDataCode> {
-    private CardDataInputCapability cardDataInputCapability = CardDataInputCapability.MagStripe_KeyEntry;
+    private CardDataInputCapability cardDataInputCapability = CardDataInputCapability.MagStripe_KeyEntrty;
     private CardHolderAuthenticationCapability cardHolderAuthenticationCapability = CardHolderAuthenticationCapability.None;
     private boolean cardCaptureCapability = false;
     private OperatingEnvironment operatingEnvironment = OperatingEnvironment.NoTerminalUsed;

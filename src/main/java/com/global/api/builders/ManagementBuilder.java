@@ -49,6 +49,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal taxAmount;
     private TaxType taxType;
+    private boolean terminalError;
     private String timestamp;
     private Integer transactionCount;
     private String transportData;
@@ -143,6 +144,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public TaxType getTaxType() {
         return taxType;
+    }
+    public boolean isTerminalError() {
+        return terminalError;
     }
     public String getTimestamp() {
         return timestamp;

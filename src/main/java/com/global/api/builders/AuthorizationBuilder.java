@@ -44,6 +44,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String customerIpAddress;
     private String cvn;
     private DccRateData dccRateData;
+//    private DccProcessor dccProcessor;
+//    private DccRateType dccRateType;
     private String description;
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
@@ -566,10 +568,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withSystemTraceAuditNumber(int value) {
         systemTraceAuditNumber = value;
-        return this;
-    }
-    public AuthorizationBuilder withTerminalError(boolean value) {
-        terminalError = value;
         return this;
     }
     public AuthorizationBuilder withTransportData(String value) {
