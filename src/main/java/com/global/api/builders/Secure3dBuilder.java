@@ -35,6 +35,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private AuthenticationRequestType authenticationRequestType = AuthenticationRequestType.PaymentTransaction;
     private Address billingAddress;
     private BrowserData browserData;
+    private ChallengeRequestIndicator challengeRequestIndicator;
     private String currency;
     private String customerAccountId;
     private String customerAuthenticationData;
@@ -128,6 +129,9 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     }
     public BrowserData getBrowserData() {
         return browserData;
+    }
+    public ChallengeRequestIndicator getChallengeRequestIndicator() {
+        return challengeRequestIndicator;
     }
     public String getCurrency() {
         return currency;
@@ -402,6 +406,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     }
     public Secure3dBuilder withBrowserData(BrowserData value) {
         browserData = value;
+        return this;
+    }
+    public Secure3dBuilder withChallengeRequestIndicator(ChallengeRequestIndicator value) {
+        challengeRequestIndicator = value;
         return this;
     }
     public Secure3dBuilder withCurrency(String value) {

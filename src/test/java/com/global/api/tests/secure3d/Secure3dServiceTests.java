@@ -145,6 +145,7 @@ public class Secure3dServiceTests {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                     .execute();
             assertNotNull(initAuth);
 
