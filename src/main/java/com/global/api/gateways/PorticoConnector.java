@@ -893,7 +893,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
 
     private TransactionSummary hydrateTransactionSummary(Element root) {
         TransactionSummary summary = new TransactionSummary();
-        summary.setAccountDataSource(root.getString("AccDataSrc"));
+        summary.setAccountDataSource(root.getString("AcctDataSrc"));
         summary.setAmount(root.getDecimal("Amt"));
         summary.setAuthCode(root.getString("AuthCode"));
         summary.setAuthorizedAmount(root.getDecimal("AuthAmt"));

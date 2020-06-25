@@ -673,7 +673,7 @@ public class Secure3dServiceTests {
                     .withSdkInterface(SdkInterface.Both)
                     .withSdkUiTypes(SdkUiType.Text, SdkUiType.SingleSelect, SdkUiType.MultiSelect, SdkUiType.OOB, SdkUiType.HTML_Other)
 //                    .withEphemeralPublicKey("{\"kty\":\"EC\",\"crv\":\"p-256\",\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\",\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"}")
-//                    .withMaximumTimeout(5)
+                    .withMaximumTimeout(5)
                     .withReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
                     .withSdkTransactionId("b2385523-a66c-4907-ac3c-91848e8c0067")
                     .withEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")

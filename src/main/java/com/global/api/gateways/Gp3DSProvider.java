@@ -282,7 +282,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 JsonDoc sdkInformationElement = request.subElement("sdk_information")
                         .set("application_id", builder.getApplicationId())
                         .set("ephemeral_public_key", builder.getEphemeralPublicKey())
-                        .set("maximum_timeout", builder.getMaximumTimeout())
+                        .set("maximum_timeout", StringUtils.padLeft(builder.getMaximumTimeout(), 2, '0'))
                         .set("reference_number", builder.getReferenceNumber())
                         .set("sdk_trans_id", builder.getSdkTransactionId())
                         .set("encoded_data", builder.getEncodedData())
