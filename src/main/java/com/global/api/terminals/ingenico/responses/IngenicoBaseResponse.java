@@ -2,7 +2,7 @@ package com.global.api.terminals.ingenico.responses;
 
 import com.global.api.terminals.abstractions.*;
 
-public abstract class IngenicoBaseResponse implements IDeviceResponse {
+public abstract class IngenicoBaseResponse implements IDeviceResponse, IInitializeResponse {
 	public String status;
 	public String command;
 	public String version;
@@ -10,6 +10,7 @@ public abstract class IngenicoBaseResponse implements IDeviceResponse {
 	public String deviceResponseText;
 	public String referenceNumber;
 	public String rawData;
+	public String serialNumber;
 
 	public String getStatus() {
 		return status;
@@ -58,8 +59,16 @@ public abstract class IngenicoBaseResponse implements IDeviceResponse {
 	public void setReferenceNumber(String referenceNumber) {
 		this.referenceNumber = referenceNumber;
 	}
-	
+
 	public String toString() {
 		return rawData;
+	}
+
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+	
+	public String getSerialNumber() {
+		return serialNumber;
 	}
 }

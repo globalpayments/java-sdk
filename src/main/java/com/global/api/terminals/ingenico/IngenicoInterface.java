@@ -1,23 +1,19 @@
 package com.global.api.terminals.ingenico;
 
-import com.global.api.entities.enums.SafDelete;
-import com.global.api.entities.enums.SafReportSummary;
-import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.*;
 import com.global.api.terminals.ingenico.responses.CancelResponse;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
+import com.global.api.terminals.ingenico.responses.*;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
+import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentType;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.terminals.pax.responses.SAFDeleteResponse;
-import com.global.api.terminals.pax.responses.SAFSummaryReport;
-import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.*;
 
 import java.math.BigDecimal;
@@ -79,7 +75,6 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		return super.verify();
 	}
 
-	// xml & report management
 	@Override
 	public TerminalReportBuilder getReport(ReportTypes type) throws ApiException {
 		return super.getReport(type);
@@ -98,7 +93,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 
 		byte[] response = _controller
 				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
-		return new IngenicoTerminalResponse(response);
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
 	@Override
@@ -121,15 +116,54 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		}
 	}
 
-	public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
-		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+
+	@Override
+	public IDeviceResponse getTerminalConfiguration() throws ApiException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
+		sb.append(new INGENICO_REQ_CMD().CALL_TMS);
+		
+		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
-	public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
-		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	@Override
+	public IDeviceResponse testConnection() throws ApiException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
+		sb.append(new INGENICO_REQ_CMD().LOGON);
+		
+		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
-	public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
-		throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+	@Override
+	public IDeviceResponse getTerminalStatus() throws ApiException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
+		sb.append(new INGENICO_REQ_CMD().STATE);
+		
+		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+		return new TerminalStateResponse(response);
+	}
+	
+	@Override
+	public IDeviceResponse reboot() throws ApiException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
+		sb.append(new INGENICO_REQ_CMD().RESET);
+		
+		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
+	}
+	
+	@Override
+	public IInitializeResponse initialize() throws ApiException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
+		sb.append(new INGENICO_REQ_CMD().PID);
+		
+		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+		return new POSIdentifierResponse(response);
 	}
 }

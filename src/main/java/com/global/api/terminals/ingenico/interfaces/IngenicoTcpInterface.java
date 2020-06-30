@@ -25,8 +25,14 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 	private DataOutputStream out;
 	private DataInputStream in;
 	private ITerminalConfiguration settings;
-	private byte[] terminalResponse = null;
 	private Thread dataReceiving;
+	private byte[] terminalResponse = null;
+	private Exception exception = null;
+
+	private boolean readData;
+	private boolean disposable;
+	private boolean isResponseNeeded;
+	private boolean isKeepAlive;
 
 	private IMessageSentInterface onMessageSent;
 	private IBroadcastMessageInterface onBroadcastMessage;
@@ -76,10 +82,13 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 			try {
 				int port = tryParse(settings.getPort(), 0);
 				serverSocket = new ServerSocket(port);
-				serverSocket.setSoTimeout(settings.getTimeout());
 				socket = serverSocket.accept();
 				out = new DataOutputStream(socket.getOutputStream());
 				in = new DataInputStream(socket.getInputStream());
+				exception = null;
+				readData = true;
+				disposable = false;
+				isKeepAlive = false;
 			} catch (IOException e) {
 				throw new ConfigurationException(e.getMessage());
 			}
@@ -102,62 +111,82 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 		}
 	}
 
-	private synchronized void analyzeReceivedData() throws ApiException {
+	private void analyzeReceivedData() throws ApiException {
 		try {
 			byte[] headerBuffer = new byte[2];
-			
-			while (serverSocket != null || !serverSocket.isClosed()) {
+
+			while (readData) {
+				if (!readData) {
+					break;
+				}
+
 				in.read(headerBuffer, 0, headerBuffer.length);
 				int dataLength = TerminalUtilities.headerLength(headerBuffer);
 				byte[] dataBuffer = new byte[dataLength + 2];
 				Thread.sleep(1000);
 				in.read(dataBuffer, 0, dataBuffer.length);
+				
+				if (exception != null) {
+					dataBuffer = null;
+				}
 
 				if (isBroadcast(dataBuffer)) {
 					BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
-					
 					if (onBroadcastMessage != null) {
-						onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(), broadcastMessage.getMessage());	
+						onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(), broadcastMessage.getMessage());
 					}
 				} else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+					isKeepAlive = true;
 					byte[] kResponse = keepAliveResponse(dataBuffer);
 					out.write(kResponse);
+					out.flush();
 				} else {
 					terminalResponse = dataBuffer;
 				}
-
-				headerBuffer = new byte[2];
 			}
 		} catch (Exception e) {
-			throw new ApiException("Unable to get data from the terminal. " + e.getMessage());
+			if (isResponseNeeded || isKeepAlive) {
+				exception = new ApiException("Socket Error: " + e.getMessage());
+			}
+
+			if (!readData) {
+				disposable = true;
+			} else {
+				analyzeReceivedData();
+			}
 		}
 	}
 
 	public void connect() throws ConfigurationException {
-		try {
-			if (serverSocket != null)
-				if (dataReceiving == null) {
-					Thread t = new Thread() {
-						public void run() {
-							try {
-								analyzeReceivedData();
-							} catch (ApiException e) {
-								e.printStackTrace();
-							}
+		if (serverSocket != null) {
+			if (dataReceiving == null) {
+				new Thread(new Runnable() {
+					public void run() {
+						try {
+							analyzeReceivedData();
+						} catch (ApiException e) {
+							e.printStackTrace();
 						}
-					};
-					t.start();
-				}
-		} catch (Exception e) {
+					}
+				}).start();
+			}
+		} else {
 			throw new ConfigurationException("Server already started.");
 		}
 	}
 
 	public void disconnect() {
 		try {
-			if (!serverSocket.isClosed() && socket.isConnected()) {
+			if (!serverSocket.isClosed() || serverSocket != null) {
+				if (!isKeepAlive) {
+					socket.setSoTimeout(1000);
+				}
+
+				readData = false;
+				socket.close();
 				serverSocket.close();
-				socket.shutdownOutput();
+				serverSocket = null;
+				socket = null;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -167,11 +196,17 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 	public byte[] send(IDeviceMessage message) throws ApiException {
 		final byte[] buffer = message.getSendBuffer();
 		terminalResponse = null;
+		exception = null;
+		isResponseNeeded = true;
 
 		try {
-			if (serverSocket == null)
+			if (serverSocket == null) {
 				throw new ConfigurationException("Server is not running.");
+			} else if (socket == null) {
+				socket = serverSocket.accept();
+			}
 
+			socket.setSoTimeout(settings.getTimeout());
 			out.write(buffer);
 			out.flush();
 			if (onMessageSent != null) {
@@ -181,7 +216,12 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
 			while (terminalResponse == null) {
 				Thread.sleep(100);
+				if (exception != null) {
+					throw new ApiException(exception.getMessage());
+				}
+
 				if (terminalResponse != null) {
+					isResponseNeeded = false;
 					return terminalResponse;
 				}
 			}

@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
@@ -40,6 +41,10 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
     IEODResponse endOfDay() throws ApiException;
     IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
+    IDeviceResponse getTerminalConfiguration() throws ApiException;	
+    IDeviceResponse testConnection() throws ApiException;
+    IDeviceResponse getTerminalStatus() throws ApiException;
+    
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

@@ -3,12 +3,12 @@ package com.global.api.terminals.ingenico.responses;
 import java.nio.charset.StandardCharsets;
 
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.ingenico.variables.LogOnStatus;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
-import com.global.api.terminals.ingenico.variables.ReverseStatus;
 
-public class ReverseResponse extends IngenicoTerminalResponse implements IDeviceResponse {
+public class LogOnResponse extends IngenicoTerminalResponse implements IDeviceResponse {
 
-	public ReverseResponse(byte[] buffer) {
+	public LogOnResponse(byte[] buffer) {
 		super(buffer, ParseFormat.Transaction);
 		parseResponse(buffer);
 	}
@@ -17,6 +17,6 @@ public class ReverseResponse extends IngenicoTerminalResponse implements IDevice
 	public void parseResponse(byte[] response) {
 		super.parseResponse(response);
 		rawData = new String(response, StandardCharsets.UTF_8);
-		setStatus(ReverseStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString());
+        setStatus(LogOnStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString());
 	}
 }

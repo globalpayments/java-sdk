@@ -3,26 +3,26 @@ package com.global.api.terminals.ingenico.variables;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum TerminalStatus {
-	NOT_READY(0), READY(1);
+public enum TerminalResetStatus {
+	SUCCESS(9), FAILED(7);
 
 	private final int status;
 	private final static Map map = new HashMap<Object, Object>();
 
-	TerminalStatus(int status) {
+	TerminalResetStatus(int status) {
 		this.status = status;
 	}
 
 	static {
-		for (TerminalStatus _status : TerminalStatus.values())
+		for (TerminalResetStatus _status : TerminalResetStatus.values())
 			map.put(_status.status, _status);
 	}
 
-	public static TerminalStatus getEnumName(int val) {
-		return (TerminalStatus) map.get(val);
+	public static TerminalResetStatus getEnumName(int val) {
+		return (TerminalResetStatus) map.get(val);
 	}
 
-	public int getTerminalStatus() {
+	public int getTerminalResetStatus() {
 		return this.status;
 	}
 }

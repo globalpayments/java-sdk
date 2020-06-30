@@ -3,6 +3,9 @@ package com.global.api.terminals;
 import java.math.BigDecimal;
 
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.SafDelete;
+import com.global.api.entities.enums.SafReportSummary;
+import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
@@ -17,10 +20,14 @@ import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.pax.responses.SAFDeleteResponse;
+import com.global.api.terminals.pax.responses.SAFSummaryReport;
+import com.global.api.terminals.pax.responses.SAFUploadResponse;
 
 public abstract class DeviceInterface<T extends DeviceController> implements IDeviceInterface {
 	protected T _controller;
@@ -119,6 +126,13 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
 	// batching
 	public IBatchCloseResponse batchClose() throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
+	public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
+
+	public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
 
@@ -233,6 +247,11 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 	public TerminalAuthBuilder ebtWithdrawal(BigDecimal amount) throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
+	
+	// report calls
+	public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
 
 	// generic calls
 	public TerminalAuthBuilder authorize(BigDecimal amount) throws ApiException {
@@ -271,6 +290,18 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 	// for confirmation to RE
 	public TerminalManageBuilder reverse(BigDecimal amount) throws ApiException {
 		return new TerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit).withAmount(amount);
+	}
+	
+	public IDeviceResponse getTerminalConfiguration() throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
+	
+	public IDeviceResponse testConnection() throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
+	
+	public IDeviceResponse getTerminalStatus() throws ApiException {
+		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
 
 	public void dispose() {
