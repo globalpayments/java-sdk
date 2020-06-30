@@ -5,7 +5,9 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.ingenico.IngenicoController;
+import com.global.api.terminals.pax.PaxController;
 //import com.global.api.terminals.hpa.HpaController;
 //import com.global.api.terminals.pax.PaxController;
 import com.global.api.utils.StringUtils;
@@ -83,11 +85,12 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
         switch (deviceType) {
             case PAX_S300:
-//                services.setDeviceController(new PaxController(this));
-                break;
+                services.setDeviceController(new PaxController(this));
             case HPA_ISC250:
-//                services.setDeviceController(new HpaController(this));
-            case INGENICO:
+                services.setDeviceController(new HpaController(this));
+            case INGENICO_L3000:
+            case INGENICO_D5000:
+            case INGENICO_M3500:
             	services.setDeviceController(new IngenicoController(this));
             default:
                 break;

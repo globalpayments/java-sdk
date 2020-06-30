@@ -38,7 +38,7 @@ public class DataResponse {
 
 	public DataResponse(byte[] buffer) {
 		_buffer = buffer;
-		ParseData();
+		parseData();
 	}
 
 	public String getAuthorizationCode() {
@@ -130,49 +130,32 @@ public class DataResponse {
 		_dccStatus = value;
 	}
 
-	private void ParseData() {
-		_authCode = (String) getValueOfRespField(_C, String.class);
-		_cashbackAmount = (BigDecimal) getValueOfRespField(_Z, BigDecimal.class);
-		_gratuityAmount = (BigDecimal) getValueOfRespField(_Y, BigDecimal.class);
-		_finalAmount = (BigDecimal) getValueOfRespField(_M, BigDecimal.class);
-		_availableAmount = (BigDecimal) getValueOfRespField(_A, BigDecimal.class);
-		_dccCode = (String) getValueOfRespField(_U, String.class);
-		_dccAmount = (BigDecimal) getValueOfRespField(_O, BigDecimal.class);
-		_txnSubType = (TransactionSubTypes) getValueOfRespField(_T, TransactionSubTypes.class);
-		_dccStatus = (DynamicCurrencyStatus) getValueOfRespField(_D, DynamicCurrencyStatus.class);
-		_splitSaleAmount = (BigDecimal) getValueOfRespField(_S, BigDecimal.class);
-		_paymentMethod = (PaymentMethod) getValueOfRespField(_P, PaymentMethod.class);
-	}
+	private void parseData() {
+		try {
+			TypeLengthValue tlv = new TypeLengthValue(_buffer);
 
-	private Object getValueOfRespField(byte toGet, Class returnType) {
-		String sBuffer = new String(_buffer, StandardCharsets.UTF_8);
-		String sGet = new String(new byte[] { toGet }, StandardCharsets.UTF_8);
-		int index = sBuffer.indexOf(sGet);
-		
-		if (index >= 0) {
-			byte[] lengthBuffer = { _buffer[index + 1], _buffer[index + 2] };
-			int length = Integer.parseInt(new String(lengthBuffer, StandardCharsets.UTF_8), 16);
-			
-			byte[] arrValue = Arrays.copyOfRange(_buffer, index + 3, length + 3);
-			int endLength = index + length + 3;
-			_buffer = Extensions.subArray(_buffer, 0, index);
-			_buffer = Extensions.subArray(_buffer, endLength, _buffer.length - endLength);
-			String strValue = new String(arrValue, StandardCharsets.UTF_8);
-
-			if (returnType == BigDecimal.class)
-				return Extensions.toAmount(strValue);
-			 else if (returnType == String.class)
-				return strValue;
-			else if (returnType == TransactionSubTypes.class) 
-				return TransactionSubTypes.getEnumName(Integer.parseInt(new String(arrValue, StandardCharsets.UTF_8).substring(0, 0), 16));
-			 else if (returnType == DynamicCurrencyStatus.class) 
-				return DynamicCurrencyStatus.getEnumName(Integer.parseInt(strValue));
-			 else if (returnType == PaymentMethod.class) 
-				return PaymentMethod.getEnumName(Integer.parseInt(strValue));
-			 else
-				throw new RuntimeException("Data type not supported in parsing of response data.");
+			_authCode = (String) tlv.getValue((byte) RepFieldCode.Authcode.getRepFieldCode(), String.class, null);
+			_cashbackAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.CashbackAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_gratuityAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.GratuityAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_finalAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.FinalTransactionAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_availableAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.AvailableAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_dccCode = (String) tlv.getValue((byte) RepFieldCode.DccCurrency.getRepFieldCode(), String.class, null);
+			_dccAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.DccConvertedAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_txnSubType = (TransactionSubTypes) tlv.getValue((byte) RepFieldCode.TransactionSubType.getRepFieldCode(),
+					TransactionSubTypes.class, null);
+			_dccStatus = (DynamicCurrencyStatus) tlv.getValue((byte) RepFieldCode.DccOperationStatus.getRepFieldCode(),
+					DynamicCurrencyStatus.class, null);
+			_splitSaleAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.SplitSalePaidAmount.getRepFieldCode(),
+					BigDecimal.class, null);
+			_paymentMethod = (PaymentMethod) tlv.getValue((byte) RepFieldCode.PaymentMethod.getRepFieldCode(),
+					PaymentMethod.class, null);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
-		return null;
 	}
 }

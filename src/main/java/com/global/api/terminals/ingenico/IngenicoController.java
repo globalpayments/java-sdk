@@ -21,9 +21,9 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalReportRespons
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
+import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.PaymentType;
-import com.global.api.terminals.ingenico.variables.TaxFreeType;
 import com.global.api.utils.Extensions;
 
 import java.math.BigDecimal;
@@ -48,7 +48,7 @@ public class IngenicoController extends DeviceController {
 	public IDeviceCommInterface configureConnector() throws ConfigurationException {
 		switch (settings.getConnectionMode()) {
 		case SERIAL:
-			return new IngenicoSerialInterface(settings, null);
+			return new IngenicoSerialInterface(settings);
 		case TCP_IP_SERVER:
 			return new IngenicoTcpInterface(settings);
 		default:
@@ -153,7 +153,7 @@ public class IngenicoController extends DeviceController {
 			referenceNumber = requestIdProvider().getRequestId();
 		}
 
-		if (!isObjectNullOrEmpty(builder.getTaxFreeType())) {
+		if (!isObjectNullOrEmpty(builder.getTaxFreeType()) && paymentType == PaymentType.REFUND.getValue()) {
 			Integer taxFree = builder.getTaxFreeType().toInteger();
 			PaymentType[] type = PaymentType.values();
 			for (PaymentType p : type) {
@@ -263,7 +263,7 @@ public class IngenicoController extends DeviceController {
 
 	private IngenicoTerminalResponse doRequest(IDeviceMessage request) throws ApiException {
 		byte[] response = send(request);
-		return new IngenicoTerminalResponse(response);
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
 	private ReverseResponse doReverseRequest(IDeviceMessage request) throws ApiException {

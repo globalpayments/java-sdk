@@ -44,4 +44,8 @@ public final class Extensions {
 		
 		return unsigned;
 	}
+	
+	public static boolean any(byte[] buffer) {
+		return true;
+	}
 }

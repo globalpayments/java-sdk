@@ -3,11 +3,7 @@ package com.global.api.terminals.ingenico.variables;
 import java.util.*;
 
 public enum TransactionStatus {
-	SUCCESS(0), 
-	REFERRAL(2), 
-	CANCELLED_BY_USER(6), 
-	FAILED(7), 
-	RECEIVED(9);
+	SUCCESS(0), REFERRAL(2), CANCELLED_BY_USER(6), FAILED(7), RECEIVED(9);
 
 	private final int status;
 	private final static Map map = new HashMap<Object, Object>();
@@ -22,7 +18,8 @@ public enum TransactionStatus {
 	}
 
 	public static TransactionStatus getEnumName(int val) {
-		return (TransactionStatus) map.get(val);
+		
+		return (TransactionStatus)map.get(val);
 	}
 
 	public int getTransactionStatus() {
