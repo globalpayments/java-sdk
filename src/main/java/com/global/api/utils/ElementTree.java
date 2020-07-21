@@ -1,6 +1,7 @@
 package com.global.api.utils;
 
 import com.global.api.entities.enums.IFlag;
+import com.global.api.entities.enums.IMappedConstant;
 import com.global.api.entities.enums.IStringConstant;
 import com.global.api.entities.exceptions.ApiException;
 import org.w3c.dom.Document;
@@ -70,6 +71,12 @@ public class ElementTree {
         if(value == null)
             return null;
         return subElement(parent, tagName, value.getValue());
+    }
+    public Element subElement(Element parent, String tagName, IMappedConstant value) {
+        if(value == null) {
+            return null;
+        }
+        return subElement(parent, tagName, value.getValue(null));
     }
     public Element subElement(Element parent, String tagName, IFlag value) {
         if(value == null)

@@ -1,10 +1,7 @@
 package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.TransactionSummaryList;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -41,7 +38,7 @@ public class PorticoReportingTests {
 
     @Test
     public void ReportTransactionDetail() throws ApiException {
-        List<TransactionSummary> summary = ReportingService.activity()
+        TransactionSummaryList summary = ReportingService.findTransactions()
                 .withStartDate(DateUtils.addDays(new Date(), -7))
                 .withEndDate(DateUtils.addDays(new Date(), -1))
                 .execute();
@@ -65,6 +62,13 @@ public class PorticoReportingTests {
                 .withEndDate(DateUtils.addDays(new Date(), -1))
                 .execute();
         assertNotNull(summary);
+    }
+
+    @Test
+    public void ReportTransactionDetailWithTransactionId() throws ApiException {
+        TransactionSummary response = ReportingService.transactionDetail("1038021900")
+                .execute();
+        assertNotNull(response);
     }
 
     @Test

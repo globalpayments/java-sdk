@@ -332,6 +332,35 @@ public class PorticoRecurringTests {
     }
 
     @Test
+    public void Test_007b_CreditCharge_ScheduleIdWithCOF() throws ApiException {
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Schedule schedule = Schedule.find(paymentId("Credit"));
+        assertNotNull(schedule);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("19"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withOneTimePayment(false)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = paymentMethod.charge(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withOneTimePayment(false)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+    }
+
+    @Test
     public void Test_007c_ACHCharge_OneTime() throws ApiException {
         RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("ACH"));
         assertNotNull(paymentMethod);

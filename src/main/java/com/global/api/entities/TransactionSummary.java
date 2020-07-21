@@ -40,6 +40,7 @@ public class TransactionSummary {
     private int deviceId;
     private String eciIndicator;
     private String emvChipCondition;
+    private String emvIssuerResponse;
     private String fraudRuleInfo;
     private boolean fullyCaptured;
     private BigDecimal gratuityAmount;
@@ -282,6 +283,8 @@ public class TransactionSummary {
 	public void setEmvChipCondition(String emvChipCondition) {
 		this.emvChipCondition = emvChipCondition;
 	}
+	public String getEmvIssuerResponse() { return emvIssuerResponse; }
+	public void setEmvIssuerResponse(String emvIssuerResponse) { this.emvIssuerResponse = emvIssuerResponse; }
 	public String getFraudRuleInfo() {
 		return fraudRuleInfo;
 	}

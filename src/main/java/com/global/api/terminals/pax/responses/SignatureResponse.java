@@ -37,7 +37,7 @@ public class SignatureResponse extends PaxBaseResponse implements ISignatureResp
             totalLength = Integer.parseInt(mr.readToCode(ControlCodes.FS));
             responseLength = Integer.parseInt(mr.readToCode(ControlCodes.FS));
 
-            signatureData = TerminalUtilities.buildSignatureImage(mr.readToCode(ControlCodes.ETX));
+            signatureData = mr.readToCode(ControlCodes.ETX).getBytes();
         }
     }
 }

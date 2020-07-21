@@ -288,7 +288,15 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if(builder.getStoredCredential() != null) {
             Element storedCredentialElement = et.subElement(request, "storedcredential");
             et.subElement(storedCredentialElement, "type", builder.getStoredCredential().getType());
-            et.subElement(storedCredentialElement, "initiator", builder.getStoredCredential().getInitiator());
+            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.CardHolder) {
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Realex));
+            }
+            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Merchant) {
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.Merchant, Target.Realex));
+            }
+            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Scheduled) {
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.Scheduled, Target.Realex));
+            }
             et.subElement(storedCredentialElement, "sequence", builder.getStoredCredential().getSequence());
             et.subElement(storedCredentialElement, "srd", builder.getStoredCredential().getSchemeId());
         }

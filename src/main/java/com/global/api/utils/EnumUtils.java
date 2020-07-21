@@ -1,8 +1,10 @@
 package com.global.api.utils;
 
 import com.global.api.entities.enums.IByteConstant;
+import com.global.api.entities.enums.IMappedConstant;
 import com.global.api.entities.enums.INumericConstant;
 import com.global.api.entities.enums.IStringConstant;
+import com.global.api.entities.enums.Target;
 
 public class EnumUtils {
     public static <V extends Enum<V> & IByteConstant> boolean isDefined(Class<V> valueType, byte value){
@@ -22,5 +24,8 @@ public class EnumUtils {
     public static <V extends Enum<V> & INumericConstant> V parse(Class<V> valueType, int value) {
         ReverseIntEnumMap<V> map = new ReverseIntEnumMap<V>(valueType);
         return map.get(value);
+    }
+    public static String getMapping(IMappedConstant value, Target target) {
+        return value.getValue(target);
     }
 }

@@ -24,6 +24,7 @@ public class Transaction {
     private String avsResponseMessage;
     private BigDecimal balanceAmount;
     private BatchSummary batchSummary;
+    private String cardBrandTransactionId;
     private String cardType;
     private String cardLast4;
     private String cavvResponseCode;
@@ -123,6 +124,12 @@ public class Transaction {
     }
     public void setBatchSummary(BatchSummary batchSummary) {
         this.batchSummary = batchSummary;
+    }
+    public String getCardBrandTransactionId() {
+        return cardBrandTransactionId;
+    }
+    public void setCardBrandTransactionId(String cardBrandTxnId) {
+        this.cardBrandTransactionId = cardBrandTxnId;
     }
     public String getCardType() {
         return cardType;
@@ -507,6 +514,27 @@ public class Transaction {
     public static Transaction fromId(String transactionId, String orderId, PaymentMethodType paymentMethodType) {
         TransactionReference reference = new TransactionReference();
         reference.setTransactionId(transactionId);
+        reference.setOrderId(orderId);
+        reference.setPaymentMethodType(paymentMethodType);
+
+        Transaction trans = new Transaction();
+        trans.setTransactionReference(reference);
+
+        return trans;
+    }
+
+    public static Transaction fromClientTransactionId(String clientTransactionId) {
+        return fromClientTransactionId(clientTransactionId, null, PaymentMethodType.Credit);
+    }
+    public static Transaction fromClientTransactionId(String clientTransactionId, PaymentMethodType paymentMethodType) {
+        return fromClientTransactionId(clientTransactionId, null, paymentMethodType);
+    }
+    public static Transaction fromClientTransactionId(String clientTransactionId, String orderId) {
+        return fromClientTransactionId(clientTransactionId, orderId, PaymentMethodType.Credit);
+    }
+    public static Transaction fromClientTransactionId(String clientTransactionId, String orderId, PaymentMethodType paymentMethodType) {
+        TransactionReference reference = new TransactionReference();
+        reference.setClientTransactionId(clientTransactionId);
         reference.setOrderId(orderId);
         reference.setPaymentMethodType(paymentMethodType);
 

@@ -242,6 +242,13 @@ public class NetworkGateway {
                     position += currLength;
                 }
             }
+
+            try{
+                Thread.sleep(50);
+            }
+            catch(InterruptedException exc) {
+                 break;
+            }
         }
         while((System.currentTimeMillis() - t) <= 20000);
 

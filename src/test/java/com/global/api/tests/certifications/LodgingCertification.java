@@ -1931,6 +1931,33 @@ public class LodgingCertification {
     }
 
     @Test
+    public void lodging_084_IncrementalAuth_SaleWithCOF() throws ApiException {
+        CreditCardData card = TestCards.VisaManual(true, true);
+
+        Transaction response = card.charge(new BigDecimal("115"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = card.charge(new BigDecimal("115"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+
+        Transaction incremental = nextResponse.increment(new BigDecimal("23"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(incremental);
+        assertEquals("00", incremental.getResponseCode());
+    }
+
+    @Test
     public void lodging_085_IncrementalAuth_Sale() throws ApiException {
         CreditTrackData track = TestCards.MasterCardSwipe();
 

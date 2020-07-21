@@ -2,11 +2,11 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.EncryptionData;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.*;
+import com.global.api.entities.enums.StoredCredentialInitiator;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GatewayConfig;
@@ -338,6 +338,25 @@ public class PorticoCreditTests {
     }
 
     @Test
+    public void creditReversalFromClientTransactionId() throws ApiException {
+        String clientTransactionId = "123456789";
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withClientTransactionId(clientTransactionId)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction voidResponse = Transaction.fromClientTransactionId(clientTransactionId)
+                .reverse(new BigDecimal(10))
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
     public void creditTestWithNewCryptoURL() throws ApiException {
          GatewayConfig config = new GatewayConfig();
          config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
@@ -357,7 +376,87 @@ public class PorticoCreditTests {
                 .execute();
          assertNotNull(response);
          assertEquals("00", response.getResponseCode());
+    }
 
+    @Test
+    public void creditTestManualWithOneName() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+        config.setEnableLogging(true);
+        ServicesContainer.configureService(config);
+
+        Address address = new Address();
+        address.setPostalCode("75024");
+
+        card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardHolderName("John");
+
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAddress(address)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditTestManualWithTwoNames() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+
+        ServicesContainer.configureService(config);
+
+        Address address = new Address();
+        address.setPostalCode("75024");
+
+        card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardHolderName("John Doe");
+
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAddress(address)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditTestManualWithThreeNames() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+
+        ServicesContainer.configureService(config);
+
+        Address address = new Address();
+        address.setPostalCode("75024");
+
+        card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardHolderName("John Doe Smith");
+
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAddress(address)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -383,5 +482,119 @@ public class PorticoCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSaleWithTDESDukptEMV_postAuthChipDecline() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+        config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config);
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("oDA60Hw+9/K2wx+DA3Xn/q+8AZzl2ojR");
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("//89P4EAAEAACA==");
+        card.setEncryptionData(encryptionData);
+
+        Transaction response = card.charge(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData("9F1A0208409C0150950500000088009F0702FF009F03060000000000009F2701809F3901059F0D05B850AC88009F350121500B56697361204372656469745F3401019F0802008C9F120B56697361204372656469749F0E0500000000009F360200759F40057E0000A0019F0902008C9F0F05B870BC98009F370425D254AC5F280208409F33036028C882023C004F07A00000000310109F4104000000899F0607A00000000310105F2A0208409A031911229F02060000000001009F2608D4EC434B9C1CBB358407A00000000310109F100706010A03A088069B02E8009F34031E0300")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction reversalResponse = response.reverse(new BigDecimal(14))
+                .withTagData(response.getEmvIssuerResponse())
+                .execute();
+        assertNotNull(reversalResponse);
+        assertEquals("00", reversalResponse.getResponseCode());
+    }
+
+    @Test
+    public void reportDetail_withNonexistentGatewayTxnId_throwsException() throws ApiException {
+        try {
+            TransactionSummary response = ReportingService.transactionDetail("0").execute();
+        } catch (GatewayException ex) {
+            assertEquals("10", ex.getResponseCode());
+        }
+    }
+
+    @Test
+    public void findTransactions_withNonexistentClientTxnId_returnsEmptyResultList() throws ApiException {
+        TransactionSummaryList response = ReportingService.findTransactions()
+                .where(SearchCriteria.ClientTransactionId, "12345")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    public void creditSaleWithCOF() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getCardBrandTransactionId());
+
+        Transaction nextResponse = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditVerifyWithCOF() throws ApiException {
+        Transaction response = card.verify()
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getCardBrandTransactionId());
+
+        Transaction nextResponse = card.verify()
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthorizationWithCOF() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder, response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+
+        Transaction capture = nextResponse.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
     }
 }

@@ -33,6 +33,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
+    private String cardBrandTransactionId;
     private BigDecimal cashBackAmount;
     private String clerkId;
     private String clientTransactionId;
@@ -75,6 +76,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private String tagData;
     private String timestamp;
+    private StoredCredentialInitiator transactionInitiator;
 
     // network fields
     private BigDecimal feeAmount;
@@ -111,6 +113,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public Address getBillingAddress() {
         return billingAddress;
+    }
+    public String getCardBrandTransactionId( ) {
+        return cardBrandTransactionId;
     }
     public BigDecimal getCashBackAmount() {
         return cashBackAmount;
@@ -234,6 +239,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public String getTagData() {
         return tagData;
+    }
+    public StoredCredentialInitiator getTransactonInitiator() {
+        return transactionInitiator;
     }
 
     // network getters
@@ -536,6 +544,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public AuthorizationBuilder withBatchNumber(int batchNumber, int sequenceNumber) {
         this.batchNumber = batchNumber;
         this.sequenceNumber = sequenceNumber;
+        return this;
+    }
+    public AuthorizationBuilder withCardBrandStorage(StoredCredentialInitiator transactionInitiator) {
+        return withCardBrandStorage(transactionInitiator, null);
+    }
+    public AuthorizationBuilder withCardBrandStorage(StoredCredentialInitiator transactionInitiator, String value) {
+        this.transactionInitiator = transactionInitiator;
+        this.cardBrandTransactionId = value;
         return this;
     }
     public AuthorizationBuilder withCompanyId(String companyId) {
