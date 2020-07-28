@@ -74,6 +74,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal shippingAmount;
     private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
+    private BigDecimal surchargeAmount;
     private String tagData;
     private String timestamp;
     private StoredCredentialInitiator transactionInitiator;
@@ -207,6 +208,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public StoredCredential getStoredCredential() {
         return storedCredential;
     }
+    public BigDecimal getSurchargeAmount() { return surchargeAmount; }
     public String getTimestamp() {
         return timestamp;
     }
@@ -526,6 +528,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
         // add the values to it
         supplementaryData.get(type).add(values);
+        return this;
+    }
+    public AuthorizationBuilder withSurchargeAmount(BigDecimal value) {
+        this.surchargeAmount = value;
         return this;
     }
     public AuthorizationBuilder withTimestamp(String value) {

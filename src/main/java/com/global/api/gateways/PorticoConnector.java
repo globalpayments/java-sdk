@@ -83,6 +83,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         et.subElement(block1, "ConvenienceAmtInfo", builder.getConvenienceAmount());
         et.subElement(block1, "ShippingAmtInfo", builder.getShippingAmount());
 
+        // surcharge
+        if (builder.getSurchargeAmount() != null) {
+            et.subElement(block1, "SurchargeAmtInfo", builder.getSurchargeAmount().toString());
+        }
+
         // because plano...
         et.subElement(block1, paymentType == PaymentMethodType.Debit ? "CashbackAmtInfo" : "CashBackAmount", builder.getCashBackAmount());
 
@@ -465,6 +470,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             // gratuity
             if (builder.getGratuity() != null)
                 et.subElement(root, "GratuityAmtInfo").text(builder.getGratuity().toString());
+
+            // surcharge
+            if (builder.getSurchargeAmount() != null) {
+                et.subElement(root, "SurchargeAmtInfo", builder.getSurchargeAmount().toString());
+            }
 
             // Transaction ID
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());

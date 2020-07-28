@@ -47,6 +47,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String referenceNumber;
     private String shiftNumber;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
+    private BigDecimal surchargeAmount;
     private String tagData;
     private BigDecimal taxAmount;
     private TaxType taxType;
@@ -139,6 +140,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return shiftNumber;
     }
     public HashMap<String, ArrayList<String[]>> getSupplementaryData() { return supplementaryData; }
+    public BigDecimal getSurchargeAmount() { return surchargeAmount; }
     public String getTagData() { return tagData; }
     public BigDecimal getTaxAmount() {
         return taxAmount;
@@ -314,6 +316,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
         // add the values to it
         supplementaryData.get(type).add(values);
+        return this;
+    }
+    public ManagementBuilder withSurchargeAmount(BigDecimal value) {
+        surchargeAmount = value;
         return this;
     }
     public ManagementBuilder withTagData(String value) {
