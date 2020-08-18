@@ -82,6 +82,22 @@ public class PaxCreditTests {
     }
 
     @Test
+    public void creditSaleWithMerchantFee() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+                }
+        });
+
+        TerminalResponse response = device.creditSale(new BigDecimal(10))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertNotNull(response.getMerchantFee());
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
     public void creditSaleWithSignatureCapture() throws ApiException {
         device.setOnMessageSent(new IMessageSentInterface() {
             public void messageSent(String message) {

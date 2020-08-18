@@ -45,6 +45,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String taxExemptId;
     protected String ticketNumber;
     protected String paymentType;
+    protected BigDecimal merchantFee;
 
     // EMV
     protected String applicationPreferredName;
@@ -309,6 +310,14 @@ public abstract class TerminalResponse implements IDeviceResponse {
 
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public BigDecimal getMerchantFee() {
+        return merchantFee;
+    }
+
+    public void setMerchantFee(BigDecimal merchantFee) {
+        this.merchantFee = merchantFee;
     }
 
     public String getApplicationPreferredName() {

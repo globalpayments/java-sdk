@@ -46,6 +46,7 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setTipAmount(amountResponse.getTipAmount());
             setCashBackAmount(amountResponse.getCashBackAmount());
             setBalanceAmount(amountResponse.getBalance1());
+            setMerchantFee(amountResponse.getMerchantFee());
         }
 
         // account
