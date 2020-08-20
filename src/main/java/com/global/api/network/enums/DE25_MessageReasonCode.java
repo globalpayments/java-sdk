@@ -7,6 +7,8 @@ public enum DE25_MessageReasonCode implements IStringConstant {
     StandInCapture("1377"),
     VoiceCapture("1378"),
     PinDebit_EBT_Acknowledgement("1379"),
+    Forced_OriginalAdvice("1380"),
+    Forced_AuthCapture("1381"),
     TimeoutWaitingForResponse("4021"),
     MerchantInitiatedReversal("4351"),
     CustomerInitiatedReversal("4352"),

@@ -1,6 +1,7 @@
 package com.global.api.network.elements;
 
 import com.global.api.network.enums.CardIssuerEntryTag;
+import com.global.api.utils.StringUtils;
 
 public class DE62_2_CardIssuerEntry {
     private CardIssuerEntryTag issuerTag;
@@ -14,7 +15,10 @@ public class DE62_2_CardIssuerEntry {
         this.issuerTag = issuerTag;
     }
     public String getIssuerTagValue() {
-        return issuerTagValue;
+        if(!StringUtils.isNullOrEmpty(issuerTagValue)) {
+            return issuerTagValue;
+        }
+        return issuerTag.getValue();
     }
     public void setIssuerTagValue(String issuerTagValue) {
         this.issuerTagValue = issuerTagValue;

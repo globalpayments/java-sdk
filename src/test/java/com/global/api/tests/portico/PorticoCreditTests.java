@@ -53,7 +53,9 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).execute();
+        Transaction capture = response.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }

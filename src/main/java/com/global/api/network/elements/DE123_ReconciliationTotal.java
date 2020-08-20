@@ -37,7 +37,10 @@ public class DE123_ReconciliationTotal {
         this.transactionCount = transactionCount;
     }
     public BigDecimal getTotalAmount() {
-        return totalAmount;
+        if(totalAmount != null) {
+            return totalAmount;
+        }
+        return BigDecimal.ZERO;
     }
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;

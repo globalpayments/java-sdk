@@ -2225,6 +2225,7 @@ public class LodgingCertification {
         Transaction reversal = track.reverse(new BigDecimal("142"))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withTransactionId(response.getTransactionId())
                 .execute();
         assertNotNull(reversal);
         assertEquals("00", reversal.getResponseCode());
@@ -2240,7 +2241,7 @@ public class LodgingCertification {
                 .withAllowPartialAuth(true)
                 .execute();
         assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
+        assertEquals("10", response.getResponseCode());
 
         Transaction reversal = track.reverse(new BigDecimal("44"))
                 .withCurrency("USD")

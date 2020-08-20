@@ -1,8 +1,12 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.EmvChipCondition;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
@@ -10,6 +14,7 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
@@ -18,10 +23,12 @@ import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -190,6 +197,18 @@ public class VapsCreditTests {
 
         // check response
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        ManagementBuilder builder = recreated.voidTransaction()
+                .withForceToHost(true);
+
+        for(CardIssuerEntryTag key: response.getIssuerData().keySet()) {
+            builder.withIssuerData(key, response.getIssuerData().get(key));
+        }
+
+        Transaction voidResponse = builder
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("400", voidResponse.getResponseCode());
     }
 
     @Test
@@ -303,6 +322,103 @@ public class VapsCreditTests {
     }
 
     @Test
+    public void test_011_swipe_void_forced() throws ApiException {
+        Transaction sale = track.charge(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        String NM_1 = sale.getIssuerData().get(CardIssuerEntryTag.NTS_MastercardBankNet_ReferenceNumber);
+        String NM_2 = sale.getIssuerData().get(CardIssuerEntryTag.NTS_MastercardBankNet_SettlementDate);
+
+        assertNotNull(NM_1);
+        assertNotNull(NM_2);
+        assertNotNull(sale.getReferenceNumber());
+
+        Transaction response = sale.voidTransaction()
+                .withForceToHost(true)
+                .withIssuerData(CardIssuerEntryTag.NTS_MastercardBankNet_ReferenceNumber, NM_1)
+                .withIssuerData(CardIssuerEntryTag.NTS_MastercardBankNet_SettlementDate, NM_2)
+                .withReferenceNumber(sale.getReferenceNumber())
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4356", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_011_forced_swipe_void_full() throws ApiException {
+        Transaction sale = track.charge(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        ManagementBuilder builder = sale.voidTransaction()
+                .withForceToHost(true);
+
+        HashMap<CardIssuerEntryTag, String> issuerData = sale.getIssuerData();
+        for(CardIssuerEntryTag key: issuerData.keySet()) {
+            builder.withIssuerData(key, issuerData.get(key));
+        }
+
+        Transaction response = builder.execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4356", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_011_forced_swipe_void_partial() throws ApiException {
+        Transaction sale = track.charge(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("002", sale.getResponseCode());
+
+        ManagementBuilder builder = sale.voidTransaction(new BigDecimal(6), true)
+                .withForceToHost(true);
+
+        HashMap<CardIssuerEntryTag, String> issuerData = sale.getIssuerData();
+        for(CardIssuerEntryTag key: issuerData.keySet()) {
+            builder.withIssuerData(key, issuerData.get(key));
+        }
+
+        Transaction response = builder.execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4355", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
     public void test_012_swipe_partial_void() throws ApiException {
         Transaction sale = track.charge(new BigDecimal(142))
                 .withCurrency("USD")
@@ -326,19 +442,13 @@ public class VapsCreditTests {
         assertEquals("400", response.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class)
     public void test_014_swipe_reverse_sale() throws ApiException {
-        try {
-            track.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
+                .execute();
     }
 
     @Test
@@ -440,6 +550,41 @@ public class VapsCreditTests {
         assertEquals("003000", pmi.getProcessingCode());
         assertEquals("400", pmi.getFunctionCode());
         assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_020b_ICR_auth_reversal_forced() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        //assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(1))
+                .withForceToHost(true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(reversal);
+
+        // check message data
+        pmi = reversal.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("1381", pmi.getMessageReasonCode());
 
         // check response
         assertEquals("400", reversal.getResponseCode());
@@ -559,7 +704,36 @@ public class VapsCreditTests {
     }
 
     @Test
-    public void test_tor_on_stand_in_capture() throws ApiException {
+    public void test_027_emv_fallback_refund_by_card() throws ApiException {
+        Transaction response = track.refund(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_028_emv_fallback_refund_by_txn() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        TransactionReference reference = response.getTransactionReference();
+        assertNotNull(reference);
+        assertNotNull(reference.getOriginalEmvChipCondition());
+
+        Transaction refund = response.refund()
+                .execute();
+        assertNotNull(refund);
+        assertEquals("000", refund.getResponseCode());
+    }
+
+    @Test
+    public void test_029_emv_fallback_refund_from_network() throws ApiException {
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(1),
                 "TYPE04",
@@ -567,15 +741,10 @@ public class VapsCreditTests {
                 track
         );
 
-        try {
-            transaction.capture(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute("ICR");
-            fail("No timeout exception thrown");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(0, exc.getReversalCount());
-        }
+        Transaction refund = transaction.refund()
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+        assertNotNull(refund);
+        assertEquals("000", refund.getResponseCode());
     }
 }

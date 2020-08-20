@@ -3,6 +3,8 @@ package com.global.api.tests.network.vaps;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.FleetData;
@@ -18,16 +20,15 @@ import com.global.api.services.BatchService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
-import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsFleetTests {
@@ -162,6 +163,67 @@ public class VapsFleetTests {
     }
 
     @Test
+    public void test_003_swipe_refund_by_transaction() throws ApiException {
+        Transaction saleResponse = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(saleResponse);
+        assertEquals("000", saleResponse.getResponseCode());
+
+        Transaction refundResponse = saleResponse.refund(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(refundResponse);
+
+        HashMap<CardIssuerEntryTag, String> issuerData = refundResponse.getIssuerData();
+        if(issuerData != null) {
+            assertTrue(issuerData.containsKey(CardIssuerEntryTag.SwipeIndicator));
+            assertNotEquals("0", issuerData.get(CardIssuerEntryTag.SwipeIndicator));
+        }
+        assertEquals("000", refundResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_003_swipe_refund_by_rebuilt_transaction() throws ApiException {
+        Transaction saleResponse = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(saleResponse);
+        assertEquals("000", saleResponse.getResponseCode());
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("10"))
+                .withNtsData(saleResponse.getNtsData())
+                .withAuthorizationCode(saleResponse.getAuthorizationCode())
+                .withPaymentMethod(track)
+                .withSystemTraceAuditNumber(saleResponse.getSystemTraceAuditNumber())
+                .withProcessingCode(saleResponse.getProcessingCode())
+                .withAcquirerId(saleResponse.getAcquiringInstitutionId())
+                .withTransactionTime(saleResponse.getOriginalTransactionTime())
+                .build();
+
+        Transaction refundResponse = rebuild.refund(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(refundResponse);
+
+        HashMap<CardIssuerEntryTag, String> issuerData = refundResponse.getIssuerData();
+        if(issuerData != null) {
+            assertTrue(issuerData.containsKey(CardIssuerEntryTag.SwipeIndicator));
+            assertNotEquals("0", issuerData.get(CardIssuerEntryTag.SwipeIndicator));
+        }
+        assertEquals("000", refundResponse.getResponseCode());
+    }
+
+    @Test
     public void test_004_swipe_stand_in_capture() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
@@ -252,19 +314,12 @@ public class VapsFleetTests {
         assertEquals("400", response.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class) @Ignore
     public void test_007_swipe_reverse_sale() throws ApiException {
-        try {
-            track.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .execute();
     }
 
     @Test

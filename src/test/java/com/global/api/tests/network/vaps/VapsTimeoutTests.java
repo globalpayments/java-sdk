@@ -1,6 +1,8 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.IGatewayEvent;
@@ -53,11 +55,11 @@ public class VapsTimeoutTests {
         try {
             track.charge(new BigDecimal("10"))
                     .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
+                    .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
                     .execute();
         }
         catch(GatewayTimeoutException exc) {
-                assertEquals(3, exc.getReversalCount());
+            assertNotNull(exc.getTransactionToken());
         }
     }
 }

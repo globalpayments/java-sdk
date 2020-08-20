@@ -1,5 +1,7 @@
 package com.global.api.builders;
 
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.network.entities.FleetData;
@@ -9,19 +11,22 @@ import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
-    protected boolean forceGatewayTimeout;
     protected TransactionType transactionType;
     protected TransactionModifier transactionModifier = TransactionModifier.None;
     protected IPaymentMethod paymentMethod;
+    protected HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
 
     // network fields
     protected int batchNumber;
     protected String companyId;
     protected FleetData fleetData;
     protected LinkedHashMap<CardIssuerEntryTag, String> issuerData;
+    protected Integer followOnStan;
     protected PriorMessageInformation priorMessageInformation;
     protected ProductData productData;
     protected int sequenceNumber;
@@ -48,8 +53,8 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public void setPaymentMethod(IPaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    public boolean isForceGatewayTimeout() {
-        return forceGatewayTimeout;
+    public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {
+        return simulatedHostErrors;
     }
 
     // network fields
@@ -63,14 +68,17 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public LinkedHashMap<CardIssuerEntryTag, String> getIssuerData() {
         return issuerData;
     }
+    public Integer getFollowOnStan() {
+        return followOnStan;
+    }
     public PriorMessageInformation getPriorMessageInformation() {
         return priorMessageInformation;
     }
-    public ProductData getProductData() {
-        return productData;
-    }
     public void setPriorMessageInformation(PriorMessageInformation priorMessageInformation) {
         this.priorMessageInformation = priorMessageInformation;
+    }
+    public ProductData getProductData() {
+        return productData;
     }
     public int getSequenceNumber() {
         return sequenceNumber;

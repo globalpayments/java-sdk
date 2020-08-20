@@ -2,13 +2,18 @@ package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.Environment;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ConfigurationException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public abstract class Configuration {
     protected boolean enableLogging = false;
     protected Environment environment = Environment.TEST;
-    protected boolean forceGatewayTimeout = false;
     protected String serviceUrl;
+    protected HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
     protected int timeout = 30000;
     protected boolean validated;
 
@@ -33,18 +38,18 @@ public abstract class Configuration {
         this.enableLogging = enableLogging;
     }
 
-    public boolean isForceGatewayTimeout() {
-        return forceGatewayTimeout;
-    }
-    public void setForceGatewayTimeout(boolean forceGatewayTimeout) {
-        this.forceGatewayTimeout = forceGatewayTimeout;
-    }
-
     public Environment getEnvironment() {
         return environment;
     }
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {
+        return simulatedHostErrors;
+    }
+    public void setSimulatedHostErrors(HashMap<Host, ArrayList<HostError>> simulatedHostErrors) {
+        this.simulatedHostErrors = simulatedHostErrors;
     }
 
     public void setValidated(boolean validated) {

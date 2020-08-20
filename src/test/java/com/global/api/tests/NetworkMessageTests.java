@@ -643,11 +643,11 @@ public class NetworkMessageTests {
         assertEquals(2, element.getNumEntries());
         assertEquals(2, element.getCardIssuerEntries().size());
 
-        DE62_2_CardIssuerEntry entry = element.getCardIssuerEntries().get(0);
+        DE62_2_CardIssuerEntry entry = element.getCardIssuerEntries().get(CardIssuerEntryTag.OriginalResponse_ActionCode);
         assertEquals(CardIssuerEntryTag.OriginalResponse_ActionCode, entry.getIssuerTag());
         assertEquals("05", entry.getIssuerEntry());
 
-        entry = element.getCardIssuerEntries().get(1);
+        entry = element.getCardIssuerEntries().get(CardIssuerEntryTag.DisplayText);
         assertEquals(CardIssuerEntryTag.DisplayText, entry.getIssuerTag());
         assertEquals("APPROVED", entry.getIssuerEntry());
 

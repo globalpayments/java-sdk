@@ -3,6 +3,7 @@ package com.global.api.gateways;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -96,6 +97,16 @@ public class SSLSocketFactoryEx extends SSLSocketFactory
     {
         SSLSocketFactory factory = m_ctx.getSocketFactory();
         SSLSocket ss = (SSLSocket)factory.createSocket(host, port);
+
+        ss.setEnabledProtocols(m_protocols);
+        ss.setEnabledCipherSuites(m_ciphers);
+
+        return ss;
+    }
+
+    public Socket createSocket() throws IOException {
+        SSLSocketFactory factory = m_ctx.getSocketFactory();
+        SSLSocket ss = (SSLSocket)factory.createSocket();
 
         ss.setEnabledProtocols(m_protocols);
         ss.setEnabledCipherSuites(m_ciphers);

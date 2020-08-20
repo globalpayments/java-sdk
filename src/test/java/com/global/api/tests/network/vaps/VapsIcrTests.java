@@ -105,7 +105,7 @@ public class VapsIcrTests {
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
-        assertEquals("002", response.getResponseCode());
+        assertEquals("000", response.getResponseCode());
     }
 
     @Test

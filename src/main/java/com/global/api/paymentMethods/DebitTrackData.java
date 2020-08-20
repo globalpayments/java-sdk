@@ -66,6 +66,10 @@ public class DebitTrackData extends Debit implements ITrackData {
         }
     }
 
+    public String getTruncatedTrackData() {
+        return trackData.replace(discretionaryData, "");
+    }
+
     public String getValue() {
         return value;
     }

@@ -120,4 +120,13 @@ public class TerminalUtilities {
         }
         return lrc;
     }
+
+    public static boolean checkLRC(String message) {
+        byte[] messageBuffer = message.getBytes();
+
+        byte expected = messageBuffer[messageBuffer.length - 1];
+        byte actual = calculateLRC(messageBuffer);
+
+        return (expected == actual);
+    }
 }

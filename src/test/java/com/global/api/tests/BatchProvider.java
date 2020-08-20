@@ -128,20 +128,13 @@ public class BatchProvider implements IBatchProvider {
             switch (transactionType) {
                 case Capture:
                 case Sale: {
-                    if(paymentMethodType.equals(PaymentMethodType.Credit)) {
-                        totalCredits = totalCredits.add(amount);
-                    }
-                    else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
-                        totalDebits = totalDebits.add(amount);
-                    }
+                    totalDebits = totalDebits.add(amount);
                 } break;
+                case Refund: {
+                    totalCredits = totalCredits.add(amount);
+                }
                 case Reversal: {
-                    if(paymentMethodType.equals(PaymentMethodType.Credit)) {
-                        totalCredits = totalCredits.subtract(amount);
-                    }
-                    else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
-                        totalDebits = totalDebits.subtract(amount);
-                    }
+                    totalDebits = totalDebits.subtract(amount);
                 } break;
             }
             save();

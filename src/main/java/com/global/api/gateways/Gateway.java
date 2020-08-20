@@ -1,5 +1,6 @@
 package com.global.api.gateways;
 
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.StringUtils;

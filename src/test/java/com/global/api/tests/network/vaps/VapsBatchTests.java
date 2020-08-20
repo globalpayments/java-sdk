@@ -2,10 +2,12 @@ package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.BatchCloseType;
+import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.enums.CardDataInputCapability;
 import com.global.api.network.enums.TerminalOutputCapability;
@@ -14,6 +16,7 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.terminals.TerminalUtilities;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
@@ -90,6 +93,19 @@ public class VapsBatchTests {
     }
 
     @Test
+    public void test_000_super_manual_batch_close() throws ApiException {
+        ManagementBuilder builder = new ManagementBuilder(TransactionType.BatchClose)
+                .withBatchNumber(batchProvider.getBatchNumber(), batchProvider.getSequenceNumber())
+                .withBatchTotals(batchProvider.getTransactionCount(), batchProvider.getTotalDebits(), batchProvider.getTotalCredits())
+                .withBatchCloseType(BatchCloseType.EndOfShift);
+
+        Transaction trans = builder.execute("NoBatch");
+        assertNotNull(trans);
+        assertEquals("000", trans.getResponseCode());
+        assertNotNull(trans.getBatchSummary());
+    }
+
+    @Test
     public void test_001_resubmits_provider() throws ApiException {
         configName = "default";
 
@@ -110,21 +126,25 @@ public class VapsBatchTests {
 
         Transaction creditSale = creditSale(10);
         assertNotNull(creditSale.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
 
         Transaction creditAuth = creditAuth(20);
         assertNotNull(creditAuth.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditAuth.getTransactionToken()));
 
-        Transaction debitSale = debitSale(30);
-        assertNotNull(debitSale.getTransactionToken());
-
-        Transaction debitAuth = debitAuth(50);
-        assertNotNull(debitAuth.getTransactionToken());
+//        Transaction debitSale = debitSale(30);
+//        assertNotNull(debitSale.getTransactionToken());
+//        assertTrue(TerminalUtilities.checkLRC(debitSale.getTransactionToken()));
+//
+//        Transaction debitAuth = debitAuth(50);
+//        assertNotNull(debitAuth.getTransactionToken());
+//        assertTrue(TerminalUtilities.checkLRC(debitAuth.getTransactionToken()));
 
         Transaction response = BatchService.closeBatch(
                 batchProvider.getBatchNumber(),
                 batchProvider.getSequenceNumber(),
                 new BigDecimal(30),
-                new BigDecimal(80)
+                BigDecimal.ZERO
         ).execute(configName);
         assertNotNull(response);
 
@@ -136,12 +156,12 @@ public class VapsBatchTests {
             LinkedList<String> tokens = new LinkedList<String>();
             tokens.add(creditSale.getTransactionToken());
             tokens.add(creditAuth.getTransactionToken());
-            tokens.add(debitSale.getTransactionToken());
-            tokens.add(debitAuth.getTransactionToken());
+//            tokens.add(debitSale.getTransactionToken());
+//            tokens.add(debitAuth.getTransactionToken());
 
             BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
             assertNotNull(newSummary);
-            assertEquals(4, newSummary.getResentTransactions().size());
+            assertEquals(2, newSummary.getResentTransactions().size());
             for(Transaction re: newSummary.getResentTransactions()) {
                 assertEquals("000", re.getResponseCode());
             }
@@ -166,6 +186,21 @@ public class VapsBatchTests {
         assertNotNull(response);
         assertNotNull(response.getBatchSummary());
         assertTrue(response.getBatchSummary().isBalanced());
+    }
+
+    @Test
+    public void test_241_resubmit_decode_issue() throws ApiException {
+        String validToken = "L7TLtcuVGMraLtFUdo7XZrQAGG+zpa3zpGclmTBgwKFeWsFq75nIDPjuFrXU09csdZfPqXnu8TdfUn8qQt5t724qfbASTyaaOXpU6G5Ir+ILZIVODkTYda9g+kpmjWr9rKUqgGJLHK30trozIt9zrON39v1TfX2l+kTlj2R1X4jwFmifAzgb8DYTGGaRpIF62fyIbliX9vNdfaZlSfShqIauQ3WGAuCbN2LNsGL7eFaOTY5azWcultC27QmXMrITX/zYh94Fo/iP0SZQ+lBT5IQCWALmM0uil9AOIPyGsudcLuvR7h6groZ8skno9jlTktVxha1kCtAMxgub2hwIcp04IQ0Fd0ETywVW+Ay0SByT77obP5H4XhACVB+TCzlECCB++SO/QuJ+YRjQ6VNq7PX2eDr3iYduWMPa6WFB0P9ksEdEQywEiczI3M+42sDP/dRKzC+PabCkHYeFb+vYf6EXth8dwi94PM6gQJDALdGwll6MPleDBoX9BcSKI8bqiQcuZF8dTst1SuJ9fkw069IEWb5NY5Ef2U+mOXo/lmcuCbUKbZPImtN+vClmblbB";
+        //String invalidToken = "nao1NWxyjJfnI3N5O1KPJxCR/361V9yksMetoPCCkYTjVdqJ3yELrtF4XbYwZwXQ4O/vplu+nXTIjcNkoiFST3bMFMkY/YZ/a2t+nu+2fW8fz2uX84R2ZNSm4qLxGAws9jIvrqrqlw6W5h48h86LOlnG7vB9Do6EbGa8UO4q45mXSHZCPsqLXox0R+iMJoGElsZbu9F2z6V8TcpICIOS/rtnvWeAgAQSdpwYrvVSXlbFrgR4lMeJoZxihpU7l7iej+iALOT2iIOuasCYDFkt2Qp0wOsQOtlAhz8uE6DR23H8AdjXMLVWufhNEtJruso4xV71hYnqAGI8zXXhVgDNdCiVLoRr+qY5L0e57QNRoY+2VpwReDLfVUNzXH3DYztNhv19U1z3lLpsUeSQ4lqxANsK9P2jCpq5yLa524tzGVgJ6eZLENnThFZQo5ILXc+DRkaz6qhV8nFCiTzdnd1hXGz5XUy9WsYstJBzIlpDYusuqSP/nNl9S7xg3uFODKkEcDU6w/VVjPiLko/DgdmbmgQmTMljHgewaJiL2rLcFU9u/634zu0kvKlV8rJLZtiI";
+        //String invalidToken = "Qdop97Dsbn7dPfMM63IkEojqEX8SypNlpv4kvFtJOHnNPAX7UWcWKjVQjszE2IVrrEsd+aPJh/LldtPWzIYt+NOgfrj299la6RpvIE51KW4gD6/Jlmayq+0f3u/hnlHpvVqAOOrdXkiVGMk4TuLmxaRPu3xt6v8p+Q0slKJS0dqbh6lMaATmDt/2i0tbTwvhzWEV9e2qmcNFn0Ip/eZRKorwdjxI9+AxVKWSoTl+K7wa2MlSWkj7TLQL+dKv9T86gv/6wthIZNkZr5NwWb5gisYtD4rfeXbu+bd0DjLJKuPCHi7R7fVIBYDBLcBlghxKuYuOTAH8fcGGLsLVslGKZ0qD5WHEcUHVRtggCsynCP6qkoNcD0jIZJZSHl/xsiW+YQ0Q/N0ysDl7puLnLdZDlkoo4qsYZmBHuGeS8R9HvOmWlYbYzv/Nc4oki+7cfll3N2yn+sIeLvD0mvcb0Hiq/Pr4taaUIHgpAdcZNyeqPP2BKiNAFpepmM4Psvw6kv/LOQ1ywl6M+f9WcDjIPWKxRyZI6ObWHiTbX19jswMddtl9mdEkGDZ0id9o8UCbLxUPvPmYzV0oH8XG84SjxeBnffHqPObTynm6Av18v70+GJnmhJzrBixAZc0KuiE1O9mj39DRFESaOsBAuNARCIZIw==";
+
+        LinkedList<String> tokens = new LinkedList<String>();
+        tokens.add(validToken);
+        //tokens.add(invalidToken);
+
+        BatchSummary mockSummary = new BatchSummary();
+        mockSummary.setResponseCode("580");
+        mockSummary.resubmitTransactions(tokens);
     }
 
     private Transaction creditAuth(double amount) throws ApiException {

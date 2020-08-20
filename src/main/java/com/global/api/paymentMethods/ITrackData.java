@@ -24,4 +24,6 @@ public interface ITrackData {
 
     EntryMethod getEntryMethod();
     void setEntryMethod(EntryMethod entryMethod);
+
+    String getTruncatedTrackData();
 }

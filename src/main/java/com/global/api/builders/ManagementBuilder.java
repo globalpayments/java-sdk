@@ -35,7 +35,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private boolean customerInitiated;
     private DccRateData dccRateData;
     private String description;
-    private boolean forcedReversal;
+    private boolean forceToHost;
     private BigDecimal gratuity;
     private String invoiceNumber;
     private LodgingData lodgingData;
@@ -107,8 +107,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public String getDescription() {
         return description;
     }
-    public boolean isForcedReversal() {
-        return forcedReversal;
+    public EmvChipCondition getEmvChipCondition() {
+        if(paymentMethod instanceof TransactionReference) {
+            return ((TransactionReference) paymentMethod).getOriginalEmvChipCondition();
+        }
+        return null;
+    }
+    public boolean isForceToHost() {
+        return forceToHost;
     }
     public BigDecimal getGratuity() {
         return gratuity;
@@ -123,6 +129,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getOrderId();
         return null;
+    }
+    public boolean isPartialApproval() {
+        if(paymentMethod instanceof TransactionReference) {
+            return ((TransactionReference) paymentMethod).isPartialApproval();
+        }
+        return false;
     }
     public String getPayerAuthenticationResponse() {
         return payerAuthenticationResponse;
@@ -204,6 +216,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         cashBackAmount = value;
         return this;
     }
+    public ManagementBuilder withChipCondition(EmvChipCondition value) {
+        if(paymentMethod instanceof TransactionReference) {
+            ((TransactionReference) paymentMethod).setOriginalEmvChipCondition(value);
+        }
+        return this;
+    }
     public ManagementBuilder withClerkId(String value) {
         clerkId = value;
         return this;
@@ -236,12 +254,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         fleetData = value;
         return this;
     }
-    public ManagementBuilder withForceGatewayTimeout(boolean value) {
-        this.forceGatewayTimeout = value;
-        return this;
-    }
-    public ManagementBuilder withForcedReversal(boolean value) {
-        forcedReversal = value;
+    public ManagementBuilder withForceToHost(boolean value) {
+        forceToHost = value;
         return this;
     }
     public ManagementBuilder withGratuity(BigDecimal value) {
@@ -264,14 +278,21 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.lodgingData = value;
         return this;
     }
+    public ManagementBuilder withPartialApproval(boolean value) {
+        if(paymentMethod instanceof TransactionReference) {
+            ((TransactionReference) paymentMethod).setPartialApproval(value);
+        }
+        return this;
+    }
     public ManagementBuilder withPayerAuthenticationResponse(String value) {
         payerAuthenticationResponse = value;
         return this;
     }
     public ManagementBuilder withPaymentMethod(IPaymentMethod value) {
         this.paymentMethod = value;
-        if(paymentMethod instanceof TransactionReference)
+        if(paymentMethod instanceof TransactionReference) {
             this.orderId = ((TransactionReference) paymentMethod).getOrderId();
+        }
         return this;
     }
     public ManagementBuilder withPoNumber(String value) {
@@ -301,6 +322,19 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withShiftNumber(String value) {
         shiftNumber = value;
+        return this;
+    }
+    public ManagementBuilder withSimulatedHostErrors(Host host, HostError... errors) {
+        if(simulatedHostErrors == null) {
+            simulatedHostErrors = new HashMap<Host, ArrayList<HostError>>();
+        }
+
+        if(!simulatedHostErrors.containsKey(host)) {
+            simulatedHostErrors.put(host, new ArrayList<HostError>());
+        }
+        for(HostError error: errors) {
+            simulatedHostErrors.get(host).add(error);
+        }
         return this;
     }
     public ManagementBuilder withSupplementaryData(String type, String... values) {
@@ -358,8 +392,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.companyId = companyId;
         return this;
     }
-    public ManagementBuilder withSystemTraceAuditNumber(int value) {
-        systemTraceAuditNumber = value;
+    public ManagementBuilder withSystemTraceAuditNumber(int original) {
+        return withSystemTraceAuditNumber(original, null);
+    }
+    public ManagementBuilder withSystemTraceAuditNumber(int original, Integer followOn) {
+        systemTraceAuditNumber = original;
+        followOnStan = followOn;
         return this;
     }
     public ManagementBuilder withTerminalError(boolean value) {

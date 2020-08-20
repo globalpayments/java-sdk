@@ -138,7 +138,7 @@ public class NetworkGatewayConfig extends Configuration {
         gateway.setSecondaryPort(secondaryPort);
         gateway.setTimeout(timeout);
         gateway.setEnableLogging(enableLogging);
-        gateway.setForceGatewayTimeout(forceGatewayTimeout);
+        gateway.setSimulatedHostErrors(simulatedHostErrors);
 
         // other fields
         gateway.setCompanyId(companyId);

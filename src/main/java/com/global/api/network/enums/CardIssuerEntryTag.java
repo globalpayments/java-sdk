@@ -14,6 +14,8 @@ public enum CardIssuerEntryTag implements IStringConstant {
     PIN_DebitAuthorizer("D00"),
     ElectronicBenefitsTransfer("Exx"),
     FleetCards("Fxx"),
+    Wex_SpecVersionSupport("F00"),
+    Wex_PurchaseDeviceSequenceNumber("F01"),
     PrepaidServiceSystem("Gxx"),
     CardIssuerAuthenticationData("IAD"),
     AmountSentToIssuerOnBehalfOfPos("IAM"),

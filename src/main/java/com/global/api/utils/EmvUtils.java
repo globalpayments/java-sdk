@@ -138,6 +138,10 @@ public class EmvUtils {
         return parseTagData(tagData, false);
     }
     public static EmvData parseTagData(String tagData, boolean verbose) {
+        if(StringUtils.isNullOrEmpty(tagData)) {
+            return null;
+        }
+
         tagData = tagData.toUpperCase();
 
         EmvData rvalue = new EmvData();

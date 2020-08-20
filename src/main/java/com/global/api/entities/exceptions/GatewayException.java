@@ -3,12 +3,48 @@ package com.global.api.entities.exceptions;
 public class GatewayException extends ApiException {
     private String responseCode;
     private String responseText;
+    private String host;
+    private String messageTypeIndicator;
+    private String processingCode;
+    private String transactionToken;
+    private String transmissionTime;
 
     public String getResponseCode() {
         return responseCode;
     }
     public String getResponseText() {
         return responseText;
+    }
+
+    public String getHost() {
+        return host;
+    }
+    public void setHost(String host) {
+        this.host = host;
+    }
+    public String getMessageTypeIndicator() {
+        return messageTypeIndicator;
+    }
+    public void setMessageTypeIndicator(String messageTypeIndicator) {
+        this.messageTypeIndicator = messageTypeIndicator;
+    }
+    public String getProcessingCode() {
+        return processingCode;
+    }
+    public void setProcessingCode(String processingCode) {
+        this.processingCode = processingCode;
+    }
+    public String getTransactionToken() {
+        return transactionToken;
+    }
+    public void setTransactionToken(String transactionToken) {
+        this.transactionToken = transactionToken;
+    }
+    public String getTransmissionTime() {
+        return transmissionTime;
+    }
+    public void setTransmissionTime(String transmissionTime) {
+        this.transmissionTime = transmissionTime;
     }
 
     public GatewayException(String message) {

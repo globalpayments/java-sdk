@@ -2,6 +2,7 @@ package com.global.api.network.elements;
 
 import com.global.api.network.abstractions.IDataElement;
 import com.global.api.utils.StringParser;
+import com.global.api.utils.StringUtils;
 
 public class DE48_39_PriorMessageInformation implements IDataElement<DE48_39_PriorMessageInformation> {
     private String responseTime = "999";
@@ -36,10 +37,18 @@ public class DE48_39_PriorMessageInformation implements IDataElement<DE48_39_Pri
         this.messageTransactionIndicator = messageTransactionIndicator;
     }
     public String getProcessingCode() {
+        if(StringUtils.isNullOrEmpty(processingCode)) {
+            return "000000";
+        }
         return processingCode;
     }
     public void setProcessingCode(String processingCode) {
-        this.processingCode = processingCode;
+        if(StringUtils.isNullOrEmpty(processingCode)) {
+            this.processingCode = "000000";
+        }
+        else {
+            this.processingCode = processingCode;
+        }
     }
     public String getStan() {
         return stan;
@@ -66,7 +75,7 @@ public class DE48_39_PriorMessageInformation implements IDataElement<DE48_39_Pri
                 .concat(connectTime)
                 .concat(cardType)
                 .concat(messageTransactionIndicator)
-                .concat(processingCode)
+                .concat(getProcessingCode())
                 .concat(stan);
 
         return rvalue.getBytes();

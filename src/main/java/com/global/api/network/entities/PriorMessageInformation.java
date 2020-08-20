@@ -1,5 +1,7 @@
 package com.global.api.network.entities;
 
+import com.global.api.entities.enums.Host;
+
 public class PriorMessageInformation {
     private String responseTime = "999";
     private String cardType = "    ";
@@ -8,6 +10,7 @@ public class PriorMessageInformation {
     private String messageReasonCode;
     private String messageTransactionIndicator = "0000";
     private String systemTraceAuditNumber = "000000";
+    private Host processingHost = Host.Primary;
 
     public String getResponseTime() {
         return responseTime;
@@ -50,5 +53,11 @@ public class PriorMessageInformation {
     }
     public void setSystemTraceAuditNumber(String systemTraceAuditNumber) {
         this.systemTraceAuditNumber = systemTraceAuditNumber;
+    }
+    public Host getProcessingHost() {
+        return processingHost;
+    }
+    public void setProcessingHost(Host processingHost) {
+        this.processingHost = processingHost;
     }
 }

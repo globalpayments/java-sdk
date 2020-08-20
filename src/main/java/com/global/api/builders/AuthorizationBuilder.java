@@ -323,7 +323,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withClientTransactionId(String value) {
-        if(transactionType == TransactionType.Reversal || transactionType == TransactionType.Refund) {
+        if(transactionType.equals(TransactionType.Reversal)) {
             if(paymentMethod instanceof TransactionReference)
                 ((TransactionReference)paymentMethod).setClientTransactionId(value);
             else {
@@ -394,10 +394,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.ecommerceInfo = value;
         return this;
     }
-    public AuthorizationBuilder withForceGatewayTimeout(boolean value) {
-        this.forceGatewayTimeout = value;
-        return this;
-    }
     public AuthorizationBuilder withFraudFilter(FraudFilterMode value) {
         this.fraudFilterMode = value;
         return this;
@@ -406,7 +402,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.gratuity = value;
         return this;
     }
-    public AuthorizationBuilder withHostedPaymentData(HostedPaymentData value) throws ApiException {
+    public AuthorizationBuilder withHostedPaymentData(HostedPaymentData value) {
         this.hostedPaymentData = value;
         return this;
     }
@@ -495,6 +491,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         else {
             TransactionReference ref = new TransactionReference();
             ref.setTransactionId(value);
+            if(paymentMethod != null) {
+                ref.setPaymentMethodType(paymentMethod.getPaymentMethodType());
+            }
+
             this.paymentMethod = ref;
         }
         return this;
@@ -509,6 +509,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withShippingAmt(BigDecimal value) {
         this.shippingAmount = value;
+        return this;
+    }
+    public AuthorizationBuilder withSimulatedHostErrors(Host host, HostError... errors) {
+        if(simulatedHostErrors == null) {
+            simulatedHostErrors = new HashMap<Host, ArrayList<HostError>>();
+        }
+
+        if(!simulatedHostErrors.containsKey(host)) {
+            simulatedHostErrors.put(host, new ArrayList<HostError>());
+        }
+        for(HostError error: errors) {
+            simulatedHostErrors.get(host).add(error);
+        }
         return this;
     }
     public AuthorizationBuilder withStoredCredential(StoredCredential value) {
@@ -586,8 +599,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         shiftNumber = value;
         return this;
     }
-    public AuthorizationBuilder withSystemTraceAuditNumber(int value) {
-        systemTraceAuditNumber = value;
+    public AuthorizationBuilder withSystemTraceAuditNumber(int original) {
+        return withSystemTraceAuditNumber(original, null);
+    }
+    public AuthorizationBuilder withSystemTraceAuditNumber(int original, Integer followOn) {
+        systemTraceAuditNumber = original;
+        followOnStan = followOn;
         return this;
     }
     public AuthorizationBuilder withTerminalError(boolean value) {

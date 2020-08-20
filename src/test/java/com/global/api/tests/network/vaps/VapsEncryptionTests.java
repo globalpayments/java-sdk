@@ -5,7 +5,9 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
@@ -13,9 +15,13 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.terminals.TerminalUtilities;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
+import com.global.api.utils.MessageReader;
+import com.global.api.utils.MessageWriter;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -213,5 +219,57 @@ public class VapsEncryptionTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_000_encryption_base64() {
+        // initial value
+        String initialString = "This is the initial value";
+
+        // convert to byte array through MessageWriter class
+        MessageWriter mw = new MessageWriter();
+        mw.addRange(initialString.getBytes());
+        byte[] initialBuffer = mw.toArray();
+
+        // base64 encode the buffer & convert to encoded string
+        byte[] encodedBuffer = Base64.encodeBase64(initialBuffer);
+        String encodedString = new String(encodedBuffer);
+
+        // encrypt the encoded string
+        PayrollEncoder encoder = new PayrollEncoder("username", "apikey");
+        String encryptedString = encoder.encode(encodedString);
+
+        // add the STX/ETX and LRC
+        mw = new MessageWriter();
+        mw.add(ControlCodes.STX);
+        mw.addRange(encryptedString.getBytes());
+        mw.add(ControlCodes.ETX);
+        mw.add(TerminalUtilities.calculateLRC(mw.toArray()));
+
+        // final string
+        String framedString = new String(mw.toArray());
+
+        // validate
+        assertTrue(TerminalUtilities.checkLRC(framedString));
+
+        // check the outcome
+        MessageReader mr = new MessageReader(framedString.getBytes());
+        ControlCodes stx = mr.readCode();
+        assertEquals(ControlCodes.STX, stx);
+
+        String decryptedCheckString = mr.readToCode(ControlCodes.ETX, false);
+
+        ControlCodes etx = mr.readCode();
+        assertEquals(ControlCodes.ETX, etx);
+
+        // decrypt the encrypted string
+        String decryptedString = encoder.decode(decryptedCheckString);
+
+        // decode the decrypted string
+        byte[] decodedBuffer = Base64.decodeBase64(decryptedString);
+        String decodedString = new String(decodedBuffer);
+
+        // compare the initial and end values
+        assertEquals(initialString, decodedString);
     }
 }

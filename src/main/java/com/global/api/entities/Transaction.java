@@ -1,6 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.builders.TransactionRebuilder;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.gateways.events.IGatewayEvent;
@@ -431,7 +432,12 @@ public class Transaction {
         return cancel(null);
     }
     public ManagementBuilder cancel(BigDecimal amount) {
-        return new ManagementBuilder(TransactionType.Void)
+        TransactionType transType = TransactionType.Void;
+        if(transactionReference != null && transactionReference.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
+            transType = TransactionType.Reversal;
+        }
+
+        return new ManagementBuilder(transType)
                 .withPaymentMethod(transactionReference)
                 .withCustomerInitiated(true)
                 .withAmount(amount);
@@ -499,7 +505,7 @@ public class Transaction {
         return new ManagementBuilder(TransactionType.Void)
                 .withAmount(amount)
                 .withPaymentMethod(transactionReference)
-                .withForcedReversal(force);
+                .withForceToHost(force);
     }
 
     public static Transaction fromId(String transactionId) {
@@ -512,15 +518,11 @@ public class Transaction {
         return fromId(transactionId, orderId, PaymentMethodType.Credit);
     }
     public static Transaction fromId(String transactionId, String orderId, PaymentMethodType paymentMethodType) {
-        TransactionReference reference = new TransactionReference();
-        reference.setTransactionId(transactionId);
-        reference.setOrderId(orderId);
-        reference.setPaymentMethodType(paymentMethodType);
-
-        Transaction trans = new Transaction();
-        trans.setTransactionReference(reference);
-
-        return trans;
+        return new TransactionRebuilder()
+                .withTransactionId(transactionId)
+                .withOrderId(orderId)
+                .withPaymentMethodType(paymentMethodType)
+                .build();
     }
 
     public static Transaction fromClientTransactionId(String clientTransactionId) {
@@ -557,20 +559,20 @@ public class Transaction {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, messageTypeIndicator, stan, originalTransactionTime, originalProcessingCode, null);
     }
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime, String originalProcessingCode, String acquirerId) {
-        TransactionReference reference = new TransactionReference();
-        reference.setOriginalAmount(amount);
-        reference.setAcquiringInstitutionId(acquirerId);
-        reference.setAuthCode(authCode);
-        reference.setMessageTypeIndicator(messageTypeIndicator);
-        reference.setNtsData(originalNtsCode);
-        reference.setOriginalPaymentMethod(originalPaymentMethod);
-        reference.setOriginalTransactionTime(originalTransactionTime);
-        reference.setSystemTraceAuditNumber(stan);
-        reference.setOriginalProcessingCode(originalProcessingCode);
+        return new TransactionRebuilder()
+                .withAmount(amount)
+                .withAuthorizationCode(authCode)
+                .withNtsData(originalNtsCode)
+                .withPaymentMethod(originalPaymentMethod)
+                .withMessageTypeIndicator(messageTypeIndicator)
+                .withSystemTraceAuditNumber(stan)
+                .withTransactionTime(originalTransactionTime)
+                .withProcessingCode(originalProcessingCode)
+                .withAcquirerId(acquirerId)
+                .build();
+    }
 
-        Transaction trans = new Transaction();
-        trans.setTransactionReference(reference);
-
-        return trans;
+    public static TransactionRebuilder fromBuilder() {
+        return new TransactionRebuilder();
     }
 }

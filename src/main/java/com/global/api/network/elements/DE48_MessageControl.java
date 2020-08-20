@@ -1,6 +1,5 @@
 package com.global.api.network.elements;
 
-import com.global.api.entities.Address;
 import com.global.api.network.NetworkMessage;
 import com.global.api.network.abstractions.IDataElement;
 import com.global.api.network.enums.DE48_CardType;
@@ -9,10 +8,7 @@ import com.global.api.network.enums.DataElementId;
 import com.global.api.network.enums.Iso8583MessageType;
 import com.global.api.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class DE48_MessageControl implements IDataElement<DE48_MessageControl> {
     private DE48_1_CommunicationDiagnostics communicationDiagnostics;

@@ -5,9 +5,9 @@ import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.EnumUtils;
 
 public class DeviceMessage implements IDeviceMessage {
-    byte[] buffer;
-    boolean keepAlive;
-    boolean awaitResponse;
+    private byte[] buffer;
+    private boolean keepAlive;
+    private boolean awaitResponse;
 
     public DeviceMessage(byte[] buffer){
         this.buffer = buffer;

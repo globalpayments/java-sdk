@@ -1,7 +1,7 @@
 package com.global.api.paymentMethods;
 
+import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TransactionType;
 import com.global.api.network.entities.NtsData;
 
 import java.math.BigDecimal;
@@ -16,9 +16,12 @@ public class TransactionReference implements IPaymentMethod {
     private NtsData ntsData;
     private String orderId;
     private BigDecimal originalAmount;
+    private BigDecimal originalApprovedAmount;
+    private EmvChipCondition originalEmvChipCondition;
     private IPaymentMethod originalPaymentMethod;
     private String originalProcessingCode;
     private String originalTransactionTime;
+    private boolean partialApproval;
     private PaymentMethodType paymentMethodType;
     private int sequenceNumber;
     private String systemTraceAuditNumber;
@@ -90,6 +93,23 @@ public class TransactionReference implements IPaymentMethod {
         this.originalAmount = originalAmount;
     }
 
+    public BigDecimal getOriginalApprovedAmount() {
+        if(originalApprovedAmount != null) {
+            return originalApprovedAmount;
+        }
+        return originalAmount;
+    }
+    public void setOriginalApprovedAmount(BigDecimal originalApprovedAmount) {
+        this.originalApprovedAmount = originalApprovedAmount;
+    }
+
+    public EmvChipCondition getOriginalEmvChipCondition() {
+        return originalEmvChipCondition;
+    }
+    public void setOriginalEmvChipCondition(EmvChipCondition originalEmvChipCondition) {
+        this.originalEmvChipCondition = originalEmvChipCondition;
+    }
+
     public IPaymentMethod getOriginalPaymentMethod() {
         return originalPaymentMethod;
     }
@@ -109,6 +129,14 @@ public class TransactionReference implements IPaymentMethod {
     }
     public void setOriginalTransactionTime(String originalTransactionTime) {
         this.originalTransactionTime = originalTransactionTime;
+    }
+
+
+    public boolean isPartialApproval() {
+        return this.partialApproval;
+    }
+    public void setPartialApproval(boolean partial) {
+        this.partialApproval = partial;
     }
 
     public PaymentMethodType getPaymentMethodType() {

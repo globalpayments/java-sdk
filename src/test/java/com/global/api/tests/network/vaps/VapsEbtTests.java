@@ -5,9 +5,7 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.DebitAuthorizerCode;
-import com.global.api.entities.enums.EbtCardType;
-import com.global.api.entities.enums.InquiryType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
@@ -24,6 +22,7 @@ import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -272,35 +271,23 @@ public class VapsEbtTests {
         assertEquals(response.getResponseMessage(), "400", response.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class) @Ignore
     public void test_223_swipe_reversal() throws ApiException {
-        try{
-            cashCard.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not timeout.");
-        }
-        catch (GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        cashCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not timeout.");
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class) @Ignore
     public void test_224_swipe_reversal_cashBack() throws ApiException {
-        try{
-            cashCard.charge(new BigDecimal(13))
-                    .withCurrency("USD")
-                    .withCashBack(new BigDecimal(3))
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not timeout.");
-        }
-        catch (GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        cashCard.charge(new BigDecimal(13))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not timeout.");
     }
 
     @Test
@@ -479,18 +466,12 @@ public class VapsEbtTests {
         assertEquals(response.getResponseMessage(), "400", response.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class) @Ignore
     public void test_234_swipe_foodStamp_reverse_sale() throws ApiException {
-        try{
-            foodCard.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not timeout.");
-        }
-        catch (GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        foodCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not timeout.");
     }
 }

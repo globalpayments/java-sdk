@@ -8,12 +8,6 @@ public class EmvData {
     private boolean standInStatus;
     private String standInStatusReason;
 
-    public TlvData getTag(String tagName) {
-        if(tlvData.containsKey(tagName)) {
-            return tlvData.get(tagName);
-        }
-        return null;
-    }
     public String getAcceptedTagData() {
         if(tlvData.size() == 0) {
             return null;
@@ -26,23 +20,57 @@ public class EmvData {
         return rvalue;
     }
     public LinkedHashMap<String, TlvData> getAcceptedTags() { return tlvData; }
+    public String getCardSequenceNumber() {
+        if(tlvData.containsKey("5F34")) {
+            return tlvData.get("5F34").getValue();
+        }
+        return null;
+    }
+    public boolean isContactlessMsd() {
+        String entryMode = getEntryMode();
+        if(entryMode != null) {
+            return entryMode.equals("91");
+        }
+        return false;
+    }
+    public String getCustomerVerificationResults() {
+        TlvData cvm = getTag("9F34");
+        if(cvm != null) {
+            return cvm.getValue();
+        }
+        return null;
+    }
+    public String getEntryMode() {
+        TlvData posEntryMode = getTag("9F39");
+        if(posEntryMode != null) {
+            return posEntryMode.getValue();
+        }
+        return null;
+    }
+    public boolean isOfflinePin() {
+        String cvr = getCustomerVerificationResults();
+        if(!StringUtils.isNullOrEmpty(cvr)) {
+            String cvm = cvr.substring(1, 2);
+            return (cvm.equals("1") || cvm.equals("3") || cvm.equals("4") || cvm.equals("5"));
+        }
+        return false;
+    }
     public LinkedHashMap<String, TlvData> getRemovedTags() {
         return removedTags;
     }
     public boolean getStandInStatus() {
         return standInStatus;
     }
-    public String getStandInStatusReason() {
-        return standInStatusReason;
-    }
-
     public void setStandInStatus(boolean value, String reason) {
         this.standInStatus = value;
         this.standInStatusReason = reason;
     }
-    public String getCardSequenceNumber() {
-        if(tlvData.containsKey("5F34")) {
-            return tlvData.get("5F34").getValue();
+    public String getStandInStatusReason() {
+        return standInStatusReason;
+    }
+    public TlvData getTag(String tagName) {
+        if(tlvData.containsKey(tagName)) {
+            return tlvData.get(tagName);
         }
         return null;
     }

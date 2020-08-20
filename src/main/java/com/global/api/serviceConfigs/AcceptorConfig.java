@@ -38,6 +38,9 @@ public class AcceptorConfig {
     // DE48_40 - DE48_49
     private Address address;
 
+    // DE127 - FORWARDING DATA
+    private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
+
     // DE32 - Acquiring Institution Identification Code
     public String getAcquiringInstitutionIdentificationCode() {
         return acquiringInstitutionIdentificationCode;
@@ -45,9 +48,6 @@ public class AcceptorConfig {
     public void setAcquiringInstitutionIdentificationCode(String acquiringInstitutionIdentificationCode) {
         this.acquiringInstitutionIdentificationCode = acquiringInstitutionIdentificationCode;
     }
-
-    // DE127 - FORWARDING DATA
-    private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
 
     // DE48-40
     public Address getAddress() {

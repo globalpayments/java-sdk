@@ -3,6 +3,8 @@ package com.global.api.tests.network.vaps;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
@@ -127,7 +129,7 @@ public class VapsGiftTests {
         try{
             giftCard.charge(new BigDecimal(11.00))
                     .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
+                    .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
                     .execute();
             fail("No exception thrown");
         }

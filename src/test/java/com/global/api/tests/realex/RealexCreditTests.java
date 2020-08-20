@@ -80,6 +80,17 @@ public class RealexCreditTests {
     }
 
     @Test
+    public void creditRefund_withClientTransactionId() throws ApiException {
+        Transaction response = card.refund(new BigDecimal("16"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withClientTransactionId("123456789")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
     public void creditRefund() throws ApiException {
         Transaction response = card.refund(new BigDecimal("16"))
                 .withCurrency("USD")

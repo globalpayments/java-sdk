@@ -21,11 +21,11 @@ public class PorticoInteracTests {
 
     public PorticoInteracTests() throws ApiException {
         GatewayConfig config = new GatewayConfig();
-        config.setLicenseId(124964);
-        config.setSiteId(124992);
-        config.setDeviceId(145);
-        config.setUsername("9158402");
-        config.setPassword("$Test1234");
+        config.setLicenseId(139906);
+        config.setSiteId(139968);
+        config.setDeviceId(374);
+        config.setUsername("gateway382988");
+        config.setPassword("$Test123");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
         ServicesContainer.configureService(config);
@@ -48,7 +48,7 @@ public class PorticoInteracTests {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
     }
 
     @Test

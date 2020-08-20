@@ -1,6 +1,9 @@
 package com.global.api.gateways;
 
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayComsException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.*;
@@ -13,6 +16,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NetworkGateway {
     private SSLSocket client;
@@ -25,10 +33,10 @@ public class NetworkGateway {
     private String secondaryEndpoint;
     private Integer secondaryPort;
 
-    String currentEndpoint;
+    protected Host currentHost;
 
     private boolean enableLogging = false;
-    private boolean forceGatewayTimeout = false;
+    private HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
     private int timeout;
 
     private String connectorName = "NetworkGateway";
@@ -70,41 +78,59 @@ public class NetworkGateway {
     public void setEnableLogging(boolean enableLogging) {
         this.enableLogging = enableLogging;
     }
-    private boolean isForceGatewayTimeout() {
-        return forceGatewayTimeout;
-    }
-    public void setForceGatewayTimeout(boolean forceGatewayTimeout) {
-        this.forceGatewayTimeout = forceGatewayTimeout;
-    }
     public void setGatewayEventHandler(IGatewayEventHandler eventHandler) { this.gatewayEventHandler = eventHandler; }
+    public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {
+        return simulatedHostErrors;
+    }
+
+    public void setSimulatedHostErrors(HashMap<Host, ArrayList<HostError>> simulatedHostErrors) {
+        this.simulatedHostErrors = simulatedHostErrors;
+    }
+    private boolean isForcedError(HostError error) {
+        if(simulatedHostErrors != null && simulatedHostErrors.containsKey(currentHost)) {
+            return simulatedHostErrors.get(currentHost).contains(error);
+        }
+        return false;
+    }
 
     // establish connection
-    private void connect(String endpoint, Integer port) throws ApiException {
-        currentEndpoint = endpoint.equals(primaryEndpoint) ? "primary" : "secondary";
+    private void connect(String endpoint, Integer port) throws GatewayComsException {
+        currentHost = endpoint.equals(primaryEndpoint) ? Host.Primary : Host.Secondary;
 
         // create the connection event
         ConnectionEvent connectionEvent = new ConnectionEvent(connectorName);
         connectionEvent.setEndpoint(endpoint);
         connectionEvent.setPort(port.toString());
-        connectionEvent.setHost(currentEndpoint);
+        connectionEvent.setHost(currentHost.getValue());
         connectionEvent.setConnectionAttempts(connectionFaults);
         raiseGatewayEvent(connectionEvent);
 
         DateTime connectionStarted = DateTime.now(DateTimeZone.UTC);
-        if(client == null) {
+        if(client == null || out == null || in == null || !client.isConnected()) {
+            if(client != null) {
+                disconnect();
+            }
+
             try {
                 // connection started
                 connectionEvent.setConnectionStarted(connectionStarted);
 
-                try {
-                    SSLSocketFactory factory = new SSLSocketFactoryEx();
-                    client = (SSLSocket) factory.createSocket(endpoint, port);
-                    client.startHandshake();
+                // check for simulated connection error
+                if(!isForcedError(HostError.Connection)) {
+                    try {
+                        SSLSocketFactory factory = new SSLSocketFactoryEx();
+                        client = (SSLSocket) factory.createSocket();
+                        client.connect(new InetSocketAddress(endpoint, port), 5000);
+                        client.startHandshake();
 
-                    raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
-                }
-                catch(Exception exc) {
-                    raiseGatewayEvent(new SslHandshakeEvent(connectorName, exc));
+                        raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
+                    }
+                    catch(Exception exc) {
+                        raiseGatewayEvent(new SslHandshakeEvent(connectorName, exc));
+                        if(client != null && client.isConnected()) {
+                            disconnect();
+                        }
+                    }
                 }
 
                 if(client != null && client.isConnected()) {
@@ -134,7 +160,7 @@ public class NetworkGateway {
                 }
             }
             catch(Exception exc) {
-                throw new GatewayException(exc.getMessage(), exc);
+                throw new GatewayComsException(exc);
             }
         }
     }
@@ -143,8 +169,12 @@ public class NetworkGateway {
     private void disconnect() {
         try {
             if (client != null && !client.isClosed()) {
-                in.close();
-                out.close();
+                if(in != null) {
+                    in.close();
+                }
+                if(out != null) {
+                    out.close();
+                }
                 client.close();
             }
             client = null;
@@ -154,8 +184,16 @@ public class NetworkGateway {
         }
     }
 
-    public byte[] send(IDeviceMessage message) throws ApiException {
-        boolean timedOut = false;
+    public byte[] send(IDeviceMessage message) throws GatewayTimeoutException, GatewayComsException {
+        /*
+        1) if the initial attempt to connect fails (on both hosts) a GatewayComsException is thrown
+        2) if the send/receive fails, no exception is thrown (timeout flag is tripped) and fail over occurs
+        3) if timeout flag is set, Failure to connect to secondary host will throw GatewayTimeoutException
+        4) if timeout flag is not set, failure to connect to the secondary host will throw GatewayComsException
+        5) if connection to secondary host is successful, return to step 2
+        6) if no response from the secondary host, GatewayTimeoutException is thrown
+         */
+        boolean timeout = false;
         connect(getPrimaryEndpoint(), getPrimaryPort());
 
         byte[] buffer = message.getSendBuffer();
@@ -163,17 +201,25 @@ public class NetworkGateway {
             for(int i = 0; i < 2; i++) {
                 raiseGatewayEvent(new RequestSentEvent(connectorName));
                 DateTime requestSent = DateTime.now(DateTimeZone.UTC);
-                out.write(buffer);
+                try {
+                    if(!isForcedError(HostError.SendFailure)) {
+                        out.write(buffer);
+                    }
+                    else throw new IOException("Simulated IO Exception on request send.");
 
-                byte[] rvalue = getGatewayResponse();
-                if (rvalue != null && !isForceGatewayTimeout()) {
-                    raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
-                    return rvalue;
+                    byte[] rvalue = getGatewayResponse();
+                    if (rvalue != null && !isForcedError(HostError.Timeout)) {
+                        raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
+                        return rvalue;
+                    }
+                    timeout = true;
+                }
+                catch(IOException exc) {
+                    /* Exception occurred on message send, do not trip timeout */
                 }
 
                 // did not get a response, switch endpoints and try again
-                timedOut = true;
-                if(!currentEndpoint.equals("secondary") && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
+                if(!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
                     raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
 
                     disconnect();
@@ -182,32 +228,31 @@ public class NetworkGateway {
             }
 
             raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.Timeout));
-            throw new GatewayTimeoutException();
+            if(timeout) {
+                throw new GatewayTimeoutException();
+            }
+            else throw new GatewayComsException();
         }
-        catch(GatewayTimeoutException exc) {
-            throw exc;
-        }
-        catch(Exception exc) {
-            if(timedOut) {
+        catch(GatewayComsException exc) {
+            if(timeout) {
                 throw new GatewayTimeoutException(exc);
             }
-            else {
-                throw new GatewayException(exc.getMessage(), exc);
-            }
+            throw exc;
         }
         finally {
             disconnect();
             raiseGatewayEvent(new DisconnectEvent(connectorName));
 
-            // remove the force timeout
-            if(isForceGatewayTimeout()) {
-                setForceGatewayTimeout(false);
+            // remove simulated errors
+            if(simulatedHostErrors != null) {
+                simulatedHostErrors = null;
             }
         }
     }
 
     private byte[] getGatewayResponse() throws IOException, GatewayTimeoutException {
         byte[] buffer = new byte[2048];
+
         int bytesReceived = awaitResponse(in, buffer);
 
         if(bytesReceived > 0) {
@@ -243,12 +288,10 @@ public class NetworkGateway {
                 }
             }
 
-            try{
+            try {
                 Thread.sleep(50);
             }
-            catch(InterruptedException exc) {
-                 break;
-            }
+            catch(InterruptedException e) { break; }
         }
         while((System.currentTimeMillis() - t) <= 20000);
 
@@ -256,12 +299,12 @@ public class NetworkGateway {
     }
 
     private void raiseGatewayEvent(final IGatewayEvent event) {
-        new Thread(new Runnable() {
-            public void run() {
-                if(gatewayEventHandler != null) {
+        if(gatewayEventHandler != null) {
+            new Thread(new Runnable() {
+                public void run() {
                     gatewayEventHandler.eventRaised(event);
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
 }

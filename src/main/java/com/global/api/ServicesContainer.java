@@ -92,11 +92,14 @@ public class ServicesContainer implements IDisposable {
         configureService(config, "default");
     }
     public static <T extends Configuration> void configureService(T config, String configName) throws ConfigurationException {
-        if(config == null)
+        if(config == null) {
+            getInstance().removeConfiguration(configName);
             return;
+        }
 
-        if(!config.isValidated())
+        if(!config.isValidated()) {
             config.validate();
+        }
 
         ConfiguredServices cs = getInstance().getConfiguration(configName);
         config.configureContainer(cs);
@@ -115,9 +118,16 @@ public class ServicesContainer implements IDisposable {
     }
 
     private void addConfiguration(String configName, ConfiguredServices cs) {
-        if(configurations.containsKey(configName))
+        if(configurations.containsKey(configName)) {
             configurations.remove(configName);
+        }
         configurations.put(configName, cs);
+    }
+
+    private void removeConfiguration(String configName) {
+        if(configurations.containsKey(configName)) {
+            configurations.remove(configName);
+        }
     }
 
     public void dispose() {

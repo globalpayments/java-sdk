@@ -5,6 +5,8 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
@@ -22,6 +24,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -74,10 +78,6 @@ public class VapsDebitTests {
         // with merchant type
         config.setMerchantType("5542");
         ServicesContainer.configureService(config, "ICR");
-
-        // forced timeout
-        config.setForceGatewayTimeout(true);
-        ServicesContainer.configureService(config, "timeout");
 
         // debit card
         track = new DebitTrackData();
@@ -138,7 +138,7 @@ public class VapsDebitTests {
         assertEquals("1220", pmi.getMessageTransactionIndicator());
         assertEquals("000800", pmi.getProcessingCode());
         assertEquals("1379", pmi.getMessageReasonCode());
-        assertEquals("200", pmi.getFunctionCode());
+        assertEquals("201", pmi.getFunctionCode());
     }
 
     @Test
@@ -218,50 +218,35 @@ public class VapsDebitTests {
         assertEquals("400", voidResponse.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class)
     public void test_155_reverse_authorization() throws ApiException {
-        try {
-            track.authorize(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not throw a timeout");
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class)
     public void test_156_reverse_sale() throws ApiException {
-        try {
-            track.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not throw a timeout");
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class)
     public void test_157_reverse_sale_cashBack() throws ApiException {
-        try {
-            track.charge(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withCashBack(new BigDecimal(3))
-                    .withForceGatewayTimeout(true)
-                    .execute();
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
+                .execute();
+        Assert.fail("Did not throw a timeout");
     }
 
     @Test
@@ -307,19 +292,14 @@ public class VapsDebitTests {
         assertEquals("000", capture.getResponseCode());
     }
 
-    @Test
+    @Test(expected = GatewayTimeoutException.class)
     public void test_161_ICR_reverse_authorization() throws ApiException {
-        try {
-            track.authorize(new BigDecimal(10))
-                    .withCurrency("USD")
-                    .withForceGatewayTimeout(true)
-                    .execute("ICR");
-            Assert.fail("Did not throw a timeout");
-        }
-        catch(GatewayTimeoutException exc) {
-            assertEquals(1, exc.getReversalCount());
-            assertEquals("400", exc.getReversalResponseCode());
-        }
+        track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
+                .execute("ICR");
+        Assert.fail("Did not throw a timeout");
     }
 
     @Test
@@ -404,5 +384,75 @@ public class VapsDebitTests {
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
+    }
+
+    @Test
+    public void test_166_debit_pre_auth_cancel() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction cancel = response.cancel(response.getAuthorizedAmount())
+                .execute("ICR");
+        assertNotNull(cancel);
+
+        pmi = cancel.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4352", pmi.getMessageReasonCode());
+
+        assertEquals("400", cancel.getResponseCode());
+    }
+
+    @Test
+    public void test_167_debit_pre_auth_cancel_fromNetwork() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction rebuild = Transaction.fromNetwork(
+                new BigDecimal("1"),
+                response.getAuthorizationCode(),
+                response.getNtsData(),
+                track,
+                pmi.getMessageTransactionIndicator(),
+                pmi.getSystemTraceAuditNumber(),
+                response.getOriginalTransactionTime(),
+                response.getProcessingCode());
+
+        Transaction cancel = rebuild.cancel(response.getAuthorizedAmount())
+                .execute("ICR");
+        assertNotNull(cancel);
+
+        pmi = cancel.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4352", pmi.getMessageReasonCode());
+
+        assertEquals("400", cancel.getResponseCode());
     }
 }

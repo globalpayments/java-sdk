@@ -6,42 +6,39 @@ import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
-    private List<DE62_2_CardIssuerEntry> cardIssuerEntries;
+    private HashMap<String, DE62_2_CardIssuerEntry> cardIssuerEntries;
 
     public int getNumEntries() {
         return cardIssuerEntries.size();
     }
-    public List<DE62_2_CardIssuerEntry> getCardIssuerEntries() {
+    public HashMap<String, DE62_2_CardIssuerEntry> getCardIssuerEntries() {
         return cardIssuerEntries;
     }
-    public void setCardIssuerEntries(List<DE62_2_CardIssuerEntry> cardIssuerEntries) {
+    public void setCardIssuerEntries(HashMap<String, DE62_2_CardIssuerEntry> cardIssuerEntries) {
         this.cardIssuerEntries = cardIssuerEntries;
     }
 
     public DE62_CardIssuerData() {
-        cardIssuerEntries = new ArrayList<DE62_2_CardIssuerEntry>();
+        cardIssuerEntries = new HashMap<String, DE62_2_CardIssuerEntry>();
     }
 
     public void add(DE62_2_CardIssuerEntry entry) {
         if(!StringUtils.isNullOrEmpty(entry.getIssuerEntry())) {
-            cardIssuerEntries.add(entry);
+            cardIssuerEntries.put(entry.getIssuerTagValue(), entry);
         }
     }
     public void add(CardIssuerEntryTag tag, String value) {
-        DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, value);
-        add(entry);
+        add(new DE62_2_CardIssuerEntry(tag, value));
     }
     public void add(CardIssuerEntryTag tag, String tagValue, String value) {
-        DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, tagValue, value);
-        add(entry);
+        add(new DE62_2_CardIssuerEntry(tag, tagValue, value));
     }
 
     public String get(CardIssuerEntryTag tag) {
-        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries) {
+        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries.values()) {
             if(entry.getIssuerTag().equals(tag)) {
                 return entry.getIssuerEntry();
             }
@@ -49,7 +46,7 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
         return null;
     }
     public String get(String tagValue) {
-        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries) {
+        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries.values()) {
             if(entry.getIssuerTagValue().equals(tagValue)) {
                 return entry.getIssuerEntry();
             }
@@ -71,7 +68,7 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
 
             DE62_2_CardIssuerEntry entry = new DE62_2_CardIssuerEntry(tag, issuerEntryData);
             entry.setIssuerTagValue(tagValue);
-            cardIssuerEntries.add(entry);
+            cardIssuerEntries.put(entry.getIssuerTag().getValue(), entry);
         }
 
         return this;
@@ -80,7 +77,7 @@ public class DE62_CardIssuerData implements IDataElement<DE62_CardIssuerData> {
     public byte[] toByteArray() {
         String rvalue = StringUtils.padLeft(cardIssuerEntries.size(), 2, '0');
 
-        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries) {
+        for(DE62_2_CardIssuerEntry entry: cardIssuerEntries.values()) {
             // put the tag value if present
             if(!StringUtils.isNullOrEmpty(entry.getIssuerTagValue())) {
                 rvalue = rvalue.concat(entry.getIssuerTagValue());
