@@ -21,6 +21,7 @@ public abstract class BaseBuilder<TResult> {
     public TResult execute() throws ApiException {
         return execute("default");
     }
+    
     public TResult execute(String configName) throws ApiException {
         validations.validate(this);
         return null;

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ParseFormat {
-	Transaction(0), State(1), PID(2);
+	Transaction(0), State(1), PID(2), PayAtTable(3), XML(4);
 	
 	private final int format;
 	private final static Map map = new HashMap<Object, Object>();

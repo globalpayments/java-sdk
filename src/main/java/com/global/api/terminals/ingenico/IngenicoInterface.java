@@ -1,12 +1,21 @@
 package com.global.api.terminals.ingenico;
 
+import java.math.BigDecimal;
+
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.terminals.abstractions.*;
-import com.global.api.terminals.builders.*;
-import com.global.api.terminals.ingenico.responses.CancelResponse;
+import com.global.api.terminals.DeviceInterface;
+import com.global.api.terminals.TerminalUtilities;
+import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.abstractions.IInitializeResponse;
+import com.global.api.terminals.abstractions.ISignatureResponse;
+import com.global.api.terminals.builders.TerminalAuthBuilder;
+import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
-import com.global.api.terminals.ingenico.responses.*;
+import com.global.api.terminals.ingenico.responses.POSIdentifierResponse;
+import com.global.api.terminals.ingenico.responses.TerminalStateResponse;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentType;
@@ -14,12 +23,14 @@ import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.terminals.*;
-
-import java.math.BigDecimal;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
 
 public class IngenicoInterface extends DeviceInterface<IngenicoController> implements IDeviceInterface {
 	private PaymentType paymentMethod = null;
+
+	IngenicoInterface(IngenicoController controller) {
+		super(controller);
+	}
 
 	public PaymentType getPaymentMethod() {
 		return paymentMethod;
@@ -29,16 +40,16 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		this.paymentMethod = paymentMethod;
 	}
 
-	IngenicoInterface(IngenicoController controller) {
-		super(controller);
-	}
-
 	public void setOnMessageSent(IMessageSentInterface onMessageSent) {
 		this.onMessageSent = onMessageSent;
 	}
 
 	public void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived) {
 		this.onBroadcastMessage = onBroadcastReceived;
+	}
+
+	public void setOnPayAtTableRequest(IPayAtTableRequestInterface onPayAtTableRequest) {
+		this.onPayAtTableRequest = onPayAtTableRequest;
 	}
 
 	public ISignatureResponse promptForSignature() throws ApiException {
@@ -86,6 +97,11 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 	}
 
 	@Override
+	public TerminalAuthBuilder payAtTableResponse() throws ApiException {
+		return super.payAtTableResponse();
+	}
+
+	@Override
 	public IDeviceResponse duplicate() throws ApiException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
@@ -104,7 +120,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 
 		byte[] response = _controller
 				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
-		return new CancelResponse(response);
+		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
 	@Override
@@ -116,14 +132,14 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		}
 	}
 
-
 	@Override
 	public IDeviceResponse getTerminalConfiguration() throws ApiException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
 		sb.append(new INGENICO_REQ_CMD().CALL_TMS);
-		
-		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+
+		byte[] response = _controller
+				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
 		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
@@ -132,8 +148,9 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
 		sb.append(new INGENICO_REQ_CMD().LOGON);
-		
-		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+
+		byte[] response = _controller
+				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
 		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
 
@@ -142,28 +159,31 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
 		sb.append(new INGENICO_REQ_CMD().STATE);
-		
-		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+
+		byte[] response = _controller
+				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
 		return new TerminalStateResponse(response);
 	}
-	
+
 	@Override
 	public IDeviceResponse reboot() throws ApiException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
 		sb.append(new INGENICO_REQ_CMD().RESET);
-		
-		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+
+		byte[] response = _controller
+				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
 		return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
 	}
-	
+
 	@Override
 	public IInitializeResponse initialize() throws ApiException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
 		sb.append(new INGENICO_REQ_CMD().PID);
-		
-		byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
+
+		byte[] response = _controller
+				.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
 		return new POSIdentifierResponse(response);
 	}
 }

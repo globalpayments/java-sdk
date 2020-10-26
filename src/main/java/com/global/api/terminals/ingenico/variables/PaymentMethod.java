@@ -23,4 +23,8 @@ public enum PaymentMethod {
 	public static PaymentMethod getEnumName(int val) {
 		return (PaymentMethod) map.get(val);
 	}
+	
+	public int getValue() {
+		return this.method;
+	}
 }

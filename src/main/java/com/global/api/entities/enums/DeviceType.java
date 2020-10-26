@@ -5,5 +5,6 @@ public enum DeviceType {
     HPA_ISC250,
     INGENICO_L3000,
     INGENICO_M3500,
-    INGENICO_D5000
+    INGENICO_D5000,
+    INGENICO_M5000
 }

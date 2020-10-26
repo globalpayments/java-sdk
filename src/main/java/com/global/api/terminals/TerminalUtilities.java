@@ -72,6 +72,7 @@ public class TerminalUtilities {
 
 		switch (settings) {
 		case SERIAL:
+		case PAY_AT_TABLE:
 			buffer.add(ControlCodes.STX.getByte());
 			for (char c : message.toCharArray())
 				buffer.add((byte) c);

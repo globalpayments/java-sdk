@@ -20,11 +20,13 @@ import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
-import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
+import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
+import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
@@ -35,6 +37,7 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
 	public IMessageSentInterface onMessageSent;
 	public IBroadcastMessageInterface onBroadcastMessage;
+	public IPayAtTableRequestInterface onPayAtTableRequest;
 
 	public void setOnMessageSent(IMessageSentInterface onMessageSent) {
 		this.onMessageSent = onMessageSent;
@@ -42,6 +45,10 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
 	public void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastMessage) {
 		this.onBroadcastMessage = onBroadcastMessage;
+	}
+
+	public void setOnPayAtTableRequest(IPayAtTableRequestInterface onPayAtTableRequest) {
+		this.onPayAtTableRequest = onPayAtTableRequest;
 	}
 
 	public DeviceInterface(T controller) {
@@ -59,14 +66,23 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 					onBroadcastMessage.broadcastReceived(code, message);
 			}
 		});
-		
-		_requestIdProvider  = _controller.requestIdProvider();
+
+		_controller.setOnPayAtTableRequestHandler(new IPayAtTableRequestInterface() {
+			public void onPayAtTableRequest(PATRequest payAtTableRequest) {
+				if (onPayAtTableRequest != null) {
+					onPayAtTableRequest.onPayAtTableRequest(payAtTableRequest);
+				}
+			}
+		});
+
+		_requestIdProvider = _controller.requestIdProvider();
 	}
 
 	// admin methods
 	public IDeviceResponse cancel() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
+
 	public IDeviceResponse closeLane() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
@@ -128,6 +144,7 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 	public IBatchCloseResponse batchClose() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
+
 	public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
@@ -247,7 +264,7 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 	public TerminalAuthBuilder ebtWithdrawal(BigDecimal amount) throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
-	
+
 	// report calls
 	public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
@@ -291,17 +308,21 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 	public TerminalManageBuilder reverse(BigDecimal amount) throws ApiException {
 		return new TerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit).withAmount(amount);
 	}
-	
+
 	public IDeviceResponse getTerminalConfiguration() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
-	
+
 	public IDeviceResponse testConnection() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
 	}
-	
+
 	public IDeviceResponse getTerminalStatus() throws ApiException {
 		throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+	}
+
+	public TerminalAuthBuilder payAtTableResponse() throws ApiException {
+		return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other);
 	}
 
 	public void dispose() {

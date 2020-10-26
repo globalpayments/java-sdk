@@ -1,8 +1,8 @@
 package com.global.api.terminals.ingenico.interfaces;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -10,7 +10,6 @@ import com.fazecast.jSerialComm.SerialPortPacketListener;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
@@ -20,46 +19,60 @@ import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.ingenico.variables.INGENICO_RESP;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
 import com.global.api.utils.MessageWriter;
 
 public class IngenicoSerialInterface implements IDeviceCommInterface {
-	private ITerminalConfiguration settings;
-	private SerialPort serialPort;
-	private Exception exception;
+	private ITerminalConfiguration _settings;
+	private SerialPort _serialPort;
+	private OutputStream _out;
+	private Exception _exception;
 
-	private MessageWriter messageResponse;
-	private byte[] bufferReceived;
+	private MessageWriter _messageResponse;
+	private byte[] _bufferReceived;
+	private String _bReceived;
 
-	private boolean isAcknowledge;
-	private boolean isBroadcast;
-	private boolean isXML;
-	private boolean isFinalResult;
-	private boolean transComplete;
-	private String appendReport;
-	private String broadcastStr;
-	private String finalResponse;
-	private final Object lock;
+	private boolean _isAcknowledge;
+	private boolean _isBroadcast;
+	private boolean _isXML;
+	private boolean _isFinalResult;
+	private boolean _transComplete;
+	private String _broadcastStr;
+	private String _finalResponse;
+	private String _operatingSystem;
+	private String responseData;
+	private String actualReceived;
+	private StringBuilder _appendReport = new StringBuilder();
 
-	private IMessageSentInterface onMessageSent;
-	private IBroadcastMessageInterface onBroadcastMessage;
+	private final Object _lock;
+	private volatile boolean _exit;
+	private volatile boolean _hasReceived;
 
+	private IMessageSentInterface _onMessageSent;
+	private IBroadcastMessageInterface _onBroadcastMessage;
+	
 	public IngenicoSerialInterface(ITerminalConfiguration settings) throws ConfigurationException {
-		lock = new Object();
-		this.settings = settings;
+		_lock = new Object();
+		_bReceived = new String();
+		_settings = settings;
 		connect();
 	}
 
 	public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-		this.onMessageSent = onMessageSent;
+		_onMessageSent = onMessageSent;
 	}
 
 	public void setBroadcastMessageHandler(IBroadcastMessageInterface onBroadcastMessage) {
-		this.onBroadcastMessage = onBroadcastMessage;
+		_onBroadcastMessage = onBroadcastMessage;
+	}
+
+	public void setOnPayAtTableRequestHandler(IPayAtTableRequestInterface onPayAtTable) {
+		// not required for this connection mode
 	}
 
 	private final class SerialPortDataReceived implements SerialPortPacketListener {
 		public int getPacketSize() {
-			return serialPort.bytesAvailable();
+			return _serialPort.bytesAvailable();
 		}
 
 		public int getListeningEvents() {
@@ -68,114 +81,145 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 
 		public void serialEvent(SerialPortEvent event) {
 			try {
-				if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_RECEIVED) {
-					bufferReceived = event.getReceivedData();
-
+				if (event.getEventType() == getListeningEvents() && !_exit) {
+					_bufferReceived = event.getReceivedData();
 					Thread.sleep(100);
-					serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, settings.getTimeout(), 0);
 
-					if (bufferReceived.length < 3) {
+					if (_bufferReceived.length < 3) {
 						Integer ascii = 0;
-						for (byte b : bufferReceived) {
+						for (byte b : _bufferReceived) {
 							ascii = (int) b;
 						}
 
 						if (ascii.byteValue() == ControlCodes.ACK.getByte()) {
-							isAcknowledge = true;
+							_isAcknowledge = true;
 						} else if (ascii.byteValue() == ControlCodes.ENQ.getByte()) {
-							serialPort.writeBytes(ControlCodes.ACK.getBytes(), ControlCodes.ACK.getBytes().length, 0);
+							_out.write(ControlCodes.ACK.getBytes(), 0, 1);
 						}
 					} else {
-						String bReceived = new String(bufferReceived, StandardCharsets.UTF_8);
-						if (bReceived.contains(new INGENICO_RESP().XML)) {
-							appendReport = bReceived;
-							isXML = true;
-						} else if (bReceived.contains(new INGENICO_GLOBALS().BROADCAST)) {
-							isBroadcast = true;
-							broadcastStr = bReceived;
-						} else if (!bReceived.contains(new INGENICO_GLOBALS().BROADCAST)
-								&& !bReceived.contains(new INGENICO_RESP().INVALID)
-								&& !bReceived.contains(new INGENICO_RESP().XML)) {
-							isFinalResult = true;
-							finalResponse = bReceived;
+						if (!_transComplete) {
+							_bReceived = new String(_bufferReceived, StandardCharsets.UTF_8);
+
+							if (_bReceived.contains(new INGENICO_RESP().XML) && !_isXML) {
+								_isXML = true;
+							} else if (_bReceived.contains(new INGENICO_GLOBALS().BROADCAST)) {
+								_isBroadcast = true;
+								_broadcastStr = _bReceived;
+							} else if (!_bReceived.contains(new INGENICO_GLOBALS().BROADCAST)
+									&& !_bReceived.contains(new INGENICO_RESP().INVALID)
+									&& (!_bReceived.contains(new INGENICO_RESP().XML)
+											&& !_bReceived.contains(new INGENICO_RESP().ENDXML)
+											&& !_bReceived.contains(new INGENICO_RESP().LFTAG))) {
+								_isFinalResult = true;
+								_finalResponse = _bReceived;
+							}
 						}
 					}
 				}
 			} catch (InterruptedException e) {
-				exception = new InterruptedException(e.getMessage());
+				_exception = new InterruptedException(e.getMessage());
+			} catch (IOException e) {
+				_exception = new IOException(e.getMessage());
+			} finally {
+				synchronized (_lock) {
+					_hasReceived = true;
+					_lock.notify();
+				}
 			}
 		}
 	}
 
 	public void connect() throws ConfigurationException {
-		if (settings == null) {
+		if (_settings == null) {
 			throw new ConfigurationException("Please create connection between device and serial port.");
 		}
 
-		if (serialPort == null) {
+		if (_serialPort == null) {
 			StringBuilder systemPort = new StringBuilder();
 			String operatingSystem = System.getProperty("os.name").toLowerCase();
+
 			if (operatingSystem.indexOf("win") >= 0) {
 				systemPort.append("COM");
-				systemPort.append(settings.getPort());
+				systemPort.append(_settings.getPort());
+				_operatingSystem = new INGENICO_GLOBALS().WINDOWS_ENV;
 			} else if (operatingSystem.indexOf("nux") >= 0) {
 				systemPort.append("ttyS");
-				systemPort.append(settings.getPort());
+				systemPort.append(_settings.getPort());
+				_operatingSystem = new INGENICO_GLOBALS().LINUX_ENV;
 			}
 
+			String portName = systemPort.toString();
 			for (SerialPort port : SerialPort.getCommPorts()) {
-				if (port.getSystemPortName().contains(systemPort.toString())) {
-					serialPort = port;
+				if (port.getSystemPortName().contains(portName)) {
+					_serialPort = port;
 					break;
 				}
 			}
 
-			if (serialPort == null) {
-				throw new ConfigurationException("Can't connect to the terminal.");
+			if (_serialPort == null) {
+				throw new ConfigurationException("Cannot connect to the terminal.");
 			}
 
-			serialPort.openPort();
-			serialPort.setComPortParameters(settings.getBaudRate().getValue(), settings.getDataBits().getValue(),
-					settings.getStopBits().getValue(), settings.getParity().getValue());
-			serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, settings.getTimeout(), 0);
+			_serialPort.openPort();
+			_serialPort.setComPortParameters(_settings.getBaudRate().getValue(), _settings.getDataBits().getValue(),
+					_settings.getStopBits().getValue(), _settings.getParity().getValue());
+			_serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, _settings.getTimeout(), 0);
 
-			if (serialPort.isOpen()) {
-				serialPort.addDataListener(new SerialPortDataReceived());
+			if (_serialPort.isOpen()) {
+				_serialPort.addDataListener(new SerialPortDataReceived());
+				_out = _serialPort.getOutputStream();
 			}
 		} else {
-			throw new ConfigurationException("Serial port already open.");
+			throw new ConfigurationException("Serial port is already open.");
 		}
 	}
 
 	public void disconnect() {
-		serialPort.closePort();
-		serialPort = null;
+		_serialPort.closePort();
+		_serialPort = null;
 	}
 
 	public byte[] send(final IDeviceMessage message) throws ApiException {
 		try {
-			if (serialPort != null) {
-				if (onMessageSent != null) {
+			if (_serialPort != null) {
+				_exception = null;
+				_transComplete = false;
+
+				if (_onMessageSent != null) {
 					String messageSent = TerminalUtilities.getString(message.getSendBuffer());
-					messageSent = messageSent.substring(1, messageSent.length() - 3);
-					onMessageSent.messageSent(messageSent);
+					messageSent = messageSent.substring(1, messageSent.length() - 2);
+					_onMessageSent.messageSent(messageSent);
 				}
 
 				WriteMessage writeMessage = new WriteMessage(message);
 				writeMessage.start();
-				if (!writeMessage.waitTask(settings.getTimeout())) {
-					writeMessage.interrupt();
-					throw new RuntimeException("Terminal did not respond within timeout.");
+				
+				while (true) {
+					if (!writeMessage.waitTask(_settings.getTimeout())) {
+						if (!_hasReceived) {
+							writeMessage.stop();
+
+							if (_exception != null) {
+								throw new InterruptedException(_exception.getMessage());
+							} else {
+								throw new InterruptedException("Terminal did not respond within timeout.");
+							}
+						} else {
+							_hasReceived = false;
+							continue;
+						}
+					} else {
+						break;
+					}
 				}
 			}
 		} catch (Exception e) {
 			throw new ApiException(e.getMessage());
 		} finally {
-			exception = null;
-			transComplete = false;
+			_exit = true;
 		}
 
-		return messageResponse.toArray();
+		return _messageResponse.toArray();
 	}
 
 	private boolean validateResponseLRC(String toCalculate, String actualResponse) {
@@ -190,34 +234,33 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 	}
 
 	private class WriteMessage implements Runnable {
-		private IDeviceMessage message;
-		private Thread thread;
+		private IDeviceMessage _message;
+		private Thread _thread;
 
 		public WriteMessage(IDeviceMessage message) {
-			this.message = message;
-		}
-
-		public void interrupt() {
-			thread.interrupt();
-			thread = null;
+			_message = message;
 		}
 
 		public void start() {
-			thread = new Thread(this);
-			thread.start();
+			_thread = new Thread(this);
+			_exit = false;
+			_thread.start();
+		}
+
+		public void stop() throws ConfigurationException {
+			_transComplete = true;
+			_exit = true;
 		}
 
 		public boolean waitTask(long timeout) {
-			synchronized (lock) {
+			synchronized (_lock) {
 				boolean result = true;
-				try {
-					lock.wait(timeout);
 
-					if (!transComplete) {
+				try {
+					_lock.wait(timeout);
+
+					if (!_transComplete) {
 						result = false;
-						serialPort.removeDataListener();
-					} else {
-						return result;
 					}
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
@@ -230,106 +273,110 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 		private void writeMessage(IDeviceMessage message) throws ApiException {
 			try {
 				Integer enquiryCount = 0;
-				messageResponse = new MessageWriter();
+				_messageResponse = new MessageWriter();
 
-				if (serialPort == null) {
+				if (_serialPort == null) {
 					throw new ApiException("Serial port is not open.");
 				}
 
 				do {
-					serialPort.writeBytes(ControlCodes.ENQ.getBytes(), ControlCodes.ENQ.getBytes().length, 0);
-					if (!isAcknowledge) {
+					_out.write(ControlCodes.ENQ.getBytes(), 0, 1);
+
+					if (!_isAcknowledge) {
 						Thread.sleep(1000);
-						serialPort.writeBytes(ControlCodes.EOT.getBytes(), ControlCodes.EOT.getBytes().length, 0);
+						_out.write(ControlCodes.EOT.getBytes(), 0, 1);
 						enquiryCount++;
 
 						if (enquiryCount.equals(3)) {
-							throw new ApiException("Send aborted.");
+							_exception = new ApiException(
+									"Terminal did not respond in enquiry three (3) times. Send Aborted");
+							throw _exception;
 						}
 					} else {
-						byte[] msg = message.getSendBuffer();
-						serialPort.writeBytes(msg, msg.length, 0);
-						enquiryCount = 0;
-
 						do {
-							if (!isAcknowledge) {
-								enquiryCount++;
-								Thread.sleep(1000);
+							byte[] msg = message.getSendBuffer();
+							_out.write(msg, 0, msg.length);
 
-								if (enquiryCount.equals(3)) {
-									throw new ApiException("Send aborted.");
-								}
-							} else {
-								serialPort.writeBytes(ControlCodes.EOT.getBytes(), ControlCodes.EOT.getBytes().length,
-										0);
-								isAcknowledge = false;
+							if (_isAcknowledge) {
+								Thread.sleep(1000);
+								_out.write(ControlCodes.EOT.getBytes(), 0, 1);
+								_isAcknowledge = false;
 								break;
 							}
 						} while (true);
 
 						do {
 							Thread.sleep(100);
-							if (isBroadcast) {
+							if (_isBroadcast) {
 								BroadcastMessage broadcastMsg = new BroadcastMessage(
-										broadcastStr.getBytes(StandardCharsets.UTF_8));
-								if (onBroadcastMessage != null) {
-									onBroadcastMessage.broadcastReceived(broadcastMsg.getCode(),
+										_broadcastStr.getBytes(StandardCharsets.UTF_8));
+								if (_onBroadcastMessage != null) {
+									_onBroadcastMessage.broadcastReceived(broadcastMsg.getCode(),
 											broadcastMsg.getMessage());
-									broadcastStr = "";
-									isBroadcast = false;
+									_broadcastStr = "";
+									_isBroadcast = false;
 								}
 							}
 
-							if (isXML) {
-								do {
-									Thread.sleep(100);
-									String bReceived = new String(bufferReceived, StandardCharsets.UTF_8);
-									if (!appendReport.contains(bReceived)) {
-										appendReport += bReceived;
-									}
+							if (_isXML) {
+								while (!_transComplete) {
+									if (_appendReport.toString().contains(new INGENICO_RESP().ENDXML)) {
+										String xmlData = _appendReport.toString();
+										_appendReport = new StringBuilder();
 
-									if (appendReport.contains(new INGENICO_RESP().ENDXML)) {
-										String xmlData = appendReport.trim();
 										if (messageReceived(xmlData)) {
-											serialPort.writeBytes(ControlCodes.ACK.getBytes(),
-													ControlCodes.ACK.getBytes().length, 0);
-											appendReport = "";
-											isXML = false;
-											transComplete = true;
+											_out.write(ControlCodes.ACK.getBytes(), 0, 1);
+											_appendReport = new StringBuilder();
+											_isXML = false;
+											_transComplete = true;
+										}
+									} else {
+										if (!_bReceived.isEmpty()) {
+											_appendReport.append(_bReceived);
+											_bReceived = "";
 										}
 									}
-								} while (!transComplete);
+
+									Thread.sleep(100);
+								}
 							}
 
-							if (isFinalResult) {
-								String check = TerminalUtilities.getString(message.getSendBuffer());
-								String bReceived = finalResponse;
-								if (bReceived.contains(check.substring(1, 3))) {
+							if (_isFinalResult) {
+								String validate = TerminalUtilities.getString(message.getSendBuffer());
+								String received = _finalResponse;
+								String referenceNumber = validate.substring(1, 3);
+
+								if (received.contains(referenceNumber)) {
 									do {
-										String rData = bReceived.substring(0, bReceived.length() - 2);
-										bReceived = bReceived.substring(0, bReceived.length() - 2);
-										boolean validateLRC = validateResponseLRC(rData, bReceived);
+										if (_operatingSystem.equals(new INGENICO_GLOBALS().WINDOWS_ENV)) {
+											responseData = received.substring(0, received.length() - 1);
+											actualReceived = received.substring(0, received.length() - 1);
+										} else {
+											responseData = received.substring(1, received.length());
+											actualReceived = received.substring(1, received.length());	
+										}
+										
+										boolean validateLRC = validateResponseLRC(responseData, actualReceived);
 										if (validateLRC) {
-											if (messageReceived(rData)) {
-												serialPort.writeBytes(ControlCodes.ACK.getBytes(),
-														ControlCodes.ACK.getBytes().length, 0);
-												finalResponse = "";
-												isFinalResult = false;
-												transComplete = true;
+											if (messageReceived(responseData)) {
+												_out.write(ControlCodes.ACK.getBytes(), 0, 1);
+												_finalResponse = "";
+												_isFinalResult = false;
+												_transComplete = true;
 											}
 										}
-									} while (!transComplete);
+									} while (!_transComplete);
 								}
 							}
-						} while (!transComplete);
+						} while (!_transComplete);
 						break;
 					}
 				} while (true);
 			} catch (Exception e) {
 				throw new ApiException(e.getMessage());
 			} finally {
-				synchronized (lock) {
-					lock.notify();
+				synchronized (_lock) {
+					_lock.notify();
 				}
 			}
 		}
@@ -338,9 +385,9 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 			new Thread(new Runnable() {
 				public void run() {
 					try {
-						writeMessage(message);
+						writeMessage(_message);
 					} catch (ApiException e) {
-						exception = new ApiException(e.getMessage());
+						_exception = new ApiException(e.getMessage());
 					}
 				}
 			}).start();
@@ -348,16 +395,18 @@ public class IngenicoSerialInterface implements IDeviceCommInterface {
 	}
 
 	private boolean messageReceived(String message) {
-		if (messageResponse == null) {
+		if (_messageResponse == null) {
 			return false;
 		}
 
 		for (char c : message.toCharArray()) {
-			if (((byte) c) == ControlCodes.STX.getByte() || ((byte) c) == ControlCodes.ETX.getByte()) {
+			byte b = (byte) c;
+
+			if (b == ControlCodes.STX.getByte() || b == ControlCodes.ETX.getByte()) {
 				continue;
 			}
 
-			messageResponse.add((byte) c);
+			_messageResponse.add(b);
 		}
 
 		return true;

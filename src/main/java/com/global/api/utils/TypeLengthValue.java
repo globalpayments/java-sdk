@@ -12,50 +12,69 @@ import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 
 public class TypeLengthValue {
 
-	private byte[] data = new byte[0];
-	private TLVFormat format = TLVFormat.Standard;
+	private byte[] _data = new byte[0];
+	private TLVFormat _format = TLVFormat.Standard;
 
 	public TypeLengthValue() {
 
 	}
 
 	public TypeLengthValue(byte[] data) {
-		this.data = data;
+		_data = data;
 	}
 
 	public TLVFormat getTLVFormat() {
-		return format;
+		return _format;
 	}
-
-	public void setTLVFormat(TLVFormat format) {
-		this.format = format;
-	}
-
+	
 	public Object getValue(byte type, Class returnType, TLVFormat format) throws Exception {
-		if (data.length == 0) {
+		if (_data.length == 0) {
 			throw new Exception("No data to parse.");
 		}
+		
+		if (format != null) {
+			_format = format;
+		}
 
-		String buffer = new String(data, StandardCharsets.UTF_8);
+		String buffer = new String(_data, StandardCharsets.UTF_8);
 		String getBuffer = new String(new byte[] { type }, StandardCharsets.UTF_8);
 		Integer index = buffer.indexOf(getBuffer);
 
 		if (index >= 0) {
-			byte[] lengthBuffer = { data[index + 1], data[index + 2] };
+			byte[] lengthBuffer = { _data[index + 1], _data[index + 2] };
 			Integer length = 0;
 
-			if ((format != null && format == TLVFormat.Standard) || this.format == TLVFormat.Standard) {
+			if (_format == TLVFormat.Standard) {
 				length = Integer.parseInt(TerminalUtilities.getString(lengthBuffer), 16);
-			} else if ((format != null && format == TLVFormat.State) || this.format == TLVFormat.State) {
+			} else if (_format == TLVFormat.State || _format == TLVFormat.PayAtTable) {
 				length = Integer.parseInt(TerminalUtilities.getString(lengthBuffer));
 			} else {
 				throw new Exception("Unsupported TLV Format.");
 			}
 
-			byte[] arrValue = Arrays.copyOfRange(data, index + 3, length + 3);
 			int endLength = index + length + 3;
-			data = Extensions.subArray(data, 0, index);
-			data = Extensions.subArray(data, endLength, data.length - endLength);
+			byte[] arrValue = Arrays.copyOfRange(_data, index + 3, endLength);
+			
+			byte[] cuttedData = Arrays.copyOfRange(_data, 0, index);
+			byte[] excessData = Arrays.copyOfRange(_data, endLength, _data.length);
+			
+			MessageWriter msg = new MessageWriter();
+			for (int i = 0; i < cuttedData.length; i++) {
+				msg.add(cuttedData[i]);
+				
+				if (i == (cuttedData.length - 1)) {
+					for (int j = 0; j < excessData.length; j++) {
+						msg.add(excessData[j]);
+					}
+				}
+			}
+			
+			if (index > 0) {
+				_data = msg.toArray();	
+			} else {
+				_data = Extensions.subArray(_data, endLength, _data.length - endLength);
+			}
+			
 			String strValue = new String(arrValue, StandardCharsets.UTF_8);
 
 			if (returnType == BigDecimal.class) {

@@ -1,5 +1,12 @@
 package com.global.api.terminals.hpa.interfaces;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
@@ -7,16 +14,10 @@ import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
 import com.global.api.utils.AutoResetEvent;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HpaTcpInterface implements IDeviceCommInterface {
 	private Socket client;
@@ -35,6 +36,10 @@ public class HpaTcpInterface implements IDeviceCommInterface {
 	}
 
 	public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
+		// not required for this connection mode
+	}
+
+	public void setOnPayAtTableRequestHandler(IPayAtTableRequestInterface onPayAtTable) {
 		// not required for this connection mode
 	}
 

@@ -57,4 +57,14 @@ public class PaxBaseResponse extends TerminalResponse {
 
         return sb.toString();
     }
+
+	public String getReferenceNumber() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setReferenceNumber(String refNumber) {
+		// TODO Auto-generated method stub
+		
+	}
 }

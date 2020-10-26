@@ -1,10 +1,20 @@
 package com.global.api.terminals.ingenico;
 
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+
+import com.global.api.entities.enums.ConnectionModes;
+import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.terminals.*;
+import com.global.api.terminals.DeviceController;
+import com.global.api.terminals.DeviceMessage;
+import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
@@ -14,6 +24,7 @@ import com.global.api.terminals.abstractions.ITerminalResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.interfaces.IngenicoBluetoothInterface;
 import com.global.api.terminals.ingenico.interfaces.IngenicoSerialInterface;
 import com.global.api.terminals.ingenico.interfaces.IngenicoTcpInterface;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalReceiptResponse;
@@ -21,16 +32,15 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalReportRespons
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
+import com.global.api.terminals.ingenico.variables.INGENICO_RESP;
+import com.global.api.terminals.ingenico.variables.PATResponseType;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.PaymentType;
+import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.utils.Extensions;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-
 public class IngenicoController extends DeviceController {
-	private IDeviceInterface _device;
 
 	public IngenicoController(ITerminalConfiguration settings) throws ConfigurationException {
 		super(settings);
@@ -38,10 +48,10 @@ public class IngenicoController extends DeviceController {
 
 	@Override
 	public IDeviceInterface configureInterface() throws ConfigurationException {
-		if (_device == null) {
-			_device = new IngenicoInterface(this);
+		if (_interface == null) {
+			_interface = new IngenicoInterface(this);
 		}
-		return _device;
+		return _interface;
 	}
 
 	@Override
@@ -50,7 +60,10 @@ public class IngenicoController extends DeviceController {
 		case SERIAL:
 			return new IngenicoSerialInterface(settings);
 		case TCP_IP_SERVER:
+		case PAY_AT_TABLE:
 			return new IngenicoTcpInterface(settings);
+		case BLUETOOTH:
+			return new IngenicoBluetoothInterface(settings);
 		default:
 			throw new UnsupportedOperationException();
 		}
@@ -82,8 +95,35 @@ public class IngenicoController extends DeviceController {
 
 	@Override
 	public ITerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-		IDeviceMessage request = buildRequestMessage(builder);
+		IDeviceMessage request = null;
+		if (settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
+			request = buildPATTResponseMessage(builder);
+		} else {
+			request = buildRequestMessage(builder);
+		}
+
 		return doRequest(request);
+	}
+
+	private byte[] getXMLContent(String xmlPath) throws BuilderException {
+		byte[] result;
+
+		try {
+			if (xmlPath.isEmpty()) {
+				throw new BuilderException("XML Path is empty");
+			} else if (!xmlPath.contains(".xml")) {
+				throw new BuilderException("File must be in XML Document type");
+			}
+
+			result = Files.readAllBytes(Paths.get(xmlPath));
+//			String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
+//					+ new String(xmlByteArr, StandardCharsets.UTF_8);
+//			result = xmlContent.getBytes(StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			throw new BuilderException(e.getMessage());
+		}
+
+		return result;
 	}
 
 	private IDeviceMessage buildReportTransaction(TerminalReportBuilder builder) throws BuilderException {
@@ -100,8 +140,8 @@ public class IngenicoController extends DeviceController {
 		BigDecimal amount = validateAmount(builder.getAmount());
 		Integer returnRep = 1;
 		Integer paymentMode = 0;
-		Integer paymentType = ((IngenicoInterface) _device).getPaymentMethod() == null ? 0
-				: ((IngenicoInterface) _device).getPaymentMethod().getValue();
+		Integer paymentType = ((IngenicoInterface) _interface).getPaymentMethod() == null ? 0
+				: ((IngenicoInterface) _interface).getPaymentMethod().getValue();
 		String currencyCode = "826";
 		String privateData = "EXT0100000";
 		String immediateAnswer = "A010";
@@ -138,7 +178,7 @@ public class IngenicoController extends DeviceController {
 		BigDecimal amount = builder.getAmount();
 		Integer returnRep = 1;
 		Integer paymentMode = 0;
-		Integer paymentType = ((IngenicoInterface) _device).getPaymentMethod().getValue();
+		Integer paymentType = ((IngenicoInterface) _interface).getPaymentMethod().getValue();
 		String currencyCode = "826";
 		String privateData = "EXT0100000";
 		String immediateAnswer = "A010";
@@ -177,7 +217,7 @@ public class IngenicoController extends DeviceController {
 		} else if (!isObjectNullOrEmpty(cashbackAmount)) {
 			validateCashbackAmount(cashbackAmount);
 			cashbackAmount = cashbackAmount.multiply(new BigDecimal("100"));
-			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().CASHBACK, cashbackAmount);
+			extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().CASHBACK, cashbackAmount.intValue());
 		}
 
 		DecimalFormat decimalFormat = new DecimalFormat("00000000");
@@ -192,6 +232,41 @@ public class IngenicoController extends DeviceController {
 		message.append(immediateAnswer);
 		message.append(forceOnline);
 		message.append(extendedData);
+
+		return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
+	}
+
+	private IDeviceMessage buildPATTResponseMessage(TerminalAuthBuilder builder) throws BuilderException {
+		StringBuilder message = new StringBuilder();
+
+		if (builder.getXMLPath() != null) {
+			byte[] content = getXMLContent(builder.getXMLPath());
+			String xml = new String(content, StandardCharsets.ISO_8859_1);
+			
+			message.append(xml);
+		} else {
+			String referenceNumber = new INGENICO_RESP().PAT_EPOS_NUMBER;
+			Integer transactionStatus = TransactionStatus.SUCCESS.getValue();
+			BigDecimal amount = validateAmount(builder.getAmount());
+			Integer paymentMode = builder.getPATTPaymentMode().getValue();
+			String currencyCode = (!isObjectNullOrEmpty(builder.getCurrencyCode()) ? builder.getCurrencyCode()
+					: new INGENICO_REQ_CMD().DEFAULT_CURRENCY);
+			String privateData = PATResponseType.getEnumName(builder.getPATTResponseType().getValue()).toString();
+			
+			if (privateData.length() < 10) {
+				for (int i = privateData.length(); i < 10; i++) {
+					privateData += (char)ControlCodes.SP.getByte();
+				}
+			}
+			
+			DecimalFormat decimalFormat = new DecimalFormat("00000000");
+			message.append(referenceNumber);
+			message.append(transactionStatus);
+			message.append(decimalFormat.format(amount));
+			message.append(paymentMode);
+			message.append(currencyCode);
+			message.append(privateData);
+		}
 
 		return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
 	}
@@ -222,23 +297,24 @@ public class IngenicoController extends DeviceController {
 		return paymentMode.getValue();
 	}
 
-	private static void validateCashbackAmount(BigDecimal value) throws BuilderException {
-		Integer cashback = Integer.parseInt(value.toString());
-		if (cashback >= 1000000) {
+	private static void validateCashbackAmount(BigDecimal cashback) throws BuilderException {
+		BigDecimal compareDecimal = new BigDecimal("1000000");
+
+		if ((cashback.compareTo(compareDecimal) >= 0)) {
 			throw new BuilderException("Cashback amount exceed.");
-		} else if (cashback < 0) {
+		} else if ((cashback.compareTo(BigDecimal.ZERO) == -1)) {
 			throw new BuilderException("Cashback amount must not be less than zero.");
 		}
 	}
 
 	private static BigDecimal validateAmount(BigDecimal amount) throws BuilderException {
-		BigDecimal amount1mil = new BigDecimal("1000000");
+		BigDecimal compareDecimal = new BigDecimal("1000000");
 
 		if (amount == null) {
-			throw new BuilderException("Amount can not be null.");
-		} else if ((amount.compareTo(BigDecimal.ZERO) > 0) && (amount.compareTo(amount1mil) < 0)) {
+			throw new BuilderException("Amount can't be null.");
+		} else if ((amount.compareTo(BigDecimal.ZERO) > 0) && (amount.compareTo(compareDecimal) < 0)) {
 			amount = amount.multiply(new BigDecimal("100"));
-		} else if ((amount.compareTo(amount1mil) == 0) && (amount.compareTo(amount1mil) > 0)) {
+		} else if ((amount.compareTo(compareDecimal) == 0) && (amount.compareTo(compareDecimal) > 0)) {
 			throw new BuilderException("Amount exceed.");
 		} else {
 			throw new BuilderException("Invalid input amount.");

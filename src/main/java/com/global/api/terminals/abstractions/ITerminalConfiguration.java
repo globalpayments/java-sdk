@@ -1,7 +1,11 @@
 package com.global.api.terminals.abstractions;
 
-import com.global.api.entities.enums.*;
-import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.enums.BaudRate;
+import com.global.api.entities.enums.ConnectionModes;
+import com.global.api.entities.enums.DataBits;
+import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.Parity;
+import com.global.api.entities.enums.StopBits;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.IRequestIdProvider;
 

@@ -18,11 +18,10 @@ public enum TransactionStatus {
 	}
 
 	public static TransactionStatus getEnumName(int val) {
-		
-		return (TransactionStatus)map.get(val);
+		return (TransactionStatus) map.get(val);
 	}
 
-	public int getTransactionStatus() {
+	public int getValue() {
 		return this.status;
 	}
 }

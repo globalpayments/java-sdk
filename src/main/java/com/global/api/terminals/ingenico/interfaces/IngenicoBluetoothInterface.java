@@ -1,24 +1,30 @@
 package com.global.api.terminals.ingenico.interfaces;
 
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.terminals.abstractions.IDeviceCommInterface;
-import com.global.api.terminals.abstractions.IDeviceMessage;
-import com.global.api.terminals.messaging.IBroadcastMessageInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.utils.MessageWriter;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import javax.bluetooth.*;
+import javax.bluetooth.DataElement;
+import javax.bluetooth.DeviceClass;
+import javax.bluetooth.DiscoveryAgent;
+import javax.bluetooth.DiscoveryListener;
+import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.ServiceRecord;
+import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
-import javax.obex.ClientSession;
-import javax.obex.HeaderSet;
-import javax.obex.ResponseCodes;
+
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.terminals.abstractions.IDeviceCommInterface;
+import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
+import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
+import com.global.api.utils.MessageWriter;
 
 public class IngenicoBluetoothInterface implements IDeviceCommInterface {
 	private Object lock = new Object();
@@ -40,7 +46,7 @@ public class IngenicoBluetoothInterface implements IDeviceCommInterface {
 
 	private DeviceDiscoveryListener listener;
 
-	public IngenicoBluetoothInterface() throws ConfigurationException {
+	public IngenicoBluetoothInterface(ITerminalConfiguration settings) throws ConfigurationException {
 		listener.devices = new ArrayList<RemoteDevice>();
 		connect();
 	}
@@ -158,6 +164,11 @@ public class IngenicoBluetoothInterface implements IDeviceCommInterface {
 		} catch (Exception e) {
 			throw new ApiException(e.getMessage());
 		}
+	}
+
+	public void setOnPayAtTableRequestHandler(IPayAtTableRequestInterface onPayAtTable) {
+		// TODO Auto-generated method stub
+		
 	}
 
 //	private void deviceInquiry() {

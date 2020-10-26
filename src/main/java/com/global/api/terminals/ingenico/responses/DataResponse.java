@@ -20,24 +20,10 @@ public class DataResponse {
 	private TransactionSubTypes _txnSubType;
 	private BigDecimal _splitSaleAmount;
 	private DynamicCurrencyStatus _dccStatus;
-
-	private byte[] _buffer;
-
-	// For less memory allocation;
-	private byte _C = 67;
-	private byte _Z = 90;
-	private byte _Y = 89;
-	private byte _M = 77;
-	private byte _A = 65;
-	private byte _U = 85;
-	private byte _O = 79;
-	private byte _P = 80;
-	private byte _T = 84;
-	private byte _S = 83;
-	private byte _D = 68;
+	private TypeLengthValue tlv;
 
 	public DataResponse(byte[] buffer) {
-		_buffer = buffer;
+		tlv = new TypeLengthValue(buffer);
 		parseData();
 	}
 
@@ -45,7 +31,7 @@ public class DataResponse {
 		return _authCode != null ? _authCode : "";
 	}
 
-	private void setAuthorizationCode(String value) {
+	public void setAuthorizationCode(String value) {
 		_authCode = value;
 	}
 
@@ -132,8 +118,6 @@ public class DataResponse {
 
 	private void parseData() {
 		try {
-			TypeLengthValue tlv = new TypeLengthValue(_buffer);
-
 			_authCode = (String) tlv.getValue((byte) RepFieldCode.Authcode.getRepFieldCode(), String.class, null);
 			_cashbackAmount = (BigDecimal) tlv.getValue((byte) RepFieldCode.CashbackAmount.getRepFieldCode(),
 					BigDecimal.class, null);

@@ -1,17 +1,20 @@
 package com.global.api.terminals.pax.interfaces;
 
-import com.global.api.entities.enums.ControlCodes;
-import com.global.api.entities.exceptions.MessageException;
-import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.*;
-import com.global.api.terminals.messaging.IBroadcastMessageInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.utils.EnumUtils;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+
+import com.global.api.entities.enums.ControlCodes;
+import com.global.api.entities.exceptions.MessageException;
+import com.global.api.terminals.TerminalUtilities;
+import com.global.api.terminals.abstractions.IDeviceCommInterface;
+import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.messaging.IBroadcastMessageInterface;
+import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
+import com.global.api.utils.EnumUtils;
 
 public class PaxTcpInterface implements IDeviceCommInterface {
     private Socket client;
@@ -28,6 +31,10 @@ public class PaxTcpInterface implements IDeviceCommInterface {
     }
     
 	public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
+        // not required for this connection mode
+	}
+	
+	public void setOnPayAtTableRequestHandler(IPayAtTableRequestInterface onPayAtTable) {
         // not required for this connection mode
 	}
 

@@ -1,5 +1,7 @@
 package com.global.api.terminals.abstractions;
 
+import java.math.BigDecimal;
+
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.SafDelete;
 import com.global.api.entities.enums.SafReportSummary;
@@ -9,20 +11,19 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
-import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IPayAtTableRequestInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 
-import java.math.BigDecimal;
-
 public interface IDeviceInterface extends IDisposable {
     void setOnMessageSent(IMessageSentInterface onMessageSent);
     void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived);
+    void setOnPayAtTableRequest(IPayAtTableRequestInterface onPayAtTableRequest);
 
     // admin calls
     IDeviceResponse disableHostResponseBeep() throws ApiException;
@@ -103,4 +104,7 @@ public interface IDeviceInterface extends IDisposable {
     // transaction management
     IDeviceResponse duplicate() throws ApiException;
     TerminalManageBuilder reverse(BigDecimal amount) throws ApiException;
+    
+    // pay at table
+    TerminalAuthBuilder payAtTableResponse() throws ApiException;
 }

@@ -6,5 +6,6 @@ public enum ConnectionModes {
     SSL_TCP,
     HTTP,
     TCP_IP_SERVER,
-    BLUETOOTH
+    BLUETOOTH,
+    PAY_AT_TABLE
 }

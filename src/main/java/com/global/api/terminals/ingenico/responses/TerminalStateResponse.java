@@ -1,6 +1,5 @@
 package com.global.api.terminals.ingenico.responses;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.global.api.terminals.abstractions.IDeviceResponse;
@@ -65,20 +64,19 @@ public class TerminalStateResponse extends IngenicoTerminalResponse implements I
 
 				super.parseResponse(response);
 				TypeLengthValue tlv = new TypeLengthValue(Extensions.subArray(response, 12, 67));
-				tlv.setTLVFormat(TLVFormat.State);
 
 				String terminalStatusData = (String) tlv
-						.getValue((byte) StatusResponseCode.Status.getStatusResponseCode(), String.class, null);
+						.getValue((byte) StatusResponseCode.Status.getStatusResponseCode(), String.class, TLVFormat.State);
 				terminalStatus = TerminalStatus.getEnumName(Integer.parseInt(terminalStatusData.substring(0, 1)));
 				salesMode = SalesMode.getEnumName(Integer.parseInt(terminalStatusData.substring(1, 2)));
 				terminalCapabilities = terminalStatusData.substring(2, 8);
 				additionalTerminalCap = terminalStatusData.substring(8, 18);
 				appVersion = (String) tlv.getValue((byte) StatusResponseCode.AppVersion.getStatusResponseCode(),
-						String.class, null);
+						String.class, TLVFormat.State);
 				handsetNumber = (String) tlv.getValue((byte) StatusResponseCode.HandsetNumber.getStatusResponseCode(),
-						String.class, null);
+						String.class, TLVFormat.State);
 				terminalId = (String) tlv.getValue((byte) StatusResponseCode.TerminalId.getStatusResponseCode(),
-						String.class, null);
+						String.class, TLVFormat.State);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

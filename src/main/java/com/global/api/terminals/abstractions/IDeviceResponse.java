@@ -11,5 +11,7 @@ public interface IDeviceResponse {
     void setDeviceResponseCode(String deviceResponseCode);
     String getDeviceResponseText();
     void setDeviceResponseText(String deviceResponseMessage);
+    String getReferenceNumber();
+    void setReferenceNumber(String refNumber);
     String toString();
 }

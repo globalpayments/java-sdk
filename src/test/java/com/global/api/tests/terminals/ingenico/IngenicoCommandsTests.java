@@ -3,7 +3,6 @@ package com.global.api.tests.terminals.ingenico;
 import static org.junit.Assert.assertNotNull;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
@@ -21,8 +20,6 @@ import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IInitializeResponse;
 import com.global.api.terminals.abstractions.ITerminalReport;
 import com.global.api.terminals.abstractions.ITerminalResponse;
-import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
-import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
@@ -35,25 +32,15 @@ public class IngenicoCommandsTests {
 	ConnectionConfig config = new ConnectionConfig();
 
 	public IngenicoCommandsTests() throws ApiException {
-//		config.setDeviceType(DeviceType.INGENICO_L3000);
-//		config.setConnectionMode(ConnectionModes.SERIAL);
-//		config.setPort("1");
-//		config.setBaudRate(BaudRate.r9600);
-//		config.setDataBits(DataBits.Seven);
-//		config.setStopBits(StopBits.One);
-//		config.setParity(Parity.Even);
-//		config.setTimeout(8000);
-//		device = DeviceService.create(config);
-	}
-
-	@Test
-	public void testConnection() throws ApiException {
-		String test = "01700000001100000000000000000000000000000000000000000000000000000008260000000000";
-		byte[] res = test.getBytes(StandardCharsets.UTF_8);
-		
-		IngenicoTerminalResponse r = new IngenicoTerminalResponse(res, ParseFormat.Transaction);
-		ITerminalResponse t = (ITerminalResponse)r;
-		int i = 0;
+		config.setDeviceType(DeviceType.INGENICO_L3000);
+		config.setConnectionMode(ConnectionModes.SERIAL);
+		config.setPort("7");
+		config.setDataBits(DataBits.Seven);
+		config.setParity(Parity.Even);
+		config.setStopBits(StopBits.One);
+		config.setBaudRate(BaudRate.r9600);
+		config.setTimeout(65000);
+		device = DeviceService.create(config);
 	}
 
 	@Test
@@ -66,21 +53,34 @@ public class IngenicoCommandsTests {
 
 		device.setOnBroadcastMessageReceived(new IBroadcastMessageInterface() {
 			public void broadcastReceived(String code, String message) {
+				System.out.println(String.format("Code: %s, Message: %s", code, message));
 				assertNotNull(code, message);
 			}
 		});
 
-		ITerminalResponse response = device.sale(new BigDecimal("100")).withPaymentMode(PaymentMode.APPLICATION)
-				.withReferenceNumber(01).withCurrencyCode("826").withCashBack(new BigDecimal("90")).execute();
-
-//		if (response != null) {
-//			Thread.sleep(5000);
-			
-//			ITerminalResponse response2 = device.sale(new BigDecimal("100")).withPaymentMode(PaymentMode.APPLICATION)
-//					.withReferenceNumber(01).withCurrencyCode("826").withCashBack(new BigDecimal("90")).execute();
-			
+//		try {
+//			ITerminalResponse response = device.sale(new BigDecimal("6.18")).withPaymentMode(PaymentMode.APPLICATION)
+//					.withReferenceNumber(01).withCurrencyCode("826").execute();
+//		} catch (Exception e) {
+//			if (e.getMessage().contains("Terminal did not respond")) {
+//				Thread.sleep(5000);
+//
+//				IDeviceResponse duplic = device.duplicate();
+//				assertNotNull(duplic);
+//			}
 //		}
-		assertNotNull(response);
+
+		ITerminalResponse response = device.sale(new BigDecimal("6.18")).withPaymentMode(PaymentMode.APPLICATION)
+				.withReferenceNumber(01).withCurrencyCode("826").execute();
+//
+//		assertNotNull(response);
+	}
+	
+	@Test
+	public void refund() throws ApiException {
+		ITerminalResponse response = device.refund(new BigDecimal("6.18"))
+				.withPaymentMode(PaymentMode.MAILORDER)
+				.withReferenceNumber(01).withCurrencyCode("826").execute();
 	}
 
 	@Test
@@ -258,7 +258,7 @@ public class IngenicoCommandsTests {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void posIdentifer() {
 		try {
@@ -274,7 +274,7 @@ public class IngenicoCommandsTests {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void terminalStatus() {
 		try {
@@ -286,6 +286,15 @@ public class IngenicoCommandsTests {
 
 			IDeviceResponse response = device.getTerminalStatus();
 			assertNotNull(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void payAtTable() {
+		try {
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

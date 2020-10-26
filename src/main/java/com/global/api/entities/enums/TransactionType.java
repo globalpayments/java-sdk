@@ -39,7 +39,8 @@ public enum TransactionType implements IFlag {
     InitiateAuthentication,
     SendFile,
     Cancel,
-    Duplicate;
+    Duplicate,
+    PayAtTable;
 
     public long getLongValue() {
         return 1L << this.ordinal();

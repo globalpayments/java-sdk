@@ -10,7 +10,8 @@ public enum ControlCodes implements IByteConstant {
 	FS(0x1C), // Field separator
 	GS(0x1D), // Message ID follows (for non-PIN entry prompts)
 	RS(0x1E), // Message ID follows (for PIN entry prompts)
-	US(0x1F), COMMA(0x2C), COLON(0x3A), PTGS(0x7C);
+	US(0x1F), COMMA(0x2C), COLON(0x3A), PTGS(0x7C),
+	NUM(0x23), GBP(0xA3), SP(0x20);
 
 	private final byte code;
 
