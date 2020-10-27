@@ -37,7 +37,8 @@ public enum TransactionType implements IFlag {
     VerifyAuthentication,
     PreAuthCompletion,
     InitiateAuthentication,
-    SendFile;
+    SendFile,
+    Tokenize;
 
     public long getLongValue() {
         return 1 << this.ordinal();

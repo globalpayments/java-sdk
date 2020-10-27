@@ -235,7 +235,10 @@ public class GatewayConfig extends Configuration {
             payplan.setEnableLogging(enableLogging);
             payplan.setSecretApiKey(secretApiKey);
             payplan.setTimeout(timeout);
-            payplan.setServiceUrl(serviceUrl + "/Portico.PayPlan.v2/");
+            String payplanEndpoint = environment == Environment.TEST || serviceUrl.contains("cert.")
+                    ? "/Portico.PayPlan.v2/"
+                    : "/PayPlan.v2/";
+            payplan.setServiceUrl(serviceUrl + payplanEndpoint);
 
             services.setRecurringConnector(payplan);
         }

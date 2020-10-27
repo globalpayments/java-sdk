@@ -401,12 +401,12 @@ public class VapsEbtTests {
         // check message data
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
-        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
         assertEquals("200080", pmi.getProcessingCode());
         assertEquals("200", pmi.getFunctionCode());
 
         // check result
-        assertEquals(response.getResponseMessage(), "902", response.getResponseCode());
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
     @Test

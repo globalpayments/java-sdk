@@ -272,4 +272,37 @@ public class VapsEncryptionTests {
         // compare the initial and end values
         assertEquals(initialString, decodedString);
     }
+
+//    @Test
+//    public void test_000_token_test() throws ApiException {
+//        String terminalString = "000%s9911";
+//
+//        int storeNumber = 736716;
+//        while(storeNumber++ < 999999) {
+//            if(storeNumber % 1000 == 0) {
+//                System.out.println(storeNumber);
+//            }
+//
+//            String terminalId = String.format(terminalString, storeNumber);
+//            PayrollEncoder encoder = new PayrollEncoder("0044", terminalId);
+//
+//            String framedString = "bE1KW+xLqbgPdVMyoZ+Fa94zGXBYywYOiAxFyIK5SrBdjt3DQcxthFfOnRN2eZMCJik3p9D18SBTywBdqa3CBIv8lYhKt+iJ9D3ywuHc4z1GPEG8krq8BVO5aOpgXPXQwcfIpE4QRA7/c3LUm5hNTYYrFh/v7DKmAeorB+mH79aQv0sfEMHpJfsnaSRFwI+v2l7xuBo2oIDGyzSNRYju8idZA0WNmLs8A/lAP3sQp34Xr+2ILH5ayzrZ93Z9ie5gNN6oYTHmbXQ6nlr92VUOO7I8cWDQv+dSTOAtXcKjIkztOvpWAl2Rvvs7ponw2pCCgCzXc3OaOcj8F35pkuXvTA+2SuMu1ztabkGCyhzG12X0crRMpFEgeG+EhHaCT66+NVwrgLcbvXHi6vaCUZT2pEjJ6K0aGWErE3Fo1qrBqE3WF8ltRqX9HmM9D9pUn0x5nZlDzVRT7iO77r9+WnaJ5h3ONJFk6OUlVL1sY0NNp8VZY1J3hJPwR/+SUxfBR+vVsXFZt+IXoZxkIalLnBLufv/10sprQRboGsYia/VMQC72lp7ODHmWntnYqza22uRuW1ymjd377IZ/T7vH6pzLjUkVx/SfFy37icoXA4QlTaI=";
+//            //String framedString = "9b4sO7nSybc2q3aCq6jtCtvd9d0Nc7jZsIsk2Y63COIXVvY6q1ZG4ADjCxN7+mL1PdZMGntFwN5XRu16tKM0tmU4Xu2AU8EEdF8Br1Lp6sIFXCBcG7mU7c5ee/H8L4PY/EpmvIyzyZvNm2VoRi114qiGY32l7G0SnOZ7GfUz0nTVg8k8Rawcix33/5K+6Tb2R96TwD3G/yxhSpKnEB7ypIH/+P0wq5ANpTcdnMo0meBuIqNPfbmGgwKVrsHKygEjE73LnognfxYc6tOMDzsik+UQJMI/jXN3xCB1IpSg9S3ZoQN+gc46wuoXzKY/5IsiudwDn7+OatuVPb9OnNUaCN2HCRQRwhUnyzN7clcm6nL30ZTWtydNGH37pDuHegadhYpL8CyzYlAm/alZloHY/wVe2NCfKgnmTuABGLfpg6TMJUa4hwRc4iFnGyVW/Yi25oFMVYlX70BRLTJFKxMVY28hoyoWD2eG2UjoNxqufdY4SjeKgj6waarnAkWO8q9iB6Uncu4CVOzEYBsjbUchTg==";
+//            MessageReader mr = new MessageReader(framedString.getBytes());
+//
+//            String decryptedCheckString = mr.readToCode(ControlCodes.ETX, false);
+//
+//            // decrypt the encrypted string
+//            String decryptedString = encoder.decode(decryptedCheckString);
+//
+//            // decode the decrypted string
+//            byte[] decodedBuffer = Base64.decodeBase64(decryptedString);
+//            String decodedString = new String(decodedBuffer);
+//            if(decodedString.startsWith("1220")) {
+//                System.out.print(storeNumber);
+//                assertTrue(decodedString.startsWith("1220"));
+//                break;
+//            }
+//        }
+//    }
 }

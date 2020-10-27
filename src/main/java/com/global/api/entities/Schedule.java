@@ -167,7 +167,13 @@ public class Schedule extends RecurringEntity<Schedule> {
         this.taxAmount = taxAmount;
     }
     public BigDecimal getTotalAmount() {
-        return amount.add(taxAmount);
+        if(amount != null) {
+            if(taxAmount != null) {
+                return amount.add(taxAmount);
+            }
+            return amount;
+        }
+        return BigDecimal.ZERO;
     }
 
     public Schedule withAmount(BigDecimal value) {

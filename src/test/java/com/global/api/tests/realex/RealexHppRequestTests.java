@@ -1,5 +1,6 @@
 package com.global.api.tests.realex;
 
+import com.global.api.entities.Customer;
 import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Address;
@@ -15,8 +16,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class RealexHppRequestTests {
     private HostedService _service;
@@ -706,6 +706,33 @@ public class RealexHppRequestTests {
     }
 
     @Test
+    public void fraudFilterActive() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+        hostedConfig.setFraudFilterMode(FraudFilterMode.Active);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedService service = new HostedService(config);
+
+        String hppJson = service.charge(new BigDecimal("19.99"))
+                .withCurrency("EUR")
+                .withTimestamp("20170725154824")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .serialize();
+
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CURRENCY\":\"EUR\",\"AUTO_SETTLE_FLAG\":\"1\",\"SHA1HASH\":\"89ed337102ebe5992f022cf3194c4f28d6bcfa0e\",\"AMOUNT\":\"1999\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\"}";
+
+        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+    }
+
+    @Test
     public void dynamicCurrencyConversionOn() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1118,4 +1145,113 @@ public class RealexHppRequestTests {
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
 
     }
+
+    @Test
+    public void hasSupplementaryDataWithOneValueSerialized() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedService service = new HostedService(config);
+
+        Address billingAddress = new Address();
+        billingAddress.setCountry("US");
+        billingAddress.setPostalCode("50001");
+
+        Customer customer = new Customer();
+        customer.setId("e193c21a-ce64-4820-b5b6-8f46715de931");
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setDateOfBirth("01011980");
+        customer.setCustomerPassword("VerySecurePassword");
+        customer.setEmail("text@example.com");
+        customer.setDomainName("example.com");
+        customer.setHomePhone("+35312345678");
+        customer.setDeviceFingerPrint("devicefingerprint");
+
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerExists(true);
+        testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
+        testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
+        testHostedPaymentData.setCustomerNumber("a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa");
+        testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
+        testHostedPaymentData.setOfferToSaveCard(true);
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withTimestamp("20170725154824")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withCustomerData(customer)
+                .withHostedPaymentData(testHostedPaymentData)
+                .withCustomerId("123456")
+                .withSupplementaryData("HPP_FRAUDFILTER_MODE", "ACTIVE")
+                .serialize();
+
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"US\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\"}";
+
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
+    }
+
+    @Test
+    public void hasSupplementaryDataWithTwoValuesSerialized() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedService service = new HostedService(config);
+
+        Address billingAddress = new Address();
+        billingAddress.setCountry("US");
+        billingAddress.setPostalCode("50001");
+
+        Customer customer = new Customer();
+        customer.setId("e193c21a-ce64-4820-b5b6-8f46715de931");
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setDateOfBirth("01011980");
+        customer.setCustomerPassword("VerySecurePassword");
+        customer.setEmail("text@example.com");
+        customer.setDomainName("example.com");
+        customer.setHomePhone("+35312345678");
+        customer.setDeviceFingerPrint("devicefingerprint");
+
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerExists(true);
+        testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
+        testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
+        testHostedPaymentData.setCustomerNumber("a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa");
+        testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
+        testHostedPaymentData.setOfferToSaveCard(true);
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withTimestamp("20170725154824")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withCustomerData(customer)
+                .withHostedPaymentData(testHostedPaymentData)
+                .withCustomerId("123456")
+                .withSupplementaryData("RANDOM_KEY", "RANDOM_VALUE1", "RANDOM_VALUE2")
+                .serialize();
+
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"US\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\"}";
+
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
+    }
+
 }

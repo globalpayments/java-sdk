@@ -74,7 +74,10 @@ public class CreditTrackData extends Credit implements ITrackData, IPinProtected
     }
 
     public String getTruncatedTrackData() {
-        return trackData.replace(discretionaryData, "");
+        if(discretionaryData != null) {
+            return trackData.replace(discretionaryData, "");
+        }
+        return trackData;
     }
 
     public String getValue() {

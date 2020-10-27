@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.heartlandpaymentsystems</groupId>
     <artifactId>globalpayments-sdk</artifactId>
-    <version>6.1.53-SNAPSHOT</version>
+    <version>6.1.62-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Heartland &amp; Global Payments SDK</name>
     <description>API for processing payments through Global Payments</description>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.13.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

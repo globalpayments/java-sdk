@@ -161,7 +161,7 @@ public class CardUtils {
             paymentMethod.setPan(pan);
             paymentMethod.setExpiry(expiry);
             paymentMethod.setDiscretionaryData(discretionary);
-            paymentMethod.setTrackData(String.format("%s=%s%s", pan, expiry, discretionary));
+            paymentMethod.setTrackData(String.format("%s=%s%s", pan, expiry, discretionary != null ? discretionary : ""));
         }
         else {
             matcher = trackOnePattern.matcher(trackData);

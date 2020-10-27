@@ -13,10 +13,7 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
 import org.joda.time.format.DateTimeFormat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.HashMap;
+import java.util.*;
 
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider {
     private String merchantId;
@@ -468,6 +465,27 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("HPP_VERSION", hostedPaymentConfig.getVersion());
         request.set("HPP_POST_DIMENSIONS", hostedPaymentConfig.getPostDimensions());
         request.set("HPP_POST_RESPONSE", hostedPaymentConfig.getPostResponse());
+
+        // SUPPLEMENTARY DATA
+        if (builder.getSupplementaryData() != null) {
+            for (Map.Entry<String, ArrayList<String[]>> entry : builder.getSupplementaryData().entrySet()) {
+                for (String[] arrayValues : entry.getValue()) {
+                    if (arrayValues.length == 1) {
+                        request.set(entry.getKey(), arrayValues[0]);
+                    }
+                    else {
+                        StringBuilder serializedValues = new StringBuilder("[");
+                        for (int i = 0; i < arrayValues.length; i++) {
+                            serializedValues.append(arrayValues[i]);
+                            if ((i + 1) < arrayValues.length) {
+                                serializedValues.append(" ,");
+                            }
+                        }
+                        request.set(entry.getKey(), serializedValues.append("]").toString());
+                    }
+                }
+            }
+        }
 
         List<String> toHash = new ArrayList<String>(Arrays.asList(
                 timestamp, merchantId, orderId,

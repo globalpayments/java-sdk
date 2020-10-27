@@ -18,6 +18,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class VapsPanTests {
@@ -62,5 +63,26 @@ public class VapsPanTests {
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_002_truncated_pan() throws ApiException {
+        // create the track data object from full pan
+        CreditTrackData track = TestCards.VisaSwipe();
+
+        // get the truncated data
+        String truncatedTrack = track.getTruncatedTrackData();
+        assertNotNull(track.getTruncatedTrackData());
+
+        // create new track data from truncated
+        track.setValue(truncatedTrack);
+        assertFalse(track.getTrackData().endsWith("null"));
+    }
+
+    @Test
+    public void test_003_truncated_pan() throws ApiException {
+        // create the track data object from full pan
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=2512");
     }
 }

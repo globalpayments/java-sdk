@@ -105,10 +105,21 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder verify() {
         return new AuthorizationBuilder(TransactionType.Verify, this);
     }
-
+    
     public String tokenize() {
+    	return tokenize(true, "default");
+    }
+    public String tokenize(boolean validatecard) {
+    	return tokenize(validatecard, "default");
+    }
+    public String tokenize(String configName) { 
+    	return tokenize(true, configName);
+    }
+    public String tokenize(boolean validatecard, String configName) {
         try {
-            Transaction response = new AuthorizationBuilder(TransactionType.Verify, this).withRequestMultiUseToken(true).execute();
+            Transaction response = new AuthorizationBuilder(validatecard ? TransactionType.Verify : TransactionType.Tokenize, this)
+            		.withRequestMultiUseToken(true)
+            		.execute("tokenConfig");
             return response.getToken();
         }
         catch(ApiException e) { return null; }

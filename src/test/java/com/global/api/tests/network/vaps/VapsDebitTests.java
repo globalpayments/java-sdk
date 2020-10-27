@@ -9,6 +9,8 @@ import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
+import com.global.api.network.abstractions.IBatchProvider;
+import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -20,6 +22,7 @@ import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -272,16 +275,16 @@ public class VapsDebitTests {
         assertNotNull(capture);
         assertNotNull(capture.getPreAuthCompletion());
 
-        // check the pre-auth completion
-        pmi = capture.getPreAuthCompletion().getMessageInformation();
+        // check data-collect
+        pmi = capture.getMessageInformation();
         assertNotNull(pmi);
         assertEquals("1220", pmi.getMessageTransactionIndicator());
         assertEquals("000800", pmi.getProcessingCode());
         assertEquals("201", pmi.getFunctionCode());
         assertEquals("1376", pmi.getMessageReasonCode());
 
-        // check data-collect
-        pmi = capture.getMessageInformation();
+        // check the pre-auth completion
+        pmi = capture.getPreAuthCompletion().getMessageInformation();
         assertNotNull(pmi);
         assertEquals("1220", pmi.getMessageTransactionIndicator());
         assertEquals("000800", pmi.getProcessingCode());
@@ -331,7 +334,7 @@ public class VapsDebitTests {
         assertEquals("1220", pmi.getMessageTransactionIndicator());
         assertEquals("000800", pmi.getProcessingCode());
         assertEquals("201", pmi.getFunctionCode());
-        assertEquals("1379", pmi.getMessageReasonCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
 
         // check response
         assertEquals("000", capture.getResponseCode());
@@ -454,5 +457,167 @@ public class VapsDebitTests {
         assertEquals("4352", pmi.getMessageReasonCode());
 
         assertEquals("400", cancel.getResponseCode());
+    }
+
+    @Test
+    public void test_168_debit_pre_auth_completion() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(12))
+                .execute("ICR");
+        assertNotNull(capture);
+        assertNotNull(capture.getPreAuthCompletion());
+
+        // check the pre-auth completion
+        pmi = capture.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
+
+        // check the data-collect
+        Transaction completion = capture.getPreAuthCompletion();
+        assertNotNull(completion);
+
+        if(!completion.getResponseCode().equals("000")) {
+            // re-do the data-collect
+            completion = response.preAuthCompletion(new BigDecimal(12))
+                    .execute("ICR");
+
+            assertNotNull(completion);
+        }
+
+        pmi = completion.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+        assertEquals("1379", pmi.getMessageReasonCode());
+
+        assertEquals("000", completion.getResponseCode());
+    }
+
+    @Test @Ignore
+    public void test_168_debit_sale_failed_data_collect() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction completion = response.preAuthCompletion()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(completion);
+    }
+
+    @Test @Ignore
+    public void test_169_debit_pre_auth_manual() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+
+        Transaction response = track.authorize(new BigDecimal("1"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = response.capture()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+
+        Transaction completion = response.preAuthCompletion()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(completion);
+        assertEquals("000", completion.getResponseCode());
+    }
+
+    @Test @Ignore
+    public void test_169_debit_pre_auth_manual_builder() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+
+        Transaction response = track.authorize(new BigDecimal("1"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("1"))
+                .withAuthorizedAmount(response.getAuthorizedAmount())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withNtsData(response.getNtsData())
+                .withPaymentMethod(track)
+                .withMessageTypeIndicator(pmi.getMessageTransactionIndicator())
+                .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber())
+                .withTransactionTime(response.getOriginalTransactionTime())
+                .withProcessingCode(response.getProcessingCode())
+                .build();
+
+        Transaction capture = rebuild.capture()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+
+        Transaction completion = rebuild.preAuthCompletion()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(completion);
+        assertEquals("000", completion.getResponseCode());
+    }
+
+    @Test
+    public void test_170_debit_sale_partial_completion() throws ApiException {
+        Transaction response = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("25"))
+                .withAuthorizedAmount(new BigDecimal("12.50"), true)
+                .withSystemTraceAuditNumber("1234")
+                .withAuthorizationCode("TYPE04")
+                .withPaymentMethod(track)
+                .withNtsData()
+
     }
 }

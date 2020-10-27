@@ -23,6 +23,7 @@ public class TransactionReference implements IPaymentMethod {
     private String originalTransactionTime;
     private boolean partialApproval;
     private PaymentMethodType paymentMethodType;
+    private String posDataCode;
     private int sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
@@ -147,6 +148,13 @@ public class TransactionReference implements IPaymentMethod {
     }
     public void setPaymentMethodType(PaymentMethodType paymentMethodType) {
         this.paymentMethodType = paymentMethodType;
+    }
+
+    public String getPosDataCode() {
+        return posDataCode;
+    }
+    public void setPosDataCode(String posDataCode) {
+        this.posDataCode = posDataCode;
     }
 
     public int getSequenceNumber() {

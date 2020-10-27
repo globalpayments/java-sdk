@@ -71,7 +71,10 @@ public class EBTTrackData extends EBT implements ITrackData, IEncryptable {
     }
 
     public String getTruncatedTrackData() {
-        return trackData.replace(discretionaryData, "");
+        if(discretionaryData != null) {
+            return trackData.replace(discretionaryData, "");
+        }
+        return trackData;
     }
 
     public String getValue() {

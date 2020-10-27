@@ -3,6 +3,7 @@ package com.global.api.network.enums;
 import com.global.api.entities.enums.IStringConstant;
 
 public enum DE54_AmountTypeCode implements IStringConstant {
+    AccountLedgerBalance("01"),
     AccountAvailableBalance("02"),
     AmountCash("40"),
     AmountGoodsAndServices("41"),

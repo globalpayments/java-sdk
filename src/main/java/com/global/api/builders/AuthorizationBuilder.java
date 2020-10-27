@@ -16,6 +16,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.paymentMethods.TransactionReference;
 
 import java.math.BigDecimal;
@@ -350,7 +351,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public AuthorizationBuilder withCurrency(String value) {
         this.currency = value;
         return this;
-    }
+    }    
     public AuthorizationBuilder withCustomerId(String value) {
         this.customerId = value;
         return this;
@@ -704,5 +705,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
         this.validations.of(TransactionType.DccRateLookup)
                 .check("dccRateData").isNotNull();
+
+        this.validations.of(TransactionType.Tokenize)
+                .check("paymentMethod").isNotNull()
+                .check("paymentMethod").isInstanceOf(ITokenizable.class);
     }
 }

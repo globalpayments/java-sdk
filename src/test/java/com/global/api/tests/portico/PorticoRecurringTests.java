@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
@@ -14,6 +15,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -464,5 +466,23 @@ public class PorticoRecurringTests {
                 .execute();
         assertNotNull(response);
         assertEquals("51", response.getResponseCode());
+    }
+
+    @Test
+    public void Test_PROD_endpoint() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setServiceUrl("https://api2.heartlandportico.com");
+        config.setEnvironment(Environment.PRODUCTION);
+        ServicesContainer.configureService(config);
+
+        try {
+            List<RecurringPaymentMethod> paymentMethods = RecurringPaymentMethod.findAll();
+            assertNotNull(paymentMethods);
+        } catch (GatewayException ex) {
+            if (ex.getCause() instanceof FileNotFoundException) {
+                fail("Thrown exception should not be `FileNotFoundException``");
+            }
+        }
     }
 }

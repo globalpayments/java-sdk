@@ -10,6 +10,7 @@ import com.global.api.utils.MessageWriter;
 import com.global.api.utils.StringParser;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DE54_AmountsAdditional implements IDataElement<DE54_AmountsAdditional> {
@@ -30,6 +31,15 @@ public class DE54_AmountsAdditional implements IDataElement<DE54_AmountsAddition
         return null;
     }
 
+    public BigDecimal getAmount(ArrayList<DE3_AccountType> accountTypes, DE54_AmountTypeCode amountType) {
+        for(DE3_AccountType accountType: accountTypes) {
+            BigDecimal amount = getAmount(accountType, amountType);
+            if(amount != null) {
+                return amount;
+            }
+        }
+        return null;
+    }
     public BigDecimal getAmount(DE3_AccountType accountType, DE54_AmountTypeCode amountType) {
         DE54_AdditionalAmount entity = get(accountType, amountType);
         if(entity != null) {

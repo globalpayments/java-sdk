@@ -21,6 +21,7 @@ public class TransactionRebuilder {
     private String originalTransactionTime;
     private boolean partialApproval;
     private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
+    private String posDataCode;
     private String systemTraceAuditNumber;
     private String transactionId;
 
@@ -68,6 +69,10 @@ public class TransactionRebuilder {
         originalProcessingCode = value;
         return this;
     }
+    public TransactionRebuilder withPosDataCode(String value) {
+        posDataCode = value;
+        return this;
+    }
     public TransactionRebuilder withTransactionTime(String value) {
         originalTransactionTime = value;
         return this;
@@ -99,6 +104,7 @@ public class TransactionRebuilder {
         reference.setOriginalTransactionTime(originalTransactionTime);
         reference.setPartialApproval(partialApproval);
         reference.setPaymentMethodType(paymentMethodType);
+        reference.setPosDataCode(posDataCode);
         reference.setSystemTraceAuditNumber(systemTraceAuditNumber);
         reference.setTransactionId(transactionId);
 

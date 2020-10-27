@@ -614,6 +614,18 @@ public class VapsCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+        assertNotNull(response.getPosDataCode());
+
+        Transaction rebuilt = Transaction.fromBuilder()
+                // All other attributes here
+                .withPosDataCode(response.getPosDataCode())
+                .build();
+
+        Transaction capture = rebuilt.capture()
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", response.getResponseCode());
+        assertEquals(response.getPosDataCode(), capture.getPosDataCode());
     }
 
     @Test

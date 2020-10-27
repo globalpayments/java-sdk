@@ -3,7 +3,8 @@ package com.global.api.entities.enums;
 public enum FraudFilterMode implements IStringConstant {
     None("NONE"),
     Off("OFF"),
-    Passive("PASSIVE");
+    Passive("PASSIVE"),
+    Active("ACTIVE");
 
     String value;
     FraudFilterMode(String value) {this.value = value;}

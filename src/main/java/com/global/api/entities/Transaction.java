@@ -45,6 +45,7 @@ public class Transaction {
     private String recurringDataCode;
     private String referenceNumber;
     private String responseCode;
+    private Date responseDate;
     private String responseMessage;
     private HashMap<String, String> responseValues;
     private String schemeId;
@@ -171,6 +172,12 @@ public class Transaction {
     }
     public void setCvnResponseCode(String cvnResponseCode) {
         this.cvnResponseCode = cvnResponseCode;
+    }
+    public Date getResponseDate() {
+        return responseDate;
+    }
+    public void setResponseDate(Date responseDate) {
+        this.responseDate = responseDate;
     }
     public String getCvnResponseMessage() {
         return cvnResponseMessage;
@@ -302,6 +309,12 @@ public class Transaction {
     }
     public void setPointsBalanceAmount(BigDecimal pointsBalanceAmount) {
         this.pointsBalanceAmount = pointsBalanceAmount;
+    }
+    public String getPosDataCode() {
+        if(transactionReference != null) {
+            return transactionReference.getPosDataCode();
+        }
+        return null;
     }
     public String getProcessingCode() {
         if(transactionReference != null) {
