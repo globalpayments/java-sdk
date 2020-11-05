@@ -27,6 +27,7 @@ public class TransactionReference implements IPaymentMethod {
     private int sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
+    private boolean useAuthorizedAmount;
 
     public String getAlternativePaymentType() {
 		return alternativePaymentType;
@@ -132,7 +133,6 @@ public class TransactionReference implements IPaymentMethod {
         this.originalTransactionTime = originalTransactionTime;
     }
 
-
     public boolean isPartialApproval() {
         return this.partialApproval;
     }
@@ -176,5 +176,12 @@ public class TransactionReference implements IPaymentMethod {
     }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public boolean isUseAuthorizedAmount() {
+        return useAuthorizedAmount;
+    }
+    public void setUseAuthorizedAmount(boolean useAuthorizedAmount) {
+        this.useAuthorizedAmount = useAuthorizedAmount;
     }
 }

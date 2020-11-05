@@ -62,6 +62,7 @@ public class VapsDebitTests {
         acceptorConfig.setSupportsReturnBalance(true);
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
+        acceptorConfig.setPinlessDebit(true);
 
         // gateway config
         NetworkGatewayConfig config = new NetworkGatewayConfig();
@@ -253,6 +254,7 @@ public class VapsDebitTests {
     }
 
     @Test
+    @Ignore
     public void test_159_ICR_authorization() throws ApiException {
         Transaction response = track.authorize(new BigDecimal(12))
                 .withCurrency("USD")
@@ -306,6 +308,7 @@ public class VapsDebitTests {
     }
 
     @Test
+    @Ignore
     public void test_162_ICR_partial_authorization() throws ApiException {
         Transaction response = track.authorize(new BigDecimal(1), true)
                 .withCurrency("USD")
@@ -610,14 +613,29 @@ public class VapsDebitTests {
     }
 
     @Test
-    public void test_170_debit_sale_partial_completion() throws ApiException {
-        Transaction response = Transaction.fromBuilder()
-                .withAmount(new BigDecimal("25"))
-                .withAuthorizedAmount(new BigDecimal("12.50"), true)
-                .withSystemTraceAuditNumber("1234")
+    public void test_030_creditSale_partial_retry() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("25.00"))
+                .withAuthorizedAmount(new BigDecimal("12.50"))
+                .withSystemTraceAuditNumber("000832")
                 .withAuthorizationCode("TYPE04")
                 .withPaymentMethod(track)
-                .withNtsData()
+                .withNtsData(new NtsData())
+                .withMessageTypeIndicator("1200")
+                .withTransactionTime("201019092041")
+                .build();
 
+        Transaction response = transaction.preAuthCompletion(new BigDecimal("12.50"))
+                .withTimestamp("201019092041")
+                .withPartialApproval(true)
+                .withCurrency("USD")
+                //.withSystemTraceAuditNumber()
+                //.withBatchNumber()
+                //.withUniqueDeviceId("")
+                //.withPriorMessageInformation()
+                .withTerminalError(false)
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
     }
 }

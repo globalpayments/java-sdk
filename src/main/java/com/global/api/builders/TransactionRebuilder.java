@@ -24,6 +24,7 @@ public class TransactionRebuilder {
     private String posDataCode;
     private String systemTraceAuditNumber;
     private String transactionId;
+    private boolean useAuthorizedAmount;
 
     public TransactionRebuilder withAuthorizationCode(String value) {
         authCode = value;
@@ -50,7 +51,7 @@ public class TransactionRebuilder {
     }
     public TransactionRebuilder withAuthorizedAmount (BigDecimal value, boolean useAuthorizedAmount) {
         originalApprovedAmount = value;
-        partialApproval = useAuthorizedAmount;
+        this.useAuthorizedAmount = useAuthorizedAmount;
         return this;
     }
     public TransactionRebuilder withNtsData (NtsData value) {
@@ -107,6 +108,7 @@ public class TransactionRebuilder {
         reference.setPosDataCode(posDataCode);
         reference.setSystemTraceAuditNumber(systemTraceAuditNumber);
         reference.setTransactionId(transactionId);
+        reference.setUseAuthorizedAmount(useAuthorizedAmount);
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);

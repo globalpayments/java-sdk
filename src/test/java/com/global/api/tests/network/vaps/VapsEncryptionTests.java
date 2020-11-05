@@ -8,6 +8,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.payroll.PayrollEncoder;
+import com.global.api.network.NetworkMessage;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
@@ -271,6 +272,61 @@ public class VapsEncryptionTests {
 
         // compare the initial and end values
         assertEquals(initialString, decodedString);
+    }
+
+    @Test
+    public void test_000_token_lrc_issue() throws ApiException {
+        PayrollEncoder requestEncoder = new PayrollEncoder("0044", "0007100099911");
+
+        String encodedString = "MTEwMLIwRQAgwQAEAAAAAAAAAAAwMDMwMDAwMDAwMDAwMTAwMDAxMDA5MDQyNzEyMDA3MTIzMjAxMDA5MTIyNzEyNTU0MjIwMDIwMUIwMDE0QzEwMTIwMzcxNDQ5NjM1Mzk4NDMxPTI1MTIwMDQ0ICAgIDAwMDcxMDAwOTk5MTEgIDA5OUEgAACDAAAAUzIgIDEwMSAgICAgMTAxMTExMDAwMDgwMUU3NTA2M0FYICAwMyBZWTI2MDAxOTk5VlQgIDEyMDAwMDA5MDAwMDcxMjIyMTA0XFxcICAgNzUwNjMgICAgICAgIDAyNTAyTlBDMDlZWU5ZWVlZTk5JSUQwNDAyMDE=[TOKEN TRACE]: encryptedToken: NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==[TOKEN TRACE]: framedRequest: [1]NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==";
+
+        /* Does the message decode properly */
+        byte[] encodedBuffer = encodedString.getBytes();
+        MessageReader mr = new MessageReader(encodedBuffer);
+
+        String valueToDecrypt = encodedString;
+        if(mr.peek() == ControlCodes.STX.getByte()) {
+            mr.readCode(); // pop the STX off
+            valueToDecrypt = mr.readToCode(ControlCodes.ETX);
+
+            byte crc = mr.readByte();
+            if(crc != TerminalUtilities.calculateLRC(encodedBuffer)) {
+                // invalid token
+            }
+        }
+
+        String requestStr = requestEncoder.decode(valueToDecrypt);
+        byte[] decoded = Base64.decodeBase64(requestStr);
+
+        mr = new MessageReader(decoded);
+        String mti = mr.readString(4);
+        byte[] buffer = mr.readBytes(decoded.length);
+        NetworkMessage request = NetworkMessage.parse(buffer, Iso8583MessageType.CompleteMessage);
+        request.setMessageTypeIndicator(mti);
+        System.out.println(request.toString());
+
+        /* RE-ENCODE THE MESSAGE */
+        byte[] encoded = Base64.encodeBase64(request.buildMessage());
+        encodedString = new String(encoded);
+
+        // encrypt it
+        String token = requestEncoder.encode(encodedString);
+
+        // build final token
+        MessageWriter mw = new MessageWriter();
+        mw.add(ControlCodes.STX);
+        mw.addRange(token.getBytes());
+        mw.add(ControlCodes.ETX);
+
+        // generate the CRC
+        byte requestLrc = TerminalUtilities.calculateLRC(mw.toArray());
+        mw.add(requestLrc);
+        String encodedRequest = new String(mw.toArray());
+        System.out.println(encodedRequest);
+
+        String checkValue = encodedRequest.substring(0, encodedRequest.length() - 1);
+        boolean lrcMatches = TerminalUtilities.checkLRC(checkValue);
+        assertTrue(lrcMatches);
     }
 
 //    @Test

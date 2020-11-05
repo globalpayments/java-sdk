@@ -149,7 +149,8 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             ITrackData card = (ITrackData)builder.getPaymentMethod();
 
             // put the track data
-            if(transactionType.equals(TransactionType.Refund) && !paymentMethodType.equals(PaymentMethodType.Debit)) {
+            if(transactionType.equals(TransactionType.Refund) &&
+                    (!paymentMethodType.equals(PaymentMethodType.Debit) && !paymentMethodType.equals(PaymentMethodType.EBT))) {
                 request.set(DataElementId.DE_002, card.getPan());
                 request.set(DataElementId.DE_014, card.getExpiry());
             }
@@ -1710,16 +1711,24 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case Capture: {
                 ManagementBuilder managementBuilder = (ManagementBuilder)builder;
 
-                if(managementBuilder.getAmount() != null) {
-                    if(managementBuilder.getPaymentMethod() != null && managementBuilder.getPaymentMethod() instanceof TransactionReference) {
-                        TransactionReference reference = (TransactionReference)managementBuilder.getPaymentMethod();
+                TransactionReference reference = null;
+                if(managementBuilder.getPaymentMethod() != null && managementBuilder.getPaymentMethod() instanceof TransactionReference) {
+                    reference = (TransactionReference)managementBuilder.getPaymentMethod();
+                }
 
-                        BigDecimal amount = reference.getOriginalAmount();
-                        if(reference.isPartialApproval() && reference.getOriginalApprovedAmount() != null) {
-                            amount = reference.getOriginalApprovedAmount();
+                BigDecimal amount = managementBuilder.getAmount();
+                if(amount == null && reference != null) {
+                    amount = reference.getOriginalAmount();
+                }
+
+                if(amount != null) {
+                    if(reference != null) {
+                        BigDecimal compareAmount = reference.getOriginalAmount();
+                        if(reference.isUseAuthorizedAmount() && reference.getOriginalApprovedAmount() != null) {
+                            compareAmount = reference.getOriginalApprovedAmount();
                         }
 
-                        if(managementBuilder.getAmount().compareTo(amount) == 0) {
+                        if(amount.compareTo(compareAmount) == 0) {
                             return "201";
                         }
                         return "202";
@@ -2437,6 +2446,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         impliedCapture.set(DataElementId.DE_041, request.getString(DataElementId.DE_041));
         impliedCapture.set(DataElementId.DE_042, request.getString(DataElementId.DE_042));
         impliedCapture.set(DataElementId.DE_043, request.getString(DataElementId.DE_043));
+        impliedCapture.set(DataElementId.DE_054, request.getString(DataElementId.DE_054));
         impliedCapture.set(DataElementId.DE_063, request.getDataElement(DataElementId.DE_063, DE63_ProductData.class));
 
         // DE_048 Message Control
@@ -2519,9 +2529,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
         // encrypt it
         if(requestEncoder == null) {
-//            if(isEnableLogging()) {
-//                System.out.println(String.format("[TOKEN TRACE]: %s %s", companyId, terminalId));
-//            }
+            if(isEnableLogging()) {
+                System.out.println(String.format("[TOKEN TRACE]: %s %s", companyId, terminalId));
+            }
             requestEncoder = new PayrollEncoder(companyId, terminalId);
         }
         String token = requestEncoder.encode(encodedString);
@@ -2552,8 +2562,8 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             mr.readCode(); // pop the STX off
             valueToDecrypt = mr.readToCode(ControlCodes.ETX);
 
-            byte crc = mr.readByte();
-            if(crc != TerminalUtilities.calculateLRC(encodedBuffer)) {
+            byte lrc = mr.readByte();
+            if(lrc != TerminalUtilities.calculateLRC(encodedBuffer)) {
                 // invalid token
             }
         }

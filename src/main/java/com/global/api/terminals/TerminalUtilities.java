@@ -125,7 +125,7 @@ public class TerminalUtilities {
         byte[] messageBuffer = message.getBytes();
 
         byte expected = messageBuffer[messageBuffer.length - 1];
-        byte actual = calculateLRC(messageBuffer);
+        byte actual = calculateLRC(message.substring(0, message.length() - 1).getBytes());
 
         return (expected == actual);
     }

@@ -379,10 +379,6 @@ public class VapsEbtTests {
 
     @Test
     public void test_231_swipe_foodStamp_return() throws ApiException {
-        EBTTrackData track = new EBTTrackData(EbtCardType.FoodStamp);
-        track.setValue(";4012002000060016=25121011803939600000?");
-        track.setPinBlock("32539F50C245A6A93D123412324000AA");
-
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
@@ -473,5 +469,23 @@ public class VapsEbtTests {
                 .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
                 .execute();
         Assert.fail("Did not timeout.");
+    }
+
+    @Test
+    public void test_235_swipe_foodStanp_refund_by_card() throws ApiException {
+        Transaction response = foodCard.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("200080", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 }

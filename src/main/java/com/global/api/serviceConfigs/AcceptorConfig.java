@@ -34,6 +34,7 @@ public class AcceptorConfig {
     private Boolean supportsDiscoverNetworkReferenceId;
     private Boolean supportsAvsCnvVoidReferrals;
     private Boolean supportsEmvPin;
+    private Boolean pinlessDebit;
 
     // DE48_40 - DE48_49
     private Address address;
@@ -182,6 +183,12 @@ public class AcceptorConfig {
     public void setMobileDevice(Boolean mobileDevice) {
         this.mobileDevice = mobileDevice;
     }
+    public Boolean getPinlessDebit() {
+        return pinlessDebit;
+    }
+    public void setPinlessDebit(Boolean pinlessDebit) {
+        this.pinlessDebit = pinlessDebit;
+    }
     public boolean hasPosConfiguration_MessageControl() {
         return (!StringUtils.isNullOrEmpty(timezone)
                 || supportsPartialApproval != null
@@ -196,7 +203,8 @@ public class AcceptorConfig {
                 || supportsDiscoverNetworkReferenceId != null
                 || supportsAvsCnvVoidReferrals != null
                 || supportsEmvPin != null
-                || mobileDevice != null);
+                || mobileDevice != null
+                || pinlessDebit != null);
     }
     public String getPosConfigForIssuerData() {
         String rvalue = supportsPartialApproval != null ? supportsPartialApproval ? "Y" : "N" : "N";
@@ -207,7 +215,7 @@ public class AcceptorConfig {
                 .concat(supportsAvsCnvVoidReferrals != null ? supportsAvsCnvVoidReferrals ? "Y" : "N" : "N")
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
-                .concat("N");
+                .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N");
         return rvalue;
     }
 
