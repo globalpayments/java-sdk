@@ -3,7 +3,9 @@ package com.global.api.entities.enums;
 public enum ReversalReasonCode implements IStringConstant {
     CustomerCancellation("CUSTOMERCANCELLATION"),
     TerminalError("TERMINALERROR"),
-    Timeout("TIMEOUT");
+    Timeout("TIMEOUT"),
+    ChipCardDecline("CHIPCARDDECLINE"),
+    MacFailure("MACFAILURE");
 
     String value;
     ReversalReasonCode(String value) { this.value = value; }
