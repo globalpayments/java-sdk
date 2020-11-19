@@ -111,8 +111,8 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("method_url_completion", builder.getMethodUrlCompletion())
                     .set("merchant_contact_url", merchantContactUrl)
                     .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? builder.getMerchantInitiatedRequestType().getValue() : "")
-                    .set("whitelist_status", builder.getWhitelistStatus() != null ? builder.getWhitelistStatus().getValue() : "")
-                    .set("decoupled_flow_request", builder.getDecoupledFlowRequest() != null ? builder.getDecoupledFlowRequest().getValue() : "")
+                    .set("whitelist_status", builder.getWhitelistStatus() != null ? builder.getWhitelistStatus().toString() : "")
+                    .set("decoupled_flow_request", builder.getDecoupledFlowRequest() != null ? builder.getDecoupledFlowRequest().toString() : "")
                     .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout())
                     .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
 

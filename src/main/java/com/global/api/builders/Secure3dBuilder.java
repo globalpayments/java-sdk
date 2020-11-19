@@ -42,7 +42,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private CustomerAuthenticationMethod customerAuthenticationMethod;
     private DateTime customerAuthenticationTimestamp;
     private String customerEmail;
-    private DecoupledFlowRequest decoupledFlowRequest;
+    private Boolean decoupledFlowRequest;
     private Integer decoupledFlowTimeout;
     private String decoupledNotificationUrl;
     private String deliveryEmail;
@@ -97,7 +97,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private Boolean shippingNameMatchesCardHolderName;
     private ThreeDSecure threeDSecure;
     private TransactionType transactionType;
-    private WhitelistStatus whitelistStatus;
+    private Boolean whitelistStatus;
     private String workCountryCode;
     private String workNumber;
 
@@ -155,10 +155,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public String getCustomerEmail() {
         return customerEmail;
     }
-    public DecoupledFlowRequest getDecoupledFlowRequest() {
+    public Boolean getDecoupledFlowRequest() {
         return decoupledFlowRequest;
     }
-    public void setDecoupledFlowRequest(DecoupledFlowRequest decoupledFlowRequest) {
+    public void setDecoupledFlowRequest(Boolean decoupledFlowRequest) {
         this.decoupledFlowRequest = decoupledFlowRequest;
     }
     public Integer getDecoupledFlowTimeout() {
@@ -338,10 +338,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public TransactionType getTransactionType() {
         return transactionType;
     }
-    public WhitelistStatus getWhitelistStatus() {
+    public Boolean getWhitelistStatus() {
         return whitelistStatus;
     }
-    public void setWhitelistStatus(WhitelistStatus whitelistStatus) {
+    public void setWhitelistStatus(Boolean whitelistStatus) {
         this.whitelistStatus = whitelistStatus;
     }
     public String getWorkCountryCode() {
@@ -467,7 +467,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         customerEmail = value;
         return this;
     }
-    public Secure3dBuilder withDecoupledFlowRequest(DecoupledFlowRequest value) {
+    public Secure3dBuilder withDecoupledFlowRequest(Boolean value) {
         this.decoupledFlowRequest = value;
         return this;
     }
@@ -697,7 +697,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         this.transactionType = transactionType;
         return this;
     }
-    public Secure3dBuilder withWhitelistStatus(WhitelistStatus whitelistStatus) {
+    public Secure3dBuilder withWhitelistStatus(Boolean whitelistStatus) {
         this.whitelistStatus = whitelistStatus;
         return this;
     }
