@@ -1,15 +1,18 @@
 package com.global.api.entities;
 
+import com.global.api.entities.enums.ExemptStatus;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.utils.ReverseStringEnumMap;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 public class ThreeDSecure {
     private String acsTransactionId;
     private String acsEndVersion;
     private String acsStartVersion;
+    private ArrayList<String> acsInfoIndicator;
     private int algorithm;
     private BigDecimal amount;
     private String authenticationSource;
@@ -20,14 +23,17 @@ public class ThreeDSecure {
     private boolean challengeMandated;
     private String criticalityIndicator;
     private String currency;
+    private String decoupledResponseIndicator;
     private String directoryServerTransactionId;
     private String directoryServerEndVersion;
     private String directoryServerStartVersion;
     private String eci;
     private boolean enrolled;
+    private ExemptStatus exemptStatus;
     private String issuerAcsUrl;
     private MerchantDataCollection merchantData;
     private String messageCategory;
+    private String messageExtensionData;
     private String messageExtensionId;
     private String messageExtensionName;
     private String messageVersion;
@@ -41,6 +47,7 @@ public class ThreeDSecure {
     private String status;
     private String statusReason;
     private Secure3dVersion version;
+    private String whitelistStatus;
     private String xid;
 
     public String getAcsTransactionId() {
@@ -60,6 +67,12 @@ public class ThreeDSecure {
     }
     public void setAcsStartVersion(String acsStartVersion) {
         this.acsStartVersion = acsStartVersion;
+    }
+    public ArrayList<String> getAcsInfoIndicator() {
+        return acsInfoIndicator;
+    }
+    public void setAcsInfoIndicator(ArrayList<String> acsInfoIndicator) {
+        this.acsInfoIndicator = acsInfoIndicator;
     }
     public int getAlgorithm() {
         return algorithm;
@@ -123,6 +136,12 @@ public class ThreeDSecure {
         this.currency = currency;
         getMerchantData().put("_currency", currency, false);
     }
+    public String getDecoupledResponseIndicator() {
+        return decoupledResponseIndicator;
+    }
+    public void setDecoupledResponseIndicator(String decoupledResponseIndicator) {
+        this.decoupledResponseIndicator = decoupledResponseIndicator;
+    }
     public String getDirectoryServerTransactionId() {
         return directoryServerTransactionId;
     }
@@ -152,6 +171,12 @@ public class ThreeDSecure {
     }
     public void setEnrolled(boolean enrolled) {
         this.enrolled = enrolled;
+    }
+    public ExemptStatus getExemptStatus() {
+        return exemptStatus;
+    }
+    public void setExemptStatus(ExemptStatus exemptStatus) {
+        this.exemptStatus = exemptStatus;
     }
     public String getIssuerAcsUrl() {
         return issuerAcsUrl;
@@ -187,6 +212,12 @@ public class ThreeDSecure {
     }
     public void setMessageCategory(String messageCategory) {
         this.messageCategory = messageCategory;
+    }
+    public String getMessageExtensionData() {
+        return messageExtensionData;
+    }
+    public void setMessageExtensionData(String messageExtensionData) {
+        this.messageExtensionData = messageExtensionData;
     }
     public String getMessageExtensionId() {
         return messageExtensionId;
@@ -268,6 +299,12 @@ public class ThreeDSecure {
         this.version = version;
         getMerchantData().put("_version", version.getValue(), false);
     }
+    public String getWhitelistStatus() {
+        return whitelistStatus;
+    }
+    public void setWhitelistStatus(String whitelistStatus) {
+        this.whitelistStatus = whitelistStatus;
+    }
     public String getXid() {
         return xid;
     }
@@ -294,6 +331,7 @@ public class ThreeDSecure {
             this.challengeMandated = mergeValue(challengeMandated, secureEcom.isChallengeMandated());
             this.criticalityIndicator = mergeValue(criticalityIndicator, secureEcom.getCriticalityIndicator());
             this.currency = mergeValue(currency, secureEcom.getCurrency());
+            this.decoupledResponseIndicator = mergeValue(decoupledResponseIndicator, secureEcom.getDecoupledResponseIndicator());
             this.directoryServerTransactionId = mergeValue(directoryServerTransactionId, secureEcom.getDirectoryServerTransactionId());
             this.directoryServerEndVersion = mergeValue(directoryServerEndVersion, secureEcom.getDirectoryServerEndVersion());
             this.directoryServerStartVersion = mergeValue(directoryServerStartVersion, secureEcom.getDirectoryServerStartVersion());
@@ -314,6 +352,7 @@ public class ThreeDSecure {
             this.status = mergeValue(status, secureEcom.getStatus());
             this.statusReason = mergeValue(statusReason, secureEcom.getStatusReason());
             this.version = mergeValue(version, secureEcom.getVersion());
+            this.whitelistStatus = mergeValue(whitelistStatus, secureEcom.getWhitelistStatus());
             this.xid = mergeValue(xid, secureEcom.getXid());
 
             //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());

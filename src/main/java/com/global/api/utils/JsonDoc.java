@@ -223,6 +223,17 @@ public class JsonDoc {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    public ArrayList<String> geStringArrayList(String name) {
+        if (dict.containsKey(name)) {
+            Object value = dict.get(name);
+            if (value instanceof List)
+                return (ArrayList<String>) value;
+            return null;
+        }
+        return null;
+    }
+
     public boolean has(String name) {
         return dict.containsKey(name);
     }
@@ -250,8 +261,13 @@ public class JsonDoc {
         HashMap<String, Object> values = new HashMap<String, Object>();
         for(Map.Entry<String, JsonElement> child: obj.entrySet()) {
             if(child.getValue().isJsonArray()) {
-                List<JsonDoc> objs = parseArray(child.getValue().getAsJsonArray(), encoder);
-                values.put(child.getKey(), objs);
+                if( (child.getValue().getAsJsonArray().size() > 0) && (child.getValue().getAsJsonArray().get(0) instanceof JsonObject) ) {
+                    List<JsonDoc> objs = parseArray(child.getValue().getAsJsonArray(), encoder);
+                    values.put(child.getKey(), objs);
+                } else {
+                    ArrayList<String> objs = parseStringArrayList(child.getValue().getAsJsonArray(), encoder);
+                    values.put(child.getKey(), objs);
+                }
             }
             else if(child.getValue().isJsonObject()){
                 values.put(child.getKey(), parseObject(child.getValue().getAsJsonObject(), encoder));
@@ -264,6 +280,14 @@ public class JsonDoc {
             }
         }
         return new JsonDoc(values, encoder);
+    }
+
+    public static ArrayList<String> parseStringArrayList(JsonArray objs, IRequestEncoder encoder) {
+        ArrayList<String> response = new ArrayList<String>();
+        for (JsonElement child : objs) {
+            response.add(child.getAsString());
+        }
+        return response;
     }
 
     private static List<JsonDoc> parseArray(JsonArray objs, IRequestEncoder encoder) {

@@ -373,7 +373,7 @@ public class Secure3dServiceTests {
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
 
                     // optionals
-                    .withMerchantInitiatedRequestType(AuthenticationRequestType.RecurringTransaction)
+                    .withMerchantInitiatedRequestType(MerchantInitiatedRequestType.RecurringTransaction)
 
                     .execute();
             assertNotNull(initAuth);

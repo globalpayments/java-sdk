@@ -254,6 +254,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(mpi, "ds_trans_id", secureEcom.getDirectoryServerTransactionId());
                 et.subElement(mpi, "authentication_value", secureEcom.getAuthenticationValue());
                 et.subElement(mpi, "message_version", secureEcom.getMessageVersion());
+                if(secureEcom.getExemptStatus() != null) {
+                    et.subElement(mpi, "exempt_status", secureEcom.getExemptStatus().getValue());
+                }
             }
         }
         //</editor-fold>

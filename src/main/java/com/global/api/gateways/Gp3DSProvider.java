@@ -74,14 +74,14 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             }
 
             String hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, hashValue);
-            headers.put("Authorization", String.format("securehash %s", hash));
+            setAuthHeader(hash);
 
             String rawResponse = doTransaction("POST", "protocol-versions", request.toString());
             return mapResponse(rawResponse);
         }
         else  if(transType.equals(TransactionType.VerifySignature)) {
             String hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, builder.getServerTransactionId());
-            headers.put("Authorization", String.format("securehash %s", hash));
+            setAuthHeader(hash);
 
             HashMap<String, String> queryValues = new HashMap<String, String>();
             queryValues.put("merchant_id", merchantId);
@@ -110,7 +110,11 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("challenge_request_indicator", builder.getChallengeRequestIndicator())
                     .set("method_url_completion", builder.getMethodUrlCompletion())
                     .set("merchant_contact_url", merchantContactUrl)
-                    .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType());
+                    .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? builder.getMerchantInitiatedRequestType().getValue() : "")
+                    .set("whitelist_status", builder.getWhitelistStatus() != null ? builder.getWhitelistStatus().getValue() : "")
+                    .set("decoupled_flow_request", builder.getDecoupledFlowRequest() != null ? builder.getDecoupledFlowRequest().getValue() : "")
+                    .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout())
+                    .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
 
             // card details
             String hashValue = "";
@@ -298,13 +302,18 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             }
 
             String hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, hashValue, secureEcom.getServerTransactionId());
-            headers.put("Authorization", String.format("securehash %s", hash));
+            setAuthHeader(hash);
 
             String rawResponse = doTransaction("POST", "authentications", request.toString());
             return mapResponse(rawResponse);
         }
 
         throw new ApiException(String.format("Unknown transaction type %s.", transType));
+    }
+
+    private void setAuthHeader(String value) {
+        headers.put("Authorization", String.format("securehash %s", value));
+        headers.put("X-GP-Version", "2.2.0");
     }
 
     private Transaction mapResponse(String rawResponse) {
@@ -330,6 +339,9 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
         secureEcom.setAuthenticationSource(doc.getString("authentication_source"));
         secureEcom.setMessageCategory(doc.getString("message_category"));
         secureEcom.setMessageVersion(doc.getString("message_version"));
+        secureEcom.setAcsInfoIndicator(doc.geStringArrayList("acs_info_indicator"));
+        secureEcom.setDecoupledResponseIndicator(doc.getString("decoupled_response_indicator"));
+        secureEcom.setWhitelistStatus(doc.getString("whitelist_status"));
 
         // challenge mandated
         if(doc.has("challenge_mandated")) {
@@ -350,7 +362,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
         if(doc.has("message_extension")) {
             for (JsonDoc messageExtension : doc.getEnumerator("message_extension")) {
                 secureEcom.setCriticalityIndicator(messageExtension.getString("criticality_indicator"));
-                //secureEcom.setMessageExtensionData(messageExtensions.getString("data"));
+                secureEcom.setMessageExtensionData(messageExtension.getString("data"));
                 secureEcom.setMessageExtensionId(messageExtension.getString("id"));
                 secureEcom.setMessageExtensionName(messageExtension.getString("name"));
             }

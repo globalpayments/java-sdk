@@ -42,6 +42,9 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private CustomerAuthenticationMethod customerAuthenticationMethod;
     private DateTime customerAuthenticationTimestamp;
     private String customerEmail;
+    private DecoupledFlowRequest decoupledFlowRequest;
+    private Integer decoupledFlowTimeout;
+    private String decoupledNotificationUrl;
     private String deliveryEmail;
     private DeliveryTimeFrame deliveryTimeframe;
     private String encodedData;
@@ -55,7 +58,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private Integer maximumTimeout;
     private MerchantDataCollection merchantData;
     private MessageCategory messageCategory = MessageCategory.PaymentAuthentication;
-    private AuthenticationRequestType merchantInitiatedRequestType;
+    private MerchantInitiatedRequestType merchantInitiatedRequestType;
     private MessageVersion messageVersion;
     private MethodUrlCompletion methodUrlCompletion;
     private String mobileCountryCode;
@@ -94,6 +97,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private Boolean shippingNameMatchesCardHolderName;
     private ThreeDSecure threeDSecure;
     private TransactionType transactionType;
+    private WhitelistStatus whitelistStatus;
     private String workCountryCode;
     private String workNumber;
 
@@ -151,6 +155,24 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public String getCustomerEmail() {
         return customerEmail;
     }
+    public DecoupledFlowRequest getDecoupledFlowRequest() {
+        return decoupledFlowRequest;
+    }
+    public void setDecoupledFlowRequest(DecoupledFlowRequest decoupledFlowRequest) {
+        this.decoupledFlowRequest = decoupledFlowRequest;
+    }
+    public Integer getDecoupledFlowTimeout() {
+        return decoupledFlowTimeout;
+    }
+    public void setDecoupledFlowTimeout(Integer decoupledFlowTimeout) {
+        this.decoupledFlowTimeout = decoupledFlowTimeout;
+    }
+    public String getDecoupledNotificationUrl() {
+        return decoupledNotificationUrl;
+    }
+    public void setDecoupledNotificationUrl(String decoupledNotificationUrl) {
+        this.decoupledNotificationUrl = decoupledNotificationUrl;
+    }
     public String getDeliveryEmail() {
         return deliveryEmail;
     }
@@ -190,8 +212,11 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public MessageCategory getMessageCategory() {
         return messageCategory;
     }
-    public AuthenticationRequestType getMerchantInitiatedRequestType() {
+    public MerchantInitiatedRequestType getMerchantInitiatedRequestType() {
         return merchantInitiatedRequestType;
+    }
+    public void setMerchantInitiatedRequestType(MerchantInitiatedRequestType merchantInitiatedRequestType) {
+        this.merchantInitiatedRequestType = merchantInitiatedRequestType;
     }
     public MessageVersion getMessageVersion() {
         return messageVersion;
@@ -312,6 +337,12 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     }
     public TransactionType getTransactionType() {
         return transactionType;
+    }
+    public WhitelistStatus getWhitelistStatus() {
+        return whitelistStatus;
+    }
+    public void setWhitelistStatus(WhitelistStatus whitelistStatus) {
+        this.whitelistStatus = whitelistStatus;
     }
     public String getWorkCountryCode() {
         return workCountryCode;
@@ -436,6 +467,18 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         customerEmail = value;
         return this;
     }
+    public Secure3dBuilder withDecoupledFlowRequest(DecoupledFlowRequest value) {
+        this.decoupledFlowRequest = value;
+        return this;
+    }
+    public Secure3dBuilder withDecoupledFlowTimeout(Integer value) {
+        this.decoupledFlowTimeout = value;
+        return this;
+    }
+    public Secure3dBuilder withDecoupledNotificationUrl(String value) {
+        this.decoupledNotificationUrl = value;
+        return this;
+    }
     public Secure3dBuilder withDeliveryEmail(String deliveryEmail) {
         this.deliveryEmail = deliveryEmail;
         return this;
@@ -492,7 +535,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         messageCategory = value;
         return this;
     }
-    public Secure3dBuilder withMerchantInitiatedRequestType(AuthenticationRequestType merchantInitiatedRequestType) {
+    public Secure3dBuilder withMerchantInitiatedRequestType(MerchantInitiatedRequestType merchantInitiatedRequestType) {
         this.merchantInitiatedRequestType = merchantInitiatedRequestType;
         return this;
     }
@@ -652,6 +695,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     }
     public Secure3dBuilder withTransactionType(TransactionType transactionType) {
         this.transactionType = transactionType;
+        return this;
+    }
+    public Secure3dBuilder withWhitelistStatus(WhitelistStatus whitelistStatus) {
+        this.whitelistStatus = whitelistStatus;
         return this;
     }
     public Secure3dBuilder withWorkNumber(String countryCode, String number) {
