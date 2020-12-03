@@ -5,6 +5,7 @@ public class GatewayException extends ApiException {
     private String responseText;
     private String host;
     private String messageTypeIndicator;
+    private String posDataCode;
     private String processingCode;
     private String transactionToken;
     private String transmissionTime;
@@ -27,6 +28,12 @@ public class GatewayException extends ApiException {
     }
     public void setMessageTypeIndicator(String messageTypeIndicator) {
         this.messageTypeIndicator = messageTypeIndicator;
+    }
+    public String getPosDataCode() {
+        return posDataCode;
+    }
+    public void setPosDataCode(String posDataCode) {
+        this.posDataCode = posDataCode;
     }
     public String getProcessingCode() {
         return processingCode;

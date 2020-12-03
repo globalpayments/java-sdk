@@ -1276,6 +1276,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             exc.setMessageTypeIndicator(request.getMessageTypeIndicator());
             exc.setProcessingCode(request.getString(DataElementId.DE_003));
             exc.setTransmissionTime(request.getString(DataElementId.DE_007));
+            exc.setPosDataCode(request.getString(DataElementId.DE_022));
             exc.setHost(currentHost.getValue());
             throw exc;
         }
@@ -2254,6 +2255,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             }
             else if(card.getCardType().equals("VisaFleet")) {
                 return DE48_CardType.VisaFleet;
+            }
+            else if(card.getCardType().equals("VisaReadyLink")) {
+                return DE48_CardType.ReadyLink;
             }
             else if(card.getCardType().equals("DinersClub")) {
                 return DE48_CardType.DinersClub;

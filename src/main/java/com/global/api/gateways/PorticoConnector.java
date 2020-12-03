@@ -479,9 +479,22 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             // Transaction ID
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
-            // client transaction id
-            if(builder.getTransactionType().equals(TransactionType.Reversal))
+            // reversal
+            if(type.equals(TransactionType.Reversal)) {
+                // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
+
+                // reversal reason code
+                if(paymentType.equals(PaymentMethodType.Debit)) {
+                    et.subElement(root, "ReversalReasonCode", builder.getReversalReasonCode());
+                }
+
+                // tag data
+                if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
+                    Element tagData = et.subElement(root, "TagData");
+                    et.subElement(tagData, "TagValues", builder.getTagData()).set("source", "chip");
+                }
+            }
 
             // Level II Data
             if (type.equals(TransactionType.Edit) && modifier.equals(TransactionModifier.LevelII)) {
@@ -513,12 +526,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 et.subElement(addons, "CustomerID", builder.getCustomerId());
                 et.subElement(addons, "Description", builder.getDescription());
                 et.subElement(addons, "InvoiceNbr", builder.getInvoiceNumber());
-            }
-
-            // tag data
-            if (type.equals(TransactionType.Reversal) && !StringUtils.isNullOrEmpty(builder.getTagData())) {
-                Element tagData = et.subElement(root, "TagData");
-                et.subElement(tagData, "TagValues", builder.getTagData()).set("source", "chip");
             }
         }
 

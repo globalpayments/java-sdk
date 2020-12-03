@@ -45,6 +45,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String productId;
     private ReasonCode reasonCode;
     private String referenceNumber;
+    private ReversalReasonCode reversalReasonCode;
     private String shiftNumber;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
@@ -147,6 +148,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ReasonCode getReasonCode() {
         return reasonCode;
+    }
+    public ReversalReasonCode getReversalReasonCode() {
+        return reversalReasonCode;
     }
     public String getShiftNumber() {
         return shiftNumber;
@@ -314,6 +318,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withReasonCode(ReasonCode value) {
         this.reasonCode = value;
+        return this;
+    }
+    public ManagementBuilder withReversalReasonCode(ReversalReasonCode value) {
+        reversalReasonCode = value;
         return this;
     }
     public ManagementBuilder withReferenceNumber(String value) {

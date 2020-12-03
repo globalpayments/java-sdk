@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AccountType;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.ReversalReasonCode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.DebitTrackData;
@@ -24,6 +25,7 @@ public class PorticoDebitTests {
         GatewayConfig config = new GatewayConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 
@@ -85,9 +87,20 @@ public class PorticoDebitTests {
         Transaction.fromId("1234567890", PaymentMethodType.Debit).refund().execute();
     }
 
-    @Test(expected = UnsupportedTransactionException.class)
+    @Test
     public void debitReverseFromTransactionId() throws ApiException {
-        Transaction.fromId("1234567890", PaymentMethodType.Debit).reverse().execute();
+        Transaction response = track.charge(new BigDecimal("12.21"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal("12.21"))
+                .withReversalReasonCode(ReversalReasonCode.Timeout)
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("00", reversal.getResponseCode());
     }
 
     @Test
