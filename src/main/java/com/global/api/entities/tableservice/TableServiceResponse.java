@@ -8,7 +8,6 @@ import com.global.api.gateways.TableServiceConnector;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MultipartForm;
 import com.global.api.utils.StringUtils;
-import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 
 public class TableServiceResponse extends BaseTableServiceResponse {
     protected String configName = "default";
