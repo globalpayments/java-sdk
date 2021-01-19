@@ -18,6 +18,9 @@ import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -50,10 +53,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
+    @Getter @Setter private EmvFallbackCondition emvFallbackCondition;
     private EmvChipCondition emvChipCondition;
     private FraudFilterMode fraudFilterMode;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
+    @Getter @Setter private String idempotencyKey;
     private String invoiceNumber;
     private boolean level2Request;
     private LodgingData lodgingData;
@@ -62,6 +67,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
+    @Getter @Setter private String paymentApplicationVersion;
     private String posSequenceNumber;
     private String productId;
     private ArrayList<String[]> miscProductData;
@@ -76,6 +82,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
+    private boolean hasEmvFallbackData;
+
     private String tagData;
     private String timestamp;
     private StoredCredentialInitiator transactionInitiator;
@@ -212,6 +220,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public BigDecimal getSurchargeAmount() { return surchargeAmount; }
     public String getTimestamp() {
         return timestamp;
+    }
+    public boolean hasEmvFallbackData() {
+        return (emvFallbackCondition != null || emvChipCondition != null || !StringUtils.isNullOrEmpty(paymentApplicationVersion));
     }
     public BigDecimal getConvenienceAmount() {
         return convenienceAmount;
@@ -405,6 +416,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withHostedPaymentData(HostedPaymentData value) {
         this.hostedPaymentData = value;
+        return this;
+    }
+    public AuthorizationBuilder withIdempotencyKey(String value) {
+        this.idempotencyKey = value;
         return this;
     }
     public AuthorizationBuilder withInvoiceNumber(String value) {

@@ -1,6 +1,7 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
@@ -9,7 +10,8 @@ import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.utils.CardUtils;
+import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -105,23 +107,115 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder verify() {
         return new AuthorizationBuilder(TransactionType.Verify, this);
     }
-    
+
+    @Override
     public String tokenize() {
-    	return tokenize(true, "default");
+        return tokenize(true, "default");
     }
+
+    @Override
     public String tokenize(boolean validatecard) {
     	return tokenize(validatecard, "default");
     }
-    public String tokenize(String configName) { 
+
+    @Override
+    public String tokenize(String configName) {
     	return tokenize(true, configName);
     }
+
+    @Override
     public String tokenize(boolean validatecard, String configName) {
+        return tokenizeWithIdempotencyKey(validatecard, configName,  null);
+    }
+
+    public String tokenizeWithIdempotencyKey(boolean validatecard, String configName, String idempotencyKey) {
         try {
-            Transaction response = new AuthorizationBuilder(validatecard ? TransactionType.Verify : TransactionType.Tokenize, this)
-            		.withRequestMultiUseToken(true)
-            		.execute("tokenConfig");
+            AuthorizationBuilder ab = new AuthorizationBuilder(validatecard ? TransactionType.Verify : TransactionType.Tokenize, this);
+
+            if(idempotencyKey != null) {
+                ab.withIdempotencyKey(idempotencyKey);
+            }
+
+            Transaction response =
+                    ab
+                            .withRequestMultiUseToken(true)
+                            .execute(configName);
+
             return response.getToken();
         }
         catch(ApiException e) { return null; }
     }
+
+    public boolean updateTokenExpiry() {
+        try {
+            return updateTokenExpiry("default");
+        } catch (BuilderException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateTokenExpiry(String configName) throws BuilderException {
+        return updateTokenExpiryWithIdemPotencyKey(configName, null);
+    }
+
+    public boolean updateTokenExpiryWithIdemPotencyKey(String configName, String idemPotencyKey) throws BuilderException {
+        if (StringUtils.isNullOrEmpty(token)) {
+            throw new BuilderException("Token cannot be null");
+        }
+
+        try {
+            ManagementBuilder mb = new ManagementBuilder(TransactionType.TokenUpdate);
+
+            if(idemPotencyKey != null) {
+                mb.withIdempotencyKey(idemPotencyKey);
+            }
+
+            mb
+                    .withPaymentMethod(this)
+                    .execute(configName);
+
+            return true;
+        }
+        catch (ApiException e) {
+            return false;
+        }
+    }
+
+    public boolean deleteToken() {
+        try {
+            return deleteToken("default");
+        } catch (BuilderException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteToken(String configName) throws BuilderException {
+        return deleteTokenWithIdempotencyKey(configName, null);
+    }
+
+    public boolean deleteTokenWithIdempotencyKey(String configName, String idempotencyKey) throws BuilderException {
+        if (StringUtils.isNullOrEmpty(token)) {
+            throw new BuilderException("Token cannot be null");
+        }
+
+        try {
+            ManagementBuilder mb = new ManagementBuilder(TransactionType.TokenDelete);
+
+            if(idempotencyKey != null) {
+                mb.withIdempotencyKey(idempotencyKey);
+            }
+
+            mb
+                    .withPaymentMethod(this)
+                    .execute(configName);
+
+            return true;
+        }
+        catch (ApiException e) {
+            return false;
+        }
+    }
+
 }

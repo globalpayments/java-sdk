@@ -178,7 +178,7 @@ public class JsonDoc {
     }
     public BigDecimal getDecimal(String name) {
         String value = getString(name);
-        if(value != null) {
+        if(!StringUtils.isNullOrEmpty(value)) {
             return new BigDecimal(value);
         }
         return null;

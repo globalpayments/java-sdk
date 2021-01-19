@@ -60,6 +60,11 @@ public class GatewayException extends ApiException {
     public GatewayException(String message, Exception innerException) {
         super(message, innerException);
     }
+    public GatewayException(String message, Exception innerException, String responseCode, String responseText) {
+        this(message, innerException);
+        this.responseCode = responseCode;
+        this.responseText = responseText;
+    }
     public GatewayException(String message, String responseCode, String responseText) {
         super(message);
         this.responseCode = responseCode;

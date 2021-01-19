@@ -6,12 +6,15 @@ import com.global.api.gateways.*;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 
 public class ConfiguredServices implements IDisposable {
     private IPaymentGateway gatewayConnector;
     private IRecurringGateway recurringConnector;
+    @Getter @Setter private IReportingService reportingService;
     private IDeviceInterface deviceInterface;
     private DeviceController deviceController;
     private TableServiceConnector tableServiceConnector;

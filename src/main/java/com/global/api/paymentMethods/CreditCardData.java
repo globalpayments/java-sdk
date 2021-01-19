@@ -8,6 +8,7 @@ import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.CardUtils;
 import com.global.api.utils.StringUtils;
@@ -189,4 +190,37 @@ public class CreditCardData extends Credit implements ICardData {
         }
         return false;
     }
+
+    public CreditCardData detokenize() throws CloneNotSupportedException, ApiException {
+        return detokenize("default");
+    }
+
+    public CreditCardData detokenize(String configName) throws ApiException {
+        return detokenizeWithIdemPotencyKey(configName, null);
+    }
+
+    public CreditCardData detokenizeWithIdemPotencyKey(String configName, String idemPotencyKey) throws ApiException {
+        if (StringUtils.isNullOrEmpty(getToken())) {
+            throw new BuilderException("Token cannot be null");
+        }
+
+        ManagementBuilder mb = new ManagementBuilder(TransactionType.Detokenize);
+
+        if(idemPotencyKey != null) {
+            mb.withIdempotencyKey(idemPotencyKey);
+        }
+
+        Transaction transaction =
+                mb
+                        .withPaymentMethod(this)
+                        .execute(configName);
+
+        CreditCardData card = new CreditCardData();
+        card.number = transaction.getCardNumber();
+        card.cardType = transaction.getCardType();
+        card.expMonth = transaction.getCardExpMonth();
+        card.expYear = 2000 + transaction.getCardExpYear();
+        return card;
+    }
+
 }

@@ -28,6 +28,9 @@ public class Transaction {
     private String cardBrandTransactionId;
     private String cardType;
     private String cardLast4;
+    private String cardNumber;
+    private int cardExpMonth;
+    private int cardExpYear;
     private String cavvResponseCode;
     private String commercialIndicator;
     private String cvnResponseCode;
@@ -144,6 +147,24 @@ public class Transaction {
     }
     public void setCardLast4(String cardLast4) {
         this.cardLast4 = cardLast4;
+    }
+    public String getCardNumber() {
+        return cardNumber;
+    }
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+    public int getCardExpMonth() {
+        return cardExpMonth;
+    }
+    public void setCardExpMonth(int cardExpMonth) {
+        this.cardExpMonth = cardExpMonth;
+    }
+    public int getCardExpYear() {
+        return cardExpYear;
+    }
+    public void setCardExpYear(int cardExpYear) {
+        this.cardExpYear = cardExpYear;
     }
     public String getCavvResponseCode() {
         return cavvResponseCode;

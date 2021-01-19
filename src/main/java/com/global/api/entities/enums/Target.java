@@ -5,7 +5,8 @@ public enum Target implements IFlag {
     VAPS,
     Transit,
     Portico,
-    Realex;
+    Realex,
+    GP_API;
 
     public long getLongValue() {
         return 1 << this.ordinal();

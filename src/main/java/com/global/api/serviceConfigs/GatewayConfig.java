@@ -7,7 +7,13 @@ import com.global.api.entities.enums.ServiceEndpoints;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
+@Accessors(chain = true)
+@Getter
+@Setter
 public class GatewayConfig extends Configuration {
     // portico & gp-ecom
     private boolean enableLogging;

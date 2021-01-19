@@ -2,6 +2,7 @@ package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.DccRateData;
+import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.LodgingData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.Transaction;
@@ -15,6 +16,8 @@ import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,8 +38,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private boolean customerInitiated;
     private DccRateData dccRateData;
     private String description;
+    private ArrayList<DisputeDocument> disputeDocuments;
+    private String disputeId;
     private boolean forceToHost;
     private BigDecimal gratuity;
+    @Getter @Setter private String idempotencyKey;
     private String invoiceNumber;
     private LodgingData lodgingData;
     private String orderId;
@@ -104,6 +110,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public DccRateData getDccRateData() {
         return dccRateData;
+    }
+    public ArrayList<DisputeDocument> getDisputeDocuments() {
+        return disputeDocuments;
+    }
+    public String getDisputeId() {
+        return disputeId;
     }
     public String getDescription() {
         return description;
@@ -254,6 +266,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.description = value;
         return this;
     }
+    public ManagementBuilder withDisputeDocuments(ArrayList<DisputeDocument> value) {
+        disputeDocuments = value;
+        return this;
+    }
+    public ManagementBuilder withDisputeId(String value) {
+        disputeId = value;
+        return this;
+    }
     public ManagementBuilder withFleetData(FleetData value) {
         fleetData = value;
         return this;
@@ -268,6 +288,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withInvoiceNumber(String value) {
         this.invoiceNumber = value;
+        return this;
+    }
+    public ManagementBuilder withIdempotencyKey(String value) {
+        this.idempotencyKey = value;
         return this;
     }
     public ManagementBuilder withIssuerData(CardIssuerEntryTag tag, String value) {

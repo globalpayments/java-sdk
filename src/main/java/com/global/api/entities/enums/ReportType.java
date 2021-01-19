@@ -11,7 +11,14 @@ public enum ReportType implements IFlag {
     BatchSummary,
     OpenAuths,
     Search,
-    TransactionDetail;
+    TransactionDetail,
+    FindDeposits,
+    FindDisputes,
+    FindSettlementDisputes,
+    DepositDetail,
+    DisputeDetail,
+    SettlementDisputeDetail,
+    FindSettlementTransactions;
 
     public long getLongValue() {
         return 1 << this.ordinal();
