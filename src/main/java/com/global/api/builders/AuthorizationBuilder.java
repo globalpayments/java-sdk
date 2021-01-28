@@ -93,6 +93,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private FeeType feeType;
     private String shiftNumber;
     private String transportData;
+    //card holder language
+    private String cardHolderLanguage;
 
     public String getAlias() {
         return alias;
@@ -271,7 +273,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getTransportData() {
         return transportData;
     }
-
+    public String getCardHolderLanguage() { return cardHolderLanguage; }
     public AuthorizationBuilder withAccountType(AccountType value) {
         this.accountType = value;
         return this;
@@ -639,7 +641,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         uniqueDeviceId = value;
         return this;
     }
-
+    public AuthorizationBuilder withCardHolderLanguage(String value) {
+        this.cardHolderLanguage = value;
+        return this;
+    }
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);
     }

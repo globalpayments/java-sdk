@@ -114,6 +114,17 @@ public class PorticoDebitTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+    @Test
+    public void debitInteracWithCardHolderLanguage() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withPosSequenceNumber("1")
+                .withCardHolderLanguage("en-US")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 
     @Test
     public void debitInteracAccountTypeChecking() throws ApiException {

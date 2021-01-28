@@ -89,6 +89,16 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 	}
+    @Test
+    public void creditSaleWithCardHolderLanguage() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardHolderLanguage("en-US")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 	
 	@Test
 	public void creditTestWithNewCryptoURL() throws ApiException {

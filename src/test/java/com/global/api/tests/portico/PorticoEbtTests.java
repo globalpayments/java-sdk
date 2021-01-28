@@ -54,6 +54,15 @@ public class PorticoEbtTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+    @Test
+    public void ebtSaleWithCardHolderLanguage() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withCardHolderLanguage("en-US")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 
     @Test
     public void ebtRefund() throws ApiException {

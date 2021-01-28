@@ -76,8 +76,21 @@ public class PorticoInteracTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
-
     @Test
+    public void debitInteracAccountTypeSavingsCardHolderLanguage() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("8"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAccountType(AccountType.Savings)
+                .withTagData(tagData)
+                .withCardHolderLanguage("en-US")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+
+        @Test
     public void debitInteracMessageAuthenticationCode() throws ApiException {
         Transaction response = track.charge(new BigDecimal("8"))
                 .withCurrency("USD")
