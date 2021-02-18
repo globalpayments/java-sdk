@@ -4,8 +4,8 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.LodgingData;
-import com.global.api.entities.enums.*;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.entities.FleetData;
@@ -38,8 +38,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private boolean customerInitiated;
     private DccRateData dccRateData;
     private String description;
-    private ArrayList<DisputeDocument> disputeDocuments;
-    private String disputeId;
+    @Getter @Setter private ArrayList<DisputeDocument> disputeDocuments;
+    @Getter @Setter private String disputeId;
     private boolean forceToHost;
     private BigDecimal gratuity;
     @Getter @Setter private String idempotencyKey;
@@ -443,6 +443,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
     public ManagementBuilder(TransactionType type) {
         super(type, null);
+    }
+
+    public ManagementBuilder(TransactionType type, IPaymentMethod paymentMethod) {
+        super(type, paymentMethod);
     }
 
     @Override

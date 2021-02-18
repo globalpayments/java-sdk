@@ -32,6 +32,8 @@ public class GpApiDebitTests {
                 .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardPresent.getValue());
 
+        config.setEnableLogging(true);
+
         ServicesContainer.configureService(config, "GpApiConfig");
     }
 

@@ -1,7 +1,6 @@
 package com.global.api.gateways;
 
 import com.global.api.builders.*;
-import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -10,6 +9,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.*;
 import org.joda.time.format.DateTimeFormat;
 
@@ -775,6 +775,28 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // stored credential
         result.setSchemeId(root.getString("srd"));
+
+        // fraud response
+        if(root.has("fraudresponse")) {
+            Element fraudResponseElement = root.get("fraudresponse");
+
+            fraudResponseElement.getAttributeString("mode");
+
+            FraudResponse fraudResponse =
+                    new FraudResponse()
+                            .setMode(FraudFilterMode.fromString(fraudResponseElement.getAttributeString("mode")))
+                            .setResult(fraudResponseElement.getString("result"));
+
+            for (Element rule : fraudResponseElement.get("rules").getAll("rule")) {
+                fraudResponse.addRule(
+                        new FraudResponse.Rule()
+                                .setName(rule.getAttributeString("name"))
+                                .setId(rule.getAttributeString("id"))
+                                .setAction(rule.getString("action")));
+            }
+
+            result.setFraudResponse(fraudResponse);
+        }
 
         return result;
     }

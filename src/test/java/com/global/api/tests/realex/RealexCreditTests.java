@@ -495,6 +495,28 @@ public class RealexCreditTests {
     }
 
     @Test
+    public void fraudManagement_FraudResponse() throws ApiException {
+        Transaction response =
+                card
+                        .authorize(new BigDecimal("199.99"))
+                        .withCurrency("EUR")
+                        .execute();
+
+        FraudResponse fraudResponse = response.getFraudResponse();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        assertEquals(FraudFilterMode.Active, fraudResponse.getMode());
+        assertEquals("PASS", fraudResponse.getResult());
+        for(FraudResponse.Rule rule : fraudResponse.getRules()) {
+            assertNotNull(rule.getName());
+            assertNotNull(rule.getId());
+            assertEquals("PASS", rule.getAction());
+        }
+    }
+
+    @Test
     public void supplementaryData() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("GBP")

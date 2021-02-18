@@ -35,6 +35,8 @@ public class GpApiCreditTests {
                 .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardNotPresent.getValue());
 
+        config.setEnableLogging(true);
+
         ServicesContainer.configureService(config, "GpApiConfig");
 
         card = new CreditCardData();

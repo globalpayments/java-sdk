@@ -59,8 +59,7 @@ public class GpApiConfig extends GatewayConfig {
 
         gpApiConnector.setServiceUrl(serviceUrl);
 
-        // TODO: Disable Logging when Production ready
-        gpApiConnector.setEnableLogging(true);
+        gpApiConnector.setEnableLogging(this.isEnableLogging());
 
         services.setGatewayConnector(gpApiConnector);
         services.setReportingService(gpApiConnector);

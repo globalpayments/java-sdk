@@ -34,6 +34,8 @@ public class GpApiMappingTests {
 //                .setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll")
 //                .setAppKey("QDsW1ETQKHX6Y4TA");
 
+        config.setEnableLogging(true);
+
         ServicesContainer.configureService(config, "GpApiConfig");
     }
 

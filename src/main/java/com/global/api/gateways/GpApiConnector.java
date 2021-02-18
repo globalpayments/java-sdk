@@ -17,6 +17,9 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -101,11 +104,12 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         transactionProcessingAccountName = value;
     }
 
-    public GpApiConnector(GpApiConfig gpApiConfig) {
+    public GpApiConnector(GpApiConfig config) {
         super();    // ContentType is: "application/json"
 
-        this.gpApiConfig = gpApiConfig;
-        setServiceUrl(this.gpApiConfig.getServiceUrl());
+        gpApiConfig = config;
+        setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
+        setEnableLogging(gpApiConfig.isEnableLogging());
 
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
         headers.put(org.apache.http.HttpHeaders.ACCEPT_ENCODING, "gzip");
@@ -381,6 +385,9 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                 if (StringUtils.isNullOrEmpty(builder.getTagData())) {
                     card.set("chip_condition", getChipCondition(builder.getEmvChipCondition())); // [PREV_SUCCESS, PREV_FAILED]
                 }
+            }
+
+            if (builderTransactionType == TransactionType.Sale) {
                 card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
             }
 
@@ -523,11 +530,23 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         } else if (builderTransactionType == TransactionType.Detokenize && builderPaymentMethod instanceof ITokenizable) {
             response = doTransaction("POST", "/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken() + "/detokenize", "", null, builder.getIdempotencyKey());
         } else if (builderTransactionType == TransactionType.DisputeAcceptance) {
-            response = doTransaction("POST", "/disputes/" + builder.getDisputeId() + "/acceptance", builder.getIdempotencyKey());
+            response = doTransaction("POST", "/disputes/" + builder.getDisputeId() + "/acceptance", "", null, builder.getIdempotencyKey());
         } else if (builderTransactionType == TransactionType.DisputeChallenge) {
-            // TODO: Check this toString() conversion !
-            JsonDoc disputeChallengeData = new JsonDoc()
-                    .set("documents", builder.getDisputeDocuments().toString());
+            JsonArray documentsJsonArray = new JsonArray();
+            for(DisputeDocument document : builder.getDisputeDocuments()) {
+                JsonObject innerJsonDoc = new JsonObject();
+
+                if(document.getType() != null ) {
+                    innerJsonDoc.add("type", new JsonPrimitive(document.getType()));
+                }
+
+                innerJsonDoc.add("b64_content", new JsonPrimitive(document.getBase64Content()));
+
+                documentsJsonArray.add(innerJsonDoc);
+            }
+
+            JsonObject disputeChallengeData = new JsonObject();
+            disputeChallengeData.add("documents", documentsJsonArray);
 
             response = doTransaction("POST", "/disputes/" + builder.getDisputeId() + "/challenge", disputeChallengeData.toString(), null, builder.getIdempotencyKey());
         }
@@ -675,8 +694,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
                 case SettlementDisputeDetail:
                     reportUrl = "/settlement/disputes/" + trb.getSearchBuilder().getSettlementDisputeId();
-
-                    addQueryStringParam(queryStringParams, "account_name", getDataAccountName());
 
                     response = doTransaction("GET", reportUrl, "", queryStringParams, null);
                     return (T) GpApiMapping.mapDisputeSummary(JsonDoc.parse(response));

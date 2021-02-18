@@ -11,6 +11,8 @@ import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -38,6 +40,7 @@ public class Transaction {
     private DccRateData dccRateData;
     private DebitMac debitMac;
     private String emvIssuerResponse;
+    @Getter @Setter private FraudResponse fraudResponse;
     private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
     private HashMap<CardIssuerEntryTag, String> issuerData;

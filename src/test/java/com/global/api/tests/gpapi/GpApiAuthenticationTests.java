@@ -2,10 +2,10 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.GpApiService;
 import org.junit.Test;
 
-import static com.global.api.entities.enums.Environment.TEST;
 import static com.global.api.entities.enums.IntervalToExpire.FIVE_MINUTES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,8 +17,14 @@ public class GpApiAuthenticationTests {
 
     @Test
     public void GenerateAccessTokenManual() throws GatewayException {
+        GpApiConfig config =
+                new GpApiConfig()
+                        .setAppId(APP_ID)
+                        .setAppKey(APP_KEY);
 
-        AccessTokenInfo info = GpApiService.generateTransactionKey(TEST, APP_ID, APP_KEY);
+        config.setEnableLogging(true);
+
+        AccessTokenInfo info = GpApiService.generateTransactionKey(config);
 
         assertNotNull(info);
         assertNotNull(info.getToken());
@@ -30,8 +36,15 @@ public class GpApiAuthenticationTests {
 
     @Test
     public void createAccessTokenWithSpecific_SecondsToExpire() throws GatewayException {
-        // 60 is the minimum supported value
-        AccessTokenInfo info = GpApiService.generateTransactionKey(TEST, APP_ID, APP_KEY, 60);
+        GpApiConfig config =
+                new GpApiConfig()
+                        .setAppId(APP_ID)
+                        .setAppKey(APP_KEY)
+                        .setSecondsToExpire(60);    // 60 is the minimum supported value
+
+        config.setEnableLogging(true);
+
+        AccessTokenInfo info = GpApiService.generateTransactionKey(config);
 
         assertNotNull(info);
         assertNotNull(info.getToken());
@@ -43,7 +56,15 @@ public class GpApiAuthenticationTests {
 
     @Test
     public void createAccessTokenWithSpecific_IntervalToExpire() throws GatewayException {
-        AccessTokenInfo info = GpApiService.generateTransactionKey(TEST, APP_ID, APP_KEY, FIVE_MINUTES);
+        GpApiConfig config =
+                new GpApiConfig()
+                        .setAppId(APP_ID)
+                        .setAppKey(APP_KEY)
+                        .setIntervalToExpire(FIVE_MINUTES);
+
+        config.setEnableLogging(true);
+
+        AccessTokenInfo info = GpApiService.generateTransactionKey(config);
 
         assertNotNull(info);
         assertNotNull(info.getToken());
@@ -55,7 +76,16 @@ public class GpApiAuthenticationTests {
 
     @Test
     public void createAccessTokenWithSpecific_SecondsToExpireAndIntervalToExpire() throws GatewayException {
-        AccessTokenInfo info = GpApiService.generateTransactionKey(TEST, APP_ID, APP_KEY, 60, FIVE_MINUTES);
+        GpApiConfig config =
+                new GpApiConfig()
+                        .setAppId(APP_ID)
+                        .setAppKey(APP_KEY)
+                        .setSecondsToExpire(60)    // 60 is the minimum supported value
+                        .setIntervalToExpire(FIVE_MINUTES);
+
+        config.setEnableLogging(true);
+
+        AccessTokenInfo info = GpApiService.generateTransactionKey(config);
 
         assertNotNull(info);
         assertNotNull(info.getToken());
@@ -68,7 +98,14 @@ public class GpApiAuthenticationTests {
     @Test
     public void GenerateAccessTokenWrongAppId() {
         try {
-            GpApiService.generateTransactionKey(TEST, APP_ID + "a", APP_KEY);
+            GpApiConfig config =
+                    new GpApiConfig()
+                            .setAppId(APP_ID + "a")
+                            .setAppKey(APP_KEY);
+
+            config.setEnableLogging(true);
+
+            GpApiService.generateTransactionKey(config);
         } catch (GatewayException ex) {
             assertEquals("40004", ex.getResponseText());
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
@@ -79,7 +116,14 @@ public class GpApiAuthenticationTests {
     @Test
     public void GenerateAccessTokenWrongAppKey() {
         try {
-            GpApiService.generateTransactionKey(TEST, APP_ID, APP_KEY + "a");
+            GpApiConfig config =
+                    new GpApiConfig()
+                            .setAppId(APP_ID)
+                            .setAppKey(APP_KEY + "a");
+
+            config.setEnableLogging(true);
+
+            GpApiService.generateTransactionKey(config);
         } catch (GatewayException ex) {
             assertEquals("40004", ex.getResponseText());
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());

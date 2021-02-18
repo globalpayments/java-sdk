@@ -3,6 +3,7 @@ package com.global.api.entities.reporting;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.paymentMethods.TransactionReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
-@Getter @Setter
+@Getter
+@Setter
 public class DisputeSummary {
     private String merchantHierarchy;
     private String merchantName;
@@ -59,12 +61,12 @@ public class DisputeSummary {
     private String lastAdjustmentCurrency;
     private String lastAdjustmentFunding;
 
-    public ManagementBuilder Accept() {
-        return new ManagementBuilder(TransactionType.DisputeAcceptance)
+    public ManagementBuilder accept() {
+        return new ManagementBuilder(TransactionType.DisputeAcceptance, new TransactionReference())
                 .withDisputeId(caseId);
     }
 
-    public ManagementBuilder Challenge(ArrayList<DisputeDocument> documents) {
+    public ManagementBuilder challenge(ArrayList<DisputeDocument> documents) {
         return new ManagementBuilder(TransactionType.DisputeChallenge)
                 .withDisputeId(caseId)
                 .withDisputeDocuments(documents);

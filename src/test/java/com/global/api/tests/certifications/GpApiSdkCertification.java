@@ -29,6 +29,8 @@ public class GpApiSdkCertification {
                 .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardNotPresent.getValue());
 
+        gpApiConfig.setEnableLogging(true);
+
         ServicesContainer.configureService(gpApiConfig, "GpApiConfig");
     }
 

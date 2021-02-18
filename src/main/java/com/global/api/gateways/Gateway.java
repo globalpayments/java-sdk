@@ -279,8 +279,10 @@ abstract class Gateway {
     private boolean notCompressedResponseEndpoints(String verb, String endpoint) {
         return
                 serviceUrl.endsWith("globalpay.com/ucp") &&
-                "GET".equalsIgnoreCase(verb) &&
-                endpoint.startsWith("/disputes");
+                (
+                    "GET".equalsIgnoreCase(verb) && endpoint.startsWith("/disputes") ||
+                    "POST".equalsIgnoreCase(verb) && endpoint.startsWith("/disputes")
+                );
     }
 
     // For some reason, if Content-Type is added for some GP-API endpoints we get a 502: Bad gateway error

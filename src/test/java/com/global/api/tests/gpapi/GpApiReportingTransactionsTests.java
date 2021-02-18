@@ -47,6 +47,8 @@ public class GpApiReportingTransactionsTests {
         //                .setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll")
         //                .setAppKey("QDsW1ETQKHX6Y4TA");
 
+        config.setEnableLogging(true);
+
         ServicesContainer.configureService(config, "GpApiConfig");
     }
 
@@ -980,7 +982,6 @@ public class GpApiReportingTransactionsTests {
     @Test
     public void reportFindSettlementTransactions_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
-        String[] cardBrandsShort = {"VISA", "MC", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
         for (int index = 0; index < cardBrands.length; index++) {
             TransactionSummaryList transactions =
@@ -993,7 +994,7 @@ public class GpApiReportingTransactionsTests {
 
             assertNotNull(transactions);
             for (TransactionSummary transactionSummary : transactions) {
-                assertEquals(cardBrandsShort[index], transactionSummary.getCardType());
+                assertEquals(cardBrands[index], transactionSummary.getCardType());
             }
         }
     }

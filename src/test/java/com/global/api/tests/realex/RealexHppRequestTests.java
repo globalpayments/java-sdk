@@ -1,14 +1,14 @@
 package com.global.api.tests.realex;
 
-import com.global.api.entities.Customer;
-import com.global.api.serviceConfigs.GatewayConfig;
-import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Address;
+import com.global.api.entities.Customer;
 import com.global.api.entities.HostedPaymentData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
 import com.global.api.tests.realex.hpp.RealexHppClient;
@@ -1252,6 +1252,36 @@ public class RealexHppRequestTests {
         String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"US\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\"}";
 
         assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
+    }
+
+    @Test
+    public void customHostedServiceConfigName() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        final String CONFIG_NAME = "customName";
+
+        HostedService service = new HostedService(config, CONFIG_NAME);
+
+        String hppJson =
+                service
+                        .authorize(new BigDecimal("19.99"))
+                        .withCurrency("EUR")
+                        .withTimestamp("20170725154824")
+                        .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                        .serialize(CONFIG_NAME);
+
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"0\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\"}";
+
+        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
 }

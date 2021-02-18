@@ -1,6 +1,5 @@
 package com.global.api.services;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.Transaction;
@@ -9,7 +8,6 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GatewayConfig;
-import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
@@ -22,7 +20,12 @@ public class HostedService {
 
     public HostedService(GatewayConfig config) throws ApiException {
         _config = config;
-        ServicesContainer.configureService(config);
+        ServicesContainer.configureService(config); // Configure the default Service
+    }
+
+    public HostedService(GatewayConfig config, String configName) throws ApiException {
+        _config = config;
+        ServicesContainer.configureService(config, configName); // Configure a new service with the given configName
     }
 
     public AuthorizationBuilder authorize() {
@@ -47,9 +50,14 @@ public class HostedService {
     }
 
     public Transaction parseResponse(String json) throws ApiException {
-        return parseResponse(json, false);
+        return parseResponse(json, false, "default");
     }
+
     public Transaction parseResponse(String json, boolean encoded) throws ApiException {
+        return parseResponse(json, encoded, "default");
+    }
+
+    public Transaction parseResponse(String json, boolean encoded, String configName) throws ApiException {
         JsonDoc response = JsonDoc.parse(json, encoded ? JsonEncoders.base64Encoder() : null);
 
         String timestamp = response.getString("TIMESTAMP");
