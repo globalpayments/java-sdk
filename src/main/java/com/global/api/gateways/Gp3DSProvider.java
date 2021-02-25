@@ -15,7 +15,9 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
     private String accountId;
@@ -135,7 +137,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                         cardDetailElement.set("first_name", names[0]);
                     }
                     if(names.length >= 2) {
-                        cardDetailElement.set("last_name", names[1]);
+                        cardDetailElement.set("last_name", Arrays.stream(names).skip(1).collect(Collectors.joining(" ")));
                     }
                 }
             }
