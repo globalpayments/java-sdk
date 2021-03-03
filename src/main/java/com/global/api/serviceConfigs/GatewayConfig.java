@@ -184,6 +184,7 @@ public class GatewayConfig extends Configuration {
             gateway.setRefundPassword(refundPassword);
             gateway.setTimeout(timeout);
             gateway.setServiceUrl(serviceUrl);
+            gateway.setProxy(proxy);
             gateway.setHostedPaymentConfig(hostedPaymentConfig);
             gateway.setEnableLogging(enableLogging);
 
