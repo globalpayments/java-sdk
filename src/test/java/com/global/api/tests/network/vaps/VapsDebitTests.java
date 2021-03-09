@@ -613,29 +613,30 @@ public class VapsDebitTests {
     }
 
     @Test
-    public void test_030_creditSale_partial_retry() throws ApiException {
-        Transaction transaction = Transaction.fromBuilder()
-                .withAmount(new BigDecimal("25.00"))
-                .withAuthorizedAmount(new BigDecimal("12.50"))
-                .withSystemTraceAuditNumber("000832")
-                .withAuthorizationCode("TYPE04")
-                .withPaymentMethod(track)
-                .withNtsData(new NtsData())
-                .withMessageTypeIndicator("1200")
-                .withTransactionTime("201019092041")
-                .build();
-
-        Transaction response = transaction.preAuthCompletion(new BigDecimal("12.50"))
-                .withTimestamp("201019092041")
-                .withPartialApproval(true)
+    public void test_170_reverse_sale_with_cashBack() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
-                //.withSystemTraceAuditNumber()
-                //.withBatchNumber()
-                //.withUniqueDeviceId("")
-                //.withPriorMessageInformation()
-                .withTerminalError(false)
+                .withCashBack(new BigDecimal(3))
                 .execute();
         assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("090800", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
         assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(10))
+                .withCashBackAmount(new BigDecimal(3))
+                .withTimestamp(response.getTimestamp())
+                .withTerminalError(true)
+                .withUniqueDeviceId("123456789")
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("400", reversal.getResponseCode());
     }
 }

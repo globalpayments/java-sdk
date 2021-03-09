@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
@@ -315,6 +316,18 @@ public class NetworkValidationTests {
         card.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .withTransactionMatchingData(new TransactionMatchingData("0000040067", ""))
+                .execute();
+    }
+
+    @Test(expected = BuilderException.class)
+    public void readyLink_loadReversal_wrong_cardType() throws ApiException {
+        CreditCardData card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+
+        card.loadReversal(new BigDecimal("10"))
+                .withCurrency("USD")
                 .execute();
     }
 }

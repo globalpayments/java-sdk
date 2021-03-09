@@ -26,6 +26,8 @@ import com.global.api.utils.*;
 import org.apache.commons.codec.binary.Base64;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -690,20 +692,16 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         // DE 15: Date, Settlement - n6 (YYMMDD) // C
         // DE 17: Date, Capture - n4 (MMDD) // C
         if(transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion)) {
+            String captureTimestamp = timestamp.substring(2, 6);
+
             if(paymentMethod instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference) paymentMethod;
-                if(reference.getOriginalPaymentMethod() instanceof GiftCard) {
-                    String cardType = ((GiftCard) reference.getOriginalPaymentMethod()).getCardType();
-                    if (!cardType.equals("ValueLink")) {
-                        request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
-                    }
-                }
-                else {
-                    request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+                if(reference.getOriginalPaymentMethod() instanceof EBT) {
+                    request.set(DataElementId.DE_017, captureTimestamp);
                 }
             }
-            else {
-                request.set(DataElementId.DE_017, DateTime.now(DateTimeZone.UTC).toString("MMdd"));
+            else if(paymentMethod instanceof EBT) {
+                request.set(DataElementId.DE_017, captureTimestamp);
             }
         }
 
@@ -876,7 +874,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             54.3 CURRENCY CODE, ADDITIONAL AMOUNTS n3 Use DE 49 codes.
             54.4 AMOUNT, ADDITIONAL AMOUNTS x + n12 See Use of the Terms Credit and Debit under Table 1-2 Transaction Processing, p. 61.
          */
-        if(builder.getCashBackAmount() != null && transactionType.equals(TransactionType.Reversal)) {
+        if(builder.getCashBackAmount() != null && (isReversal(transactionType) || transactionType.equals(TransactionType.PreAuthCompletion))) {
             DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
             if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.EBT)) {
                 amountsAdditional.put(DE54_AmountTypeCode.AmountCash, DE3_AccountType.CashBenefitAccount, currencyCode, builder.getCashBackAmount());
@@ -1176,7 +1174,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             PriorMessageInformation priorMessageInformation = new PriorMessageInformation();
             IPaymentMethod paymentMethod = builder != null ? builder.getPaymentMethod() : null;
             if(paymentMethod != null) {
-                DE48_CardType cardType = mapCardType(paymentMethod);
+                DE48_CardType cardType = mapCardType(paymentMethod, transactionType);
                 if(cardType != null) {
                     priorMessageInformation.setCardType(cardType.getValue());
                 }
@@ -1468,6 +1466,15 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                             for(DE123_ReconciliationTotal total: reconciliationTotals.getTotals()) {
                                 transactionCount += total.getTransactionCount();
                                 totalAmount = totalAmount.add(total.getTotalAmount());
+
+                                if(total.getTransactionType().equals(DE123_TransactionType.DebitLessReversals)) {
+                                    summary.setDebitCount(total.getTransactionCount());
+                                    summary.setDebitAmount(total.getTotalAmount());
+                                }
+                                else if(total.getTransactionType().equals(DE123_TransactionType.CreditLessReversals)) {
+                                    summary.setCreditCount(total.getTransactionCount());
+                                    summary.setCreditAmount(total.getTotalAmount());
+                                }
                             }
 
                             summary.setTransactionCount(transactionCount);
@@ -1506,12 +1513,13 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case AddValue:
             case BenefitWithdrawal:
             case Capture:
-            case PreAuthCompletion:
             case CashOut:
+            case PreAuthCompletion:
             case Refund:
             case Sale: {
                 mtiValue += "2";
             } break;
+            case LoadReversal:
             case Reversal:
             case Void:{
                 mtiValue += "4";
@@ -1535,6 +1543,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case BatchClose:
             case Capture:
             case PreAuthCompletion:
+            case LoadReversal:
             case Reversal:
             case Void: {
                 mtiValue += "2";
@@ -1579,7 +1588,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         DE3_ProcessingCode processingCode = new DE3_ProcessingCode();
 
         TransactionType type = builder.getTransactionType();
-        if(type.equals(TransactionType.Reversal)) {
+        IPaymentMethod paymentMethod = builder.getPaymentMethod();
+
+        if(isReversal(type)) {
             // set the transaction type to the original transaction type
             if(builder.getPaymentMethod() instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
@@ -1599,6 +1610,13 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 }
             } break;
             case AddValue: {
+                // TODO: ReadyLink should be "60"
+                if(paymentMethod instanceof Credit) {
+                    Credit card = (Credit)paymentMethod;
+                    if(card.getCardType().equals("VisaReadyLink")) {
+
+                    }
+                }
                 processingCode.setTransactionType(DE3_TransactionType.Deposit);
             } break;
             case Auth: {
@@ -1616,6 +1634,13 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             case Balance: {
                 if(builder.getPaymentMethod() instanceof EBT) {
                     processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
+                }
+                else if(builder.getPaymentMethod() instanceof GiftCard) {
+                    GiftCard gift = (GiftCard)builder.getPaymentMethod();
+                    if(gift.getCardType().equals("ValueLink")) {
+                        processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
+                    }
+                    else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
                 }
                 else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
             } break;
@@ -1646,7 +1671,6 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         }
 
         // check for an original payment method
-        IPaymentMethod paymentMethod = builder.getPaymentMethod();
         if(paymentMethod instanceof TransactionReference) {
             TransactionReference transactionReference = (TransactionReference)paymentMethod;
             if(transactionReference.getOriginalPaymentMethod() != null) {
@@ -1764,6 +1788,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 }
                 return "570";
             }
+            case LoadReversal:
             case Reversal: {
                 ManagementBuilder managementBuilder = (ManagementBuilder)builder;
 
@@ -1842,14 +1867,14 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         if(transactionType.equals(TransactionType.PreAuthCompletion)) {
             reasonCode = DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement;
         }
-        else if(transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)) {
+        else if(isReversal(transactionType) || transactionType.equals(TransactionType.Void)) {
             boolean partial = false;
             if(paymentMethod != null) {
                 partial = paymentMethod.isPartialApproval();
             }
 
             if(builder.isForceToHost()) {
-                if(transactionType.equals(TransactionType.Reversal)) {
+                if(isReversal(transactionType)) {
                     reasonCode = DE25_MessageReasonCode.Forced_AuthCapture;
                 }
                 else {
@@ -2021,7 +2046,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         }
 
         // DE48-11
-        messageControl.setCardType(mapCardType(builder.getPaymentMethod()));
+        messageControl.setCardType(mapCardType(builder.getPaymentMethod(), builder.getTransactionType()));
 
         // DE48-14
         if(builder.getPaymentMethod() instanceof IPinProtected && builder instanceof AuthorizationBuilder) {
@@ -2162,7 +2187,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
                 // NTS Specific Data
                 if(reference.getNtsData() != null) {
-                    if(!mb.getTransactionType().equals(TransactionType.Void) && !mb.getTransactionType().equals(TransactionType.Reversal)) {
+                    if(!mb.getTransactionType().equals(TransactionType.Void) && !isReversal(mb.getTransactionType())) {
                         cardIssuerData.add(CardIssuerEntryTag.NTS_System, reference.getNtsData().toString());
                     }
                 }
@@ -2223,7 +2248,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         }
         return null;
     }
-    private DE48_CardType mapCardType(IPaymentMethod paymentMethod) {
+    private DE48_CardType mapCardType(IPaymentMethod paymentMethod, TransactionType transactionType) {
         // check to see if the original payment method is set
         if(paymentMethod instanceof TransactionReference) {
             TransactionReference transactionReference = (TransactionReference)paymentMethod;
@@ -2257,6 +2282,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 return DE48_CardType.VisaFleet;
             }
             else if(card.getCardType().equals("VisaReadyLink")) {
+                if(transactionType != null) {
+                    if(transactionType.equals(TransactionType.AddValue) || transactionType.equals(TransactionType.LoadReversal)) {
+                        return DE48_CardType.PINDebitCard;
+                    }
+                }
                 return DE48_CardType.ReadyLink;
             }
             else if(card.getCardType().equals("DinersClub")) {
@@ -2582,6 +2612,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         request.setMessageTypeIndicator(mti);
         return request;
     }
+    private boolean isReversal(TransactionType type) {
+        return type.equals(TransactionType.Reversal) || type.equals(TransactionType.LoadReversal);
+    }
 
     private <T extends TransactionBuilder<Transaction>> void validate(T builder) throws BuilderException, UnsupportedTransactionException {
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -2666,7 +2699,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 }
             }
 
-            if(transactionType.equals(TransactionType.Reversal)) {
+            if(isReversal(transactionType)) {
                 if(StringUtils.isNullOrEmpty(reference.getOriginalProcessingCode())) {
                     throw new BuilderException("The original processing code should be specified when performing a reversal.");
                 }

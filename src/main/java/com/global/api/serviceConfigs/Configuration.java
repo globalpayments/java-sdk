@@ -4,6 +4,7 @@ import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
+import com.global.api.entities.enums.ServiceEndpoints;
 import com.global.api.entities.exceptions.ConfigurationException;
 
 import java.util.ArrayList;

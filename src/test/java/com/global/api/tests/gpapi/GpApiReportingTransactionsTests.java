@@ -1033,7 +1033,7 @@ public class GpApiReportingTransactionsTests {
 
         assertNotNull(transactions);
         for (TransactionSummary transactionSummary : transactions)
-            assertEquals(transactionSummary.getAquirerReferenceNumber(), arn);
+            assertEquals(transactionSummary.getAcquirerReferenceNumber(), arn);
     }
 
     @Test

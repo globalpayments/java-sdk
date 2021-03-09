@@ -55,6 +55,13 @@ public class ServicesContainer implements IDisposable {
             return configurations.get(configName).getTableServiceConnector();
         throw new ApiException("The specified configuration has not been configured for payroll.");
     }
+    public IBillingProvider getBillingClient(String configName) throws ApiException {
+        if (configurations.containsKey(configName)) {
+            return configurations.get(configName).getBillingProvider();
+        }
+
+        throw new ConfigurationException("The specified configuration has not been configured for gateway processing.");
+    }
 
     public static ServicesContainer getInstance() {
         if(instance == null)

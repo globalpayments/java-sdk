@@ -11,6 +11,7 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.utils.CardUtils;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -23,6 +24,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     private String token;
     protected String cardType = "Unknown";
     protected boolean fleetCard;
+    private String bankName;
 
     public String getCardType() {
         return cardType;
@@ -61,6 +63,12 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public void setFleetCard(boolean fleetCard) {
         this.fleetCard = fleetCard;
     }
+    public String getBankName() {
+        return bankName;
+    }
+    public void setBankName(String value) {
+        this.bankName = value;
+    }
 
     public AuthorizationBuilder authorize() { return authorize(null, false); }
     public AuthorizationBuilder authorize(BigDecimal amount) {
@@ -92,6 +100,13 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     }
     public AuthorizationBuilder balanceInquiry(InquiryType inquiry) {
         return new AuthorizationBuilder(TransactionType.Balance, this).withBalanceInquiryType(inquiry);
+    }
+
+    public AuthorizationBuilder loadReversal() {
+        return loadReversal(null);
+    }
+    public AuthorizationBuilder loadReversal(BigDecimal amount) {
+        return new AuthorizationBuilder(TransactionType.LoadReversal, this).withAmount(amount);
     }
 
     public AuthorizationBuilder refund() { return refund(null); }
@@ -154,6 +169,10 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         }
     }
 
+    /// <summary>
+    /// Updates the token expiry date with the values proced to the card object
+    /// </summary>
+    /// <returns>boolean value indcating success/failure</returns>
     @Override
     public boolean updateTokenExpiry(String configName) throws BuilderException {
         return updateTokenExpiryWithIdemPotencyKey(configName, null);
@@ -172,8 +191,8 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
             }
 
             mb
-                    .withPaymentMethod(this)
-                    .execute(configName);
+                .withPaymentMethod(this)
+                .execute(configName);
 
             return true;
         }
@@ -190,6 +209,10 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         }
     }
 
+    /// <summary>
+    /// Deletes the token associated with the current card object
+    /// </summary>
+    /// <returns>boolean value indicating success/failure</returns>
     @Override
     public boolean deleteToken(String configName) throws BuilderException {
         return deleteTokenWithIdempotencyKey(configName, null);
@@ -208,8 +231,8 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
             }
 
             mb
-                    .withPaymentMethod(this)
-                    .execute(configName);
+                .withPaymentMethod(this)
+                .execute(configName);
 
             return true;
         }

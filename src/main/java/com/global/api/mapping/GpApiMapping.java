@@ -92,7 +92,7 @@ public class GpApiMapping {
                 summary.setCardType(card.getString("brand"));
                 summary.setAuthCode(card.getString("authcode"));
                 summary.setBrandReference(card.getString("brand_reference"));
-                summary.setAquirerReferenceNumber(card.getString("arn"));
+                summary.setAcquirerReferenceNumber(card.getString("arn"));
                 summary.setMaskedCardNumber(card.getString("masked_number_first6last4"));
             }
             else if(paymentMethod.has("digital_wallet")) {

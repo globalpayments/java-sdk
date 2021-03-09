@@ -6,9 +6,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class EmvTests {
     @Test
@@ -54,5 +52,12 @@ public class EmvTests {
             EmvData emvData = EmvUtils.parseTagData(cvr, true);
             assertTrue(emvData.isOfflinePin());
         }
+    }
+
+    @Test
+    public void parseError() {
+        String tagData = "721F861D8424000218728018221726508F7FEE012C411D51B5EC795251F81B3EE59108D2ABF19600820000";
+        EmvData data = EmvUtils.parseTagData(tagData, true);
+        assertEquals(tagData, data.getAcceptedTagData());
     }
 }

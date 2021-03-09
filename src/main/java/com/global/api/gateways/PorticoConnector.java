@@ -101,7 +101,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         }
 
         boolean isCheck = (paymentType.equals(PaymentMethodType.ACH));
-        if (isCheck || builder.getBillingAddress() != null) {
+        if (isCheck || builder.getBillingAddress() != null || !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
             Element holder = et.subElement(block1, isCheck ? "ConsumerInfo" : "CardHolderData");
 
             Address address = builder.getBillingAddress();
@@ -140,6 +140,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                     }
                 }
             }
+
+            // card holder language
+            if(!isCheck && !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
+                et.subElement(holder, "CardHolderLanguage", builder.getCardHolderLanguage());
+            }
+
         }
 
         // card data
@@ -156,9 +162,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             ICardData card = (ICardData) builder.getPaymentMethod();
 
             // card on File
-            if(builder.getTransactonInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
+            if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
-                if(builder.getTransactonInitiator() == StoredCredentialInitiator.CardHolder) {
+                if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Portico));
                 }
                 else {
@@ -292,9 +298,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             RecurringPaymentMethod method = (RecurringPaymentMethod)builder.getPaymentMethod();
 
             // card on File
-            if(builder.getTransactonInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
+            if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
-                if(builder.getTransactonInitiator() == StoredCredentialInitiator.CardHolder) {
+                if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Portico));
                 }
                 else {
@@ -344,7 +350,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         }
 
         // set token flag
-        if (builder.getPaymentMethod() instanceof ITokenizable) {
+        if (builder.getPaymentMethod() instanceof ITokenizable && builder.getPaymentMethod().getPaymentMethodType() != PaymentMethodType.ACH) {
             et.subElement(cardData, "TokenRequest").text(builder.isRequestMultiUseToken() ? "Y" : "N");
         }
 
@@ -596,10 +602,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         return buildEnvelope(et, transaction, null);
     }
     private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId) {
+        et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
+        et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        et.addNamespace("xsd", "http://www.w3.org/2001/XMLSchema");
+
         Element envelope = et.element("soap:Envelope");
-        envelope.set("xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
-        envelope.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        envelope.set("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
 
         Element body = et.subElement(envelope, "soap:Body");
         Element request = et.subElement(body, "PosRequest").set("xmlns", "http://Hps.Exchange.PosGateway");

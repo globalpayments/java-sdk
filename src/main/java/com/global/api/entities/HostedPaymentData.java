@@ -1,14 +1,21 @@
 package com.global.api.entities;
 
 import java.util.HashMap;
+import java.util.List;
 
+import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ChallengeRequest;
+import com.global.api.entities.enums.HostedPaymentType;
+import com.global.api.paymentMethods.AlternatePaymentMethod;
 
-public class HostedPaymentData {
+public class HostedPaymentData extends AlternatePaymentMethod {
     private Boolean addressesMatch;
+    private List<Bill> bills;
     private ChallengeRequest challengeRequest;
     private Boolean customerExists;
+    private Boolean customerIsEditable;
+    private Address customerAddress;
     private String customerEmail;
     private String customerKey;
     private String customerNumber;
@@ -16,6 +23,7 @@ public class HostedPaymentData {
     private String customerFirstName;
     private String customerLastName;
     private String customerPhoneMobile;
+    private HostedPaymentType hostedPaymentType;
     private String merchantResponseUrl;
     private Boolean offerToSaveCard;
     private String paymentKey;
@@ -30,6 +38,12 @@ public class HostedPaymentData {
     public void setAddressesMatch(Boolean addressesMatch) {
         this.addressesMatch = addressesMatch;
     }
+    public List<Bill> getBills() {
+        return bills;
+    }
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
     public ChallengeRequest getChallengeRequest() {
         return challengeRequest;
     }
@@ -42,11 +56,23 @@ public class HostedPaymentData {
     public void setCustomerEmail(String customerEmail) {
         this.customerEmail = customerEmail;
     }
-    public Boolean isCustomerExists() {
+    public boolean isCustomerExists() {
         return customerExists;
     }
     public void setCustomerExists(boolean customerExists) {
         this.customerExists = customerExists;
+    }
+    public boolean isCustomerEditable() {
+        return customerIsEditable;
+    }
+    public void setCustomerIsEditable(boolean customerIsEditable) {
+        this.customerIsEditable = customerIsEditable;
+    }
+    public Address getCustomerAddress() {
+        return customerAddress;
+    }
+    public void setCustomerAddress(Address address) {
+        this.customerAddress = address;
     }
     public String getCustomerKey() {
         return customerKey;
@@ -89,7 +115,13 @@ public class HostedPaymentData {
 	}
 	public void setMerchantResponseUrl(String merchantResponseUrl) {
 		this.merchantResponseUrl = merchantResponseUrl;
-	}
+    }
+    public HostedPaymentType getHostedPaymentType() {
+        return hostedPaymentType;
+    }
+    public void setHostedPaymentType(HostedPaymentType hostedPaymentType) {
+        this.hostedPaymentType = hostedPaymentType;
+    }
     public Boolean isOfferToSaveCard() {
         return offerToSaveCard;
     }
@@ -128,5 +160,7 @@ public class HostedPaymentData {
 	}
 	public HostedPaymentData() {
         supplementaryData = new HashMap<String, String>();
+        customerIsEditable = false;
+        customerExists = true;
     }
 }

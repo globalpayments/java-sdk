@@ -19,7 +19,7 @@ public class TransactionSummary {
     private AltPaymentData altPaymentData;
     private BigDecimal amount;
     private String attachmentInfo;
-    private String aquirerReferenceNumber;
+    private String acquirerReferenceNumber;
     private BigDecimal authorizedAmount;
     private String authCode;
     private String avsResponseCode;
@@ -122,5 +122,4 @@ public class TransactionSummary {
     public void setOrderId(String value) {
 		this.clientTransactionId = value;
 	}
-
 }

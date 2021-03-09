@@ -2,7 +2,9 @@ package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.Host;
@@ -38,7 +40,16 @@ public class VapsCreditTests {
     private CreditTrackData track;
 
     public VapsCreditTests() throws ApiException {
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+
         AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig.setAddress(address);
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_ContactlessMsd_MagStripe_KeyEntry);

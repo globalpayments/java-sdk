@@ -74,7 +74,7 @@ public class GpApiMappingTests {
                 assertEquals(card.getString("brand"), transaction.getCardType());
                 assertEquals(card.getString("authcode"), transaction.getAuthCode());
                 assertEquals(card.getString("brand_reference"), transaction.getBrandReference());
-                assertEquals(card.getString("arn"), transaction.getAquirerReferenceNumber());
+                assertEquals(card.getString("arn"), transaction.getAcquirerReferenceNumber());
                 assertEquals(card.getString("masked_number_first6last4"), transaction.getMaskedCardNumber());
             }
         }
@@ -139,7 +139,7 @@ public class GpApiMappingTests {
         assertEquals(card.getString("brand"), transaction.getCardType());
         assertEquals(card.getString("authcode"), transaction.getAuthCode());
         assertEquals(card.getString("brand_reference"), transaction.getBrandReference());
-        assertEquals(card.getString("arn"), transaction.getAquirerReferenceNumber());
+        assertEquals(card.getString("arn"), transaction.getAcquirerReferenceNumber());
         assertEquals(card.getString("masked_number_first6last4"), transaction.getMaskedCardNumber());
     }
 

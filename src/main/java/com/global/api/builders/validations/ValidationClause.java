@@ -1,5 +1,7 @@
 package com.global.api.builders.validations;
 
+import com.global.api.utils.StringUtils;
+
 import java.lang.reflect.Field;
 
 public class ValidationClause {
@@ -9,6 +11,8 @@ public class ValidationClause {
     private MyCallable callback;
     private String message;
     private boolean precondition;
+    private Class propertyClass;
+    private String subPropertyName;
 
     public MyCallable getCallback() {
         return callback;
@@ -126,6 +130,17 @@ public class ValidationClause {
                 try {
                     Field f = getField(builder.getClass(), propertyName);
                     Object value = f.get(builder);
+
+                    // check sub-field
+                    if(!StringUtils.isNullOrEmpty(subPropertyName)) {
+                        if(!propertyClass.isInstance(value)) {
+                            return false;
+                        }
+
+                        Field subField = getField(propertyClass, subPropertyName);
+                        value = subField.get(value);
+                    }
+
                     return value.equals(expected);
                 }
                 catch(NoSuchFieldException exc) {
@@ -159,6 +174,12 @@ public class ValidationClause {
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
+    }
+
+    public ValidationClause propertyOf(Class clazz, String subPropertyName) {
+        this.propertyClass = clazz;
+        this.subPropertyName = subPropertyName;
+        return this;
     }
 
     private Field getField(Class clazz, String fieldName) throws NoSuchFieldException {

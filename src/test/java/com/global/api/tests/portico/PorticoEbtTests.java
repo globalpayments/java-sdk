@@ -59,6 +59,7 @@ public class PorticoEbtTests {
         Transaction response = card.charge(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withCardHolderLanguage("en-US")
+                .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());

@@ -40,12 +40,13 @@ public enum TransactionType implements IFlag {
     Increment,
     Tokenize,
     CashOut,
+    SendFile,
     Payment,
     CashAdvance,
     Detokenize,
     DisputeAcceptance,
     DisputeChallenge,
-    SendFile;
+    LoadReversal;
 
     public long getLongValue() {
         return 1 << this.ordinal();
@@ -59,5 +60,9 @@ public enum TransactionType implements IFlag {
                 flags.add(flag);
         }
         return flags;
+    }
+
+    public boolean isReversal() {
+        return this.equals(TransactionType.Reversal) || this.equals(TransactionType.LoadReversal);
     }
 }

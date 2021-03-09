@@ -66,7 +66,7 @@ public class VapsPanTests {
     }
 
     @Test
-    public void test_002_truncated_pan() throws ApiException {
+    public void test_002_truncated_pan() {
         // create the track data object from full pan
         CreditTrackData track = TestCards.VisaSwipe();
 
@@ -80,9 +80,16 @@ public class VapsPanTests {
     }
 
     @Test
-    public void test_003_truncated_pan() throws ApiException {
+    public void test_003_truncated_pan() {
         // create the track data object from full pan
         CreditTrackData track = new CreditTrackData();
         track.setValue("4111111111111111=2512");
+    }
+
+    @Test
+    public void test_004_readyLink_pan() {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4627661111111111=2512");
+        assertEquals("VisaReadyLink", track.getCardType());
     }
 }

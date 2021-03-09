@@ -2,6 +2,7 @@ package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
+import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -12,15 +13,8 @@ import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.EBTCardData;
-import com.global.api.paymentMethods.GiftCard;
-import com.global.api.paymentMethods.IPaymentMethod;
-import com.global.api.paymentMethods.ITokenizable;
-import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -38,6 +32,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private InquiryType balanceInquiryType;
     private Address billingAddress;
     private String cardBrandTransactionId;
+    private String cardHolderLanguage;
     private BigDecimal cashBackAmount;
     private String clerkId;
     private String clientTransactionId;
@@ -53,12 +48,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
-    @Getter @Setter private EmvFallbackCondition emvFallbackCondition;
+    private EmvFallbackCondition emvFallbackCondition;
     private EmvChipCondition emvChipCondition;
+    private EmvLastChipRead emvLastChipRead;
     private FraudFilterMode fraudFilterMode;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
-    @Getter @Setter private String idempotencyKey;
+    private String idempotencyKey;
     private String invoiceNumber;
     private boolean level2Request;
     private LodgingData lodgingData;
@@ -67,7 +63,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
-    @Getter @Setter private String paymentApplicationVersion;
+    private String paymentApplicationVersion;
     private String posSequenceNumber;
     private String productId;
     private ArrayList<String[]> miscProductData;
@@ -87,14 +83,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String tagData;
     private String timestamp;
     private StoredCredentialInitiator transactionInitiator;
+    private List<Bill> bills;
 
     // network fields
     private BigDecimal feeAmount;
     private FeeType feeType;
+    private String followOnTimestamp;
     private String shiftNumber;
     private String transportData;
-    //card holder language
-    private String cardHolderLanguage;
 
     public String getAlias() {
         return alias;
@@ -126,6 +122,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public Address getBillingAddress() {
         return billingAddress;
     }
+    public List<Bill> getBills() {
+        return bills;
+    }
     public String getCardBrandTransactionId( ) {
         return cardBrandTransactionId;
     }
@@ -140,6 +139,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public String getCurrency() {
         return currency;
+    }
+    public Customer getCustomer() {
+        return getCustomerData();
     }
     public String getCustomerId() {
         return customerId;
@@ -241,6 +243,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public EmvChipCondition getEmvChipCondition() {
         return emvChipCondition;
     }
+    public EmvFallbackCondition getEmvFallbackCondition() {
+        return emvFallbackCondition;
+    }
+    public EmvLastChipRead getEmvLastChipRead() {
+        return emvLastChipRead;
+    }
     public String getMessageAuthenticationCode() {
         return messageAuthenticationCode;
     }
@@ -256,8 +264,17 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getTagData() {
         return tagData;
     }
-    public StoredCredentialInitiator getTransactonInitiator() {
+    public StoredCredentialInitiator getTransactionInitiator() {
         return transactionInitiator;
+    }
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+    public String getPaymentApplicationVersion() {
+        return paymentApplicationVersion;
+    }
+    public boolean isHasEmvFallbackData() {
+        return hasEmvFallbackData;
     }
 
     // network getters
@@ -267,6 +284,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public FeeType getFeeType() {
         return feeType;
     }
+    public String getFollowOnTimestamp() { return followOnTimestamp; }
     public String getShiftNumber() {
         return shiftNumber;
     }
@@ -323,6 +341,18 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.balanceInquiryType = value;
         return this;
     }
+    public AuthorizationBuilder withCardHolderLanguage(String value) {
+        cardHolderLanguage = value;
+        return this;
+    }
+    public AuthorizationBuilder withBills(Bill ... bills) {
+        this.bills = Arrays.asList(bills);
+        return this;
+    }
+    public AuthorizationBuilder withBills(List<Bill> values) {
+        this.bills = values;
+        return this;
+    }
     public AuthorizationBuilder withCashBack(BigDecimal value) {
         this.cashBackAmount = value;
         this.transactionModifier = TransactionModifier.CashBack;
@@ -330,6 +360,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withChipCondition(EmvChipCondition value) {
         this.emvChipCondition = value;
+        return this;
+    }
+    public AuthorizationBuilder withFallbackCondition(EmvFallbackCondition value) {
+        this.emvFallbackCondition = value;
+        return this;
+    }
+    public AuthorizationBuilder withLastChipRead(EmvLastChipRead value) {
+        this.emvLastChipRead = value;
         return this;
     }
     public AuthorizationBuilder withClerkId(String value) {
@@ -364,7 +402,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public AuthorizationBuilder withCurrency(String value) {
         this.currency = value;
         return this;
-    }    
+    }
+    public AuthorizationBuilder withCustomer(Customer value) {
+        return withCustomerData(value);
+    } 
     public AuthorizationBuilder withCustomerId(String value) {
         this.customerId = value;
         return this;
@@ -566,7 +607,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withTimestamp(String value) {
+        return withTimestamp(value, null);
+    }
+    public AuthorizationBuilder withTimestamp(String value, String followOn) {
         this.timestamp = value;
+        this.followOnTimestamp = followOn;
         return this;
     }
     public AuthorizationBuilder withTagData(String value) {
@@ -639,10 +684,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withUniqueDeviceId(String value) {
         uniqueDeviceId = value;
-        return this;
-    }
-    public AuthorizationBuilder withCardHolderLanguage(String value) {
-        this.cardHolderLanguage = value;
         return this;
     }
     public AuthorizationBuilder(TransactionType type) {
@@ -729,5 +770,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(TransactionType.Tokenize)
                 .check("paymentMethod").isNotNull()
                 .check("paymentMethod").isInstanceOf(ITokenizable.class);
+
+        this.validations.of(PaymentMethodType.Credit)
+                .with(TransactionType.LoadReversal)
+                .check("paymentMethod").propertyOf(Credit.class, "cardType").isEqualTo("VisaReadyLink");
     }
 }

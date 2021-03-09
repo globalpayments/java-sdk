@@ -30,6 +30,7 @@ public class CardUtils {
 
     private static Map<String, Map<String, String>> fleetBinMap;
     private static Map<String,Pattern> regexMap;
+    private static ArrayList<String> readyLinkBinMap;
 
     static {
         regexMap = new HashMap<String, Pattern>();
@@ -45,6 +46,41 @@ public class CardUtils {
         regexMap.put("StoredValue", StoredValueRegex);
         regexMap.put("ValueLink", ValueLinkRegex);
         regexMap.put("HeartlandGift", HeartlandGiftRegex);
+
+        // ReadyLink
+        readyLinkBinMap = new ArrayList<String>();
+        readyLinkBinMap.add("462766");
+        readyLinkBinMap.add("406498");
+        readyLinkBinMap.add("440230");
+        readyLinkBinMap.add("485932");
+        readyLinkBinMap.add("434249");
+        readyLinkBinMap.add("487093");
+        readyLinkBinMap.add("411338");
+        readyLinkBinMap.add("438968");
+        readyLinkBinMap.add("444083");
+        readyLinkBinMap.add("417021");
+        readyLinkBinMap.add("400421");
+        readyLinkBinMap.add("426938");
+        readyLinkBinMap.add("478499");
+        readyLinkBinMap.add("446053");
+        readyLinkBinMap.add("459440");
+        readyLinkBinMap.add("421783");
+        readyLinkBinMap.add("422799");
+        readyLinkBinMap.add("473517");
+        readyLinkBinMap.add("493478");
+        readyLinkBinMap.add("453037");
+        readyLinkBinMap.add("443613");
+        readyLinkBinMap.add("401658");
+        readyLinkBinMap.add("439331");
+        readyLinkBinMap.add("407216");
+        readyLinkBinMap.add("400123");
+        readyLinkBinMap.add("402407");
+        readyLinkBinMap.add("405551");
+        readyLinkBinMap.add("404206");
+        readyLinkBinMap.add("422803");
+        readyLinkBinMap.add("407635");
+        readyLinkBinMap.add("447904");
+        readyLinkBinMap.add("439461");
 
         // fleet bin ranges
         fleetBinMap = new HashMap<String, Map<String, String>>();
@@ -101,6 +137,14 @@ public class CardUtils {
         return false;
     }
 
+    public static boolean isReadyLink(String pan) {
+        if(!StringUtils.isNullOrEmpty(pan)) {
+            String compareValue = pan.substring(0, 6);
+            return readyLinkBinMap.contains(compareValue);
+        }
+        return false;
+    }
+
     public static String mapCardType(String pan) {
         String rvalue = "Unknown";
         if(!StringUtils.isNullOrEmpty(pan)) {
@@ -116,6 +160,9 @@ public class CardUtils {
             if(!rvalue.equals("Unknown")) {
                 if(isFleet(rvalue, pan)) {
                     rvalue += "Fleet";
+                }
+                else if(isReadyLink(pan)) {
+                    rvalue += "ReadyLink";
                 }
             }
         }
