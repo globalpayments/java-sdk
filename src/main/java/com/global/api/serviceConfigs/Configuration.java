@@ -7,6 +7,7 @@ import com.global.api.entities.enums.HostError;
 import com.global.api.entities.enums.ServiceEndpoints;
 import com.global.api.entities.exceptions.ConfigurationException;
 
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,6 +15,7 @@ public abstract class Configuration {
     protected boolean enableLogging = false;
     protected Environment environment = Environment.TEST;
     protected String serviceUrl;
+    protected Proxy proxy;
     protected HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
     protected int timeout = 30000;
     protected boolean validated;
@@ -30,6 +32,10 @@ public abstract class Configuration {
     }
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
+    }
+
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
     }
 
     public boolean isEnableLogging() {
