@@ -13,9 +13,11 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 abstract class Gateway {
@@ -24,6 +26,7 @@ abstract class Gateway {
     protected HashMap<String, String> headers;
     protected int timeout;
     protected String serviceUrl;
+    protected Proxy proxy;
 
     // ----------------------------------------------------------------------
     // TODO: Remove if it is not more useful
@@ -57,7 +60,12 @@ abstract class Gateway {
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
     }
-
+    public Proxy getProxy() {
+        return this.proxy;
+    }
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
+    }
     public Gateway(String contentType) {
         headers = new HashMap<String, String>();
         this.contentType = contentType;
@@ -73,7 +81,11 @@ abstract class Gateway {
         HttpsURLConnection conn = null;
         try{
             String queryString = buildQueryString(queryStringParams);
-            conn = (HttpsURLConnection)new URL((serviceUrl + endpoint + queryString).trim()).openConnection();
+            if (proxy != null) {
+                conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection(proxy);
+            } else {
+                conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection();
+            }
             conn.setSSLSocketFactory(new SSLSocketFactoryEx());
             conn.setConnectTimeout(timeout);
             conn.setDoInput(true);
@@ -101,6 +113,7 @@ abstract class Gateway {
                 System.out.println("Endpoint:       " + endpoint);
                 System.out.println("Verb:           " + verb);
                 System.out.println("Headers:        " + conn.getRequestProperties());
+                System.out.println("Proxy:          " + ((proxy != null) ? proxy.toString() : "none"));
             }
 
             if (!verb.equals("GET")) {
