@@ -185,14 +185,10 @@ public class Element {
     private org.w3c.dom.Element getElementByTagName(String tagName) {
         org.w3c.dom.Element node;
 
-        // if (tagName.contains(":")) {
-        //     String[] data = tagName.split(":");
-        //     String namespaceURI = namespaces.get(data[0]);
-        //     node = (org.w3c.dom.Element) doc.getElementsByTagNameNS(namespaceURI, tagName).item(0);
-        // }
-        // else {
+        node = (org.w3c.dom.Element) element.getElementsByTagName(tagName).item(0);
+        if(node == null) {
             node = (org.w3c.dom.Element) doc.getElementsByTagName(tagName).item(0);
-        // }
+        }
 
         return node;
     }

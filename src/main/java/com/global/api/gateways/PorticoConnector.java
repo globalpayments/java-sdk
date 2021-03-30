@@ -406,12 +406,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             et.subElement(autoSub, "MerchantVerificationValue", builder.getAutoSubstantiation().getMerchantVerificationValue());
             et.subElement(autoSub, "RealTimeSubstantiation", builder.getAutoSubstantiation().isRealTimeSubstantiation() ? "Y" : "N");
         }
-        //Portico language
-        if (!StringUtils.isNullOrEmpty(builder.getCardHolderLanguage()))
-        {
-            Element holderElement = et.subElement(block1, "CardHolderData");
-            et.subElement(holderElement, "CardHolderLanguage", builder.getCardHolderLanguage());
-        }
 
         // lodging data
 //        if(builder.getLodgingData() != null) {

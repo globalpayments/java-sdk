@@ -280,14 +280,21 @@ public class VapsEbtTests {
         Assert.fail("Did not timeout.");
     }
 
-    @Test(expected = GatewayTimeoutException.class) @Ignore
+    @Test
     public void test_224_swipe_reversal_cashBack() throws ApiException {
-        cashCard.charge(new BigDecimal(13))
+        Transaction response = cashCard.charge(new BigDecimal(13))
                 .withCurrency("USD")
                 .withCashBack(new BigDecimal(3))
-                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
                 .execute();
-        Assert.fail("Did not timeout.");
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(13))
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("400", reversal.getResponseCode());
     }
 
     @Test

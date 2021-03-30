@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.gateways.RealexConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
@@ -509,12 +510,73 @@ public class RealexCreditTests {
 
         assertEquals(FraudFilterMode.Active, fraudResponse.getMode());
         assertEquals("PASS", fraudResponse.getResult());
-        for(FraudResponse.Rule rule : fraudResponse.getRules()) {
-            assertNotNull(rule.getName());
-            assertNotNull(rule.getId());
-            assertEquals("PASS", rule.getAction());
-        }
+
+        FraudResponse.Rule rule0 = fraudResponse.getRules().get(0);
+
+        assertEquals("Block Card Number", rule0.getName());
+        assertEquals("853c1d37-6e9f-467e-9ffc-182210b40c6b", rule0.getId());
+        assertEquals("PASS", rule0.getAction());
+
+        FraudResponse.Rule rule1 = fraudResponse.getRules().get(1);
+
+        assertEquals("Block Country", rule1.getName());
+        assertEquals("f9b93363-4f4e-4d31-b7a2-1f816f461ada", rule1.getId());
+        assertEquals("PASS", rule1.getAction());
     }
+
+//    TODO: At some point should make use of the proxy to send back mock responses we want to parse.
+//    @Test
+//    public void fraudManagement_FraudResponse_Mapping_01() throws ApiException {
+//        String rawResponse = "<response timestamp=\"20210319120046\">\n" +
+//                "  <merchantid>nakedwinesukdev</merchantid>\n" +
+//                "  <account>ecom3ds</account>\n" +
+//                "  <orderid>30931236</orderid>\n" +
+//                "  <authcode>12345</authcode>\n" +
+//                "  <result>00</result>\n" +
+//                "  <cvnresult>U</cvnresult>\n" +
+//                "  <avspostcoderesponse>U</avspostcoderesponse>\n" +
+//                "  <avsaddressresponse>U</avsaddressresponse>\n" +
+//                "  <batchid>-1</batchid>\n" +
+//                "  <message>[ test system ] Authorised</message>\n" +
+//                "  <pasref>16161552459779525</pasref>\n" +
+//                "  <timetaken>0</timetaken>\n" +
+//                "  <authtimetaken>0</authtimetaken>\n" +
+//                "  <srd>9wbpTsF5Pe7K5Law</srd>\n" +
+//                "  <cardissuer>\n" +
+//                "    <bank></bank>\n" +
+//                "    <country></country>\n" +
+//                "    <countrycode></countrycode>\n" +
+//                "    <region></region>\n" +
+//                "  </cardissuer>\n" +
+//                "  <fraudresponse mode=\"ACTIVE\">\n" +
+//                "    <result>HOLD</result>\n" +
+//                "    <rules>\n" +
+//                "      <rule name=\"high risk customers\" id=\"2783b676-db7e-486d-901f-d9db7d977d87\">\n" +
+//                "        <action>HOLD</action>\n" +
+//                "      </rule>\n" +
+//                "      <rule name=\"countryrisk\" id=\"aaddd3e5-8743-4332-888d-71f847af71a9\">\n" +
+//                "        <action>PASS</action>\n" +
+//                "      </rule>\n" +
+//                "    </rules>\n" +
+//                "  </fraudresponse>\n" +
+//                "  <sha1hash>478c01f38a86cb8a06087c605a51653d3ebd0831</sha1hash>\n" +
+//                "</response>";
+//
+//        Transaction response = new RealexConnector().mapResponse(rawResponse, null);
+//
+//        FraudResponse fraudResponse = response.getFraudResponse();
+//
+//        assertNotNull(response);
+//        assertEquals("00", response.getResponseCode());
+//
+//        assertEquals(FraudFilterMode.Active, fraudResponse.getMode());
+//        assertEquals("HOLD", fraudResponse.getResult());
+//        for(FraudResponse.Rule rule : fraudResponse.getRules()) {
+//            assertNotNull(rule.getName());
+//            assertNotNull(rule.getId());
+//            assertNotNull(rule.getAction());
+//        }
+//    }
 
     @Test
     public void supplementaryData() throws ApiException {

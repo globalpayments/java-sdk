@@ -534,6 +534,12 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             currencyCode = builder.getCurrency().equalsIgnoreCase("USD") ? Iso4217_CurrencyCode.USD : Iso4217_CurrencyCode.CAD;
         }
 
+        BigDecimal transactionAmount = builder.getAmount();
+        if(transactionAmount == null && paymentMethod instanceof TransactionReference) {
+            TransactionReference transactionReference = (TransactionReference)paymentMethod;
+            transactionAmount = transactionReference.getOriginalApprovedAmount();
+        }
+
         // MTI
         String mti = mapMTI(builder);
         request.setMessageTypeIndicator(mti);
@@ -664,12 +670,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             request.set(DataElementId.DE_003, processingCode);
 
             // DE 4: Amount, Transaction - n12 // C 1100, 1200, 1220, 1420
-            BigDecimal amount = builder.getAmount();
-            if(amount == null && paymentMethod instanceof TransactionReference) {
-                TransactionReference transactionReference = (TransactionReference)paymentMethod;
-                amount = transactionReference.getOriginalApprovedAmount();
-            }
-            request.set(DataElementId.DE_004, StringUtils.toNumeric(amount, 12));
+            request.set(DataElementId.DE_004, StringUtils.toNumeric(transactionAmount, 12));
 
             // DE 7: Date and Time, Transmission - n10 (MMDDhhmmss) // C
             request.set(DataElementId.DE_007, DateTime.now(DateTimeZone.UTC).toString("MMddhhmmss"));
@@ -875,14 +876,18 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             54.4 AMOUNT, ADDITIONAL AMOUNTS x + n12 See Use of the Terms Credit and Debit under Table 1-2 Transaction Processing, p. 61.
          */
         if(builder.getCashBackAmount() != null && (isReversal(transactionType) || transactionType.equals(TransactionType.PreAuthCompletion))) {
+            if(transactionAmount == null) {
+                transactionAmount = BigDecimal.ZERO;
+            }
+
             DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
             if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.EBT)) {
                 amountsAdditional.put(DE54_AmountTypeCode.AmountCash, DE3_AccountType.CashBenefitAccount, currencyCode, builder.getCashBackAmount());
-                amountsAdditional.put(DE54_AmountTypeCode.AmountGoodsAndServices, DE3_AccountType.CashBenefitAccount, currencyCode, builder.getAmount().subtract(builder.getCashBackAmount()));
+                amountsAdditional.put(DE54_AmountTypeCode.AmountGoodsAndServices, DE3_AccountType.CashBenefitAccount, currencyCode, transactionAmount.subtract(builder.getCashBackAmount()));
             }
             else if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
                 amountsAdditional.put(DE54_AmountTypeCode.AmountCash, DE3_AccountType.PinDebitAccount, currencyCode, builder.getCashBackAmount());
-                amountsAdditional.put(DE54_AmountTypeCode.AmountGoodsAndServices, DE3_AccountType.PinDebitAccount, currencyCode, builder.getAmount().subtract(builder.getCashBackAmount()));
+                amountsAdditional.put(DE54_AmountTypeCode.AmountGoodsAndServices, DE3_AccountType.PinDebitAccount, currencyCode, transactionAmount.subtract(builder.getCashBackAmount()));
             }
             request.set(DataElementId.DE_054, amountsAdditional);
         }
@@ -1590,7 +1595,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         TransactionType type = builder.getTransactionType();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
 
-        if(isReversal(type)) {
+        if(isReversal(type) || type.equals(TransactionType.PreAuthCompletion)) {
             // set the transaction type to the original transaction type
             if(builder.getPaymentMethod() instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
@@ -2471,7 +2476,9 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         impliedCapture.set(DataElementId.DE_007, request.getString(DataElementId.DE_007));
         impliedCapture.set(DataElementId.DE_011, request.getString(DataElementId.DE_011));
         impliedCapture.set(DataElementId.DE_012, request.getString(DataElementId.DE_012));
-        impliedCapture.set(DataElementId.DE_017, request.getString(DataElementId.DE_012).substring(0, 4));
+        if(paymentMethodType.equals(PaymentMethodType.EBT)) {
+            impliedCapture.set(DataElementId.DE_017, request.getString(DataElementId.DE_012).substring(2, 6));
+        }
         impliedCapture.set(DataElementId.DE_018, request.getString(DataElementId.DE_018));
         impliedCapture.set(DataElementId.DE_022, request.getDataElement(DataElementId.DE_022, DE22_PosDataCode.class));
         impliedCapture.set(DataElementId.DE_024, isPartial ? "202" : "201");

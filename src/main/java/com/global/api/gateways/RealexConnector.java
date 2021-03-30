@@ -287,7 +287,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         //<editor-fold desc="STORED CREDENTIAL">
         if(builder.getStoredCredential() != null) {
             Element storedCredentialElement = et.subElement(request, "storedcredential");
-            et.subElement(storedCredentialElement, "type", builder.getStoredCredential().getType());
+            et.subElement(storedCredentialElement, "type", EnumUtils.getMapping(builder.getStoredCredential().getType(), Target.Realex));
             if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.CardHolder) {
                 et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Realex));
             }
@@ -297,7 +297,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Scheduled) {
                 et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.Scheduled, Target.Realex));
             }
-            et.subElement(storedCredentialElement, "sequence", builder.getStoredCredential().getSequence());
+            et.subElement(storedCredentialElement, "sequence", EnumUtils.getMapping(builder.getStoredCredential().getSequence(), Target.Realex));
             et.subElement(storedCredentialElement, "srd", builder.getStoredCredential().getSchemeId());
         }
         //</editor-fold>
@@ -780,19 +780,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if(root.has("fraudresponse")) {
             Element fraudResponseElement = root.get("fraudresponse");
 
-            fraudResponseElement.getAttributeString("mode");
-
             FraudResponse fraudResponse =
                     new FraudResponse()
                             .setMode(FraudFilterMode.fromString(fraudResponseElement.getAttributeString("mode")))
                             .setResult(fraudResponseElement.getString("result"));
 
-            for (Element rule : fraudResponseElement.get("rules").getAll("rule")) {
-                fraudResponse.addRule(
-                        new FraudResponse.Rule()
-                                .setName(rule.getAttributeString("name"))
-                                .setId(rule.getAttributeString("id"))
-                                .setAction(rule.getString("action")));
+            if (fraudResponseElement.has("rules")) {
+                for (Element rule : fraudResponseElement.get("rules").getAll("rule")) {
+                    fraudResponse.addRule(
+                            new FraudResponse.Rule()
+                                    .setName(rule.getAttributeString("name"))
+                                    .setId(rule.getAttributeString("id"))
+                                    .setAction(rule.getString("action")));
+                }
             }
 
             result.setFraudResponse(fraudResponse);

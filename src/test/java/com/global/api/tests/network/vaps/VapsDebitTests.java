@@ -242,15 +242,20 @@ public class VapsDebitTests {
         Assert.fail("Did not throw a timeout");
     }
 
-    @Test(expected = GatewayTimeoutException.class)
+    @Test
     public void test_157_reverse_sale_cashBack() throws ApiException {
-        track.charge(new BigDecimal(10))
+        Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withCashBack(new BigDecimal(3))
-                .withSimulatedHostErrors(Host.Primary, HostError.Timeout)
-                .withSimulatedHostErrors(Host.Secondary, HostError.Timeout)
                 .execute();
-        Assert.fail("Did not throw a timeout");
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
     }
 
     @Test
