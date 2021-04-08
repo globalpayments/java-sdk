@@ -14,6 +14,7 @@ import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
+import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
@@ -643,5 +644,34 @@ public class VapsDebitTests {
                 .execute();
         assertNotNull(reversal);
         assertEquals("400", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_171_ReadyLink() throws ApiException {
+        CreditTrackData rlTrack = new CreditTrackData();
+        rlTrack.setValue("354358770862127311=210612100000439000");
+
+        Transaction response = rlTrack.addValue(new BigDecimal(10))
+            .withCurrency("USD")
+            .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_172_DebitPartialCashBackReversal() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction cancel = response.cancel(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(10))
+                .execute();
+        assertNotNull(cancel);
+        assertEquals("400", cancel.getResponseCode());
     }
 }

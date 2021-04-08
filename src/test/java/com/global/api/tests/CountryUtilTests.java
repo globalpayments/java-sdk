@@ -2,6 +2,7 @@ package com.global.api.tests;
 
 import com.global.api.entities.Address;
 import com.global.api.utils.CountryUtils;
+import com.global.api.utils.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -77,7 +78,62 @@ public class CountryUtilTests {
     public void getCountryByThreeDigitCode() {
         String result = CountryUtils.getCountryByCode("USA");
         assertNotNull(result);
-        assertEquals("United States", result);
+        assertEquals("United States of America", result);
+    }
+
+    @Test
+    public void getCountryCodeByExactNumericCode() {
+        String result = CountryUtils.getCountryCodeByCountry("840");
+        assertNotNull(result);
+        assertEquals("US", result);
+    }
+
+    @Test
+    public void getNumericCodeByTwoDigitCode() {
+        String result = CountryUtils.getNumericCodeByCountry("US");
+        assertNotNull(result);
+        assertEquals("840", result);
+    }
+
+    @Test
+    public void getNumericCodeByThreeDigitCode() {
+        String result = CountryUtils.getNumericCodeByCountry("USA");
+        assertNotNull(result);
+        assertEquals("840", result);
+    }
+
+    @Test
+    public void getNumericCodeByCountryName() {
+        String result = CountryUtils.getNumericCodeByCountry("United States of America");
+        assertNotNull(result);
+        assertEquals("840", result);
+    }
+
+    @Test
+    public void getNumericCodeByNumericCode() {
+        String result = CountryUtils.getNumericCodeByCountry("840");
+        assertNotNull(result);
+        assertEquals("840", result);
+    }
+
+    @Test
+    public void getNumericCodeByNonExistingCountryName() {
+        String result = CountryUtils.getNumericCodeByCountry("Fake Country Name");
+        assertNull(result);
+    }
+
+    @Test
+    public void extractDigitsTest() {
+        String result = StringUtils.extractDigits("12 MAIN ST STE 34");
+        assertNotNull(result);
+        assertEquals("1234", result);
+    }
+
+    @Test
+    public void getCountryCodeByExactNumericCode() {
+        String result = CountryUtils.getCountryCodeByCountry("840");
+        assertNotNull(result);
+        assertEquals("US", result);
     }
 
     @Test
@@ -88,7 +144,7 @@ public class CountryUtilTests {
     @Test
     public void checkAddressCodeFromCountryExact() {
         Address address = new Address();
-        address.setCountry("United States");
+        address.setCountry("United States of America");
         assertNotNull(address.getCountryCode());
         assertEquals("US", address.getCountryCode());
     }
@@ -120,8 +176,16 @@ public class CountryUtilTests {
     @Test
     public void addressIsCountryExactMatch() {
         Address address = new Address();
-        address.setCountry("United States");
+        address.setCountry("United States of America");
         assertTrue(address.isCountry("US"));
+    }
+
+    @Test
+    public void CheckAddressCodeFromNumericCodeExact() {
+        Address address = new Address();
+        address.setCountry("056");
+        assertNotNull(address.getCountryCode());
+        assertEquals("BE", address.getCountryCode());
     }
 
     @Test

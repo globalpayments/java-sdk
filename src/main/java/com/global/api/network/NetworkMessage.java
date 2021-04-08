@@ -135,6 +135,13 @@ public class NetworkMessage {
         return null;
     }
 
+    public NetworkMessage remove(DataElementId id) {
+        if(has(id)) {
+            elements.remove(id);
+        }
+        return this;
+    }
+
     public NetworkMessage set(DataElementId id, String value) {
         if(value != null) {
             return set(id, value.getBytes());

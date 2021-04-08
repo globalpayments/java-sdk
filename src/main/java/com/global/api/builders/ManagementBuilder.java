@@ -52,6 +52,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     private String payerAuthenticationResponse;
     private String poNumber;
+    @Getter private String posSequenceNumber;
     private String productId;
     private ReasonCode reasonCode;
     private String referenceNumber;
@@ -350,6 +351,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public ManagementBuilder withPoNumber(String value) {
         this.transactionModifier = TransactionModifier.LevelII;
         this.poNumber = value;
+        return this;
+    }
+    public ManagementBuilder withPosSequenceNumber(String value) {
+        this.posSequenceNumber = value;
         return this;
     }
     public ManagementBuilder withPriorMessageInformation(PriorMessageInformation value) {

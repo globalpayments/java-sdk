@@ -215,4 +215,9 @@ public class StringUtils {
 		}
 		return masked;
 	}
+
+    public static String extractDigits(String str) {
+        return StringUtils.isNullOrEmpty(str) ? str : str.replaceAll("[^0-9]", "");
+    }
+
 }

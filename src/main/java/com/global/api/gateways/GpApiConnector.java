@@ -458,7 +458,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         }
 
         JsonDoc data = new JsonDoc()
-                .set("account_name", "Transaction_Processing")
+                .set("account_name", getTransactionProcessingAccountName())
                 .set("type", builderTransactionType == Refund ? "REFUND" : "SALE") // [SALE, REFUND]
                 .set("channel", gpApiConfig.getChannel()) // [CP, CNP]
                 .set("capture_mode", getCaptureMode(builder)) // [AUTO, LATER, MULTIPLE]

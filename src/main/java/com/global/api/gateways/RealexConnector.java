@@ -15,6 +15,8 @@ import org.joda.time.format.DateTimeFormat;
 
 import java.util.*;
 
+import static com.global.api.utils.StringUtils.extractDigits;
+
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider {
     private String merchantId;
     private String accountId;
@@ -418,8 +420,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         if (builder.getShippingAddress() != null) {
             // FRAUD VALUES
-            request.set("SHIPPING_CODE", builder.getShippingAddress().getPostalCode());
-            request.set("SHIPPING_CO", builder.getShippingAddress().getCountry());
+            request.set("SHIPPING_CODE", generateCode(builder.getShippingAddress()));
+            request.set("SHIPPING_CO", CountryUtils.getCountryCodeByCountry(builder.getShippingAddress().getCountry()));
 
             // 3DS2 VALUES
             request.set("HPP_SHIPPING_STREET1", builder.getShippingAddress().getStreetAddress1());
@@ -428,14 +430,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_SHIPPING_CITY", builder.getShippingAddress().getCity());
             request.set("HPP_SHIPPING_STATE", builder.getShippingAddress().getState());
             request.set("HPP_SHIPPING_POSTALCODE", builder.getShippingAddress().getPostalCode());
-            request.set("HPP_SHIPPING_COUNTRY", builder.getShippingAddress().getCountry());
+            request.set("HPP_SHIPPING_COUNTRY", CountryUtils.getNumericCodeByCountry(builder.getShippingAddress().getCountry()));
         }
         // HPP_ADDRESS_MATCH_INDICATOR (is shipping same as billing)
 
         if (builder.getBillingAddress() != null) {
             // FRAUD VALUES
-            request.set("BILLING_CODE", builder.getBillingAddress().getPostalCode());
-            request.set("BILLING_CO", builder.getBillingAddress().getCountry());
+            request.set("BILLING_CODE", generateCode(builder.getBillingAddress()));
+            request.set("BILLING_CO", CountryUtils.getCountryCodeByCountry(builder.getBillingAddress().getCountry()));
 
             // 3DS2 VALUES
             request.set("HPP_BILLING_STREET1", builder.getBillingAddress().getStreetAddress1());
@@ -444,7 +446,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_BILLING_CITY", builder.getBillingAddress().getCity());
             request.set("HPP_BILLING_STATE", builder.getBillingAddress().getState());
             request.set("HPP_BILLING_POSTALCODE", builder.getBillingAddress().getPostalCode());
-            request.set("HPP_BILLING_COUNTRY", builder.getBillingAddress().getCountry());
+            request.set("HPP_BILLING_COUNTRY", CountryUtils.getNumericCodeByCountry(builder.getBillingAddress().getCountry()));
         }
 
         request.set("CUST_NUM", builder.getCustomerId());
@@ -508,6 +510,19 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, toHash.toArray(new String[toHash.size()])));
 
         return request.toString();
+    }
+
+    private String generateCode(Address address) {
+        String countryCode = CountryUtils.getCountryCodeByCountry(address.getCountry());
+        switch (countryCode) {
+            case "GB":
+                return extractDigits(address.getPostalCode()) + "|" + extractDigits(address.getStreetAddress1());
+            case "US":
+            case "CA":
+                return address.getPostalCode() + "|" + address.getStreetAddress1();
+            default:
+                return null;
+        }
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

@@ -767,9 +767,12 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         if(paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference)paymentMethod;
             if(reference.getOriginalAmount() != null) {
-                DE30_OriginalAmounts originalAmounts = new DE30_OriginalAmounts();
-                originalAmounts.setOriginalTransactionAmount(reference.getOriginalAmount());
-                request.set(DataElementId.DE_030, originalAmounts);
+                BigDecimal amount = builder.getAmount();
+                if(amount != null && !amount.equals(reference.getOriginalAmount())) {
+                    DE30_OriginalAmounts originalAmounts = new DE30_OriginalAmounts();
+                    originalAmounts.setOriginalTransactionAmount(reference.getOriginalAmount());
+                    request.set(DataElementId.DE_030, originalAmounts);
+                }
             }
         }
 
@@ -1068,6 +1071,11 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                         messageControl.setSequenceNumber(builder.getSequenceNumber());
                     }
                     request.set(DataElementId.DE_048, messageControl);
+                }
+
+                // DE 56
+                if(builder.getTransactionType().equals(TransactionType.Refund)) {
+                    request.remove(DataElementId.DE_056);
                 }
 
                 // NTS Data
@@ -1595,7 +1603,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         TransactionType type = builder.getTransactionType();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
 
-        if(isReversal(type) || type.equals(TransactionType.PreAuthCompletion)) {
+        if(shouldUseOriginalProcessingCode(paymentMethod, type)) {
             // set the transaction type to the original transaction type
             if(builder.getPaymentMethod() instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
@@ -1615,14 +1623,18 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 }
             } break;
             case AddValue: {
-                // TODO: ReadyLink should be "60"
                 if(paymentMethod instanceof Credit) {
                     Credit card = (Credit)paymentMethod;
                     if(card.getCardType().equals("VisaReadyLink")) {
-
+                        processingCode.setTransactionType(DE3_TransactionType.LoadValue);
+                    }
+                    else {
+                        processingCode.setTransactionType(DE3_TransactionType.Deposit);
                     }
                 }
-                processingCode.setTransactionType(DE3_TransactionType.Deposit);
+                else {
+                    processingCode.setTransactionType(DE3_TransactionType.Deposit);
+                }
             } break;
             case Auth: {
                 AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
@@ -1686,8 +1698,12 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         // setting the accountType
         DE3_AccountType accountType = DE3_AccountType.Unspecified;
         if(paymentMethod instanceof Credit) {
-            if(((Credit) paymentMethod).isFleet()) {
+            Credit card = (Credit)paymentMethod;
+            if(card.isFleet()) {
                 accountType = DE3_AccountType.FleetAccount;
+            }
+            else if(card.getCardType().equals("VisaReadyLink")) {
+                accountType = DE3_AccountType.PinDebitAccount;
             }
             else {
                 accountType = DE3_AccountType.CreditAccount;
@@ -2199,14 +2215,16 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
 
                 // original payment method
                 if(reference.getOriginalPaymentMethod() != null) {
-                    if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
-                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
-                    }
-                    else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
-                        ITrackData track = (ITrackData)reference.getOriginalPaymentMethod();
+                    if(!(reference.getOriginalPaymentMethod() instanceof Debit) || !(reference.getOriginalPaymentMethod() instanceof EBT)){
+                        if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
+                            cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
+                        }
+                        else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
+                            ITrackData track = (ITrackData) reference.getOriginalPaymentMethod();
 
-                        String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
-                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                            String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
+                            cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                        }
                     }
                 }
             }
@@ -2230,8 +2248,12 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 if(paymentMethod instanceof ITrackData) {
                     ITrackData track = (ITrackData)paymentMethod;
 
-                    String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
-                    cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                    // NO NSI for EBT or Debit
+                    if(track instanceof Debit || track instanceof EBT) { /* TODO: Rewrite this */ }
+                    else {
+                        String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
+                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                    }
                 }
                 else {
                     cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
@@ -2501,27 +2523,37 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             requestIssuerData = new DE62_CardIssuerData();
         }
 
+        // NTS
         if(ntsData != null) {
             requestIssuerData.add(CardIssuerEntryTag.NTS_System, ntsData);
         }
+
+        // NSI
+        String nsi = requestIssuerData.get(CardIssuerEntryTag.SwipeIndicator);
 
         // DE_002 / DE_014 - PAN / EXP DATE
         if(request.has(DataElementId.DE_002)) {
             impliedCapture.set(DataElementId.DE_002, request.getString(DataElementId.DE_002));
             impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
-            requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "0");
+            if(StringUtils.isNullOrEmpty(nsi)) {
+                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "0");
+            }
         }
         else if(request.has(DataElementId.DE_035)) {
             CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_035));
             impliedCapture.set(DataElementId.DE_002, track.getPan());
             impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-            requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "2");
+            if(StringUtils.isNullOrEmpty(nsi)) {
+                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "2");
+            }
         }
         else {
             CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_045));
             impliedCapture.set(DataElementId.DE_002, track.getPan());
             impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-            requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "1");
+            if(StringUtils.isNullOrEmpty(nsi)) {
+                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "1");
+            }
         }
         impliedCapture.set(DataElementId.DE_062, requestIssuerData);
 
@@ -2621,6 +2653,14 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
     }
     private boolean isReversal(TransactionType type) {
         return type.equals(TransactionType.Reversal) || type.equals(TransactionType.LoadReversal);
+    }
+    private boolean shouldUseOriginalProcessingCode(IPaymentMethod paymentMethod, TransactionType type) {
+        if(isReversal(type) || type.equals(TransactionType.PreAuthCompletion)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private <T extends TransactionBuilder<Transaction>> void validate(T builder) throws BuilderException, UnsupportedTransactionException {

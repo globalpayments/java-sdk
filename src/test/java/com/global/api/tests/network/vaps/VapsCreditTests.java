@@ -770,4 +770,17 @@ public class VapsCreditTests {
         assertNotNull(refund);
         assertEquals("000", refund.getResponseCode());
     }
+
+    @Test
+    public void test_030_ready_link() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
 }

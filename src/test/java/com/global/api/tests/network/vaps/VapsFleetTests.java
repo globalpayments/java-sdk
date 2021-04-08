@@ -17,6 +17,7 @@ import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
@@ -160,6 +161,9 @@ public class VapsFleetTests {
 
         // check response
         assertEquals("000", response.getResponseCode());
+
+        Transaction forced = NetworkService.forcedRefund(response.getTransactionToken())
+                .execute();
     }
 
     @Test

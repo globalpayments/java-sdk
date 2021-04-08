@@ -490,9 +490,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
 
-                // reversal reason code
+                // reversal reason code & PosSequenceNumber
                 if(paymentType.equals(PaymentMethodType.Debit)) {
                     et.subElement(root, "ReversalReasonCode", builder.getReversalReasonCode());
+                    et.subElement(root, "PosSequenceNbr", builder.getPosSequenceNumber());
                 }
 
                 // tag data
