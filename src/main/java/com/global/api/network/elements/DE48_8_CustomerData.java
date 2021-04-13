@@ -11,10 +11,16 @@ import java.util.LinkedHashMap;
 public class DE48_8_CustomerData implements IDataElement<DE48_8_CustomerData> {
     private int fieldCount;
     private LinkedHashMap<DE48_CustomerDataType, String> fields;
+    private boolean emvFlag;
 
     public int getFieldCount() {
         return fields.size();
     }
+
+    public void setEmvFlag(boolean emvFlag) {
+        this.emvFlag = emvFlag;
+    }
+
     public HashMap<DE48_CustomerDataType, String> getFields() {
         return fields;
     }
@@ -56,7 +62,7 @@ public class DE48_8_CustomerData implements IDataElement<DE48_8_CustomerData> {
         }
 
         // strip the final '\\'
-        rvalue = StringUtils.trimEnd(rvalue, "\\");
+        rvalue = !emvFlag ? StringUtils.trimEnd(rvalue, "\\") : rvalue;
         return rvalue.getBytes();
     }
 

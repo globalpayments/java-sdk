@@ -130,13 +130,6 @@ public class CountryUtilTests {
     }
 
     @Test
-    public void getCountryCodeByExactNumericCode() {
-        String result = CountryUtils.getCountryCodeByCountry("840");
-        assertNotNull(result);
-        assertEquals("US", result);
-    }
-
-    @Test
     public void getCountryByCodeNullDoesNotError() {
         CountryUtils.getCountryCodeByCountry(null);
     }

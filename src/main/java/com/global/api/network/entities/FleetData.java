@@ -12,6 +12,34 @@ public class FleetData {
     private String userId;
     private String vehicleNumber;
     private String vehicleTag;
+    private String unitNumber;
+    private String tripNumber;
+    private String trailerReferHours;
+
+    public String getTrailerReferHours() {
+        return trailerReferHours;
+    }
+    public void setTrailerReferHours(String trailerReferHours) {
+        this.trailerReferHours = trailerReferHours;
+    }
+
+    public String getUnitNumber() {
+        return unitNumber;
+    }
+
+    public void setUnitNumber(String unitNumber) {
+        this.unitNumber = unitNumber;
+    }
+
+    public String getTripNumber() {
+        return tripNumber;
+    }
+
+    public void setTripNumber(String tripNumber) {
+        this.tripNumber = tripNumber;
+    }
+
+
 
     public String getDepartment() {
         return department;

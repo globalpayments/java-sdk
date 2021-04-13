@@ -2024,6 +2024,12 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         // fleet data
         if(builder.getFleetData() != null) {
             FleetData fleetData = builder.getFleetData();
+            if(builder instanceof AuthorizationBuilder) {
+                AuthorizationBuilder authBuilder = (AuthorizationBuilder) builder;
+                if (!StringUtils.isNullOrEmpty(authBuilder.getTagData())) {
+                    customerData.setEmvFlag(true);
+                }
+            }
 
             customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
             customerData.set(DE48_CustomerDataType.Vehicle_Trailer_Number, fleetData.getVehicleNumber());
@@ -2031,12 +2037,22 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
             customerData.set(DE48_CustomerDataType.Odometer_Hub_Reading, fleetData.getOdometerReading());
             customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
+            customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());
             customerData.set(DE48_CustomerDataType.EnteredData_Numeric, fleetData.getEnteredData());
             customerData.set(DE48_CustomerDataType.ServicePrompt, fleetData.getServicePrompt());
             customerData.set(DE48_CustomerDataType.JobNumber, fleetData.getJobNumber());
             customerData.set(DE48_CustomerDataType.Department, fleetData.getDepartment());
+            customerData.set(DE48_CustomerDataType.TripNumber, fleetData.getTripNumber());
+            customerData.set(DE48_CustomerDataType.UnitNumber, fleetData.getUnitNumber());
         }
-
+        //DE48_34 message configuration fields
+        if(acceptorConfig.hasPosconfiguration_MessageData()) {
+            DE48_34_MessageConfiguration messageConfigData = new DE48_34_MessageConfiguration();
+            messageConfigData.setPerformDateCheck(acceptorConfig.getPerformDateCheck());
+            messageConfigData.setEchoSettlementData(acceptorConfig.getEchoSettlementData());
+            messageConfigData.setIncludeLoyaltyData(acceptorConfig.getIncludeLoyaltyData());
+            messageControl.setMessageConfiguration(messageConfigData);
+        }
         // cvn number
         if(builder.getPaymentMethod() instanceof ICardData) {
             ICardData card = (ICardData)builder.getPaymentMethod();
@@ -2168,7 +2184,17 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
             }
 
             if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("WexFleet")) {
-                cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0202");
+
+                if(builder instanceof AuthorizationBuilder){
+                    AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
+                    if(!StringUtils.isNullOrEmpty(authBuilder.getTagData())){
+                        cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0401");
+                    }else{
+                        cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0202");
+                    }
+                }else{
+                    cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0202");
+                }
                 if(builder.getTransactionType().equals(TransactionType.Refund)) {
                     cardIssuerData.add(CardIssuerEntryTag.IssuerSpecificTransactionMatchData, builder.getTransactionMatchingData().getElementData());
                 }

@@ -36,6 +36,30 @@ public class AcceptorConfig {
     private Boolean supportsEmvPin;
     private Boolean pinlessDebit;
 
+    //DE48_34
+    private Boolean echoSettlementData;
+    private Boolean includeLoyaltyData;
+    private Boolean performDateCheck;
+
+    public Boolean getEchoSettlementData() {
+        return echoSettlementData;
+    }
+    public void setEchoSettlementData(Boolean echoSettlementData) {
+        this.echoSettlementData = echoSettlementData;
+    }
+    public Boolean getIncludeLoyaltyData() {
+        return includeLoyaltyData;
+    }
+    public void setIncludeLoyaltyData(Boolean includeLoyaltyData) {
+        this.includeLoyaltyData = includeLoyaltyData;
+    }
+    public Boolean getPerformDateCheck() {
+        return performDateCheck;
+    }
+    public void setPerformDateCheck(Boolean performDateCheck) {
+        this.performDateCheck = performDateCheck;
+    }
+
     // DE48_40 - DE48_49
     private Address address;
 
@@ -205,6 +229,9 @@ public class AcceptorConfig {
                 || supportsEmvPin != null
                 || mobileDevice != null
                 || pinlessDebit != null);
+    }
+    public boolean hasPosconfiguration_MessageData(){
+        return performDateCheck || echoSettlementData || includeLoyaltyData;
     }
     public String getPosConfigForIssuerData() {
         String rvalue = supportsPartialApproval != null ? supportsPartialApproval ? "Y" : "N" : "N";

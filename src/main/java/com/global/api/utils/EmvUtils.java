@@ -123,6 +123,69 @@ public class EmvUtils {
         knownTags.put("FFC7", "Terminal Action Code (TAC) Denial");
         knownTags.put("FFC8", "Terminal Action Code (TAC) Online");
 
+        // Adding the WEX EMV
+        knownTags.put("42", "Issuer Identification Number (IIN or BIN)");
+        knownTags.put("61", "Directory entry Template");
+        knownTags.put("70", "Record Template");
+        knownTags.put("73", "Directory Discretionary Template");
+        knownTags.put("9F4D", "Log Entry");
+        knownTags.put("9F4F", "Transaction Log Format");
+        knownTags.put("9F52", "Card Verification Results (CVR)");
+        knownTags.put("9F7E", "Issuer Life Cycle Data");
+        knownTags.put("A5", "FCI Proprietary Template");
+        knownTags.put("BF0C", "FCI Issuer Discretionary Data");
+        knownTags.put("BF20", "PRO 00");
+        knownTags.put("BF27", "PRO 07");
+        knownTags.put("BF2E", "PRO 14");
+        knownTags.put("C1", "Application Control");
+        knownTags.put("C4", "Default Contact Profile31");
+        knownTags.put("CA", "Previous Transaction History");
+        knownTags.put("CB", "CRM Country Code");
+        knownTags.put("CD", "CRM Currency Code");
+        knownTags.put("D3", "PDOL Related data Length");
+        knownTags.put("D8", "CAFL");
+        knownTags.put("DF01", "Proprietary Data Element n°1");
+        knownTags.put("DF02", "Proprietary Data Element n°2");
+        knownTags.put("DF03", "Proprietary Data Element n°3");
+        knownTags.put("DF04", "Proprietary Data Element n°4");
+        knownTags.put("DF05", "Proprietary Data Element n°5 ");
+        knownTags.put("DF06", "Proprietary Data Element n°6");
+        knownTags.put("DF07", "Proprietary Data Element n°7 ");
+        knownTags.put("DF08", "Proprietary Data Element n°8");
+        knownTags.put("DF10", "Profile Selection Table");
+        knownTags.put("DF11", "Currency Conversion Code 1");
+        knownTags.put("DF12", "Currency Conversion Code 2");
+        knownTags.put("DF13", "COTN counter");
+        knownTags.put("DF14", "COTA accumulator");
+
+        knownTags.put("DF15", "CIAC – Denial");
+        knownTags.put("DF16", "CIAC – Default");
+        knownTags.put("DF17", "CIAC – Online");
+        knownTags.put("DF18", "LCOTA limit ");
+        knownTags.put("DF19", "UCOTA limit");
+        knownTags.put("DF1A", "MTAL limit ");
+        knownTags.put("DF1B", "LCOL limit");
+
+        knownTags.put("DF1C", "Upper Consecutive Offline Limit (UCOL)");
+        knownTags.put("DF1D", "IADOL");
+
+        knownTags.put("DF1E", "Derivation key Index");
+        knownTags.put("DF30", "Fuel Card usage bitmap [Prompting], ATC Limit");
+        knownTags.put("DF31", "Encrypted PIN cryptography failure limit");
+        knownTags.put("DF32", "Purchase Restrictions (WEX refers to this as Chip Offline Purchase Restriction), Failed MAC limit");
+        knownTags.put("DF33", "Lifetime MAC Limit");
+        knownTags.put("DF34", "Chip Offline Purchase Restrictions Amount for Fuel*, Session MAC Limit");
+        knownTags.put("DF35", "Chip Offline Purchase Restrictions Amount for non-Fuel*");
+
+        knownTags.put("DF36", "Relationship Codes*");
+        knownTags.put("DF37", "3rd Party Reference Data Generation 2*");
+        knownTags.put("DF38", "Loyalty ID*");
+        knownTags.put("DF39", "Purchase Device Sequence Number (with the suffix)* ");
+        knownTags.put("DF40", "DDOL Related Data Length");
+        knownTags.put("DF41", "CCDOL2 Related Data Length");
+        knownTags.put("DF4D", "Transaction Log Setting parameter31");
+
+
         dataTypes = new HashMap<String, String>();
         dataTypes.put("82", "b");
         dataTypes.put("8E", "b");
