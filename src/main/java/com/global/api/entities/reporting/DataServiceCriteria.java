@@ -1,7 +1,6 @@
 package com.global.api.entities.reporting;
 
 public enum DataServiceCriteria {
-    AdjustmentFunding,
     Amount,
     BankAccountNumber,
     CaseId,
@@ -11,19 +10,20 @@ public enum DataServiceCriteria {
     Country,
     Currency,
     DepositReference,
-    EndAdjustmentDate,
     EndBatchDate,
     EndDepositDate,
+    EndLastUpdatedDate,
     EndStageDate,
     Hierarchy,
     LocalTransactionEndTime,
     LocalTransactionStartTime,
     MerchantId,
     OrderId,
-    StartAdjustmentDate,
     StartBatchDate,
     StartDepositDate,
+    StartLastUpdatedDate,
     StartStageDate,
+    StoredPaymentMethodId,
     SystemHierarchy,
     Timezone
 }

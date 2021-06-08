@@ -9,29 +9,24 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DisputeSummary;
 import com.global.api.serviceConfigs.GpApiConfig;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
-public class GpApiDisputeTests {
+public class GpApiDisputeTests extends BaseGpApiTest {
     DisputeSummary dispute;
 
     public GpApiDisputeTests() throws ApiException {
-
         GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
         config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 
-        ServicesContainer.configureService(config, "GpApiConfig");
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
     @Before
@@ -45,11 +40,30 @@ public class GpApiDisputeTests {
         Transaction response =
                 dispute
                         .accept()
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(DisputeStatus.Closed.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void disputeAccept_WrongId() throws ApiException {
+        dispute.setCaseId("DIS_SAND_bbbb1111");
+
+        boolean exceptionCaught = false;
+        try {
+            dispute
+                    .accept()
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("40067", ex.getResponseText());
+            assertEquals("INVALID_DISPUTE_ACTION", ex.getResponseCode());
+            assertEquals("Status Code: 400 - 124,Unable to accept for that id. Please check the Case id again.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     @Test
@@ -64,57 +78,83 @@ public class GpApiDisputeTests {
         Transaction response =
                 dispute
                         .challenge(documents)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(DisputeStatus.Closed.getValue(), response.getResponseMessage());
     }
 
-    @Ignore
-    // For invalid input Case IDs, the response is compressed but the hacking code related to the method:
-    // Gateway.notCompressedResponseEndpoints( ... ) is avoiding to decompressed this endpoint
-    // due to for valid input Case IDs the response is not compressed.
-    // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void disputeAccept_WrongId() throws ApiException {
-        dispute.setCaseId("DIS_SAND_abcd1000");
+    public void disputeChallenge_MultipleDocuments() throws ApiException {
+        dispute.setCaseId("DIS_SAND_abcd1241");
 
-        try {
-            dispute
-                    .accept()
-                    .execute("GpApiConfig");
-        } catch (GatewayException ex) {
-            assertEquals("40067", ex.getResponseText());
-            assertEquals("INVALID_DISPUTE_ACTION", ex.getResponseCode());
-            assertEquals("Status Code: 400 - 124,Unable to accept for that id. Please check the Case id again.", ex.getMessage());
-        }
-    }
+        DisputeDocument firstDocument = new DisputeDocument();
+        firstDocument.setType("SALES_RECEIPT");
+        firstDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
 
-    @Ignore
-    // For invalid input Case IDs, the response is compressed but the hacking code related to the method:
-    // Gateway.notCompressedResponseEndpoints( ... ) is avoiding to decompressed this endpoint
-    // due to for valid input Case IDs the response is not compressed.
-    // TODO: Report error to GP-API team. Enable it when fixed.
-    @Test
-    public void disputeChallenge_WrongId() throws ApiException {
-        dispute.setCaseId("DIS_SAND_abcd1000");
-
-        DisputeDocument disputeDocument = new DisputeDocument();
-        disputeDocument.setType("SALES_RECEIPT");
-        disputeDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
+        DisputeDocument secondDocument = new DisputeDocument();
+        secondDocument.setType("TERMS_AND_CONDITIONS");
+        secondDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
 
         ArrayList<DisputeDocument> documents = new ArrayList<>();
-        documents.add(disputeDocument);
+        documents.add(firstDocument);
+        documents.add(secondDocument);
 
+        Transaction response =
+                dispute
+                        .challenge(documents)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(DisputeStatus.UnderReview.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void disputeChallenge_MultipleDocuments_ClosedStatus() throws ApiException {
+        DisputeDocument firstDocument = new DisputeDocument();
+        firstDocument.setType("SALES_RECEIPT");
+        firstDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
+
+        DisputeDocument secondDocument = new DisputeDocument();
+        secondDocument.setType("TERMS_AND_CONDITIONS");
+        secondDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
+
+        ArrayList<DisputeDocument> documents = new ArrayList<>();
+        documents.add(firstDocument);
+        documents.add(secondDocument);
+
+        boolean exceptionCaught = false;
         try {
             dispute
                     .challenge(documents)
-                    .execute("GpApiConfig");
+                    .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
-            assertEquals("40060", ex.getResponseText());
-            assertEquals("INVALID_DISPUTE_ACTION", ex.getResponseCode());
-            assertEquals("Status Code: 400 - 117,Unable to challenge for that id. Please check the Case id again.", ex.getMessage());
+            exceptionCaught = true;
+            assertEquals("40072", ex.getResponseText());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("Status Code: 400 - 131,The dispute stage, Retrieval, can be challenged with a single document only. Please correct the request and resubmit", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void disputeChallenge_MissingDocument() throws ApiException {
+        boolean exceptionCaught = false;
+
+        try {
+            dispute
+                    .challenge(new ArrayList<>())
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("40065", ex.getResponseText());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("Status Code: 400 - Unable to challenge as No document provided with the request", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -129,11 +169,37 @@ public class GpApiDisputeTests {
         Transaction response =
                 dispute
                         .challenge(documents)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(DisputeStatus.Closed.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void disputeChallenge_WrongId() throws ApiException {
+        dispute.setCaseId("DIS_SAND_abcd1000");
+
+        DisputeDocument disputeDocument = new DisputeDocument();
+        disputeDocument.setType("SALES_RECEIPT");
+        disputeDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
+
+        ArrayList<DisputeDocument> documents = new ArrayList<>();
+        documents.add(disputeDocument);
+
+        boolean exceptionCaught = false;
+        try {
+            dispute
+                    .challenge(documents)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("40060", ex.getResponseText());
+            assertEquals("INVALID_DISPUTE_ACTION", ex.getResponseCode());
+            assertEquals("Status Code: 400 - 117,Unable to challenge for that id. Please check the Case id again.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
 }

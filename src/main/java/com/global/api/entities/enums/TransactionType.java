@@ -43,10 +43,11 @@ public enum TransactionType implements IFlag {
     SendFile,
     Payment,
     CashAdvance,
-    Detokenize,
     DisputeAcceptance,
     DisputeChallenge,
-    LoadReversal;
+    LoadReversal,
+    // In .NET, we have many more enum types
+    Reauth;
 
     public long getLongValue() {
         return 1 << this.ordinal();

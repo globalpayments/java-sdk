@@ -2,18 +2,12 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.TransactionSummaryList;
-import com.global.api.entities.enums.SortDirection;
-import com.global.api.entities.enums.TransactionSortProperty;
-import com.global.api.entities.enums.TransactionStatus;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
-import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.DepositStatus;
-import com.global.api.entities.enums.PaymentEntryMode;
-import com.global.api.entities.enums.PaymentType;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
@@ -23,33 +17,22 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class GpApiReportingTransactionsTests {
-
-    private static final String TRANSACTION_ID = "TRN_ImiKh03hpvpjJDPMLmCbpRMyv5v6Q7";
+public class GpApiReportingTransactionsTests extends BaseGpApiTest {
 
     public GpApiReportingTransactionsTests() throws ApiException {
 
         GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        // Pablo Credentials
         config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh");
-
-        // Nacho credentials
-        //        config
-        //                .setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll")
-        //                .setAppKey("QDsW1ETQKHX6Y4TA");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 
-        ServicesContainer.configureService(config, "GpApiConfig");
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
     // ================================================================================
@@ -58,13 +41,14 @@ public class GpApiReportingTransactionsTests {
 
     @Test
     public void reportTransactionDetail_By_Id() throws ApiException {
+        String transactionId = "TRN_ImiKh03hpvpjJDPMLmCbpRMyv5v6Q7";
         TransactionSummary transaction =
                 ReportingService
-                        .transactionDetail(TRANSACTION_ID)
-                        .execute("GpApiConfig");
+                        .transactionDetail(transactionId)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transaction);
-        assertEquals(TRANSACTION_ID, transaction.getTransactionId());
+        assertEquals(transactionId, transaction.getTransactionId());
     }
 
     @Test
@@ -74,7 +58,7 @@ public class GpApiReportingTransactionsTests {
         try {
             ReportingService
                     .transactionDetail(transactionId)
-                    .execute("GpApiConfig");
+                    .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -83,38 +67,36 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_StartDate() throws ApiException {
+    public void reportFindTransactionsPaged_By_StartDate() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -15);
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 25)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 25)
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertTrue(DateUtils.isAfterOrEquals(transactionSummary.getTransactionDate().toDate(), startDate));
     }
 
     @Test
-    public void reportFindTransactions_By_StartDate_And_EndDate() throws ApiException {
+    public void reportFindTransactionsPaged_By_StartDate_And_EndDate() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -10);
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             Date transactionDate = transactionSummary.getTransactionDate().toDate();
             assertTrue(DateUtils.isBeforeOrEquals(transactionDate, endDate));
             assertTrue(DateUtils.isAfterOrEquals(transactionDate, startDate));
@@ -122,22 +104,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_OrderBy_TimeCreated() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_OrderBy_TimeCreated() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
 
-        TransactionSummaryList transactionsAsc =
+        TransactionSummaryPaged transactionsAsc =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsAsc);
 
@@ -146,25 +126,23 @@ public class GpApiReportingTransactionsTests {
 
     //TODO - returning empty transaction list
     @Test
-    public void reportFindTransactions_OrderBy_Status() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_OrderBy_Status() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Status, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
     }
 
     @Test
-    public void reportFindTransactions_OrderBy_Type() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_OrderBy_Type() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
     }
@@ -172,34 +150,31 @@ public class GpApiReportingTransactionsTests {
     @Ignore // Although documentation allows order_by DEPOSIT_ID, the real endpoint does not.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindTransactions_OrderBy_DepositsId() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_OrderBy_DepositsId() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.DepositId, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
     }
 
     @Test
-    public void compareResults_reportFindTransactions_OrderBy_TypeAndTimeCreated() throws ApiException {
-        TransactionSummaryList transactionsOrderedByTimeCreated =
+    public void compareResults_reportFindTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
+        TransactionSummaryPaged transactionsOrderedByTimeCreated =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsOrderedByTimeCreated);
 
-        TransactionSummaryList transactionsOrderedByType =
+        TransactionSummaryPaged transactionsOrderedByType =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsOrderedByType);
 
@@ -207,81 +182,86 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_Id() throws ApiException {
-        String transactionId = "TRN_ouFFiOnhcBFCV7uWeqWYRHJwOmB73V";
-
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_By_Id() throws ApiException {
+        String transactionId =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 1)
+                        .execute(GP_API_CONFIG_NAME)
+                        .getResults()
+                        .get(0)
+                        .getTransactionId();
+
+        assertNotNull(transactionId);
+
+        TransactionSummaryPaged result =
+                ReportingService
+                        .findTransactionsPaged(1, 10)
                         .withTransactionId(transactionId)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(transactions);
-        assertEquals(1, transactions.size());
-        assertEquals(transactionId, transactions.get(0).getTransactionId());
+        assertNotNull(result);
+        assertEquals(1, result.getResults().size());
+        assertEquals(transactionId, result.getResults().get(0).getTransactionId());
     }
 
     @Test
-    public void reportFindTransactions_WrongId() throws ApiException {
-        List<TransactionSummary> transactions =
+    public void reportFindTransactionsPaged_WrongId() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .withTransactionId("TRN_CQauJhxTXBvPGqIO66MJA3Rfk7V5PUa")
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindTransactions_By_Type() throws ApiException {
+    public void reportFindTransactionsPaged_By_Type() throws ApiException {
         PaymentType paymentType = PaymentType.Sale;
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.PaymentType, paymentType)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(paymentType.getValue(), transactionSummary.getTransactionType());
 
         PaymentType refundPaymentType = PaymentType.Refund;
-        TransactionSummaryList transactionsRefunded =
+        TransactionSummaryPaged transactionsRefunded =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.PaymentType, refundPaymentType)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsRefunded);
-        for (TransactionSummary transactionSummary : transactionsRefunded)
+        for (TransactionSummary transactionSummary : transactionsRefunded.getResults())
             assertEquals(refundPaymentType.getValue(), transactionSummary.getTransactionType());
 
         assertNotSame(transactions, transactionsRefunded);
     }
 
     @Test
-    public void reportFindTransactions_By_Amount_And_Currency_And_Country() throws ApiException {
+    public void reportFindTransactionsPaged_By_Amount_And_Currency_And_Country() throws ApiException {
         BigDecimal amount = new BigDecimal("1.12");
         String currency = "aud"; //This is case sensitive
         String country = "AU"; //This is case sensitive
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(DataServiceCriteria.Amount, amount)
                         .and(DataServiceCriteria.Currency, currency)
                         .and(DataServiceCriteria.Country, country)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertEquals(StringUtils.toNumeric(amount), transactionSummary.getAmount().toString());
             assertEquals(currency, transactionSummary.getCurrency());
             assertEquals(country, transactionSummary.getCountry());
@@ -289,67 +269,67 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_WrongCurrency() throws ApiException {
+    public void reportFindTransactionsPaged_By_WrongCurrency() throws ApiException {
         String currency = "aUd"; //This is case sensitive
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(DataServiceCriteria.Currency, currency)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindTransactions_By_Channel() throws ApiException {
+    public void reportFindTransactionsPaged_By_Channel() throws ApiException {
         Channel channel = Channel.CardNotPresent;
 
-        TransactionSummaryList transactionsCNP =
+        TransactionSummaryPaged transactionsCNP =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.Channel, channel)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsCNP);
-        for (TransactionSummary transactionSummary : transactionsCNP)
+        for (TransactionSummary transactionSummary : transactionsCNP.getResults())
             assertEquals(channel.getValue(), transactionSummary.getChannel());
 
         Channel channelCP = Channel.CardPresent;
-        TransactionSummaryList transactionsCP =
+        TransactionSummaryPaged transactionsCP =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.Channel, channelCP)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsCP);
-        for (TransactionSummary transactionSummary : transactionsCP)
+        for (TransactionSummary transactionSummary : transactionsCP.getResults())
             assertEquals(channelCP.getValue(), transactionSummary.getChannel());
 
         assertNotSame(transactionsCNP, transactionsCP);
     }
 
     @Test
-    public void reportFindTransactions_By_AllStatus() throws ApiException {
+    public void reportFindTransactionsPaged_By_AllStatus() throws ApiException {
         for (TransactionStatus transactionStatus : TransactionStatus.values()) {
 
-            TransactionSummaryList transactions =
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findTransactions()
+                            .findTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
+                            
                             .where(SearchCriteria.TransactionStatus, transactionStatus)
-                            .execute("GpApiConfig");
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions)
+            for (TransactionSummary transactionSummary : transactions.getResults())
                 // GP-API returns SUCCESS_AUTHENTICATED instead of AUTHENTICATED
                 // when searching by TransactionStatus = AUTHENTICATED
                 // TODO: Report this particularity to GP-API team
@@ -362,54 +342,54 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_Status() throws ApiException {
+    public void reportFindTransactionsPaged_By_Status() throws ApiException {
         TransactionStatus transactionStatus = TransactionStatus.Preauthorized;
 
-        TransactionSummaryList transactionsInitiated =
+        TransactionSummaryPaged transactionsInitiated =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.TransactionStatus, transactionStatus)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsInitiated);
-        for (TransactionSummary transactionSummary : transactionsInitiated)
+        for (TransactionSummary transactionSummary : transactionsInitiated.getResults())
             assertEquals(transactionStatus.getValue(), transactionSummary.getTransactionStatus());
 
         TransactionStatus transactionStatusRejected = TransactionStatus.Rejected;
 
-        TransactionSummaryList transactionsRejected =
+        TransactionSummaryPaged transactionsRejected =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.TransactionStatus, transactionStatusRejected)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsRejected);
-        for (TransactionSummary transactionSummary : transactionsRejected)
+        for (TransactionSummary transactionSummary : transactionsRejected.getResults())
             assertEquals(transactionStatusRejected.getValue(), transactionSummary.getTransactionStatus());
 
         assertNotSame(transactionsInitiated, transactionsRejected);
     }
 
     @Test
-    public void reportFindTransactions_By_CardBrand_And_AuthCode() throws ApiException {
+    public void reportFindTransactionsPaged_By_CardBrand_And_AuthCode() throws ApiException {
         String cardBrand = "VISA";
         String authCode = "12345";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.CardBrand, cardBrand)
                         .and(SearchCriteria.AuthCode, authCode)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertEquals(cardBrand, transactionSummary.getCardType());
             assertEquals(authCode, transactionSummary.getAuthCode());
         }
@@ -417,7 +397,7 @@ public class GpApiReportingTransactionsTests {
 
     //Diners and JCB cards are not working
     @Test
-    public void reportFindTransactions_By_CardBrand() throws ApiException {
+    public void reportFindTransactionsPaged_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
         String[] cardBrandsShort = {"VISA", "MC", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
@@ -427,32 +407,32 @@ public class GpApiReportingTransactionsTests {
             if (("DINERS").equals(cardBrands[index]) || "JCB".equals(cardBrands[index]))
                 continue;
 
-            TransactionSummaryList transactions =
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findTransactions()
+                            .findTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
+                            
                             .where(SearchCriteria.CardBrand, cardBrands[index])
-                            .execute("GpApiConfig");
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions) {
+            for (TransactionSummary transactionSummary : transactions.getResults()) {
                 assertEquals(cardBrandsShort[index], transactionSummary.getCardType());
             }
         }
     }
 
     @Test
-    public void reportFindTransactions_By_InvalidCardBrand() throws ApiException {
+    public void reportFindTransactionsPaged_By_InvalidCardBrand() throws ApiException {
         String cardBrand = "MIT";
 
         try {
             ReportingService
-                    .findTransactions()
+                    .findTransactionsPaged(1, 10)
                     .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                    .withPaging(1, 10)
+                    
                     .where(SearchCriteria.CardBrand, cardBrand)
-                    .execute("GpApiConfig");
+                    .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
             assertEquals("40097", ex.getResponseText());
@@ -462,163 +442,163 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_Reference() throws ApiException {
+    public void reportFindTransactionsPaged_By_Reference() throws ApiException {
         String referenceNumber = "98f64385-6fcd-4605-b0ae-c5675be681cf";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.ReferenceNumber, referenceNumber)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(referenceNumber, transactionSummary.getReferenceNumber());
     }
 
     @Test
-    public void reportFindTransactions_By_RandomReference() throws ApiException {
+    public void reportFindTransactionsPaged_By_RandomReference() throws ApiException {
         String referenceNumber = UUID.randomUUID().toString();
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.ReferenceNumber, referenceNumber)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindTransactions_By_BrandReference() throws ApiException {
+    public void reportFindTransactionsPaged_By_BrandReference() throws ApiException {
         String brandReference = "300351293234459";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.BrandReference, brandReference)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(brandReference, transactionSummary.getBrandReference());
     }
 
     @Test
-    public void reportFindTransactions_By_WrongBrandReference() throws ApiException {
+    public void reportFindTransactionsPaged_By_WrongBrandReference() throws ApiException {
         String brandReference = "000000000000001";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.BrandReference, brandReference)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Ignore
     // Although requests are done with &entry_mode set properly, the real endpoint returns transactions with other entry_modes.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindTransactions_By_AllEntryModes() throws ApiException {
+    public void reportFindTransactionsPaged_By_AllEntryModes() throws ApiException {
         for (PaymentEntryMode paymentEntryMode : PaymentEntryMode.values()) {
 
-            TransactionSummaryList transactions =
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findTransactions()
+                            .findTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
+                            
                             .where(SearchCriteria.PaymentEntryMode, paymentEntryMode)
-                            .execute("GpApiConfig");
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions)
+            for (TransactionSummary transactionSummary : transactions.getResults())
                 assertEquals(paymentEntryMode.getValue(), transactionSummary.getEntryMode());
         }
     }
 
     @Test
-    public void reportFindTransactions_By_EntryMode() throws ApiException {
+    public void reportFindTransactionsPaged_By_EntryMode() throws ApiException {
         PaymentEntryMode paymentEntryMode = PaymentEntryMode.Ecom;
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.PaymentEntryMode, paymentEntryMode)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(paymentEntryMode.getValue(), transactionSummary.getEntryMode());
 
 
         PaymentEntryMode paymentEntryModeMoto = PaymentEntryMode.Moto;
 
-        TransactionSummaryList transactionsMoto =
+        TransactionSummaryPaged transactionsMoto =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.PaymentEntryMode, paymentEntryModeMoto)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsMoto);
-        for (TransactionSummary transactionSummary : transactionsMoto)
+        for (TransactionSummary transactionSummary : transactionsMoto.getResults())
             assertEquals(paymentEntryModeMoto.getValue(), transactionSummary.getEntryMode());
 
         assertNotSame(transactions, transactionsMoto);
     }
 
     @Test
-    public void reportFindTransactions_By_Number_First6_And_Number_Last4() throws ApiException {
-        String number_first6 = "516730";
-        String number_last4 = "5507";
+    public void reportFindTransactionsPaged_By_Number_First6_And_Number_Last4() throws ApiException {
+        String number_first6 = "543458";
+        String number_last4 = "7652";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.CardNumberFirstSix, number_first6)
                         .and(SearchCriteria.CardNumberLastFour, number_last4)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertTrue(transactionSummary.getMaskedCardNumber().startsWith(number_first6));
             assertTrue(transactionSummary.getMaskedCardNumber().endsWith(number_last4));
         }
     }
 
     @Test
-    public void reportFindTransactions_By_Token_First6_And_Token_Last4() throws ApiException {
+    public void reportFindTransactionsPaged_By_Token_First6_And_Token_Last4() throws ApiException {
         String token_first6 = "516730";
         String token_last4 = "5507";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.TokenFirstSix, token_first6)
                         .and(SearchCriteria.TokenLastFour, token_last4)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             String maskedCardNumber = transactionSummary.getMaskedCardNumber();
             if (maskedCardNumber != null) {
                 assertTrue(maskedCardNumber.startsWith(token_first6));
@@ -628,80 +608,80 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_By_BatchId() throws ApiException {
+    public void reportFindTransactionsPaged_By_BatchId() throws ApiException {
         String batchId = "BAT_875461";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.BatchId, batchId)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(batchId, transactionSummary.getBatchSequenceNumber());
     }
 
     @Test
-    public void reportFindTransactions_By_WrongBatchId() throws ApiException {
+    public void reportFindTransactionsPaged_By_WrongBatchId() throws ApiException {
         String batchId = "BAT_000461";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.BatchId, batchId)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindTransactions_By_Name() throws ApiException {
+    public void reportFindTransactionsPaged_By_Name() throws ApiException {
         String name = "James Mason";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.Name, name)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(name, transactionSummary.getCardHolderName());
     }
 
     @Test
-    public void reportFindTransactions_By_RandomName() throws ApiException {
+    public void reportFindTransactionsPaged_By_RandomName() throws ApiException {
         String name = UUID.randomUUID().toString().replace("-", "");
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
+                        
                         .where(SearchCriteria.Name, name)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindTransactions_WithInvalid_AccountName() throws ApiException {
+    public void reportFindTransactionsPaged_WithInvalid_AccountName() throws ApiException {
         try {
             ReportingService
-                    .findTransactions()
+                    .findTransactionsPaged(1, 10)
                     .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                    .withPaging(1, 10)
+                    
                     .where(SearchCriteria.AccountName, "VISA")
-                    .execute("GpApiConfig");
+                    .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
             assertEquals("40003", ex.getResponseText());
@@ -713,12 +693,11 @@ public class GpApiReportingTransactionsTests {
     @Ignore // Although documentation indicates from_time_created is required, the real endpoint returns results.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindTransactions_Without_Mandatory_StartDate() throws ApiException {
+    public void reportFindTransactionsPaged_Without_Mandatory_StartDate() throws ApiException {
         try {
-            TransactionSummaryList summary =
-                    ReportingService
-                            .findTransactions()
-                            .execute("GpApiConfig");
+            ReportingService
+                    .findTransactionsPaged(1, 10)
+                    .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
             assertEquals("40008", ex.getResponseText());
@@ -728,74 +707,99 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindTransactions_OrderBy_TimeCreated_Ascending() throws ApiException {
-        TransactionSummaryList transactions =
+    public void CompareResults_reportFindTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
+        Date startDate = DateUtils.addDays(new Date(), -30);
+        Date endDate = DateUtils.addDays(new Date(), -10);
+
+        TransactionSummaryPaged resultByTimeCreated =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
+                        .withPaging(1, 10)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(transactions);
-    }
-
-    @Test
-    public void reportFindTransactions_OrderBy_TimeCreated_Descending() throws ApiException {
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged resultByType =
                 ReportingService
-                        .findTransactions()
-                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
-
-        assertNotNull(transactions);
-    }
-
-    @Test
-    public void reportFindTransactions_OrderBy_Status_Ascending() throws ApiException {
-        TransactionSummaryList transactions =
-                ReportingService
-                        .findTransactions()
-                        .orderBy(TransactionSortProperty.Status, SortDirection.Ascending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
-        ;
-        assertNotNull(transactions);
-    }
-
-    @Test
-    public void reportFindTransactions_OrderBy_Status_Descending() throws ApiException {
-        TransactionSummaryList transactions =
-                ReportingService
-                        .findTransactions()
-                        .orderBy(TransactionSortProperty.Status, SortDirection.Descending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
-        ;
-        assertNotNull(transactions);
-    }
-
-    @Test
-    public void reportFindTransactions_OrderBy_Type_Ascending() throws ApiException {
-        TransactionSummaryList transactions =
-                ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Ascending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
+                        .withPaging(1, 10)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(resultByTimeCreated.getResults());
+        assertTrue(resultByTimeCreated.getResults().size() > 0);
+        assertNotNull(resultByType.getResults());
+        assertTrue(resultByType.getResults().size() > 0);
+
+        assertNotEquals(resultByTimeCreated.getResults(), resultByType.getResults());
+    }
+
+    @Test
+    public void reportFindTransactionsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(1, 25)
+                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
     }
 
     @Test
-    public void reportFindTransactions_OrderBy_Type_Descending() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindTransactionsPaged_OrderBy_TimeCreated_Descending() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findTransactions()
+                        .findTransactionsPaged(1, 25)
+                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(transactions);
+    }
+
+    @Test
+    public void reportFindTransactionsPaged_OrderBy_Id_Ascending() throws ApiException, NoSuchFieldException, SecurityException {
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(1, 25)
+                        .orderBy(TransactionSortProperty.Id, SortDirection.Ascending)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(transactions);
+    }
+
+    @Test
+    public void reportFindTransactionsPaged_OrderBy_Id_Descending() throws ApiException {
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(1, 25)
+                        .orderBy(TransactionSortProperty.Id, SortDirection.Descending)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(transactions);
+    }
+
+    @Test
+    public void reportFindTransactionsPaged_OrderBy_Type_Ascending() throws ApiException {
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(1, 25)
+                        .orderBy(TransactionSortProperty.Type, SortDirection.Ascending)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(transactions);
+    }
+
+    @Test
+    public void reportFindTransactionsPaged_OrderBy_Type_Descending() throws ApiException {
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(1, 25)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Descending)
-                        .withPaging(1, 25)
-                        .execute("GpApiConfig");
-        ;
+                        .execute(GP_API_CONFIG_NAME);
+
         assertNotNull(transactions);
     }
 
@@ -803,21 +807,20 @@ public class GpApiReportingTransactionsTests {
     // Settlement Transactions
     // ================================================================================
     @Test
-    public void reportFindSettlementTransactions_By_StartDate_And_EndDate() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_StartDate_And_EndDate() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -10);
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             Date transactionDate = transactionSummary.getTransactionDate().toDate();
             assertTrue(DateUtils.isBeforeOrEquals(transactionDate, endDate));
             assertTrue(DateUtils.isAfterOrEquals(transactionDate, startDate));
@@ -825,22 +828,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_OrderBy_TimeCreated() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindSettlementTransactionsPaged_OrderBy_TimeCreated() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
 
-        TransactionSummaryList transactionsAsc =
+        TransactionSummaryPaged transactionsAsc =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsAsc);
 
@@ -848,22 +849,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_OrderBy_Status() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindSettlementTransactionsPaged_OrderBy_Status() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Status, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
 
-        TransactionSummaryList transactionsAsc =
+        TransactionSummaryPaged transactionsAsc =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Status, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsAsc);
 
@@ -871,22 +870,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_OrderBy_Type() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindSettlementTransactionsPaged_OrderBy_Type() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
 
-        TransactionSummaryList transactionsAsc =
+        TransactionSummaryPaged transactionsAsc =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsAsc);
 
@@ -894,22 +891,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_OrderBy_DepositId() throws ApiException {
-        TransactionSummaryList transactions =
+    public void reportFindSettlementTransactionsPaged_OrderBy_DepositId() throws ApiException {
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.DepositId, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
 
-        TransactionSummaryList transactionsAsc =
+        TransactionSummaryPaged transactionsAsc =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.DepositId, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsAsc);
 
@@ -917,22 +912,20 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void compareResults_reportFindSettlementTransactions_OrderBy_TypeAndTimeCreated() throws ApiException {
-        TransactionSummaryList transactionsOrderedByTimeCreated =
+    public void compareResults_reportFindSettlementTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
+        TransactionSummaryPaged transactionsOrderedByTimeCreated =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsOrderedByTimeCreated);
 
-        TransactionSummaryList transactionsOrderedByType =
+        TransactionSummaryPaged transactionsOrderedByType =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.Type, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactionsOrderedByType);
 
@@ -940,274 +933,256 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_Number_First6_And_Number_Last4() throws ApiException {
-        String number_first6 = "516075";
-        String number_last4 = "4234";
+    public void reportFindSettlementTransactionsPaged_By_Number_First6_And_Number_Last4() throws ApiException {
+        String number_first6 = "543458";
+        String number_last4 = "7652";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.CardNumberFirstSix, number_first6)
                         .and(SearchCriteria.CardNumberLastFour, number_last4)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertTrue(transactionSummary.getMaskedCardNumber().startsWith(number_first6));
             assertTrue(transactionSummary.getMaskedCardNumber().endsWith(number_last4));
         }
     }
 
-    //TODO - check assert if it's working
     @Test
-    public void reportFindSettlementTransactions_FilterBy_AllDepositStatus() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_FilterBy_AllDepositStatus() throws ApiException {
         for (DepositStatus depositStatus : DepositStatus.values()) {
 
-            TransactionSummaryList transactions =
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findSettlementTransactions()
+                            .findSettlementTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
                             .where(SearchCriteria.DepositStatus, depositStatus)
-                            .execute("GpApiConfig");
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions)
-                assertEquals(depositStatus.name(), transactionSummary.getDepositType());
+            for (TransactionSummary transactionSummary : transactions.getResults())
+                assertEquals(depositStatus.getValue(Target.GP_API), transactionSummary.getDepositStatus());
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_CardBrand() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
-        for (int index = 0; index < cardBrands.length; index++) {
-            TransactionSummaryList transactions =
+        for (String cardBrand : cardBrands) {
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findSettlementTransactions()
+                            .findSettlementTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
-                            .where(SearchCriteria.CardBrand, cardBrands[index])
-                            .execute("GpApiConfig");
+                            .where(SearchCriteria.CardBrand, cardBrand)
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions) {
-                assertEquals(cardBrands[index], transactionSummary.getCardType());
+            for (TransactionSummary transactionSummary : transactions.getResults()) {
+                assertEquals(cardBrand, transactionSummary.getCardType());
             }
         }
     }
 
-    //TODO - no error raised. empty list is received instead
     @Test
-    public void reportFindSettlementTransactions_By_InvalidCardBrand() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_InvalidCardBrand() throws ApiException {
         String cardBrand = "MIT";
+        Date startDate = DateUtils.addDays(new Date(), -30);
 
-        try {
-            ReportingService
-                    .findSettlementTransactions()
-                    .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                    .withPaging(1, 10)
-                    .where(SearchCriteria.CardBrand, cardBrand)
-                    .execute("GpApiConfig");
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findSettlementTransactionsPaged(1, 10)
+                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.CardBrand, cardBrand)
+                        .execute(GP_API_CONFIG_NAME);
 
-        } catch (GatewayException ex) {
-            assertEquals("40097", ex.getResponseText());
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("Status Code: 400 - Invalid Value provided in the input field - brand", ex.getMessage());
-        }
+        assertNotNull(transactions);
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_ARN() throws ApiException {
-        String arn = "71400011203688701840077";
+    public void reportFindSettlementTransactionsPaged_By_ARN() throws ApiException {
+        String arn = "74500010037624410827759";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(transactionSummary.getAcquirerReferenceNumber(), arn);
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_WrongARN() throws ApiException {
-        String arn = "714000";
+    public void reportFindSettlementTransactionsPaged_By_WrongARN() throws ApiException {
+        String arn = "00000010037624410827527";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_BrandReference() throws ApiException {
-        String brandReference = "MCS18V1EG3201";
+    public void reportFindSettlementTransactionsPaged_By_BrandReference() throws ApiException {
+        String brandReference = "MCF1CZ5ME5405";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.BrandReference, brandReference)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(1, transactions.size());
-        for (TransactionSummary transactionSummary : transactions)
+        assertEquals(1, transactions.getResults().size());
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(brandReference, transactionSummary.getBrandReference());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_WrongBrandReference() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_WrongBrandReference() throws ApiException {
         String brandReference = "000000000000001";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.BrandReference, brandReference)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_CardBrand_And_AuthCode() throws ApiException {
-        String cardBrand = "VISA";
-        String authCode = "008481";
+    public void reportFindSettlementTransactionsPaged_By_CardBrand_And_AuthCode() throws ApiException {
+        String cardBrand = "MASTERCARD";
+        String authCode = "028010";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.CardBrand, cardBrand)
                         .and(SearchCriteria.AuthCode, authCode)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(1, transactions.size());
-        for (TransactionSummary transactionSummary : transactions) {
+        assertEquals(1, transactions.getResults().size());
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertEquals(cardBrand, transactionSummary.getCardType());
             assertEquals(authCode, transactionSummary.getAuthCode());
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_Reference() throws ApiException {
-        String referenceNumber = "28012076405M";
+    public void reportFindSettlementTransactionsPaged_By_Reference() throws ApiException {
+        String referenceNumber = "50080513769";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.ReferenceNumber, referenceNumber)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
+        for (TransactionSummary transactionSummary : transactions.getResults())
             assertEquals(referenceNumber, transactionSummary.getReferenceNumber());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_RandomReference() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_RandomReference() throws ApiException {
         String referenceNumber = UUID.randomUUID().toString();
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(SearchCriteria.ReferenceNumber, referenceNumber)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_AllStatus() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_AllStatus() throws ApiException {
         for (TransactionStatus transactionStatus : TransactionStatus.values()) {
 
-            TransactionSummaryList transactions =
+            TransactionSummaryPaged transactions =
                     ReportingService
-                            .findSettlementTransactions()
+                            .findSettlementTransactionsPaged(1, 10)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .withPaging(1, 10)
                             .where(SearchCriteria.TransactionStatus, transactionStatus)
-                            .execute("GpApiConfig");
+                            .execute(GP_API_CONFIG_NAME);
 
             assertNotNull(transactions);
-            for (TransactionSummary transactionSummary : transactions)
+            for (TransactionSummary transactionSummary : transactions.getResults())
                 assertEquals(transactionStatus.getValue(), transactionSummary.getTransactionStatus());
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_DepositId() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_DepositId() throws ApiException {
         String depositId = "DEP_2342423423";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .where(SearchCriteria.DepositId, depositId)
-                        .execute("GpApiConfig");
+                        .withDepositReference(depositId)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions)
-            assertEquals(transactionSummary.getDepositReference(), depositId);
+        for (TransactionSummary transactionSummary : transactions.getResults())
+            assertEquals(depositId, transactionSummary.getDepositReference());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_RandomDepositId() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_RandomDepositId() throws ApiException {
         String depositId = UUID.randomUUID().toString();
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .where(SearchCriteria.DepositId, depositId)
-                        .execute("GpApiConfig");
+                        .withDepositReference(depositId)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_FromDepositTimeCreated_And_ToDepositTimeCreated() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_FromDepositTimeCreated_And_ToDepositTimeCreated() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -1);
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(DataServiceCriteria.StartDepositDate, startDate)
                         .and(DataServiceCriteria.EndDepositDate, endDate)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
             Date depositDate = transactionSummary.getDepositDate();
             assertTrue(DateUtils.isBeforeOrEquals(depositDate, endDate));
             assertTrue(DateUtils.isAfterOrEquals(depositDate, startDate));
@@ -1215,96 +1190,90 @@ public class GpApiReportingTransactionsTests {
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_FromBatchTimeCreated_And_ToBatchTimeCreated() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_FromBatchTimeCreated_And_ToBatchTimeCreated() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -1);
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(DataServiceCriteria.StartBatchDate, startDate)
                         .and(DataServiceCriteria.EndBatchDate, endDate)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
-            Date depositDate = transactionSummary.getDepositDate();
-            assertTrue(DateUtils.isBeforeOrEquals(depositDate, endDate));
-            assertTrue(DateUtils.isAfterOrEquals(depositDate, startDate));
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
+            Date transactionDate = transactionSummary.getTransactionDate().toDate();
+            assertTrue(DateUtils.isBeforeOrEquals(transactionDate, endDate));
+            assertTrue(DateUtils.isAfterOrEquals(transactionDate, startDate));
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_SystemMid_And_SystemHierarchy() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_SystemMid_And_SystemHierarchy() throws ApiException {
         String merchantId = "101023947262";
         String hierarchy = "055-70-024-011-019";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(DataServiceCriteria.MerchantId, merchantId)
                         .and(DataServiceCriteria.SystemHierarchy, hierarchy)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        for (TransactionSummary transactionSummary : transactions) {
-            assertEquals(transactionSummary.getMerchantId(), merchantId);
-            assertEquals(transactionSummary.getMerchantHierarchy(), hierarchy);
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
+            assertEquals(merchantId, transactionSummary.getMerchantId());
+            assertEquals(hierarchy, transactionSummary.getMerchantHierarchy());
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_NonExistent_SystemMid() throws ApiException {
-        String merchantId = "000023940000";
+    public void reportFindSettlementTransactionsPaged_By_NonExistent_SystemMerchantId() throws ApiException {
+        String merchantId = "100023947222";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
                         .where(DataServiceCriteria.MerchantId, merchantId)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
-    //TODO - NPE exception not handled; check asserts
     @Test
-    public void reportFindSettlementTransactions_By_Invalid_SystemMid() throws ApiException {
+    public void reportFindSettlementTransactionsPaged_By_Invalid_SystemMid() throws ApiException {
         String merchantId = UUID.randomUUID().toString().replace("-", "");
 
         try {
             ReportingService
-                    .findSettlementTransactions()
+                    .findSettlementTransactionsPaged(1, 10)
                     .where(DataServiceCriteria.MerchantId, merchantId)
-                    .execute("GpApiConfig");
+                    .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
-            assertEquals("40097", ex.getResponseText());
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("Status Code: 400 - Invalid Value provided in the input field - brand", ex.getMessage());
+            assertEquals("Error occurred while communicating with gateway.", ex.getMessage());
         }
     }
 
     @Test
-    public void reportFindSettlementTransactions_By_Random_SystemHierarchy() throws ApiException {
-        String hierarchy = "000-00-024-000-000";
+    public void reportFindSettlementTransactionsPaged_By_Random_SystemHierarchy() throws ApiException {
+        String systemHierarchy = "000-00-024-000-000";
 
-        TransactionSummaryList transactions =
+        TransactionSummaryPaged transactions =
                 ReportingService
-                        .findSettlementTransactions()
+                        .findSettlementTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.SystemHierarchy, hierarchy)
-                        .execute("GpApiConfig");
+                        
+                        .where(DataServiceCriteria.SystemHierarchy, systemHierarchy)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transactions);
-        assertEquals(0, transactions.size());
+        assertEquals(0, transactions.getResults().size());
     }
 
 }

@@ -4,7 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.gateways.IPaymentGateway;
+import com.global.api.gateways.IReportingService;
 
 public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
     private ReportType reportType;
@@ -33,7 +33,7 @@ public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
     public TResult execute(String configName) throws ApiException {
         super.execute(configName);
 
-        IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
+        IReportingService client = (IReportingService) ServicesContainer.getInstance().getGateway(configName);
         return client.processReport(this, clazz);
     }
 }

@@ -4,7 +4,6 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.gateways.RealexConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
@@ -218,6 +217,31 @@ public class RealexCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void CreditAuthorization_WithDynamicDescriptor() throws ApiException {
+        String dynamicDescriptor = "MyCompany LLC";
+
+        Transaction authorization =
+                card
+                        .authorize(new BigDecimal("5"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withDynamicDescriptor(dynamicDescriptor)
+                        .execute();
+
+        assertNotNull(authorization);
+        assertEquals("00", authorization.getResponseCode());
+
+        Transaction capture =
+                authorization
+                        .capture(new BigDecimal("5"))
+                        .withDynamicDescriptor(dynamicDescriptor)
+                        .execute();
+
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
     }
 
     @Test

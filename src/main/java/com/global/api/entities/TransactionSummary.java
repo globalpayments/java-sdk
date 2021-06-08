@@ -51,7 +51,7 @@ public class TransactionSummary {
     private String depositCurrency;
     private Date depositDate;
     private String depositReference;
-    private String depositType;
+    private String depositStatus;
     private String description;
     private int deviceId;
     private String eciIndicator;

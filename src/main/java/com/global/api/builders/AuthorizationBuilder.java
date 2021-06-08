@@ -15,6 +15,8 @@ import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -48,13 +50,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
-    private EmvFallbackCondition emvFallbackCondition;
+    @Getter @Setter private EmvFallbackCondition emvFallbackCondition;
     private EmvChipCondition emvChipCondition;
     private EmvLastChipRead emvLastChipRead;
     private FraudFilterMode fraudFilterMode;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
-    private String idempotencyKey;
+    @Getter @Setter private String idempotencyKey;
     private String invoiceNumber;
     private boolean level2Request;
     private LodgingData lodgingData;
@@ -63,7 +65,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
-    private String paymentApplicationVersion;
+    @Getter @Setter private String paymentApplicationVersion;
+    @Getter @Setter private PaymentMethodUsageMode paymentMethodUsageMode;
     private String posSequenceNumber;
     private String productId;
     private ArrayList<String[]> miscProductData;
@@ -243,9 +246,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public EmvChipCondition getEmvChipCondition() {
         return emvChipCondition;
     }
-    public EmvFallbackCondition getEmvFallbackCondition() {
-        return emvFallbackCondition;
-    }
     public EmvLastChipRead getEmvLastChipRead() {
         return emvLastChipRead;
     }
@@ -266,15 +266,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public StoredCredentialInitiator getTransactionInitiator() {
         return transactionInitiator;
-    }
-    public String getIdempotencyKey() {
-        return idempotencyKey;
-    }
-    public String getPaymentApplicationVersion() {
-        return paymentApplicationVersion;
-    }
-    public boolean isHasEmvFallbackData() {
-        return hasEmvFallbackData;
     }
 
     // network getters
@@ -405,7 +396,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withCustomer(Customer value) {
         return withCustomerData(value);
-    } 
+    }
     public AuthorizationBuilder withCustomerId(String value) {
         this.customerId = value;
         return this;
@@ -512,6 +503,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withProductId(String value) {
         this.productId = value;
+        return this;
+    }
+    public AuthorizationBuilder withPaymentApplicationVersion(String value) {
+        this.paymentApplicationVersion = value;
+        return this;
+    }
+    public AuthorizationBuilder withPaymentMethodUsageMode(PaymentMethodUsageMode value) {
+        this.paymentMethodUsageMode = value;
         return this;
     }
     public AuthorizationBuilder withPaymentMethod(IPaymentMethod value) {

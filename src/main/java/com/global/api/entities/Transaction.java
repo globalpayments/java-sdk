@@ -536,6 +536,15 @@ public class Transaction {
                 .withAmount(amount);
     }
 
+    public ManagementBuilder reauthorize() {
+        return reauthorize(null);
+    }
+    public ManagementBuilder reauthorize(BigDecimal amount) {
+        return new ManagementBuilder(TransactionType.Reauth)
+                .withPaymentMethod(transactionReference)
+                .withAmount(amount != null ? amount : balanceAmount);
+    }
+
     public ManagementBuilder voidTransaction() {
         return voidTransaction(null, false);
     }

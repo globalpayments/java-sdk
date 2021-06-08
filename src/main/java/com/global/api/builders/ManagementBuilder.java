@@ -5,8 +5,8 @@ import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.LodgingData;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.*;
 import com.global.api.entities.billing.Bill;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.entities.FleetData;
@@ -14,18 +14,15 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.CardIssuerEntryTag;
+import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
 	private AlternativePaymentType alternativePaymentType;
@@ -44,6 +41,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String description;
     @Getter private ArrayList<DisputeDocument> disputeDocuments;
     @Getter private String disputeId;
+    @Getter private String dynamicDescriptor;
     private boolean forceToHost;
     private BigDecimal gratuity;
     @Getter private String idempotencyKey;
@@ -68,6 +66,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String transportData;
     private BigDecimal totalCredits;
     private BigDecimal totalDebits;
+    @Getter private String batchReference;
     private List<Bill> bills;
 
     public AlternativePaymentType getAlternativePaymentType() {
@@ -237,6 +236,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
         return this;
     }
+    public ManagementBuilder withBatchReference(String value) {
+        this.batchReference = value;
+        return this;
+    }
     public ManagementBuilder withBills(Bill ... bills) {
         this.bills = Arrays.asList(bills);
         return this;
@@ -297,6 +300,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withDisputeId(String value) {
         disputeId = value;
+        return this;
+    }
+    public ManagementBuilder withDynamicDescriptor(String value) {
+        dynamicDescriptor = value;
         return this;
     }
     public ManagementBuilder withFleetData(FleetData value) {
@@ -489,7 +496,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Override
     public void setupValidations() {
         this.validations.of(EnumSet.of(TransactionType.Capture, TransactionType.Edit, TransactionType.Hold, TransactionType.Release))
-                .check("paymentMethod").isClass(TransactionReference.class);
+                // .check("paymentMethod").isClass(TransactionReference.class);
+                // Validation extracted from .NET SDK to be aligned between different SDKs
+                .check("paymentMethod").isNotNull();
 
         this.validations.of(TransactionType.Edit).with(TransactionModifier.LevelII)
                 .check("taxType").isNotNull();
@@ -503,5 +512,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
                 .check("amount").isNotNull()
                 .check("currency").isNotNull()
                 .check("orderId").isNotNull();
+
+        // Validations extracted from .NET SDK to be aligned between different SDKs
+        this.validations.of(EnumSet.of(TransactionType.TokenDelete, TransactionType.TokenUpdate))
+                .check("paymentMethod").isNotNull()
+                .check("paymentMethod").isInstanceOf(ITokenizable.class);
+
+        // Validations extracted from .NET SDK to be aligned between different SDKs
+        this.validations.of(EnumSet.of(TransactionType.TokenUpdate))
+                .check("paymentMethod").isInstanceOf(CreditCardData.class);
     }
 }

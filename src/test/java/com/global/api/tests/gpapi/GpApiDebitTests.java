@@ -3,10 +3,10 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.enums.Channel;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import org.junit.After;
@@ -17,9 +17,8 @@ import java.math.BigDecimal;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class GpApiDebitTests {
+public class GpApiDebitTests extends BaseGpApiTest {
 
-    private final String SUCCESS = "SUCCESS";
     private final DebitTrackData track = new DebitTrackData();
 
     public GpApiDebitTests() throws ApiException {
@@ -28,13 +27,13 @@ public class GpApiDebitTests {
 
         // GP-API settings
         config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh")
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardPresent.getValue());
 
         config.setEnableLogging(true);
 
-        ServicesContainer.configureService(config, "GpApiConfig");
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
     @Test
@@ -48,7 +47,7 @@ public class GpApiDebitTests {
                         .charge(new BigDecimal("17.01"))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -65,7 +64,7 @@ public class GpApiDebitTests {
                         .refund(new BigDecimal("12.99"))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -85,7 +84,7 @@ public class GpApiDebitTests {
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
                         .withTagData(tagData)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -104,7 +103,7 @@ public class GpApiDebitTests {
                         .charge(new BigDecimal("17.01"))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
-                        .execute("GpApiConfig");
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -123,7 +122,7 @@ public class GpApiDebitTests {
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .withTagData(tagData)
-                .execute("GpApiConfig");
+                .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -142,12 +141,14 @@ public class GpApiDebitTests {
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .withTagData(tagData)
-                .execute("GpApiConfig");
+                .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
+
+    // .NET CreditCardReauthorizeTransaction() test is into GpApiCreditTests.java class
 
     @After
     public void generalValidations() {

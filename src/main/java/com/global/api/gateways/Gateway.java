@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-abstract class Gateway {
+public abstract class Gateway {
     private String contentType;
     private boolean enableLogging;
     protected HashMap<String, String> headers;
@@ -176,7 +176,7 @@ abstract class Gateway {
         }
     }
 
-    private String getRawResponse(String verb, String endpoint, InputStream responseStream) throws IOException {
+    public String getRawResponse(String verb, String endpoint, InputStream responseStream) throws IOException {
         String rawResponse;
         if (acceptGzipEncoding(verb, endpoint)) {
             // Decompress GZIP response
@@ -284,18 +284,7 @@ abstract class Gateway {
     private boolean acceptGzipEncoding(String verb, String endpoint) {
         return
                 headers.containsKey("Accept-Encoding") &&
-                headers.get("Accept-Encoding").equalsIgnoreCase("gzip") &&
-                !notCompressedResponseEndpoints(verb, endpoint);
-    }
-
-    // For some reason, some GP-API endpoints are not compressed
-    private boolean notCompressedResponseEndpoints(String verb, String endpoint) {
-        return
-                serviceUrl.endsWith("globalpay.com/ucp") &&
-                (
-                    "GET".equalsIgnoreCase(verb) && endpoint.startsWith("/disputes") ||
-                    "POST".equalsIgnoreCase(verb) && endpoint.startsWith("/disputes")
-                );
+                headers.get("Accept-Encoding").equalsIgnoreCase("gzip");
     }
 
     // For some reason, if Content-Type is added for some GP-API endpoints we get a 502: Bad gateway error

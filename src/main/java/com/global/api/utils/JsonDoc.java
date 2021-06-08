@@ -69,6 +69,12 @@ public class JsonDoc {
         }
         return this;
     }
+    public JsonDoc set(String key, String[] values) {
+        if(values != null) {
+            dict.put(key, Arrays.asList(values));
+        }
+        return this;
+    }
     public JsonDoc set(String key, Integer value) {
         return set(key, value, false);
     }

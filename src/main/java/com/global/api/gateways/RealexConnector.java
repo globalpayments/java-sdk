@@ -337,6 +337,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
         //</editor-fold>
 
+        // DYNAMIC DESCRIPTOR
+        if (builder.getTransactionType() == TransactionType.Auth || builder.getTransactionType() == TransactionType.Capture || builder.getTransactionType() == TransactionType.Refund) {
+            if (!StringUtils.isNullOrEmpty(builder.getDynamicDescriptor())) {
+                Element narrative = et.subElement(request, "narrative");
+                et.subElement(narrative, "chargedescription", builder.getDynamicDescriptor());
+            }
+        }
+
         String response = doTransaction(et.toString(request));
         return mapResponse(response, builder);
     }
@@ -412,7 +420,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             // 3DSv2
             request.set("HPP_CUSTOMER_EMAIL", paymentData.getCustomerEmail());
             request.set("HPP_CUSTOMER_PHONENUMBER_MOBILE", paymentData.getCustomerPhoneMobile());
-            request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequest());
+            request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator());
             if(paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
             }
@@ -507,6 +515,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if(hostedPaymentConfig.getFraudFilterMode() != null && hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None)
             toHash.add(hostedPaymentConfig.getFraudFilterMode().getValue());
 
+        request.set("CHARGE_DESCRIPTION", builder.getDynamicDescriptor());
         request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, toHash.toArray(new String[toHash.size()])));
 
         return request.toString();
@@ -606,6 +615,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(tssInfo, "varref", builder.getClientTransactionId());
         }
         //</editor-fold>
+
+        // dynamic descriptor
+        if (builder.getTransactionType() == TransactionType.Capture || builder.getTransactionType() == TransactionType.Refund) {
+            if (!StringUtils.isNullOrEmpty(builder.getDynamicDescriptor())) {
+                Element narrative = et.subElement(request, "narrative");
+                et.subElement(narrative, "chargedescription", builder.getDynamicDescriptor());
+            }
+        }
 
         et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), builder.getAlternativePaymentType() != null ? builder.getAlternativePaymentType().getValue() : null));
 

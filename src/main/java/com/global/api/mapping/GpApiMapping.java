@@ -1,21 +1,29 @@
 package com.global.api.mapping;
 
 import com.global.api.entities.BatchSummary;
+import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.TransactionSummaryList;
+import com.global.api.entities.enums.ReportType;
+import com.global.api.entities.enums.Secure3dVersion;
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.reporting.DepositSummary;
-import com.global.api.entities.reporting.DepositSummaryList;
-import com.global.api.entities.reporting.DisputeSummary;
-import com.global.api.entities.reporting.DisputeSummaryList;
+import com.global.api.entities.gpApi.PagedResult;
+import com.global.api.entities.reporting.*;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
 
 public class GpApiMapping {
+
+    private static final String BATCH_CLOSE = "CLOSE";
+    private static final String PAYMENT_METHOD_CREATE = "PAYMENT_METHOD_CREATE";
+    private static final String PAYMENT_METHOD_DETOKENIZE = "PAYMENT_METHOD_DETOKENIZE";
+    private static final String PAYMENT_METHOD_EDIT = "PAYMENT_METHOD_EDIT";
+    private static final String PAYMENT_METHOD_DELETE = "PAYMENT_METHOD_DELETE";
 
     public static Transaction mapResponse(String rawResponse) {
         Transaction transaction = new Transaction();
@@ -23,38 +31,75 @@ public class GpApiMapping {
         if (!StringUtils.isNullOrEmpty(rawResponse)) {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
+            transaction.setResponseCode(json.get("action").getString("result_code"));
+
+            String actionType = json.get("action").getString("type");
+
+            switch (actionType) {
+                case BATCH_CLOSE:
+                    BatchSummary batchSummary = new BatchSummary();
+
+                    batchSummary.setBatchReference(json.getString("id"));
+                    batchSummary.setStatus(json.getString("status"));
+                    batchSummary.setTotalAmount(json.getDecimal("amount"));
+                    batchSummary.setTransactionCount(json.getInt("transaction_count"));
+
+                    transaction.setBatchSummary(batchSummary);
+
+                    return transaction;
+
+                case PAYMENT_METHOD_CREATE:
+                case PAYMENT_METHOD_DETOKENIZE:
+                case PAYMENT_METHOD_EDIT:
+                case PAYMENT_METHOD_DELETE:
+                    transaction.setToken(json.getString("id"));
+                    transaction.setTimestamp(json.getString("time_created"));
+                    transaction.setReferenceNumber(json.getString("reference"));
+
+                    if (json.has("card")) {
+                        JsonDoc card = json.get("card");
+
+                        transaction.setCardType(card.getString("brand"));
+                        transaction.setCardNumber(card.getString("number"));
+                        transaction.setCardLast4(card.getString("masked_number_last4"));
+                        transaction.setCardExpMonth(card.getInt("expiry_month"));
+                        transaction.setCardExpYear(card.getInt("expiry_year"));
+                    }
+
+                    return transaction;
+
+                default:
+                    break;
+
+            }
+
             transaction.setTransactionId(json.getString("id"));
             transaction.setBalanceAmount(json.getDecimal("amount"));
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setResponseMessage(json.getString("status"));
             transaction.setReferenceNumber(json.getString("reference"));
+            transaction.setClientTransactionId(json.getString("reference"));
 
             BatchSummary batchSummary = new BatchSummary();
-            batchSummary.setSequenceNumber(json.getString("batch_id"));
+            batchSummary.setBatchReference(json.getString("batch_id"));
             transaction.setBatchSummary(batchSummary);
-
-            transaction.setResponseCode(json.get("action").getString(("result_code")));
-            transaction.setToken(json.getString("id"));
 
             if (json.has("payment_method")) {
                 JsonDoc paymentMethod = json.get("payment_method");
-                transaction.setAuthorizationCode( paymentMethod.getString(("result")));
+
+                transaction.setToken(paymentMethod.getString("id"));
+                transaction.setAuthorizationCode(paymentMethod.getString("result"));
+
                 if (paymentMethod.has("card")) {
                     JsonDoc card = paymentMethod.get("card");
+
                     transaction.setCardType(card.getString("brand"));
                     transaction.setCardLast4(card.getString("masked_number_last4"));
                     transaction.setCvnResponseMessage(card.getString("cvv_result"));
                 }
+
             }
 
-            if( json.has("card")) {
-                JsonDoc card = json.get("card");
-                transaction.setCardNumber(card.getString("number"));
-                transaction.setCardType(card.getString("brand"));
-                transaction.setCardExpMonth(card.getInt("expiry_month"));
-                transaction.setCardExpYear(card.getInt("expiry_year"));
-                transaction.setCardLast4(card.getString("number_last4"));
-            }
         }
 
         return transaction;
@@ -63,21 +108,24 @@ public class GpApiMapping {
     public static TransactionSummary mapTransactionSummary(JsonDoc doc) throws GatewayException {
         TransactionSummary summary = new TransactionSummary();
 
-        //TODO: Map all transaction properties
         summary.setTransactionId(doc.getString("id"));
+        summary.setDepositReference(doc.getString("deposit_id"));
         summary.setTransactionDate(parseGpApiDateTime(doc.getString("time_created")));
+        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setTransactionStatus(doc.getString("status"));
+        summary.setDepositStatus(doc.getString("deposit_status"));
         summary.setTransactionType(doc.getString("type"));
         summary.setChannel(doc.getString("channel"));
         summary.setAmount(doc.getDecimal("amount")); // TODO: Check if we have to transform the amount format
         summary.setCurrency(doc.getString("currency"));
         summary.setReferenceNumber(doc.getString("reference"));
         summary.setClientTransactionId(doc.getString("reference"));
-        // ?? = DATE_FORMATTER.parseDateTime(doc.getString("time_created_reference"))
+        summary.setTransactionLocalDate(parseGpApiDateTime(doc.getString("time_created_reference")));
         summary.setBatchSequenceNumber(doc.getString("batch_id"));
         summary.setCountry(doc.getString("country"));
-        // ?? = doc.getString("action_create_id")
         summary.setOriginalTransactionId(doc.getString("parent_resource_id"));
+        summary.setDepositReference(doc.getString("deposit_id"));
+        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
 
         if (doc.has("payment_method")) {
             final JsonDoc paymentMethod = doc.get("payment_method");
@@ -94,18 +142,89 @@ public class GpApiMapping {
                 summary.setBrandReference(card.getString("brand_reference"));
                 summary.setAcquirerReferenceNumber(card.getString("arn"));
                 summary.setMaskedCardNumber(card.getString("masked_number_first6last4"));
-            }
-            else if(paymentMethod.has("digital_wallet")) {
-                    JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
+            } else if (paymentMethod.has("digital_wallet")) {
+                JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
 
-                    summary.setCardType(digitalWallet.getString("brand"));
-                    summary.setAuthCode(digitalWallet.getString("authcode"));
-                    summary.setBrandReference(digitalWallet.getString("brand_reference"));
-                    summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
+                summary.setCardType(digitalWallet.getString("brand"));
+                summary.setAuthCode(digitalWallet.getString("authcode"));
+                summary.setBrandReference(digitalWallet.getString("brand_reference"));
+                summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
             }
         }
 
+        if (doc.has("system")) {
+            JsonDoc system = doc.get("system");
+
+            summary.setMerchantId(system.getString("mid"));
+            summary.setMerchantHierarchy(system.getString("hierarchy"));
+            summary.setMerchantName(system.getString("name"));
+            summary.setMerchantDbaName(system.getString("dba"));
+        }
+
         return summary;
+    }
+
+    public static <T> T mapReportResponse(String rawResponse, ReportType reportType) throws GatewayException {
+        JsonDoc json = JsonDoc.parse(rawResponse);
+
+        switch (reportType) {
+            case TransactionDetail:
+                return (T) mapTransactionSummary(json);
+
+            case FindTransactionsPaged:
+            case FindSettlementTransactionsPaged:
+                return (T) mapTransactions(json);
+
+            case DepositDetail:
+                return (T) mapDepositSummary(json);
+
+            case FindDepositsPaged:
+                return (T) mapDeposits(json);
+
+            case DisputeDetail:
+                return (T) mapDisputeSummary(json);
+
+            case SettlementDisputeDetail:
+                return (T) mapSettlementDisputeSummary(json);
+
+            case FindDisputesPaged:
+                return (T) mapDisputes(json);
+
+            case FindSettlementDisputesPaged:
+                return (T) mapSettlementDisputes(json);
+
+            case StoredPaymentMethodDetail:
+                return (T) mapStoredPaymentMethodSummary(json);
+
+            case FindStoredPaymentMethodsPaged:
+                return (T) mapStoredPaymentMethods(json);
+
+            case ActionDetail:
+                return (T) mapActionSummary(json);
+
+            case FindActionsPaged:
+                return (T) mapActions(json);
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
+    private static <T> void setPagingInfo(PagedResult<T> result, JsonDoc json) {
+        if (json.getInt("total_record_count") != null) {
+            result.setTotalRecordCount(json.getInt("total_record_count"));
+        } else if (json.getInt("total_count") != null) {
+            result.setTotalRecordCount(json.getInt("total_count"));
+        } else {
+            result.setTotalRecordCount(json.getInt("current_page_size"));
+        }
+
+        JsonDoc paging = json.get("paging");
+        if (paging != null) {
+            result.setPageSize(paging.getInt("page_size") != null ? paging.getInt("page_size") : 0);
+            result.setPage(paging.getInt("page") != null ? paging.getInt("page") : 0);
+            result.setOrder(paging.getString("order"));
+            result.setOrderBy(paging.getString("order_by"));
+        }
     }
 
     public static DepositSummary mapDepositSummary(JsonDoc doc) throws GatewayException {
@@ -118,51 +237,51 @@ public class GpApiMapping {
         summary.setAmount(doc.getDecimal("amount"));
         summary.setCurrency(doc.getString("currency"));
 
-        if(doc.has("system")) {
+        if (doc.has("system")) {
             JsonDoc system = doc.get("system");
             summary.setMerchantNumber(system.getString("mid"));
             summary.setMerchantHierarchy(system.getString("hierarchy"));
-            summary.setMerchantName(system.getString ("name"));
+            summary.setMerchantName(system.getString("name"));
             summary.setMerchantDbaName(system.getString("dba"));
         }
 
-        if(doc.has("sales")) {
+        if (doc.has("sales")) {
             JsonDoc sales = doc.get("sales");
             summary.setSalesTotalCount(sales.getInt("count"));
             summary.setSalesTotalAmount(sales.getDecimal("amount"));
         }
 
-        if(doc.has("refunds")) {
+        if (doc.has("refunds")) {
             JsonDoc refunds = doc.get("refunds");
-            summary.setRefundsTotalCount(refunds.getInt ("count"));
-            summary.setRefundsTotalAmount(refunds.getDecimal ("amount"));
+            summary.setRefundsTotalCount(refunds.getInt("count"));
+            summary.setRefundsTotalAmount(refunds.getDecimal("amount"));
         }
 
-        if(doc.has("disputes")) {
+        if (doc.has("disputes")) {
             JsonDoc disputes = doc.get("disputes");
 
-            if(disputes.has("chargebacks")) {
+            if (disputes.has("chargebacks")) {
                 JsonDoc chargebacks = disputes.get("chargebacks");
 
                 summary.setChargebackTotalCount(chargebacks.getInt("count"));
                 summary.setChargebackTotalAmount(chargebacks.getDecimal("amount"));
             }
 
-            if(disputes.has("reversals")) {
+            if (disputes.has("reversals")) {
                 JsonDoc reversals = disputes.get("reversals");
 
-                summary.setAdjustmentTotalCount(reversals.getInt ("count"));
-                summary.setAdjustmentTotalAmount(reversals.getDecimal ("amount"));
+                summary.setAdjustmentTotalCount(reversals.getInt("count"));
+                summary.setAdjustmentTotalAmount(reversals.getDecimal("amount"));
             }
         }
 
-        if(doc.has("fees")) {
+        if (doc.has("fees")) {
             JsonDoc fees = doc.get("fees");
 
             summary.setFeesTotalAmount(fees.getDecimal("amount"));
         }
 
-        if(doc.has("bank_transfer")) {
+        if (doc.has("bank_transfer")) {
             JsonDoc bankTransfer = doc.get("bank_transfer");
 
             summary.setAccountNumber(bankTransfer.getString("masked_account_number_last4"));
@@ -174,7 +293,6 @@ public class GpApiMapping {
     public static DisputeSummary mapDisputeSummary(JsonDoc doc) throws GatewayException {
         DisputeSummary summary = new DisputeSummary();
 
-        //TODO: Map dispute summary
         summary.setCaseId(doc.getString("id"));
         summary.setCaseIdTime(parseGpApiDate(doc.getString("time_created")));
         summary.setCaseStatus(doc.getString("status"));
@@ -182,77 +300,248 @@ public class GpApiMapping {
         summary.setCaseAmount(doc.getDecimal("amount"));
         summary.setCaseCurrency(doc.getString("currency"));
 
-        if(doc.has("system")) {
+        summary.setReasonCode(doc.getString("reason_code"));
+        summary.setReason(doc.getString("reason_description"));
+        summary.setResult(doc.getString("result"));
+
+        if (doc.has("system")) {
             JsonDoc system = doc.get("system");
+
             summary.setCaseMerchantId(system.getString("mid"));
+            summary.setCaseTerminalId(system.getString("tid"));
             summary.setMerchantHierarchy(system.getString("hierarchy"));
+            summary.setMerchantName(system.getString("name"));
+            summary.setMerchantDbaName(system.getString("dba"));
         }
 
+        summary.setLastAdjustmentAmount(doc.getDecimal("last_adjustment_amount"));
+        summary.setLastAdjustmentCurrency(doc.getString("last_adjustment_currency"));
+        summary.setLastAdjustmentFunding(doc.getString("last_adjustment_funding"));
+
+//        if (doc.has("transaction")) {
+//            JsonDoc transaction = doc.get("transaction");
+//
+//            summary.setTransactionTime(parseGpApiDate(transaction.getString("time_created")));
+//            summary.setTransactionType(transaction.getString("type"));
+//            summary.setTransactionAmount(transaction.getDecimal("amount"));
+//            summary.setTransactionCurrency(transaction.getString("currency"));
+//            summary.setTransactionReferenceNumber(transaction.getString("reference"));
+//
         if (doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
-            JsonDoc card = paymentMethod.get("card");
-            if (card != null) {
+
+            if (paymentMethod.has("card")) {
+                JsonDoc card = paymentMethod.get("card");
+
                 summary.setTransactionMaskedCardNumber(card.getString("number"));
                 summary.setTransactionARN(card.getString("arn"));
                 summary.setTransactionCardType(card.getString("brand"));
             }
         }
-        else {
-            if (doc.has("transaction")) {
-                JsonDoc transaction = doc.get("transaction");
-                if (transaction.has("payment_method")) {
-                    JsonDoc transactionPaymentMethod = transaction.get("payment_method");
-                    if (transactionPaymentMethod.has("card")) {
-                        JsonDoc card = transactionPaymentMethod.get("card");
-                        if (card != null) {
-                            summary.setTransactionMaskedCardNumber(card.getString("masked_number_first6last4"));
-                            summary.setTransactionARN(card.getString("arn"));
-                            summary.setTransactionCardType(card.getString("brand"));
-                        }
-                    }
-                }
-            }
-        }
+//        }
 
-        summary.setReasonCode(doc.getString("reason_code"));
-        summary.setReason(doc.getString("reason_description"));
-        summary.setRespondByDate(doc.getDate("time_to_respond_by"));
-        summary.setResult(doc.getString("result"));
-        summary.setLastAdjustmentAmount(doc.getDecimal("last_adjustment_amount"));
-        summary.setLastAdjustmentCurrency(doc.getString("last_adjustment_currency"));
-        summary.setLastAdjustmentFunding(doc.getString("last_adjustment_funding"));
+        String timeToRespondBy = doc.getString("time_to_respond_by");
+        if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
+            summary.setRespondByDate(parseGpApiDate(timeToRespondBy));
+        }
 
         return summary;
     }
 
-    public static TransactionSummaryList mapTransactions(JsonDoc doc) throws GatewayException {
-        TransactionSummaryList transactionsList = new TransactionSummaryList();
+    public static DisputeSummary mapSettlementDisputeSummary(JsonDoc doc) throws GatewayException {
+        DisputeSummary summary = mapDisputeSummary(doc);
+
+        summary.setCaseIdTime(parseGpApiDate(doc.getString("stage_time_created")));
+
+        if (doc.has("transaction")) {
+            JsonDoc transaction = doc.get("transaction");
+
+            summary.setTransactionTime(parseGpApiDate(transaction.getString("time_created")));
+            summary.setTransactionType(transaction.getString("type"));
+            summary.setTransactionAmount(transaction.getDecimal("amount"));
+            summary.setTransactionCurrency(transaction.getString("currency"));
+            summary.setTransactionReferenceNumber(transaction.getString("reference"));
+
+            if (transaction.has("payment_method")) {
+                JsonDoc paymentMethod = transaction.get("payment_method");
+
+                if (paymentMethod.has("card")) {
+                    JsonDoc card = paymentMethod.get("card");
+
+                    summary.setTransactionMaskedCardNumber(card.getString("masked_number_first6last4"));
+                    summary.setTransactionARN(card.getString("arn"));
+                    summary.setTransactionCardType(card.getString("brand"));
+                    summary.setTransactionAuthCode(card.getString("authcode"));
+                }
+            }
+        }
+
+        return summary;
+    }
+
+    private static Secure3dVersion parse3DSVersion(String messageVersion) {
+        if (messageVersion.startsWith("1."))
+            return Secure3dVersion.ONE;
+        if (messageVersion.startsWith("2."))
+            return Secure3dVersion.TWO;
+        return Secure3dVersion.ANY;
+    }
+
+    public static Transaction map3DSecureData(String rawResponse) throws ApiException {
+        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+            JsonDoc json = JsonDoc.parse(rawResponse);
+
+            ThreeDSecure threeDSecure = new ThreeDSecure();
+            threeDSecure.setServerTransactionId(json.getString("id"));
+            threeDSecure.setStatus(json.getString("status"));
+            threeDSecure.setCurrency(json.getString("currency"));
+            threeDSecure.setAmount(json.getDecimal("amount"));
+
+            if (json.has("three_ds")) {
+                JsonDoc three_ds = json.get("three_ds");
+
+                threeDSecure.setVersion(parse3DSVersion(three_ds.getString("message_version")));
+                threeDSecure.setMessageVersion(three_ds.getString("message_version"));
+                threeDSecure.setDirectoryServerStartVersion(three_ds.getString("ds_protocol_version_start"));
+                threeDSecure.setDirectoryServerEndVersion(three_ds.getString("ds_protocol_version_end"));
+                threeDSecure.setDirectoryServerTransactionId(three_ds.getString("ds_trans_ref"));
+                threeDSecure.setAcsStartVersion(three_ds.getString("acs_protocol_version_start"));
+                threeDSecure.setAcsEndVersion(three_ds.getString("acs_protocol_version_end"));
+                threeDSecure.setAcsTransactionId(three_ds.getString("acs_trans_ref"));
+                threeDSecure.setAuthenticationValue(three_ds.getString("authentication_value"));
+                threeDSecure.setChallengeMandated(three_ds.getString("challenge_status").equals("MANDATED"));
+                threeDSecure.setIssuerAcsUrl(
+                        !StringUtils.isNullOrEmpty(three_ds.getString("method_url")) ?
+                                three_ds.getString("method_url") :
+                                three_ds.getString("acs_challenge_request_url")
+                );
+
+                if (json.has("notifications")) {
+                    threeDSecure.setChallengeReturnUrl(json.get("notifications").getString("challenge_return_url"));
+                }
+
+                threeDSecure.setSessionDataFieldName(three_ds.getString("session_data_field_name"));
+                threeDSecure.setMessageType(three_ds.getString("message_type"));
+                threeDSecure.setPayerAuthenticationRequest(three_ds.getString("challenge_value"));
+                threeDSecure.setStatusReason(three_ds.getString("status_reason"));
+                threeDSecure.setMessageCategory(three_ds.getString("message_category"));
+            }
+
+            Transaction transaction = new Transaction();
+            transaction.setThreeDsecure(threeDSecure);
+
+            return transaction;
+        }
+
+        return new Transaction();
+    }
+
+    public static StoredPaymentMethodSummary mapStoredPaymentMethodSummary(JsonDoc doc) throws GatewayException {
+        StoredPaymentMethodSummary storedPaymentMethodSummary = new StoredPaymentMethodSummary();
+
+        storedPaymentMethodSummary.setId(doc.getString("id"));
+        storedPaymentMethodSummary.setTimeCreated(parseGpApiDate(doc.getString("time_created")));
+        storedPaymentMethodSummary.setStatus(doc.getString("status"));
+        storedPaymentMethodSummary.setReference(doc.getString("reference"));
+        storedPaymentMethodSummary.setName(doc.getString("name"));
+
+        if (doc.has("card")) {
+            JsonDoc card = doc.get("card");
+
+            storedPaymentMethodSummary.setCardLast4(card.getString("number_last4"));
+            storedPaymentMethodSummary.setCardType(card.getString("brand"));
+            storedPaymentMethodSummary.setCardExpMonth(card.getString("expiry_month"));
+            storedPaymentMethodSummary.setCardExpYear(card.getString("expiry_year"));
+        }
+
+        return storedPaymentMethodSummary;
+    }
+
+    public static ActionSummary mapActionSummary(JsonDoc doc) throws GatewayException {
+        ActionSummary actionSummary = new ActionSummary();
+
+        actionSummary.setId(doc.getString("id"));
+        actionSummary.setType(doc.getString("type"));
+        actionSummary.setTimeCreated(parseGpApiDateTime(doc.getString("time_created")));
+        actionSummary.setResource(doc.getString("resource"));
+        actionSummary.setVersion(doc.getString("version"));
+        actionSummary.setResourceId(doc.getString("resource_id"));
+        actionSummary.setResourceStatus(doc.getString("resource_status"));
+        actionSummary.setHttpResponseCode(doc.getString("http_response_code"));
+        actionSummary.setResponseCode(doc.getString("response_code"));
+        actionSummary.setAppId(doc.getString("app_id"));
+        actionSummary.setAppName(doc.getString("app_name"));
+        actionSummary.setAccountId(doc.getString("account_id"));
+        actionSummary.setAccountName(doc.getString("account_name"));
+        actionSummary.setMerchantName(doc.getString("merchant_name"));
+
+        return actionSummary;
+    }
+
+    public static TransactionSummaryPaged mapTransactions(JsonDoc doc) throws GatewayException {
+        TransactionSummaryPaged pagedResult = new TransactionSummaryPaged();
+        setPagingInfo(pagedResult, doc);
 
         for (JsonDoc transaction : doc.getEnumerator("transactions")) {
-            transactionsList.add(mapTransactionSummary(transaction));
+            pagedResult.add(mapTransactionSummary(transaction));
         }
 
-        return transactionsList;
+        return pagedResult;
     }
 
-    public static DepositSummaryList mapDeposits(JsonDoc doc) throws GatewayException {
-        DepositSummaryList depositSummaryList = new DepositSummaryList();
+    public static DepositSummaryPaged mapDeposits(JsonDoc doc) throws GatewayException {
+        DepositSummaryPaged pagedResult = new DepositSummaryPaged();
+        setPagingInfo(pagedResult, doc);
 
         for (JsonDoc deposit : doc.getEnumerator("deposits")) {
-            depositSummaryList.add(mapDepositSummary(deposit));
+            pagedResult.add(mapDepositSummary(deposit));
         }
 
-        return depositSummaryList;
+        return pagedResult;
     }
 
-    public static DisputeSummaryList mapDisputes(JsonDoc doc) throws GatewayException {
-        DisputeSummaryList disputeSummaryList = new DisputeSummaryList();
+    public static DisputeSummaryPaged mapDisputes(JsonDoc doc) throws GatewayException {
+        DisputeSummaryPaged pagedResult = new DisputeSummaryPaged();
+        setPagingInfo(pagedResult, doc);
 
         for (JsonDoc transaction : doc.getEnumerator("disputes")) {
-            disputeSummaryList.add(mapDisputeSummary(transaction));
+            pagedResult.add(mapDisputeSummary(transaction));
         }
 
-        return disputeSummaryList;
+        return pagedResult;
+    }
+
+    public static DisputeSummaryPaged mapSettlementDisputes(JsonDoc doc) throws GatewayException {
+        DisputeSummaryPaged pagedResult = new DisputeSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc transaction : doc.getEnumerator("disputes")) {
+            pagedResult.add(mapSettlementDisputeSummary(transaction));
+        }
+
+        return pagedResult;
+    }
+
+    public static StoredPaymentMethodSummaryPaged mapStoredPaymentMethods(JsonDoc doc) throws GatewayException {
+        StoredPaymentMethodSummaryPaged pagedResult = new StoredPaymentMethodSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc paymentMethod : doc.getEnumerator("payment_methods")) {
+            pagedResult.add(mapStoredPaymentMethodSummary(paymentMethod));
+        }
+
+        return pagedResult;
+    }
+
+    public static ActionSummaryPaged mapActions(JsonDoc doc) throws GatewayException {
+        ActionSummaryPaged pagedResult = new ActionSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc element : doc.getEnumerator("actions")) {
+            pagedResult.add(mapActionSummary(element));
+        }
+
+        return pagedResult;
     }
 
 }

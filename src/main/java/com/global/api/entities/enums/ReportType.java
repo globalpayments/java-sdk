@@ -12,13 +12,18 @@ public enum ReportType implements IFlag {
     OpenAuths,
     Search,
     TransactionDetail,
-    FindDeposits,
-    FindDisputes,
-    FindSettlementDisputes,
     DepositDetail,
     DisputeDetail,
     SettlementDisputeDetail,
-    FindSettlementTransactions;
+    FindTransactionsPaged,
+    FindSettlementTransactionsPaged,
+    FindDepositsPaged,
+    FindDisputesPaged,
+    FindSettlementDisputesPaged,
+    StoredPaymentMethodDetail,
+    FindStoredPaymentMethodsPaged,
+    ActionDetail,
+    FindActionsPaged;
 
     public long getLongValue() {
         return 1 << this.ordinal();

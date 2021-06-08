@@ -1,7 +1,12 @@
 package com.global.api.gateways;
 
 import com.global.api.builders.Secure3dBuilder;
-import com.global.api.entities.*;
+import com.global.api.entities.Address;
+import com.global.api.entities.BrowserData;
+import com.global.api.entities.ThreeDSecure;
+import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.ExemptReason;
+import com.global.api.entities.enums.ExemptStatus;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
@@ -110,13 +115,14 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("account_id", accountId)
                     .set("challenge_notification_url", challengeNotificationUrl)
                     .set("challenge_request_indicator", builder.getChallengeRequestIndicator())
-                    .set("method_url_completion", builder.getMethodUrlCompletion())
+                    .set("method_url_completion", builder.getMethodUrlCompletion() != null ? builder.getMethodUrlCompletion().getValue() : "")
                     .set("merchant_contact_url", merchantContactUrl)
                     .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? builder.getMerchantInitiatedRequestType().getValue() : "")
                     .set("whitelist_status", builder.getWhitelistStatus() != null ? builder.getWhitelistStatus().toString() : "")
                     .set("decoupled_flow_request", builder.getDecoupledFlowRequest() != null ? builder.getDecoupledFlowRequest().toString() : "")
                     .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout())
-                    .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
+                    .set("decoupled_notification_url", builder.getDecoupledNotificationUrl())
+                    .set("enable_exemption_optimization", builder.isEnableExemptionOptimization());
 
             // card details
             String hashValue = "";
@@ -344,6 +350,10 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
         secureEcom.setAcsInfoIndicator(doc.geStringArrayList("acs_info_indicator"));
         secureEcom.setDecoupledResponseIndicator(doc.getString("decoupled_response_indicator"));
         secureEcom.setWhitelistStatus(doc.getString("whitelist_status"));
+        secureEcom.setExemptReason(doc.getString("eos_reason"));
+        if (ExemptReason.APPLY_EXEMPTION.name().equals(secureEcom.getExemptReason())) {
+            secureEcom.setExemptStatus(ExemptStatus.TransactionRiskAnalysis);
+        }
 
         // challenge mandated
         if(doc.has("challenge_mandated")) {
@@ -401,7 +411,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
     }
 
     protected String handleResponse(GatewayResponse response) throws GatewayException {
-        if(response.getStatusCode() != 200 && response.getStatusCode() != 204) {
+        if(response.getStatusCode() != 200 && response.getStatusCode() != 202 && response.getStatusCode() != 204) {
             JsonDoc parsed = JsonDoc.parse(response.getRawResponse());
             if(parsed.has("error")) {
                 JsonDoc error = parsed.get("error");

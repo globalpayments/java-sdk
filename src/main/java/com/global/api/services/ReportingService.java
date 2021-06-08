@@ -2,13 +2,10 @@ package com.global.api.services;
 
 import com.global.api.entities.ActivityReport;
 import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.reporting.*;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.builders.TransactionReportBuilder;
 import com.global.api.entities.TransactionSummaryList;
-import com.global.api.entities.reporting.DepositSummary;
-import com.global.api.entities.reporting.DepositSummaryList;
-import com.global.api.entities.reporting.DisputeSummary;
-import com.global.api.entities.reporting.DisputeSummaryList;
 
 public class ReportingService {
 
@@ -19,18 +16,6 @@ public class ReportingService {
     public static TransactionReportBuilder<TransactionSummary> findTransactions(String transactionId) {
         return new TransactionReportBuilder<TransactionSummary>(ReportType.FindTransactions, TransactionSummary.class)
                 .withTransactionId(transactionId);
-    }
-
-    public static TransactionReportBuilder<DisputeSummaryList> findSettlementDisputes() {
-        return new TransactionReportBuilder<DisputeSummaryList>(ReportType.FindSettlementDisputes, DisputeSummaryList.class);
-    }
-
-    public static TransactionReportBuilder<DepositSummaryList> findDeposits() {
-        return new TransactionReportBuilder<DepositSummaryList>(ReportType.FindDeposits, DepositSummaryList.class);
-    }
-
-    public static TransactionReportBuilder<DisputeSummaryList> findDisputes() {
-        return new TransactionReportBuilder<DisputeSummaryList>(ReportType.FindDisputes, DisputeSummaryList.class);
     }
 
     public static TransactionReportBuilder<ActivityReport> activity() {
@@ -44,7 +29,7 @@ public class ReportingService {
 
     public static TransactionReportBuilder<DepositSummary> depositDetail(String depositId) {
         return new TransactionReportBuilder<DepositSummary>(ReportType.DepositDetail, DepositSummary.class)
-                .withDepositId(depositId);
+                .withDepositReference(depositId);
     }
 
     public static TransactionReportBuilder<DisputeSummary> disputeDetail(String disputeId) {
@@ -57,8 +42,55 @@ public class ReportingService {
                 .WithSettlementDisputeId(settlementDisputeId);
     }
 
-    public static TransactionReportBuilder<TransactionSummaryList> findSettlementTransactions() {
-        return new TransactionReportBuilder<TransactionSummaryList>(ReportType.FindSettlementTransactions, TransactionSummaryList.class);
+    public static TransactionReportBuilder<StoredPaymentMethodSummary> storedPaymentMethodDetail(String storedPaymentMethodId) {
+        return new TransactionReportBuilder<StoredPaymentMethodSummary>(ReportType.StoredPaymentMethodDetail, StoredPaymentMethodSummary.class)
+                .withStoredPaymentMethodId(storedPaymentMethodId);
+    }
+
+    public static TransactionReportBuilder<ActionSummary> actionDetail(String actionId) {
+        return new TransactionReportBuilder<>(ReportType.ActionDetail, ActionSummary.class)
+                .withActionId(actionId);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryPaged> findTransactionsPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindTransactionsPaged, TransactionSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryPaged> findTransactionsPaged(int page, int pageSize, String transactionId) {
+        return new TransactionReportBuilder<>(ReportType.FindTransactionsPaged, TransactionSummaryPaged.class)
+                .withTransactionId(transactionId)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryPaged> findSettlementTransactionsPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindSettlementTransactionsPaged, TransactionSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<DepositSummaryPaged> findDepositsPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindDepositsPaged, DepositSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<DisputeSummaryPaged> findDisputesPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindDisputesPaged, DisputeSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<DisputeSummaryPaged> findSettlementDisputesPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindSettlementDisputesPaged, DisputeSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<StoredPaymentMethodSummaryPaged> findStoredPaymentMethodsPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindStoredPaymentMethodsPaged, StoredPaymentMethodSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<ActionSummaryPaged> findActionsPaged(int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindActionsPaged, ActionSummaryPaged.class)
+                .withPaging(page, pageSize);
     }
 
 }

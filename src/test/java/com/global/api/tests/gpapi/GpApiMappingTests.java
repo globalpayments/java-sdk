@@ -5,8 +5,10 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.reporting.ActionSummary;
 import com.global.api.entities.reporting.DepositSummary;
 import com.global.api.entities.reporting.DisputeSummary;
+import com.global.api.entities.reporting.StoredPaymentMethodSummary;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.serviceConfigs.GpApiConfig;
@@ -14,11 +16,12 @@ import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import static com.global.api.gateways.GpApiConnector.*;
+import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-public class GpApiMappingTests {
+public class GpApiMappingTests extends BaseGpApiTest {
 
     public GpApiMappingTests() throws ApiException {
 
@@ -26,17 +29,12 @@ public class GpApiMappingTests {
 
         // GP-API settings
         config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh");
-
-//      With these Nacho credentials
-//        config
-//                .setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll")
-//                .setAppKey("QDsW1ETQKHX6Y4TA");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 
-        ServicesContainer.configureService(config, "GpApiConfig");
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
     @Test
@@ -99,7 +97,7 @@ public class GpApiMappingTests {
 
         JsonDoc paymentMethod = new JsonDoc();
 
-        paymentMethod.set("message", "SUCCESS");
+        paymentMethod.set("message", SUCCESS);
         paymentMethod.set("entry_mode", "ECOM");
         paymentMethod.set("name", "James Mason");
 
@@ -237,7 +235,7 @@ public class GpApiMappingTests {
 
         assertEquals(doc.getString("reason_code"), dispute.getReasonCode());
         assertEquals(doc.getString("reason_description"), dispute.getReason());
-        assertEquals(doc.getDate("time_to_respond_by"), dispute.getRespondByDate());
+        assertEquals(parseGpApiDate(doc.getString("time_to_respond_by")), dispute.getRespondByDate());
         assertEquals(doc.getString("result"), dispute.getResult());
         assertEquals(doc.getDecimal("last_adjustment_amount"), dispute.getLastAdjustmentAmount());
         assertEquals(doc.getString("last_adjustment_currency"), dispute.getLastAdjustmentCurrency());
@@ -245,9 +243,120 @@ public class GpApiMappingTests {
     }
 
     @Test
-    public void MapResponseTest() {
+    public void MapSettlementDisputeSummaryTest() throws GatewayException {
+        String rawJson = "{\"id\":\"DIS_812\",\"status\":\"FUNDED\",\"stage\":\"CHARGEBACK\",\"stage_time_created\":\"2021-03-16T14:03:44\",\"amount\":\"200\",\"currency\":\"GBP\",\"reason_code\":\"PM\",\"reason_description\":\"Paid by Other Means\",\"time_to_respond_by\":\"2021-04-02T14:03:44\",\"result\":\"LOST\",\"funding_type\":\"DEBIT\",\"deposit_time_created\":\"2021-03-20\",\"deposit_id\":\"DEP_2342423443\",\"last_adjustment_amount\":\"\",\"last_adjustment_currency\":\"\",\"last_adjustment_funding\":\"\",\"last_adjustment_time_created\":\"\",\"system\":{\"mid\":\"101023947262\",\"hierarchy\":\"055-70-024-011-019\",\"name\":\"XYZ LTD.\"},\"transaction\":{\"time_created\":\"2021-02-21T14:03:44\",\"merchant_time_created\":\"2021-02-21T16:03:44\",\"type\":\"SALE\",\"amount\":\"200\",\"currency\":\"GBP\",\"reference\":\"28012076eb6M\",\"payment_method\":{\"card\":{\"masked_number_first6last4\":\"379132XXXXX1007\",\"arn\":\"71400011203688701393903\",\"brand\":\"AMEX\",\"authcode\":\"129623\",\"brand_reference\":\"MWE1P0JG80110\"}}}}";
+
+        JsonDoc doc = JsonDoc.parse(rawJson);
+
+        // Act
+        DisputeSummary dispute = GpApiMapping.mapSettlementDisputeSummary(doc);
+
+        // Assert
+        assertEquals(doc.getString("id"), dispute.getCaseId());
+        assertEquals(parseGpApiDate(doc.getString("stage_time_created")), dispute.getCaseIdTime());
+        assertEquals(doc.getString("status"), dispute.getCaseStatus());
+        assertEquals(doc.getString("stage"), dispute.getCaseStage());
+        assertEquals(doc.getDecimal("amount"), dispute.getCaseAmount());
+        assertEquals(doc.getString("currency"), dispute.getCaseCurrency());
+
+        assertEquals(doc.getDecimal("last_adjustment_amount"), dispute.getLastAdjustmentAmount());
+        assertEquals(doc.getString("last_adjustment_currency"), dispute.getLastAdjustmentCurrency());
+        assertEquals(doc.getString("last_adjustment_funding"), dispute.getLastAdjustmentFunding());
+
+        if(doc.has("system")) {
+            JsonDoc system = doc.get("system");
+
+            assertEquals(system.getString("mid"), dispute.getCaseMerchantId());
+            assertEquals(system.getString("hierarchy"), dispute.getMerchantHierarchy());
+            assertEquals(system.getString("name"), dispute.getMerchantName());
+        }
+
+        assertEquals(doc.getString("reason_code"), dispute.getReasonCode());
+        assertEquals(doc.getString("reason_description"), dispute.getReason());
+        assertEquals(doc.getString("result"), dispute.getResult());
+
+        if(doc.has("transaction")) {
+            JsonDoc transaction = doc.get("transaction");
+
+            assertEquals(parseGpApiDate(transaction.getString("time_created")), dispute.getTransactionTime());
+            assertEquals(transaction.getString("type"), dispute.getTransactionType());
+            assertEquals(transaction.getDecimal("amount"), dispute.getTransactionAmount());
+            assertEquals(transaction.getString("currency"), dispute.getTransactionCurrency());
+            assertEquals(transaction.getString("reference"), dispute.getTransactionReferenceNumber());
+
+            if (transaction.has("payment_method")) {
+                JsonDoc paymentMethod = transaction.get("payment_method");
+
+                if (paymentMethod.has("card")) {
+                    JsonDoc card = paymentMethod.get("card");
+
+                    assertEquals(card.getString("masked_number_first6last4"), dispute.getTransactionMaskedCardNumber());
+                    assertEquals(card.getString("arn"), dispute.getTransactionARN());
+                    assertEquals(card.getString("brand"), dispute.getTransactionCardType());
+                    assertEquals(card.getString("authcode"), dispute.getTransactionAuthCode());
+                }
+            }
+        }
+
+        assertEquals(parseGpApiDate(doc.getString("time_to_respond_by")), dispute.getRespondByDate());
+    }
+
+    @Test
+    public void mapMapStoredPaymentMethodSummaryTest() throws GatewayException {
         // Arrange
-        String rawJson = "{\"id\":\"TRN_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"type\":\"SALE\",\"status\":\"PREAUTHORIZED\",\"channel\":\"CNP\",\"capture_mode\":\"LATER\",\"amount\":\"1400\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"reference\":\"15fbcdd9-8626-4e29-aae8-050f823f995f\",\"payment_method\":{\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"card\":{\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"PSkAnccWLNMTcRmm\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\"}},\"batch_id\":\"\",\"action\":{\"id\":\"ACT_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"type\":\"PREAUTHORIZE\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"Uyq6PzRbkorv2D4RQGlldEtunEeGNZll\",\"app_name\":\"sample_app_CERT\"}}";
+        String rawJson = "{\"id\":\"PMT_3502a05c-0a79-469b-bff9-994b665ce9d9\",\"time_created\":\"2021-04-23T18:46:57.000Z\",\"status\":\"ACTIVE\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TKA_eba30a1b5c4a468d90ceeef2ffff7f5e\",\"account_name\":\"Tokenization\",\"reference\":\"faed4ae3-1dd6-414a-bd7e-3a585715d9cc\",\"card\":{\"number_last4\":\"xxxxxxxxxxxx1111\",\"brand\":\"VISA\",\"expiry_month\":\"12\",\"expiry_year\":\"25\"},\"action\":{\"id\":\"ACT_wFGcHivudqleji9jA7S4MTapAHCTkp\",\"type\":\"PAYMENT_METHOD_SINGLE\",\"time_created\":\"2021-04-23T18:47:01.057Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
+
+        JsonDoc doc = JsonDoc.parse(rawJson);
+
+        // Act
+        StoredPaymentMethodSummary paymentMethod = GpApiMapping.mapStoredPaymentMethodSummary(doc);
+
+        // Assert
+        assertEquals(doc.getString("id"), paymentMethod.getId());
+        assertEquals(parseGpApiDate(doc.getString("time_created")), paymentMethod.getTimeCreated());
+        assertEquals(doc.getString("status"), paymentMethod.getStatus());
+        assertEquals(doc.getString("reference"), paymentMethod.getReference());
+        assertEquals(doc.getString("name"), paymentMethod.getName());
+        if(doc.has("card")) {
+            JsonDoc card = doc.get("card");
+            assertEquals(card.getString("number_last4"), paymentMethod.getCardLast4());
+            assertEquals(card.getString("brand"), paymentMethod.getCardType());
+            assertEquals(card.getString ("expiry_month"), paymentMethod.getCardExpMonth());
+            assertEquals(card.getString ("expiry_year"), paymentMethod.getCardExpYear());
+        }
+    }
+
+    @Test
+    public void MapActionSummaryTest() throws GatewayException {
+        // Arrange
+        String rawJson = "{\"id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"type\":\"CREATE_TOKEN\",\"time_created\":\"2021-03-24T02:02:27.158Z\",\"resource\":\"ACCESS_TOKENS\",\"resource_request_url\":\"http://localhost:8998/v7/unifiedcommerce/accesstoken\",\"version\":\"2020-12-22\",\"resource_parent_id\":\"\",\"resource_id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"resource_status\":\"\",\"http_response_code\":\"200\",\"http_response_message\":\"OK\",\"response_code\":\"SUCCESS\",\"response_detailed_code\":\"\",\"response_detailed_message\":\"\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\",\"app_developer\":\"colleen.mcgloin@globalpay.com\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"\",\"account_name\":\"\",\"source_location\":\"63.241.252.2\",\"destination_location\":\"74.125.196.153\",\"metrics\":{\"X-GP-Version\":\"2020-12-22\"},\"action\":{\"id\":\"ACT_qOTwHG38UvuWwjcI6DBNu0uqbg8eoR\",\"type\":\"ACTION_SINGLE\",\"time_created\":\"2021-04-23T18:23:05.824Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
+
+        JsonDoc doc = JsonDoc.parse(rawJson);
+
+        // Act
+        ActionSummary action = GpApiMapping.mapActionSummary(doc);
+
+        // Assert
+        assertEquals(doc.getString("id"), action.getId());
+        assertEquals(doc.getString("type"), action.getType());
+        assertEquals(parseGpApiDateTime(doc.getString("time_created")), action.getTimeCreated());
+        assertEquals(doc.getString("resource"), action.getResource());
+        assertEquals(doc.getString("version"), action.getVersion());
+        assertEquals(doc.getString("resource_id"), action.getResourceId());
+        assertEquals(doc.getString("resource_status"), action.getResourceStatus());
+        assertEquals(doc.getString("http_response_code"), action.getHttpResponseCode());
+        assertEquals(doc.getString("response_code"), action.getResponseCode());
+        assertEquals(doc.getString("app_id"), action.getAppId());
+        assertEquals(doc.getString("app_name"), action.getAppName());
+        assertEquals(doc.getString("account_id"), action.getAccountId());
+        assertEquals(doc.getString("account_name"), action.getAccountName());
+        assertEquals(doc.getString("merchant_name"), action.getMerchantName());
+    }
+
+@Test
+    public void MapResponseTest_CreateTransaction() {
+        // Arrange
+        String rawJson = "{\"id\":\"TRN_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"type\":\"SALE\",\"status\":\"PREAUTHORIZED\",\"channel\":\"CNP\",\"capture_mode\":\"LATER\",\"amount\":\"1400\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"reference\":\"15fbcdd9-8626-4e29-aae8-050f823f995f\",\"payment_method\":{\"id\":\"PMT_9a8f1b66-58e3-409d-86df-ed5fb14ad2f6\",\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"card\":{\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"PSkAnccWLNMTcRmm\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\"}},\"batch_id\":\"\",\"action\":{\"id\":\"ACT_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"type\":\"PREAUTHORIZE\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"Uyq6PzRbkorv2D4RQGlldEtunEeGNZll\",\"app_name\":\"sample_app_CERT\"}}";
 
         // Act
         Transaction transaction = GpApiMapping.mapResponse(rawJson);
@@ -260,27 +369,56 @@ public class GpApiMappingTests {
         assertEquals(doc.getString("time_created"), transaction.getTimestamp());
         assertEquals(doc.getString("status"), transaction.getResponseMessage());
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
-        assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getSequenceNumber());
+        assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getBatchReference());
         assertEquals(doc.get("action").getString("result_code"), transaction.getResponseCode());
-        assertEquals(doc.getString("id"), transaction.getToken());
-
-        if (doc.has("payment_method")) {
+        if(doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
+            assertEquals(paymentMethod.getString("id"), transaction.getToken());
             assertEquals(paymentMethod.getString("result"), transaction.getAuthorizationCode());
-            if (paymentMethod.has("card")) {
+            if(paymentMethod.has("card")) {
                 JsonDoc card = paymentMethod.get("card");
                 assertEquals(card.getString("brand"), transaction.getCardType());
                 assertEquals(card.getString("masked_number_last4"), transaction.getCardLast4());
+                assertEquals(card.getString("cvv_result"), transaction.getCvnResponseMessage());
             }
         }
+    }
 
-        if (doc.has("card")) {
-            JsonDoc card = doc.get("card");
-            assertEquals(card.getString("number"), transaction.getCardNumber());
-            assertEquals(card.getString("brand"), transaction.getCardType());
-            assertEquals((int) card.getInt("expiry_month"), transaction.getCardExpMonth());
-            assertEquals((int) card.getInt("expiry_year"), transaction.getCardExpYear());
-        }
+    @Test
+    public void MapResponseTest_BatchClose() {
+        // Arrange
+        String rawJson = "{\"id\":\"BAT_631762-460\",\"time_last_updated\":\"2021-04-23T18:54:52.467Z\",\"status\":\"CLOSED\",\"amount\":\"869\",\"currency\":\"USD\",\"country\":\"US\",\"transaction_count\":2,\"action\":{\"id\":\"ACT_QUuw7OPd9Rw8n72oaVOmVlQXpuhLUZ\",\"type\":\"CLOSE\",\"time_created\":\"2021-04-23T18:54:52.467Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
+
+        // Act
+        Transaction transaction = GpApiMapping.mapResponse(rawJson);
+
+        // Assert
+        assertNotNull(transaction.getBatchSummary());
+        JsonDoc doc = JsonDoc.parse(rawJson);
+        assertEquals(transaction.getBatchSummary().getBatchReference(), doc.getString("id"));
+        assertEquals(transaction.getBatchSummary().getStatus(), doc.getString("status"));
+        assertEquals(transaction.getBatchSummary().getTotalAmount(), doc.getDecimal("amount"));
+        assertEquals(transaction.getBatchSummary().getTransactionCount(), doc.getInt("transaction_count"));
+    }
+
+    @Test
+    public void MapResponseTest_CreateStoredPaymentMethod() {
+        // Arrange
+        String rawJson = "{\"id\":\"PMT_e150ba7c-bbbd-41fe-bc04-f21d18def2a1\",\"time_created\":\"2021-04-26T14:59:00.813Z\",\"status\":\"ACTIVE\",\"usage_mode\":\"MULTIPLE\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TKA_eba30a1b5c4a468d90ceeef2ffff7f5e\",\"account_name\":\"Tokenization\",\"reference\":\"9486a9e8-d8bd-4fd2-877c-796d07f3a2ce\",\"card\":{\"masked_number_last4\":\"XXXXXXXXXXXX1111\",\"brand\":\"VISA\",\"expiry_month\":\"12\",\"expiry_year\":\"25\"},\"action\":{\"id\":\"ACT_jFOurWcX9CvA8UKtEywVpxArNEryvZ\",\"type\":\"PAYMENT_METHOD_CREATE\",\"time_created\":\"2021-04-26T14:59:00.813Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
+
+        // Act
+        Transaction transaction = GpApiMapping.mapResponse(rawJson);
+
+        // Assert
+        JsonDoc doc = JsonDoc.parse(rawJson);
+        assertEquals(transaction.getToken(), doc.getString("id"));
+        assertEquals(transaction.getTimestamp(), doc.getString("time_created"));
+        assertEquals(transaction.getReferenceNumber(), doc.getString("reference"));
+        assertEquals(transaction.getCardType(), doc.get("card").getString("brand"));
+        assertEquals(transaction.getCardNumber(), doc.get("card").getString("number"));
+        assertEquals(transaction.getCardLast4(), doc.get("card").getString("masked_number_last4"));
+        assertEquals(transaction.getCardExpMonth(), doc.get("card").getInt("expiry_month").intValue());
+        assertEquals(transaction.getCardExpYear(), doc.get("card").getInt("expiry_year").intValue());
     }
 
 }

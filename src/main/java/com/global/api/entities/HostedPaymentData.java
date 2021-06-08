@@ -1,18 +1,18 @@
 package com.global.api.entities;
 
-import java.util.HashMap;
-import java.util.List;
-
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ChallengeRequest;
 import com.global.api.entities.enums.HostedPaymentType;
 import com.global.api.paymentMethods.AlternatePaymentMethod;
 
+import java.util.HashMap;
+import java.util.List;
+
 public class HostedPaymentData extends AlternatePaymentMethod {
     private Boolean addressesMatch;
     private List<Bill> bills;
-    private ChallengeRequest challengeRequest;
+    private ChallengeRequest challengeRequestIndicator;
     private Boolean customerExists;
     private Boolean customerIsEditable;
     private Address customerAddress;
@@ -44,11 +44,11 @@ public class HostedPaymentData extends AlternatePaymentMethod {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    public ChallengeRequest getChallengeRequest() {
-        return challengeRequest;
+    public ChallengeRequest getChallengeRequestIndicator() {
+        return challengeRequestIndicator;
     }
-    public void setChallengeRequest(ChallengeRequest challengeRequest) {
-        this.challengeRequest = challengeRequest;
+    public void setChallengeRequestIndicator(ChallengeRequest challengeRequestIndicator) {
+        this.challengeRequestIndicator = challengeRequestIndicator;
     }
     public String getCustomerEmail() {
         return customerEmail;

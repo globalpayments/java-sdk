@@ -30,7 +30,11 @@ public class ThreeDSecure {
     private String eci;
     private boolean enrolled;
     private ExemptStatus exemptStatus;
+    private String exemptReason;
     private String issuerAcsUrl;
+    public String challengeReturnUrl;
+    public String sessionDataFieldName;
+    public String messageType;
     private MerchantDataCollection merchantData;
     private String messageCategory;
     private String messageExtensionData;
@@ -178,8 +182,32 @@ public class ThreeDSecure {
     public void setExemptStatus(ExemptStatus exemptStatus) {
         this.exemptStatus = exemptStatus;
     }
+    public String getExemptReason() {
+        return exemptReason;
+    }
+    public void setExemptReason(String exemptReason) {
+        this.exemptReason = exemptReason;
+    }
     public String getIssuerAcsUrl() {
         return issuerAcsUrl;
+    }
+    public String getChallengeReturnUrl() {
+        return challengeReturnUrl;
+    }
+    public void setChallengeReturnUrl(String challengeReturnUrl) {
+        this.challengeReturnUrl = challengeReturnUrl;
+    }
+    public String getSessionDataFieldName() {
+        return sessionDataFieldName;
+    }
+    public void setSessionDataFieldName(String sessionDataFieldName) {
+        this.sessionDataFieldName = sessionDataFieldName;
+    }
+    public String getMessageType() {
+        return messageType;
+    }
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
     public void setIssuerAcsUrl(String issuerAcsUrl) {
         this.issuerAcsUrl = issuerAcsUrl;
@@ -353,6 +381,8 @@ public class ThreeDSecure {
             this.statusReason = mergeValue(statusReason, secureEcom.getStatusReason());
             this.version = mergeValue(version, secureEcom.getVersion());
             this.whitelistStatus = mergeValue(whitelistStatus, secureEcom.getWhitelistStatus());
+            this.exemptStatus = mergeValue(exemptStatus, secureEcom.getExemptStatus());
+            this.exemptReason = mergeValue(exemptReason, secureEcom.getExemptReason());
             this.xid = mergeValue(xid, secureEcom.getXid());
 
             //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());

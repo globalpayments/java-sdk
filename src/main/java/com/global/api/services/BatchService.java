@@ -71,6 +71,14 @@ public class BatchService {
                 .withBatchTotals(transactionTotal, totalDebits, totalCredits)
                 .withBatchCloseType(closeType);
     }
+    public static BatchSummary closeBatch(String batchReference, String configName) throws ApiException {
+        Transaction response =
+                new ManagementBuilder(TransactionType.BatchClose)
+                        .withBatchReference(batchReference)
+                        .execute(configName);
+
+        return response.getBatchSummary();
+    }
 
 //    public static BatchSummary closeBatch(BatchCloseType closeType) throws ApiException {
 //        return closeBatch(closeType, "default");

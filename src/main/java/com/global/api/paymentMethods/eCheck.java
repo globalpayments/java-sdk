@@ -5,7 +5,6 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 
 import java.math.BigDecimal;
@@ -209,11 +208,6 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable {
         } catch (ApiException ex) {
             return false;
         }
-    }
-
-    @Override
-    public ITokenizable detokenize(String configName) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
     }
 
     public AuthorizationBuilder verify() {

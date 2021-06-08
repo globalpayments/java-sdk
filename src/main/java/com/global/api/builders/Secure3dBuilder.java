@@ -4,22 +4,16 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.ISecure3dProvider;
-import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ISecure3d;
-import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
-import com.global.api.entities.MerchantDataCollection;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.Secure3dVersion;
-import com.global.api.entities.enums.TransactionType;
 
 import java.math.BigDecimal;
 
@@ -47,6 +41,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private String decoupledNotificationUrl;
     private String deliveryEmail;
     private DeliveryTimeFrame deliveryTimeframe;
+    @Getter @Setter private boolean enableExemptionOptimization;
     private String encodedData;
     private JsonDoc ephemeralPublicKey;
     private Integer giftCardCount;
@@ -54,6 +49,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private BigDecimal giftCardAmount;
     private String homeCountryCode;
     private String homeNumber;
+    @Getter @Setter private String idempotencyKey;
     private Integer maxNumberOfInstallments;
     private Integer maximumTimeout;
     private MerchantDataCollection merchantData;
@@ -95,6 +91,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     private AgeIndicator shippingAddressUsageIndicator;
     private ShippingMethod shippingMethod;
     private Boolean shippingNameMatchesCardHolderName;
+    private StoredCredential storedCredential;
     private ThreeDSecure threeDSecure;
     private TransactionType transactionType;
     private Boolean whitelistStatus;
@@ -332,6 +329,9 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public Boolean getShippingNameMatchesCardHolderName() {
         return shippingNameMatchesCardHolderName;
     }
+    public StoredCredential getStoredCredential() {
+        return storedCredential;
+    }
     public ThreeDSecure getThreeDSecure() {
         return threeDSecure;
     }
@@ -487,6 +487,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         this.deliveryTimeframe = deliveryTimeframe;
         return this;
     }
+    public Secure3dBuilder withEnableExemptionOptimization(boolean enableExemptionOptimization) {
+        this.enableExemptionOptimization = enableExemptionOptimization;
+        return this;
+    }
     public Secure3dBuilder withEncodedData(String encodedData) {
         this.encodedData = encodedData;
         return this;
@@ -510,6 +514,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public Secure3dBuilder withHomeNumber(String countryCode, String number) {
         this.homeCountryCode = countryCode;
         this.homeNumber = number;
+        return this;
+    }
+    public Secure3dBuilder withIdempotencyKey(String value) {
+        this.idempotencyKey = value;
         return this;
     }
     public Secure3dBuilder withMaxNumberOfInstallments(Integer maxNumberOfInstallments) {
@@ -689,6 +697,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
         this.shippingNameMatchesCardHolderName = shippingNameMatchesCardHolderName;
         return this;
     }
+    public Secure3dBuilder withStoredCredential(StoredCredential storedCredential) {
+        this.storedCredential = storedCredential;
+        return this;
+    }
     public Secure3dBuilder withThreeDSecure(ThreeDSecure threeDSecure) {
         this.threeDSecure = threeDSecure;
         return this;
@@ -757,11 +769,11 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
             }
             catch(GatewayException exc) {
                 // check for not enrolled
-                if(exc.getResponseCode() != null) {
-                    if (exc.getResponseCode().equals("110") && provider.getVersion().equals(Secure3dVersion.ONE)) {
+//                if(exc.getResponseCode() != null) {
+                    if ("110".equals(exc.getResponseCode()) && provider.getVersion().equals(Secure3dVersion.ONE)) {
                         return rvalue;
                     }
-                }
+//                }
                 // check if we can downgrade
                 else if(canDowngrade && transactionType.equals(TransactionType.VerifyEnrolled)) {
                     return execute(Secure3dVersion.ONE, configName);

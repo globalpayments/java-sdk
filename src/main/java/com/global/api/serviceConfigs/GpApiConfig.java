@@ -1,14 +1,10 @@
 package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
-import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.Environment;
-import com.global.api.entities.enums.ServiceEndpoints;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.gateways.GpApiConnector;
-import com.global.api.entities.enums.IntervalToExpire;
-import com.global.api.entities.enums.Language;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.gateways.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,8 +40,19 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     private String country = "US";
 
+    // The list of the permissions the integrator want the access token to have
+    @Accessors(chain = true)
+    // public IStringConstant[] permissions;
+    public String[] permissions;
+
     // GP-API Access token information
     private AccessTokenInfo accessTokenInfo;
+
+    // 3DSecure challenge return url
+    @Getter @Setter public String challengeNotificationUrl;
+
+    // 3DSecure method return url
+    @Getter @Setter public String methodNotificationUrl;
 
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
@@ -58,11 +65,14 @@ public class GpApiConfig extends GatewayConfig {
         GpApiConnector gpApiConnector = new GpApiConnector(this);
 
         gpApiConnector.setServiceUrl(serviceUrl);
-
         gpApiConnector.setEnableLogging(this.isEnableLogging());
 
         services.setGatewayConnector(gpApiConnector);
+
         services.setReportingService(gpApiConnector);
+
+        services.setSecure3dProvider(Secure3dVersion.ONE, gpApiConnector);
+        services.setSecure3dProvider(Secure3dVersion.TWO, gpApiConnector);
     }
 
     @Override

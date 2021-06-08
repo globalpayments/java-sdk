@@ -5,8 +5,8 @@ import com.global.api.utils.JsonDoc;
 
 import java.util.HashMap;
 
-class RestGateway extends Gateway {
-    RestGateway() {
+public class RestGateway extends Gateway {
+    public RestGateway() {
         super("application/json");
     }
 

@@ -2,7 +2,6 @@ package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TrackNumber;
-import com.global.api.entities.exceptions.ApiException;
 import com.global.api.utils.CardUtils;
 
 public class CreditTrackData extends Credit implements ITrackData, IPinProtected {
@@ -102,10 +101,5 @@ public class CreditTrackData extends Credit implements ITrackData, IPinProtected
         if(trackData != null) {
             setValue(trackData);
         }
-    }
-
-    @Override
-    public ITokenizable detokenize(String configName) {
-        return null;    // Implement if needed
     }
 }

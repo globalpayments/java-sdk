@@ -571,7 +571,7 @@ public class GpApiSdkCertification {
                     .withDescription("CreditCard_DinersClub_Processing_Error")
                     .execute("GpApiConfig");
         } catch (GatewayException ex) {
-            assertEquals("50021", ex.getResponseText());
+            assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
         }
     }

@@ -1,14 +1,9 @@
 package com.global.api.builders;
 
-import com.global.api.entities.enums.ReportType;
-import com.global.api.entities.enums.SortDirection;
-import com.global.api.entities.enums.TimeZoneConversion;
-import com.global.api.entities.enums.TransactionSortProperty;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.SearchCriteriaBuilder;
-import com.global.api.entities.enums.DepositSortProperty;
-import com.global.api.entities.enums.DisputeSortProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,12 +16,13 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     private String transactionId;
     @Getter @Setter private int page = 1;       // 1: DEFAULT PARAM VALUE
     @Getter @Setter private int pageSize = 5;   // 5: DEFAULT PARAM VALUE
+    @Getter @Setter private SortDirection order;
     @Getter @Setter private TransactionSortProperty transactionOrderBy;
-    @Getter @Setter private SortDirection transactionOrder;
     @Getter @Setter private DepositSortProperty depositOrderBy;
-    @Getter @Setter private SortDirection depositOrder;
     @Getter @Setter private DisputeSortProperty disputeOrderBy;
-    @Getter @Setter private SortDirection disputeOrder;
+    @Getter @Setter private StoredPaymentMethodSortProperty storedPaymentMethodOrderBy;
+    @Getter @Setter private SortDirection storedPaymentMethodOrder;
+    @Getter @Setter private ActionSortProperty actionOrderBy;
 
     private SearchCriteriaBuilder<TResult> _searchBuilder;
 
@@ -57,8 +53,13 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.transactionId = transactionId;
     }
 
-    public TransactionReportBuilder<TResult> withDepositId(String value) {
-        getSearchBuilder().setDepositId(value);
+    public TransactionReportBuilder<TResult> withActionId(String value) {
+        getSearchBuilder().setActionId(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withDepositReference(String value) {
+        getSearchBuilder().setDepositReference(value);
         return this;
     }
 
@@ -108,22 +109,39 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
+    public TransactionReportBuilder<TResult> withStoredPaymentMethodId(String value) {
+        getSearchBuilder().setStoredPaymentMethodId(value);
+        return this;
+    }
+
     public TransactionReportBuilder<TResult> orderBy(TransactionSortProperty orderBy, SortDirection direction)
     {
-        this.transactionOrderBy = orderBy;
-        this.transactionOrder = (direction != null) ? direction : SortDirection.Ascending;
+        transactionOrderBy = orderBy;
+        order = (direction != null) ? direction : SortDirection.Ascending;
         return this;
     }
 
     public TransactionReportBuilder<TResult> orderBy(DepositSortProperty orderBy, SortDirection direction) {
         depositOrderBy = orderBy;
-        depositOrder = (direction != null) ? direction : SortDirection.Ascending;
+        order = (direction != null) ? direction : SortDirection.Ascending;
         return this;
     }
 
     public TransactionReportBuilder<TResult> orderBy(DisputeSortProperty orderBy, SortDirection direction) {
         disputeOrderBy = orderBy;
-        disputeOrder = (direction != null) ? direction : SortDirection.Ascending;
+        order = (direction != null) ? direction : SortDirection.Ascending;
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> orderBy(StoredPaymentMethodSortProperty orderBy, SortDirection direction) {
+        storedPaymentMethodOrderBy = orderBy;
+        order = (direction != null) ? direction : SortDirection.Ascending;
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> orderBy(ActionSortProperty orderBy, SortDirection direction) {
+        actionOrderBy = orderBy;
+        order = (direction != null) ? direction : SortDirection.Ascending;
         return this;
     }
 
