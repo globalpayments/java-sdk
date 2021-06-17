@@ -7,6 +7,7 @@ import com.global.api.utils.ReverseStringEnumMap;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ThreeDSecure {
     private String acsTransactionId;
@@ -21,7 +22,6 @@ public class ThreeDSecure {
     private String cardHolderResponseInfo;
     private String cavv;
     private boolean challengeMandated;
-    private String criticalityIndicator;
     private String currency;
     private String decoupledResponseIndicator;
     private String directoryServerTransactionId;
@@ -37,9 +37,7 @@ public class ThreeDSecure {
     public String messageType;
     private MerchantDataCollection merchantData;
     private String messageCategory;
-    private String messageExtensionData;
-    private String messageExtensionId;
-    private String messageExtensionName;
+    public List<MessageExtension> messageExtensions;
     private String messageVersion;
     private String orderId;
     private String payerAuthenticationRequest;
@@ -127,12 +125,7 @@ public class ThreeDSecure {
     public void setChallengeMandated(boolean challengeMandated) {
         this.challengeMandated = challengeMandated;
     }
-    public String getCriticalityIndicator() {
-        return criticalityIndicator;
-    }
-    public void setCriticalityIndicator(String criticalityIndicator) {
-        this.criticalityIndicator = criticalityIndicator;
-    }
+
     public String getCurrency() {
         return currency;
     }
@@ -241,23 +234,11 @@ public class ThreeDSecure {
     public void setMessageCategory(String messageCategory) {
         this.messageCategory = messageCategory;
     }
-    public String getMessageExtensionData() {
-        return messageExtensionData;
+    public List<MessageExtension> getMessageExtensions() {
+        return messageExtensions;
     }
-    public void setMessageExtensionData(String messageExtensionData) {
-        this.messageExtensionData = messageExtensionData;
-    }
-    public String getMessageExtensionId() {
-        return messageExtensionId;
-    }
-    public void setMessageExtensionId(String messageExtensionId) {
-        this.messageExtensionId = messageExtensionId;
-    }
-    public String getMessageExtensionName() {
-        return messageExtensionName;
-    }
-    public void setMessageExtensionName(String messageExtensionName) {
-        this.messageExtensionName = messageExtensionName;
+    public void setMessageExtensions(List<MessageExtension> messageExtensions) {
+        this.messageExtensions = messageExtensions;
     }
     public String getMessageVersion() {
         return messageVersion;
@@ -357,7 +338,7 @@ public class ThreeDSecure {
             this.cardHolderResponseInfo = mergeValue(cardHolderResponseInfo, secureEcom.getCardHolderResponseInfo());
             this.cavv = mergeValue(cavv, secureEcom.getCavv());
             this.challengeMandated = mergeValue(challengeMandated, secureEcom.isChallengeMandated());
-            this.criticalityIndicator = mergeValue(criticalityIndicator, secureEcom.getCriticalityIndicator());
+            this.messageExtensions = mergeValue(messageExtensions, secureEcom.getMessageExtensions());
             this.currency = mergeValue(currency, secureEcom.getCurrency());
             this.decoupledResponseIndicator = mergeValue(decoupledResponseIndicator, secureEcom.getDecoupledResponseIndicator());
             this.directoryServerTransactionId = mergeValue(directoryServerTransactionId, secureEcom.getDirectoryServerTransactionId());
@@ -367,8 +348,6 @@ public class ThreeDSecure {
             this.enrolled = mergeValue(enrolled, secureEcom.isEnrolled());
             this.issuerAcsUrl = mergeValue(issuerAcsUrl, secureEcom.getIssuerAcsUrl());
             this.messageCategory = mergeValue(messageCategory, secureEcom.getMessageCategory());
-            this.messageExtensionId = mergeValue(messageExtensionId, secureEcom.getMessageExtensionId());
-            this.messageExtensionName = mergeValue(messageExtensionName, secureEcom.getMessageExtensionName());
             this.messageVersion = mergeValue(messageVersion, secureEcom.getMessageVersion());
             this.orderId = mergeValue(orderId, secureEcom.getOrderId());
             this.payerAuthenticationRequest = mergeValue(payerAuthenticationRequest, secureEcom.getPayerAuthenticationRequest());

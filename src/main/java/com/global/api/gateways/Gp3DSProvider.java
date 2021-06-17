@@ -1,10 +1,7 @@
 package com.global.api.gateways;
 
 import com.global.api.builders.Secure3dBuilder;
-import com.global.api.entities.Address;
-import com.global.api.entities.BrowserData;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.ExemptReason;
 import com.global.api.entities.enums.ExemptStatus;
 import com.global.api.entities.enums.Secure3dVersion;
@@ -20,6 +17,7 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -372,11 +370,16 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
 
         // message_extension
         if(doc.has("message_extension")) {
+            secureEcom.setMessageExtensions(new ArrayList<>());
             for (JsonDoc messageExtension : doc.getEnumerator("message_extension")) {
-                secureEcom.setCriticalityIndicator(messageExtension.getString("criticality_indicator"));
-                secureEcom.setMessageExtensionData(messageExtension.getString("data"));
-                secureEcom.setMessageExtensionId(messageExtension.getString("id"));
-                secureEcom.setMessageExtensionName(messageExtension.getString("name"));
+                MessageExtension msgExtension =
+                        new MessageExtension()
+                                .setCriticalityIndicator(messageExtension.getString("criticality_indicator"))
+                                .setMessageExtensionData(messageExtension.get("data").toString())
+                                .setMessageExtensionId(messageExtension.getString("id"))
+                                .setMessageExtensionName(messageExtension.getString("name"));
+
+                secureEcom.getMessageExtensions().add(msgExtension);
             }
         }
 

@@ -299,6 +299,8 @@ public class GpApiMappingTests extends BaseGpApiTest {
         }
 
         assertEquals(parseGpApiDate(doc.getString("time_to_respond_by")), dispute.getRespondByDate());
+        assertEquals(doc.getDate("deposit_time_created", "yyyy-MM-dd"), dispute.getDepositDate());
+        assertEquals(doc.getString("deposit_id"), dispute.getDepositReference());
     }
 
     @Test

@@ -352,6 +352,8 @@ public class GpApiMapping {
         DisputeSummary summary = mapDisputeSummary(doc);
 
         summary.setCaseIdTime(parseGpApiDate(doc.getString("stage_time_created")));
+        summary.setDepositDate(doc.getDate("deposit_time_created", "yyyy-MM-dd"));
+        summary.setDepositReference(doc.getString("deposit_id"));
 
         if (doc.has("transaction")) {
             JsonDoc transaction = doc.get("transaction");
