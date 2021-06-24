@@ -783,4 +783,17 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
+
+    @Test
+    public void test_031_pudding() throws ApiException {
+        Transaction trans = Transaction.fromBuilder()
+                .withAmount(new BigDecimal(10))
+                .withMessageTypeIndicator("1200")
+                .withSystemTraceAuditNumber("1234567")
+                .withTransactionTime("NOT EVEN A DATE")
+                .build();
+
+        Transaction response = trans.capture()
+                .execute();
+    }
 }

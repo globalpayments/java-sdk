@@ -1,6 +1,7 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
@@ -673,5 +674,35 @@ public class VapsDebitTests {
                 .execute();
         assertNotNull(cancel);
         assertEquals("400", cancel.getResponseCode());
+    }
+
+    @Test
+    public void test_173_DE30_test() throws ApiException {
+        Transaction response = track.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAmount(new BigDecimal(10))
+                .withAuthorizedAmount(response.getAuthorizedAmount())
+                .withSystemTraceAuditNumber(response.getSystemTraceAuditNumber())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withPaymentMethod(track)
+                .withNtsData(response.getNtsData())
+                .withPosDataCode(response.getPosDataCode())
+                .withMessageTypeIndicator(response.getMessageTypeIndicator())
+                .withProcessingCode(response.getProcessingCode())
+                .withTransactionTime(response.getOriginalTransactionTime())
+                .build();
+
+        Transaction retryResponse = transaction.preAuthCompletion(response.getAuthorizedAmount())
+                .withCurrency("USD")
+                .withIssuerData(CardIssuerEntryTag.SwipeIndicator, "0")
+                .withPriorMessageInformation(response.getMessageInformation())
+                .execute();
+        assertNotNull(retryResponse);
+        assertEquals("000", retryResponse.getResponseCode());
     }
 }

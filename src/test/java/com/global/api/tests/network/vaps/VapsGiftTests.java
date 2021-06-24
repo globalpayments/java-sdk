@@ -240,4 +240,22 @@ public class VapsGiftTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
+
+    @Test
+    public void value_link_void() throws ApiException {
+        GiftCard card = new GiftCard();
+        card.setValue("6010567085878703=25010004000070779628");
+        card.setCardType("ValueLink");
+
+        Transaction response = card.addValue(new BigDecimal(10.00))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction voidResponse = response.voidTransaction()
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("400", voidResponse.getResponseCode());
+    }
 }

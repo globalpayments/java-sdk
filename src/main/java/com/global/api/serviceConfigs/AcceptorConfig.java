@@ -230,8 +230,10 @@ public class AcceptorConfig {
                 || mobileDevice != null
                 || pinlessDebit != null);
     }
-    public boolean hasPosconfiguration_MessageData(){
-        return performDateCheck || echoSettlementData || includeLoyaltyData;
+    public boolean hasPosConfiguration_MessageData(){
+        return performDateCheck != null
+                || echoSettlementData != null
+                || includeLoyaltyData != null;
     }
     public String getPosConfigForIssuerData() {
         String rvalue = supportsPartialApproval != null ? supportsPartialApproval ? "Y" : "N" : "N";
@@ -252,6 +254,11 @@ public class AcceptorConfig {
     }
     public void setSupportedEncryptionType(EncryptionType supportedEncryptionType) {
         this.supportedEncryptionType = supportedEncryptionType;
+    }
+
+    public boolean isAttended() {
+        return operatingEnvironment.equals(OperatingEnvironment.OnPremises_CardAcceptor_Attended_Mobile) ||
+                operatingEnvironment.equals(OperatingEnvironment.OnPremises_CardAcceptor_Attended);
     }
 
     public void validate() throws ConfigurationException {

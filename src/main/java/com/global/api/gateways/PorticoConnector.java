@@ -145,7 +145,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             if(!isCheck && !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
                 et.subElement(holder, "CardHolderLanguage", builder.getCardHolderLanguage());
             }
-
         }
 
         // card data
@@ -450,6 +449,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
         TransactionType type = builder.getTransactionType();
         TransactionModifier modifier = builder.getTransactionModifier();
 
+        // payment method
+        IPaymentMethod paymentMethod = builder.getPaymentMethod();
+        if(paymentMethod instanceof TransactionReference) {
+            TransactionReference reference = (TransactionReference)paymentMethod;
+            paymentMethod = reference.getOriginalPaymentMethod();
+        }
+
         // build request
         Element transaction = et.element(mapTransactionType(builder));
 
@@ -494,6 +500,23 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 if(paymentType.equals(PaymentMethodType.Debit)) {
                     et.subElement(root, "ReversalReasonCode", builder.getReversalReasonCode());
                     et.subElement(root, "PosSequenceNbr", builder.getPosSequenceNumber());
+
+                    // track data
+                    if(paymentMethod != null) {
+                        DebitTrackData track = (DebitTrackData)paymentMethod;
+                        et.subElement(root, "TrackData", track.getValue());
+                        et.subElement(root, "PinBlock", track.getPinBlock());
+
+                        EncryptionData encryptionData = track.getEncryptionData();
+
+                        if (encryptionData != null) {
+                            Element enc = et.subElement(root, "EncryptionData");
+                            et.subElement(enc, "Version").text(encryptionData.getVersion());
+                            et.subElement(enc, "EncryptedTrackNumber", encryptionData.getTrackNumber());
+                            et.subElement(enc, "KTB", encryptionData.getKtb());
+                            et.subElement(enc, "KSN", encryptionData.getKsn());
+                        }
+                    }
                 }
 
                 // tag data
@@ -719,8 +742,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 debitMac.setFieldKey(root.getString("FieldKey"));
                 debitMac.setTraceNumber(root.getString("TraceNumber"));
                 debitMac.setMessageAuthenticationCode(root.getString("MessageAuthenticationCode"));
-
                 result.setDebitMac(debitMac);
+
+                // add the track data for debit interact
+                result.getTransactionReference().setOriginalPaymentMethod(paymentMethod);
             }
         }
         return result;
