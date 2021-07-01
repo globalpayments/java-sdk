@@ -1284,4 +1284,46 @@ public class RealexHppRequestTests {
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
+    @Test
+    public void testNetherlandsAntillesCountry() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+        hostedPaymentConfig.setDynamicCurrencyConversionEnabled(true);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        // Add 3D Secure 2 Mandatory and Recommended Fields
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setCustomerEmail("test@test.com");
+        hostedPaymentData.setAddressesMatch(false);
+
+        Address billingAddress = new Address();
+        billingAddress.setStreetAddress1("Flat 123");
+        billingAddress.setStreetAddress2("House 456");
+        billingAddress.setStreetAddress3("Unit 4");
+        billingAddress.setCity("Halifax");
+        billingAddress.setPostalCode("W5 9HR");
+        billingAddress.setCountry("AN");
+
+        HostedService service = new HostedService(config);
+
+        String hppJson =
+                service
+                        .charge(new BigDecimal("59.00"))
+                        .withCurrency("EUR")
+                        .withHostedPaymentData(hostedPaymentData)
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .serialize();
+
+        assertNotNull(hppJson);
+        assertTrue(hppJson.contains("\"HPP_BILLING_COUNTRY\":\"530\""));
+        assertTrue(hppJson.contains("\"BILLING_CO\":\"AN\""));
+    }
+
 }

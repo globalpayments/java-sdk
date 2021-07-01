@@ -172,6 +172,7 @@ public class CountryUtils {
         countryCodeMapByCountry.put("Nauru", "NR");
         countryCodeMapByCountry.put("Nepal", "NP");
         countryCodeMapByCountry.put("Netherlands", "NL");
+        countryCodeMapByCountry.put("Netherlands Antilles", "AN");
         countryCodeMapByCountry.put("New Caledonia", "NC");
         countryCodeMapByCountry.put("New Zealand", "NZ");
         countryCodeMapByCountry.put("Nicaragua", "NI");
@@ -423,6 +424,7 @@ public class CountryUtils {
         countryCodeMapByNumericCode.put("520", "NR");
         countryCodeMapByNumericCode.put("524", "NP");
         countryCodeMapByNumericCode.put("528", "NL");
+        countryCodeMapByNumericCode.put("530", "AN");
         countryCodeMapByNumericCode.put("531", "CW");
         countryCodeMapByNumericCode.put("533", "AW");
         countryCodeMapByNumericCode.put("534", "SX");
