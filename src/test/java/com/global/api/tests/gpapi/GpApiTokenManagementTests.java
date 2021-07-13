@@ -30,8 +30,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg")
-                .setAppKey("ockJr6pv6KFoGiZA");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 

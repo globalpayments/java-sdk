@@ -2,7 +2,6 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
@@ -25,8 +24,8 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg")
-                .setAppKey("ockJr6pv6KFoGiZA");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 
@@ -103,23 +102,36 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
     }
 
     @Test
-    public void d1_UpdateTokenizedPaymentMethod_WithMalformedId() throws BuilderException {
+    public void d1_UpdateTokenizedPaymentMethod_WithMalformedId() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken("This_is_not_a_payment_id");
         tokenizedCard.setExpMonth(12);
         tokenizedCard.setExpYear(2030);
 
-        assertFalse(tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME));
+        try {
+            tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40213", ex.getResponseText());
+            assertTrue(ex.getMessage().startsWith("Status Code: 400 - payment_method.id: This_is_not_a_payment_id contains unexpected data"));
+        }
     }
 
     @Test
-    public void d2_UpdateTokenizedPaymentMethod_WithRandomId() throws BuilderException {
+    public void d2_UpdateTokenizedPaymentMethod_WithRandomId() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken("PMT_" + UUID.randomUUID());
         tokenizedCard.setExpMonth(12);
         tokenizedCard.setExpYear(2030);
 
-        assertFalse(tokenizedCard.updateTokenExpiry());
+        try {
+            tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
+            assertEquals("40116", ex.getResponseText());
+            assertTrue(ex.getMessage().startsWith("Status Code: 404 - payment_method"));
+        }
+
     }
 
     @Test

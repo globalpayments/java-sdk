@@ -5,7 +5,6 @@ import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.enums.StoredPaymentMethodSortProperty;
 import com.global.api.entities.enums.StoredPaymentMethodStatus;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -293,7 +292,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @AfterClass
-    public static void cleanup() throws BuilderException {
+    public static void cleanup() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
         assertTrue(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));

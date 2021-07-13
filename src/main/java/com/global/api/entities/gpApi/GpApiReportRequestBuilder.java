@@ -152,6 +152,7 @@ public class GpApiReportRequestBuilder {
                             .setEndpoint("/settlement/disputes");
 
                     request.addQueryStringParam("account_name", gateway.getDataAccountName());
+                    request.addQueryStringParam("deposit_id", trb.getSearchBuilder().getDepositReference());
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
                     request.addQueryStringParam("order_by", getValueIfNotNull(trb.getDisputeOrderBy()));

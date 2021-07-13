@@ -149,7 +149,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return response.getToken();
     }
 
-    public boolean updateTokenExpiry() throws BuilderException {
+    public boolean updateTokenExpiry() throws ApiException {
         return updateTokenExpiry("default");
     }
 
@@ -158,7 +158,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
      * @return a boolean value indicating success/failure
      */
     @Override
-    public boolean updateTokenExpiry(String configName) throws BuilderException {
+    public boolean updateTokenExpiry(String configName) throws ApiException {
         if(configName == null) {
             configName = "default";
         }
@@ -167,16 +167,11 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
             throw new BuilderException("Token cannot be null");
         }
 
-        try {
-            new ManagementBuilder(TransactionType.TokenUpdate)
-                            .withPaymentMethod(this)
-                            .execute(configName);
+        new ManagementBuilder(TransactionType.TokenUpdate)
+                        .withPaymentMethod(this)
+                        .execute(configName);
 
-            return true;
-        }
-        catch (ApiException e) {
-            return false;
-        }
+        return true;
     }
 
     /**
@@ -184,7 +179,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
      * @return a boolean value indicating success/failure
      */
     @Override
-    public boolean deleteToken(String configName) throws BuilderException {
+    public boolean deleteToken(String configName) throws ApiException {
         if(configName == null) {
             configName = "default";
         }
@@ -193,16 +188,11 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
             throw new BuilderException("Token cannot be null");
         }
 
-        try {
-            new ManagementBuilder(TransactionType.TokenDelete)
-                    .withPaymentMethod(this)
-                    .execute(configName);
+        new ManagementBuilder(TransactionType.TokenDelete)
+                .withPaymentMethod(this)
+                .execute(configName);
 
-            return true;
-        }
-        catch (ApiException e) {
-            return false;
-        }
+        return true;
     }
 
 }

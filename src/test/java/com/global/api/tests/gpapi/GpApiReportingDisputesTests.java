@@ -919,4 +919,21 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         assertEquals(0, disputes.getResults().size());
     }
 
+    @Test
+    public void reportFindSettlementDisputesPaged_FilterBy_DepositId() throws ApiException {
+        String DEPOSIT_ID = "DEP_2342423423";
+
+        DisputeSummaryPaged disputes =
+                ReportingService
+                        .findSettlementDisputesPaged(1, 10)
+                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .and(DataServiceCriteria.DepositReference, DEPOSIT_ID)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(disputes);
+        for (DisputeSummary disputeSummary : disputes.getResults()) {
+            assertEquals(DEPOSIT_ID, disputeSummary.getDepositReference());
+        }
+    }
+
 }

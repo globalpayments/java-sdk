@@ -291,12 +291,19 @@ public abstract class Gateway {
     private boolean contentTypeNotAllowedEndpoints(String verb, String endpoint) {
         return
                 serviceUrl.endsWith("globalpay.com/ucp") &&
-                "GET".equalsIgnoreCase(verb) &&
-                (
-                    endpoint.startsWith("/settlement/deposits") ||
-                    endpoint.startsWith("/settlement/disputes") ||
-                    endpoint.startsWith("/disputes")
-                );
+                        (
+                                "GET".equalsIgnoreCase(verb) &&
+                                        (
+                                                endpoint.startsWith("/settlement/deposits") ||
+                                                        endpoint.startsWith("/settlement/disputes") ||
+                                                        endpoint.startsWith("/disputes")
+                                        )                             ||
+                                        "POST".equalsIgnoreCase(verb) &&
+                                                (
+                                                        endpoint.startsWith("/disputes") &&
+                                                                endpoint.endsWith("/acceptance")
+                                                )
+                        );
     }
 
 }
