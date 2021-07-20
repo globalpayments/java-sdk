@@ -6,9 +6,11 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.DebitAuthorizerCode;
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
@@ -704,5 +706,11 @@ public class VapsDebitTests {
                 .execute();
         assertNotNull(retryResponse);
         assertEquals("000", retryResponse.getResponseCode());
+    }
+
+    @Test(expected = GatewayException.class)
+    public void test_174_InvalidDebitAuthorizer() throws ApiException {
+        String ntsString = "00 30";
+        NtsData ntsData = NtsData.fromString(ntsString);
     }
 }

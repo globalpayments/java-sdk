@@ -4,6 +4,43 @@
 
 ### Enhancements:
 
+- Support findSettlementDisputes by Deposit ID
+- Fix Failing Disputes Tests
+
+### Bug Fixes:
+
+- Exceptions unhidden on Credit.updateTokenExpiry() & Credit.deleteToken()
+
+---
+
+## v6.1.89 (01/07/2021)
+
+### Enhancements:
+
+- Support Netherlands Antilles Country
+
+### Bug Fixes:
+
+-
+
+---
+
+## v6.1.84 (17/06/2021)
+
+### Enhancements:
+
+- Message Extension List added to ThreeDSecure class 
+
+### Bug Fixes:
+
+- 
+
+---
+
+## v6.1.83 (08/06/2021)
+
+### Enhancements:
+
 - Update GP API access token not authenticated scenarios
 - Add GP API 3DS builder stored credentials and properly map the data on each request
 - Set global merchant country configuration where required

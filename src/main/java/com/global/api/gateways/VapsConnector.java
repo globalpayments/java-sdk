@@ -1380,13 +1380,14 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                     reference.setAcquiringInstitutionId(request.getString(DataElementId.DE_032));
 
                     // partial flag
-                    if(responseCode.equals("002")) {
-                        reference.setPartialApproval(true);
-                    }
-                    else if(responseCode.equals("000")) {
-                        String requestAmount = request.getString(DataElementId.DE_004);
-                        String responseAmount = message.getString(DataElementId.DE_004);
-                        reference.setPartialApproval(!requestAmount.equals(responseAmount));
+                    if(!StringUtils.isNullOrEmpty(responseCode)) {
+                        if (responseCode.equals("002")) {
+                            reference.setPartialApproval(true);
+                        } else if (responseCode.equals("000")) {
+                            String requestAmount = request.getString(DataElementId.DE_004);
+                            String responseAmount = message.getString(DataElementId.DE_004);
+                            reference.setPartialApproval(!requestAmount.equals(responseAmount));
+                        }
                     }
 
                     // message control fields

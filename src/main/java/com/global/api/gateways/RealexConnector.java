@@ -17,7 +17,7 @@ import java.util.*;
 
 import static com.global.api.utils.StringUtils.extractDigits;
 
-public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider {
+public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider, IReportingService {
     private String merchantId;
     private String accountId;
     private String rebatePassword;
@@ -980,8 +980,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
     private String mapReportType(ReportType reportType) throws ApiException {
         switch (reportType) {
-//            case TransactionDetail:
-//                return "query";
+            case TransactionDetail:
+                return "query";
             default:
                 throw new UnsupportedTransactionException("This reporting call is not supported by your currently configured gateway.");
         }

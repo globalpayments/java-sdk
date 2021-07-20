@@ -53,7 +53,8 @@ public class VapsEncryptionTests {
         acceptorConfig.setAddress(address);
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
+        acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
 
         // hardware software config values
@@ -192,6 +193,12 @@ public class VapsEncryptionTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(capture);
+        assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
     }
 
     @Test
@@ -220,6 +227,30 @@ public class VapsEncryptionTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_039_debit_swipe_auth_capture() throws ApiException {
+        Transaction response = debit.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(6))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+    }
+
+    @Test
+    public void test_040_debit_swipe_sale() throws ApiException {
+        Transaction response = debit.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
     }
 
     @Test
@@ -276,9 +307,10 @@ public class VapsEncryptionTests {
 
     @Test
     public void test_000_token_lrc_issue() throws ApiException {
-        PayrollEncoder requestEncoder = new PayrollEncoder("0044", "0007100099911");
+        PayrollEncoder requestEncoder = new PayrollEncoder("0044", "0007169969911");
 
-        String encodedString = "MTEwMLIwRQAgwQAEAAAAAAAAAAAwMDMwMDAwMDAwMDAwMTAwMDAxMDA5MDQyNzEyMDA3MTIzMjAxMDA5MTIyNzEyNTU0MjIwMDIwMUIwMDE0QzEwMTIwMzcxNDQ5NjM1Mzk4NDMxPTI1MTIwMDQ0ICAgIDAwMDcxMDAwOTk5MTEgIDA5OUEgAACDAAAAUzIgIDEwMSAgICAgMTAxMTExMDAwMDgwMUU3NTA2M0FYICAwMyBZWTI2MDAxOTk5VlQgIDEyMDAwMDA5MDAwMDcxMjIyMTA0XFxcICAgNzUwNjMgICAgICAgIDAyNTAyTlBDMDlZWU5ZWVlZTk5JSUQwNDAyMDE=[TOKEN TRACE]: encryptedToken: NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==[TOKEN TRACE]: framedRequest: [1]NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==";
+        //String encodedString = "MTEwMLIwRQAgwQAEAAAAAAAAAAAwMDMwMDAwMDAwMDAwMTAwMDAxMDA5MDQyNzEyMDA3MTIzMjAxMDA5MTIyNzEyNTU0MjIwMDIwMUIwMDE0QzEwMTIwMzcxNDQ5NjM1Mzk4NDMxPTI1MTIwMDQ0ICAgIDAwMDcxMDAwOTk5MTEgIDA5OUEgAACDAAAAUzIgIDEwMSAgICAgMTAxMTExMDAwMDgwMUU3NTA2M0FYICAwMyBZWTI2MDAxOTk5VlQgIDEyMDAwMDA5MDAwMDcxMjIyMTA0XFxcICAgNzUwNjMgICAgICAgIDAyNTAyTlBDMDlZWU5ZWVlZTk5JSUQwNDAyMDE=[TOKEN TRACE]: encryptedToken: NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==[TOKEN TRACE]: framedRequest: [1]NmgnRkOdVxn/Q3/QTrStkOTvOZ+DTPYH879KL8/OCd/q9j7x/pRVN60Zbp9dgaco1WjHQX2OalQTKLiwTQ6NAzGwPF5WsueNQYB7gHuC0pg4jbcQ2sVsIp1vIS3/wRCB6Tix6ECL+TDDRasuhMoIbLqE7i4YhKn/83/raok6w5h5yquKGNcWCHZMCeab1TeqL2Pr09xfpWyXm7bBB8CnnoxVZ904rTZL4WnG2c/WmHzqGh70QSctU5wvggNhcCGQgx5SDshQmaupuTEXf3V878uL5NhhMn5uiT4IhTLm/aFP+rRJiPllJTz58acCcg6egv9/c8XyzkSV6CduC1LERIl8T5JOCmDLk2omTwP2fGhsSZtpzv47lXroBDFDEpQ0kcQZljZDrnxyg2lcLbjDyMaMvEKvHelim1Ga3HwB4tLKtkS7vs3JyHGtZsbtBcH56WrvR0h5/joS6dZpFRT4yA==";
+        String encodedString = "2QZH7AwLg3hFryDOw5E8ICBfMkng1KKlRY4PoLRxc/mEo7id7/O1ca1yP/QM01bOroTMLt6Luv56teTzhlihagwe8G5M6ylorGKbCYXCZp5sLpTqik5dNcSreIG0WW7W2uw0D13d952OLdRkKAaiyw0fnZcMShIq7aCCXqpi8pmyrXYeRfOnQUExvFMe4FY2IQIMFbLYrhvNrCOsCsLnv58NTDR4c4TrP4JFtGZaey1tyc0Nqr8qTtTsOzczMOTVaTlrNBGUm+oxuAipG+SOs7MWkMUpfuUTUt6xxf6Eh5DdwYKDzN5V6gojLUXH+9cuAaupb0U0Ju9jpEJ5IKQNZjpsBQ/RAJgNtWO9OzXR/SRxrKt8O0kWGWEZXv9GDSJelS2GsoFosJESpYXB9vHiOdf4TnxibJXvru2Tf+znpPjOyZKJdCtw5LBywgC4slsnNQ950yKBsWcrG9ZKxDB7tCLHL73wQeM4gV6Vt7UJtqqNPw9KtcqwkAZWJDkuhxfVqO78JWcnDCEh6ZeFlWlPcrGYmz6dXJOhLoR4srg8Va00vIBUkh7ZYTHhbX9GjIvdoTpy2VKzyZ/BNvDpD6/neNQXaYmBXnKawOmhhpFy24iUeSs03H2xb0fVlv1wsHu79WQAQK/NJ0oRPPXEOo3eDEO9AjA6Mv5MVQigVXLnag8=";
 
         /* Does the message decode properly */
         byte[] encodedBuffer = encodedString.getBytes();
@@ -329,36 +361,37 @@ public class VapsEncryptionTests {
         assertTrue(lrcMatches);
     }
 
-//    @Test
-//    public void test_000_token_test() throws ApiException {
-//        String terminalString = "000%s9911";
-//
-//        int storeNumber = 736716;
-//        while(storeNumber++ < 999999) {
-//            if(storeNumber % 1000 == 0) {
-//                System.out.println(storeNumber);
-//            }
-//
-//            String terminalId = String.format(terminalString, storeNumber);
-//            PayrollEncoder encoder = new PayrollEncoder("0044", terminalId);
-//
-//            String framedString = "bE1KW+xLqbgPdVMyoZ+Fa94zGXBYywYOiAxFyIK5SrBdjt3DQcxthFfOnRN2eZMCJik3p9D18SBTywBdqa3CBIv8lYhKt+iJ9D3ywuHc4z1GPEG8krq8BVO5aOpgXPXQwcfIpE4QRA7/c3LUm5hNTYYrFh/v7DKmAeorB+mH79aQv0sfEMHpJfsnaSRFwI+v2l7xuBo2oIDGyzSNRYju8idZA0WNmLs8A/lAP3sQp34Xr+2ILH5ayzrZ93Z9ie5gNN6oYTHmbXQ6nlr92VUOO7I8cWDQv+dSTOAtXcKjIkztOvpWAl2Rvvs7ponw2pCCgCzXc3OaOcj8F35pkuXvTA+2SuMu1ztabkGCyhzG12X0crRMpFEgeG+EhHaCT66+NVwrgLcbvXHi6vaCUZT2pEjJ6K0aGWErE3Fo1qrBqE3WF8ltRqX9HmM9D9pUn0x5nZlDzVRT7iO77r9+WnaJ5h3ONJFk6OUlVL1sY0NNp8VZY1J3hJPwR/+SUxfBR+vVsXFZt+IXoZxkIalLnBLufv/10sprQRboGsYia/VMQC72lp7ODHmWntnYqza22uRuW1ymjd377IZ/T7vH6pzLjUkVx/SfFy37icoXA4QlTaI=";
-//            //String framedString = "9b4sO7nSybc2q3aCq6jtCtvd9d0Nc7jZsIsk2Y63COIXVvY6q1ZG4ADjCxN7+mL1PdZMGntFwN5XRu16tKM0tmU4Xu2AU8EEdF8Br1Lp6sIFXCBcG7mU7c5ee/H8L4PY/EpmvIyzyZvNm2VoRi114qiGY32l7G0SnOZ7GfUz0nTVg8k8Rawcix33/5K+6Tb2R96TwD3G/yxhSpKnEB7ypIH/+P0wq5ANpTcdnMo0meBuIqNPfbmGgwKVrsHKygEjE73LnognfxYc6tOMDzsik+UQJMI/jXN3xCB1IpSg9S3ZoQN+gc46wuoXzKY/5IsiudwDn7+OatuVPb9OnNUaCN2HCRQRwhUnyzN7clcm6nL30ZTWtydNGH37pDuHegadhYpL8CyzYlAm/alZloHY/wVe2NCfKgnmTuABGLfpg6TMJUa4hwRc4iFnGyVW/Yi25oFMVYlX70BRLTJFKxMVY28hoyoWD2eG2UjoNxqufdY4SjeKgj6waarnAkWO8q9iB6Uncu4CVOzEYBsjbUchTg==";
-//            MessageReader mr = new MessageReader(framedString.getBytes());
-//
-//            String decryptedCheckString = mr.readToCode(ControlCodes.ETX, false);
-//
-//            // decrypt the encrypted string
-//            String decryptedString = encoder.decode(decryptedCheckString);
-//
-//            // decode the decrypted string
-//            byte[] decodedBuffer = Base64.decodeBase64(decryptedString);
-//            String decodedString = new String(decodedBuffer);
-//            if(decodedString.startsWith("1220")) {
-//                System.out.print(storeNumber);
-//                assertTrue(decodedString.startsWith("1220"));
-//                break;
-//            }
-//        }
-//    }
+    @Test
+    public void test_000_token_test() throws ApiException {
+        String terminalString = "000%s9911";
+
+        int storeNumber = 710000;
+        while(storeNumber++ < 999999) {
+            if(storeNumber % 1000 == 0) {
+                System.out.println(storeNumber);
+            }
+
+            String terminalId = String.format(terminalString, storeNumber);
+            PayrollEncoder encoder = new PayrollEncoder("0044", terminalId);
+
+            //String framedString = "bE1KW+xLqbgPdVMyoZ+Fa94zGXBYywYOiAxFyIK5SrBdjt3DQcxthFfOnRN2eZMCJik3p9D18SBTywBdqa3CBIv8lYhKt+iJ9D3ywuHc4z1GPEG8krq8BVO5aOpgXPXQwcfIpE4QRA7/c3LUm5hNTYYrFh/v7DKmAeorB+mH79aQv0sfEMHpJfsnaSRFwI+v2l7xuBo2oIDGyzSNRYju8idZA0WNmLs8A/lAP3sQp34Xr+2ILH5ayzrZ93Z9ie5gNN6oYTHmbXQ6nlr92VUOO7I8cWDQv+dSTOAtXcKjIkztOvpWAl2Rvvs7ponw2pCCgCzXc3OaOcj8F35pkuXvTA+2SuMu1ztabkGCyhzG12X0crRMpFEgeG+EhHaCT66+NVwrgLcbvXHi6vaCUZT2pEjJ6K0aGWErE3Fo1qrBqE3WF8ltRqX9HmM9D9pUn0x5nZlDzVRT7iO77r9+WnaJ5h3ONJFk6OUlVL1sY0NNp8VZY1J3hJPwR/+SUxfBR+vVsXFZt+IXoZxkIalLnBLufv/10sprQRboGsYia/VMQC72lp7ODHmWntnYqza22uRuW1ymjd377IZ/T7vH6pzLjUkVx/SfFy37icoXA4QlTaI=";
+            //String framedString = "9b4sO7nSybc2q3aCq6jtCtvd9d0Nc7jZsIsk2Y63COIXVvY6q1ZG4ADjCxN7+mL1PdZMGntFwN5XRu16tKM0tmU4Xu2AU8EEdF8Br1Lp6sIFXCBcG7mU7c5ee/H8L4PY/EpmvIyzyZvNm2VoRi114qiGY32l7G0SnOZ7GfUz0nTVg8k8Rawcix33/5K+6Tb2R96TwD3G/yxhSpKnEB7ypIH/+P0wq5ANpTcdnMo0meBuIqNPfbmGgwKVrsHKygEjE73LnognfxYc6tOMDzsik+UQJMI/jXN3xCB1IpSg9S3ZoQN+gc46wuoXzKY/5IsiudwDn7+OatuVPb9OnNUaCN2HCRQRwhUnyzN7clcm6nL30ZTWtydNGH37pDuHegadhYpL8CyzYlAm/alZloHY/wVe2NCfKgnmTuABGLfpg6TMJUa4hwRc4iFnGyVW/Yi25oFMVYlX70BRLTJFKxMVY28hoyoWD2eG2UjoNxqufdY4SjeKgj6waarnAkWO8q9iB6Uncu4CVOzEYBsjbUchTg==";
+            String framedString = "2QZH7AwLg3hFryDOw5E8ICBfMkng1KKlRY4PoLRxc/mEo7id7/O1ca1yP/QM01bOroTMLt6Luv56teTzhlihagwe8G5M6ylorGKbCYXCZp5sLpTqik5dNcSreIG0WW7W2uw0D13d952OLdRkKAaiyw0fnZcMShIq7aCCXqpi8pmyrXYeRfOnQUExvFMe4FY2IQIMFbLYrhvNrCOsCsLnv58NTDR4c4TrP4JFtGZaey1tyc0Nqr8qTtTsOzczMOTVaTlrNBGUm+oxuAipG+SOs7MWkMUpfuUTUt6xxf6Eh5DdwYKDzN5V6gojLUXH+9cuAaupb0U0Ju9jpEJ5IKQNZjpsBQ/RAJgNtWO9OzXR/SRxrKt8O0kWGWEZXv9GDSJelS2GsoFosJESpYXB9vHiOdf4TnxibJXvru2Tf+znpPjOyZKJdCtw5LBywgC4slsnNQ950yKBsWcrG9ZKxDB7tCLHL73wQeM4gV6Vt7UJtqqNPw9KtcqwkAZWJDkuhxfVqO78JWcnDCEh6ZeFlWlPcrGYmz6dXJOhLoR4srg8Va00vIBUkh7ZYTHhbX9GjIvdoTpy2VKzyZ/BNvDpD6/neNQXaYmBXnKawOmhhpFy24iUeSs03H2xb0fVlv1wsHu79WQAQK/NJ0oRPPXEOo3eDEO9AjA6Mv5MVQigVXLnag8=";
+            MessageReader mr = new MessageReader(framedString.getBytes());
+
+            String decryptedCheckString = mr.readToCode(ControlCodes.ETX, false);
+
+            // decrypt the encrypted string
+            String decryptedString = encoder.decode(decryptedCheckString);
+
+            // decode the decrypted string
+            byte[] decodedBuffer = Base64.decodeBase64(decryptedString);
+            String decodedString = new String(decodedBuffer);
+            if(decodedString.startsWith("1220")) {
+                System.out.print(storeNumber);
+                assertTrue(decodedString.startsWith("1220"));
+                break;
+            }
+        }
+    }
 }

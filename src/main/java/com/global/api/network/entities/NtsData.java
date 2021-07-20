@@ -1,6 +1,9 @@
 package com.global.api.network.entities;
 
 import com.global.api.entities.enums.DebitAuthorizerCode;
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayComsException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.FallbackCode;
 import com.global.api.utils.ReverseStringEnumMap;
@@ -55,7 +58,7 @@ public class NtsData {
                 .concat(debitAuthorizerCode.getValue());
     }
 
-    public static NtsData fromString(String data) {
+    public static NtsData fromString(String data) throws GatewayException {
         if(data == null) {
             return null;
         }
@@ -69,6 +72,10 @@ public class NtsData {
         rvalue.setFallbackCode(ReverseStringEnumMap.parse(fallbackStr, FallbackCode.class));
         rvalue.setAuthorizerCode(ReverseStringEnumMap.parse(authorizorCodeStr, AuthorizerCode.class));
         rvalue.setDebitAuthorizerCode(ReverseStringEnumMap.parse(debitAuthorizorCode, DebitAuthorizerCode.class));
+
+        if(rvalue.getDebitAuthorizerCode() == null) {
+            rvalue.setDebitAuthorizerCode(DebitAuthorizerCode.UnknownAuthorizer);
+        }
 
         return rvalue;
     }

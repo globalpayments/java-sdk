@@ -2,6 +2,8 @@ package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.entities.NtsData;
 
 import java.math.BigDecimal;
@@ -77,7 +79,7 @@ public class TransactionReference implements IPaymentMethod {
     public void setNtsData(NtsData ntsData) {
         this.ntsData = ntsData;
     }
-    public void setNtsData(String ntsData) {
+    public void setNtsData(String ntsData) throws GatewayException {
         this.ntsData = NtsData.fromString(ntsData);
     }
 
