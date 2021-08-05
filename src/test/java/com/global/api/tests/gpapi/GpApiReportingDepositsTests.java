@@ -41,7 +41,6 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
-        // Pablo Credentials
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
@@ -51,12 +50,8 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
-    // ================================================================================
-    // Deposits
-    // ================================================================================
-
     @Test
-    public void reportDepositDetail() throws ApiException {
+    public void ReportDepositDetail() throws ApiException {
         String depositId = "DEP_2342423423";
 
         DepositSummary deposit =
@@ -69,7 +64,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportDepositDetail_WrongId() throws ApiException {
+    public void ReportDepositDetail_WrongId() throws ApiException {
         String depositId = "DEP_234242342";
         try {
             ReportingService
@@ -84,7 +79,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsWithCriteria() throws ApiException {
+    public void ReportFindDepositsWithCriteria() throws ApiException {
         DepositSummaryPaged deposits =
                 ReportingService
                         .findDepositsPaged(1, 10)
@@ -100,7 +95,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_StartDate_OrderBy_TimeCreated() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_StartDate_OrderBy_TimeCreated() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
 
         DepositSummaryPaged deposits =
@@ -117,7 +112,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_OrderBy_DepositId() throws ApiException {
+    public void ReportFindDepositsPaged_OrderBy_DepositId() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
 
         DepositSummaryPaged deposits =
@@ -134,7 +129,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_OrderBy_Status() throws ApiException {
+    public void ReportFindDepositsPaged_OrderBy_Status() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
 
         DepositSummaryPaged deposits =
@@ -151,7 +146,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_OrderBy_Type() throws ApiException {
+    public void ReportFindDepositsPaged_OrderBy_Type() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
 
         DepositSummaryPaged deposits =
@@ -179,7 +174,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void compareResults_reportFindDepositsPaged_OrderBy_DepositId_And_Type() throws ApiException {
+    public void CompareResults_ReportFindDepositsPaged_OrderBy_DepositId_And_Type() throws ApiException {
         DepositSummaryPaged deposits =
                 ReportingService
                         .findDepositsPaged(1, 10)
@@ -202,7 +197,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_DepositReference() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_DepositReference() throws ApiException {
         String depositReference = "DEP_2342423423";
 
         DepositSummaryPaged deposits =
@@ -218,7 +213,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_WrongDepositReference() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_WrongDepositReference() throws ApiException {
         String depositReference = UUID.randomUUID().toString().replace("-", "");
 
         DepositSummaryPaged deposits =
@@ -233,7 +228,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_Status() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_Status() throws ApiException {
         //"FUNDED", "SPLIT_FUNDING", "DELAYED", "RESERVED", "IRREG", "RELEASED"
         for (DepositStatus depositStatus : DepositStatus.values()) {
             DepositSummaryPaged deposits =
@@ -253,7 +248,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
 
     //TODO - empty list returned
     @Test
-    public void reportFindDepositsPaged_FilterBy_StartAndEndDate() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_StartAndEndDate() throws ApiException {
         DepositSummaryPaged deposits =
                 ReportingService
                         .findDepositsPaged(1, 10)
@@ -265,7 +260,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_Amount() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_Amount() throws ApiException {
         BigDecimal amount = new BigDecimal("114");
 
         DepositSummaryPaged deposits =
@@ -282,7 +277,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_NotFoundAmount() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_NotFoundAmount() throws ApiException {
         BigDecimal amount = new BigDecimal("1");
 
         DepositSummaryPaged deposits =
@@ -297,7 +292,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_MaskedAccountNumberLast4() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_MaskedAccountNumberLast4() throws ApiException {
         String masked_account_number_last4 = "9999";
 
         DepositSummaryPaged deposits =
@@ -314,7 +309,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_SystemMerchantId() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_SystemMerchantId() throws ApiException {
         String merchantId = "101023947262";
 
         DepositSummaryPaged deposits =
@@ -331,7 +326,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_SystemHierarchy() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_SystemHierarchy() throws ApiException {
         String hierarchy = "055-70-024-011-019";
 
         DepositSummaryPaged deposits =
@@ -348,7 +343,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_WrongSystemMerchantId() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_WrongSystemMerchantId() throws ApiException {
         String merchantId = "100000000000";
 
         DepositSummaryPaged deposits =
@@ -363,7 +358,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_WrongSystemHierarchy() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_WrongSystemHierarchy() throws ApiException {
         String hierarchy = "000-70-024-000-000";
 
         DepositSummaryPaged deposits =
@@ -378,7 +373,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDepositsPaged_FilterBy_RandomUUIDSystemHierarchy() throws ApiException {
+    public void ReportFindDepositsPaged_FilterBy_RandomUUIDSystemHierarchy() throws ApiException {
         try {
             ReportingService
                     .findDepositsPaged(1, 10)
@@ -396,7 +391,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
     @Ignore // Although documentation indicates from_time_created is required, the real endpoint returns results.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindDepositsPaged_WithoutFromTimeCreated() throws ApiException {
+    public void ReportFindDepositsPaged_WithoutFromTimeCreated() throws ApiException {
         try {
             ReportingService
                     .findDepositsPaged(1, 10)

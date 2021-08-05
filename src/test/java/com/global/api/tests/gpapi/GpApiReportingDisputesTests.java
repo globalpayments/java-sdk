@@ -7,6 +7,7 @@ import com.global.api.entities.enums.DisputeStatus;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.PagedResult;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.DisputeSummary;
 import com.global.api.entities.reporting.DisputeSummaryPaged;
@@ -41,7 +42,6 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
-        // Pablo Credentials
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
@@ -51,12 +51,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
-    // ================================================================================
-    // Disputes
-    // ================================================================================
-
     @Test
-    public void reportDisputeDetail() throws ApiException {
+    public void ReportDisputeDetail() throws ApiException {
         String disputeId = "DIS_SAND_abcd1234";
 
         DisputeSummary response =
@@ -69,7 +65,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportDisputeDetail_WrongId() throws ApiException {
+    public void ReportDisputeDetail_WrongId() throws ApiException {
         String disputeId = "DIS_SAND_abcd123a";
 
         boolean exceptionCaught = false;
@@ -88,7 +84,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Id() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Id() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -111,7 +107,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_ARN() throws ApiException, ParseException {
+    public void ReportFindDisputesPaged_OrderBy_ARN() throws ApiException, ParseException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -127,7 +123,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Brand() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Brand() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -139,7 +135,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Status() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Status() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -151,7 +147,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Stage() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Stage() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -162,8 +158,10 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         assertNotNull(disputes);
     }
 
+    @Ignore
+    // orderBy FromStageTimeCreated is not supported anymore
     @Test
-    public void reportFindDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -175,7 +173,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -187,7 +185,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -199,7 +197,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -211,7 +209,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -223,14 +221,13 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_ARN() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_ARN() throws ApiException {
         String arn = "135091790340196";
 
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
-                        .and(SearchCriteria.AquirerReferenceNumber, arn)
+                        .where(SearchCriteria.AquirerReferenceNumber, arn)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -244,7 +241,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     // Requests to /disputes which returns errors are compressed, but our code avoid decompressing them so we cannot parse the error
     // TODO: Reported error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindDisputesPaged_FilterBy_ARN_NotFound() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_ARN_NotFound() throws ApiException {
         String arn = "745000100375912";
 
         DisputeSummaryPaged disputes =
@@ -260,7 +257,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_Brand_OrderBy_Brand() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_Brand_OrderBy_Brand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DISCOVER"};
 
         for (String cardBrand : cardBrands) {
@@ -285,9 +282,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     @Ignore
     // Although requests are done with &status set properly, the real endpoint returns disputes with other statuses.
-    // TODO: Report error to GP-API team. Enable it when fixed.
+    // TODO: Reported error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindDisputesPaged_FilterBy_Status() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_Status() throws ApiException {
         for (DisputeStatus disputeStatus : DisputeStatus.values()) {
             DisputeSummaryPaged disputes =
                     ReportingService
@@ -305,7 +302,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_Stage_OrderBy_Stage() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_Stage_OrderBy_Stage() throws ApiException {
         for (DisputeStage disputeStage : DisputeStage.values()) {
             // Although documentation allows a GOODFAITH value for &stage request param, the real endpoint does not.
             // TODO: Report error to GP-API team. Enable it when fixed.
@@ -329,7 +326,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_From_And_To_Stage_Time_Created() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_From_And_To_Stage_Time_Created() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -342,7 +339,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_MerchantId_And_SystemHierarchy() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_MerchantId_And_SystemHierarchy() throws ApiException {
         String merchantId = "8593872";
         String systemHierarchy = "111-23-099-002-005";
 
@@ -363,7 +360,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_WrongMerchantId() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_WrongMerchantId() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -377,7 +374,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_FilterBy_WrongHierarchy() throws ApiException {
+    public void ReportFindDisputesPaged_FilterBy_WrongHierarchy() throws ApiException {
         String hierarchy = "111-23-099-001-009";
         DisputeSummaryPaged disputes =
                 ReportingService
@@ -392,7 +389,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_Without_FromStageTimeCreated() throws ApiException {
+    public void ReportFindDisputesPaged_Without_FromStageTimeCreated() throws ApiException {
         try {
             ReportingService
                     .findDisputesPaged(1, 10)
@@ -406,7 +403,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Id_With_Brand_VISA() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Id_With_Brand_VISA() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -420,7 +417,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -434,7 +431,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindDisputesPaged_OrderBy_Id_With_Stage_Chargeback() throws ApiException {
+    public void ReportFindDisputesPaged_OrderBy_Id_With_Stage_Chargeback() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findDisputesPaged(1, 10)
@@ -451,7 +448,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     // Settlement disputes
     // ================================================================================
     @Test
-    public void reportSettlementDisputeDetail() throws ApiException {
+    public void ReportSettlementDisputeDetail() throws ApiException {
         String settlementDisputeId = "DIS_810";
 
         DisputeSummary response =
@@ -464,7 +461,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportSettlementDisputeDetail_WrongID() throws ApiException {
+    public void ReportSettlementDisputeDetail_WrongID() throws ApiException {
         String disputeId = "DIS_666";
 
         try {
@@ -480,7 +477,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - status = funded and "to_stage_time_created": "2020-12-17T23:59:59.999Z" added as default for filter
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_Id() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_Id() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -492,7 +489,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_ARN() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_ARN() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -504,7 +501,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -517,7 +514,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_Brand() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_Brand() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -540,7 +537,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_Status() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_Status() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -563,7 +560,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_Stage() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_Stage() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -587,7 +584,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - lists not ordered correctly
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -611,7 +608,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - lists not ordered correctly
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -635,7 +632,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - lists not ordered correctly
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -659,7 +656,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - lists not ordered correctly
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -683,7 +680,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - lists not ordered correctly
     @Test
-    public void reportFindSettlementDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
                         .findSettlementDisputesPaged(1, 10)
@@ -706,7 +703,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_ARN() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_ARN() throws ApiException {
         String arn = "71400011129688701392096";
 
         DisputeSummaryPaged disputes =
@@ -723,7 +720,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_ARN_NotFound() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_ARN_NotFound() throws ApiException {
         String arn = "00000011129654301392121";
 
         DisputeSummaryPaged disputes =
@@ -738,7 +735,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_Brand() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_Brand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DISCOVER"};
 
         for (String cardBrand : cardBrands) {
@@ -762,7 +759,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     //TODO - Brand = JCB results are returned even JCB is not in the agreed list
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_Brand_NotFound() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_Brand_NotFound() throws ApiException {
         String cardBrand = "Bank of America";
 
         DisputeSummaryPaged disputes =
@@ -776,29 +773,43 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         assertEquals(0, disputes.getResults().size());
     }
 
-    @Ignore
-    // Although requests are done with &STATUS set properly, the real endpoint returns disputes with other statuses.
-    // Apart from this, the request param: STATUS is accepted, but status is not.
-    // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_Status() throws ApiException {
-        for (DisputeStatus disputeStatus : DisputeStatus.values()) {
-            DisputeSummaryPaged disputes =
-                    ReportingService
-                            .findSettlementDisputesPaged(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
-                            .and(SearchCriteria.DisputeStatus, disputeStatus)
-                            .execute(GP_API_CONFIG_NAME);
+    public void ReportFindSettlementDisputesPaged_FilterBy_Status() throws ApiException {
+        DisputeSummaryPaged disputes =
+                ReportingService
+                        .findSettlementDisputesPaged(1, 10)
+                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .and(SearchCriteria.DisputeStatus, DisputeStatus.Funded)
+                        .execute(GP_API_CONFIG_NAME);
 
-            assertNotNull(disputes);
-            for (DisputeSummary disputeSummary : disputes.getResults()) {
-                assertEquals(disputeStatus.getValue(), disputeSummary.getCaseStatus());
-            }
+        assertNotNull(disputes);
+        for (DisputeSummary disputeSummary : disputes.getResults()) {
+            assertEquals(DisputeStatus.Funded.getValue(), disputeSummary.getCaseStatus());
         }
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_AllStages() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_By_DepositDate() throws ParseException, ApiException {
+        Date startDepositDate = DATE_SDF.parse("2021-01-01");
+        Date endDepositDate = DATE_SDF.parse("2021-07-30");
+
+        PagedResult<DisputeSummary> result =
+                ReportingService
+                        .findSettlementDisputesPaged(1, 10)
+                        .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
+                        .where(DataServiceCriteria.StartDepositDate, startDepositDate)
+                        .and(DataServiceCriteria.EndDepositDate, endDepositDate)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(result.getResults());
+        for (DisputeSummary disputeSummary : result.getResults()) {
+            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), startDepositDate));
+            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getDepositDate(), endDepositDate));
+        }
+    }
+
+    @Test
+    public void ReportFindSettlementDisputesPaged_FilterBy_AllStages() throws ApiException {
         for (DisputeStage disputeStage : DisputeStage.values()) {
 
             DisputeSummaryPaged disputes =
@@ -816,7 +827,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_Stage() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_Stage() throws ApiException {
         DisputeStage disputeStage = DisputeStage.Chargeback;
 
         DisputeSummaryPaged disputes =
@@ -849,7 +860,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_FromAndToStageTimeCreated() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_FromAndToStageTimeCreated() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -40);
         Date endDate = DateUtils.addDays(new Date(), -20);
 
@@ -867,7 +878,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_SystemMidAndHierarchy() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_SystemMidAndHierarchy() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -10);
         String merchantId = "101023947262";
         String systemHierarchy = "055-70-024-011-019";
@@ -888,7 +899,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_WrongSystemMerchantId() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_WrongSystemMerchantId() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -10);
         String merchantId = "000023947222";
 
@@ -904,7 +915,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_WrongSystemHierarchy() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_WrongSystemHierarchy() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -10);
         String systemHierarchy = "000-70-024-011-111";
 
@@ -920,7 +931,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindSettlementDisputesPaged_FilterBy_DepositId() throws ApiException {
+    public void ReportFindSettlementDisputesPaged_FilterBy_DepositId() throws ApiException {
         String DEPOSIT_ID = "DEP_2342423423";
 
         DisputeSummaryPaged disputes =

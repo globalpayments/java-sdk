@@ -205,12 +205,18 @@ public class GpApiSecure3DRequestBuilder {
                             .set("user_agent", builderBrowserData.getUserAgent());
                 }
 
+                JsonDoc threeDS =
+                        new JsonDoc()
+                                .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
+                                .set("preference", getValueIfNotNull(builder.getChallengeRequestIndicator()))
+                                .set("message_version", getValueIfNotNull(builder.getMessageVersion()));
+
                 JsonDoc data =
                         new JsonDoc()
-                                .set("source", builder.getAuthenticationSource().getValue())           // BROWSER, MERCHANT_INITIATED, MOBILE_SDK
+                                .set("three_ds", !threeDS.getKeys().isEmpty() ? threeDS : null)
                                 .set("initator", builder.getStoredCredential() != null ? getValueIfNotNull(builder.getStoredCredential().getInitiator()) : null)
-                                .set("stored_credential", storedCredential.getKeys() != null ? storedCredential : null)
-                                .set("method_url_completion_status", builder.getMethodUrlCompletion().getValue())
+                                .set("stored_credential", !storedCredential.getKeys().isEmpty() ? storedCredential : null)
+                                .set("method_url_completion_status", builder.getMethodUrlCompletion() != null ? getValueIfNotNull(builder.getMethodUrlCompletion()) : null)
                                 .set("payment_method", !paymentMethod.getKeys().isEmpty() ? paymentMethod : null)
                                 .set("notifications", notifications)
                                 .set("order", !order.getKeys().isEmpty() ? order : null)
@@ -219,7 +225,7 @@ public class GpApiSecure3DRequestBuilder {
                                 .set("recurring_authorization_data", !recurringAuthorizationData.getKeys().isEmpty() ? recurringAuthorizationData : null)
                                 .set("payer_login_data", !payerLoginData.getKeys().isEmpty() ? payerLoginData : null)
                                 .set("browser_data", !browserData.getKeys().isEmpty() ? browserData : null)
-                                .set("merchant_contact_url", "https://enp4qhvjseljg.x.pipedream.net/"); // TODO: Confirm
+                                .set("merchant_contact_url", gateway.getGpApiConfig().getMerchantContactUrl());
 
                 return
                         new GpApiRequest()

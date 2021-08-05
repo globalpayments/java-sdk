@@ -4,6 +4,20 @@
 
 ### Enhancements:
 
+- Upgrade GP-API to 2021-03-22 version and fix tests to support it
+- Add GP-API 3DS enhanced
+- 
+
+### Bug Fixes:
+
+- Set the GpApiConfig's proxy setting to the parent's Gateway class
+
+---
+
+## v6.1.90 (13/07/2021)
+
+### Enhancements:
+
 - Support findSettlementDisputes by Deposit ID
 - Fix Failing Disputes Tests
 

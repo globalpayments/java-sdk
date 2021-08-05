@@ -37,7 +37,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitSaleSwipe() throws ApiException {
+    public void DebitSaleSwipe() throws ApiException {
         track.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
         track.setPinBlock("32539F50C245A6A93D123412324000AA");
         track.setEntryMethod(EntryMethod.Swipe);
@@ -55,7 +55,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitRefundSwipe() throws ApiException {
+    public void DebitRefundSwipe() throws ApiException {
         track.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
         track.setEntryMethod(EntryMethod.Swipe);
 
@@ -72,7 +72,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitRefundChip() throws ApiException {
+    public void DebitRefundChip() throws ApiException {
         track.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
         track.setEntryMethod(EntryMethod.Swipe);
 
@@ -92,7 +92,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitSaleSwipeEncrypted() throws ApiException {
+    public void DebitSaleSwipeEncrypted() throws ApiException {
         track.setValue("&lt;E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|&gt;");
         track.setPinBlock("32539F50C245A6A93D123412324000AA");
         track.setEntryMethod(EntryMethod.Swipe);
@@ -111,7 +111,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitSaleSwipeChip() throws ApiException {
+    public void DebitSaleSwipeChip() throws ApiException {
         track.setValue(";4024720012345671=18125025432198712345?");
         track.setEntryMethod(EntryMethod.Swipe);
         track.setPinBlock("AFEC374574FC90623D010000116001EE");
@@ -130,7 +130,7 @@ public class GpApiDebitTests extends BaseGpApiTest {
     }
 
     @Test
-    public void debitSaleContactlessChip() throws ApiException {
+    public void DebitSaleContactlessChip() throws ApiException {
         track.setValue(";4024720012345671=18125025432198712345?");
         track.setEntryMethod(EntryMethod.Proximity);
         track.setPinBlock("AFEC374574FC90623D010000116001EE");

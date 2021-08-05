@@ -29,6 +29,7 @@ public class ThreeDSecure {
     private String directoryServerStartVersion;
     private String eci;
     private boolean enrolled;
+    private String enrolledStatus;
     private ExemptStatus exemptStatus;
     private String exemptReason;
     private String issuerAcsUrl;
@@ -51,6 +52,7 @@ public class ThreeDSecure {
     private Secure3dVersion version;
     private String whitelistStatus;
     private String xid;
+    private String liabilityShift;
 
     public String getAcsTransactionId() {
         return acsTransactionId;
@@ -168,6 +170,12 @@ public class ThreeDSecure {
     }
     public void setEnrolled(boolean enrolled) {
         this.enrolled = enrolled;
+    }
+    public String getEnrolledStatus() {
+        return enrolledStatus;
+    }
+    public void setEnrolledStatus(String enrolledStatus) {
+        this.enrolledStatus = enrolledStatus;
     }
     public ExemptStatus getExemptStatus() {
         return exemptStatus;
@@ -320,6 +328,12 @@ public class ThreeDSecure {
     public void setXid(String xid) {
         this.xid = xid;
     }
+    public String getLiabilityShift() {
+        return liabilityShift;
+    }
+    public void setLiabilityShift(String liabilityShift) {
+        this.liabilityShift = liabilityShift;
+    }
 
     public ThreeDSecure() {
         this.paymentDataType = "3DSecure";
@@ -346,6 +360,7 @@ public class ThreeDSecure {
             this.directoryServerStartVersion = mergeValue(directoryServerStartVersion, secureEcom.getDirectoryServerStartVersion());
             this.eci = mergeValue(eci, secureEcom.getEci());
             this.enrolled = mergeValue(enrolled, secureEcom.isEnrolled());
+            this.enrolledStatus = mergeValue(enrolledStatus, secureEcom.getEnrolledStatus());
             this.issuerAcsUrl = mergeValue(issuerAcsUrl, secureEcom.getIssuerAcsUrl());
             this.messageCategory = mergeValue(messageCategory, secureEcom.getMessageCategory());
             this.messageVersion = mergeValue(messageVersion, secureEcom.getMessageVersion());
@@ -363,7 +378,7 @@ public class ThreeDSecure {
             this.exemptStatus = mergeValue(exemptStatus, secureEcom.getExemptStatus());
             this.exemptReason = mergeValue(exemptReason, secureEcom.getExemptReason());
             this.xid = mergeValue(xid, secureEcom.getXid());
-
+            this.liabilityShift = mergeValue(liabilityShift, secureEcom.getLiabilityShift());
             //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());
         }
     }

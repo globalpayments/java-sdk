@@ -41,7 +41,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessTokenManual() throws GatewayException {
+    public void GenerateAccessTokenManual() throws GatewayException {
         GpApiConfig config = configAccessTokenCall();
 
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
@@ -50,7 +50,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessTokenManualWithPermissions() throws GatewayException {
+    public void GenerateAccessTokenManualWithPermissions() throws GatewayException {
         String[] permissions = new String[]{"PMT_POST_Create", "PMT_POST_Detokenize"};
 
         GpApiConfig config =
@@ -63,14 +63,14 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
 
         assertNotNull(info);
         assertNotNull(info.getToken());
-        assertEquals("Tokenization", info.getTokenizationAccountName());
+        assertEquals("tokenization", info.getTokenizationAccountName());
         assertNull(info.getDataAccountName());
         assertNull(info.getDisputeManagementAccountName());
         assertNull(info.getTransactionProcessingAccountName());
     }
 
     @Test
-    public void generateAccessTokenManualWithWrongPermissions() {
+    public void GenerateAccessTokenManualWithWrongPermissions() {
         String[] permissions = new String[]{"TEST_1", "TEST_2"};
 
         GpApiConfig config =
@@ -92,7 +92,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessTokenManualWithSecondsToExpire() throws ApiException {
+    public void GenerateAccessTokenManualWithSecondsToExpire() throws ApiException {
         GpApiConfig gpApiConfig = configAccessTokenCall()
                 .setSecondsToExpire(60);
 
@@ -114,7 +114,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessTokenManualWithIntervalToExpire() throws ApiException {
+    public void GenerateAccessTokenManualWithIntervalToExpire() throws ApiException {
         GpApiConfig gpApiConfig =
                 configAccessTokenCall()
                         .setIntervalToExpire(THREE_HOURS);
@@ -137,7 +137,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessTokenManualWithSecondsToExpireAndIntervalToExpire() throws ApiException {
+    public void GenerateAccessTokenManualWithSecondsToExpireAndIntervalToExpire() throws ApiException {
         GpApiConfig gpApiConfig =
                 configAccessTokenCall()
                         .setSecondsToExpire(60)
@@ -161,7 +161,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessToken_WrongAppId() {
+    public void GenerateAccessToken_WrongAppId() {
         try {
             GpApiConfig config = configAccessTokenCall().setAppId(APP_ID + "a");
             GpApiService.generateTransactionKey(config);
@@ -173,7 +173,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void generateAccessToken_WrongAppKey() {
+    public void GenerateAccessToken_WrongAppKey() {
         try {
             GpApiConfig config = configAccessTokenCall().setAppKey(APP_KEY + "a");
             GpApiService.generateTransactionKey(config);
@@ -185,7 +185,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void useInvalidAccessTokenInfo() throws ApiException {
+    public void UseInvalidAccessTokenInfo() throws ApiException {
         GpApiConfig gpApiConfig = configAccessTokenCall();
 
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
@@ -212,7 +212,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void useExpiredAccessTokenInfo() throws ApiException {
+    public void UseExpiredAccessTokenInfo() throws ApiException {
 
         GpApiConfig gpApiConfig = configAccessTokenCall();
 
@@ -240,11 +240,12 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
-    public void verifyCardWithAccessTokenWithLimitedPermissions() throws ApiException {
+    public void ChargeCardWithAccessTokenWithLimitedPermissions() throws ApiException {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
-        GpApiConfig gpApiConfig = configAccessTokenCall()
-                .setPermissions(permissions);
+        GpApiConfig gpApiConfig =
+                configAccessTokenCall()
+                    .setPermissions(permissions);
 
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(gpApiConfig);
 
@@ -256,7 +257,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             card
-                    .charge(new BigDecimal("0.01"))
+                    .charge(new BigDecimal("1"))
                     .withCurrency("USD")
                     .execute("GpApiConfig_2");
         } catch (GatewayException ex) {
@@ -272,10 +273,10 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     private void assertAccessTokenResponse(AccessTokenInfo accessTokenInfo) {
         assertNotNull(accessTokenInfo);
         assertNotNull(accessTokenInfo.getToken());
-        assertEquals("Transaction_Processing", accessTokenInfo.getTransactionProcessingAccountName());
-        assertEquals("Settlement Reporting", accessTokenInfo.getDataAccountName());
-        assertEquals("Dispute Management", accessTokenInfo.getDisputeManagementAccountName());
-        assertEquals("Tokenization", accessTokenInfo.getTokenizationAccountName());
+        assertEquals("transaction_processing", accessTokenInfo.getTransactionProcessingAccountName());
+        assertEquals("settlement_reporting", accessTokenInfo.getDataAccountName());
+        assertEquals("dispute_management", accessTokenInfo.getDisputeManagementAccountName());
+        assertEquals("tokenization", accessTokenInfo.getTokenizationAccountName());
     }
 
 }

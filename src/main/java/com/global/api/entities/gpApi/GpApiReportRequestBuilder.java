@@ -163,6 +163,8 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("stage", getValueIfNotNull(trb.getSearchBuilder().getDisputeStage()));
                     request.addQueryStringParam("from_stage_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartStageDate()));
                     request.addQueryStringParam("to_stage_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndStageDate()));
+                    request.addQueryStringParam("from_deposit_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartDepositDate()));
+                    request.addQueryStringParam("to_deposit_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndDepositDate()));
                     request.addQueryStringParam("system.mid", trb.getSearchBuilder().getMerchantId());
                     request.addQueryStringParam("system.hierarchy", trb.getSearchBuilder().getSystemHierarchy());
 

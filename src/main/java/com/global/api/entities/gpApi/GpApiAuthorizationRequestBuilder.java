@@ -40,7 +40,7 @@ public class GpApiAuthorizationRequestBuilder {
             //card.set("track", "");
             card.set("tag", builder.getTagData());
             card.set("cvv", cardData.getCvn());
-            card.set("cvv_indicator", getCvvIndicator(cardData.getCvnPresenceIndicator())); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
+            card.set("cvv_indicator", !cardData.getCvnPresenceIndicator().getValue().equals("0") ? getCvvIndicator(cardData.getCvnPresenceIndicator()) : null); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
             card.set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "");
             card.set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
             card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
@@ -160,7 +160,7 @@ public class GpApiAuthorizationRequestBuilder {
         // Payment Method Storage Mode
         if (builder.isRequestMultiUseToken()) {
             //TODO: there might be a typo: should be storage_mode
-            paymentMethod.set("storage_model", "ON_SUCCESS");
+            paymentMethod.set("storage_mode", "ON_SUCCESS");
         }
 
         // Tokenized Payment Method
@@ -183,20 +183,7 @@ public class GpApiAuthorizationRequestBuilder {
 
             ThreeDSecure secureEcom = creditCardData.getThreeDSecure();
             if (secureEcom != null) {
-                JsonDoc three_ds = new JsonDoc()
-                        // Indicates the version of 3DS
-                        .set("message_version", secureEcom.getMessageVersion())
-                        // An indication of the degree of the authentication and liability shift obtained for this transaction.
-                        // It is determined during the 3D Secure process.
-                        .set("eci", secureEcom.getEci())
-                        // The authentication value created as part of the 3D Secure process.
-                        .set("value", secureEcom.getAuthenticationValue())
-                        // The reference created by the 3DSecure provider to identify the specific authentication attempt.
-                        .set("server_trans_ref", secureEcom.getServerTransactionId())
-                        // The reference created by the 3DSecure Directory Server to identify the specific authentication attempt.
-                        .set("ds_trans_ref", secureEcom.getDirectoryServerTransactionId());
-
-                JsonDoc authentication = new JsonDoc().set("three_ds", three_ds);
+                JsonDoc authentication = new JsonDoc().set("id", secureEcom.getServerTransactionId());
 
                 paymentMethod.set("authentication", authentication);
             }

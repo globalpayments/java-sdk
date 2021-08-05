@@ -39,10 +39,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     public static final DateTimeFormatter DATE_TIME_DTF_3 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_3);
     public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_PATTERN);
 
-    private static final String GP_API_VERSION = "2020-12-22";
+    private static final String GP_API_VERSION = "2021-03-22";
     private static final String IDEMPOTENCY_HEADER = "x-gp-idempotency";
 
-    static String accessToken;
+    private String accessToken;
     @Getter GpApiConfig gpApiConfig; // Contains: appId, appKey, secondsToExpire, intervalToExpire, channel and language
 
     private static String dataAccountName;
@@ -107,6 +107,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         super();    // ContentType is: "application/json"
 
         gpApiConfig = config;
+
+        setProxy(gpApiConfig.getProxy());
         setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
         setEnableLogging(gpApiConfig.isEnableLogging());
 

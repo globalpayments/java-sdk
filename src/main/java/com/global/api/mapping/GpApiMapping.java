@@ -1,9 +1,6 @@
 package com.global.api.mapping;
 
-import com.global.api.entities.BatchSummary;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
@@ -13,6 +10,9 @@ import com.global.api.entities.reporting.*;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
@@ -394,7 +394,12 @@ public class GpApiMapping {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             ThreeDSecure threeDSecure = new ThreeDSecure();
-            threeDSecure.setServerTransactionId(json.getString("id"));
+            threeDSecure.setServerTransactionId(
+                    !StringUtils.isNullOrEmpty(json.getString("id")) ?
+                            json.getString("id") :
+                            !StringUtils.isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
+                                    json.get("three_ds").getString("server_trans_ref") :
+                                    null);
             threeDSecure.setStatus(json.getString("status"));
             threeDSecure.setCurrency(json.getString("currency"));
             threeDSecure.setAmount(json.getDecimal("amount"));
@@ -402,31 +407,65 @@ public class GpApiMapping {
             if (json.has("three_ds")) {
                 JsonDoc three_ds = json.get("three_ds");
 
-                threeDSecure.setVersion(parse3DSVersion(three_ds.getString("message_version")));
                 threeDSecure.setMessageVersion(three_ds.getString("message_version"));
+                threeDSecure.setVersion(parse3DSVersion(three_ds.getString("message_version")));
                 threeDSecure.setDirectoryServerStartVersion(three_ds.getString("ds_protocol_version_start"));
                 threeDSecure.setDirectoryServerEndVersion(three_ds.getString("ds_protocol_version_end"));
-                threeDSecure.setDirectoryServerTransactionId(three_ds.getString("ds_trans_ref"));
                 threeDSecure.setAcsStartVersion(three_ds.getString("acs_protocol_version_start"));
                 threeDSecure.setAcsEndVersion(three_ds.getString("acs_protocol_version_end"));
-                threeDSecure.setAcsTransactionId(three_ds.getString("acs_trans_ref"));
-                threeDSecure.setAuthenticationValue(three_ds.getString("authentication_value"));
+                // In other SDKs, enrolled is simply a String.
+                // In JAVA, enrolled was used in another connectors as boolean. So enrolledStatus was created as String for that purpose.
+                threeDSecure.setEnrolledStatus(three_ds.getString("enrolled_status"));
+                threeDSecure.setEci(!StringUtils.isNullOrEmpty(three_ds.getString("eci")) ? three_ds.getString("eci") : null);
+                threeDSecure.setAcsInfoIndicator(three_ds.getStringArrayList("acs_info_indicator"));
                 threeDSecure.setChallengeMandated(three_ds.getString("challenge_status").equals("MANDATED"));
+                threeDSecure.setPayerAuthenticationRequest(
+                        !StringUtils.isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
+                                three_ds.getString("challenge_value") :
+                                three_ds.get("method_data") != null ?
+                                        (!StringUtils.isNullOrEmpty(three_ds.get("method_data").getString("encoded_method_data")) ? three_ds.get("method_data").getString("encoded_method_data") : null) :
+                                        null
+                );
                 threeDSecure.setIssuerAcsUrl(
-                        !StringUtils.isNullOrEmpty(three_ds.getString("method_url")) ?
-                                three_ds.getString("method_url") :
-                                three_ds.getString("acs_challenge_request_url")
+                        !StringUtils.isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
+                                three_ds.getString("acs_challenge_request_url") :
+                                three_ds.getString("method_url")
                 );
 
+                threeDSecure.setCurrency(json.getString("currency"));
+                threeDSecure.setAmount(json.getDecimal("amount"));
+                threeDSecure.setAuthenticationValue(three_ds.getString("authentication_value"));
+                threeDSecure.setDirectoryServerTransactionId(three_ds.getString("ds_trans_ref"));
+                threeDSecure.setAcsTransactionId(three_ds.getString("acs_trans_ref"));
+                threeDSecure.setStatusReason(three_ds.getString("status_reason"));
+                threeDSecure.setMessageCategory(three_ds.getString("message_category"));
+                threeDSecure.setMessageType(three_ds.getString("message_type"));
+                threeDSecure.setSessionDataFieldName(three_ds.getString("session_data_field_name"));
                 if (json.has("notifications")) {
                     threeDSecure.setChallengeReturnUrl(json.get("notifications").getString("challenge_return_url"));
                 }
+                threeDSecure.setLiabilityShift(three_ds.getString("liability_shift"));
+                threeDSecure.setAuthenticationSource(three_ds.getString("authentication_source"));
+                threeDSecure.setAuthenticationType(three_ds.getString("authentication_request_type"));
+                threeDSecure.setWhitelistStatus(three_ds.getString("whitelist_status"));
+                threeDSecure.setMessageExtensions(new ArrayList<MessageExtension>());
 
-                threeDSecure.setSessionDataFieldName(three_ds.getString("session_data_field_name"));
-                threeDSecure.setMessageType(three_ds.getString("message_type"));
-                threeDSecure.setPayerAuthenticationRequest(three_ds.getString("challenge_value"));
-                threeDSecure.setStatusReason(three_ds.getString("status_reason"));
-                threeDSecure.setMessageCategory(three_ds.getString("message_category"));
+                List<JsonDoc> messageExtensions = three_ds.getEnumerator("message_extension");
+                List<MessageExtension> msgExtensions = new ArrayList<>();
+
+                if (messageExtensions != null) {
+                    for (JsonDoc messageExtension : messageExtensions) {
+                        MessageExtension msgExtension =
+                                new MessageExtension()
+                                        .setCriticalityIndicator(messageExtension.getString("criticality_indicator"))
+                                        .setMessageExtensionData(messageExtension.get("data").toString())
+                                        .setMessageExtensionId(messageExtension.getString("id"))
+                                        .setMessageExtensionName(messageExtension.getString("name"));
+
+                        msgExtensions.add(msgExtension);
+                    }
+                }
+                threeDSecure.setMessageExtensions(msgExtensions);
             }
 
             Transaction transaction = new Transaction();

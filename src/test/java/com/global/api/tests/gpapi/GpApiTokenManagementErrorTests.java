@@ -6,6 +6,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -134,6 +135,9 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
 
     }
 
+    @Ignore
+    // Credentials on this test have not permissions to delete a tokenized card
+    // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void e1_DeleteTokenizedPaymentMethod_WithNonExistingId() throws ApiException {
         CreditCardData card = new CreditCardData();
@@ -162,6 +166,9 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
         }
     }
 
+    @Ignore
+    // Credentials on this test have not permissions to delete a tokenized card
+    // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void e2_DeleteTokenizedPaymentMethod_WithRandomId() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
@@ -182,6 +189,9 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
         }
     }
 
+    @Ignore
+    // Credentials on this test have not permissions to delete a tokenized card
+    // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void e3_DeleteTokenizedPaymentMethod_WithMalformedId() throws ApiException {
         String token = "This_is_not_a_payment_id";

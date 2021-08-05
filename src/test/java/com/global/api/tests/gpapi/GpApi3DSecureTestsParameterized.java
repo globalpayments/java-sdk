@@ -21,19 +21,25 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import static com.global.api.tests.gpapi.GpApi3DSTestCards.*;
+import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
+
+// TODO: @alexandru: Unify naming convention with other SDKs
 
 @RunWith(Enclosed.class)
 public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
+    private final static String ENROLLED = "ENROLLED";
     private final static String AUTHENTICATION_COULD_NOT_BE_PERFORMED = "AUTHENTICATION_COULD_NOT_BE_PERFORMED";
     private final static String AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
+    private final static String NOT_AUTHENTICATED = "NOT_AUTHENTICATED";
     private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
     private final static String SUCCESS = "SUCCESS";
     private final static String SUCCESS_AUTHENTICATED = "SUCCESS_AUTHENTICATED";
+    private final static String FAILED = "FAILED";
+    private final static String SUCCESS_ATTEMPT_MADE = "SUCCESS_ATTEMPT_MADE";
 
     private static final BigDecimal amount = new BigDecimal("10.01");
     private static final String currency = "GBP";
@@ -47,11 +53,14 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
         @SneakyThrows
         public static void init() {
             GpApiConfig config = new GpApiConfig();
-            config.setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg");
-            config.setAppKey("ockJr6pv6KFoGiZA");
+
+            // GP-API settings
+            config.setAppId(APP_ID);
+            config.setAppKey(APP_KEY);
             config.setCountry("GB");
             config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
             config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
+            config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
 
             config.setEnableLogging(true);
 
@@ -115,7 +124,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secureEcom);
-            // assertTrue(secureEcom.isEnrolled());
+            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
 
@@ -133,6 +142,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
 
             assertNotNull(initAuth);
             assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
+            assertEquals("YES", initAuth.getLiabilityShift());
 
             secureEcom =
                     Secure3dService
@@ -141,6 +151,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
                             .execute();
 
             assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+            assertEquals("YES", secureEcom.getLiabilityShift());
 
             card.setThreeDSecure(secureEcom);
 
@@ -161,14 +172,14 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
         @Parameterized.Parameters(name = "Failed3DSCardTests :: {index} :: card [{0}], status [{1}]")
         public static Collection input() {
             return asList(new Object[][]{
-                    {CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1.cardNumber, "NOT_AUTHENTICATED"},
-                    {CARD_AUTH_FAILED_V2_1.cardNumber, "FAILED"},
-                    {CARD_AUTH_ISSUER_REJECTED_V2_1.cardNumber, "FAILED"},
-                    {CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1.cardNumber, "FAILED"},
-                    {CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2.cardNumber, "NOT_AUTHENTICATED"},
-                    {CARD_AUTH_FAILED_V2_2.cardNumber, "FAILED"},
-                    {CARD_AUTH_ISSUER_REJECTED_V2_2.cardNumber, "FAILED"},
-                    {CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2.cardNumber, "FAILED"}
+                    {CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_1.cardNumber, SUCCESS_ATTEMPT_MADE},
+                    {CARD_AUTH_FAILED_V2_1.cardNumber, NOT_AUTHENTICATED},
+                    {CARD_AUTH_ISSUER_REJECTED_V2_1.cardNumber, FAILED},
+                    {CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_1.cardNumber, FAILED},
+                    {CARD_AUTH_ATTEMPTED_BUT_NOT_SUCCESSFUL_V2_2.cardNumber, SUCCESS_ATTEMPT_MADE},
+                    {CARD_AUTH_FAILED_V2_2.cardNumber, NOT_AUTHENTICATED},
+                    {CARD_AUTH_ISSUER_REJECTED_V2_2.cardNumber, FAILED},
+                    {CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2.cardNumber, FAILED}
             });
         }
 
@@ -189,7 +200,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secureEcom);
-            // assertTrue(secureEcom.isEnrolled());
+            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
 
@@ -207,7 +218,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
 
             assertNotNull(initAuth);
             assertEquals(status, initAuth.getStatus());
-//        assertEquals("06", initAuth.getEci());
+            assertTrue(initAuth.getEci().equals("06") || initAuth.getEci().equals("07"));
 
             secureEcom =
                     Secure3dService
@@ -238,9 +249,9 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
         @Parameterized.Parameters(name = "ChallengeRequiredFailed3DSV1CardTests :: {index} :: card [{0}], status [{1}], acs_status [{2}]")
         public static Collection input() {
             return asList(new Object[][]{
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, AUTHENTICATION_COULD_NOT_BE_PERFORMED, GpApi3DSecureTests.AuthenticationResultCode.Unavailable},
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, AUTHENTICATION_FAILED, GpApi3DSecureTests.AuthenticationResultCode.Failed},
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, AUTHENTICATION_FAILED, GpApi3DSecureTests.AuthenticationResultCode.AttemptAcknowledge}
+                    {CARDHOLDER_ENROLLED_V1.cardNumber, FAILED, GpApi3DSecureTests.AuthenticationResultCode.Unavailable},
+                    {CARDHOLDER_ENROLLED_V1.cardNumber, NOT_AUTHENTICATED, GpApi3DSecureTests.AuthenticationResultCode.Failed},
+                    {CARDHOLDER_ENROLLED_V1.cardNumber, SUCCESS_ATTEMPT_MADE, GpApi3DSecureTests.AuthenticationResultCode.AttemptAcknowledge}
             });
         }
 
@@ -263,7 +274,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secureEcom);
-            assertFalse(secureEcom.isEnrolled());
+            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
             assertEquals(CHALLENGE_REQUIRED, secureEcom.getStatus());
             assertTrue(secureEcom.isChallengeMandated());
@@ -313,7 +324,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secureEcom);
-            //assertTrue(secureEcom.isEnrolled());
+            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
 
@@ -347,6 +358,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
 
             assertNotNull(secureEcom);
             assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+            assertEquals("YES", secureEcom.getLiabilityShift());
 
             card.setThreeDSecure(secureEcom);
 

@@ -15,7 +15,6 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,8 +37,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg")
-                .setAppKey("ockJr6pv6KFoGiZA");
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
 
         config.setEnableLogging(true);
 
@@ -60,7 +59,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportStoredPaymentMethodDetail() throws ApiException {
+    public void ReportStoredPaymentMethodDetail() throws ApiException {
         StoredPaymentMethodSummary response =
                 ReportingService
                         .storedPaymentMethodDetail(token)
@@ -71,7 +70,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportStoredPaymentMethodDetailWithNonExistentId() throws ApiException {
+    public void ReportStoredPaymentMethodDetailWithNonExistentId() throws ApiException {
         String storedPaymentMethodId = "PMT_" + UUID.randomUUID();
 
         try {
@@ -86,7 +85,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportStoredPaymentMethodDetailWithRandomId() throws ApiException {
+    public void ReportStoredPaymentMethodDetailWithRandomId() throws ApiException {
         String storedPaymentMethodId = UUID.randomUUID().toString().replace("-", "");
 
         boolean exceptionCaught = false;
@@ -105,7 +104,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_Id() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_Id() throws ApiException {
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
                         .findStoredPaymentMethodsPaged(1, 25)
@@ -119,7 +118,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_RandomId() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_RandomId() throws ApiException {
         String storedPaymentMethodId = "PMT_" + UUID.randomUUID();
 
         StoredPaymentMethodSummaryPaged result =
@@ -133,15 +132,15 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // TODO: Inform the the GP API team
+    // TODO: Reported the the GP API team. Enable when fixed.
     // Endpoint is retrieving not filtered results
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_NumberLast4() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_NumberLast4() throws ApiException {
         String numberLast4 = card.getNumber().substring(card.getNumber().length() - 4);
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(1, 10)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -152,15 +151,15 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // TODO: Inform the the GP API team
+    // TODO: Reported the the GP API team. Enable when fixed.
     // Endpoint is retrieving not filtered results
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_NumberLast4_0000() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_NumberLast4_Set0000() throws ApiException {
         String numberLast4 = "0000";
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(1, 10)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -169,7 +168,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_Reference() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_Reference() throws ApiException {
         StoredPaymentMethodSummary response =
                 ReportingService
                         .storedPaymentMethodDetail(token)
@@ -190,7 +189,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_Status() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_Status() throws ApiException {
         StoredPaymentMethodStatus status = StoredPaymentMethodStatus.Active;
 
         StoredPaymentMethodSummaryPaged result =
@@ -206,7 +205,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -10);
 
@@ -225,26 +224,25 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate_CurrentDay() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -30);
-        Date endDate = DateUtils.addDays(new Date(), -10);
+    public void ReportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate_CurrentDay() throws ApiException {
+        Date currentDay = new Date();
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
                         .findStoredPaymentMethodsPaged(1, 25)
-                        .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, endDate)
+                        .where(SearchCriteria.StartDate, currentDay)
+                        .and(SearchCriteria.EndDate, currentDay)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), startDate));
-            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), endDate));
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), currentDay));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), currentDay));
         }
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_By_StartLastUpdatedDate_And_EndLastUpdatedDate() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_By_StartLastUpdatedDate_And_EndLastUpdatedDate() throws ApiException {
         Date startLastUpdatedDate = DateUtils.addDays(new Date(), -30);
         Date endLastUpdatedDate = DateUtils.addDays(new Date(), -10);
 
@@ -260,7 +258,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void reportFindStoredPaymentMethodsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
+    public void ReportFindStoredPaymentMethodsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
                         .findStoredPaymentMethodsPaged(1, 25)
@@ -291,7 +289,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
         }
     }
 
-    @AfterClass
+    // @AfterClass
+    // The used credentials have no permissions to delete a tokenized card
     public static void cleanup() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);

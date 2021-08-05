@@ -1,11 +1,10 @@
 package com.global.api.entities.enums;
 
-import com.global.api.entities.enums.IStringConstant;
-
 public enum DisputeStatus implements IStringConstant {
     UnderReview("UNDER_REVIEW"),
     WithMerchant("WITH_MERCHANT"),
-    Closed("CLOSED");
+    Closed("CLOSED"),
+    Funded("FUNDED");       //Only for Settlement disputes
 
     String value;
     DisputeStatus(String value) {

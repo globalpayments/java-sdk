@@ -20,6 +20,8 @@ public class GpApiDisputeTests extends BaseGpApiTest {
 
     public GpApiDisputeTests() throws ApiException {
         GpApiConfig config = new GpApiConfig();
+
+        // GP-API settings
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
@@ -36,7 +38,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeAccept() throws ApiException {
+    public void DisputeAccept() throws ApiException {
         Transaction response =
                 dispute
                         .accept()
@@ -48,7 +50,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeAccept_WrongId() throws ApiException {
+    public void DisputeAccept_WrongId() throws ApiException {
         dispute.setCaseId("DIS_SAND_bbbb1111");
 
         boolean exceptionCaught = false;
@@ -67,7 +69,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge() throws ApiException {
+    public void DisputeChallenge() throws ApiException {
         DisputeDocument newDocument = new DisputeDocument();
         newDocument.setType("SALES_RECEIPT");
         newDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
@@ -86,7 +88,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge_MultipleDocuments() throws ApiException {
+    public void DisputeChallenge_MultipleDocuments() throws ApiException {
         dispute.setCaseId("DIS_SAND_abcd1241");
 
         DisputeDocument firstDocument = new DisputeDocument();
@@ -112,7 +114,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge_MultipleDocuments_ClosedStatus() throws ApiException {
+    public void DisputeChallenge_MultipleDocuments_ClosedStatus() throws ApiException {
         DisputeDocument firstDocument = new DisputeDocument();
         firstDocument.setType("SALES_RECEIPT");
         firstDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
@@ -141,7 +143,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge_MissingDocument() throws ApiException {
+    public void DisputeChallenge_MissingDocument() throws ApiException {
         boolean exceptionCaught = false;
 
         try {
@@ -159,7 +161,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge_MissingOptional_Type() throws ApiException {
+    public void DisputeChallenge_MissingOptional_Type() throws ApiException {
         DisputeDocument newDocument = new DisputeDocument();
         newDocument.setBase64Content("R0lGODlhigPCAXAAACwAAAAAigPCAYf///8AQnv");
 
@@ -177,7 +179,7 @@ public class GpApiDisputeTests extends BaseGpApiTest {
     }
 
     @Test
-    public void disputeChallenge_WrongId() throws ApiException {
+    public void DisputeChallenge_WrongId() throws ApiException {
         dispute.setCaseId("DIS_SAND_abcd1000");
 
         DisputeDocument disputeDocument = new DisputeDocument();

@@ -345,7 +345,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
         secureEcom.setAuthenticationSource(doc.getString("authentication_source"));
         secureEcom.setMessageCategory(doc.getString("message_category"));
         secureEcom.setMessageVersion(doc.getString("message_version"));
-        secureEcom.setAcsInfoIndicator(doc.geStringArrayList("acs_info_indicator"));
+        secureEcom.setAcsInfoIndicator(doc.getStringArrayList("acs_info_indicator"));
         secureEcom.setDecoupledResponseIndicator(doc.getString("decoupled_response_indicator"));
         secureEcom.setWhitelistStatus(doc.getString("whitelist_status"));
         secureEcom.setExemptReason(doc.getString("eos_reason"));

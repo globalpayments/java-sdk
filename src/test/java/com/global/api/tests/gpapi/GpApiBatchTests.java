@@ -32,8 +32,9 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg")
-                .setAppKey("ockJr6pv6KFoGiZA")
+                // These credentials have permissions for executing BATCH
+                .setAppId(APP_ID_FOR_BATCH)
+                .setAppKey(APP_KEY_FOR_BATCH)
                 .setChannel(Channel.CardPresent.getValue());
 
         config.setEnableLogging(true);
@@ -46,7 +47,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch() throws ApiException, InterruptedException {
+    public void CloseBatch() throws ApiException, InterruptedException {
         Transaction chargeTransaction =
                 creditCard
                         .charge(new BigDecimal("1.99"))
@@ -63,7 +64,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_ChipTransaction() throws ApiException, InterruptedException {
+    public void CloseBatch_ChipTransaction() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
                         .charge(new BigDecimal("1.99"))
@@ -80,7 +81,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_AuthAndCapture() throws ApiException, InterruptedException {
+    public void CloseBatch_AuthAndCapture() throws ApiException, InterruptedException {
         Transaction authTransaction =
                 creditCard
                         .authorize(new BigDecimal("1.99"))
@@ -104,7 +105,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_ContactlessTransaction() throws ApiException, InterruptedException {
+    public void CloseBatch_ContactlessTransaction() throws ApiException, InterruptedException {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue(";4024720012345671=18125025432198712345?");
         debitCard.setEntryMethod(EntryMethod.Proximity);
@@ -128,7 +129,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_MultipleChargeCreditTrackData() throws ApiException, InterruptedException {
+    public void CloseBatch_MultipleChargeCreditTrackData() throws ApiException, InterruptedException {
         Transaction firstTransaction =
                 creditCard
                         .charge(new BigDecimal("1.25"))
@@ -153,7 +154,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_Refund_CreditTrackData() throws ApiException, InterruptedException {
+    public void CloseBatch_Refund_CreditTrackData() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
                         .charge(new BigDecimal("1.99"))
@@ -178,7 +179,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_DebitTrackData() throws ApiException, InterruptedException {
+    public void CloseBatch_DebitTrackData() throws ApiException, InterruptedException {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
         debitCard.setPinBlock("32539F50C245A6A93D123412324000AA");
@@ -200,7 +201,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_Reverse_DebitTrackData() throws ApiException, InterruptedException {
+    public void CloseBatch_Reverse_DebitTrackData() throws ApiException, InterruptedException {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
         debitCard.setPinBlock("32539F50C245A6A93D123412324000AA");
@@ -238,7 +239,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_WithCardNumberDetails() throws ApiException, InterruptedException {
+    public void CloseBatch_WithCardNumberDetails() throws ApiException, InterruptedException {
         CreditCardData card = new CreditCardData();
 
         card.setNumber("4263970000005262");
@@ -262,7 +263,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_WithCardNumberDetails_DeclinedTransaction() throws ApiException, InterruptedException {
+    public void CloseBatch_WithCardNumberDetails_DeclinedTransaction() throws ApiException, InterruptedException {
         CreditCardData card = new CreditCardData();
         card.setNumber("4263970000005262");
         card.setExpMonth(05);
@@ -298,7 +299,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     @Test
     @Ignore
     //TODO - add idempotency key as header
-    public void closeBatch_WithIdempotency() throws ApiException {
+    public void CloseBatch_WithIdempotency() throws ApiException {
         String idempotency = java.util.UUID.randomUUID().toString();
 
         Transaction transaction =
@@ -319,7 +320,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_WithClosedBatchReference() throws ApiException, InterruptedException {
+    public void CloseBatch_WithClosedBatchReference() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
                         .charge(new BigDecimal("1.25"))
@@ -351,7 +352,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_Verify_MissingBatchId() throws ApiException {
+    public void CloseBatch_Verify_MissingBatchId() throws ApiException {
         Transaction transaction =
                 creditCard
                         .verify()
@@ -376,7 +377,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_CardNotPresentChannel() throws ApiException, InterruptedException {
+    public void CloseBatch_CardNotPresentChannel() throws ApiException, InterruptedException {
         GpApiConfig gpApiConfig = new GpApiConfig();
         gpApiConfig.setAppId("P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg");
         gpApiConfig.setAppKey("ockJr6pv6KFoGiZA");
@@ -417,7 +418,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    public void closeBatch_WithInvalidBatchReference() throws ApiException {
+    public void CloseBatch_WithInvalidBatchReference() throws ApiException {
         String batchReference = java.util.UUID.randomUUID().toString().replace("-", "");
 
         boolean exceptionCaught = false;
@@ -434,14 +435,14 @@ public class GpApiBatchTests extends BaseGpApiTest {
     }
 
     @Test
-    // Works isolated but fails when running in the test suite. Cause could not be detected.
-    public void closeBatch_ActionNotAuthorized() throws ApiException, InterruptedException {
+    public void CloseBatch_ActionNotAuthorized() throws ApiException, InterruptedException {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
         config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
+                // These credentials have NOT permissions for executing BATCH
+                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
+                .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardPresent.getValue());
 
         config.setEnableLogging(true);
@@ -453,6 +454,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
                         .charge(new BigDecimal("1.99"))
                         .withCurrency("USD")
                         .execute(GP_API_CONFIG_NAME);
+
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Thread.sleep(1000);

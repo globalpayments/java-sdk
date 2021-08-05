@@ -230,7 +230,7 @@ public class JsonDoc {
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayList<String> geStringArrayList(String name) {
+    public ArrayList<String> getStringArrayList(String name) {
         if (dict.containsKey(name)) {
             Object value = dict.get(name);
             if (value instanceof List)

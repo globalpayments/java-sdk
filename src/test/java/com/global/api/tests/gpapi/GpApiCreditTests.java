@@ -3,18 +3,22 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.EntryMethod;
-import com.global.api.entities.enums.TransactionStatus;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.joda.time.DateTime;
+import com.global.api.services.ReportingService;
+import com.global.api.utils.DateUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -41,11 +45,23 @@ public class GpApiCreditTests extends BaseGpApiTest {
         card.setNumber("4263970000005262");
         card.setExpMonth(5);
         card.setExpYear(2025);
-        card.setCvn("852");
+        card.setCvn("123");
+    }
+
+    private void GpApiCardPresentConfig() throws ConfigurationException {
+        GpApiConfig config = new GpApiConfig();
+        config
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
+                .setChannel(Channel.CardPresent.getValue());
+
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME_CARD_PRESENT);
     }
 
     @Test
-    public void creditAuthorization() throws ApiException {
+    public void CreditAuthorization() throws ApiException {
         Transaction transaction =
                 card
                         .authorize(new BigDecimal(14))
@@ -59,7 +75,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditAuthorization_CaptureLowerAmount() throws ApiException {
+    public void CreditAuthorization_CaptureLowerAmount() throws ApiException {
         Transaction transaction =
                 card
                         .authorize(new BigDecimal(5))
@@ -131,12 +147,12 @@ public class GpApiCreditTests extends BaseGpApiTest {
         } catch (GatewayException ex) {
             assertEquals("50020", ex.getResponseText());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("Status Code: 400 - Can't settle for more than 115% of that which you authorised.", ex.getMessage());
+            assertEquals("Status Code: 400 - Can't settle for more than 115% of that which you authorised ", ex.getMessage());
         }
     }
 
     @Test
-    public void creditAuthorizationAndCapture() throws ApiException {
+    public void CreditAuthorizationAndCapture() throws ApiException {
         Transaction transaction =
                 card
                         .authorize(new BigDecimal(14))
@@ -150,8 +166,8 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction capture =
                 transaction
-                        .capture(new BigDecimal("16"))
-                        .withGratuity(new BigDecimal("2"))
+                        .capture(new BigDecimal(16))
+                        .withGratuity(new BigDecimal(2))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(capture);
@@ -160,7 +176,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditAuthorizationAndCapture_WithIdempotencyKey() throws ApiException {
+    public void CreditAuthorizationAndCapture_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction transaction =
@@ -178,9 +194,9 @@ public class GpApiCreditTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             transaction
-                    .capture(new BigDecimal("16"))
+                    .capture(new BigDecimal(16))
                     .withIdempotencyKey(idempotencyKey)
-                    .withGratuity(new BigDecimal("2"))
+                    .withGratuity(new BigDecimal(2))
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -193,7 +209,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditAuthorization_CP() throws ApiException {
+    public void CreditAuthorization_CP() throws ApiException {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
@@ -221,7 +237,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditAuthorizationAndCapture_CP() throws ApiException {
+    public void CreditAuthorizationAndCapture_CP() throws ApiException {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
@@ -259,7 +275,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditCaptureWrongId() throws ApiException {
+    public void CreditCaptureWrongId() throws ApiException {
         Transaction authorization = new Transaction();
         authorization.setTransactionId(UUID.randomUUID().toString());
 
@@ -270,14 +286,14 @@ public class GpApiCreditTests extends BaseGpApiTest {
                     .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
-            assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
+            assertEquals("40008", ex.getResponseText());
             assertEquals(String.format("Status Code: 404 - Transaction %s not found at this location.", authorization.getTransactionId()), ex.getMessage());
         }
     }
 
     @Test
-    public void creditSale() throws ApiException {
+    public void CreditSale() throws ApiException {
         Address address = new Address();
         address.setStreetAddress1("123 Main St.");
         address.setCity("Downtown");
@@ -286,7 +302,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction response =
                 card
-                        .charge(new BigDecimal("19.99"))
+                        .charge(new BigDecimal(19.99))
                         .withCurrency("USD")
                         .withAddress(address)
                         .execute(GP_API_CONFIG_NAME);
@@ -294,39 +310,48 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+
+        // TODO: Confirm if we need to set Balance Amount using 2 decimals format
+        // assertEquals(new BigDecimal("19.99"), response.getBalanceAmount());
     }
 
     @Test
-    public void creditSale_WithoutPermissions() throws ApiException {
+    public void CreditSale_WithoutPermissions() throws ApiException {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
         config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh")
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setPermissions(permissions)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardPresent.getValue());
 
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        final String GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
 
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS);
+
+        boolean exceptionCaught = false;
         try {
             card
-                    .charge(new BigDecimal("19.99"))
+                    .charge(new BigDecimal(19.99))
                     .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute(GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("40212", ex.getResponseText());
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
             assertEquals("Status Code: 403 - Permission not enabled to execute action", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
     @Test
-    public void creditSale_WithRequestMultiUseToken() throws ApiException {
+    public void CreditSale_WithRequestMultiUseToken() throws ApiException {
         Transaction response =
-                card.charge(new BigDecimal("19.99"))
+                card.charge(new BigDecimal(19.99))
                         .withCurrency("USD")
                         .withRequestMultiUseToken(true)
                         .execute(GP_API_CONFIG_NAME);
@@ -338,7 +363,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditRefund() throws ApiException {
+    public void CreditRefund() throws ApiException {
         Transaction response =
                 card
                         .refund(new BigDecimal(16))
@@ -351,8 +376,8 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditRefundTransaction() throws ApiException {
-        BigDecimal amount = new BigDecimal("10.95");
+    public void CreditRefundTransaction() throws ApiException {
+        BigDecimal amount = new BigDecimal(10.95);
 
         Transaction transaction =
                 card
@@ -416,25 +441,24 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
         try {
-            Transaction response =
-                    transaction
-                            .refund(new BigDecimal(amount.doubleValue() * 1.1))
-                            .withCurrency("USD")
-                            .execute(GP_API_CONFIG_NAME);
+            transaction
+                    .refund(new BigDecimal(amount.doubleValue() * 1.1))
+                    .withCurrency("USD")
+                    .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             assertEquals("40087", ex.getResponseText());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("Status Code: 400 - You may only refund up to 100% of the original amount.", ex.getMessage());
+            assertEquals("Status Code: 400 - You may only refund up to 100% of the original amount ", ex.getMessage());
         }
     }
 
     @Test
-    public void creditRefundTransaction_WithIdempotencyKey() throws ApiException {
+    public void CreditRefundTransaction_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("10.95"))
+                        .charge(new BigDecimal(10.95))
                         .withCurrency("USD")
                         .withIdempotencyKey(idempotencyKey)
                         .withAllowDuplicates(true)
@@ -447,7 +471,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             transaction
-                    .refund(new BigDecimal("10.95"))
+                    .refund(new BigDecimal(10.95))
                     .withIdempotencyKey(idempotencyKey)
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
@@ -462,28 +486,28 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditRefundTransactionWrongId() throws ApiException {
+    public void CreditRefundTransactionWrongId() throws ApiException {
         Transaction charge = new Transaction();
         charge.setTransactionId(UUID.randomUUID().toString());
 
         try {
             charge
-                    .refund(new BigDecimal("10.95"))
+                    .refund(new BigDecimal(10.95))
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
-            assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
+            assertEquals("40008", ex.getResponseText());
             assertEquals(String.format("Status Code: 404 - Transaction %s not found at this location.", charge.getTransactionId()), ex.getMessage());
         }
     }
 
     @Test
-    public void creditReverseTransaction() throws ApiException {
+    public void CreditReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("12.99"))
+                        .charge(new BigDecimal(12.99))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
@@ -494,7 +518,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction response =
                 transaction
-                        .reverse(new BigDecimal("12.99"))
+                        .reverse(new BigDecimal(12.99))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -503,12 +527,12 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditReverseTransaction_WithIdempotencyKey() throws ApiException {
+    public void CreditReverseTransaction_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("12.99"))
+                        .charge(new BigDecimal(12.99))
                         .withCurrency("USD")
                         .withIdempotencyKey(idempotencyKey)
                         .withAllowDuplicates(true)
@@ -521,7 +545,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             transaction
-                    .reverse(new BigDecimal("12.99"))
+                    .reverse(new BigDecimal(12.99))
                     .withIdempotencyKey(idempotencyKey)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
@@ -535,26 +559,26 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditReverseTransactionWrongId() throws ApiException {
+    public void CreditReverseTransactionWrongId() throws ApiException {
         Transaction charge = new Transaction();
         charge.setTransactionId(UUID.randomUUID().toString());
 
         try {
             charge
-                    .reverse(new BigDecimal("12.99"))
+                    .reverse(new BigDecimal(12.99))
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
-            assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
+            assertEquals("40008", ex.getResponseText());
             assertEquals(String.format("Status Code: 404 - Transaction %s not found at this location.", charge.getTransactionId()), ex.getMessage());
         }
     }
 
     @Test
-    public void creditPartialReverseTransaction() throws ApiException {
+    public void CreditPartialReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("3.99"))
+                        .charge(new BigDecimal(3.99))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
@@ -565,7 +589,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         try {
             transaction
-                    .reverse(new BigDecimal("1.29"))
+                    .reverse(new BigDecimal(1.29))
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -575,10 +599,10 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditAuthorizationForMultiCapture() throws ApiException {
+    public void CreditAuthorizationForMultiCapture() throws ApiException {
         Transaction authorization =
                 card
-                        .authorize(new BigDecimal("14"))
+                        .authorize(new BigDecimal(14))
                         .withCurrency("USD")
                         .withMultiCapture(true)
                         .withAllowDuplicates(true)
@@ -590,7 +614,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction capture1 =
                 authorization
-                        .capture(new BigDecimal("3"))
+                        .capture(new BigDecimal(3))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(capture1);
@@ -598,7 +622,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), capture1.getResponseMessage());
 
         Transaction capture2 =
-                authorization.capture(new BigDecimal("5"))
+                authorization.capture(new BigDecimal(5))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(capture2);
@@ -607,7 +631,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction capture3 =
                 authorization
-                        .capture(new BigDecimal("7"))
+                        .capture(new BigDecimal(7))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(capture3);
@@ -616,7 +640,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify() throws ApiException {
+    public void CreditVerify() throws ApiException {
         Transaction response =
                 card
                         .verify()
@@ -629,7 +653,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_With_Address() throws ApiException {
+    public void CreditVerify_With_Address() throws ApiException {
         Address address = new Address();
         address.setPostalCode("WB3 A21");
         address.setStreetAddress1("Flat 456");
@@ -648,16 +672,8 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_CP() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh")
-                .setChannel(Channel.CardPresent.getValue());
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+    public void CreditVerify_CP() throws ApiException {
+        GpApiCardPresentConfig();
 
         card.setCvn("123");
 
@@ -665,7 +681,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
                 card
                         .verify()
                         .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -673,22 +689,16 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_CP_CVNNotMatched() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
+    public void CreditVerify_CP_CVNNotMatched() throws ApiException {
+        GpApiCardPresentConfig();
 
-        // GP-API settings
-        config
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh")
-                .setChannel(Channel.CardPresent.getValue());
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        card.setCvn("853");
 
         Transaction response =
                 card
                         .verify()
                         .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(response);
         assertEquals("NOT_VERIFIED", response.getResponseCode());
@@ -697,7 +707,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_WithIdempotencyKey() throws ApiException {
+    public void CreditVerify_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction response =
@@ -729,7 +739,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_Without_Currency() throws ApiException {
+    public void CreditVerify_Without_Currency() throws ApiException {
         try {
             card
                     .verify()
@@ -743,7 +753,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_InvalidCVV() throws ApiException {
+    public void CreditVerify_InvalidCVV() throws ApiException {
         card.setCvn("1234");
         try {
             card
@@ -759,7 +769,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditVerify_NotNumericCVV() throws ApiException {
+    public void CreditVerify_NotNumericCVV() throws ApiException {
         card.setCvn("SMA");
         try {
             card
@@ -775,12 +785,12 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditChargeTransactions_WithSameIdempotencyKey() throws ApiException {
+    public void CreditChargeTransactions_WithSameIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("4.95"))
+                        .charge(new BigDecimal(4.95))
                         .withCurrency("USD")
                         .withIdempotencyKey(idempotencyKey)
                         .execute(GP_API_CONFIG_NAME);
@@ -792,7 +802,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             card
-                    .charge(new BigDecimal("4.95"))
+                    .charge(new BigDecimal(4.95))
                     .withCurrency("USD")
                     .withIdempotencyKey(idempotencyKey)
                     .execute(GP_API_CONFIG_NAME);
@@ -806,9 +816,10 @@ public class GpApiCreditTests extends BaseGpApiTest {
         }
     }
 
-    // TODO: Check why it is failing
     @Test
-    public void creditTrackDataVerify() throws ApiException {
+    public void CreditTrackDataVerify() throws ApiException {
+        GpApiCardPresentConfig();
+
         CreditTrackData creditTrackData = new CreditTrackData();
         creditTrackData.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
 
@@ -816,7 +827,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
                 creditTrackData
                         .verify()
                         .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -824,32 +835,14 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
-    public void creditCardReauthorizeTransaction() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent.getValue());
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, "GP_API_CONFIG_CARD_PRESENT");
-
-        CreditCardData card = new CreditCardData();
-        card.setNumber("5425230000004415");
-        card.setExpMonth(DateTime.now().getMonthOfYear());
-        card.setExpYear(DateTime.now().getYear() + 1);
-        card.setCvn("123");
-        card.setCardHolderName("John Smith");
-
+    public void CreditCardReauthorizeTransaction() throws ApiException {
+        GpApiCardPresentConfig();
 
         Transaction chargeTransaction =
                 card
-                        .charge(new BigDecimal("1.25"))
+                        .charge(new BigDecimal(1.25))
                         .withCurrency("USD")
-                        .execute("GP_API_CONFIG_CARD_PRESENT");
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(chargeTransaction);
         assertEquals(SUCCESS, chargeTransaction.getResponseCode());
@@ -857,22 +850,237 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction reverseTransaction =
                 chargeTransaction
-                        .reverse(new BigDecimal("1.25"))
-                        .execute("GP_API_CONFIG_CARD_PRESENT");
+                        .reverse(new BigDecimal(1.25))
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(reverseTransaction);
         assertEquals(SUCCESS, reverseTransaction.getResponseCode());
         assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
 
-        Transaction reauthTransaction =
-                chargeTransaction
+        Transaction reAuthTransaction =
+                reverseTransaction
                         .reauthorize()
-                        .execute("GP_API_CONFIG_CARD_PRESENT");
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
-        assertNotNull(reauthTransaction);
-        assertEquals(SUCCESS, reauthTransaction.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), reauthTransaction.getResponseMessage());
-        assertEquals("00", reauthTransaction.getAuthorizationCode());
+        assertNotNull(reAuthTransaction);
+        assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), reAuthTransaction.getResponseMessage());
+        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+    }
+
+    @Test
+    public void CreditCardReauthorizeTransaction_OldExistentSale() throws ApiException {
+        GpApiCardPresentConfig();
+
+        Date startDate = DateUtils.addDays(new Date(), -29);
+        Date endDate = DateUtils.addDays(new Date(), -1);
+
+        TransactionSummaryPaged resultTransactions =
+                ReportingService
+                        .findTransactionsPaged(1, 1000)
+                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.TransactionStatus, TransactionStatus.Preauthorized)
+                        .and(SearchCriteria.Channel, Channel.CardPresent)
+                        .and(SearchCriteria.CardNumberLastFour, "0016")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(resultTransactions);
+
+        int random = new Random().nextInt(resultTransactions.results.size());
+
+        Transaction transaction = new Transaction();
+        transaction.setBalanceAmount(resultTransactions.results.get(random).getAmount());
+        transaction.setTransactionId(resultTransactions.results.get(random).getTransactionId());
+
+        Transaction reverseTransaction =
+                transaction
+                        .reverse()
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reverseTransaction);
+        assertEquals(SUCCESS, reverseTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
+
+        Transaction reAuthTransaction =
+                reverseTransaction
+                        .reauthorize()
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reAuthTransaction);
+        assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), reAuthTransaction.getResponseMessage());
+        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+    }
+
+    @Test
+    public void CreditCardReauthorizeAuthorizedTransaction() throws ApiException {
+        GpApiCardPresentConfig();
+
+        Transaction authTransaction =
+                card
+                        .authorize(new BigDecimal(1.25))
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(authTransaction);
+        assertEquals(SUCCESS, authTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), authTransaction.getResponseMessage());
+
+        Transaction reverseTransaction =
+                authTransaction
+                        .reverse(new BigDecimal(1.25))
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reverseTransaction);
+        assertEquals(SUCCESS, reverseTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
+        assertEquals(authTransaction.getTransactionId(), reverseTransaction.getTransactionId());
+
+        Transaction reAuthTransaction =
+                reverseTransaction
+                        .reauthorize()
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reAuthTransaction);
+        assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), reAuthTransaction.getResponseMessage());
+        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+        assertNotEquals(reverseTransaction.getTransactionId(), reAuthTransaction.getTransactionId());
+    }
+
+    @Test
+    public void CreditCardReauthorizeTransaction_WithIdempotencyKey() throws ApiException {
+        String idempotencyKey = UUID.randomUUID().toString();
+        GpApiCardPresentConfig();
+
+        Transaction chargeTransaction =
+                card
+                        .charge(new BigDecimal(1.25))
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(chargeTransaction);
+        assertEquals(SUCCESS, chargeTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
+
+        Transaction reverseTransaction =
+                chargeTransaction
+                        .reverse(new BigDecimal(1.25))
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reverseTransaction);
+        assertEquals(SUCCESS, reverseTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
+
+        Transaction reAuthTransaction =
+                reverseTransaction
+                        .reauthorize()
+                        .withIdempotencyKey(idempotencyKey)
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(reAuthTransaction);
+        assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), reAuthTransaction.getResponseMessage());
+        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+
+        boolean exceptionCaught = false;
+        try {
+            reverseTransaction
+                    .reauthorize()
+                    .withIdempotencyKey(idempotencyKey)
+                    .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
+            assertEquals("40039", ex.getResponseText());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + reAuthTransaction.getTransactionId() + ", status=CAPTURED", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditCardReauthorizeTransaction_Refund() throws ApiException {
+        GpApiCardPresentConfig();
+
+        Transaction refundTransaction =
+                card
+                        .refund(new BigDecimal(1.25))
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(refundTransaction);
+        assertEquals(SUCCESS, refundTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), refundTransaction.getResponseMessage());
+
+        boolean exceptionCaught = false;
+        try {
+            refundTransaction
+                    .reauthorize()
+                    .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40213", ex.getResponseText());
+            assertEquals("Status Code: 400 - An error occurred on the server.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditCardReauthorizeTransaction_SaleWithCapturedStatus() throws ApiException {
+        GpApiCardPresentConfig();
+
+        Transaction chargeTransaction =
+                card
+                        .charge(new BigDecimal(1.25))
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(chargeTransaction);
+        assertEquals(SUCCESS, chargeTransaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
+
+        boolean exceptionCaught = false;
+        try {
+            chargeTransaction
+                    .reauthorize()
+                    .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40044", ex.getResponseText());
+            assertEquals("Status Code: 400 - 36, Invalid original transaction for reauthorization-This error is returned from a CreditAuth or CreditSale if the original transaction referenced by GatewayTxnId cannot be found. This is typically because the original does not meet the criteria for the sale or authorization by GatewayTxnID. This error can also be returned if the original transaction is found, but the card number has been written over with nulls after 30 days.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditCardReauthorizeTransaction_NonExistentId() throws ApiException {
+        GpApiCardPresentConfig();
+        String randomTransactionId = UUID.randomUUID().toString();
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId(randomTransactionId);
+        transaction.setBalanceAmount(new BigDecimal(1.25));
+
+        boolean exceptionCaught = false;
+        try {
+            transaction
+                    .reauthorize()
+                    .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
+            assertEquals("40008", ex.getResponseText());
+            assertEquals("Status Code: 404 - Transaction " + randomTransactionId + " not found at this location.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
 }

@@ -54,6 +54,9 @@ public class GpApiConfig extends GatewayConfig {
     // 3DSecure method return url
     @Getter @Setter public String methodNotificationUrl;
 
+    // 3DSecure merchant contact url
+    @Getter @Setter public String merchantContactUrl;
+
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
             serviceUrl =

@@ -11,6 +11,7 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.StringUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -47,8 +48,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
             token = card.tokenize(GP_API_CONFIG_NAME);
 
             assertTrue("Token could not be generated.", !StringUtils.isNullOrEmpty(token));
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             Assert.fail(ex.getMessage());
         }
     }
@@ -222,6 +222,9 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
+    @Ignore
+    // Credentials on this test have not permissions to delete a tokenized card
+    // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void f1_DeleteToken() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
@@ -240,6 +243,9 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         }
     }
 
+    @Ignore
+    // Credentials on this test have not permissions to delete a tokenized card
+    // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void f2_DeleteToken_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
