@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, IRefundable, IPinProtected, IAuthable {
     protected EbtCardType ebtCardType;
     private String pinBlock;
+    public String cardHolderName;
 
     public EbtCardType getEbtCardType() {
         return ebtCardType;
@@ -24,6 +25,12 @@ public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, I
     }
     public void setPinBlock(String pinBlock) {
         this.pinBlock = pinBlock;
+    }
+    public String getCardHolderName() {
+        return cardHolderName;
+    }
+    public void setCardHolderName(String cardHolderName) {
+        this.cardHolderName = cardHolderName;
     }
 
     public AuthorizationBuilder authorize() { return authorize(null, false); }

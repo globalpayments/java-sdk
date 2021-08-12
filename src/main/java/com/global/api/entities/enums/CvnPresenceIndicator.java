@@ -1,6 +1,6 @@
 package com.global.api.entities.enums;
 
-public enum CvnPresenceIndicator {
+public enum CvnPresenceIndicator implements IStringConstant  {
     Present("1"),
     Illegible("2"),
     NotOnCard("3"),
@@ -11,4 +11,5 @@ public enum CvnPresenceIndicator {
         this.value = value;
     }
     public String getValue() { return this.value; }
+    public byte[] getBytes() { return value.getBytes(); }
 }

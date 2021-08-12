@@ -25,8 +25,6 @@ import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
-// TODO: @alexandru: Unify naming convention with other SDKs
-
 @RunWith(Enclosed.class)
 public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
 

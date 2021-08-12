@@ -764,7 +764,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiTest {
     }
 
     @Test
-    public void ReportFindTransactionsPaged_OrderBy_Id_Ascending() throws ApiException, NoSuchFieldException, SecurityException {
+    public void ReportFindTransactionsPaged_OrderBy_Id_Ascending() throws ApiException, SecurityException {
         TransactionSummaryPaged transactions =
                 ReportingService
                         .findTransactionsPaged(1, 25)

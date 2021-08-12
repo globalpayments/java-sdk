@@ -99,7 +99,6 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         }
     }
 
-    // TODO: Getting: Status Code: 403 - Permission not enabled to execute action
     @Test
     public void CardHolderEnrolled_ChallengeRequired_v1_TokenizedCard() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();

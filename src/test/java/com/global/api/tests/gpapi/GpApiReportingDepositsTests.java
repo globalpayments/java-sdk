@@ -272,7 +272,7 @@ public class GpApiReportingDepositsTests extends BaseGpApiTest {
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
-            assertEquals(amount.multiply(new BigDecimal("100")), depositSummary.getAmount());
+            assertEquals(amount, depositSummary.getAmount());
         }
     }
 

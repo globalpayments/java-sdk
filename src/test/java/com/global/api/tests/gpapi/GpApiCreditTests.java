@@ -837,10 +837,11 @@ public class GpApiCreditTests extends BaseGpApiTest {
     @Test
     public void CreditCardReauthorizeTransaction() throws ApiException {
         GpApiCardPresentConfig();
+        BigDecimal amount = new BigDecimal(1.25);
 
         Transaction chargeTransaction =
                 card
-                        .charge(new BigDecimal(1.25))
+                        .charge(amount)
                         .withCurrency("USD")
                         .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
@@ -850,7 +851,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         Transaction reverseTransaction =
                 chargeTransaction
-                        .reverse(new BigDecimal(1.25))
+                        .reverse(amount)
                         .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
         assertNotNull(reverseTransaction);

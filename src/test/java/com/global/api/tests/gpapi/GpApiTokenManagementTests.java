@@ -20,11 +20,12 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiTokenManagementTests extends BaseGpApiTest {
 
     private static CreditCardData card;
     private static String token;
+    private final BigDecimal amount = new BigDecimal("15.25");
+    private final String currency = "USD";
 
     public GpApiTokenManagementTests() throws ApiException {
         GpApiConfig config = new GpApiConfig();
@@ -47,47 +48,45 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         try {
             token = card.tokenize(GP_API_CONFIG_NAME);
 
-            assertTrue("Token could not be generated.", !StringUtils.isNullOrEmpty(token));
+            assertFalse("Token could not be generated.", StringUtils.isNullOrEmpty(token));
         } catch (GatewayException ex) {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void a1_TokenizePaymentMethod() throws ApiException {
-        CreditCardData cardData = new CreditCardData();
-        cardData.setNumber("4111111111111111");
-        cardData.setExpMonth(12);
-        cardData.setExpYear(2021);
+    public void TokenizePaymentMethod() throws ApiException {
+        card.setExpYear(2021);
 
         String response =
-                cardData
+                card
                         .tokenize(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
+        assertTrue(response.startsWith("PMT_"));
     }
 
     @Test
-    public void b1_VerifyTokenizedPaymentMethod() throws ApiException {
+    public void VerifyTokenizedPaymentMethod() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
         Transaction response =
                 tokenizedCard
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertNotNull(response.getTransactionId());
         assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals("VERIFIED", response.getResponseMessage());
+        assertEquals(VERIFIED, response.getResponseMessage());
         assertEquals("XXXXXXXXXXXX1111", response.getCardLast4());
         assertEquals("VISA", response.getCardType());
     }
 
     @Test
-    public void b2_VerifyTokenizedPaymentMethod_withIdempotencyKey() throws ApiException {
+    public void VerifyTokenizedPaymentMethod_withIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         CreditCardData tokenizedCard = new CreditCardData();
@@ -96,13 +95,13 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         Transaction response =
                 tokenizedCard
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals("VERIFIED", response.getResponseMessage());
+        assertEquals(VERIFIED, response.getResponseMessage());
         assertEquals("XXXXXXXXXXXX1111", response.getCardLast4());
         assertEquals("VISA", response.getCardType());
 
@@ -123,7 +122,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void d1_UpdateTokenizedPaymentMethod() throws ApiException {
+    public void UpdateTokenizedPaymentMethod() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
         tokenizedCard.setExpMonth(12);
@@ -134,12 +133,12 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         Transaction response =
                 tokenizedCard
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals("VERIFIED", response.getResponseMessage());
+        assertEquals(VERIFIED, response.getResponseMessage());
         // assertEquals(30, response.getCardExpYear());
 
         tokenizedCard.setExpYear(2025);
@@ -147,14 +146,14 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void d3_UpdateTokenizedPaymentMethodWrongId() throws ApiException {
+    public void UpdateTokenizedPaymentMethodWrongId() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken("PMT_" + UUID.randomUUID().toString());
 
         try {
             tokenizedCard
                     .verify()
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
@@ -165,13 +164,13 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void e1_CreditSaleWithTokenizedPaymentMethod() throws ApiException {
+    public void CreditSaleWithTokenizedPaymentMethod() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
         Transaction response = tokenizedCard
-                .charge(new BigDecimal("19.99"))
-                .withCurrency("USD")
+                .charge(amount)
+                .withCurrency(currency)
                 .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -180,7 +179,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void e2_CreditSaleWithTokenizedPaymentMethod_WithStoredCredentials() throws ApiException {
+    public void CreditSaleWithTokenizedPaymentMethod_WithStoredCredentials() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
@@ -192,8 +191,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         storedCredential.setReason(StoredCredentialReason.Incremental);
 
         Transaction response = tokenizedCard
-                .charge(new BigDecimal("15.25"))
-                .withCurrency("USD")
+                .charge(amount)
+                .withCurrency(currency)
                 .withStoredCredential(storedCredential)
                 .execute(GP_API_CONFIG_NAME);
 
@@ -203,7 +202,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void e3_CreditSale_WithStoredCredentials() throws ApiException {
+    public void CreditSale_WithStoredCredentials() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
 
         storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
@@ -212,8 +211,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         storedCredential.setReason(StoredCredentialReason.Incremental);
 
         Transaction response = card
-                .charge(new BigDecimal("15.25"))
-                .withCurrency("USD")
+                .charge(amount)
+                .withCurrency(currency)
                 .withStoredCredential(storedCredential)
                 .execute(GP_API_CONFIG_NAME);
 
@@ -226,7 +225,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     // Credentials on this test have not permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
-    public void f1_DeleteToken() throws ApiException {
+    public void DeleteToken() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
@@ -236,7 +235,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         try {
             tokenizedCard
                     .verify()
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -247,7 +246,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     // Credentials on this test have not permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
-    public void f2_DeleteToken_WithIdempotencyKey() throws ApiException {
+    public void DeleteToken_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
         CreditCardData tokenizedCard = new CreditCardData();
@@ -259,7 +258,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         try {
             tokenizedCard
                     .verify()
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
@@ -268,7 +267,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Test
-    public void g1_cardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
+    public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
         // process an auto-capture authorization
         String tokenId =
                 card
@@ -280,8 +279,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
 
         Transaction response =
                 tokenizedCard
-                        .charge(new BigDecimal("10"))
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .withRequestMultiUseToken(true)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -294,8 +293,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
 
         response =
                 tokenizedCard
-                        .charge(new BigDecimal("10"))
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);

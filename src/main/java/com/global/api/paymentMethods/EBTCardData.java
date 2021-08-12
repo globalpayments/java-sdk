@@ -2,7 +2,6 @@ package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.CvnPresenceIndicator;
 import com.global.api.entities.enums.EbtCardType;
-import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.utils.StringUtils;
 
 public class EBTCardData extends EBT implements ICardData {

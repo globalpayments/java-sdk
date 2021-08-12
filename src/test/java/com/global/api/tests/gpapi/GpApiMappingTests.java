@@ -53,7 +53,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("status"), transaction.getTransactionStatus());
         assertEquals(doc.getString("type"), transaction.getTransactionType());
         assertEquals(doc.getString("channel"), transaction.getChannel());
-        assertEquals(doc.getDecimal("amount"), transaction.getAmount());
+        assertEquals(doc.getAmount("amount"), transaction.getAmount());
         assertEquals(doc.getString("currency"), transaction.getCurrency());
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
         assertEquals(doc.getString("reference"), transaction.getClientTransactionId());
@@ -124,7 +124,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(obj.getString("status"), transaction.getTransactionStatus());
         assertEquals(obj.getString("type"), transaction.getTransactionType());
         assertEquals(obj.getString("channel"), transaction.getChannel());
-        assertEquals(obj.getDecimal("amount"), transaction.getAmount());
+        assertEquals(obj.getAmount("amount"), transaction.getAmount());
         assertEquals(obj.getString("currency"), transaction.getCurrency());
         assertEquals(obj.getString("reference"), transaction.getReferenceNumber());
         assertEquals(obj.getString("reference"), transaction.getClientTransactionId());
@@ -156,7 +156,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(parseGpApiDate(doc.getString("time_created")), deposit.getDepositDate());
         assertEquals(doc.getString("status"), deposit.getStatus());
         assertEquals(doc.getString("funding_type"), deposit.getType());
-        assertEquals(doc.getDecimal("amount"), deposit.getAmount());
+        assertEquals(doc.getAmount("amount"), deposit.getAmount());
         assertEquals(doc.getString("currency"), deposit.getCurrency());
 
         if (doc.has("system")) {
@@ -170,13 +170,13 @@ public class GpApiMappingTests extends BaseGpApiTest {
         if (doc.has("sales")) {
             JsonDoc sales = doc.get("sales");
             assertEquals((int) sales.getInt("count"), deposit.getSalesTotalCount());
-            assertEquals(sales.getDecimal("amount"), deposit.getSalesTotalAmount());
+            assertEquals(sales.getAmount("amount"), deposit.getSalesTotalAmount());
         }
 
         if (doc.has("refunds")) {
             JsonDoc refunds = doc.get("refunds");
             assertEquals((int) refunds.getInt("count"), deposit.getRefundsTotalCount());
-            assertEquals(refunds.getDecimal("amount"), deposit.getRefundsTotalAmount());
+            assertEquals(refunds.getAmount("amount"), deposit.getRefundsTotalAmount());
         }
 
         if (doc.has("disputes")) {
@@ -184,17 +184,17 @@ public class GpApiMappingTests extends BaseGpApiTest {
             if (disputes.has("chargebacks")) {
                 JsonDoc chargebacks = disputes.get("chargebacks");
                 assertEquals((int) chargebacks.getInt("count"), deposit.getChargebackTotalCount());
-                assertEquals(chargebacks.getDecimal("amount"), deposit.getChargebackTotalAmount());
+                assertEquals(chargebacks.getAmount("amount"), deposit.getChargebackTotalAmount());
             }
 
             if (disputes.has("reversals")) {
                 JsonDoc reversals = disputes.get("reversals");
                 assertEquals((int) reversals.getInt("count"), deposit.getAdjustmentTotalCount());
-                assertEquals(reversals.getDecimal("amount"), deposit.getAdjustmentTotalAmount());
+                assertEquals(reversals.getAmount("amount"), deposit.getAdjustmentTotalAmount());
             }
         }
         if (doc.has("fees")) {
-            assertEquals(doc.get("fees").getDecimal("amount"), deposit.getFeesTotalAmount());
+            assertEquals(doc.get("fees").getAmount("amount"), deposit.getFeesTotalAmount());
         }
 
     }
@@ -214,7 +214,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(parseGpApiDate(doc.getString("time_created")), dispute.getCaseIdTime());
         assertEquals(doc.getString("status"), dispute.getCaseStatus());
         assertEquals(doc.getString("stage"), dispute.getCaseStage());
-        assertEquals(doc.getDecimal("amount"), dispute.getCaseAmount());
+        assertEquals(doc.getAmount("amount"), dispute.getCaseAmount());
         assertEquals(doc.getString("currency"), dispute.getCaseCurrency());
 
         if (doc.has("system")) {
@@ -256,7 +256,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(parseGpApiDate(doc.getString("stage_time_created")), dispute.getCaseIdTime());
         assertEquals(doc.getString("status"), dispute.getCaseStatus());
         assertEquals(doc.getString("stage"), dispute.getCaseStage());
-        assertEquals(doc.getDecimal("amount"), dispute.getCaseAmount());
+        assertEquals(doc.getAmount("amount"), dispute.getCaseAmount());
         assertEquals(doc.getString("currency"), dispute.getCaseCurrency());
 
         assertEquals(doc.getDecimal("last_adjustment_amount"), dispute.getLastAdjustmentAmount());
@@ -280,7 +280,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
 
             assertEquals(parseGpApiDate(transaction.getString("time_created")), dispute.getTransactionTime());
             assertEquals(transaction.getString("type"), dispute.getTransactionType());
-            assertEquals(transaction.getDecimal("amount"), dispute.getTransactionAmount());
+            assertEquals(transaction.getAmount("amount"), dispute.getTransactionAmount());
             assertEquals(transaction.getString("currency"), dispute.getTransactionCurrency());
             assertEquals(transaction.getString("reference"), dispute.getTransactionReferenceNumber());
 
@@ -367,7 +367,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
 
         // Assert
         assertEquals(doc.getString("id"), transaction.getTransactionId());
-        assertEquals(doc.getDecimal("amount"), transaction.getBalanceAmount());
+        assertEquals(doc.getAmount("amount"), transaction.getBalanceAmount());
         assertEquals(doc.getString("time_created"), transaction.getTimestamp());
         assertEquals(doc.getString("status"), transaction.getResponseMessage());
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
@@ -399,7 +399,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         JsonDoc doc = JsonDoc.parse(rawJson);
         assertEquals(transaction.getBatchSummary().getBatchReference(), doc.getString("id"));
         assertEquals(transaction.getBatchSummary().getStatus(), doc.getString("status"));
-        assertEquals(transaction.getBatchSummary().getTotalAmount(), doc.getDecimal("amount"));
+        assertEquals(transaction.getBatchSummary().getTotalAmount(), doc.getAmount("amount"));
         assertEquals(transaction.getBatchSummary().getTransactionCount(), doc.getInt("transaction_count"));
     }
 

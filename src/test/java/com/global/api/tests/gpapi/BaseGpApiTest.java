@@ -47,7 +47,7 @@ public class BaseGpApiTest {
         CARD_AUTH_COULD_NOT_BE_PREFORMED_V2_2("4222000008880910"),
         CARD_CHALLENGE_REQUIRED_V2_2("4222000001227408");
 
-        String cardNumber;
+        final String cardNumber;
 
         GpApi3DSTestCards(String cardNumber) {
             this.cardNumber = cardNumber;

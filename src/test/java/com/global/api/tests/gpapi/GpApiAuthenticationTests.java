@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class GpApiAuthenticationTests extends BaseGpApiTest {
 
-    CreditCardData card = new CreditCardData();
+    final CreditCardData card = new CreditCardData();
 
     @Before
     public void Initialize() {

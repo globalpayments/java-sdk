@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 public class GpApiBatchTests extends BaseGpApiTest {
 
     private final CreditTrackData creditCard;
+    private final BigDecimal amount = new BigDecimal("1.00");
     private final String CURRENCY = "USD";
     private final String TAG_DATA = "82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019";
 
@@ -50,7 +51,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     public void CloseBatch() throws ApiException, InterruptedException {
         Transaction chargeTransaction =
                 creditCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -60,14 +61,14 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
     public void CloseBatch_ChipTransaction() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .withTagData(TAG_DATA)
                         .execute(GP_API_CONFIG_NAME);
@@ -77,14 +78,14 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
     public void CloseBatch_AuthAndCapture() throws ApiException, InterruptedException {
         Transaction authTransaction =
                 creditCard
-                        .authorize(new BigDecimal("1.99"))
+                        .authorize(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -92,7 +93,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction captureTransaction =
                 authTransaction
-                        .capture(new BigDecimal("1.99"))
+                        .capture(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(captureTransaction, TransactionStatus.Captured);
@@ -101,7 +102,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(captureTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
@@ -111,12 +112,12 @@ public class GpApiBatchTests extends BaseGpApiTest {
         debitCard.setEntryMethod(EntryMethod.Proximity);
         debitCard.setPinBlock("AFEC374574FC90623D010000116001EE");
 
-
         Transaction transaction =
                 debitCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .withTagData(TAG_DATA)
+                        .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
 
         assertTransactionResponse(transaction, TransactionStatus.Captured);
@@ -125,7 +126,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
@@ -157,7 +158,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     public void CloseBatch_Refund_CreditTrackData() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -187,8 +188,9 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction transaction =
                 debitCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
+                        .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
 
         assertTransactionResponse(transaction, TransactionStatus.Captured);
@@ -197,7 +199,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
@@ -209,7 +211,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction transaction =
                 debitCard
-                        .authorize(new BigDecimal("1.99"))
+                        .authorize(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -249,7 +251,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction chargeTransaction =
                 card
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -259,7 +261,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.99"));
+        assertBatchCloseResponse(batchSummary, amount);
     }
 
     @Test
@@ -272,7 +274,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction chargeTransaction =
                 card
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -304,7 +306,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction transaction =
                 creditCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -323,7 +325,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
     public void CloseBatch_WithClosedBatchReference() throws ApiException, InterruptedException {
         Transaction transaction =
                 creditCard
-                        .charge(new BigDecimal("1.25"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -333,7 +335,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Thread.sleep(1000);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
-        assertBatchCloseResponse(batchSummary, new BigDecimal("1.25"));
+        assertBatchCloseResponse(batchSummary, amount);
 
         //TODO - remove when api fix polling issue
         Thread.sleep(1000);
@@ -395,7 +397,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction transaction =
                 creditCardData
-                        .charge(new BigDecimal("1.25"))
+                        .charge(amount)
                         .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -451,7 +453,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         Transaction transaction =
                 creditCard
-                        .charge(new BigDecimal("1.99"))
+                        .charge(amount)
                         .withCurrency("USD")
                         .execute(GP_API_CONFIG_NAME);
 

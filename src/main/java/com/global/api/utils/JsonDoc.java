@@ -217,6 +217,13 @@ public class JsonDoc {
         }
         return null;
     }
+    public BigDecimal getAmount(String name) {
+        String value = getString(name);
+        if(!StringUtils.isNullOrEmpty(value)) {
+            return StringUtils.toAmount(value);
+        }
+        return null;
+    }
 
     @SuppressWarnings("unchecked")
     public List<JsonDoc> getEnumerator(String name) {

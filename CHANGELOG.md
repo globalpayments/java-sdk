@@ -4,6 +4,17 @@
 
 ### Enhancements:
 
+- Tests clean up
+
+### Bug Fixes:
+
+---
+
+
+## v6.1.93 (05/08/2021)
+
+### Enhancements:
+
 - Upgrade GP-API to 2021-03-22 version and fix tests to support it
 - Add GP-API 3DS enhanced
 - 

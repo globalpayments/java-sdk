@@ -2,11 +2,8 @@ package com.global.api.entities.gpApi;
 
 import com.global.api.entities.gpApi.entities.GpApiAccount;
 import com.global.api.utils.JsonDoc;
-import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Date;

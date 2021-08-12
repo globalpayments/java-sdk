@@ -41,7 +41,7 @@ public class GpApiMapping {
 
                     batchSummary.setBatchReference(json.getString("id"));
                     batchSummary.setStatus(json.getString("status"));
-                    batchSummary.setTotalAmount(json.getDecimal("amount"));
+                    batchSummary.setTotalAmount(json.getAmount("amount"));
                     batchSummary.setTransactionCount(json.getInt("transaction_count"));
 
                     transaction.setBatchSummary(batchSummary);
@@ -74,7 +74,7 @@ public class GpApiMapping {
             }
 
             transaction.setTransactionId(json.getString("id"));
-            transaction.setBalanceAmount(json.getDecimal("amount"));
+            transaction.setBalanceAmount(json.getAmount("amount"));
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setResponseMessage(json.getString("status"));
             transaction.setReferenceNumber(json.getString("reference"));
@@ -116,7 +116,7 @@ public class GpApiMapping {
         summary.setDepositStatus(doc.getString("deposit_status"));
         summary.setTransactionType(doc.getString("type"));
         summary.setChannel(doc.getString("channel"));
-        summary.setAmount(doc.getDecimal("amount")); // TODO: Check if we have to transform the amount format
+        summary.setAmount(doc.getAmount("amount"));
         summary.setCurrency(doc.getString("currency"));
         summary.setReferenceNumber(doc.getString("reference"));
         summary.setClientTransactionId(doc.getString("reference"));
@@ -234,7 +234,7 @@ public class GpApiMapping {
         summary.setDepositDate(parseGpApiDate(doc.getString("time_created")));
         summary.setStatus(doc.getString("status"));
         summary.setType(doc.getString("funding_type"));
-        summary.setAmount(doc.getDecimal("amount"));
+        summary.setAmount(doc.getAmount("amount"));
         summary.setCurrency(doc.getString("currency"));
 
         if (doc.has("system")) {
@@ -248,13 +248,13 @@ public class GpApiMapping {
         if (doc.has("sales")) {
             JsonDoc sales = doc.get("sales");
             summary.setSalesTotalCount(sales.getInt("count"));
-            summary.setSalesTotalAmount(sales.getDecimal("amount"));
+            summary.setSalesTotalAmount(sales.getAmount("amount"));
         }
 
         if (doc.has("refunds")) {
             JsonDoc refunds = doc.get("refunds");
             summary.setRefundsTotalCount(refunds.getInt("count"));
-            summary.setRefundsTotalAmount(refunds.getDecimal("amount"));
+            summary.setRefundsTotalAmount(refunds.getAmount("amount"));
         }
 
         if (doc.has("disputes")) {
@@ -264,21 +264,21 @@ public class GpApiMapping {
                 JsonDoc chargebacks = disputes.get("chargebacks");
 
                 summary.setChargebackTotalCount(chargebacks.getInt("count"));
-                summary.setChargebackTotalAmount(chargebacks.getDecimal("amount"));
+                summary.setChargebackTotalAmount(chargebacks.getAmount("amount"));
             }
 
             if (disputes.has("reversals")) {
                 JsonDoc reversals = disputes.get("reversals");
 
                 summary.setAdjustmentTotalCount(reversals.getInt("count"));
-                summary.setAdjustmentTotalAmount(reversals.getDecimal("amount"));
+                summary.setAdjustmentTotalAmount(reversals.getAmount("amount"));
             }
         }
 
         if (doc.has("fees")) {
             JsonDoc fees = doc.get("fees");
 
-            summary.setFeesTotalAmount(fees.getDecimal("amount"));
+            summary.setFeesTotalAmount(fees.getAmount("amount"));
         }
 
         if (doc.has("bank_transfer")) {
@@ -297,7 +297,7 @@ public class GpApiMapping {
         summary.setCaseIdTime(parseGpApiDate(doc.getString("time_created")));
         summary.setCaseStatus(doc.getString("status"));
         summary.setCaseStage(doc.getString("stage"));
-        summary.setCaseAmount(doc.getDecimal("amount"));
+        summary.setCaseAmount(doc.getAmount("amount"));
         summary.setCaseCurrency(doc.getString("currency"));
 
         summary.setReasonCode(doc.getString("reason_code"));
@@ -314,19 +314,10 @@ public class GpApiMapping {
             summary.setMerchantDbaName(system.getString("dba"));
         }
 
-        summary.setLastAdjustmentAmount(doc.getDecimal("last_adjustment_amount"));
+        summary.setLastAdjustmentAmount(doc.getAmount("last_adjustment_amount"));
         summary.setLastAdjustmentCurrency(doc.getString("last_adjustment_currency"));
         summary.setLastAdjustmentFunding(doc.getString("last_adjustment_funding"));
 
-//        if (doc.has("transaction")) {
-//            JsonDoc transaction = doc.get("transaction");
-//
-//            summary.setTransactionTime(parseGpApiDate(transaction.getString("time_created")));
-//            summary.setTransactionType(transaction.getString("type"));
-//            summary.setTransactionAmount(transaction.getDecimal("amount"));
-//            summary.setTransactionCurrency(transaction.getString("currency"));
-//            summary.setTransactionReferenceNumber(transaction.getString("reference"));
-//
         if (doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
 
@@ -338,7 +329,6 @@ public class GpApiMapping {
                 summary.setTransactionCardType(card.getString("brand"));
             }
         }
-//        }
 
         String timeToRespondBy = doc.getString("time_to_respond_by");
         if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
@@ -360,7 +350,7 @@ public class GpApiMapping {
 
             summary.setTransactionTime(parseGpApiDate(transaction.getString("time_created")));
             summary.setTransactionType(transaction.getString("type"));
-            summary.setTransactionAmount(transaction.getDecimal("amount"));
+            summary.setTransactionAmount(transaction.getAmount("amount"));
             summary.setTransactionCurrency(transaction.getString("currency"));
             summary.setTransactionReferenceNumber(transaction.getString("reference"));
 
@@ -402,7 +392,7 @@ public class GpApiMapping {
                                     null);
             threeDSecure.setStatus(json.getString("status"));
             threeDSecure.setCurrency(json.getString("currency"));
-            threeDSecure.setAmount(json.getDecimal("amount"));
+            threeDSecure.setAmount(json.getAmount("amount"));
 
             if (json.has("three_ds")) {
                 JsonDoc three_ds = json.get("three_ds");
@@ -433,7 +423,7 @@ public class GpApiMapping {
                 );
 
                 threeDSecure.setCurrency(json.getString("currency"));
-                threeDSecure.setAmount(json.getDecimal("amount"));
+                threeDSecure.setAmount(json.getAmount("amount"));
                 threeDSecure.setAuthenticationValue(three_ds.getString("authentication_value"));
                 threeDSecure.setDirectoryServerTransactionId(three_ds.getString("ds_trans_ref"));
                 threeDSecure.setAcsTransactionId(three_ds.getString("acs_trans_ref"));

@@ -13,10 +13,8 @@ import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +25,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
 
     private final ActionSummary sampleAction;
 
-    public GpApiActionsReportTests() throws ApiException, ParseException {
+    public GpApiActionsReportTests() throws ApiException {
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
@@ -90,7 +88,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
-            assertEquals(actionId,el.getId());
+            assertEquals(actionId, el.getId());
         }
     }
 
@@ -174,15 +172,15 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
     public void ReportFindActionsPaged_By_ResourceId() throws ApiException {
         String resourceId = sampleAction.getResourceId();
 
-        if(StringUtils.isNullOrEmpty(resourceId)) {
+        if (StringUtils.isNullOrEmpty(resourceId)) {
             List<ActionSummary> results = ReportingService
                     .findActionsPaged(1, 25)
                     .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -5))
                     .execute(GP_API_CONFIG_NAME).getResults();
 
-            for(ActionSummary actionSummary : results) {
+            for (ActionSummary actionSummary : results) {
                 resourceId = actionSummary.getResourceId();
-                if( !StringUtils.isNullOrEmpty(resourceId)) {
+                if (!StringUtils.isNullOrEmpty(resourceId)) {
                     resourceId = actionSummary.getResourceId();
                     break;
                 }
@@ -221,7 +219,6 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
         }
     }
 
-    @Ignore
     @Test
     public void ReportFindActionsPaged_By_RandomMerchantName() throws ApiException {
         String merchantName = "Sandbox_merchant_" + UUID.randomUUID();
@@ -236,7 +233,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
             assertEquals("40003", ex.getResponseText());
-            assertEquals("Status Code: Forbidden - Token does not match merchant_name in the request", ex.getMessage());
+            assertEquals("Status Code: 403 - Token does not match merchant_name in the request", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -325,7 +322,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindActionsPaged_By_ResponseCode() throws ApiException {
-		String responseCode = !StringUtils.isNullOrEmpty(sampleAction.getResponseCode()) ? sampleAction.getResponseCode() : "SUCCESS";
+        String responseCode = !StringUtils.isNullOrEmpty(sampleAction.getResponseCode()) ? sampleAction.getResponseCode() : "SUCCESS";
 
         ActionSummaryPaged result =
                 ReportingService
@@ -334,7 +331,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
-        for(ActionSummary el : result.getResults()) {
+        for (ActionSummary el : result.getResults()) {
             assertEquals(responseCode, el.getResponseCode());
         }
     }
@@ -350,7 +347,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
-        for(ActionSummary el : result.getResults()) {
+        for (ActionSummary el : result.getResults()) {
             assertEquals(responseCode, el.getResponseCode());
         }
     }
@@ -483,7 +480,7 @@ public class GpApiActionsReportTests extends BaseGpApiTest {
 
         List<ActionSummary> results = result.getResults();
         assertNotNull(results);
-        for(ActionSummary el :  results) {
+        for (ActionSummary el : results) {
             assertEquals(actionType, el.getType());
             assertEquals(resource, el.getResource());
             assertEquals(resourceStatus, el.getResourceStatus());

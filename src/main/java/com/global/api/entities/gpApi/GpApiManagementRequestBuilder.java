@@ -115,7 +115,7 @@ public class GpApiManagementRequestBuilder {
         }
         else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
-                            .set("amount", builder.getAmount().toString());
+                            .set("amount", builder.getAmount());
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)

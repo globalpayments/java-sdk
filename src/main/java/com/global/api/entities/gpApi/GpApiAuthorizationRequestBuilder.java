@@ -15,6 +15,7 @@ import com.global.api.utils.StringUtils;
 import java.util.UUID;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
+import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiAuthorizationRequestBuilder {
@@ -40,14 +41,18 @@ public class GpApiAuthorizationRequestBuilder {
             //card.set("track", "");
             card.set("tag", builder.getTagData());
             card.set("cvv", cardData.getCvn());
-            card.set("cvv_indicator", !cardData.getCvnPresenceIndicator().getValue().equals("0") ? getCvvIndicator(cardData.getCvnPresenceIndicator()) : null); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
             card.set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "");
             card.set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
-            card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
             card.set("authcode", builder.getOfflineAuthCode());
             //card.set("brand_reference", "")
 
             card.set("chip_condition", builder.getEmvChipCondition()); // [PREV_SUCCESS, PREV_FAILED]
+
+            // Avoid setting transaction types requesting to: POST /payment-methods
+            if (!(builderTransactionType == TransactionType.Tokenize || builderTransactionType == TransactionType.Verify)) {
+                card.set("cvv_indicator", !getValueIfNotNull(cardData.getCvnPresenceIndicator()).equals("0") ? getCvvIndicator(cardData.getCvnPresenceIndicator()) : null); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
+                card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
+            }
 
             paymentMethod.set("card", card);
 
@@ -189,6 +194,11 @@ public class GpApiAuthorizationRequestBuilder {
             }
         }
 
+        if(builderPaymentMethod instanceof EBT) {
+            EBT ebt = (EBT) builderPaymentMethod;
+            paymentMethod.set("name", ebt.getCardHolderName());
+        }
+
         // Encryption
         if (builderPaymentMethod instanceof IEncryptable) {
             IEncryptable encryptable = (IEncryptable) builderPaymentMethod;
@@ -297,11 +307,14 @@ public class GpApiAuthorizationRequestBuilder {
     }
 
     private static String getCvvIndicator(CvnPresenceIndicator cvnPresenceIndicator) {
+        if(cvnPresenceIndicator == null) return "";
         switch (cvnPresenceIndicator) {
             case Present:
                 return "PRESENT";
             case Illegible:
                 return "ILLEGIBLE";
+            case NotOnCard:
+                return "NOT_ON_CARD";
             default:
                 return "NOT_PRESENT";
         }

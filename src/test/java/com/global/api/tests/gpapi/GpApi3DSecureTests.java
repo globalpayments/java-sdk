@@ -38,7 +38,6 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     private final static String SUCCESS_AUTHENTICATED = "SUCCESS_AUTHENTICATED";
 
     private CreditCardData card;
-    private RecurringPaymentMethod stored;
     private final Address shippingAddress;
     private final Address billingAddress;
     private final BrowserData browserData;
@@ -66,7 +65,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         card.setCardHolderName("John Smith");
 
         // Stored card
-        stored = new RecurringPaymentMethod("20190809-Realex", "20190809-Realex-Credit");
+        RecurringPaymentMethod stored = new RecurringPaymentMethod("20190809-Realex", "20190809-Realex-Credit");
 
         // Shipping address
         shippingAddress = new Address();
@@ -629,13 +628,14 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     public void Frictionless_AuthenticationSuccessful_FullCycle_v2_DifferentAmount() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+        BigDecimal amount = new BigDecimal("10.01");
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
                         .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -646,7 +646,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertNotNull(secureEcom.getChallengeReturnUrl());
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNotNull(secureEcom.getMessageType());
-        assertEquals(new BigDecimal("1001"), secureEcom.getAmount());
+        assertEquals(amount, secureEcom.getAmount());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -671,7 +671,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertNotNull(initAuth.getChallengeReturnUrl());
         assertNotNull(initAuth.getSessionDataFieldName());
         assertNotNull(initAuth.getMessageType());
-        assertEquals(new BigDecimal("1001"), initAuth.getAmount());
+        assertEquals(amount, initAuth.getAmount());
 
         // Get authentication data
         secureEcom =
@@ -685,7 +685,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
         assertEquals("05", secureEcom.getEci());
-        assertEquals(new BigDecimal("1001"), secureEcom.getAmount());
+        assertEquals(amount, secureEcom.getAmount());
 
         card.setThreeDSecure(secureEcom);
 
@@ -760,10 +760,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
      * This 3DS ACS client mocks the ACS Authentication Simulator used for testing purposes
      */
     public static class GpApi3DSecureAcsClient {
-        private final String _redirectUrl;
 
         public GpApi3DSecureAcsClient(String redirectUrl) {
-            _redirectUrl = redirectUrl;
         }
 
         private String submitFormData(String formUrl, List<HashMap<String, String>> formData) throws GatewayException {
