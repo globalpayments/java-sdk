@@ -234,7 +234,7 @@ public class RealexHppResponseTests {
         Transaction response = _service.parseResponse(responseJson, false);
 
         assertEquals("12345", response.getAuthorizationCode());
-        assertEquals("MULTI", response.getMultiCapture());
+        assertEquals("MULTI", response.getAutoSettleFlag());
         assertEquals(new BigDecimal("1999"), response.getAuthorizedAmount());
         assertEquals("M", response.getAvsResponseCode());
         assertEquals("GTI5Yxb0SumL_TkDMCAxQA", response.getOrderId());

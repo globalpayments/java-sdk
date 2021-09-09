@@ -22,12 +22,14 @@ import java.util.LinkedList;
 public class Transaction {
     private String additionalResponseCode;
     private BigDecimal authorizedAmount;
+    @Getter @Setter private String autoSettleFlag;
     private BigDecimal availableBalance;
     private String avsResponseCode;
     private String avsResponseMessage;
     private BigDecimal balanceAmount;
     private BatchSummary batchSummary;
     private String cardBrandTransactionId;
+    @Getter @Setter private AlternativePaymentResponse alternativePaymentResponse;
     private String cardType;
     private String cardLast4;
     private String cardNumber;
@@ -44,9 +46,14 @@ public class Transaction {
     @Getter @Setter private FraudResponse fraudResponse;
     private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
+    @Getter @Setter private boolean multiCapture;
+    public boolean isMultiCapture() {
+        return (multiCapturePaymentCount != null && multiCapturePaymentCount != null);
+    }
+    @Getter @Setter private Integer multiCapturePaymentCount;
+    @Getter @Setter private Integer multiCaptureSequence;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
-    private String multiCapture;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;
     private String recurringDataCode;
@@ -267,12 +274,6 @@ public class Transaction {
         }
         transactionReference.setMessageTypeIndicator(value);
     }
-    public String getMultiCapture() {
-		return multiCapture;
-	}
-	public void setMultiCapture(String multiCapture) {
-		this.multiCapture = multiCapture;
-	}
 	public HashMap<String, String> getResponseValues() {
         return responseValues;
     }
@@ -467,9 +468,16 @@ public class Transaction {
         return capture(null);
     }
     public ManagementBuilder capture(BigDecimal amount) {
-        return new ManagementBuilder(TransactionType.Capture)
-                .withPaymentMethod(transactionReference)
-                .withAmount(amount);
+        ManagementBuilder builder =
+                new ManagementBuilder(TransactionType.Capture)
+                        .withPaymentMethod(transactionReference)
+                        .withAmount(amount);
+
+        if (isMultiCapture()) {
+            builder.withMultiCapture(getMultiCaptureSequence(), getMultiCapturePaymentCount());
+        }
+
+        return builder;
     }
 
     public ManagementBuilder cancel() {

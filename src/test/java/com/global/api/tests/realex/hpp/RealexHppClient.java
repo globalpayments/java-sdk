@@ -1,24 +1,28 @@
 package com.global.api.tests.realex.hpp;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.Address;
+import com.global.api.entities.FraudResponse;
+import com.global.api.entities.FraudRuleCollection;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.FraudFilterMode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GatewayConfig;
-import com.global.api.utils.GenerationUtils;
-import com.global.api.utils.JsonDoc;
-import com.global.api.utils.JsonEncoders;
-import com.global.api.utils.StringUtils;
+import com.global.api.utils.*;
+
+import java.util.ArrayList;
+
+import java.util.ArrayList;
 
 public class RealexHppClient {
     private String serviceUrl;
     private String sharedSecret;
     private CreditCardData card;
 
+    // TODO: Check why in .NET the url is not needed
     public RealexHppClient(String url, String sharedSecret) {
         this.serviceUrl = url;
         this.sharedSecret = sharedSecret;
@@ -33,7 +37,9 @@ public class RealexHppClient {
 
     public String sendRequest(String request) throws ApiException {
         // gather information
-        JsonDoc json = JsonDoc.parse(request, JsonEncoders.base64Encoder());
+        IRequestEncoder encoder = request.contains("\"HPP_VERSION\":\"2\"") ? null : JsonEncoders.base64Encoder();
+        JsonDoc json = JsonDoc.parse(request, encoder);
+
         if(json == null)
             throw new ApiException("Failed to parse request.");
         
@@ -46,8 +52,30 @@ public class RealexHppClient {
         boolean autoSettle = json.getString("AUTO_SETTLE_FLAG").equals("1");
         String requestHash = json.getString("SHA1HASH");
 
+        ArrayList<String> hashParam = new ArrayList<>();
+        hashParam.add(timestamp);
+        hashParam.add(merchantId);
+        hashParam.add(orderId);
+        hashParam.add(amount);
+        hashParam.add(currency);
+
+        // for stored card
+        if (json.has("OFFER_SAVE_CARD")) {
+            if (json.has("PAYER_REF")) {
+                hashParam.add(json.getString("PAYER_REF"));
+            }
+            if (json.has("PMT_REF")) {
+                hashParam.add(json.getString("PMT_REF"));
+            }
+        }
+
+        if (json.has("HPP_FRAUDFILTER_MODE"))
+        {
+            hashParam.add(json.getString("HPP_FRAUDFILTER_MODE"));
+        }
+
         // check hash
-        String newhash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, amount, currency);
+        String newhash = GenerationUtils.generateHash(sharedSecret, hashParam.toArray(new String[0]));
         if (!newhash.equals(requestHash)) {
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
         }
@@ -66,6 +94,7 @@ public class RealexHppClient {
         String shippingCountry = json.getString("SHIPPING_CO");
         String billingCode = json.getString("BILLING_CODE");
         String billingCountry = json.getString("BILLING_CO");
+        String fraudFilterMode = json.getString("HPP_FRAUDFILTER_MODE");
 
         // build request
         AuthorizationBuilder gatewayRequest = null;
@@ -101,12 +130,29 @@ public class RealexHppClient {
         if(shipping != null)
             gatewayRequest.withAddress(shipping, AddressType.Shipping);
 
+        //handle fraud management
+        if(fraudFilterMode != null) {
+            gatewayRequest.withFraudFilter(FraudFilterMode.fromString(fraudFilterMode), getFraudFilterRules(json));
+        }
+
         Transaction gatewayResponse = gatewayRequest.execute("realexResponder");
-        if (gatewayResponse.getResponseCode().equals("00"))
+        if (gatewayResponse.getResponseCode().equals("00")) {
             return convertResponse(json, gatewayResponse);
-        else throw new ApiException(gatewayResponse.getResponseMessage());
+        } else {
+            throw new ApiException(gatewayResponse.getResponseMessage());
+        }
     }
-    
+
+    private FraudRuleCollection getFraudFilterRules(JsonDoc json) {
+        FraudRuleCollection rules = new FraudRuleCollection();
+        for(String hppKey : json.getKeys()) {
+            if (hppKey.startsWith("HPP_FRAUDFILTER_RULE_")) {
+                rules.addRule(hppKey.replace("HPP_FRAUDFILTER_RULE_", ""), FraudFilterMode.fromString(json.getString(hppKey)));
+            }
+        }
+        return rules.getRules().isEmpty() ? null : rules;
+    }
+
     private String convertResponse(JsonDoc request, Transaction trans) {
         String merchantId = request.getString("MERCHANT_ID");
         String account = request.getString("ACCOUNT");
@@ -135,6 +181,17 @@ public class RealexHppClient {
         response.set("MESSAGE", trans.getResponseMessage());
         response.set("AMOUNT", StringUtils.toNumeric(trans.getAuthorizedAmount()));
         response.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, trans.getTimestamp(), merchantId, trans.getOrderId(), trans.getResponseCode(), trans.getResponseMessage(), trans.getTransactionId(), trans.getAuthorizationCode()));
+        response.set("DCC_INFO_REQUST", request.getString("DCC_INFO"));
+        // TODO: Check
+        // response.set("DCC_INFO_RESPONSE", trans.getDccResponseResult());
+        response.set("HPP_FRAUDFILTER_MODE", request.getString("HPP_FRAUDFILTER_MODE"));
+        response.set("HPP_FRAUDFILTER_RESULT", trans.getFraudResponse().getResult());
+
+        for (FraudResponse.Rule fraudResponseRule : trans.getFraudResponse().getRules()) {
+            response.set("HPP_FRAUDFILTER_RULE_" + fraudResponseRule.getId(), fraudResponseRule.getAction());
+        }
+
+        response.set("TSS_INFO", request.getString("TSS_INFO"));
 
         return response.toString();
     }

@@ -25,11 +25,9 @@ public class FraudResponse {
     private String result;
     private ArrayList<Rule> rules;
 
-    public void addRule(Rule rule) {
-        if(rules == null) {
-            rules = new ArrayList<>();
-        }
-        rules.add(rule);
+    public FraudResponse()
+    {
+        rules = new ArrayList<>();
     }
 
 }

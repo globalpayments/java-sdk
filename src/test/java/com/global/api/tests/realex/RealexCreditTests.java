@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class RealexCreditTests {
     private CreditCardData card;
 
+    // Similar to ApiCaseTest.php file in the PHP-SDK
     public RealexCreditTests() throws ApiException {
         GatewayConfig config = new GatewayConfig();
         config.setMerchantId("heartlandgpsandbox");
@@ -441,6 +442,71 @@ public class RealexCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void FraudManagementDataSubmissionWithRules() throws ApiException {
+        final String rule1 = "853c1d37-6e9f-467e-9ffc-182210b40c6b";
+        final String rule2 = "f9b93363-4f4e-4d31-b7a2-1f816f461ada";
+        FraudRuleCollection rules = new FraudRuleCollection();
+        rules.addRule(rule1, FraudFilterMode.Off);
+        rules.addRule(rule2, FraudFilterMode.Active);
+
+        // create the card object
+        card = new CreditCardData();
+        card.setNumber("4263970000005262");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("131");
+        card.setCardHolderName("James Mason");
+
+        // supply the customer's billing country and post code for avs checks
+        Address billingAddress = new Address();
+        billingAddress.setPostalCode("50001|Flat 123");
+        billingAddress.setCountry("US");
+
+        // supply the customer's shipping country and post code
+        Address shippingAddress = new Address();
+        shippingAddress.setPostalCode("654|123");
+        shippingAddress.setCountry("FR");
+
+        // create the delayed settle authorization
+        Transaction response =
+                card
+                        .charge(new BigDecimal("10"))
+                        .withCurrency("EUR")
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withProductId("SID9838383") // prodid
+                        .withClientTransactionId("Car Part HV") // varref
+                        .withCustomerId("E8953893489") // custnum
+                        .withCustomerIpAddress("123.123.123.123")
+                        .withFraudFilter(FraudFilterMode.Passive, rules)
+                        .execute();
+
+        String responseCode = response.getResponseCode(); // 00 == Success
+        String message = response.getResponseMessage(); // [ test system ] AUTHORISED
+        // get the response details to save to the DB for future transaction management requests
+        String orderId = response.getOrderId();
+        String authCode = response.getAuthorizationCode();
+        String paymentsReference = response.getTransactionId(); // pasref
+
+        assertNotNull(response);
+        assertEquals("00", responseCode);
+        assertNotNull(response.getFraudResponse());
+        assertEquals(FraudFilterMode.Passive, response.getFraudResponse().getMode());
+        assertEquals("PASS", response.getFraudResponse().getResult());
+        for(FraudResponse.Rule rule : response.getFraudResponse().getRules()) {
+            switch (rule.getId()) {
+                case rule1:
+                    assertEquals("NOT_EXECUTED", rule.getAction());
+                    assertEquals("Block Card Number", rule.getName());
+                    break;
+                case rule2:
+                    assertEquals("PASS", rule.getAction());
+                    assertEquals("Block Country", rule.getName());
+            }
+        }
     }
 
     @Test

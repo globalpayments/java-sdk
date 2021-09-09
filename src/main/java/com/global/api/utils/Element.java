@@ -183,9 +183,12 @@ public class Element {
     }
 
     private org.w3c.dom.Element getElementByTagName(String tagName) {
-        org.w3c.dom.Element node;
+        org.w3c.dom.Element node = null;
 
-        node = (org.w3c.dom.Element) element.getElementsByTagName(tagName).item(0);
+        if(element != null ) {
+            node = (org.w3c.dom.Element) element.getElementsByTagName(tagName).item(0);
+        }
+
         if(node == null) {
             node = (org.w3c.dom.Element) doc.getElementsByTagName(tagName).item(0);
         }

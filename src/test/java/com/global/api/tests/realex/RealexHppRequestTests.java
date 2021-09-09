@@ -1,9 +1,6 @@
 package com.global.api.tests.realex;
 
-import com.global.api.entities.Address;
-import com.global.api.entities.Customer;
-import com.global.api.entities.HostedPaymentData;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -21,6 +18,8 @@ import static org.junit.Assert.*;
 public class RealexHppRequestTests {
     private HostedService _service;
     private RealexHppClient _client;
+    private Address billingAddress;
+    private Address shippingAddress;
 
     public RealexHppRequestTests() throws ApiException {
         _client = new RealexHppClient("https://pay.sandbox.realexpayments.com/pay", "secret");
@@ -37,6 +36,20 @@ public class RealexHppRequestTests {
         config.setHostedPaymentConfig(hostedConfig);
 
         _service = new HostedService(config);
+
+        // billing address
+        billingAddress = new Address();
+        billingAddress.setStreetAddress1("Flat 123");
+        billingAddress.setStreetAddress2("House 456");
+        billingAddress.setPostalCode("50001");
+        billingAddress.setCountry("US");
+
+        // shipping address
+        shippingAddress = new Address();
+        shippingAddress.setStreetAddress1("Flat 456");
+        shippingAddress.setStreetAddress2("House 123");
+        shippingAddress.setPostalCode("WB3 A21");
+        shippingAddress.setCountry("GB");
     }
 
     @Test
@@ -206,7 +219,7 @@ public class RealexHppRequestTests {
                 .withClientTransactionId("My Legal Entity")
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CUST_NUM\": \"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\", \"PROD_ID\": \"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\", \"COMMENT1\": \"Mobile Channel\", \"HPP_LANG\": \"EN\", \"CARD_PAYMENT_BUTTON\": \"Place Order\", \"VAR_REF\": \"My Legal Entity\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CUST_NUM\": \"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\", \"PROD_ID\": \"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\", \"COMMENT1\": \"Mobile Channel\", \"HPP_LANG\": \"EN\", \"CARD_PAYMENT_BUTTON\": \"Place Order\", \"VAR_REF\": \"My Legal Entity\", \"PAYER_EXIST\": \"1\"}";
 
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
@@ -238,7 +251,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"0\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -270,7 +283,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"0\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -302,7 +315,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"0\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -335,7 +348,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"0\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -366,7 +379,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\", \"PAYER_EXIST\": \"0\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -558,7 +571,7 @@ public class RealexHppRequestTests {
                 .withAddress(billingAddress, AddressType.Billing)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\", \"HPP_BILLING_POSTALCODE\": \"50001\", \"HPP_BILLING_COUNTRY\":\"840\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -588,7 +601,7 @@ public class RealexHppRequestTests {
                 .withAddress(shippingAddress, AddressType.Shipping)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"50001\", \"SHIPPING_CO\": \"US\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"50001\", \"SHIPPING_CO\": \"US\", \"HPP_SHIPPING_COUNTRY\":\"840\", \"HPP_SHIPPING_POSTALCODE\":\"50001\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -623,7 +636,7 @@ public class RealexHppRequestTests {
                 .withAddress(shippingAddress, AddressType.Shipping)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"654|123\", \"SHIPPING_CO\": \"GB\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\"}";
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"HPP_SHIPPING_COUNTRY\":\"826\",\"SHIPPING_CODE\":\"654123\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"HPP_SHIPPING_POSTALCODE\":\"654|123\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"AUTO_SETTLE_FLAG\":\"1\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"061609f85a8e0191dc7f487f8278e71898a2ee2d\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"1999\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"SHIPPING_CO\":\"GB\",\"MERCHANT_ID\":\"MerchantId\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -730,6 +743,96 @@ public class RealexHppRequestTests {
         String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CURRENCY\":\"EUR\",\"AUTO_SETTLE_FLAG\":\"1\",\"SHA1HASH\":\"89ed337102ebe5992f022cf3194c4f28d6bcfa0e\",\"AMOUNT\":\"1999\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\"}";
 
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+    }
+
+    @Test
+    public void FraudManagementRequestWithRules() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("myMerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setLanguage("GB");
+        hostedPaymentConfig.setResponseUrl("https://www.example.com/response");
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+        hostedPaymentConfig.setFraudFilterMode(FraudFilterMode.Passive);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        FraudRuleCollection rules = new FraudRuleCollection();
+        String rule1 = "2603986b-3a17-410f-b05a-003f9d955a0f";
+        String rule2 = "a7a0918d-20d7-444f-bf07-65f7d320be91";
+        rules.addRule(rule1, FraudFilterMode.Active);
+        rules.addRule(rule2, FraudFilterMode.Off);
+
+        config.getHostedPaymentConfig().setFraudFilterRules(rules);
+
+        HostedService service = new HostedService(config);
+        RealexHppClient client = new RealexHppClient("https://pay.sandbox.realexpayments.com/pay","secret");
+
+        // data to be passed to the HPP along with transaction level settings
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setCustomerNumber("E8953893489"); // display the save card tick box
+        hostedPaymentData.setProductId("SID9838383"); // new customer
+
+        //serialize the request
+        String json = service
+                .charge(new BigDecimal("19.99"))
+                .withCurrency("EUR")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withClientTransactionId("Car Part HV") // varref
+                .withCustomerIpAddress("123.123.123.123")
+                .withHostedPaymentData(hostedPaymentData)
+                .serialize();
+
+        assertNotNull(json);
+
+        //make API call
+        String response = client.sendRequest(json);
+        assertNotNull(response);
+
+        Transaction parsedResponse = service.parseResponse(response, true);
+        assertNotNull(parsedResponse);
+        assertEquals("00", parsedResponse.getResponseCode());
+        assertEquals(FraudFilterMode.Passive.getValue(), parsedResponse.getResponseValues().get("HPP_FRAUDFILTER_MODE"));
+        assertEquals("PASS", parsedResponse.getResponseValues().get("HPP_FRAUDFILTER_RESULT"));
+        assertEquals("PASS", parsedResponse.getResponseValues().get("HPP_FRAUDFILTER_RULE_" + rule1));
+        assertEquals("NOT_EXECUTED", parsedResponse.getResponseValues().get("HPP_FRAUDFILTER_RULE_" + rule2));
+    }
+
+    @Test
+    public void fraudWithFraudRules() throws ApiException {
+        String ruleId = "853c1d37-6e9f-467e-9ffc-182210b40c6b";
+        FraudFilterMode mode = FraudFilterMode.Off;
+        FraudRuleCollection fraudRuleCollection = new FraudRuleCollection();
+        fraudRuleCollection.addRule(ruleId, mode);
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setResponseUrl("https://www.example.com/response");
+        hostedPaymentConfig.setFraudFilterMode(FraudFilterMode.Passive);
+        hostedPaymentConfig.setFraudFilterRules(fraudRuleCollection);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        HostedService service = new HostedService(config);
+
+        String hppJson = service
+                .charge(new BigDecimal("19.99"))
+                .withCurrency("EUR")
+                .serialize();
+
+        String response = _client.sendRequest(hppJson);
+        Transaction parsedResponse = _service.parseResponse(response, true);
+        assertNotNull(response);
+        assertEquals("00", parsedResponse.getResponseCode());
     }
 
     @Test
@@ -910,7 +1013,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"1384392a30abbd7a1993e33c308bf9a2bd354d48\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"1384392a30abbd7a1993e33c308bf9a2bd354d48\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"PAYER_EXIST\": \"1\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -941,7 +1044,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"c10b55c16276366ced59174cbab20a6eeeec16c9\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"c10b55c16276366ced59174cbab20a6eeeec16c9\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"PAYER_EXIST\": \"1\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -972,7 +1075,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"73236b35e253215380a9bf2f7a1f11ac23204224\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"73236b35e253215380a9bf2f7a1f11ac23204224\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"PAYER_EXIST\": \"1\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -1003,7 +1106,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_EXIST\": \"1\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -1035,7 +1138,8 @@ public class RealexHppRequestTests {
 
         Address shippingAddress = new Address();
         shippingAddress.setCountry("GB");
-        shippingAddress.setPostalCode("654|123");
+        shippingAddress.setPostalCode("654");
+        shippingAddress.setStreetAddress1("123");
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setCustomerExists(true);
@@ -1054,7 +1158,7 @@ public class RealexHppRequestTests {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"1384392a30abbd7a1993e33c308bf9a2bd354d48\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"654|123\", \"SHIPPING_CO\": \"GB\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\", \"CARD_PAYMENT_BUTTON\": \"Place Order\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"DCC_ENABLE\": \"1\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\", \"HPP_LANG\": \"EN\", \"RETURN_TSS\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"CUST_NUM\": \"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\", \"PROD_ID\": \"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\"}";
+        String expectedJson = "{\"SHIPPING_CODE\":\"654|123\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_SHIPPING_STREET1\":\"123\",\"DCC_ENABLE\":\"1\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"1\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"RETURN_TSS\":\"1\",\"AMOUNT\":\"1999\",\"TIMESTAMP\":\"20170725154824\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"CURRENCY\":\"EUR\",\"HPP_SHIPPING_COUNTRY\":\"826\",\"HPP_SELECT_STORED_CARD\":\"376a2598-412d-4805-9f47-c177d5605853\",\"PAYER_EXIST\":\"1\",\"HPP_SHIPPING_POSTALCODE\":\"654\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_LANG\":\"EN\",\"CARD_STORAGE_ENABLE\":\"1\",\"SHA1HASH\":\"1384392a30abbd7a1993e33c308bf9a2bd354d48\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\",\"BILLING_CO\":\"US\",\"CARD_PAYMENT_BUTTON\":\"Place Order\",\"HPP_VERSION\":\"2\",\"SHIPPING_CO\":\"GB\",\"MERCHANT_ID\":\"MerchantId\"}";
         assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -1088,7 +1192,7 @@ public class RealexHppRequestTests {
 				.withHostedPaymentData(testHostedPaymentData)
 				.serialize();
 
-		String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\",\"HPP_CUSTOMER_COUNTRY\": \"DE\",\"HPP_CUSTOMER_FIRSTNAME\": \"James\",\"HPP_CUSTOMER_LASTNAME\": \"Mason\",\"MERCHANT_RESPONSE_URL\": \"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\": \"https://www.example.com/statusUrl\",\"PM_METHODS\": \"astropaydirect|aura|baloto|banamex\"}";
+		String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\",\"HPP_CUSTOMER_COUNTRY\": \"DE\",\"HPP_CUSTOMER_FIRSTNAME\": \"James\",\"HPP_CUSTOMER_LASTNAME\": \"Mason\",\"MERCHANT_RESPONSE_URL\": \"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\": \"https://www.example.com/statusUrl\",\"PM_METHODS\": \"astropaydirect|aura|baloto|banamex\", \"PAYER_EXIST\": \"1\"}";
 		assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
 	}
 
@@ -1195,7 +1299,7 @@ public class RealexHppRequestTests {
                 .withSupplementaryData("HPP_FRAUDFILTER_MODE", "ACTIVE")
                 .serialize();
 
-        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"US\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\"}";
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\"}";
 
         assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
@@ -1249,8 +1353,7 @@ public class RealexHppRequestTests {
                 .withSupplementaryData("RANDOM_KEY", "RANDOM_VALUE1", "RANDOM_VALUE2")
                 .serialize();
 
-        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"US\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\"}";
-
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\"}";
         assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 

@@ -20,8 +20,12 @@ import lombok.Setter;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -115,6 +119,23 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
         headers.put(org.apache.http.HttpHeaders.ACCEPT_ENCODING, "gzip");
         headers.put("X-GP-Version", GP_API_VERSION);
+        headers.put("x-gp-sdk", "java;version=" + getReleaseVersion());
+
+        dynamicHeaders = config.getDynamicHeaders();
+    }
+
+    // Get the SDK release version
+    private String getReleaseVersion() {
+        String version = "";
+        try {
+            Document pomXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("pom.xml"));
+            Element pomRoot = (Element) pomXml.getElementsByTagName("project").item(0);
+            version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
+        } catch (Exception ex) {
+            if (gpApiConfig.isEnableLogging())
+                System.out.println("JAVA SDK version could not be extracted from pom.xml file.");
+        }
+        return version;
     }
 
     void signIn() throws GatewayException {

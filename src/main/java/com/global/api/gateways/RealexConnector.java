@@ -73,17 +73,27 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // Build Request
-        Element request = et.element("request")
-                .set("timestamp", timestamp)
-                .set("type", mapAuthRequestType(builder));
+        Element request =
+                et.element("request")
+                        .set("type", mapAuthRequestType(builder))
+                        .set("timestamp", timestamp);
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
-        et.subElement(request, "channel", channel);
-        et.subElement(request, "orderid", orderId);
         if(builder.getAmount() != null) {
             et.subElement(request, "amount").text(StringUtils.toNumeric(builder.getAmount()))
                     .set("currency", builder.getCurrency());
         }
+
+        // region AUTO/MULTI SETTLE
+        //<editor-fold desc="AUTO/MULTI SETTLE">
+        if (builder.getTransactionType() == TransactionType.Sale || builder.getTransactionType() == TransactionType.Auth) {
+            String autoSettle = builder.getTransactionType() == TransactionType.Sale ? "1" : builder.isMultiCapture() ? "MULTI" : "0";
+            et.subElement(request, "autosettle").set("flag", autoSettle);
+        }
+        //</editor-fold>
+
+        et.subElement(request, "channel", channel);
+        et.subElement(request, "orderid", orderId);
 
         // Hydrate the payment data fields
         //<editor-fold desc="CREDIT CARD DATA">
@@ -92,8 +102,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
             // for google-pay & apple-pay
             if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
-                et.subElement(request, "mobile", card.getMobileType().getValue());
                 et.subElement(request, "token", card.getToken());
+                et.subElement(request, "mobile", card.getMobileType().getValue());
             }
             else {
                 Element cardElement = et.subElement(request, "card");
@@ -109,20 +119,43 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 }
             }
 
-            String hash;
+            String hash = null;
             if(builder.getTransactionType() == TransactionType.Verify)
                 hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, card.getNumber());
             else {
-                if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile)
-                    hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency() != null ? builder.getCurrency() : "", card.getToken());
-                else
+                if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
+                    switch (card.getMobileType()) {
+                        case GOOGLEPAY:
+                        case APPLEPAY:
+                            hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getToken());
+                            break;
+                    }
+                } else {
                     hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), card.getNumber());
+                }
             }
             et.subElement(request, "sha1hash", hash);
         }
+        else if (builder.getPaymentMethod() instanceof AlternatePaymentMethod) {
+            AlternatePaymentMethod apm = (AlternatePaymentMethod) builder.getPaymentMethod();
+
+            et.subElement(request, "paymentmethod", apm.getAlternativePaymentMethodType().toString());
+
+            Element paymentmethoddetails = et.subElement(request, "paymentmethoddetails");
+            et.subElement(paymentmethoddetails, "returnurl", apm.getReturnUrl());
+            et.subElement(paymentmethoddetails, "statusupdateurl", apm.getStatusUpdateUrl());
+            et.subElement(paymentmethoddetails, "descriptor", apm.getDescriptor());
+            et.subElement(paymentmethoddetails, "country", apm.getCountry());
+            et.subElement(paymentmethoddetails, "accountholdername", apm.getAccountHolderName());
+
+            // issueno
+            String hash;
+            hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), apm.getAlternativePaymentMethodType().toString());
+            et.subElement(request, "sha1hash").text(hash);
+        }
         //</editor-fold>
         //<editor-fold desc="RECURRING PAYMENT METHOD">
-        else if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
+        if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
             RecurringPaymentMethod recurring = (RecurringPaymentMethod) builder.getPaymentMethod();
             et.subElement(request, "payerref").text(recurring.getCustomerKey());
             et.subElement(request, "paymentmethod").text(recurring.getKey());
@@ -144,13 +177,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         //<editor-fold desc="TOKEN">
         else {
             // TODO: Token Processing
-        }
-        //</editor-fold>
-
-        //<editor-fold desc="AUTO/MULTI SETTLE">
-        if (builder.getTransactionType() == TransactionType.Sale || builder.getTransactionType() == TransactionType.Auth) {
-            String autoSettle = builder.getTransactionType() == TransactionType.Sale ? "1" : builder.isMultiCapture() ? "MULTI" : "0";
-            et.subElement(request, "autosettle").set("flag", autoSettle);
         }
         //</editor-fold>
 
@@ -209,8 +235,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         //<editor-fold desc="FRAUD">
         // fraud filter mode
-        if (builder.getFraudFilterMode() == FraudFilterMode.Passive){
-            et.subElement(request, "fraudfilter").set("mode", builder.getFraudFilterMode().getValue());
+        if (builder.getFraudFilterMode() != null && builder.getFraudFilterMode() != FraudFilterMode.None) {
+            Element fraudfilter = et.subElement(request, "fraudfilter").set("mode", builder.getFraudFilterMode());
+            if (builder.getFraudRules() != null) {
+                Element rules = et.subElement(fraudfilter, "rules");
+
+                for (FraudRule fraudRule : builder.getFraudRules().getRules()) {
+                    Element rule = et.subElement(rules, "rule");
+                    rule.set("id", fraudRule.getKey());
+                    rule.set("mode", fraudRule.getMode().getValue());
+                }
+            }
         }
 
         // recurring fraud filter
@@ -468,8 +503,13 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if (builder.getTransactionType() == TransactionType.Verify) {
             request.set("VALIDATE_CARD_ONLY", builder.getTransactionType() == TransactionType.Verify ? "1" : "0");
         }
-        if(!hostedPaymentConfig.getFraudFilterMode().equals(FraudFilterMode.None)) {
-            request.set("HPP_FRAUDFILTER_MODE", hostedPaymentConfig.getFraudFilterMode());
+        if (hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
+            request.set("HPP_FRAUDFILTER_MODE", hostedPaymentConfig.getFraudFilterMode().getValue());
+            if (hostedPaymentConfig.getFraudFilterRules() != null) {
+                for (FraudRule fraudRule : hostedPaymentConfig.getFraudFilterRules().getRules()) {
+                    request.set("HPP_FRAUDFILTER_RULE_" + fraudRule.getKey(), fraudRule.getMode().getValue());
+                }
+            }
         }
         if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             request.set("RECURRING_TYPE", builder.getRecurringType().getValue().toLowerCase());
@@ -512,8 +552,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             }
         }
 
-        if(hostedPaymentConfig.getFraudFilterMode() != null && hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None)
+        if(hostedPaymentConfig.getFraudFilterMode() != null && hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
             toHash.add(hostedPaymentConfig.getFraudFilterMode().getValue());
+        }
 
         request.set("CHARGE_DESCRIPTION", builder.getDynamicDescriptor());
         request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, toHash.toArray(new String[toHash.size()])));
@@ -525,10 +566,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         String countryCode = CountryUtils.getCountryCodeByCountry(address.getCountry());
         switch (countryCode) {
             case "GB":
-                return extractDigits(address.getPostalCode()) + "|" + extractDigits(address.getStreetAddress1());
+                return extractDigits(address.getPostalCode()) + (address.getStreetAddress1() != null ? "|" + extractDigits(address.getStreetAddress1()): "");
             case "US":
             case "CA":
-                return address.getPostalCode() + "|" + address.getStreetAddress1();
+                return address.getPostalCode() + (address.getStreetAddress1() != null ? "|" + address.getStreetAddress1() : "");
             default:
                 return null;
         }
@@ -748,7 +789,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     private Transaction mapResponse(String rawResponse, TransactionBuilder<Transaction> builder) throws ApiException {
         Element root = ElementTree.parse(rawResponse).get("response");
 
-        checkResponse(root);
+        List<String> acceptedCodes = new ArrayList<>();
+        if (builder instanceof AuthorizationBuilder) {
+            acceptedCodes = mapAcceptedCodes(mapAuthRequestType((AuthorizationBuilder) builder));
+        } else if (builder instanceof ManagementBuilder) {
+            acceptedCodes = mapAcceptedCodes(mapManageRequestType((ManagementBuilder) builder));
+        }
+
+        checkResponse(root, acceptedCodes);
         Transaction result = new Transaction();
         result.setResponseCode(root.getString("result"));
         result.setResponseMessage(root.getString("message"));
@@ -764,6 +812,47 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setAlternativePaymentType(root.getString("paymentmethod"));
         transReference.setBatchNumber(root.getInt("batchid"));
         result.setTransactionReference(transReference);
+
+        Element paymentMethodDetails = root.get("paymentmethoddetails");
+        result.setAlternativePaymentResponse(
+                new AlternativePaymentResponse()
+                        .setBankAccount(paymentMethodDetails != null ? paymentMethodDetails.getString("bankaccount") : null)
+                        .setAccountHolderName(paymentMethodDetails != null ? paymentMethodDetails.getString("accountholdername") : null)
+                        .setCountry(paymentMethodDetails != null ? paymentMethodDetails.getString("country") : null)
+                        .setRedirectUrl(paymentMethodDetails != null ? paymentMethodDetails.getString("redirecturl") : null)
+                        .setPaymentPurpose(paymentMethodDetails != null ? paymentMethodDetails.getString("paymentpurpose") : null)
+                        .setPaymentMethod(paymentMethodDetails != null ? paymentMethodDetails.getString("paymentmethod"): null)
+        );
+
+        // fraud response
+        if(root.has("fraudresponse")) {
+            Element fraudResponseElement = root.get("fraudresponse");
+
+            FraudResponse fraudResponse =
+                    new FraudResponse()
+                            .setMode(FraudFilterMode.fromString(fraudResponseElement.getAttributeString("mode")))
+                            .setResult(fraudResponseElement.getString("result"));
+
+            if (fraudResponseElement.has("rules")) {
+                for (Element rule : fraudResponseElement.get("rules").getAll("rule")) {
+                    fraudResponse.getRules().add((
+                            new FraudResponse.Rule()
+                                    .setName(rule.getAttributeString("name"))
+                                    .setId(rule.getAttributeString("id"))
+                                    .setAction(rule.getString("action"))));
+                }
+            }
+
+            result.setFraudResponse(fraudResponse);
+        }
+
+        if (builder instanceof ManagementBuilder) {
+            ManagementBuilder mb = (ManagementBuilder) builder;
+            if (mb.isMultiCapture()) {
+                result.setMultiCapturePaymentCount(mb.getMultiCapturePaymentCount());
+                result.setMultiCaptureSequence(mb.getMultiCaptureSequence());
+            }
+        }
 
         // dccinfo
         if (root.has("dccinfo")) {
@@ -807,28 +896,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // stored credential
         result.setSchemeId(root.getString("srd"));
-
-        // fraud response
-        if(root.has("fraudresponse")) {
-            Element fraudResponseElement = root.get("fraudresponse");
-
-            FraudResponse fraudResponse =
-                    new FraudResponse()
-                            .setMode(FraudFilterMode.fromString(fraudResponseElement.getAttributeString("mode")))
-                            .setResult(fraudResponseElement.getString("result"));
-
-            if (fraudResponseElement.has("rules")) {
-                for (Element rule : fraudResponseElement.get("rules").getAll("rule")) {
-                    fraudResponse.addRule(
-                            new FraudResponse.Rule()
-                                    .setName(rule.getAttributeString("name"))
-                                    .setId(rule.getAttributeString("id"))
-                                    .setAction(rule.getString("action")));
-                }
-            }
-
-            result.setFraudResponse(fraudResponse);
-        }
 
         return result;
     }
@@ -915,6 +982,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                         return "auth-mobile";
                     }
                     return "auth";
+                } else if (payment instanceof AlternatePaymentMethod) {
+                    return "payment-set";
                 }
                 return "receipt-in";
             }
@@ -1014,6 +1083,18 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 throw new UnsupportedTransactionException();
             default:
                 throw new UnsupportedTransactionException();
+        }
+    }
+
+    private List<String> mapAcceptedCodes(String transactionType) {
+        switch (transactionType) {
+            case "3ds-verifysig":
+            case "3ds-verifyenrolled":
+                return Arrays.asList("00", "110");
+            case "payment-set":
+                return Arrays.asList("01");
+            default:
+                return Arrays.asList("00");
         }
     }
 

@@ -24,6 +24,7 @@ public abstract class Gateway {
     private String contentType;
     private boolean enableLogging;
     protected HashMap<String, String> headers;
+    protected HashMap<String, String> dynamicHeaders;
     protected int timeout;
     protected String serviceUrl;
     protected Proxy proxy;
@@ -67,7 +68,8 @@ public abstract class Gateway {
         this.proxy = proxy;
     }
     public Gateway(String contentType) {
-        headers = new HashMap<String, String>();
+        headers = new HashMap<>();
+        dynamicHeaders = new HashMap<>();
         this.contentType = contentType;
     }
 
@@ -106,6 +108,12 @@ public abstract class Gateway {
 
             for (Map.Entry<String, String> header: headers.entrySet()) {
                 conn.addRequestProperty(header.getKey(), header.getValue());
+            }
+
+            if (dynamicHeaders != null) {
+                for (Map.Entry<String, String> dynamicHeader : dynamicHeaders.entrySet()) {
+                    conn.addRequestProperty(dynamicHeader.getKey(), dynamicHeader.getValue());
+                }
             }
 
             if (this.enableLogging) {

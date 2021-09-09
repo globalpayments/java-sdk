@@ -37,6 +37,14 @@ public class GpApiCreditTests extends BaseGpApiTest {
                 .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
 
+        //DO NO DELETE - usage example for some settings
+//        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
+//            put("x-gp-platform", "prestashop;version=1.7.2");
+//            put("x-gp-extension", "coccinet;version=2.4.1");
+//        }};
+//
+//        config.setDynamicHeaders(dynamicHeaders);
+
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
@@ -300,9 +308,11 @@ public class GpApiCreditTests extends BaseGpApiTest {
         address.setState("NJ");
         address.setPostalCode("12345");
 
+        BigDecimal amount = new BigDecimal("19.99");
+
         Transaction response =
                 card
-                        .charge(new BigDecimal(19.99))
+                        .charge(amount)
                         .withCurrency("USD")
                         .withAddress(address)
                         .execute(GP_API_CONFIG_NAME);
@@ -311,8 +321,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
 
-        // TODO: Confirm if we need to set Balance Amount using 2 decimals format
-        // assertEquals(new BigDecimal("19.99"), response.getBalanceAmount());
+        assertEquals(amount, response.getBalanceAmount());
     }
 
     @Test

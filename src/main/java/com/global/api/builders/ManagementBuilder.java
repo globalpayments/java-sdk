@@ -20,6 +20,7 @@ import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -37,6 +38,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String customerId;
     private String customerIpAddress;
     private boolean customerInitiated;
+    @Getter @Setter private boolean multiCapture;
     private DccRateData dccRateData;
     private String description;
     @Getter private ArrayList<DisputeDocument> disputeDocuments;
@@ -47,6 +49,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter private String idempotencyKey;
     private String invoiceNumber;
     private LodgingData lodgingData;
+    @Getter @Setter private Integer multiCapturePaymentCount;
+    @Getter @Setter private Integer multiCaptureSequence;
     private String orderId;
     private String payerAuthenticationResponse;
     private String poNumber;
@@ -246,6 +250,20 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withBills(List<Bill> values) {
         this.bills = values;
+        return this;
+    }
+    public ManagementBuilder withMultiCapture() {
+        this.multiCapture = true;
+        this.multiCaptureSequence = 1;
+        this.multiCapturePaymentCount = 1;
+
+        return this;
+    }
+    public ManagementBuilder withMultiCapture(int sequence, int paymentCount) {
+        this.multiCapture = true;
+        this.multiCaptureSequence = sequence;
+        this.multiCapturePaymentCount = paymentCount;
+
         return this;
     }
     public ManagementBuilder withCashBackAmount(BigDecimal value) {

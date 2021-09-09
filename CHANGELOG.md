@@ -4,12 +4,38 @@
 
 ### Enhancements:
 
+- Add Alternative payment method response mapping to GpEcom/Realex
+- Add miscellaneous missing functionality to GpEcom/Realex Connector
+- Many GpEcom/Realex tests fixed
+- Send "x-gp-sdk" in the header with the SDK programming language and release version used
+- Send headers to GP-API that are dynamically set through configuration, like:
+    - x-gp-platform: "prestashop;version=1.7.2"
+    - x-gp-extension: "coccinet;version=2.4.1"
+- Add Fraud Dynamic Rules to GpEcom
+
+### Bug Fixes:
+
+---
+
+## v6.1.94 (12/08/2021)
+
+### Enhancements:
+
 - Tests clean up
 
 ### Bug Fixes:
 
 ---
 
+## v6.1.94 (12/08/2021)
+
+### Enhancements:
+
+- Tests clean up
+
+### Bug Fixes:
+
+---
 
 ## v6.1.93 (05/08/2021)
 
@@ -17,7 +43,6 @@
 
 - Upgrade GP-API to 2021-03-22 version and fix tests to support it
 - Add GP-API 3DS enhanced
-- 
 
 ### Bug Fixes:
 

@@ -1,13 +1,17 @@
 package com.global.api.serviceConfigs;
 
+import com.global.api.entities.FraudRuleCollection;
 import com.global.api.entities.enums.FraudFilterMode;
 import com.global.api.entities.enums.HppVersion;
+import lombok.Getter;
+import lombok.Setter;
 
 public class HostedPaymentConfig {
     private Boolean cardStorageEnabled;
     private Boolean dynamicCurrencyConversionEnabled;
     private Boolean displaySavedCards;
     private FraudFilterMode fraudFilterMode = FraudFilterMode.None;
+    @Getter @Setter private FraudRuleCollection fraudFilterRules;
     private String language;
     private String paymentButtonText;
     private String postDimensions;

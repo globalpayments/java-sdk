@@ -129,13 +129,15 @@ public enum AlternativePaymentType implements IStringConstant{
 	SURTIMAX("surtimax"),
 	TARJETA_SHOPPING("tarjeta"),
 	TELEINGRESO("teleingreso"),
+	TESTPAY("testpay"),
 	TRUSTLY("trustly"),
 	TRUSTPAY("trustpay"),
 	WEBMONEY("webmoney"),
 	WEBPAY("webpay"),
 	WECHAT_PAY("wechatpay"),
 	ZIMPLER("zimpler"),
-	UK_DIRECT_DEBIT("ukdirectdebit");
+	UK_DIRECT_DEBIT("ukdirectdebit"),
+	PAYBYBANKAPP("paybybankapp");
 	
     String value;
     AlternativePaymentType(String value) { this.value = value; }

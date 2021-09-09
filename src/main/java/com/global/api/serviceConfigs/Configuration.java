@@ -5,6 +5,8 @@ import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ConfigurationException;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.net.Proxy;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ public abstract class Configuration {
     protected HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
     protected int timeout = 30000;
     protected boolean validated;
+    @Getter @Setter protected HashMap<String, String> dynamicHeaders;
 
     public int getTimeout() {
         return timeout;

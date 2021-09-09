@@ -4,11 +4,13 @@ import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
-import com.global.api.gateways.*;
+import com.global.api.gateways.GpApiConnector;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
+import java.util.HashMap;
 
 @Getter
 @Setter
@@ -43,19 +45,21 @@ public class GpApiConfig extends GatewayConfig {
     // The list of the permissions the integrator want the access token to have
     @Accessors(chain = true)
     // public IStringConstant[] permissions;
-    public String[] permissions;
+    private String[] permissions;
 
     // GP-API Access token information
     private AccessTokenInfo accessTokenInfo;
 
     // 3DSecure challenge return url
-    @Getter @Setter public String challengeNotificationUrl;
+    private String challengeNotificationUrl;
 
     // 3DSecure method return url
-    @Getter @Setter public String methodNotificationUrl;
+    private String methodNotificationUrl;
 
     // 3DSecure merchant contact url
-    @Getter @Setter public String merchantContactUrl;
+    private String merchantContactUrl;
+
+    private HashMap<String, String> dynamicHeaders;
 
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {

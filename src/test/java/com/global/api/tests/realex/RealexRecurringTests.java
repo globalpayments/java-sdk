@@ -3,7 +3,6 @@ package com.global.api.tests.realex;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
-import com.global.api.entities.DccRateData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.DccProcessor;
 import com.global.api.entities.enums.DccRateType;
@@ -131,7 +130,7 @@ public class RealexRecurringTests {
         CreditCardData card = new CreditCardData();
         card.setCardType("MC");
         card.setExpMonth(10);
-        card.setExpYear(2020);
+        card.setExpYear(2025);
         card.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(card);

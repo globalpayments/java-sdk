@@ -54,6 +54,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private EmvChipCondition emvChipCondition;
     private EmvLastChipRead emvLastChipRead;
     private FraudFilterMode fraudFilterMode;
+    @Getter @Setter private FraudRuleCollection fraudRules;
+//    @Getter @Setter private HashMap<String, FraudFilterMode> fraudRules;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
     @Getter @Setter private String idempotencyKey;
@@ -440,8 +442,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.ecommerceInfo = value;
         return this;
     }
-    public AuthorizationBuilder withFraudFilter(FraudFilterMode value) {
-        this.fraudFilterMode = value;
+    public AuthorizationBuilder withFraudFilter(FraudFilterMode fraudFilterMode) {
+        return withFraudFilter(fraudFilterMode, null);
+    }
+    public AuthorizationBuilder withFraudFilter(FraudFilterMode fraudFilterMode, FraudRuleCollection fraudRules) {
+        this.fraudFilterMode = fraudFilterMode;
+        if(fraudRules != null) {
+            this.fraudRules = fraudRules;
+        }
         return this;
     }
     public AuthorizationBuilder withGratuity(BigDecimal value) {

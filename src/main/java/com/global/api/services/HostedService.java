@@ -88,7 +88,7 @@ public class HostedService {
 
         Transaction trans = new Transaction();
         trans.setAuthorizedAmount(response.getDecimal("AMOUNT"));
-        trans.setMultiCapture(response.getString("AUTO_SETTLE_FLAG"));
+        trans.setAutoSettleFlag(response.getString("AUTO_SETTLE_FLAG"));
         trans.setCvnResponseCode(response.getString("CVNRESULT"));
         trans.setResponseCode(result);
         trans.setResponseMessage(message);
