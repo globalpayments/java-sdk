@@ -101,6 +101,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         transactionProcessingAccountName = value;
     }
 
+    public String getMerchantUrl() {
+        return !StringUtils.isNullOrEmpty(gpApiConfig.getMerchantId()) ? "/merchants/" + gpApiConfig.getMerchantId() : "";
+    }
+
     @Getter @Setter
     public String challengeNotificationUrl;
 
@@ -114,6 +118,15 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
         setProxy(gpApiConfig.getProxy());
         setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
+
+        if (gpApiConfig.getAccessTokenInfo() != null) {
+            accessToken = gpApiConfig.getAccessTokenInfo().getToken();
+            dataAccountName = gpApiConfig.getAccessTokenInfo().getDataAccountName();
+            disputeManagementAccountName = gpApiConfig.getAccessTokenInfo().getDisputeManagementAccountName();
+            tokenizationAccountName = gpApiConfig.getAccessTokenInfo().getTokenizationAccountName();
+            transactionProcessingAccountName = gpApiConfig.getAccessTokenInfo().getTransactionProcessingAccountName();
+        }
+
         setEnableLogging(gpApiConfig.isEnableLogging());
 
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
@@ -139,13 +152,24 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     }
 
     void signIn() throws GatewayException {
-        GpApiTokenResponse response = getAccessToken();
+        if (StringUtils.isNullOrEmpty(accessToken)) {
+            GpApiTokenResponse response = getAccessToken();
 
-        accessToken = response.getToken();
-        dataAccountName = response.getDataAccountName();
-        disputeManagementAccountName = response.getDisputeManagementAccountName();
-        tokenizationAccountName = response.getTokenizationAccountName();
-        transactionProcessingAccountName = response.getTransactionProcessingAccountName();
+            accessToken = response.getToken();
+
+            if (!StringUtils.isNullOrEmpty(response.getDataAccountName()) && dataAccountName != response.getDataAccountName()) {
+                dataAccountName = response.getDataAccountName();
+            }
+            if (!StringUtils.isNullOrEmpty(response.getDisputeManagementAccountName()) && disputeManagementAccountName != response.getDisputeManagementAccountName()) {
+                disputeManagementAccountName = response.getDisputeManagementAccountName();
+            }
+            if (!StringUtils.isNullOrEmpty(response.getTokenizationAccountName()) && tokenizationAccountName != response.getTokenizationAccountName()) {
+                tokenizationAccountName = response.getTokenizationAccountName();
+            }
+            if (!StringUtils.isNullOrEmpty(response.getTransactionProcessingAccountName()) && transactionProcessingAccountName != response.getTransactionProcessingAccountName()) {
+                transactionProcessingAccountName = response.getTransactionProcessingAccountName();
+            }
+        }
     }
 
     public GpApiRequest SignOut() throws UnsupportedTransactionException {

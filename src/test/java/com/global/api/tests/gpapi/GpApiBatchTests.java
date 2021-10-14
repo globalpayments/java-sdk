@@ -58,7 +58,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertTransactionResponse(chargeTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -99,7 +99,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertTransactionResponse(captureTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         BatchSummary batchSummary = BatchService.closeBatch(captureTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -123,7 +123,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -258,12 +258,13 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertTransactionResponse(chargeTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(3000);
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
     }
 
+    @Ignore // Now with a DECLINED transaction is allowed
     @Test
     public void CloseBatch_WithCardNumberDetails_DeclinedTransaction() throws ApiException, InterruptedException {
         CreditCardData card = new CreditCardData();
@@ -283,7 +284,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Declined.getValue(), chargeTransaction.getResponseMessage());
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         boolean exceptionCaught = false;
         try {
@@ -338,7 +339,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
         assertBatchCloseResponse(batchSummary, amount);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         boolean exceptionCaught = false;
         try {
@@ -459,7 +460,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         boolean exceptionCaught = false;
         try {

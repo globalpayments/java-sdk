@@ -79,6 +79,9 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     }
 
     public AuthorizationBuilder charge() { return charge(null); }
+    public AuthorizationBuilder charge(double amount) {
+        return charge(new BigDecimal(amount));
+    }
     public AuthorizationBuilder charge(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Sale, this)
                 .withAmount(amount != null ? amount : threeDSecure != null ? threeDSecure.getAmount() : null)

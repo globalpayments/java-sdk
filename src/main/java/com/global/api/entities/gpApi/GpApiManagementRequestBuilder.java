@@ -17,6 +17,7 @@ import com.google.gson.JsonPrimitive;
 public class GpApiManagementRequestBuilder {
 
     public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException {
+        String merchantUrl = gateway.getMerchantUrl();
         JsonDoc data = new JsonDoc();
 
         TransactionType builderTransactionType = builder.getTransactionType();
@@ -29,7 +30,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/transactions/" + builder.getTransactionId() + "/capture")
+                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/capture")
                             .setRequestBody(data.toString());
 
         }
@@ -39,7 +40,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/transactions/" + builder.getTransactionId() + "/refund")
+                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/refund")
                             .setRequestBody(data.toString());
 
         }
@@ -49,7 +50,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/transactions/" + builder.getTransactionId() + "/reversal")
+                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/reversal")
                             .setRequestBody(data.toString());
 
         }
@@ -68,20 +69,20 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Patch)
-                            .setEndpoint("/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken())
+                            .setEndpoint(merchantUrl + "/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken())
                             .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.TokenDelete && builderPaymentMethod instanceof ITokenizable) {
             return
                     new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Delete)
-                        .setEndpoint("/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken());
+                        .setEndpoint(merchantUrl + "/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken());
         }
         else if (builderTransactionType == TransactionType.DisputeAcceptance) {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/disputes/" + builder.getDisputeId() + "/acceptance");
+                            .setEndpoint(merchantUrl + "/disputes/" + builder.getDisputeId() + "/acceptance");
         }
         else if (builderTransactionType == TransactionType.DisputeChallenge) {
             JsonArray documentsJsonArray = new JsonArray();
@@ -105,13 +106,13 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/disputes/" + builder.getDisputeId() + "/challenge")
+                            .setEndpoint(merchantUrl + "/disputes/" + builder.getDisputeId() + "/challenge")
                             .setRequestBody(disputeChallengeData.toString());
         }
         else if (builderTransactionType == TransactionType.BatchClose) {
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint("/batches/" + builder.getBatchReference());
+                    .setEndpoint(merchantUrl + "/batches/" + builder.getBatchReference());
         }
         else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
@@ -119,7 +120,7 @@ public class GpApiManagementRequestBuilder {
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint("/transactions/" + builder.getTransactionId() + "/reauthorization")
+                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/reauthorization")
                     .setRequestBody(data.toString());
         }
         return null;

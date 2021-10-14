@@ -898,30 +898,33 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         assertNotNull(resultTransactions);
 
-        int random = new Random().nextInt(resultTransactions.results.size());
+        if (resultTransactions.results.size() > 0) {
 
-        Transaction transaction = new Transaction();
-        transaction.setBalanceAmount(resultTransactions.results.get(random).getAmount());
-        transaction.setTransactionId(resultTransactions.results.get(random).getTransactionId());
+            int random = new Random().nextInt(resultTransactions.results.size());
 
-        Transaction reverseTransaction =
-                transaction
-                        .reverse()
-                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+            Transaction transaction = new Transaction();
+            transaction.setBalanceAmount(resultTransactions.results.get(random).getAmount());
+            transaction.setTransactionId(resultTransactions.results.get(random).getTransactionId());
 
-        assertNotNull(reverseTransaction);
-        assertEquals(SUCCESS, reverseTransaction.getResponseCode());
-        assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
+            Transaction reverseTransaction =
+                    transaction
+                            .reverse()
+                            .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
 
-        Transaction reAuthTransaction =
-                reverseTransaction
-                        .reauthorize()
-                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+            assertNotNull(reverseTransaction);
+            assertEquals(SUCCESS, reverseTransaction.getResponseCode());
+            assertEquals(TransactionStatus.Reversed.getValue(), reverseTransaction.getResponseMessage());
 
-        assertNotNull(reAuthTransaction);
-        assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
-        assertEquals(TransactionStatus.Preauthorized.getValue(), reAuthTransaction.getResponseMessage());
-        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+            Transaction reAuthTransaction =
+                    reverseTransaction
+                            .reauthorize()
+                            .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+            assertNotNull(reAuthTransaction);
+            assertEquals(SUCCESS, reAuthTransaction.getResponseCode());
+            assertEquals(TransactionStatus.Preauthorized.getValue(), reAuthTransaction.getResponseMessage());
+            assertEquals("00", reAuthTransaction.getAuthorizationCode());
+        }
     }
 
     @Test

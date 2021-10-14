@@ -61,6 +61,11 @@ public class GpApiConfig extends GatewayConfig {
 
     private HashMap<String, String> dynamicHeaders;
 
+    // When set, this Merchant ID will be prefixed all endpoint's urls. Example:
+    // Endpoint:        /ucp/transactions
+    // will become to:  /ucp/merchants/merchantId/transactions
+    private String merchantId;
+
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
             serviceUrl =

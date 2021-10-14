@@ -20,8 +20,8 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiAuthorizationRequestBuilder {
 
-
     public static GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException {
+        String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
                         .set("entry_mode", getEntryMode(builder)); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
@@ -67,7 +67,7 @@ public class GpApiAuthorizationRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint("/payment-methods")
+                                .setEndpoint(merchantUrl + "/payment-methods")
                                 .setRequestBody(tokenizationData.toString());
             }
             else if (builderTransactionType == TransactionType.Verify) {
@@ -82,7 +82,7 @@ public class GpApiAuthorizationRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
-                                    .setEndpoint("/payment-methods")
+                                    .setEndpoint(merchantUrl + "/payment-methods")
                                     .setRequestBody(tokenizationData.toString());
 
                 }
@@ -108,7 +108,7 @@ public class GpApiAuthorizationRequestBuilder {
                     return
                             new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint("/verifications")
+                                .setEndpoint(merchantUrl + "/verifications")
                                 .setRequestBody(verificationData.toString());
                 }
             }
@@ -140,7 +140,7 @@ public class GpApiAuthorizationRequestBuilder {
                 return
                         new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint("/verifications")
+                            .setEndpoint(merchantUrl + "/verifications")
                             .setRequestBody(verificationData.toString());
             }
 
@@ -269,7 +269,7 @@ public class GpApiAuthorizationRequestBuilder {
         return
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint("/transactions")
+                        .setEndpoint(merchantUrl + "/transactions")
                         .setRequestBody(data.toString());
     }
 

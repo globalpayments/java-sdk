@@ -19,6 +19,7 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 public class GpApiSecure3DRequestBuilder {
 
     public static GpApiRequest buildRequest(Secure3dBuilder builder, GpApiConnector gateway) throws GatewayException {
+        String merchantUrl = gateway.getMerchantUrl();
         TransactionType builderTransactionType = builder.getTransactionType();
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
 
@@ -71,7 +72,7 @@ public class GpApiSecure3DRequestBuilder {
 
                 return new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint("/authentications")
+                        .setEndpoint(merchantUrl + "/authentications")
                         .setRequestBody(data.toString());
             }
             case InitiateAuthentication: {
@@ -230,7 +231,7 @@ public class GpApiSecure3DRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint("/authentications/" + builder.getServerTransactionId() + "/initiate")
+                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/initiate")
                                 .setRequestBody(data.toString());
             }
             case VerifySignature: {
@@ -243,7 +244,7 @@ public class GpApiSecure3DRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint("/authentications/" + builder.getServerTransactionId() + "/result")
+                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/result")
                                 .setRequestBody(data.toString());
             }
             default:

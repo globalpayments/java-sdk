@@ -207,7 +207,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         } catch (GatewayException ex) {
             assertEquals("NOT_AUTHENTICATED", ex.getResponseCode());
             assertEquals("40001", ex.getResponseText());
-            assertEquals("Status Code: Unauthorized - Invalid access token", ex.getMessage());
+            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
         }
     }
 
@@ -235,7 +235,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         } catch (GatewayException ex) {
             assertEquals("NOT_AUTHENTICATED", ex.getResponseCode());
             assertEquals("40001", ex.getResponseText());
-            assertEquals("Status Code: Unauthorized - Invalid access token", ex.getMessage());
+            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
         }
     }
 

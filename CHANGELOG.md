@@ -4,6 +4,14 @@
 
 ### Enhancements:
 
+- Add Multiple merchants to GpApi
+
+---
+
+## v6.2.2 (08/09/2021)
+
+### Enhancements:
+
 - Add Alternative payment method response mapping to GpEcom/Realex
 - Add miscellaneous missing functionality to GpEcom/Realex Connector
 - Many GpEcom/Realex tests fixed
@@ -13,8 +21,6 @@
     - x-gp-extension: "coccinet;version=2.4.1"
 - Add Fraud Dynamic Rules to GpEcom
 
-### Bug Fixes:
-
 ---
 
 ## v6.1.94 (12/08/2021)
@@ -23,8 +29,6 @@
 
 - Tests clean up
 
-### Bug Fixes:
-
 ---
 
 ## v6.1.94 (12/08/2021)
@@ -32,8 +36,6 @@
 ### Enhancements:
 
 - Tests clean up
-
-### Bug Fixes:
 
 ---
 
@@ -69,10 +71,6 @@
 
 - Support Netherlands Antilles Country
 
-### Bug Fixes:
-
--
-
 ---
 
 ## v6.1.84 (17/06/2021)
@@ -80,10 +78,6 @@
 ### Enhancements:
 
 - Message Extension List added to ThreeDSecure class 
-
-### Bug Fixes:
-
-- 
 
 ---
 
