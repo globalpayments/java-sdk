@@ -108,6 +108,18 @@ public class StringUtils {
         String rvalue = trimStart(amount.toString().replaceAll("[^0-9]", ""), "0");
         return numberPlaces + rvalue;
     }
+    public static String toCurrencyString(BigDecimal amount) {
+        if (amount == null) {
+            return "";
+        }
+        if (amount.toString().equals("0")) {
+            return "0";
+        }
+
+        NumberFormat fmt = NumberFormat.getCurrencyInstance();
+        String currency = fmt.format(amount);
+        return trimStart(currency.replaceAll("[^0-9.,]", ""), "0");
+    }
 
     public static String join(String separator, Object[] fields) {
         String rvalue = "";

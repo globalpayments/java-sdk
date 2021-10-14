@@ -6,14 +6,20 @@ public enum StoredCredentialInitiator implements IMappedConstant {
         put(Target.Realex, "cardholder");
         put(Target.Portico, "C");
         put(Target.GP_API, "PAYER");
+        put(Target.Genius, "UNSCHEDULEDCIT");
     }}),
     Merchant(new HashMap<Target, String>() {{
         put(Target.Realex, "merchant");
         put(Target.Portico, "M");
         put(Target.GP_API, "MERCHANT");
+        put(Target.Genius, "UNSCHEDULEDMIT");
     }}),
     Scheduled(new HashMap<Target, String>() {{
         put(Target.Realex, "scheduled");
+        put(Target.Genius, "RECURRING");
+    }}),
+    Installment(new HashMap<Target, String>() {{
+        put(Target.Genius, "INSTALLMENT");
     }});
 
     HashMap<Target, String> value;
