@@ -4,16 +4,16 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.PagedResult;
 import com.global.api.entities.reporting.*;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import lombok.var;
-import org.joda.time.DateTime;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.joda.time.DateTime;
 
 import static com.global.api.gateways.GpApiConnector.*;
 
@@ -171,14 +171,14 @@ public class GpApiMapping {
     }
 
     public static Transaction MapResponseAPM(String rawResponse) throws GatewayException {
-        var apm = new AlternativePaymentResponse();
-        var transaction = mapResponse(rawResponse);
+        AlternativePaymentResponse apm = new AlternativePaymentResponse();
+        Transaction transaction = mapResponse(rawResponse);
 
         JsonDoc json = JsonDoc.parse(rawResponse);
 
         apm.setRedirectUrl(json.get("payment_method").getString("redirect_url"));
 
-        var paymentMethodApm = json.get("payment_method").get("apm");
+        JsonDoc paymentMethodApm = json.get("payment_method").get("apm");
 
         if(paymentMethodApm != null) {
             apm.setProviderName(paymentMethodApm.getString("provider"));
@@ -201,7 +201,7 @@ public class GpApiMapping {
             apm.setFeeAmount(paymentMethodApm.getAmount("fee_amount"));
         }
 
-        var authorization = json.get("payment_method").get("authorization");
+        JsonDoc authorization = json.get("payment_method").get("authorization");
         if (authorization != null) {
             apm.setAuthStatus(authorization.getString("status"));
             apm.setAuthAmount(authorization.getAmount("amount"));
@@ -291,7 +291,7 @@ public class GpApiMapping {
                 summary.setPaymentType(PaymentMethodName.BankTransfer.getValue(Target.GP_API));
             } else if (paymentMethod.has("apm")) {
                 JsonDoc apm = paymentMethod.get("apm");
-                var alternativePaymentResponse = new AlternativePaymentResponse();
+                AlternativePaymentResponse alternativePaymentResponse = new AlternativePaymentResponse();
                 alternativePaymentResponse.setRedirectUrl(apm.getString("redirect_url"));
                 alternativePaymentResponse.setProviderName(apm.getString("provider"));
                 alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
@@ -304,7 +304,7 @@ public class GpApiMapping {
     }
 
     public static PayLinkSummary mapPayLinkSummary(JsonDoc doc) throws GatewayException {
-        var summary = new PayLinkSummary();
+        PayLinkSummary summary = new PayLinkSummary();
 
         summary.setId(doc.getString("id"));
         summary.setMerchantId(doc.getString("merchant_id"));
@@ -327,7 +327,7 @@ public class GpApiMapping {
 
         if (doc.has("transactions")) {
             List<TransactionSummary> transactionSummaryList = new ArrayList<>();
-            for (var transaction : doc.getEnumerator("transactions")) {
+            for (JsonDoc transaction : doc.getEnumerator("transactions")) {
                 transactionSummaryList.add(createTransactionSummary(transaction));
             }
             summary.setTransactions(transactionSummaryList);
@@ -337,7 +337,7 @@ public class GpApiMapping {
     }
 
     private static PayLinkResponse mapPayLinkResponse(JsonDoc doc) throws GatewayException {
-        var payLinkResponse =
+        PayLinkResponse payLinkResponse =
                 new PayLinkResponse()
                         .setId(doc.getString("id"))
                         .setAccountName(doc.getString("account_name"))
@@ -357,7 +357,7 @@ public class GpApiMapping {
     }
 
     private static TransactionSummary createTransactionSummary(JsonDoc doc) throws GatewayException {
-        var transaction = new TransactionSummary();
+        TransactionSummary transaction = new TransactionSummary();
 
         transaction.setTransactionId(doc.getString("id"));
         transaction.setTransactionDate(parseGpApiDateTime(doc.getString("time_created")));
@@ -384,7 +384,7 @@ public class GpApiMapping {
         return list;
     }
 
-    public static <T> T mapReportResponse(String rawResponse, ReportType reportType) throws GatewayException {
+    public static <T> T mapReportResponse(String rawResponse, ReportType reportType) throws ApiException {
         JsonDoc json = JsonDoc.parse(rawResponse);
 
         switch (reportType) {
@@ -435,7 +435,7 @@ public class GpApiMapping {
                 return (T) mapPayLinks(json);
 
             default:
-                throw new NotImplementedException();
+                throw new UnsupportedTransactionException();
         }
     }
 
@@ -629,7 +629,7 @@ public class GpApiMapping {
     }
 
     public static DccRateData mapDccInfo(JsonDoc response) throws GatewayException {
-        var currencyConversion = response;
+        JsonDoc currencyConversion = response;
 
         if (!response.get("action").getString("type").equals("RATE_LOOKUP") &&
                 response.get("currency_conversion") == null) {

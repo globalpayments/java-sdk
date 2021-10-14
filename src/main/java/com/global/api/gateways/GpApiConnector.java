@@ -25,7 +25,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -307,15 +306,15 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     // NOT IMPLEMENTED METHODS FROM IMPLEMENTING INTERFACES
     // --------------------------------------------------------------------------------
     public boolean supportsHostedPayments() {
-        throw new NotImplementedException();
+        return false;
     }
 
-    public String serializeRequest(AuthorizationBuilder builder) {
-        throw new NotImplementedException();
+    public String serializeRequest(AuthorizationBuilder builder) throws ApiException {
+        throw new UnsupportedTransactionException();
     }
 
-    public NetworkMessageHeader sendKeepAlive() {
-        throw new NotImplementedException();
+    public NetworkMessageHeader sendKeepAlive() throws ApiException {
+        throw new UnsupportedTransactionException();
     }
     // --------------------------------------------------------------------------------
 
