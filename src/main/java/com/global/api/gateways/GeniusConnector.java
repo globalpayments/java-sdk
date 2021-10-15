@@ -75,18 +75,18 @@ public class GeniusConnector extends Gateway implements IPaymentGateway {
             CreditCardData card = (CreditCardData) paymentMethod;
             if (card.getToken() != null) {
                 if (card.getMobileType() != null) {
-                    et.subElement(paymentData, "Source").text("Wallet");
+                    et.subElement(paymentData, "Source").text("WALLET");
                     et.subElement(paymentData, "WalletId", mapWalletId(card.getMobileType()));
                     et.subElement(paymentData, "EncryptedPaymentData", card.getToken());
                 }
                 else {
-                    et.subElement(paymentData, "Source").text("Vault");
+                    et.subElement(paymentData, "Source").text("VAULT");
                     et.subElement(paymentData, "VaultToken", card.getToken());
                     useToken = true;
                 }
             }
             else {
-                et.subElement(paymentData, "Source").text("Keyed");
+                et.subElement(paymentData, "Source").text("KEYED");
                 et.subElement(paymentData, "CardNumber", card.getNumber());
                 et.subElement(paymentData, "ExpirationDate", card.getShortExpiry());
                 et.subElement(paymentData, "CardHolder", card.getCardHolderName());
@@ -152,7 +152,7 @@ public class GeniusConnector extends Gateway implements IPaymentGateway {
 
         // build request
         Element transaction = et.element(mapTransactionType(builder))
-            .set("xmlns", "http://schemas.merchantwarehouse.com/merchantware/v45/");
+            .set("xmlns", "http://schemas.merchantwarehouse.com/merchantware/v46/");
 
         // Credentials
         Element credentials = et.subElement(transaction, "Credentials");

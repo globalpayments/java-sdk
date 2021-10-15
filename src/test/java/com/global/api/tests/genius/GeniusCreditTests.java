@@ -12,6 +12,7 @@ import com.global.api.serviceConfigs.GeniusConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -107,18 +108,21 @@ public class GeniusCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Ignore
 	@Test
     public void BoardCard_Keyed() throws ApiException {
         String token = card.tokenize();
         assertNotNull(token);
     }
 
+    @Ignore
 	@Test
     public void BoardCard_Swiped() throws ApiException {
         String token = track.tokenize();
         assertNotNull(token);
     }
 
+    @Ignore
     @Test
     public void BoardCard_Vault() throws ApiException {
         // TODO: for use with single use tokens
@@ -284,6 +288,7 @@ public class GeniusCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Ignore
     @Test
     public void Sale_Wallet() throws ApiException {
         Transaction response = applePay.charge()
@@ -308,6 +313,7 @@ public class GeniusCreditTests {
         assertEquals("SUCCESS", response.getStatus());
     }
 
+    @Ignore
 	@Test
     public void UnboardCard() throws ApiException {
         String token = TestCards.MasterCardManual().tokenize();
