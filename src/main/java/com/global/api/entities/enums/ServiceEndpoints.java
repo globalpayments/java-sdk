@@ -18,8 +18,8 @@ public enum ServiceEndpoints implements IStringConstant {
     BILLPAY_PRODUCTION("https://heartlandpaymentservices.net"),
     OPEN_BANKING_TEST("https://api.sandbox.globalpay-ecommerce.com/openbanking"),
     OPEN_BANKING_PRODUCTION("https://api.globalpay-ecommerce.com/openbanking"),
-    GENIUS_API_PRODUCTION("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v46/Credit.asmx"),
-    GENIUS_API_TEST("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v46/Credit.asmx"),
+    GENIUS_API_PRODUCTION("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v45/Credit.asmx"),
+    GENIUS_API_TEST("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v45/Credit.asmx"),
     GENIUS_TERMINAL_PRODUCTION("https://transport.merchantware.net/v4/transportService.asmx"),
     GENIUS_TERMINAL_TEST("https://transport.merchantware.net/v4/transportService.asmx");
 
