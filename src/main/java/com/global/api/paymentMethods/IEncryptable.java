@@ -5,4 +5,6 @@ import com.global.api.entities.EncryptionData;
 public interface IEncryptable {
     EncryptionData getEncryptionData();
     void setEncryptionData(EncryptionData encryptionData);
+    String getEncryptedPan();
+    void setEncryptedPan(String encryptedPan);
 }

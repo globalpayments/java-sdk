@@ -186,7 +186,7 @@ public abstract class Gateway {
 
     public String getRawResponse(String verb, String endpoint, InputStream responseStream) throws IOException {
         String rawResponse;
-        if (acceptGzipEncoding(verb, endpoint)) {
+        if (acceptGzipEncoding()) {
             // Decompress GZIP response
             GZIPInputStream gzis = new GZIPInputStream(responseStream);
             InputStreamReader reader = new InputStreamReader(gzis);
@@ -289,7 +289,7 @@ public abstract class Gateway {
                 headers.get("Accept").equalsIgnoreCase("application/json");
     }
 
-    private boolean acceptGzipEncoding(String verb, String endpoint) {
+    private boolean acceptGzipEncoding() {
         return
                 headers.containsKey("Accept-Encoding") &&
                 headers.get("Accept-Encoding").equalsIgnoreCase("gzip");

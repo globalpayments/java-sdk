@@ -3,15 +3,10 @@ package com.global.api.paymentMethods;
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.utils.CardUtils;
-import com.global.api.utils.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DebitTrackData extends Debit implements ITrackData {
     private String discretionaryData;
+    private String encryptedPan;
     private EntryMethod entryMethod = EntryMethod.Swipe;
     private String expiry;
     private String pan;
@@ -24,6 +19,13 @@ public class DebitTrackData extends Debit implements ITrackData {
     }
     public void setDiscretionaryData(String discretionaryData) {
         this.discretionaryData = discretionaryData;
+    }
+
+    public String getEncryptedPan() {
+        return encryptedPan;
+    }
+    public void setEncryptedPan(String value) {
+        encryptedPan = value;
     }
 
     public EntryMethod getEntryMethod() {

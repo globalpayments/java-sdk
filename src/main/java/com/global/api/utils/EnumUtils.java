@@ -1,10 +1,6 @@
 package com.global.api.utils;
 
-import com.global.api.entities.enums.IByteConstant;
-import com.global.api.entities.enums.IMappedConstant;
-import com.global.api.entities.enums.INumericConstant;
-import com.global.api.entities.enums.IStringConstant;
-import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.*;
 
 public class EnumUtils {
     public static <V extends Enum<V> & IByteConstant> boolean isDefined(Class<V> valueType, byte value){
@@ -28,4 +24,17 @@ public class EnumUtils {
     public static String getMapping(IMappedConstant value, Target target) {
         return value.getValue(target);
     }
+
+    public static String mapDigitalWalletType(Target target, MobilePaymentMethodType type) {
+        if (target == Target.GP_API) {
+            switch (type) {
+                case APPLEPAY:
+                    return EncyptedMobileType.APPLE_PAY.getValue();
+                case GOOGLEPAY:
+                    return EncyptedMobileType.GOOGLE_PAY.getValue();
+            }
+        }
+        return null;
+    }
+
 }

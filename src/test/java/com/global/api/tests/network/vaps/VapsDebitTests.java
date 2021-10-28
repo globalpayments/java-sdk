@@ -711,6 +711,21 @@ public class VapsDebitTests {
     @Test(expected = GatewayException.class)
     public void test_174_InvalidDebitAuthorizer() throws ApiException {
         String ntsString = "00 30";
-        NtsData ntsData = NtsData.fromString(ntsString);
+        NtsData.fromString(ntsString);
+    }
+
+    @Test
+    public void test_175_encrypted_debit_sale() throws ApiException {
+        DebitTrackData track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setEncryptedPan("4355561117063338");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+        track.setEncryptionData(EncryptionData.version2("/wECAQEEAoFGAgEH4gcOTDT6jRZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0m+/d4SO9TEshhRGUUQzVBrBvP/Os1qFx+6zdQp1ejjUCoDmzoUMbil9UG73zBxxTOy25f3Px0p8joyCh8PEWhADz1BkROJT3q6JnocQE49yYBHuFK0obm5kqUcYPfTY09vPOpmN+wp45gJY9PhkJF5XvPsMlcxX4/JhtCshegz4AYrcU/sFnI+nDwhy295BdOkVN1rn00jwCbRcE900kj3UsFfyc", "2"));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 }

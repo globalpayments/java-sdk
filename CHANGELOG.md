@@ -4,6 +4,23 @@
 
 ### Enhancements:
 
+- Add Digital Wallet to GpApi
+- Add AvsResponse mappings to GpApi
+
+---
+
+## v6.2.3 (14/10/2021)
+
+### Enhancements:
+
+- Add Multiple merchants to GpApi
+
+---
+
+## v6.2.2 (08/09/2021)
+
+### Enhancements:
+
 - Add Multiple merchants to GpApi
 
 ---
@@ -17,8 +34,8 @@
 - Many GpEcom/Realex tests fixed
 - Send "x-gp-sdk" in the header with the SDK programming language and release version used
 - Send headers to GP-API that are dynamically set through configuration, like:
-    - x-gp-platform: "prestashop;version=1.7.2"
-    - x-gp-extension: "coccinet;version=2.4.1"
+  - x-gp-platform: "prestashop;version=1.7.2"
+  - x-gp-extension: "coccinet;version=2.4.1"
 - Add Fraud Dynamic Rules to GpEcom
 
 ---
@@ -77,7 +94,7 @@
 
 ### Enhancements:
 
-- Message Extension List added to ThreeDSecure class 
+- Message Extension List added to ThreeDSecure class
 
 ---
 
@@ -98,7 +115,7 @@
 
 - Move GP API 3DS tests service container to class initialize to make sure we reuse the same access token
 - Fix GP API get settlement dispute detail with wrong id unit test
-- Fix TokenManagement and Misc Tests 
+- Fix TokenManagement and Misc Tests
 ---
 
 ## v6.1.80 (04/13/2021)

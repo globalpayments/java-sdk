@@ -26,6 +26,7 @@ public class Transaction {
     private BigDecimal availableBalance;
     private String avsResponseCode;
     private String avsResponseMessage;
+    public String avsAddressResponse;
     private BigDecimal balanceAmount;
     private BatchSummary batchSummary;
     private String cardBrandTransactionId;
@@ -122,6 +123,12 @@ public class Transaction {
     }
     public void setAvsResponseMessage(String avsResponseMessage) {
         this.avsResponseMessage = avsResponseMessage;
+    }
+    public String getAvsAddressResponse() {
+        return avsAddressResponse;
+    }
+    public void setAvsAddressResponse(String avsAddressResponse) {
+        this.avsAddressResponse = avsAddressResponse;
     }
     public BigDecimal getBalanceAmount() {
         return balanceAmount;

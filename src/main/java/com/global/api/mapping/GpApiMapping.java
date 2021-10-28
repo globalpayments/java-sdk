@@ -96,6 +96,10 @@ public class GpApiMapping {
                     transaction.setCardType(card.getString("brand"));
                     transaction.setCardLast4(card.getString("masked_number_last4"));
                     transaction.setCvnResponseMessage(card.getString("cvv_result"));
+                    transaction.setCardBrandTransactionId(card.getString("brand_reference"));
+                    transaction.setAvsResponseCode(card.getString("avs_postal_code_result"));
+                    transaction.setAvsAddressResponse(card.getString("avs_address_result"));
+                    transaction.setAvsResponseMessage(card.getString("avs_action"));
                 }
 
             }

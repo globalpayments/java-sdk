@@ -7,6 +7,7 @@ import com.global.api.utils.CardUtils;
 public class CreditTrackData extends Credit implements ITrackData, IPinProtected {
     private String discretionaryData;
     private EntryMethod entryMethod = EntryMethod.Swipe;
+    private String encryptedPan;
     private String expiry;
     private String pan;
     private String pinBlock;
@@ -27,6 +28,13 @@ public class CreditTrackData extends Credit implements ITrackData, IPinProtected
     }
     public void setEntryMethod(EntryMethod entryMethod) {
         this.entryMethod = entryMethod;
+    }
+
+    public String getEncryptedPan() {
+        return encryptedPan;
+    }
+    public void setEncryptedPan(String value) {
+        encryptedPan = value;
     }
 
     public String getExpiry() {

@@ -9,6 +9,7 @@ import com.global.api.utils.CardUtils;
 public class EBTTrackData extends EBT implements ITrackData, IEncryptable {
     private String discretionaryData;
     private EncryptionData encryptionData;
+    private String encryptedPan;
     private EntryMethod entryMethod;
     private String expiry;
     private String pan;
@@ -28,6 +29,13 @@ public class EBTTrackData extends EBT implements ITrackData, IEncryptable {
     }
     public void setEncryptionData(EncryptionData encryptionData) {
         this.encryptionData = encryptionData;
+    }
+
+    public String getEncryptedPan() {
+        return encryptedPan;
+    }
+    public void setEncryptedPan(String value) {
+        encryptedPan = value;
     }
 
     public EntryMethod getEntryMethod() {

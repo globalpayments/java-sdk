@@ -6,14 +6,13 @@ import com.global.api.entities.DccRateData;
 import com.global.api.entities.MerchantDataCollection;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.CvnPresenceIndicator;
-import com.global.api.entities.enums.DccProcessor;
-import com.global.api.entities.enums.DccRateType;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.CardUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -22,6 +21,8 @@ public class CreditCardData extends Credit implements ICardData {
     private boolean cardPresent = false;
     private String cvn;
     private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
+    @Getter @Setter private String eci;
+    @Getter @Setter private ManualEntryMethod entryMethod;
     private Integer expMonth;
     private Integer expYear;
     private String number;
@@ -63,6 +64,7 @@ public class CreditCardData extends Credit implements ICardData {
     public Integer getExpYear() {
         return expYear;
     }
+    // NOTE: In .NET setExpYear() has a custom logic
     public void setExpYear(Integer expYear) {
         this.expYear = expYear;
     }

@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
+import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiAuthorizationRequestBuilder {
@@ -24,54 +25,65 @@ public class GpApiAuthorizationRequestBuilder {
         String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
-                        .set("entry_mode", getEntryMode(builder)); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
+                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel())); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
 
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
         TransactionType builderTransactionType = builder.getTransactionType();
+        TransactionModifier builderTransactionModifier = builder.getTransactionModifier();
         Address builderBillingAddress = builder.getBillingAddress();
 
-        // CardData
-        if (builderPaymentMethod instanceof ICardData) {
-            ICardData cardData = (ICardData) builderPaymentMethod;
+        if (builderPaymentMethod instanceof CreditCardData && (builderTransactionModifier == TransactionModifier.EncryptedMobile || builderTransactionModifier == TransactionModifier.DecryptedMobile))
+        {
+            JsonDoc digitalWallet = new JsonDoc();
+            CreditCardData creditCardData = (CreditCardData) builderPaymentMethod;
+            //Digital Wallet
+            if (builderTransactionModifier == TransactionModifier.EncryptedMobile)
+            {
+                digitalWallet
+                        .set("payment_token", JsonDoc.parse(creditCardData.getToken()));
 
-            JsonDoc card = new JsonDoc();
-            card.set("number", cardData.getNumber());
-            card.set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : null);
-            card.set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
-            //card.set("track", "");
-            card.set("tag", builder.getTagData());
-            card.set("cvv", cardData.getCvn());
-            card.set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "");
-            card.set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
-            card.set("authcode", builder.getOfflineAuthCode());
-            //card.set("brand_reference", "")
-
-            card.set("chip_condition", builder.getEmvChipCondition()); // [PREV_SUCCESS, PREV_FAILED]
-
-            // Avoid setting transaction types requesting to: POST /payment-methods
-            if (!(builderTransactionType == TransactionType.Tokenize || builderTransactionType == TransactionType.Verify)) {
-                card.set("cvv_indicator", !getValueIfNotNull(cardData.getCvnPresenceIndicator()).equals("0") ? getCvvIndicator(cardData.getCvnPresenceIndicator()) : null); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
-                card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
             }
-
-            paymentMethod.set("card", card);
-
-            if (builderTransactionType == TransactionType.Tokenize) {
-                JsonDoc tokenizationData = new JsonDoc();
-                tokenizationData.set("account_name", gateway.getTokenizationAccountName());
-                tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
-                tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
-                tokenizationData.set("name", "");
-                tokenizationData.set("card", card);
-
-                return
-                        new GpApiRequest()
-                                .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/payment-methods")
-                                .setRequestBody(tokenizationData.toString());
+            else if (builderTransactionModifier == TransactionModifier.DecryptedMobile)
+            {
+                DigitalWalletTokenFormat tokenFormat = DigitalWalletTokenFormat.CARD_NUMBER;
+                digitalWallet
+                        .set("token", creditCardData.getToken())
+                        .set("token_format", DigitalWalletTokenFormat.CARD_NUMBER.getValue())
+                        .set("expiry_month", creditCardData.getExpMonth() != null ? StringUtils.padLeft(creditCardData.getExpMonth(), 2, '0') : null)
+                        .set("expiry_year", creditCardData.getExpYear() != null ? StringUtils.padLeft(creditCardData.getExpYear(), 4, '0').substring(2, 4) : null)
+                        .set("cryptogram", creditCardData.getCryptogram())
+                        .set("eci", creditCardData.getEci());
             }
-            else if (builderTransactionType == TransactionType.Verify) {
-                if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+            digitalWallet.set("provider", mapDigitalWalletType(Target.GP_API, ((CreditCardData) builderPaymentMethod).getMobileType()));
+            paymentMethod.set("digital_wallet", digitalWallet);
+        } else {
+            // CardData
+            if (builderPaymentMethod instanceof ICardData) {
+                ICardData cardData = (ICardData) builderPaymentMethod;
+
+                JsonDoc card = new JsonDoc();
+                card.set("number", cardData.getNumber());
+                card.set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : null);
+                card.set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
+                //card.set("track", "");
+                card.set("tag", builder.getTagData());
+                card.set("cvv", cardData.getCvn());
+                card.set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "");
+                card.set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
+                card.set("authcode", builder.getOfflineAuthCode());
+                //card.set("brand_reference", "")
+
+                card.set("chip_condition", builder.getEmvChipCondition()); // [PREV_SUCCESS, PREV_FAILED]
+
+                // Avoid setting transaction types requesting to: POST /payment-methods
+                if (!(builderTransactionType == TransactionType.Tokenize || builderTransactionType == TransactionType.Verify)) {
+                    card.set("cvv_indicator", !getValueIfNotNull(cardData.getCvnPresenceIndicator()).equals("0") ? getCvvIndicator(cardData.getCvnPresenceIndicator()) : null); // [ILLEGIBLE, NOT_PRESENT, PRESENT]
+                    card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
+                }
+
+                paymentMethod.set("card", card);
+
+                if (builderTransactionType == TransactionType.Tokenize) {
                     JsonDoc tokenizationData = new JsonDoc();
                     tokenizationData.set("account_name", gateway.getTokenizationAccountName());
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
@@ -84,101 +96,119 @@ public class GpApiAuthorizationRequestBuilder {
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + "/payment-methods")
                                     .setRequestBody(tokenizationData.toString());
-
                 }
-                else {
-                    JsonDoc verificationData =
-                            new JsonDoc()
-                                    .set("account_name", gateway.getTransactionProcessingAccountName())
-                                    .set("channel", gateway.getGpApiConfig().getChannel())
-                                    .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
-                                    .set("currency", builder.getCurrency())
-                                    .set("country", gateway.getGpApiConfig().getCountry())
-                                    .set("payment_method", paymentMethod);
+                else if (builderTransactionType == TransactionType.Verify) {
+                    if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+                        JsonDoc tokenizationData = new JsonDoc();
+                        tokenizationData.set("account_name", gateway.getTokenizationAccountName());
+                        tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
+                        tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
+                        tokenizationData.set("name", "");
+                        tokenizationData.set("card", card);
 
-                    if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
-                        verificationData.remove("payment_method");
-                        verificationData.set("payment_method",
-                                new JsonDoc()
-                                        .set("entry_mode", getEntryMode(builder))
-                                        .set("id", ((ITokenizable) builderPaymentMethod).getToken())
-                            );
+                        return
+                                new GpApiRequest()
+                                        .setVerb(GpApiRequest.HttpMethod.Post)
+                                        .setEndpoint(merchantUrl + "/payment-methods")
+                                        .setRequestBody(tokenizationData.toString());
+
                     }
+                    else {
+                        JsonDoc verificationData =
+                                new JsonDoc()
+                                        .set("account_name", gateway.getTransactionProcessingAccountName())
+                                        .set("channel", gateway.getGpApiConfig().getChannel())
+                                        .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
+                                        .set("currency", builder.getCurrency())
+                                        .set("country", gateway.getGpApiConfig().getCountry())
+                                        .set("payment_method", paymentMethod);
+
+                        if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+                            verificationData.remove("payment_method");
+                            verificationData.set("payment_method",
+                                    new JsonDoc()
+                                            //.set("entry_mode", getEntryMode(builder, Channel.valueOf(gateway.getGpApiConfig().getChannel())))
+                                            .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel()))
+                                            .set("id", ((ITokenizable) builderPaymentMethod).getToken())
+                            );
+                        }
+
+                        return
+                                new GpApiRequest()
+                                        .setVerb(GpApiRequest.HttpMethod.Post)
+                                        .setEndpoint(merchantUrl + "/verifications")
+                                        .setRequestBody(verificationData.toString());
+                    }
+                }
+            }
+
+            // TrackData
+            else if (builderPaymentMethod instanceof ITrackData) {
+                ITrackData track = (ITrackData) builderPaymentMethod;
+
+                JsonDoc card =
+                        new JsonDoc()
+                                .set("track", track.getValue())
+                                .set("tag", builder.getTagData())
+                                .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
+                                .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "")
+                                .set("authcode", builder.getOfflineAuthCode());
+
+                if (builderTransactionType == TransactionType.Verify) {
+                    paymentMethod.set("card", card);
+
+                    JsonDoc verificationData = new JsonDoc()
+                            .set("account_name", gateway.getTransactionProcessingAccountName())
+                            .set("channel", gateway.getGpApiConfig().getChannel())
+                            .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? UUID.randomUUID().toString() : builder.getClientTransactionId())
+                            .set("currency", builder.getCurrency())
+                            .set("country", gateway.getGpApiConfig().getCountry())
+                            .set("payment_method", paymentMethod);
 
                     return
                             new GpApiRequest()
-                                .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/verifications")
-                                .setRequestBody(verificationData.toString());
+                                    .setVerb(GpApiRequest.HttpMethod.Post)
+                                    .setEndpoint(merchantUrl + "/verifications")
+                                    .setRequestBody(verificationData.toString());
                 }
-            }
-        }
 
-        // TrackData
-        else if (builderPaymentMethod instanceof ITrackData) {
-            ITrackData track = (ITrackData) builderPaymentMethod;
+                if (builderTransactionType == TransactionType.Sale || builderTransactionType == TransactionType.Refund) {
+                    if (StringUtils.isNullOrEmpty(track.getValue())) {
+                        card.set("number", track.getPan());
+                        card.set("expiry_month", track.getExpiry().substring(2, 4));
+                        card.set("expiry_year", track.getExpiry().substring(0, 2));
+                    }
+                    if (StringUtils.isNullOrEmpty(builder.getTagData())) {
+                        card.set("chip_condition", getChipCondition(builder.getEmvChipCondition())); // [PREV_SUCCESS, PREV_FAILED]
+                    }
+                }
 
-            JsonDoc card =
-                    new JsonDoc()
-                            .set("track", track.getValue())
-                            .set("tag", builder.getTagData())
-                            .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
-                            .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "")
-                            .set("authcode", builder.getOfflineAuthCode());
+                if (builderTransactionType == TransactionType.Sale) {
+                    card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
+                }
 
-            if (builderTransactionType == TransactionType.Verify) {
                 paymentMethod.set("card", card);
-
-                JsonDoc verificationData = new JsonDoc()
-                        .set("account_name", gateway.getTransactionProcessingAccountName())
-                        .set("channel", gateway.getGpApiConfig().getChannel())
-                        .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? UUID.randomUUID().toString() : builder.getClientTransactionId())
-                        .set("currency", builder.getCurrency())
-                        .set("country", gateway.getGpApiConfig().getCountry())
-                        .set("payment_method", paymentMethod);
-
-                return
-                        new GpApiRequest()
-                            .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/verifications")
-                            .setRequestBody(verificationData.toString());
             }
 
-            if (builderTransactionType == TransactionType.Sale || builderTransactionType == TransactionType.Refund) {
-                if (StringUtils.isNullOrEmpty(track.getValue())) {
-                    card.set("number", track.getPan());
-                    card.set("expiry_month", track.getExpiry().substring(2, 4));
-                    card.set("expiry_year", track.getExpiry().substring(0, 2));
-                }
-                if (StringUtils.isNullOrEmpty(builder.getTagData())) {
-                    card.set("chip_condition", getChipCondition(builder.getEmvChipCondition())); // [PREV_SUCCESS, PREV_FAILED]
+            // Tokenized Payment Method
+            if (builderPaymentMethod instanceof ITokenizable) {
+                String token = ((ITokenizable) builderPaymentMethod).getToken();
+                if (!StringUtils.isNullOrEmpty(token)) {
+                    paymentMethod.set("id", token);
                 }
             }
-
-            if (builderTransactionType == TransactionType.Sale) {
-                card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
-            }
-
-            paymentMethod.set("card", card);
         }
-
         // Payment Method Storage Mode
         if (builder.isRequestMultiUseToken()) {
             //TODO: there might be a typo: should be storage_mode
             paymentMethod.set("storage_mode", "ON_SUCCESS");
         }
 
-        // Tokenized Payment Method
-        if (builderPaymentMethod instanceof ITokenizable) {
-            String token = ((ITokenizable) builderPaymentMethod).getToken();
-            if (!StringUtils.isNullOrEmpty(token)) {
-                paymentMethod.set("id", token);
-            }
-        }
-
         // Pin Block
         if (builderPaymentMethod instanceof IPinProtected) {
-            paymentMethod.get("card").set("pin_block", ((IPinProtected) builderPaymentMethod).getPinBlock());
+            if (paymentMethod.get("card") != null) {
+                paymentMethod.get("card").set("pin_block", ((IPinProtected) builderPaymentMethod).getPinBlock());
+            }
         }
 
         // Authentication
@@ -273,36 +303,59 @@ public class GpApiAuthorizationRequestBuilder {
                         .setRequestBody(data.toString());
     }
 
-    private static String getEntryMode(AuthorizationBuilder builder) {
+    private static String getEntryMode(AuthorizationBuilder builder, String channel) {
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
-        if (builderPaymentMethod instanceof ICardData) {
-            ICardData card = (ICardData) builderPaymentMethod;
-            if (card.isReaderPresent()) {
-                return card.isCardPresent() ? "MANUAL" : "IN_APP";
+
+        if (channel.equals(Channel.CardPresent.getValue())) {
+            if (builderPaymentMethod instanceof ITrackData) {
+                ITrackData paymentMethod = (ITrackData) builderPaymentMethod;
+                if (builder.getTagData() != null) {
+                    if (paymentMethod.getEntryMethod() == EntryMethod.Proximity) {
+                        return "CONTACTLESS_CHIP";
+                    }
+                    return "CHIP";
+                }
+                if (paymentMethod.getEntryMethod() == EntryMethod.Swipe) {
+                    return "SWIPE";
+                }
             }
-            else {
-                return card.isCardPresent() ? "MANUAL" : "ECOM";
-            }
-        }
-        else if (builderPaymentMethod instanceof ITrackData) {
-            ITrackData track = (ITrackData) builderPaymentMethod;
-            if (builder.getTagData() != null) {
-                return (track.getEntryMethod() == EntryMethod.Swipe) ? "CHIP" : "CONTACTLESS_CHIP";
-            }
-            else if (builder.hasEmvFallbackData()) {
-                return "CONTACTLESS_SWIPE";
+            if (builderPaymentMethod instanceof ICardData && ((ICardData) builderPaymentMethod).isCardPresent()) {
+                return "MANUAL";
             }
             return "SWIPE";
         }
-        return "ECOM";
+        else {
+            if (builderPaymentMethod instanceof ICardData) {
+                ICardData paymentMethod = (ICardData) builderPaymentMethod;
+                if (paymentMethod.isReaderPresent()) {
+                    return "ECOM";
+                }
+                else {
+                    if (paymentMethod.getEntryMethod() != null) {
+                        switch (paymentMethod.getEntryMethod()) {
+                            case Phone:
+                                return "PHONE";
+                            case Moto:
+                                return "MOTO";
+                            case Mail:
+                                return "MAIL";
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            return "ECOM";
+        }
     }
 
     private static String getCaptureMode(AuthorizationBuilder builder) {
-        if (builder.isMultiCapture())
+        if (builder.isMultiCapture()) {
             return "MULTIPLE";
-        else if (builder.getTransactionType() == TransactionType.Auth)
+        }
+        else if (builder.getTransactionType() == TransactionType.Auth) {
             return "LATER";
-
+        }
         return "AUTO";
     }
 

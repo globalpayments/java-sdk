@@ -1,6 +1,7 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.entities.enums.CvnPresenceIndicator;
+import com.global.api.entities.enums.ManualEntryMethod;
 
 public interface ICardData {
     boolean isCardPresent();
@@ -25,4 +26,7 @@ public interface ICardData {
     void setReaderPresent(boolean readerPresent);
 
     String getShortExpiry();
+
+    ManualEntryMethod getEntryMethod();
+    void setEntryMethod(ManualEntryMethod manualEntryMethod);
 }

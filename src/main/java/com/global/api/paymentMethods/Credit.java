@@ -9,61 +9,31 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.utils.StringUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizable, IChargable, IAuthable, IRefundable, IReversable, IVerifiable, IPrePayable, IBalanceable, ISecure3d {
+@Getter
+@Setter
+public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizable, IChargable, IAuthable, IRefundable, IReversable, IVerifiable, IPrePayable, IBalanceable, ISecure3d, IPinProtected {
+    private String bankName;
+    protected String cardType = "Unknown";
     private EncryptionData encryptionData;
-    private MobilePaymentMethodType mobileType;
-    private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
+    private String encryptedPan;
+    @Setter(AccessLevel.NONE) private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
     protected ThreeDSecure threeDSecure;
     private String token;
-    protected String cardType = "Unknown";
+    private MobilePaymentMethodType mobileType;
+    private String cryptogram;
     protected boolean fleetCard;
-    private String bankName;
+    private boolean purchaseCard;
+    private boolean readyLinkCard;
+    private String pinBlock;
 
-    public String getCardType() {
-        return cardType;
-    }
-    public void setCardType(String cardType) {
-        this.cardType = cardType;
-    }
-    public EncryptionData getEncryptionData() {
-        return encryptionData;
-    }
-    public void setEncryptionData(EncryptionData encryptionData) {
-        this.encryptionData = encryptionData;
-    }
-    public MobilePaymentMethodType getMobileType() {
-		return mobileType;
-	}
-	public void setMobileType(MobilePaymentMethodType mobileType) {
-		this.mobileType = mobileType;
-	}
-	public PaymentMethodType getPaymentMethodType() { return paymentMethodType; }
-    public ThreeDSecure getThreeDSecure() {
-        return threeDSecure;
-    }
-    public void setThreeDSecure(ThreeDSecure threeDSecure) {
-        this.threeDSecure = threeDSecure;
-    }
-    public String getToken() {
-        return token;
-    }
-    public void setToken(String token) {
-        this.token = token;
-    }
     public boolean isFleet() {
         return fleetCard;
-    }
-    public void setFleetCard(boolean fleetCard) {
-        this.fleetCard = fleetCard;
-    }
-    public String getBankName() {
-        return bankName;
-    }
-    public void setBankName(String value) {
-        this.bankName = value;
     }
 
     public AuthorizationBuilder authorize() { return authorize(null, false); }
