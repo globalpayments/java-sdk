@@ -1,6 +1,7 @@
 package com.global.api.mapping;
 
 import com.global.api.entities.*;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
@@ -100,6 +101,7 @@ public class GpApiMapping {
                     transaction.setAvsResponseCode(card.getString("avs_postal_code_result"));
                     transaction.setAvsAddressResponse(card.getString("avs_address_result"));
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
+                    transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                 }
 
             }

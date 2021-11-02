@@ -1,6 +1,7 @@
 package com.global.api.entities.enums;
 
 public enum Target implements IFlag {
+    DEFAULT, // Used to refer to the default (most common) values across Connectors
     NWS,
     VAPS,
     Transit,

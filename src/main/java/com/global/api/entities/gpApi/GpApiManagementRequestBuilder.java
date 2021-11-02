@@ -2,17 +2,21 @@ package com.global.api.entities.gpApi;
 
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.DisputeDocument;
+import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ITokenizable;
+import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import lombok.var;
 
 public class GpApiManagementRequestBuilder {
 
@@ -117,6 +121,35 @@ public class GpApiManagementRequestBuilder {
         else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
                             .set("amount", builder.getAmount());
+
+            if (builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.ACH) {
+                data.set("description", builder.getDescription());
+
+                if (builder.getBankTransferDetails() != null) {
+                    var bankTransferDetails = builder.getBankTransferDetails();
+
+                    var paymentMethod =
+                            new JsonDoc()
+                                    .set("narrative", bankTransferDetails.getMerchantNotes());
+
+                    var bankTransfer =
+                            new JsonDoc()
+                                    .set("account_number", bankTransferDetails.getAccountNumber())
+                                    .set("account_type", (bankTransferDetails.getAccountType() != null) ? EnumUtils.getMapping(Target.GP_API, bankTransferDetails.getAccountType()) : null)
+                                    .set("check_reference", bankTransferDetails.getCheckReference());
+
+                    var bank =
+                            new JsonDoc()
+                                    .set("code", bankTransferDetails.getRoutingNumber())
+                                    .set("name", bankTransferDetails.getBankName());
+
+                    bankTransfer.set("bank", bank);
+
+                    paymentMethod.set("bank_transfer", bankTransfer);
+
+                    data.set("payment_method", paymentMethod);
+                }
+            }
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)

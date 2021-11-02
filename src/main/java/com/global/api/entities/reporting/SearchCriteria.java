@@ -45,6 +45,7 @@ public enum SearchCriteria {
     PaymentEntryMode,
     PaymentMethodKey,
     PaymentType,
+    PaymentMethod,
     ReferenceNumber,
     Resource,
     ResourceStatus,

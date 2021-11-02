@@ -21,7 +21,8 @@ public class EnumUtils {
         ReverseIntEnumMap<V> map = new ReverseIntEnumMap<V>(valueType);
         return map.get(value);
     }
-    public static String getMapping(IMappedConstant value, Target target) {
+
+    public static String getMapping(Target target, IMappedConstant value) {
         return value.getValue(target);
     }
 

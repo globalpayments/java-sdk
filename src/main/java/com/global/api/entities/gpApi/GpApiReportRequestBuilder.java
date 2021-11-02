@@ -3,9 +3,11 @@ package com.global.api.entities.gpApi;
 import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionReportBuilder;
 import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
+import com.global.api.utils.EnumUtils;
 import com.global.api.utils.StringUtils;
 
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
@@ -57,6 +59,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("batch_id", trb.getSearchBuilder().getBatchId());
                     request.addQueryStringParam("entry_mode", getValueIfNotNull(trb.getSearchBuilder().getPaymentEntryMode()));
                     request.addQueryStringParam("name", trb.getSearchBuilder().getName());
+                    request.addQueryStringParam("payment_method", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getPaymentMethod()));
 
                     return request;
 

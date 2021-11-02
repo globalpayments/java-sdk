@@ -22,8 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
-import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARDHOLDER_ENROLLED_V1;
-import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_2;
+import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static org.junit.Assert.*;
 
 public class GpApi3DSecureTests extends BaseGpApiTest {
@@ -41,6 +40,9 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     private final Address shippingAddress;
     private final Address billingAddress;
     private final BrowserData browserData;
+
+    private static final BigDecimal amount = new BigDecimal("1.01");
+    private static final String currency = "GBP";
 
     public GpApi3DSecureTests() throws ConfigurationException {
         GpApiConfig config = new GpApiConfig();
@@ -549,6 +551,92 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void FullCycle_v2_CreditSale_WithStoredCredentials_RecurringPayment() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
+
+        // Tokenize payment method
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+
+        assertNotNull(tokenizedCard.getToken());
+
+        // Check enrollment
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertNull(secureEcom.getEci());
+
+        // Initiate authentication
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(tokenizedCard, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(initAuth);
+        assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        // Get authentication data
+        secureEcom =
+                Secure3dService
+                        .getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        tokenizedCard.setThreeDSecure(secureEcom);
+
+        // Create transaction
+        Transaction response =
+                tokenizedCard
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+        assertNotNull(response.getCardBrandTransactionId());
+
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        Transaction response2 =
+                tokenizedCard
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withStoredCredential(storedCredential)
+                        .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response2);
+        assertEquals(SUCCESS, response2.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response2.getResponseMessage());
     }
 
     @Test

@@ -14,10 +14,7 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.CardIssuerEntryTag;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.IPaymentMethod;
-import com.global.api.paymentMethods.ITokenizable;
-import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +41,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter private ArrayList<DisputeDocument> disputeDocuments;
     @Getter private String disputeId;
     @Getter private String dynamicDescriptor;
+    @Getter @Setter private eCheck bankTransferDetails;
     private boolean forceToHost;
     private BigDecimal gratuity;
     @Getter private String idempotencyKey;
@@ -322,6 +320,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withDynamicDescriptor(String value) {
         dynamicDescriptor = value;
+        return this;
+    }
+    public ManagementBuilder withBankTransferDetails(eCheck value) {
+        bankTransferDetails = value;
         return this;
     }
     public ManagementBuilder withFleetData(FleetData value) {

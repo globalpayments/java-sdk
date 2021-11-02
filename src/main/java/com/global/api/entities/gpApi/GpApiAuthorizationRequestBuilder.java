@@ -200,7 +200,6 @@ public class GpApiAuthorizationRequestBuilder {
         }
         // Payment Method Storage Mode
         if (builder.isRequestMultiUseToken()) {
-            //TODO: there might be a typo: should be storage_mode
             paymentMethod.set("storage_mode", "ON_SUCCESS");
         }
 
@@ -227,6 +226,44 @@ public class GpApiAuthorizationRequestBuilder {
         if(builderPaymentMethod instanceof EBT) {
             EBT ebt = (EBT) builderPaymentMethod;
             paymentMethod.set("name", ebt.getCardHolderName());
+        }
+
+        if (builderPaymentMethod instanceof eCheck) {
+            eCheck check = (eCheck) builderPaymentMethod;
+            paymentMethod.set("name", check.getCheckHolderName());
+
+            JsonDoc bankTransfer =
+                    new JsonDoc()
+                            .set("account_number", check.getAccountNumber())
+                            .set("account_type", (check.getAccountType() != null) ? EnumUtils.getMapping(Target.GP_API, check.getAccountType()) : null)
+                            .set("check_reference", check.getCheckReference())
+                            .set("sec_code", check.getSecCode())
+                            .set("narrative", check.getMerchantNotes());
+
+            JsonDoc bank =
+                    new JsonDoc()
+                            .set("code", check.getRoutingNumber())
+                            .set("name", check.getBankName());
+
+            if(check.getBankAddress() != null) {
+                Address checkBankAddress = check.getBankAddress();
+                JsonDoc address =
+                        new JsonDoc()
+                                .set("line_1", checkBankAddress.getStreetAddress1())
+                                .set("line_2", checkBankAddress.getStreetAddress2())
+                                .set("line_3", checkBankAddress.getStreetAddress3())
+                                .set("city", checkBankAddress.getCity())
+                                .set("postal_code", checkBankAddress.getPostalCode())
+                                .set("state", checkBankAddress.getState())
+                                .set("country", checkBankAddress.getCountryCode());
+
+                bank.set("address", address);
+            }
+
+            bankTransfer.set("bank", bank);
+
+            paymentMethod.set("bank_transfer", bankTransfer);
+
         }
 
         // Encryption
@@ -276,6 +313,10 @@ public class GpApiAuthorizationRequestBuilder {
                 //.set("site_reference", "") //
                 .set("payment_method", paymentMethod);
 
+        if (builderPaymentMethod instanceof eCheck) {
+            data.set("payer", setPayerInformation(builder));
+        }
+
         // Set Order Reference
         if (!StringUtils.isNullOrEmpty(builder.getOrderId())) {
             JsonDoc order =
@@ -287,12 +328,12 @@ public class GpApiAuthorizationRequestBuilder {
 
         // Stored Credential
         if (builder.getStoredCredential() != null) {
-            data.set("initiator", EnumUtils.getMapping(builder.getStoredCredential().getInitiator(), Target.GP_API));
+            data.set("initiator", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getInitiator()));
             JsonDoc storedCredential =
                     new JsonDoc()
-                            .set("model", EnumUtils.getMapping(builder.getStoredCredential().getType(), Target.GP_API))
-                            .set("reason", EnumUtils.getMapping(builder.getStoredCredential().getReason(), Target.GP_API))
-                            .set("sequence", EnumUtils.getMapping(builder.getStoredCredential().getSequence(), Target.GP_API));
+                            .set("model", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getType()))
+                            .set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason()))
+                            .set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
             data.set("stored_credential", storedCredential);
         }
 
@@ -301,6 +342,37 @@ public class GpApiAuthorizationRequestBuilder {
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + "/transactions")
                         .setRequestBody(data.toString());
+    }
+
+    private static JsonDoc setPayerInformation(AuthorizationBuilder builder) {
+        JsonDoc payer = new JsonDoc();
+        payer.set("reference", builder.getCustomerId() != null ? builder.getCustomerId() : (builder.getCustomerData() != null ? builder.getCustomerData().getId() : null));
+
+        if(builder.getPaymentMethod() instanceof eCheck) {
+            JsonDoc billingAddress = new JsonDoc();
+
+            Address builderBillingAddress = builder.getBillingAddress();
+
+            if(builderBillingAddress != null) {
+                billingAddress
+                        .set("line_1", builderBillingAddress.getStreetAddress1())
+                        .set("line_2", builderBillingAddress.getStreetAddress2())
+                        .set("city", builderBillingAddress.getCity())
+                        .set("postal_code", builderBillingAddress.getPostalCode())
+                        .set("state", builderBillingAddress.getState())
+                        .set("country", builderBillingAddress.getCountryCode());
+
+                payer.set("billing_address", billingAddress);
+            }
+
+            if (builder.getCustomerData() != null) {
+                payer.set("name", builder.getCustomerData().getFirstName() + " " + builder.getCustomerData().getLastName());
+                payer.set("date_of_birth", builder.getCustomerData().getDateOfBirth());
+                payer.set("landline_phone", builder.getCustomerData().getHomePhone());
+                payer.set("mobile_phone", builder.getCustomerData().getMobilePhone());
+            }
+        }
+        return payer;
     }
 
     private static String getEntryMode(AuthorizationBuilder builder, String channel) {

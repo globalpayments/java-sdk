@@ -324,17 +324,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         //<editor-fold desc="STORED CREDENTIAL">
         if(builder.getStoredCredential() != null) {
             Element storedCredentialElement = et.subElement(request, "storedcredential");
-            et.subElement(storedCredentialElement, "type", EnumUtils.getMapping(builder.getStoredCredential().getType(), Target.Realex));
+            et.subElement(storedCredentialElement, "type", EnumUtils.getMapping(Target.Realex, builder.getStoredCredential().getType()));
             if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.CardHolder) {
-                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Realex));
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.CardHolder));
             }
             if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Merchant) {
-                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.Merchant, Target.Realex));
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.Merchant));
             }
             if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Scheduled) {
-                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(StoredCredentialInitiator.Scheduled, Target.Realex));
+                et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.Scheduled));
             }
-            et.subElement(storedCredentialElement, "sequence", EnumUtils.getMapping(builder.getStoredCredential().getSequence(), Target.Realex));
+            et.subElement(storedCredentialElement, "sequence", EnumUtils.getMapping(Target.Realex, builder.getStoredCredential().getSequence()));
             et.subElement(storedCredentialElement, "srd", builder.getStoredCredential().getSchemeId());
         }
         //</editor-fold>

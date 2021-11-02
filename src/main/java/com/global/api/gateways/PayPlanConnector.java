@@ -220,7 +220,7 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
                 }
                 else if (payment.getPaymentMethod() instanceof eCheck) {
                     eCheck check = (eCheck)payment.getPaymentMethod();
-                    request.set("achType", StringUtils.toInitialCase(check.getAccountType()))
+                    request.set("achType", StringUtils.toInitialCase(check.getAccountType().getValue()))
                             .set("accountType", StringUtils.toInitialCase(check.getCheckType()))
                             .set("telephoneIndicator", (check.getSecCode().equals(SecCode.Ccd) || check.getSecCode().equals(SecCode.Ppd)) ? false : true)
                             .set("routingNumber", check.getRoutingNumber())

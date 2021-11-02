@@ -4,7 +4,6 @@ import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.IStringConstant;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -163,9 +162,12 @@ public class StringUtils {
         return length + str;
     }
 
+    public static String toInitialCase(String value) {
+        return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+    }
+
     public static String toInitialCase(IStringConstant value) {
-        String initialValue = value.getValue();
-        return initialValue.substring(0, 1).toUpperCase() + initialValue.substring(1).toLowerCase();
+        return toInitialCase(value.getValue());
     }
 
     public static byte[] bytesFromHex(String hexString) {

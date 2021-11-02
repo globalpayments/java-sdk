@@ -150,7 +150,7 @@ public abstract class Gateway {
 
             InputStream responseStream = conn.getInputStream();
 
-            String rawResponse = getRawResponse(verb, endpoint, responseStream);
+            String rawResponse = getRawResponse(responseStream);
 
             responseStream.close();
             if (this.enableLogging) {
@@ -177,14 +177,14 @@ public abstract class Gateway {
             }
 
             try {
-                throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(verb, endpoint, conn.getErrorStream()));
+                throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(conn.getErrorStream()));
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }
         }
     }
 
-    public String getRawResponse(String verb, String endpoint, InputStream responseStream) throws IOException {
+    public String getRawResponse(InputStream responseStream) throws IOException {
         String rawResponse;
         if (acceptGzipEncoding()) {
             // Decompress GZIP response

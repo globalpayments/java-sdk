@@ -164,10 +164,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
                 if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
-                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Portico));
+                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
                 }
                 else {
-                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.Merchant, Target.Portico));
+                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
             }
@@ -300,10 +300,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
             if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
                 if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
-                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.CardHolder, Target.Portico));
+                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
                 }
                 else {
-                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(StoredCredentialInitiator.Merchant, Target.Portico));
+                    et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
             }

@@ -4,6 +4,7 @@
 
 ### Enhancements:
 
+- Add ACH to GpApi
 - Add Digital Wallet to GpApi
 - Add AvsResponse mappings to GpApi
 
