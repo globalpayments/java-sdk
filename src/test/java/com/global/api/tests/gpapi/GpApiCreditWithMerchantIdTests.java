@@ -46,7 +46,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
         config.setEnableLogging(true);
 
-//      DO NO DELETE - usage example for some settings
+//      DO NOT DELETE - usage example for some settings
 //        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
 //            put("x-gp-platform", "prestashop;version=1.7.2");
 //            put("x-gp-extension", "coccinet;version=2.4.1");
@@ -964,7 +964,6 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         assertNotNull(secureEcom.getMessageType());
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNull(secureEcom.getEci());
-
 
         BrowserData browserData = new BrowserData();
         browserData.setAcceptHeader("text/html,application/xhtml+xml,application/xml;q=9,image/webp,img/apng,*/*;q=0.8");

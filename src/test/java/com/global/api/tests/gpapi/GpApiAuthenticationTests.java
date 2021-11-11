@@ -114,6 +114,42 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
     }
 
     @Test
+    public void GenerateAccessTokenManualWithMaximumSecondsToExpire() {
+        GpApiConfig gpApiConfig = configAccessTokenCall()
+                .setSecondsToExpire(604801);
+
+        boolean exceptionCaught = false;
+        try {
+            GpApiService.generateTransactionKey(gpApiConfig);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("40213", ex.getResponseText());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("Status Code: 400 - seconds_to_expire contains unexpected data", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void GenerateAccessTokenManualWithInvalidSecondsToExpire() {
+        GpApiConfig gpApiConfig = configAccessTokenCall()
+                .setSecondsToExpire(10);
+
+        boolean exceptionCaught = false;
+        try {
+            GpApiService.generateTransactionKey(gpApiConfig);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("40213", ex.getResponseText());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("Status Code: 400 - seconds_to_expire contains unexpected data", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
     public void GenerateAccessTokenManualWithIntervalToExpire() throws ApiException {
         GpApiConfig gpApiConfig =
                 configAccessTokenCall()
@@ -245,7 +281,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
 
         GpApiConfig gpApiConfig =
                 configAccessTokenCall()
-                    .setPermissions(permissions);
+                        .setPermissions(permissions);
 
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(gpApiConfig);
 

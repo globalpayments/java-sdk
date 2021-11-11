@@ -48,6 +48,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
         ebtCardData.setExpYear(2025);
         ebtCardData.setPinBlock("32539F50C245A6A93D123412324000AA");
         ebtCardData.setCardHolderName("Jane Doe");
+        ebtCardData.setCardPresent(true);
 
         ebtTrackData = new EBTTrackData();
         ebtTrackData.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");

@@ -71,7 +71,7 @@ public class GpApiAuthorizationRequestBuilder {
                 card.set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "");
                 card.set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
                 card.set("authcode", builder.getOfflineAuthCode());
-                //card.set("brand_reference", "")
+                card.set("brand_reference", builder.getCardBrandTransactionId());
 
                 card.set("chip_condition", builder.getEmvChipCondition()); // [PREV_SUCCESS, PREV_FAILED]
 

@@ -9,10 +9,10 @@ import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServicesContainer implements IDisposable {
-    private HashMap<String, ConfiguredServices> configurations;
+    private ConcurrentHashMap<String, ConfiguredServices> configurations;
     private static ServicesContainer instance;
 
     public IDeviceInterface getDeviceInterface(String configName) throws ApiException {
@@ -115,7 +115,7 @@ public class ServicesContainer implements IDisposable {
     }
 
     private ServicesContainer() {
-        configurations = new HashMap<String, ConfiguredServices>();
+        configurations = new ConcurrentHashMap<>();
     }
 
     private ConfiguredServices getConfiguration(String configName) {
@@ -124,7 +124,7 @@ public class ServicesContainer implements IDisposable {
         return new ConfiguredServices();
     }
 
-    private void addConfiguration(String configName, ConfiguredServices cs) {
+    private void addConfiguration(String configName, ConfiguredServices cs) throws ConfigurationException {
         System.out.println(String.format("[Add Configuration] - %s", configName));
         if(configurations.containsKey(configName)) {
             configurations.remove(configName);
@@ -132,7 +132,7 @@ public class ServicesContainer implements IDisposable {
         configurations.put(configName, cs);
     }
 
-    private void removeConfiguration(String configName) {
+    private void removeConfiguration(String configName) throws ConfigurationException {
         System.out.println(String.format("[Remove Configuration] - %s", configName));
         if(configurations.containsKey(configName)) {
             configurations.remove(configName);

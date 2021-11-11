@@ -14,6 +14,7 @@ import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
+import lombok.SneakyThrows;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ import static org.junit.Assert.*;
 public class GpApiCreditTests extends BaseGpApiTest {
 
     private final CreditCardData card;
+    private CreditTrackData creditTrackData;
 
     public GpApiCreditTests() throws ApiException {
 
@@ -37,7 +39,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
                 .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
 
-        //DO NO DELETE - usage example for some settings
+        //DO NOT DELETE - usage example for some settings
 //        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
 //            put("x-gp-platform", "prestashop;version=1.7.2");
 //            put("x-gp-extension", "coccinet;version=2.4.1");
@@ -54,6 +56,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         card.setExpMonth(5);
         card.setExpYear(2025);
         card.setCvn("123");
+        card.setCardPresent(true);
     }
 
     private void GpApiCardPresentConfig() throws ConfigurationException {
@@ -66,6 +69,10 @@ public class GpApiCreditTests extends BaseGpApiTest {
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        creditTrackData = new CreditTrackData();
+        creditTrackData.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        creditTrackData.setEntryMethod(EntryMethod.Swipe);
     }
 
     @Test
@@ -324,8 +331,9 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertEquals(amount, response.getBalanceAmount());
     }
 
+    @SneakyThrows
     @Test
-    public void CreditSale_WithoutPermissions() throws ApiException {
+    public void CreditSale_WithoutPermissions() {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
         GpApiConfig config = new GpApiConfig();
@@ -698,6 +706,21 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
+    public void CreditVerify_CP_CreditTrackData() throws ApiException {
+        GpApiCardPresentConfig();
+
+        Transaction response =
+                creditTrackData
+                        .verify()
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME_CARD_PRESENT);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(VERIFIED, response.getResponseMessage());
+    }
+
+    @Test
     public void CreditVerify_CP_CVNNotMatched() throws ApiException {
         GpApiCardPresentConfig();
 
@@ -828,9 +851,6 @@ public class GpApiCreditTests extends BaseGpApiTest {
     @Test
     public void CreditTrackDataVerify() throws ApiException {
         GpApiCardPresentConfig();
-
-        CreditTrackData creditTrackData = new CreditTrackData();
-        creditTrackData.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
 
         Transaction response =
                 creditTrackData

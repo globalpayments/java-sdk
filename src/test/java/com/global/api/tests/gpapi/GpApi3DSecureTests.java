@@ -40,8 +40,9 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     private final Address shippingAddress;
     private final Address billingAddress;
     private final BrowserData browserData;
+    private final StoredCredential storedCredential;
 
-    private static final BigDecimal amount = new BigDecimal("1.01");
+    private static final BigDecimal amount = new BigDecimal("10.01");
     private static final String currency = "GBP";
 
     public GpApi3DSecureTests() throws ConfigurationException {
@@ -61,10 +62,11 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
         // Create card data
         card = new CreditCardData();
-        card.setNumber("4263970000005262");
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
         card.setExpMonth(12);
         card.setExpYear(2025);
         card.setCardHolderName("John Smith");
+        card.setCardPresent(true);
 
         // Stored card
         RecurringPaymentMethod stored = new RecurringPaymentMethod("20190809-Realex", "20190809-Realex-Credit");
@@ -102,33 +104,27 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         browserData.setChallengeWindowSize(ChallengeWindowSize.Windowed_600x400);
         browserData.setTimezone("0");
         browserData.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36");
+
+        storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
     }
 
     @Test
     public void FullCycle_v1() throws ApiException {
-
-        card = new CreditCardData();
-        card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
-
-        StoredCredential storedCredential = new StoredCredential();
-        storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
-        storedCredential.setType(StoredCredentialType.Unscheduled);
-        storedCredential.setSequence(StoredCredentialSequence.First);
-        storedCredential.setReason(StoredCredentialReason.NoShow);
+        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .withAuthenticationSource(AuthenticationSource.Browser)
                         .withChallengeRequestIndicator(ChallengeRequestIndicator.ChallengeMandated)
-                        // TODO: Enable this when possible
-                        //.withStoredCredential(storedCredential)
+                        .withStoredCredential(storedCredential)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -167,8 +163,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 card
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -178,12 +174,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
     @Test
     public void FullCycle_v1_WithTokenizedPaymentMethod() throws Exception {
-
-        card = new CreditCardData();
-        card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
+        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
         // Tokenize payment method
         CreditCardData tokenizedCard = new CreditCardData();
@@ -195,8 +186,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(tokenizedCard)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -233,8 +224,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 tokenizedCard
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -244,20 +235,14 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
     @Test
     public void CardHolderEnrolled_ChallengeRequired_AuthenticationUnavailable_v1() throws Exception {
-
-        card = new CreditCardData();
-        card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
-
+        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -291,19 +276,14 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
     @Test
     public void CardHolderEnrolled_ChallengeRequired_AuthenticationAttemptAcknowledge_v1() throws Exception {
-
-        card = new CreditCardData();
-        card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
+        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -340,19 +320,15 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         AuthenticationResultCode[] authenticationResultCode = {AuthenticationResultCode.Unavailable, AuthenticationResultCode.Failed, AuthenticationResultCode.AttemptAcknowledge};
         String[] status = {FAILED, NOT_AUTHENTICATED, SUCCESS_ATTEMPT_MADE};
 
-        card = new CreditCardData();
-        card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
+        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
         for (int i = 0; i < status.length; i++) {
             // Check enrollment
             ThreeDSecure secureEcom =
                     Secure3dService
                             .checkEnrollment(card)
-                            .withCurrency("GBP")
-                            .withAmount(new BigDecimal("10.01"))
+                            .withCurrency(currency)
+                            .withAmount(amount)
                             .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
             assertNotNull(secureEcom);
@@ -384,23 +360,19 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
             assertEquals(status[i], secureEcom.getStatus());
             String liabilityShift = (status[i] == "SUCCESS_ATTEMPT_MADE") ? "YES" : "NO";
             assertEquals(liabilityShift, secureEcom.getLiabilityShift());
-            }
+        }
     }
 
     @Test
     public void CardHolderNotEnrolled_v1() throws ApiException {
-        card = new CreditCardData();
-        card.setNumber("4917000000000087");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
+        card.setNumber(CARDHOLDER_NOT_ENROLLED_V1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -411,20 +383,15 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
     @Test
     public void FullCycle_v2() throws ApiException {
-
         // Frictionless scenario
-        card = new CreditCardData();
-        card.setNumber("4263970000005262");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Doe");
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -432,20 +399,16 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
 
-        StoredCredential storedCredential = new StoredCredential();
-        storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
         storedCredential.setType(StoredCredentialType.Unscheduled);
         storedCredential.setSequence(StoredCredentialSequence.First);
-        storedCredential.setReason(StoredCredentialReason.NoShow);
 
         // Initiate authentication
         ThreeDSecure initAuth =
                 Secure3dService
                         .initiateAuthentication(card, secureEcom)
-                        .withAmount(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
-                        // TODO: Enable this when possible
-                        //.withStoredCredential(storedCredential)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withStoredCredential(storedCredential)
                         .withAuthenticationSource(AuthenticationSource.Browser)
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
@@ -473,8 +436,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 card
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -484,13 +447,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
     @Test
     public void FullCycle_v2_WithTokenizedPaymentMethod() throws ApiException {
-
         // Frictionless scenario
-        card = new CreditCardData();
-        card.setNumber("4263970000005262");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Doe");
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
         // Tokenize payment method
         CreditCardData tokenizedCard = new CreditCardData();
@@ -501,9 +459,9 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
-                        .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .checkEnrollment(tokenizedCard)
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -515,8 +473,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         ThreeDSecure initAuth =
                 Secure3dService
                         .initiateAuthentication(tokenizedCard, secureEcom)
-                        .withAmount(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .withAmount(amount)
+                        .withCurrency(currency)
                         .withAuthenticationSource(AuthenticationSource.Browser)
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
@@ -544,8 +502,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 tokenizedCard
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -620,12 +578,6 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         assertNotNull(response.getCardBrandTransactionId());
 
-        StoredCredential storedCredential = new StoredCredential();
-        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
-        storedCredential.setType(StoredCredentialType.Recurring);
-        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
-        storedCredential.setReason(StoredCredentialReason.Incremental);
-
         Transaction response2 =
                 tokenizedCard
                         .charge(amount)
@@ -642,18 +594,14 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     @Test
     public void CardHolderEnrolled_ChallengeRequired_v2() throws Exception {
         // Challenge required scenario
-        card = new CreditCardData();
-        card.setNumber("4012001038488884");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
+        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
@@ -665,8 +613,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         ThreeDSecure initAuth =
                 Secure3dService
                         .initiateAuthentication(card, secureEcom)
-                        .withAmount(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .withAmount(amount)
+                        .withCurrency(currency)
                         .withAuthenticationSource(AuthenticationSource.Browser)
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
@@ -680,7 +628,6 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertTrue(initAuth.isChallengeMandated());
         assertNotNull(initAuth.getIssuerAcsUrl());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
-
 
         // Perform ACS authentication
         GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());
@@ -703,8 +650,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 card
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -716,13 +663,12 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     public void Frictionless_AuthenticationSuccessful_FullCycle_v2_DifferentAmount() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
-        BigDecimal amount = new BigDecimal("10.01");
 
         // Check enrollment
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
+                        .withCurrency(currency)
                         .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
@@ -741,7 +687,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
                 Secure3dService
                         .initiateAuthentication(card, secureEcom)
                         .withAmount(new BigDecimal("15"))
-                        .withCurrency("EUR")
+                        .withCurrency(currency)
                         .withAuthenticationSource(AuthenticationSource.Browser)
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
@@ -780,16 +726,16 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         // Create transaction
         Transaction response =
                 card
-                        .charge(new BigDecimal("10.01"))
-                        .withCurrency("GBP")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
-	
-	@Test
+
+    @Test
     public void CardHolderEnrolled_ChallengeRequired_AuthenticationFailed_v1_WrongAcsValue() throws Exception {
         card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
 
@@ -797,8 +743,8 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(card)
-                        .withCurrency("GBP")
-                        .withAmount(new BigDecimal("10.01"))
+                        .withCurrency(currency)
+                        .withAmount(amount)
                         .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);

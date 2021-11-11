@@ -62,6 +62,10 @@ public class StringUtils {
         return qty.divide(new BigDecimal(shiftValue));
     }
 
+    public static String toNumeric(String str) {
+        return extractDigits(str);
+    }
+
     public static String toNumeric(BigDecimal amount) {
         if(amount == null) {
             return "";

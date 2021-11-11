@@ -4,7 +4,26 @@
 
 ### Enhancements:
 
+- Add Mobile phone country code and subscriber number validation for 3DS2
+- Add recurring payment with stored credentials functionality to GpApi
+- Thread Safe Changes
+- Tests Updates
+- Vaps Connector refactor
+
+---
+
+## v6.2.6 (02/11/2021)
+
+### Enhancements:
+
 - Add ACH to GpApi
+
+---
+
+## v6.2.4 (28/10/2021)
+
+### Enhancements:
+
 - Add Digital Wallet to GpApi
 - Add AvsResponse mappings to GpApi
 

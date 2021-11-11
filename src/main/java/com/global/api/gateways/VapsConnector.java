@@ -2591,7 +2591,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
         else {
             // get the track object
             ITrackData track = null;
-            if(paymentMethod != null) {
+            if(paymentMethod instanceof ITrackData) {
                 track = (ITrackData)paymentMethod;
             }
             else if(request.has(DataElementId.DE_035)) {
@@ -2627,34 +2627,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, request.has(DataElementId.DE_035) ? "2" : "1");
             }
         }
-
-//        else if(request.has(DataElementId.DE_035)) {
-//            CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_035));
-//            if(track.getEncryptionData() != null && track.getEncryptedPan() != null) {
-//                impliedCapture.set(DataElementId.DE_002, track.getEncryptedPan());
-//            }
-//            else {
-//                impliedCapture.set(DataElementId.DE_002, track.getPan());
-//            }
-//            impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-//            if(StringUtils.isNullOrEmpty(nsi)) {
-//                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "2");
-//            }
-//        }
-//        else {
-//            CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_045));
-//            if(track.getEncryptionData() != null && track.getEncryptedPan() != null) {
-//                impliedCapture.set(DataElementId.DE_002, track.getEncryptedPan());
-//            }
-//            else {
-//                impliedCapture.set(DataElementId.DE_002, track.getPan());
-//            }
-//            impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-//            if(StringUtils.isNullOrEmpty(nsi)) {
-//                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "1");
-//            }
-//        }
-        impliedCapture.set(DataElementId.DE_062, requestIssuerData);
+        impliedCapture.set(DataElementId.DE_062, requestIssuerData); // DE_042 - ISSUER DATA
 
         // DE_025 - MESSAGE REASON CODE
         if(paymentMethodType != null && paymentMethodType.equals(PaymentMethodType.Debit)) {

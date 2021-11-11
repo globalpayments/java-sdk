@@ -214,15 +214,15 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             // home phone
             if(!StringUtils.isNullOrEmpty(builder.getHomeNumber())) {
                 payer.subElement("home_phone")
-                        .set("country_code", builder.getHomeCountryCode())
-                        .set("subscriber_number", builder.getHomeNumber());
+                        .set("country_code", StringUtils.toNumeric(builder.getHomeCountryCode()))
+                        .set("subscriber_number", StringUtils.toNumeric(builder.getHomeNumber()));
             }
 
             // work phone
             if(!StringUtils.isNullOrEmpty(builder.getWorkNumber())) {
                 payer.subElement("work_phone")
-                        .set("country_code", builder.getWorkCountryCode())
-                        .set("subscriber_number", builder.getWorkNumber());
+                        .set("country_code", StringUtils.toNumeric(builder.getWorkCountryCode()))
+                        .set("subscriber_number", StringUtils.toNumeric((builder.getWorkNumber())));
             }
 
             // payer login data
@@ -267,8 +267,8 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             // mobile phone
             if(!StringUtils.isNullOrEmpty(builder.getMobileNumber())) {
                 payer.subElement("mobile_phone")
-                        .set("country_code", builder.getMobileCountryCode())
-                        .set("subscriber_number", builder.getMobileNumber());
+                        .set("country_code", StringUtils.toNumeric(builder.getMobileCountryCode()))
+                        .set("subscriber_number", StringUtils.toNumeric(builder.getMobileNumber()));
             }
 
             // browser_data

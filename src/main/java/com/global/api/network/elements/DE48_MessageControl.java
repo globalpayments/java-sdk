@@ -184,8 +184,10 @@ public class DE48_MessageControl implements IDataElement<DE48_MessageControl> {
         hardwareSoftwareConfig = nm.getDataElement(DataElementId.DE_002, DE48_2_HardwareSoftwareConfig.class);
         languageCode = nm.getString(DataElementId.DE_003);
         String _batchNumber = nm.getString(DataElementId.DE_004);
-        sequenceNumber = Integer.parseInt(_batchNumber.substring(0, 6));
-        batchNumber = Integer.parseInt(_batchNumber.substring(6));
+        if(!StringUtils.isNullOrEmpty(_batchNumber)) {
+            sequenceNumber = Integer.parseInt(_batchNumber.substring(0, 6));
+            batchNumber = Integer.parseInt(_batchNumber.substring(6));
+        }
         shiftNumber = nm.getString(DataElementId.DE_005);
         clerkId = nm.getString(DataElementId.DE_006);
         customerData = nm.getDataElement(DataElementId.DE_008, DE48_8_CustomerData.class);
