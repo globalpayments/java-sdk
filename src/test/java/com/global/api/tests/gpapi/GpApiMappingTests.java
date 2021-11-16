@@ -13,6 +13,8 @@ import com.global.api.gateways.GpApiConnector;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.JsonDoc;
+import com.global.api.utils.StringUtils;
+import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -382,6 +384,42 @@ public class GpApiMappingTests extends BaseGpApiTest {
                 assertEquals(card.getString("brand"), transaction.getCardType());
                 assertEquals(card.getString("masked_number_last4"), transaction.getCardLast4());
                 assertEquals(card.getString("cvv_result"), transaction.getCvnResponseMessage());
+            }
+        }
+    }
+
+    @Test
+    public void MapResponseTest_CreateTransaction_withAvsData() {
+        // Arrange
+        String rawJson = "{\"id\":\"TRN_J7ocSiyeHOJ1XK1jHjg9hq9U5nS0Nz_057d45d5f1fc\",\"time_created\":\"2021-09-01T14:27:41.713Z\",\"type\":\"SALE\",\"status\":\"CAPTURED\",\"channel\":\"CNP\",\"capture_mode\":\"AUTO\",\"amount\":\"1999\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_7e3e2c7df34f42819b3edee31022ee3f\",\"merchant_name\":\"Sandbox_merchant_3\",\"account_id\":\"TRA_c9967ad7d8ec4b46b6dd44a61cde9a91\",\"account_name\":\"transaction_processing\",\"reference\":\"4d361180-304a-4f8a-9e82-057d45d5f1fc\",\"payment_method\":{\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"fingerprint\":\"\",\"fingerprint_presence_indicator\":\"\",\"card\":{\"funding\":\"CREDIT\",\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"vQBOsL3WUjuaaEmT\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\",\"avs_address_result\":\"MATCHED\",\"avs_postal_code_result\":\"MATCHED\",\"avs_action\":\"\",\"provider\":{\"result\":\"00\",\"cvv_result\":\"M\",\"avs_address_result\":\"M\",\"avs_postal_code_result\":\"M\"}}},\"batch_id\":\"BAT_983471\",\"action\":{\"id\":\"ACT_J7ocSiyeHOJ1XK1jHjg9hq9U5nS0Nz\",\"type\":\"AUTHORIZE\",\"time_created\":\"2021-09-01T14:27:41.713Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"rkiYguPfTurmGcVhkDbIGKn2IJe2t09M\",\"app_name\":\"sample_app_CERT\"}}";
+
+        // Act
+        Transaction transaction = GpApiMapping.mapResponse(rawJson);
+
+        JsonDoc doc = JsonDoc.parse(rawJson);
+
+        // Assert
+        assertEquals(doc.getString("id"), transaction.getTransactionId());
+        assertEquals(StringUtils.toAmount(doc.getString("amount")), transaction.getBalanceAmount());
+        assertEquals(doc.getString("time_created"), transaction.getTimestamp());
+        assertEquals(doc.getString("status"), transaction.getResponseMessage());
+        assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
+        assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getBatchReference());
+        assertEquals(doc.get("action").getString("result_code"), transaction.getResponseCode());
+
+        var payment_method = doc.get("payment_method");
+        if (payment_method != null) {
+            assertEquals(payment_method.getString("id"), transaction.getToken());
+            assertEquals(payment_method.getString("result"), transaction.getAuthorizationCode());
+
+            var card = payment_method.get("card");
+            if (card != null) {
+                assertEquals(card.getString("brand"), transaction.getCardType());
+                assertEquals(card.getString("masked_number_last4"), transaction.getCardLast4());
+                assertEquals(card.getString("cvv_result"), transaction.getCvnResponseMessage());
+                assertEquals(card.getString("avs_postal_code_result"), transaction.getAvsResponseCode());
+                assertEquals(card.getString("avs_address_result"), transaction.getAvsAddressResponse());
+                assertEquals(card.getString("avs_action"), transaction.getAvsResponseMessage());
             }
         }
     }

@@ -23,7 +23,7 @@ public class EnumUtils {
     }
 
     public static String getMapping(Target target, IMappedConstant value) {
-        return value.getValue(target);
+        return (value != null) ? value.getValue(target) : null;
     }
 
     public static String mapDigitalWalletType(Target target, MobilePaymentMethodType type) {

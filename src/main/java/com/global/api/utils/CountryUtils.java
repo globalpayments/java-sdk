@@ -531,6 +531,23 @@ public class CountryUtils {
         }
     }
 
+    // These getters will be used in the Android SDK to avoid duplicating these maps
+    public static Map<String, String> getCountryCodeMapByCountry() {
+        return countryCodeMapByCountry;
+    }
+
+    public static Map<String, String> getCountryMapByCountryCode() {
+        return countryMapByCountryCode;
+    }
+
+    public static Map<String, String> getCountryCodeMapByNumericCode() {
+        return countryCodeMapByNumericCode;
+    }
+
+    public static Map<String, String> getNumericCodeMapByCountryCode() {
+        return numericCodeMapByCountryCode;
+    }
+
     public static boolean isCountry(Address address, String countryCode) {
         if(address.getCountryCode() != null)
             return address.getCountryCode().equals(countryCode);

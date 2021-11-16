@@ -4,6 +4,20 @@
 
 ### Enhancements:
 
+- Add AVS missing mapping to response
+- Availability of country lists for Android SDK
+- Add tests for query param paymentMethod
+
+### Bug Fixes:
+
+- Transaction reporting not working due to new mandatory query parameter added
+
+---
+
+## v6.2.7 (11/11/2021)
+
+### Enhancements:
+
 - Add Mobile phone country code and subscriber number validation for 3DS2
 - Add recurring payment with stored credentials functionality to GpApi
 - Thread Safe Changes
