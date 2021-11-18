@@ -32,6 +32,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private BigDecimal taxAmount;
     private String taxExempt;
     private String taxExemptId;
+    private Integer tokenRequest;
+    private String tokenValue;
     private String transactionId;
 
     public Address getAddress() {
@@ -85,6 +87,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     }
     public String getTaxExemptId() {
         return taxExemptId;
+    }
+
+    public Integer getTokenRequest() {
+        return this.tokenRequest;
+    }
+
+    public String getTokenValue() {
+        return this.tokenValue;
+    }
+
+    public TerminalAuthBuilder withTokenRequest(Integer tokenRequest)
+    {
+        this.tokenRequest = tokenRequest;
+        return this;
+    }
+
+    public TerminalAuthBuilder withTokenValue(String tokenValue)
+    {
+        this.tokenValue = tokenValue;
+        return this;
     }
 
     public TerminalAuthBuilder withAddress(Address address) {

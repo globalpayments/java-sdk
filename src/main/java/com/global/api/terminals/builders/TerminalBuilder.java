@@ -8,6 +8,12 @@ import com.global.api.terminals.TerminalResponse;
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
     protected Integer requestId;
+    /*
+     * ID of the clerk if in retail mode, and ID of the server if in restaurant mode
+     * 
+     * @var int
+     */
+    protected Integer clerkId;
 
     public PaymentMethodType getPaymentMethodType() {
         return paymentMethodType;
@@ -16,9 +22,18 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
         return requestId;
     }
 
-    public T withRequestId(Integer value) {
+    public Integer getClerkId() {
+        return this.clerkId;
+    }
+
+    public TerminalBuilder<T> withClerkId(Integer value) {
+        clerkId = value;
+        return this;
+    }
+
+    public TerminalBuilder<T> withRequestId(Integer value) {
         requestId = value;
-        return (T)this;
+        return this;
     }
 
     TerminalBuilder(TransactionType type, PaymentMethodType paymentType) {

@@ -8,9 +8,11 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.*;
+import com.global.api.utils.EmvUtils;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.var;
 
 import java.util.UUID;
 
@@ -381,9 +383,13 @@ public class GpApiAuthorizationRequestBuilder {
         if (channel.equals(Channel.CardPresent.getValue())) {
             if (builderPaymentMethod instanceof ITrackData) {
                 ITrackData paymentMethod = (ITrackData) builderPaymentMethod;
-                if (builder.getTagData() != null) {
+                if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                     if (paymentMethod.getEntryMethod() == EntryMethod.Proximity) {
                         return "CONTACTLESS_CHIP";
+                    }
+                    var emvData = EmvUtils.parseTagData(builder.getTagData());
+                    if (emvData.isContactlessMsd()) {
+                        return "CONTACTLESS_SWIPE";
                     }
                     return "CHIP";
                 }

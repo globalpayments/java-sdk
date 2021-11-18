@@ -313,4 +313,20 @@ class PaxInterface implements IDeviceInterface {
         SAFSummaryReport summaryResponse = new SAFSummaryReport(response);
         return summaryResponse;
     }
+
+    public IDeviceResponse ping() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public void cancel(Integer cancelParams) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
 }

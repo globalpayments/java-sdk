@@ -1,6 +1,7 @@
 package com.global.api.terminals;
 
 import com.global.api.entities.enums.ApplicationCryptogramType;
+import com.global.api.entities.enums.CardType;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String cardHolderName;
     protected String cardBIN;
     protected boolean cardPresent;
+    protected CardType cardType;
     protected String expirationDate;
     protected BigDecimal tipAmount;
     protected BigDecimal cashBackAmount;
@@ -390,5 +392,13 @@ public abstract class TerminalResponse implements IDeviceResponse {
 
     public void setBalanceAmount(BigDecimal balanceAmount) {
         this.balanceAmount = balanceAmount;
+    }
+
+    public CardType getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(CardType value) {
+        this.cardType = value;
     }
 }

@@ -1,5 +1,7 @@
 package com.global.api.terminals.abstractions;
 
+import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+
 public interface IEODResponse extends IDeviceResponse {
     IDeviceResponse getAttachmentResponse();
     IDeviceResponse getBatchCloseResponse();
@@ -10,6 +12,9 @@ public interface IEODResponse extends IDeviceResponse {
     IDeviceResponse getHeartBeatResponse();
     IDeviceResponse getReversalResponse();
     ISAFResponse getSAFResponse();
+    String getBatchId();
+    UpaMessageId getMessageId();
+    String getResponseCode();
 
     String getAttachmentResponseText();
     String getBatchCloseResponseText();

@@ -13,7 +13,8 @@ public enum ControlCodes implements IByteConstant {
     US (0x1F),
     COMMA (0x2C),
     COLON (0x3A),
-    PTGS (0x7C);
+    PTGS (0x7C),
+    LF (0x0A);
 
     private final byte code;
     ControlCodes(int code){ this.code = (byte)code; }

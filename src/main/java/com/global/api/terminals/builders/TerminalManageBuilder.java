@@ -13,20 +13,28 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 
 public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder> {
-    private BigDecimal amount;
-    private CurrencyType currency;
-    private BigDecimal gratuity;
-    private String transactionId;
+    protected BigDecimal amount;
+    protected CurrencyType currency;
+    protected BigDecimal gratuity;
+    protected String transactionId;
+    protected String terminalRefNumber;
 
     public BigDecimal getAmount() {
         return amount;
     }
+
     public CurrencyType getCurrency() {
         return currency;
     }
+
     public BigDecimal getGratuity() {
         return gratuity;
     }
+
+    public String getTerminalRefNumber() {
+        return terminalRefNumber;
+    }
+
     public String getTransactionId() {
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getTransactionId();
@@ -37,14 +45,22 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.amount = value;
         return this;
     }
+
     public TerminalManageBuilder withCurrency(CurrencyType value) {
         this.currency = value;
         return this;
     }
+
     public TerminalManageBuilder withGratuity(BigDecimal value) {
         this.gratuity = value;
         return this;
     }
+
+    public TerminalManageBuilder withTerminalRefNumber(String value) {
+        this.terminalRefNumber = value;
+        return this;
+    }
+
     public TerminalManageBuilder withTransactionId(String value) {
         if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();

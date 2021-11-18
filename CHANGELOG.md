@@ -4,6 +4,14 @@
 
 ### Enhancements:
 
+- Add initial support for UPA Terminals/Devices
+
+---
+
+## v6.2.8 (11/16/2021)
+
+### Enhancements:
+
 - Add AVS missing mapping to response
 - Availability of country lists for Android SDK
 - Add tests for query param paymentMethod

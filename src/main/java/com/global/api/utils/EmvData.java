@@ -1,6 +1,8 @@
 package com.global.api.utils;
 
-import java.util.*;
+import lombok.var;
+
+import java.util.LinkedHashMap;
 
 public class EmvData {
     private LinkedHashMap<String, TlvData> tlvData;
@@ -26,24 +28,10 @@ public class EmvData {
         }
         return null;
     }
-    public boolean isContactlessMsd() {
-        String entryMode = getEntryMode();
-        if(entryMode != null) {
-            return entryMode.equals("91");
-        }
-        return false;
-    }
     public String getCustomerVerificationResults() {
         TlvData cvm = getTag("9F34");
         if(cvm != null) {
             return cvm.getValue();
-        }
-        return null;
-    }
-    public String getEntryMode() {
-        TlvData posEntryMode = getTag("9F39");
-        if(posEntryMode != null) {
-            return posEntryMode.getValue();
         }
         return null;
     }
@@ -77,6 +65,16 @@ public class EmvData {
 
     public byte[] getSendBuffer() {
         return StringUtils.bytesFromHex(getAcceptedTagData());
+    }
+
+    public boolean isContactlessMsd() {
+        var entryMode = getEntryMode();
+        return (entryMode != null) ? entryMode == "91" : false;
+    }
+
+    public String getEntryMode() {
+        var posEntryMode = getTag("9F39");
+        return (posEntryMode != null) ? posEntryMode.getValue() : null;
     }
 
     EmvData() {

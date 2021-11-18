@@ -20,26 +20,29 @@ public interface IDeviceInterface extends IDisposable {
     void setOnMessageSent(IMessageSentInterface onMessageSent);
 
     // admin calls
+    IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException; // UPA
+    IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
+    void cancel() throws ApiException;
+    void cancel(Integer cancelParams) throws ApiException; // UPA
+    IDeviceResponse closeLane() throws ApiException;
     IDeviceResponse disableHostResponseBeep() throws ApiException;
+    ISignatureResponse getSignatureFile() throws ApiException;
     IInitializeResponse initialize() throws ApiException;
+    IDeviceResponse openLane() throws ApiException;
+    IDeviceResponse ping() throws ApiException; // UPA
+    ISignatureResponse promptForSignature() throws ApiException;
+    ISignatureResponse promptForSignature(String transactionId) throws ApiException;    
     IDeviceResponse reboot() throws ApiException;
     IDeviceResponse reset() throws ApiException;
-    void cancel() throws ApiException;
-    IDeviceResponse openLane() throws ApiException;
-    IDeviceResponse closeLane() throws ApiException;
-    ISignatureResponse getSignatureFile() throws ApiException;
-    ISignatureResponse promptForSignature() throws ApiException;
-    ISignatureResponse promptForSignature(String transactionId) throws ApiException;
-    IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
-    IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
+    IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
     IDeviceResponse setStoreAndForwardMode(SafMode safMode) throws ApiException;
-    IEODResponse endOfDay() throws ApiException;
-    IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
+    IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;    
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;
+    IEODResponse endOfDay() throws ApiException;
     SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException;
     SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException;
 
@@ -54,6 +57,7 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder creditSale() throws ApiException;
     TerminalAuthBuilder creditVerify() throws ApiException;
     TerminalManageBuilder creditVoid() throws ApiException;
+    TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException;
 
     // debit calls
     TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException;

@@ -1,7 +1,11 @@
 package com.global.api.terminals;
 
+import java.sql.Timestamp;
+
 import com.global.api.entities.enums.*;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
+import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
 
 public class TerminalUtilities {
@@ -58,6 +62,24 @@ public class TerminalUtilities {
         buffer.add(lrc);
 
         return new DeviceMessage(buffer.toArray());
+    }
+
+    public static DeviceMessage buildMessage(UpaMessageId messageType, String requestId, JsonDoc body) {
+        JsonDoc data = new JsonDoc();
+        JsonDoc json = new JsonDoc();
+
+        data.set("EcrId", "13");
+        data.set("requestId", requestId);
+        data.set("command", messageType.toString());
+
+        if (body != null) {
+            data.set("data", body);
+        }
+
+        json.set("data", data);
+        json.set("message", "MSG");
+
+        return compileMessage(json.toString());
     }
 
     public static DeviceMessage buildRequest(String message, MessageFormat format) {
@@ -128,5 +150,23 @@ public class TerminalUtilities {
         byte actual = calculateLRC(message.substring(0, message.length() - 1).getBytes());
 
         return (expected == actual);
+    }
+
+    public static DeviceMessage compileMessage(String body) {
+        MessageWriter buffer = new MessageWriter();
+
+        buffer.add(ControlCodes.STX.getByte());
+        buffer.add(ControlCodes.LF.getByte());
+        buffer.addRange(body.getBytes());
+        buffer.add(ControlCodes.LF.getByte());
+        buffer.add(ControlCodes.ETX.getByte());
+        buffer.add(ControlCodes.LF.getByte());
+
+        long currentMillis = System.currentTimeMillis();
+        Timestamp t = new Timestamp(currentMillis);
+        System.out.println(t.toString() + " Sent: " + body);
+        System.out.println("");
+
+        return new DeviceMessage(buffer.toArray());
     }
 }

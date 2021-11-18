@@ -7,6 +7,7 @@ import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.pax.PaxController;
+import com.global.api.terminals.upa.UpaController;
 import com.global.api.utils.StringUtils;
 
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
@@ -86,6 +87,9 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
                 break;
             case HPA_ISC250:
                 services.setDeviceController(new HpaController(this));
+                break;
+            case UPA_SATURN_1000:
+                services.setDeviceController(new UpaController(this));
             default:
                 break;
         }

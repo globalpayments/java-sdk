@@ -3,6 +3,7 @@ package com.global.api.terminals.hpa.responses;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IEODResponse;
+import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.utils.Element;
 import com.global.api.utils.StringUtils;
 
@@ -178,5 +179,13 @@ public class EODResponse extends SipBaseResponse implements IEODResponse {
             }
             catch(ApiException exc) { /* NOM NOM */ }
         }
+    }
+
+    public String getBatchId() {
+        return null;
+    }
+
+    public UpaMessageId getMessageId() {
+        return null;
     }
 }
