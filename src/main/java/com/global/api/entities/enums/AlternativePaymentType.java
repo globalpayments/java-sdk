@@ -93,6 +93,7 @@ public enum AlternativePaymentType implements IStringConstant{
 	OSUUSPANKKI("osuuspankki"),
 	OXXO("oxxo"),
 	PAGO_FACIL("pagofacil"),
+	PAYPAL("paypal"),
 	PAYPOST_LIETUVOS_PASTAS("paypost"),
 	PAYSAFECARD("paysafecard"),
 	PAYSBUY_CASH("paysbuy"),

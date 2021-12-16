@@ -22,7 +22,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.101");
+        config.setIpAddress("192.168.0.115");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_SATURN_1000);
@@ -143,7 +143,8 @@ public class UpaCreditTests {
                 .execute();
 
             TerminalResponse response2 = device.tipAdjust(new BigDecimal("1.50"))
-                .withTransactionId(response1.getTransactionId())
+                .withTerminalRefNumber(response1.getTerminalRefNumber())
+                .withClerkId(420)
                 .execute();
 
             assertNotNull(response2);
@@ -163,6 +164,26 @@ public class UpaCreditTests {
                 .execute();
 
             TerminalResponse response2 = device.creditVoid()
+                .withTerminalRefNumber(response1.getTerminalRefNumber())
+                .execute();
+
+            assertNotNull(response2);
+            assertEquals("00", response2.getResponseCode());
+        } catch (Exception e) {
+            device = null;
+            System.out.println(e.getMessage());
+            throw new ApiException(e.getMessage());
+        }
+    }
+
+    @Test
+    public void reverseTerminalTrans() throws ApiException
+    {
+        try {
+            TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
+                .execute();
+
+            TerminalResponse response2 = device.reverse()
                 .withTerminalRefNumber(response1.getTerminalRefNumber())
                 .execute();
 

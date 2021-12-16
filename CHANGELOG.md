@@ -4,6 +4,19 @@
 
 ### Enhancements:
 
+- Add support for 'ManageTokens' transaction using Heartland/Portico gateway
+- Add support for 'Reversal' transaction using UPA devices
+- Add PAYPAL alternative payment method on GP-API Connector
+- Update miscProductData structure
+- Add configName to Recurring Services
+- Update MasterCard regex
+
+---
+
+## v6.3.0 (11/18/2021):
+
+### Enhancements:
+
 - Add initial support for UPA Terminals/Devices
 
 ---

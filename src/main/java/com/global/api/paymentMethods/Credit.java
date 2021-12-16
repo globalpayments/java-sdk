@@ -147,6 +147,10 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return true;
     }
 
+    public boolean deleteToken() throws ApiException {
+        return deleteToken("default");
+    }
+
     /**
      * Deletes the token associated with the current card object
      * @return a boolean value indicating success/failure

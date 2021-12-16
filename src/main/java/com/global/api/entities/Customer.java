@@ -148,7 +148,7 @@ public class Customer extends RecurringEntity<Customer> {
         return create("default");
     }
     public Customer create(String configName) throws ApiException {
-        return RecurringService.create(this, Customer.class);
+        return RecurringService.create(this, Customer.class, configName);
     }
 
     public void delete() throws ApiException {
@@ -197,10 +197,13 @@ public class Customer extends RecurringEntity<Customer> {
     }
 
     public void saveChanges() throws ApiException {
+        saveChanges("default");
+    }
+
+    public void saveChanges(String configName) throws ApiException {
         try{
-            RecurringService.edit(this, Customer.class);
-        }
-        catch (ApiException e) {
+            RecurringService.edit(this, Customer.class, configName);
+        } catch (ApiException e) {
             throw new ApiException("Update failed, see inner exception for more details", e);
         }
     }

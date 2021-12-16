@@ -10,6 +10,7 @@ import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ITokenizable;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
@@ -156,6 +157,29 @@ public class GpApiManagementRequestBuilder {
                     .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/reauthorization")
                     .setRequestBody(data.toString());
         }
+        else if (builderTransactionType == TransactionType.Confirm) {
+            if (builderPaymentMethod instanceof TransactionReference && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.APM) {
+                var transactionReference = (com.global.api.paymentMethods.TransactionReference) builderPaymentMethod;
+                var apmResponse = transactionReference.getAlternativePaymentResponse();
+                var apm =
+                        new JsonDoc()
+                                .set("provider", apmResponse.getProviderName())
+                                .set("provider_payer_reference", apmResponse.getProviderReference());
+
+                var payment_method =
+                        new JsonDoc()
+                                .set("apm", apm);
+
+                data
+                        .set("payment_method", payment_method);
+
+                return new GpApiRequest()
+                        .setVerb(GpApiRequest.HttpMethod.Post)
+                        .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/confirmation")
+                        .setRequestBody(data.toString());
+            }
+        }
+
         return null;
     }
 }

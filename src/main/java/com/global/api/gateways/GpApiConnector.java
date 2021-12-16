@@ -12,6 +12,8 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.*;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.network.NetworkMessageHeader;
+import com.global.api.paymentMethods.AlternatePaymentMethod;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
@@ -36,11 +38,14 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider {
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";  // Standard expected GP API DateTime format
     public static final String DATE_TIME_PATTERN_2 = "yyyy-MM-dd'T'HH:mm:ss.SSS";   // Slightly different GP API DateTime format
-    public static final String DATE_TIME_PATTERN_3 = "yyyy-MM-dd'T'HH:mm:ss";       // Another slightly different GP API DateTime format
+    public static final String DATE_TIME_PATTERN_3 = "yyyy-MM-dd'T'HH:mm:ss'Z'";    // Another slightly different GP API DateTime format. Appears in Paypal.
+    public static final String DATE_TIME_PATTERN_4 = "yyyy-MM-dd'T'HH:mm:ss";       // Another slightly different GP API DateTime format
+
     public static final String DATE_PATTERN = "yyyy-MM-dd";
     public static final DateTimeFormatter DATE_TIME_DTF = DateTimeFormat.forPattern(DATE_TIME_PATTERN);
     public static final DateTimeFormatter DATE_TIME_DTF_2 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_2);
     public static final DateTimeFormatter DATE_TIME_DTF_3 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_3);
+    public static final DateTimeFormatter DATE_TIME_DTF_4 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_4);
     public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_PATTERN);
 
     private static final String GP_API_VERSION = "2021-03-22";
@@ -266,6 +271,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
+            if (builder.getPaymentMethod() instanceof AlternatePaymentMethod && builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.APM) {
+                return GpApiMapping.MapResponseAPM(response);
+            }
+
             return GpApiMapping.mapResponse(response);
         }
         return null;
@@ -281,6 +290,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
+
+            if (builder.getPaymentMethod() instanceof TransactionReference && builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.APM) {
+                return GpApiMapping.MapResponseAPM(response);
+            }
 
             return GpApiMapping.mapResponse(response);
         }
@@ -392,7 +405,11 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                 try {
                     return GpApiConnector.DATE_TIME_DTF_3.parseDateTime(dateValue);
                 } catch (IllegalArgumentException ex3) {
-                    throw new GatewayException("DateTime format is not supported.", ex3);
+                    try {
+                        return GpApiConnector.DATE_TIME_DTF_4.parseDateTime(dateValue);
+                    } catch (IllegalArgumentException ex4) {
+                        throw new GatewayException("DateTime format is not supported.", ex4);
+                    }
                 }
             }
         }

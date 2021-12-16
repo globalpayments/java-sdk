@@ -32,7 +32,7 @@ public enum TransactionType implements IFlag {
     VerifySignature,
     TokenUpdate,
     TokenDelete,
-    VerifyAuthentication,
+    Confirm,
     InitiateAuthentication,
     DataCollect,
     PreAuthCompletion,

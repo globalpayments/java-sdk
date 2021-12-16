@@ -331,4 +331,8 @@ public class HpaInterface implements IDeviceInterface {
     public TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException {
         throw new UnsupportedTransactionException();
     }
+
+    public TerminalManageBuilder reverse() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
 }

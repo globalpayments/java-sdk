@@ -3,6 +3,7 @@ package com.global.api.entities.gpApi;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.EncryptionData;
+import com.global.api.entities.Product;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
@@ -14,6 +15,9 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
@@ -268,6 +272,18 @@ public class GpApiAuthorizationRequestBuilder {
 
         }
 
+        if (builderPaymentMethod instanceof AlternatePaymentMethod) {
+            var alternatepaymentMethod = (AlternatePaymentMethod) builderPaymentMethod;
+
+            paymentMethod.set("name", alternatepaymentMethod.getAccountHolderName());
+
+            var apm = new JsonDoc()
+                    .set("provider", alternatepaymentMethod.getAlternativePaymentMethodType().getValue())
+                    .set("address_override_mode", alternatepaymentMethod.getAddressOverrideMode());
+
+            paymentMethod.set("apm", apm);
+        }
+
         // Encryption
         if (builderPaymentMethod instanceof IEncryptable) {
             IEncryptable encryptable = (IEncryptable) builderPaymentMethod;
@@ -315,7 +331,7 @@ public class GpApiAuthorizationRequestBuilder {
                 //.set("site_reference", "") //
                 .set("payment_method", paymentMethod);
 
-        if (builderPaymentMethod instanceof eCheck) {
+        if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternatePaymentMethod) {
             data.set("payer", setPayerInformation(builder));
         }
 
@@ -326,6 +342,20 @@ public class GpApiAuthorizationRequestBuilder {
                             .set("reference", builder.getOrderId());
 
             data.set("order", order);
+        }
+
+        if (builderPaymentMethod instanceof AlternatePaymentMethod) {
+            setOrderInformation(builder, data);
+
+            var alternatepaymentMethod = (AlternatePaymentMethod) builderPaymentMethod;
+
+            var notifications =
+                    new JsonDoc()
+                            .set("return_url", alternatepaymentMethod.getReturnUrl())
+                            .set("status_url", alternatepaymentMethod.getStatusUpdateUrl())
+                            .set("cancel_url", alternatepaymentMethod.getCancelUrl());
+
+            data.set("notifications", notifications);
         }
 
         // Stored Credential
@@ -361,7 +391,7 @@ public class GpApiAuthorizationRequestBuilder {
                         .set("line_2", builderBillingAddress.getStreetAddress2())
                         .set("city", builderBillingAddress.getCity())
                         .set("postal_code", builderBillingAddress.getPostalCode())
-                        .set("state", builderBillingAddress.getState())
+                        .set("state", builderBillingAddress.getProvince())
                         .set("country", builderBillingAddress.getCountryCode());
 
                 payer.set("billing_address", billingAddress);
@@ -370,10 +400,31 @@ public class GpApiAuthorizationRequestBuilder {
             if (builder.getCustomerData() != null) {
                 payer.set("name", builder.getCustomerData().getFirstName() + " " + builder.getCustomerData().getLastName());
                 payer.set("date_of_birth", builder.getCustomerData().getDateOfBirth());
-                payer.set("landline_phone", builder.getCustomerData().getHomePhone());
-                payer.set("mobile_phone", builder.getCustomerData().getMobilePhone());
+            }
+
+            payer.set("landline_phone", StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) : builder.getHomePhone().toString());
+            payer.set("mobile_phone", StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) : builder.getMobilePhone().toString());
+        } else if (builder.getPaymentMethod() instanceof AlternatePaymentMethod) {
+
+            if (builder.getHomePhone() != null) {
+                var homePhone =
+                        new JsonDoc()
+                                .set("country_code", builder.getHomePhone().getCountryCode())
+                                .set("subscriber_number", builder.getHomePhone().getNumber());
+
+                payer.set("home_phone", homePhone);
+            }
+
+            if (builder.getWorkPhone() != null) {
+                var workPhone =
+                        new JsonDoc()
+                                .set("country_code", builder.getWorkPhone().getCountryCode())
+                                .set("subscriber_number", builder.getWorkPhone().getNumber());
+
+                payer.set("work_phone", workPhone);
             }
         }
+
         return payer;
     }
 
@@ -435,6 +486,99 @@ public class GpApiAuthorizationRequestBuilder {
             return "LATER";
         }
         return "AUTO";
+    }
+
+    private static JsonDoc setOrderInformation(AuthorizationBuilder builder, JsonDoc requestBody) {
+
+        JsonDoc order;
+        if (requestBody.has("order")) {
+            order = requestBody.get("order");
+        } else {
+            order = new JsonDoc();
+        }
+
+        if (builder.getOrderDetails() != null) {
+            order.set("description", builder.getOrderDetails().getDescription());
+        }
+
+        if (builder.getShippingAddress() != null) {
+            var shippingAddress =
+                    new JsonDoc()
+                            .set("line1", builder.getShippingAddress().getStreetAddress1())
+                            .set("line2", builder.getShippingAddress().getStreetAddress2())
+                            .set("line3", builder.getShippingAddress().getStreetAddress3())
+                            .set("city", builder.getShippingAddress().getCity())
+                            .set("postal_code", builder.getShippingAddress().getPostalCode())
+                            .set("state", builder.getShippingAddress().getProvince())
+                            .set("country", builder.getShippingAddress().getCountryCode());
+
+            order.set("shipping_address", shippingAddress);
+        }
+
+        if (builder.getShippingPhone() != null) {
+            var shippingPhone =
+                    new JsonDoc()
+                            .set("country_code", builder.getShippingPhone().getCountryCode())
+                            .set("subscriber_number", builder.getShippingPhone().getNumber());
+
+            order.set("shipping_phone", shippingPhone);
+        }
+
+        BigDecimal taxTotalAmount = new BigDecimal(0);
+        BigDecimal itemsAmount = new BigDecimal(0);
+        BigDecimal orderAmount = null;
+
+        if (builder.getMiscProductData() != null) {
+            var items = new ArrayList<HashMap<String, Object>>();
+            for (Product product : builder.getMiscProductData()) {
+                var qta = product.getQuantity() != null ? product.getQuantity() : 0;
+                var taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : new BigDecimal(0);
+                var unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : new BigDecimal(0);
+                var item = new HashMap<String, Object>();
+                item.put("reference", product.getProductId());
+                item.put("label", product.getProductName());
+                item.put("description", product.getDescription());
+                item.put("quantity", qta);
+                item.put("unit_amount", StringUtils.toNumeric(unitAmount));
+                item.put("unit_currency", product.getUnitCurrency());
+                item.put("tax_amount", StringUtils.toNumeric(taxAmount));
+                item.put("amount", StringUtils.toNumeric(unitAmount.multiply(new BigDecimal(qta))));
+                items.add(item);
+
+                taxTotalAmount = taxTotalAmount.add(taxAmount);
+                itemsAmount = itemsAmount.add(unitAmount);
+            }
+
+            order.set("tax_amount", StringUtils.toNumeric(taxTotalAmount));
+            order.set("item_amount", itemsAmount);
+            var shippingAmount = builder.getShippingAmount();
+            order.set("shipping_amount", builder.getShippingAmount());
+
+            var builderOrderDetails = builder.getOrderDetails();
+            BigDecimal insuranceAmount = null;
+            BigDecimal handlingAmount = null;
+
+            if (builderOrderDetails != null) {
+                order.set("shipping_discount", builder.getShippingDiscount());
+                order.set("insurance_offered", builderOrderDetails.hasInsurance() ? "YES" : "NO");
+                order.set("insurance_amount", builderOrderDetails.getInsuranceAmount());
+                order.set("handling_amount", builderOrderDetails.getHandlingAmount());
+
+                insuranceAmount = builderOrderDetails.getInsuranceAmount();
+                handlingAmount = builderOrderDetails.getHandlingAmount();
+            }
+
+            orderAmount = itemsAmount.add(taxTotalAmount).add(handlingAmount).add(insuranceAmount).add(shippingAmount);
+            order.set("amount", orderAmount);
+            order.set("currency", builder.getCurrency());
+            order.set("items", items);
+        }
+
+        if (!requestBody.has("order")) {
+            requestBody.set("order", order);
+        }
+
+        return requestBody;
     }
 
     private static String getCvvIndicator(CvnPresenceIndicator cvnPresenceIndicator) {

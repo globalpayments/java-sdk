@@ -38,7 +38,8 @@ public interface IDeviceInterface extends IDisposable {
     ISAFResponse sendStoreAndForward() throws ApiException;
     IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException;
     IDeviceResponse setStoreAndForwardMode(SafMode safMode) throws ApiException;
-    IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;    
+    IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
+    TerminalManageBuilder reverse() throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;

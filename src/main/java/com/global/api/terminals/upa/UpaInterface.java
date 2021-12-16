@@ -222,6 +222,10 @@ public class UpaInterface implements IDeviceInterface {
         return new UpaDeviceResponse(responseObj, UpaMessageId.Restart);
     }
 
+    public TerminalManageBuilder reverse() throws ApiException {
+        return new UpaTerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit);
+    }
+
     public ISAFResponse sendStoreAndForward() throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }

@@ -1,6 +1,7 @@
 package com.global.api.utils;
 
 import com.global.api.entities.enums.IStringConstant;
+import com.global.api.entities.exceptions.GatewayException;
 import com.google.gson.*;
 import org.joda.time.DateTime;
 
@@ -8,6 +9,8 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
 
 public class JsonDoc {
     private HashMap<String, Object> dict;
@@ -73,6 +76,10 @@ public class JsonDoc {
         if(values != null) {
             dict.put(key, Arrays.asList(values));
         }
+        return this;
+    }
+    public JsonDoc set(String key, ArrayList<HashMap<String, Object>> values) {
+        dict.put(key, values);
         return this;
     }
     public JsonDoc set(String key, Integer value) {
@@ -216,6 +223,9 @@ public class JsonDoc {
             }
         }
         return null;
+    }
+    public DateTime getDateTime(String name) throws GatewayException {
+        return parseGpApiDateTime(getString(name));
     }
     public BigDecimal getAmount(String name) {
         String value = getString(name);

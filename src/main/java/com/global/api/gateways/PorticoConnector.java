@@ -550,6 +550,31 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 }
             }
 
+            // Token Management
+            if (builder.getTransactionType() == TransactionType.TokenUpdate || builder.getTransactionType() == TransactionType.TokenDelete) {
+                ITokenizable token = (ITokenizable) builder.getPaymentMethod();
+
+                // Set the token value
+                et.subElement(root, "TokenValue", token.getToken());
+
+                Element tokenActions = et.subElement(root, "TokenActions");
+                if (builder.getTransactionType() == TransactionType.TokenUpdate) {
+                    CreditCardData card = (CreditCardData) builder.getPaymentMethod();
+
+                    Element setElement = et.subElement(tokenActions, "Set");
+
+                    Element expMonth = et.subElement(setElement, "Attribute");
+                    et.subElement(expMonth, "Name", "expmonth");
+                    et.subElement(expMonth, "Value", card.getExpMonth());
+
+                    Element expYear = et.subElement(setElement, "Attribute");
+                    et.subElement(expYear, "Name", "expyear");
+                    et.subElement(expYear, "Value", card.getExpYear());
+                } else {
+                    et.subElement(tokenActions, "Delete");
+                }
+            }
+
             // details
             if (!StringUtils.isNullOrEmpty(builder.getCustomerId()) || !StringUtils.isNullOrEmpty(builder.getDescription()) || !StringUtils.isNullOrEmpty(builder.getInvoiceNumber())) {
                 Element addons = et.subElement(root, "AdditionalTxnFields");
@@ -947,6 +972,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway {
                 return "CreditIncrementalAuth";
             case Tokenize:
             	return "Tokenize";
+            case TokenUpdate:
+            case TokenDelete:
+                return "ManageTokens";
             default:
                 throw new UnsupportedTransactionException();
         }

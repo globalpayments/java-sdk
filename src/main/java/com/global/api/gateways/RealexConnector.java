@@ -300,14 +300,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         //<editor-fold desc="PRODUCT DATA">
         if (builder.getMiscProductData() != null) {
-            ArrayList<String[]> productValues = builder.getMiscProductData();
+            ArrayList<Product> productValues = builder.getMiscProductData();
             Element products = et.subElement(request, "products");
-            String str[] = { "productid", "productname", "quantity", "unitprice", "gift", "type", "risk" };
-            for (String[] values : productValues) {
+            for (Product values : productValues) {
                 Element product = et.subElement(products, "product");
-                for (int x = 0; x < values.length; x++) {
-                    et.subElement(product, str[x], values[x]);
-                }
+                et.subElement(product, "productid", values.getProductId());
+                et.subElement(product, "productname", values.getProductName());
+                et.subElement(product, "quantity", values.getQuantity().toString());
+                et.subElement(product, "unitprice", StringUtils.toNumeric(values.getUnitPrice()));
+                et.subElement(product, "gift", values.isGift() ? "true" : "false");
+                et.subElement(product, "type", values.getType());
+                et.subElement(product, "risk", values.getRisk());
             }
         }
         //</editor-fold>

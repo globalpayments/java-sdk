@@ -14,6 +14,7 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
+import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -45,7 +46,7 @@ public class RealexRecurringTests {
         config.setRefundPassword("refund");
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
 
-        ServicesContainer.configureService(config);
+        ServicesContainer.configureService(config, "test");
         
         Address address = new Address();
         address.setStreetAddress1("Flat 123");
@@ -73,14 +74,14 @@ public class RealexRecurringTests {
         card = new CreditCardData();
         card.setNumber("4263970000005262");
         card.setExpMonth(5);
-        card.setExpYear(2025);
+        card.setExpYear(DateTime.now().getYear() + 2);
         card.setCardHolderName("James Mason");
     }
 
     @Test
     public void Test_001a_CreateCustomer() throws ApiException {
         try {
-            Customer customer = new_customer.create();
+            Customer customer = new_customer.create("test");
             assertNotNull(customer);
         }
         catch (GatewayException exc) {
@@ -93,7 +94,7 @@ public class RealexRecurringTests {
     @Test
     public void Test_001b_CreatePaymentMethod() throws ApiException {
         try {
-            RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card).create();
+            RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card).create("test");
             assertNotNull(paymentMethod);
         }
         catch (GatewayException exc) {
@@ -108,7 +109,7 @@ public class RealexRecurringTests {
         Customer customer = new Customer();
         customer.setKey(customerId());
         customer.setFirstName("Perry");
-        customer.saveChanges();
+        customer.saveChanges("test");
     }
 
     @Test
@@ -121,7 +122,7 @@ public class RealexRecurringTests {
         newCard.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(newCard);
-        paymentMethod.saveChanges();
+        paymentMethod.saveChanges("test");
     }
 
     @Test
@@ -134,12 +135,12 @@ public class RealexRecurringTests {
         card.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(card);
-        paymentMethod.saveChanges();
+        paymentMethod.saveChanges("test");
     }
 
     @Test(expected = UnsupportedTransactionException.class)
     public void Test_003_FindOnRealex() throws ApiException {
-        Customer.find(customerId());
+        Customer.find(customerId(), "test");
     }
 
     @Test
@@ -148,7 +149,8 @@ public class RealexRecurringTests {
         Transaction response = paymentMethod.charge(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withCvn("123")
-                .execute();
+                .execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -158,7 +160,8 @@ public class RealexRecurringTests {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.verify()
                 .withCvn("123")
-                .execute();
+                .execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -168,7 +171,8 @@ public class RealexRecurringTests {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.refund(new BigDecimal("10.01"))
                 .withCurrency("USD")
-                .execute();
+                .execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -179,7 +183,8 @@ public class RealexRecurringTests {
         Transaction response = paymentMethod.charge(new BigDecimal("12"))
                 .withRecurringInfo(RecurringType.Fixed, RecurringSequence.First)
                 .withCurrency("USD")
-                .execute();
+                .execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -187,7 +192,7 @@ public class RealexRecurringTests {
     @Test
     public void Test_006_DeletePaymentMethod() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
-        paymentMethod.delete();
+        paymentMethod.delete(false, "test");
     }
 
     // Negative Test Cases
@@ -201,7 +206,7 @@ public class RealexRecurringTests {
         newCard.setCardHolderName(null);
 
         paymentMethod.setPaymentMethod(newCard);
-        paymentMethod.saveChanges();
+        paymentMethod.saveChanges("test");
     }
 
     @Test(expected = ApiException.class)
@@ -214,7 +219,7 @@ public class RealexRecurringTests {
         newCard.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(newCard);
-        paymentMethod.saveChanges();
+        paymentMethod.saveChanges("test");
     }
 
     @Test(expected = ApiException.class)
@@ -227,7 +232,8 @@ public class RealexRecurringTests {
 		Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .execute();
+                .execute("test");
+
 		assertNotNull(dccResponse);
 		assertEquals("00", dccResponse.getResponseCode());
 
@@ -235,7 +241,8 @@ public class RealexRecurringTests {
 		        .withCurrency("EUR")
 		        .withOrderId(dccResponse.getOrderId())
 		        .withDccRateData(dccResponse.getDccRateData())
-				.execute();
+				.execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 	}
@@ -250,7 +257,8 @@ public class RealexRecurringTests {
         Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
-                .execute();
+                .execute("test");
+
         assertNotNull(dccResponse);
         assertEquals("00", dccResponse.getResponseCode());
 
@@ -258,9 +266,9 @@ public class RealexRecurringTests {
                 .withCurrency("EUR")
                 .withOrderId(dccResponse.getOrderId())
                 .withDccRateData(dccResponse.getDccRateData())
-                .execute();
+                .execute("test");
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 	}
 }
-

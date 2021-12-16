@@ -3,6 +3,9 @@ package com.global.api.entities;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.joda.time.DateTime;
+
+import java.math.BigDecimal;
 
 @Accessors(chain = true)
 @Getter
@@ -27,4 +30,33 @@ public class AlternativePaymentResponse {
 
     // Payment method
     private String paymentMethod;
+    private String providerReference;
+    private String providerName;
+    private String ack;
+    private String sessionToken;
+    private String correlationReference;
+    private String versionReference;
+    private String buildReference;
+    private DateTime timeCreatedReference;
+    private String transactionReference;
+    private String secureAccountReference;
+    private String reasonCode;
+    private String pendingReason;
+    private BigDecimal grossAmount;
+    private DateTime paymentTimeReference;
+    private String paymentType;
+    private String paymentStatus;
+    private String type;
+    private String protectionEligibility;
+    private String authStatus;
+    private BigDecimal authAmount;
+    private String authAck;
+    private String authCorrelationReference;
+    private String authVersionReference;
+    private String authBuildReference;
+    private String authPendingReason;
+    private String authProtectionEligibility;
+    private String authProtectionEligibilityType;
+    private String authReference;
+    private BigDecimal feeAmount;
 }

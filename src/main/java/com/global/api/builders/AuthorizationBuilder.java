@@ -17,6 +17,7 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.var;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -69,9 +70,13 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String orderId;
     @Getter @Setter private String paymentApplicationVersion;
     @Getter @Setter private PaymentMethodUsageMode paymentMethodUsageMode;
+    @Getter @Setter private PhoneNumber homePhone;
+    @Getter @Setter private PhoneNumber workPhone;
+    @Getter @Setter private PhoneNumber shippingPhone;
+    @Getter @Setter private PhoneNumber mobilePhone;
     private String posSequenceNumber;
     private String productId;
-    private ArrayList<String[]> miscProductData;
+    private ArrayList<Product> miscProductData;
     private RecurringSequence recurringSequence;
     private RecurringType recurringType;
     private boolean requestMultiUseToken;
@@ -80,6 +85,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String scheduleId;
     private Address shippingAddress;
     private BigDecimal shippingAmount;
+    @Getter @Setter private BigDecimal shippingDiscount;
+    @Getter @Setter private OrderDetails orderDetails;
     private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
@@ -260,7 +267,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getPosSequenceNumber() {
         return posSequenceNumber;
     }
-    public ArrayList<String[]> getMiscProductData() {
+    public ArrayList<Product> getMiscProductData() {
         return miscProductData;
     }
     public String getTagData() {
@@ -498,11 +505,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.posSequenceNumber = value;
         return this;
     }
-    public AuthorizationBuilder withMiscProductData(String ... value) {
-        if (this.miscProductData == null) {
-            miscProductData = new ArrayList<String[]>();
-        }
-        this.miscProductData.add(value);
+    public AuthorizationBuilder withMiscProductData(ArrayList<Product> values) {
+        this.miscProductData = values;
         return this;
     }
     public AuthorizationBuilder withProductData(ProductData value) {
@@ -519,6 +523,29 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withPaymentMethodUsageMode(PaymentMethodUsageMode value) {
         this.paymentMethodUsageMode = value;
+        return this;
+    }
+    public AuthorizationBuilder withPhoneNumber(String phoneCountryCode, String number, PhoneNumberType type) {
+        var phoneNumber = new PhoneNumber();
+        phoneNumber.setCountryCode(phoneCountryCode);
+        phoneNumber.setNumber(number);
+
+        switch (type) {
+            case Home:
+                this.homePhone = phoneNumber;
+                break;
+            case Work:
+                this.workPhone = phoneNumber;
+                break;
+            case Shipping:
+                this.shippingPhone = phoneNumber;
+                break;
+            case Mobile:
+                this.mobilePhone = phoneNumber;
+                break;
+            default:
+                break;
+        }
         return this;
     }
     public AuthorizationBuilder withPaymentMethod(IPaymentMethod value) {
@@ -575,6 +602,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withShippingAmt(BigDecimal value) {
         this.shippingAmount = value;
+        return this;
+    }
+    public AuthorizationBuilder withShippingDiscount(BigDecimal value) {
+        this.shippingDiscount = value;
+        return this;
+    }
+    public AuthorizationBuilder withOrderDetails(OrderDetails value) {
+        this.orderDetails = value;
         return this;
     }
     public AuthorizationBuilder withSimulatedHostErrors(Host host, HostError... errors) {

@@ -7,11 +7,13 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GatewayConfig;
+import lombok.var;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -430,14 +432,34 @@ public class RealexCreditTests {
         decisionManager.setItemTimeHedge(Risk.HIGH);
         decisionManager.setItemVelocityHedge(Risk.HIGH);
 
+        var products = new ArrayList<Product>();
+        products.add(
+                new Product()
+                        .setProductId("SKU251584")
+                        .setProductName("Magazine Subscription")
+                        .setQuantity(12)
+                        .setUnitPrice(new BigDecimal(12))
+                        .setGift(true)
+                        .setType("subscription")
+                        .setRisk("Low"));
+
+        products.add(
+                new Product()
+                        .setProductId("SKU8884785")
+                        .setProductName("Charger")
+                        .setQuantity(10)
+                        .setUnitPrice(new BigDecimal(12))
+                        .setGift(false)
+                        .setType("electronic_good")
+                        .setRisk("High"));
+
         Transaction response = card.charge(new BigDecimal("199.99"))
                 .withCurrency("EUR")
                 .withAddress(billingAddress, AddressType.Billing)
                 .withAddress(shippingAddress, AddressType.Shipping)
                 .withDecisionManager(decisionManager)
                 .withCustomerData(customer)
-                .withMiscProductData("SKU251584", "Magazine Subscription", "12", "1200", "true", "subscription", "Low")
-                .withMiscProductData("SKU8884784", "Charger", "10", "1200", "false", "electronic_good", "High")
+                .withMiscProductData(products)
                 .withCustomData("fieldValue01", "fieldValue02", "fieldValue03", "fieldValue04")
                 .execute();
         assertNotNull(response);

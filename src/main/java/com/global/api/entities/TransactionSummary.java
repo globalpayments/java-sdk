@@ -1,13 +1,13 @@
 package com.global.api.entities;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
 import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -111,6 +111,9 @@ public class TransactionSummary {
     private String uniqueDeviceId;
     private String username;
     private String xid;
+    private String accountNumberLast4;
+    private String accountType;
+    private AlternativePaymentResponse alternativePaymentResponse;
     private String transactionType;
     private String CardEntryMethod;
     private BigDecimal amountDue;

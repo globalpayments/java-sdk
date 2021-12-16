@@ -18,7 +18,8 @@ public enum TransactionModifier implements IFlag {
     Recurring,
     EncryptedMobile,
     Level_III,
-    DecryptedMobile;
+    DecryptedMobile,
+    AlternativePaymentMethod;
 
     public long getLongValue() {
         return 1 << this.ordinal();

@@ -4,6 +4,7 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionRebuilder;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -30,7 +31,7 @@ public class Transaction {
     private BigDecimal balanceAmount;
     private BatchSummary batchSummary;
     private String cardBrandTransactionId;
-    @Getter @Setter private AlternativePaymentResponse alternativePaymentResponse;
+    private AlternativePaymentResponse alternativePaymentResponse;
     private String cardType;
     private String cardLast4;
     private String cardNumber;
@@ -159,6 +160,15 @@ public class Transaction {
     }
     public void setCardType(String cardType) {
         this.cardType = cardType;
+    }
+    public AlternativePaymentResponse getAlternativePaymentResponse() {
+        return transactionReference.getAlternativePaymentResponse();
+    }
+    public void setAlternativePaymentResponse(AlternativePaymentResponse value) {
+        if(transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setAlternativePaymentResponse(value);
     }
     public String getCardLast4() {
         return cardLast4;
@@ -299,11 +309,11 @@ public class Transaction {
         }
         return null;
     }
-    public void setNtsData(NtsData value) {
+    public void setNtsData(NtsData value) throws GatewayException {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
         }
-        transactionReference.setNtsData(value);
+        transactionReference.setNtsData(value.toString());
     }
     public String getOrderId() {
         if(transactionReference != null)
@@ -474,6 +484,9 @@ public class Transaction {
     public ManagementBuilder capture() {
         return capture(null);
     }
+    public ManagementBuilder capture(double amount) {
+        return capture(new BigDecimal(amount));
+    }
     public ManagementBuilder capture(BigDecimal amount) {
         ManagementBuilder builder =
                 new ManagementBuilder(TransactionType.Capture)
@@ -509,6 +522,14 @@ public class Transaction {
 
     public ManagementBuilder hold() {
         return new ManagementBuilder(TransactionType.Hold).withPaymentMethod(transactionReference);
+    }
+
+    // Confirm an original transaction. For now on, it is used for the APM transactions with PayPal
+    public ManagementBuilder confirm()
+    {
+        return
+                new ManagementBuilder(TransactionType.Confirm)
+                        .withPaymentMethod(this.transactionReference);
     }
 
     public ManagementBuilder increment() {

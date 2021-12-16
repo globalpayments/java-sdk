@@ -1,15 +1,14 @@
 package com.global.api.mapping;
 
 import com.global.api.entities.*;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.ReportType;
-import com.global.api.entities.enums.Secure3dVersion;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.PagedResult;
 import com.global.api.entities.reporting.*;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.var;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -102,11 +101,69 @@ public class GpApiMapping {
                     transaction.setAvsAddressResponse(card.getString("avs_address_result"));
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
                     transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
+                    transaction.setPaymentMethodType(getPaymentMehodType(json) != null ? getPaymentMehodType(json) : transaction.getPaymentMethodType());
                 }
-
             }
-
         }
+
+        return transaction;
+    }
+
+    private static PaymentMethodType getPaymentMehodType(JsonDoc json) {
+        if (json.get("payment_method").has("bank_transfer")) {
+            return PaymentMethodType.ACH;
+        } else if (json.get("payment_method").has("apm")) {
+            return PaymentMethodType.APM;
+        }
+        return null;
+    }
+
+    public static Transaction MapResponseAPM(String rawResponse) throws GatewayException {
+        var apm = new AlternativePaymentResponse();
+        var transaction = mapResponse(rawResponse);
+
+        JsonDoc json = JsonDoc.parse(rawResponse);
+
+        apm.setRedirectUrl(json.get("payment_method").getString("redirect_url"));
+
+        var paymentMethodApm = json.get("payment_method").get("apm");
+
+        if(paymentMethodApm != null) {
+            apm.setProviderName(paymentMethodApm.getString("provider"));
+            apm.setAck(paymentMethodApm.getString("ack"));
+            apm.setSessionToken(paymentMethodApm.getString("session_token"));
+            apm.setCorrelationReference(paymentMethodApm.getString("correlation_reference"));
+            apm.setVersionReference(paymentMethodApm.getString("version_reference"));
+            apm.setBuildReference(paymentMethodApm.getString("build_reference"));
+            apm.setTimeCreatedReference(paymentMethodApm.getDateTime("time_created_reference"));
+            apm.setTransactionReference(paymentMethodApm.getString("transaction_reference"));
+            apm.setSecureAccountReference(paymentMethodApm.getString("secure_account_reference"));
+            apm.setReasonCode(paymentMethodApm.getString("reason_code"));
+            apm.setPendingReason(paymentMethodApm.getString("pending_reason"));
+            apm.setGrossAmount(paymentMethodApm.getAmount("gross_amount"));
+            apm.setPaymentTimeReference(paymentMethodApm.getDateTime("payment_time_reference"));
+            apm.setPaymentType(paymentMethodApm.getString("payment_type"));
+            apm.setPaymentStatus(paymentMethodApm.getString("payment_status"));
+            apm.setType(paymentMethodApm.getString("type"));
+            apm.setProtectionEligibility(paymentMethodApm.getString("protection_eligibilty"));
+            apm.setFeeAmount(paymentMethodApm.getAmount("fee_amount"));
+        }
+
+        var authorization = json.get("payment_method").get("authorization");
+        if (authorization != null) {
+            apm.setAuthStatus(authorization.getString("status"));
+            apm.setAuthAmount(authorization.getAmount("amount"));
+            apm.setAuthAck(authorization.getString("ack"));
+            apm.setAuthCorrelationReference(authorization.getString("correlation_reference"));
+            apm.setAuthVersionReference(authorization.getString("version_reference"));
+            apm.setAuthBuildReference(authorization.getString("build_reference"));
+            apm.setAuthPendingReason(authorization.getString("pending_reason"));
+            apm.setAuthProtectionEligibility(authorization.getString("protection_eligibilty"));
+            apm.setAuthProtectionEligibilityType(authorization.getString("protection_eligibilty_type"));
+            apm.setAuthReference(authorization.getString("reference"));
+        }
+
+        transaction.setAlternativePaymentResponse(apm);
 
         return transaction;
     }
@@ -165,6 +222,40 @@ public class GpApiMapping {
             summary.setMerchantHierarchy(system.getString("hierarchy"));
             summary.setMerchantName(system.getString("name"));
             summary.setMerchantDbaName(system.getString("dba"));
+        }
+
+        if (doc.has("payment_method")) {
+            JsonDoc paymentMethod = doc.get("payment_method");
+            summary.setGatewayResponseMessage(paymentMethod.getString("message"));
+            summary.setEntryMode(paymentMethod.getString("entry_mode"));
+            summary.setCardHolderName(paymentMethod.getString("name"));
+
+            if (paymentMethod.has("card")) {
+                JsonDoc card = paymentMethod.get("card");
+                summary.setCardType(card.getString("brand"));
+                summary.setAuthCode(card.getString("authcode"));
+                summary.setBrandReference(card.getString("brand_reference"));
+                summary.setAcquirerReferenceNumber(card.getString("arn"));
+                summary.setMaskedCardNumber(card.getString("masked_number_first6last4"));
+                summary.setPaymentType(PaymentMethodName.Card.getValue(Target.GP_API));
+            } else if (paymentMethod.has("digital_wallet")) {
+                JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
+                summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
+                summary.setPaymentType(PaymentMethodName.DigitalWallet.getValue(Target.GP_API));
+            } else if (paymentMethod.has("bank_transfer")) {
+                JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
+                summary.setAccountNumberLast4(bankTransfer.getString("masked_account_number_last4"));
+                summary.setAccountType(bankTransfer.getString("account_type"));
+                summary.setPaymentType(PaymentMethodName.BankTransfer.getValue(Target.GP_API));
+            } else if (paymentMethod.has("apm")) {
+                JsonDoc apm = paymentMethod.get("apm");
+                var alternativePaymentResponse = new AlternativePaymentResponse();
+                alternativePaymentResponse.setRedirectUrl(apm.getString("redirect_url"));
+                alternativePaymentResponse.setProviderName(apm.getString("provider"));
+                alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
+                summary.setAlternativePaymentResponse(alternativePaymentResponse);
+                summary.setPaymentType(PaymentMethodName.APM.getValue(Target.GP_API));
+            }
         }
 
         return summary;
