@@ -2,37 +2,26 @@ package com.global.api.tests.realex.hpp;
 
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.entities.Address;
-import com.global.api.entities.FraudResponse;
-import com.global.api.entities.FraudRuleCollection;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.FraudFilterMode;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.utils.*;
-
-import java.util.ArrayList;
 
 import java.util.ArrayList;
 
 public class RealexHppClient {
     private String serviceUrl;
     private String sharedSecret;
-    private CreditCardData card;
+    private IPaymentMethod paymentMethod;
 
     // TODO: Check why in .NET the url is not needed
     public RealexHppClient(String url, String sharedSecret) {
         this.serviceUrl = url;
         this.sharedSecret = sharedSecret;
-        
-        this.card = new CreditCardData();
-        card.setNumber("4111111111111111");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCvn("123");
-        card.setCardHolderName("James Mason");
     }
 
     public String sendRequest(String request) throws ApiException {
@@ -51,6 +40,12 @@ public class RealexHppClient {
         String currency = json.getString("CURRENCY");
         boolean autoSettle = json.getString("AUTO_SETTLE_FLAG").equals("1");
         String requestHash = json.getString("SHA1HASH");
+        // gather additional information
+        String shippingCode = json.getString("SHIPPING_CODE");
+        String shippingCountry = json.getString("SHIPPING_CO");
+        String billingCode = json.getString("BILLING_CODE");
+        String billingCountry = json.getString("BILLING_CO");
+        String fraudFilterMode = json.getString("HPP_FRAUDFILTER_MODE");
 
         ArrayList<String> hashParam = new ArrayList<>();
         hashParam.add(timestamp);
@@ -58,6 +53,36 @@ public class RealexHppClient {
         hashParam.add(orderId);
         hashParam.add(amount);
         hashParam.add(currency);
+
+        // create the card/APM/LPM object
+        if (json.has("PM_METHODS")) {
+            String[] apmTypes = json.getString("PM_METHODS").split("\\|");
+            String apmType = apmTypes[0];
+
+            AlternativePaymentMethod apm = new AlternativePaymentMethod(AlternativePaymentType.fromValue(apmType));
+            apm.setReturnUrl(json.getString("MERCHANT_RESPONSE_URL"));
+            apm.setStatusUpdateUrl(json.getString("HPP_TX_STATUS_URL"));
+
+            if (apmType == AlternativePaymentType.PAYPAL.getValue()) {
+                //cancelUrl for Paypal example
+                apm.setCancelUrl("https://www.example.com/failure/cancelURL");
+            }
+
+            apm.setCountry(json.getString("HPP_CUSTOMER_COUNTRY"));
+            apm.setAccountHolderName(
+                    json.getString("HPP_CUSTOMER_FIRSTNAME") + " " + json.getString("HPP_CUSTOMER_LASTNAME"));
+
+            paymentMethod = apm;
+        } else {
+            CreditCardData card = new CreditCardData();
+            card.setNumber("4006097467207025");
+            card.setExpMonth(12);
+            card.setExpYear(2025);
+            card.setCvn("131");
+            card.setCardHolderName("James Mason");
+
+            paymentMethod = card;
+        }
 
         // for stored card
         if (json.has("OFFER_SAVE_CARD")) {
@@ -86,28 +111,31 @@ public class RealexHppClient {
         config.setAccountId(account);
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
         config.setSharedSecret(sharedSecret);
+        // Uncomment/Comment if you need to enable/disable logging the raw request/response
+        // config.setEnableLogging(true);
         
         ServicesContainer.configureService(config, "realexResponder");
-
-        // gather additional information
-        String shippingCode = json.getString("SHIPPING_CODE");
-        String shippingCountry = json.getString("SHIPPING_CO");
-        String billingCode = json.getString("BILLING_CODE");
-        String billingCountry = json.getString("BILLING_CO");
-        String fraudFilterMode = json.getString("HPP_FRAUDFILTER_MODE");
 
         // build request
         AuthorizationBuilder gatewayRequest = null;
         if (amount == null) {
             boolean validate = json.getString("VALIDATE_CARD_ONLY").equals("1");
-            if (validate)
-                gatewayRequest = card.verify();
-            else gatewayRequest = card.verify().withRequestMultiUseToken(true);
-        }
-        else {
-            if (autoSettle)
-                gatewayRequest = card.charge(StringUtils.toAmount(amount));
-            else gatewayRequest = card.authorize(StringUtils.toAmount(amount));
+            if (validate) {
+                gatewayRequest = ((CreditCardData) paymentMethod).verify();
+            } else {
+                gatewayRequest = ((CreditCardData) paymentMethod).verify().withRequestMultiUseToken(true);
+            }
+        } else {
+            if (autoSettle) {
+                if (paymentMethod instanceof CreditCardData) {
+                    gatewayRequest = ((CreditCardData) paymentMethod).charge(StringUtils.toAmount(amount));
+                }
+                if (paymentMethod instanceof AlternativePaymentMethod) {
+                    gatewayRequest = ((AlternativePaymentMethod) paymentMethod).charge(StringUtils.toAmount(amount));
+                }
+            } else {
+                gatewayRequest = ((CreditCardData) paymentMethod).authorize(StringUtils.toAmount(amount));
+            }
         }
 
         Address billing = null;
@@ -136,7 +164,7 @@ public class RealexHppClient {
         }
 
         Transaction gatewayResponse = gatewayRequest.execute("realexResponder");
-        if (gatewayResponse.getResponseCode().equals("00")) {
+        if (gatewayResponse.getResponseCode().equals("00") || gatewayResponse.getResponseCode().equals("01") ) {
             return convertResponse(json, gatewayResponse);
         } else {
             throw new ApiException(gatewayResponse.getResponseMessage());
@@ -185,10 +213,22 @@ public class RealexHppClient {
         // TODO: Check
         // response.set("DCC_INFO_RESPONSE", trans.getDccResponseResult());
         response.set("HPP_FRAUDFILTER_MODE", request.getString("HPP_FRAUDFILTER_MODE"));
-        response.set("HPP_FRAUDFILTER_RESULT", trans.getFraudResponse().getResult());
+        if (trans.getFraudResponse() != null) {
+            response.set("HPP_FRAUDFILTER_RESULT", trans.getFraudResponse().getResult());
 
-        for (FraudResponse.Rule fraudResponseRule : trans.getFraudResponse().getRules()) {
-            response.set("HPP_FRAUDFILTER_RULE_" + fraudResponseRule.getId(), fraudResponseRule.getAction());
+            for (FraudResponse.Rule fraudResponseRule : trans.getFraudResponse().getRules()) {
+                response.set("HPP_FRAUDFILTER_RULE_" + fraudResponseRule.getId(), fraudResponseRule.getAction());
+            }
+        }
+
+        if (trans.getAlternativePaymentResponse() != null) {
+            AlternativePaymentResponse alternativePaymentResponse = trans.getAlternativePaymentResponse();
+            response.set("HPP_CUSTOMER_FIRSTNAME", request.getString("HPP_CUSTOMER_FIRSTNAME"));
+            response.set("HPP_CUSTOMER_LASTNAME", request.getString("HPP_CUSTOMER_LASTNAME"));
+            response.set("HPP_CUSTOMER_COUNTRY", request.getString("HPP_CUSTOMER_COUNTRY"));
+            response.set("PAYMENTMETHOD", alternativePaymentResponse.getProviderName());
+            response.set("PAYMENTPURPOSE", alternativePaymentResponse.getPaymentPurpose());
+            response.set("HPP_CUSTOMER_BANK_ACCOUNT", alternativePaymentResponse.getBankAccount());
         }
 
         response.set("TSS_INFO", request.getString("TSS_INFO"));

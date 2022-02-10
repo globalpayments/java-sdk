@@ -4,12 +4,12 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ChallengeRequest;
 import com.global.api.entities.enums.HostedPaymentType;
-import com.global.api.paymentMethods.AlternatePaymentMethod;
+import com.global.api.paymentMethods.AlternativePaymentMethod;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class HostedPaymentData extends AlternatePaymentMethod {
+public class HostedPaymentData extends AlternativePaymentMethod {
     private Boolean addressesMatch;
     private List<Bill> bills;
     private ChallengeRequest challengeRequestIndicator;

@@ -1,6 +1,7 @@
 package com.global.api.entities.gpApi;
 
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.Target;
@@ -31,6 +32,7 @@ public class GpApiManagementRequestBuilder {
         if (builderTransactionType == TransactionType.Capture) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("gratuity_amount", StringUtils.toNumeric(builder.getGratuity()));
+            data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             return
                     new GpApiRequest()
@@ -41,6 +43,7 @@ public class GpApiManagementRequestBuilder {
         }
         else if (builderTransactionType == TransactionType.Refund) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
+            data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             return
                     new GpApiRequest()
@@ -51,6 +54,7 @@ public class GpApiManagementRequestBuilder {
         }
         else if (builderTransactionType == TransactionType.Reversal) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
+            data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             return
                     new GpApiRequest()
@@ -181,5 +185,12 @@ public class GpApiManagementRequestBuilder {
         }
 
         return null;
+    }
+
+    static JsonDoc getDccId(DccRateData dccRateData)
+    {
+        return
+                new JsonDoc()
+                        .set("id", dccRateData.getDccId());
     }
 }

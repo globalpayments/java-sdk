@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @Getter
 @Setter
-public class AlternatePaymentMethod implements IPaymentMethod, IChargable {
+public class AlternativePaymentMethod implements IPaymentMethod, IChargable {
     private PaymentMethodType paymentMethodType;
     private AlternativePaymentType alternativePaymentMethodType;
     private String returnUrl;
@@ -28,8 +28,12 @@ public class AlternatePaymentMethod implements IPaymentMethod, IChargable {
     // Accepted values ENABLE/DISABLE
     private String addressOverrideMode;
 
-    public AlternatePaymentMethod() {
+    public AlternativePaymentMethod() {
         this.paymentMethodType = PaymentMethodType.APM;
+    }
+
+    public AlternativePaymentMethod(AlternativePaymentType alternativePaymentType) {
+        this.alternativePaymentMethodType = alternativePaymentType;
     }
 
     @Override

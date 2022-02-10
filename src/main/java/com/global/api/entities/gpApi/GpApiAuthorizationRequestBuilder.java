@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
+import static com.global.api.entities.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
@@ -102,6 +103,31 @@ public class GpApiAuthorizationRequestBuilder {
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + "/payment-methods")
                                     .setRequestBody(tokenizationData.toString());
+                }
+                else if (builderTransactionType == TransactionType.DccRateLookup) {
+                    // tokenized payment method
+                    if (builderPaymentMethod instanceof ITokenizable) {
+                        String token = ((ITokenizable) builderPaymentMethod).getToken();
+                        if (!StringUtils.isNullOrEmpty(token)) {
+                            paymentMethod.set("id", token);
+                        }
+                    }
+
+                    var requestData =
+                            new JsonDoc()
+                                    .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName() != null ? gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName() : gateway.getTransactionProcessingAccountName())
+                                    .set("channel", gateway.getGpApiConfig().getChannel())
+                                    .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
+                                    .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                                    .set("currency", builder.getCurrency())
+                                    .set("country", gateway.getGpApiConfig().getCountry())
+                                    .set("payment_method", paymentMethod);
+
+                    return
+                            new GpApiRequest()
+                                    .setVerb(GpApiRequest.HttpMethod.Post)
+                                    .setEndpoint(merchantUrl + "/currency-conversions")
+                                    .setRequestBody(requestData.toString());
                 }
                 else if (builderTransactionType == TransactionType.Verify) {
                     if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
@@ -272,8 +298,8 @@ public class GpApiAuthorizationRequestBuilder {
 
         }
 
-        if (builderPaymentMethod instanceof AlternatePaymentMethod) {
-            var alternatepaymentMethod = (AlternatePaymentMethod) builderPaymentMethod;
+        if (builderPaymentMethod instanceof AlternativePaymentMethod) {
+            var alternatepaymentMethod = (AlternativePaymentMethod) builderPaymentMethod;
 
             paymentMethod.set("name", alternatepaymentMethod.getAccountHolderName());
 
@@ -328,10 +354,11 @@ public class GpApiAuthorizationRequestBuilder {
                 .set("country", gateway.getGpApiConfig().getCountry())
                 //.set("language", language)
                 .set("ip_address", builder.getCustomerIpAddress())
+                .set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null)
                 //.set("site_reference", "") //
                 .set("payment_method", paymentMethod);
 
-        if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternatePaymentMethod) {
+        if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod) {
             data.set("payer", setPayerInformation(builder));
         }
 
@@ -344,10 +371,10 @@ public class GpApiAuthorizationRequestBuilder {
             data.set("order", order);
         }
 
-        if (builderPaymentMethod instanceof AlternatePaymentMethod) {
+        if (builderPaymentMethod instanceof AlternativePaymentMethod) {
             setOrderInformation(builder, data);
 
-            var alternatepaymentMethod = (AlternatePaymentMethod) builderPaymentMethod;
+            var alternatepaymentMethod = (AlternativePaymentMethod) builderPaymentMethod;
 
             var notifications =
                     new JsonDoc()
@@ -404,7 +431,7 @@ public class GpApiAuthorizationRequestBuilder {
 
             payer.set("landline_phone", StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) : builder.getHomePhone().toString());
             payer.set("mobile_phone", StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) : builder.getMobilePhone().toString());
-        } else if (builder.getPaymentMethod() instanceof AlternatePaymentMethod) {
+        } else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
 
             if (builder.getHomePhone() != null) {
                 var homePhone =

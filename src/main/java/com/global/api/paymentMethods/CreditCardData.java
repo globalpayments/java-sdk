@@ -17,29 +17,17 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 public class CreditCardData extends Credit implements ICardData {
-    private String cardHolderName;
-    private boolean cardPresent = false;
+    @Getter @Setter private String cardHolderName;
+    @Getter @Setter private boolean cardPresent = false;
     private String cvn;
-    private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
+    @Getter @Setter private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
     @Getter @Setter private String eci;
     @Getter @Setter private ManualEntryMethod entryMethod;
-    private Integer expMonth;
+    @Getter @Setter private Integer expMonth;
     private Integer expYear;
     private String number;
     private boolean readerPresent = false;
 
-    public String getCardHolderName() {
-        return cardHolderName;
-    }
-    public void setCardHolderName(String cardHolderName) {
-        this.cardHolderName = cardHolderName;
-    }
-    public boolean isCardPresent() {
-        return cardPresent;
-    }
-    public void setCardPresent(boolean cardPresent) {
-        this.cardPresent = cardPresent;
-    }
     public String getCvn() {
         return cvn;
     }
@@ -48,18 +36,6 @@ public class CreditCardData extends Credit implements ICardData {
             this.cvn = cvn;
             this.cvnPresenceIndicator = CvnPresenceIndicator.Present;
         }
-    }
-    public CvnPresenceIndicator getCvnPresenceIndicator() {
-        return cvnPresenceIndicator;
-    }
-    public void setCvnPresenceIndicator(CvnPresenceIndicator cvnPresenceIndicator) {
-        this.cvnPresenceIndicator = cvnPresenceIndicator;
-    }
-    public Integer getExpMonth() {
-        return expMonth;
-    }
-    public void setExpMonth(Integer expMonth) {
-        this.expMonth = expMonth;
     }
     public Integer getExpYear() {
         return expYear;
@@ -100,10 +76,14 @@ public class CreditCardData extends Credit implements ICardData {
         this.setToken(token);
     }
 
+    public AuthorizationBuilder getDccRate() {
+        return getDccRate(null, null);
+    }
+
     public AuthorizationBuilder getDccRate(DccRateType dccRateType, DccProcessor dccProcessor) {
         DccRateData dccRateData = new DccRateData();
-        dccRateData.setDccRateType(dccRateType);
-        dccRateData.setDccProcessor(dccProcessor);
+        dccRateData.setDccRateType(dccRateType == null ? DccRateType.None : dccRateType);
+        dccRateData.setDccProcessor(dccProcessor == null ? DccProcessor.None : dccProcessor);
 
         return new AuthorizationBuilder(TransactionType.DccRateLookup, this)
                 .withDccRateData(dccRateData);

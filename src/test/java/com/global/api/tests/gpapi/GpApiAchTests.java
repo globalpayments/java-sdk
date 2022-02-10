@@ -47,7 +47,6 @@ public class GpApiAchTests extends BaseGpApiTest {
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
     }
 
-
     @Before
     public void TestInitialize() {
         address = new Address();
@@ -108,6 +107,7 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
                         .withAddress(address)
+                        .withCustomer(customer)
                         .execute(GP_API_CONFIG_NAME);
 
         assertResponse(response, TransactionStatus.Captured);
@@ -122,8 +122,8 @@ public class GpApiAchTests extends BaseGpApiTest {
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(),-1))
-                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(),-2))
+                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -1))
+                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(), -2))
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
                         .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)
@@ -160,8 +160,8 @@ public class GpApiAchTests extends BaseGpApiTest {
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(),-365))
-                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(),-2))
+                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -365))
+                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(), -2))
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
                         .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)

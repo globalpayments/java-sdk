@@ -8,10 +8,12 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigDecimal;
 
+@Accessors(chain = true)
 @Getter
 @Setter
 public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthable, IVerifiable, IRefundable {
@@ -34,7 +36,7 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthab
     private String routingNumber;
     private SecCode secCode;
     private String ssnLast4;
-    private String token;
+    @Accessors(chain = false) private String token;
     private boolean checkGuarantee;
     private String checkReference;
     private String merchantNotes;

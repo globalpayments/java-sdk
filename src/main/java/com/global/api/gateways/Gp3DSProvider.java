@@ -12,6 +12,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ISecure3d;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
+import com.global.api.utils.CardUtils;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
@@ -67,8 +68,9 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             String hashValue = "";
             if(paymentMethod instanceof CreditCardData) {
                 CreditCardData cardData = (CreditCardData)paymentMethod;
-                request.set("number", cardData.getNumber())
-                        .set("scheme", mapCardScheme(cardData.getCardType().toUpperCase()));
+                request
+                        .set("number", cardData.getNumber())
+                        .set("scheme", mapCardScheme(CardUtils.getBaseCardType(cardData.getCardType()).toUpperCase()));
                 hashValue = cardData.getNumber();
             }
             else if(paymentMethod instanceof RecurringPaymentMethod) {
@@ -130,7 +132,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 hashValue = cardData.getNumber();
 
                 cardDetailElement.set("number", cardData.getNumber())
-                        .set("scheme", cardData.getCardType().toUpperCase())
+                        .set("scheme", CardUtils.getBaseCardType(cardData.getCardType()).toUpperCase())
                         .set("expiry_month", cardData.getExpMonth().toString())
                         .set("expiry_year", cardData.getExpYear().toString().substring(2))
                         .set("full_name", cardData.getCardHolderName());

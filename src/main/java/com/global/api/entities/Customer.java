@@ -5,9 +5,15 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.services.RecurringService;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
+@Accessors(chain = true)
+@Getter
+@Setter
 public class Customer extends RecurringEntity<Customer> {
     private String title;
     private String firstName;
@@ -27,115 +33,6 @@ public class Customer extends RecurringEntity<Customer> {
     private String department;
     private String status;
     private List<RecurringPaymentMethod> paymentMethods;
-
-    public String getTitle() {
-        return title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public String getFirstName() {
-        return firstName;
-    }
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-    public String getLastName() {
-        return lastName;
-    }
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-    public String getCompany() {
-        return company;
-    }
-    public void setCompany(String company) {
-        this.company = company;
-    }
-    public String getCustomerPassword() {
-        return customerPassword;
-    }
-    public void setCustomerPassword(String customerPassword) {
-        this.customerPassword = customerPassword;
-    }
-    public String getDateOfBirth() {
-        return dateOfBirth;
-    }
-    public void setDateOfBirth(String dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-    public String getDomainName() {
-        return domainName;
-    }
-    public void setDomainName(String domainName) {
-        this.domainName = domainName;
-    }
-    public String getDeviceFingerPrint() {
-        return deviceFingerPrint;
-    }
-    public void setDeviceFingerPrint(String deviceFingerPrint) {
-        this.deviceFingerPrint = deviceFingerPrint;
-    }
-    public Address getAddress() {
-        return address;
-    }
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-    public String getHomePhone() {
-        return homePhone;
-    }
-    public void setHomePhone(String homePhone) {
-        this.homePhone = homePhone;
-    }
-    public String getWorkPhone() {
-        return workPhone;
-    }
-    public void setWorkPhone(String workPhone) {
-        this.workPhone = workPhone;
-    }
-    public String getFax() {
-        return fax;
-    }
-    public void setFax(String fax) {
-        this.fax = fax;
-    }
-    public String getMobilePhone() {
-        return mobilePhone;
-    }
-    public void setMobilePhone(String mobilePhone) {
-        this.mobilePhone = mobilePhone;
-    }
-    public String getEmail() {
-        return email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    public String getComments() {
-        return comments;
-    }
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
-    public String getDepartment() {
-        return department;
-    }
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    public List<RecurringPaymentMethod> getPaymentMethods() {
-        return paymentMethods;
-    }
-    public void setPaymentMethods(List<RecurringPaymentMethod> paymentMethods) {
-        this.paymentMethods = paymentMethods;
-    }
 
     public Customer() {
         //super(Customer.class);

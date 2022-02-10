@@ -25,7 +25,7 @@ public class GpApiMapping {
     private static final String PAYMENT_METHOD_EDIT = "PAYMENT_METHOD_EDIT";
     private static final String PAYMENT_METHOD_DELETE = "PAYMENT_METHOD_DELETE";
 
-    public static Transaction mapResponse(String rawResponse) {
+    public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
 
         if (!StringUtils.isNullOrEmpty(rawResponse)) {
@@ -102,6 +102,7 @@ public class GpApiMapping {
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
                     transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                     transaction.setPaymentMethodType(getPaymentMehodType(json) != null ? getPaymentMehodType(json) : transaction.getPaymentMethodType());
+                    transaction.setDccRateData(mapDccInfo(json));
                 }
             }
         }
@@ -466,6 +467,32 @@ public class GpApiMapping {
         }
 
         return summary;
+    }
+
+    public static DccRateData mapDccInfo(JsonDoc response) throws GatewayException {
+        var currencyConversion = response;
+
+        if (!response.get("action").getString("type").equals("RATE_LOOKUP") &&
+                response.get("currency_conversion") == null) {
+            return null;
+        }
+
+        if (response.get("currency_conversion") != null) {
+            currencyConversion = response.get("currency_conversion");
+        }
+
+        return
+                new DccRateData()
+                        .setCardHolderCurrency(currencyConversion.getString("payer_currency"))
+                        .setCardHolderAmount(currencyConversion.getAmount("payer_amount"))
+                        .setCardHolderRate(currencyConversion.getString("exchange_rate"))
+                        .setMerchantCurrency(currencyConversion.getString("currency"))
+                        .setMerchantAmount(currencyConversion.getAmount("amount"))
+                        .setMarginRatePercentage(currencyConversion.getString("margin_rate_percentage"))
+                        .setExchangeRateSourceName(currencyConversion.getString("exchange_rate_source"))
+                        .setCommissionPercentage(currencyConversion.getString("commission_percentage"))
+                        .setExchangeRateSourceTimestamp(currencyConversion.getDateTime("exchange_rate_time_created"))
+                        .setDccId(currencyConversion.getString("id"));
     }
 
     private static Secure3dVersion parse3DSVersion(String messageVersion) {

@@ -144,4 +144,13 @@ public enum AlternativePaymentType implements IStringConstant{
     AlternativePaymentType(String value) { this.value = value; }
     public byte[] getBytes() { return value.getBytes(); }
     public String getValue() { return value; }
+
+	public static AlternativePaymentType fromValue(String value) {
+		for (AlternativePaymentType apt : AlternativePaymentType.values()) {
+			if (apt.getValue().equals(value)) {
+				return apt;
+			}
+		}
+		return null;
+	}
 }

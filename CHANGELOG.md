@@ -4,6 +4,21 @@
 
 ### Enhancements:
 
+- Dynamic Currency Conversion on GP-API Connector
+- Add Alternative Payment Methods (APMs) to HPP
+- Misc tests updated
+
+### Bug Fixes:
+
+- Strip fleet from card type for Realex Connector and GP-API Connector
+- Diners card type fix on Realex Connector
+
+---
+
+## v6.3.1 (16/12/2021)
+
+### Enhancements:
+
 - Add support for 'ManageTokens' transaction using Heartland/Portico gateway
 - Add support for 'Reversal' transaction using UPA devices
 - Add PAYPAL alternative payment method on GP-API Connector
@@ -13,7 +28,7 @@
 
 ---
 
-## v6.3.0 (11/18/2021):
+## v6.3.0 (11/18/2021)
 
 ### Enhancements:
 

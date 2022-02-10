@@ -3,6 +3,7 @@ package com.global.api.utils;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.ITrackData;
+import lombok.var;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -166,6 +167,16 @@ public class CardUtils {
             }
         }
         return rvalue;
+    }
+
+    public static String getBaseCardType(String cardType) {
+        var resultCardType = cardType;
+        for (String cardTypeKey : regexMap.keySet()) {
+            if (cardType.toUpperCase().startsWith(cardTypeKey.toUpperCase())) {
+                return cardTypeKey;
+            }
+        }
+        return resultCardType;
     }
 
     public static GiftCard parseTrackData(GiftCard paymentMethod) {

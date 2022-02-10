@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.UUID;
+import java.util.Random;
 
 import static com.global.api.gateways.GpApiConnector.DATE_SDF;
 import static org.junit.Assert.*;
@@ -38,14 +38,12 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     public GpApiReportingDisputesTests() throws ApiException {
-
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
-
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
@@ -280,17 +278,16 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         }
     }
 
-    @Ignore
-    // Although requests are done with &status set properly, the real endpoint returns disputes with other statuses.
-    // TODO: Reported error to GP-API team. Enable it when fixed.
     @Test
     public void ReportFindDisputesPaged_FilterBy_Status() throws ApiException {
+        Date startDate = DateUtils.addDays(new Date(), -15);
+
         for (DisputeStatus disputeStatus : DisputeStatus.values()) {
             DisputeSummaryPaged disputes =
                     ReportingService
                             .findDisputesPaged(1, 10)
                             .withPaging(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                            .where(DataServiceCriteria.StartStageDate, startDate)
                             .and(SearchCriteria.DisputeStatus, disputeStatus)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -366,7 +363,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
                         .findDisputesPaged(1, 10)
                         .withPaging(1, 10)
                         .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
-                        .and(DataServiceCriteria.MerchantId, UUID.randomUUID().toString())
+                        .and(DataServiceCriteria.MerchantId, Integer.toString(new Random().nextInt(999999999)))
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -396,8 +393,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
                     .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
-//            assertEquals("40074", ex.getResponseText());
-//            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("40074", ex.getResponseText());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Error occurred while communicating with gateway.", ex.getMessage());
         }
     }

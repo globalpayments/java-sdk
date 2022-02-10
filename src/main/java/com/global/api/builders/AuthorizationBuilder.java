@@ -325,6 +325,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.amount = value;
         return this;
     }
+    public AuthorizationBuilder withAmount(double amount) {
+        return withAmount(new BigDecimal(amount));
+    }
     public AuthorizationBuilder withAmountEstimated(boolean value) {
         amountEstimated = value;
         return this;

@@ -43,11 +43,12 @@ public class GpApiConfig extends GatewayConfig {
     private String country = "US";
 
     // The list of the permissions the integrator want the access token to have
-    @Accessors(chain = true)
     // public IStringConstant[] permissions;
+    @Accessors(chain = true)
     private String[] permissions;
 
     // GP-API Access token information
+    @Accessors(chain = true)
     private AccessTokenInfo accessTokenInfo;
 
     // 3DSecure challenge return url

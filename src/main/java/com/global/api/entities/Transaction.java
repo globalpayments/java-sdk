@@ -525,11 +525,15 @@ public class Transaction {
     }
 
     // Confirm an original transaction. For now on, it is used for the APM transactions with PayPal
-    public ManagementBuilder confirm()
-    {
+    public ManagementBuilder confirm() {
+        return confirm(null);
+    }
+
+    public ManagementBuilder confirm(BigDecimal amount) {
         return
                 new ManagementBuilder(TransactionType.Confirm)
-                        .withPaymentMethod(this.transactionReference);
+                        .withPaymentMethod(this.transactionReference)
+                        .withAmount(amount);
     }
 
     public ManagementBuilder increment() {
@@ -558,6 +562,9 @@ public class Transaction {
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
     }
+    public ManagementBuilder refund(double amount) {
+        return refund(new BigDecimal(amount));
+    }
 
     public ManagementBuilder release() {
         return new ManagementBuilder(TransactionType.Release).withPaymentMethod(transactionReference);
@@ -570,6 +577,9 @@ public class Transaction {
         return new ManagementBuilder(TransactionType.Reversal)
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
+    }
+    public ManagementBuilder reverse(double amount) {
+        return reverse(new BigDecimal(amount));
     }
 
     public ManagementBuilder reauthorize() {

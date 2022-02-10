@@ -40,6 +40,9 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder authorize(BigDecimal amount) {
         return authorize(amount, false);
     }
+    public AuthorizationBuilder authorize(double amount) {
+        return authorize(new BigDecimal(amount));
+    }
     public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
         return new AuthorizationBuilder(TransactionType.Auth, this)
                 .withAmount(amount != null ? amount : threeDSecure != null ? threeDSecure.getAmount() : null)
@@ -82,12 +85,17 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder refund(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Refund, this).withAmount(amount);
     }
+    public AuthorizationBuilder refund(double amount) {
+        return charge(new BigDecimal(amount));
+    }
 
     public AuthorizationBuilder reverse() { return reverse(null); }
     public AuthorizationBuilder reverse(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Reversal, this).withAmount(amount);
     }
-
+    public AuthorizationBuilder reverse(double amount) {
+        return charge(new BigDecimal(amount));
+    }
     public AuthorizationBuilder verify() {
         return new AuthorizationBuilder(TransactionType.Verify, this);
     }

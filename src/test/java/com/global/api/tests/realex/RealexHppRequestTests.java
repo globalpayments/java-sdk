@@ -9,6 +9,7 @@ import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
 import com.global.api.tests.realex.hpp.RealexHppClient;
+import com.global.api.utils.JsonDoc;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -1427,6 +1428,71 @@ public class RealexHppRequestTests {
         assertNotNull(hppJson);
         assertTrue(hppJson.contains("\"HPP_BILLING_COUNTRY\":\"530\""));
         assertTrue(hppJson.contains("\"BILLING_CO\":\"AN\""));
+    }
+
+    @Test
+    /**
+     * We can set multiple APMs/LPMs on $presetPaymentMethods, but our HppClient for testing will treat only the first
+     * entry from the list as an example for our unit test, in this case will be "sofort"
+     */
+    public void testBasicChargeAlternativePayment() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setEnableLogging(true);
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+
+        hostedPaymentData.setCustomerCountry("DE");
+        hostedPaymentData.setCustomerFirstName("James");
+        hostedPaymentData.setCustomerFirstName("Mason");
+        hostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        hostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+
+        AlternativePaymentType[] apmTypes = {
+                AlternativePaymentType.SOFORTUBERWEISUNG,
+                AlternativePaymentType.TESTPAY,
+                AlternativePaymentType.PAYPAL,
+                AlternativePaymentType.SEPA_DIRECTDEBIT_PPPRO_MANDATE_MODEL_A
+        };
+
+        hostedPaymentData.setPresetPaymentMethods(apmTypes);
+
+        HostedService service = new HostedService(config);
+
+        String json =
+                service
+                        .charge(new BigDecimal(10.01))
+                        .withCurrency("EUR")
+                        .withHostedPaymentData(hostedPaymentData)
+                        .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(json);
+
+        assertEquals("sofort|testpay|paypal|sepapm", jsonResponse.getString("PM_METHODS"));
+        assertEquals(hostedPaymentData.getCustomerFirstName(), jsonResponse.getString("HPP_CUSTOMER_FIRSTNAME"));
+        assertEquals(hostedPaymentData.getCustomerLastName(), jsonResponse.getString("HPP_CUSTOMER_LASTNAME"));
+        assertEquals(hostedPaymentData.getMerchantResponseUrl(), jsonResponse.getString("MERCHANT_RESPONSE_URL"));
+        assertEquals(hostedPaymentData.getTransactionStatusUrl(), jsonResponse.getString("HPP_TX_STATUS_URL"));
+        assertEquals(hostedPaymentData.getCustomerCountry(), jsonResponse.getString("HPP_CUSTOMER_COUNTRY"));
+
+        RealexHppClient client = new RealexHppClient("https://pay.sandbox.realexpayments.com/pay","secret");
+        String response = client.sendRequest(json);
+        Transaction parsedResponse = service.parseResponse(response, true);
+
+        assertNotNull(parsedResponse);
+        // TODO: Getting 00 && [ test system ] Authorised
+        assertEquals("01", parsedResponse.getResponseCode());
+        assertEquals(TransactionStatus.Pending.getValue(), parsedResponse.getResponseMessage());
+        assertEquals(AlternativePaymentType.SOFORTUBERWEISUNG.getValue(), parsedResponse.getResponseValues().get("PAYMENTMETHOD"));
+        assertEquals(hostedPaymentData.getMerchantResponseUrl(), parsedResponse.getResponseValues().get("MERCHANT_RESPONSE_URL"));
     }
 
 }

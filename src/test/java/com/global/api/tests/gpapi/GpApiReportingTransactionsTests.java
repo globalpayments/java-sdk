@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 import static com.global.api.entities.enums.Target.GP_API;
@@ -1194,7 +1195,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindSettlementTransactionsPaged_By_NonExistent_SystemMerchantId() throws ApiException {
-        String merchantId = "100023947222";
+        String merchantId = String.valueOf(new Random().nextInt(999999999));
 
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -1208,7 +1209,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindSettlementTransactionsPaged_By_Invalid_SystemMid() throws ApiException {
-        String merchantId = UUID.randomUUID().toString().replace("-", "");
+        String merchantId = UUID.randomUUID().toString();
 
         try {
             ReportingService
@@ -1217,8 +1218,8 @@ public class GpApiReportingTransactionsTests extends BaseGpApiTest {
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("40100", ex.getResponseText());
-            assertEquals("Status Code: 400 - Invalid Value provided in the input field - system.mid", ex.getMessage());
+            assertEquals("40090", ex.getResponseText());
+            assertEquals("Status Code: 400 - system.mid value is invalid. Please check the format and data provided is correct", ex.getMessage());
         }
     }
 

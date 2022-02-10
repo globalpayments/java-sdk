@@ -1,5 +1,6 @@
 package com.global.api.tests.gpapi;
 
+import lombok.SneakyThrows;
 import org.junit.Ignore;
 
 public class BaseGpApiTest {
@@ -16,6 +17,13 @@ public class BaseGpApiTest {
     // ================================================================================
     static final String APP_ID_FOR_BATCH = "P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg";
     static final String APP_KEY_FOR_BATCH = "ockJr6pv6KFoGiZA";
+    // ================================================================================
+
+    // ================================================================================
+    // Credentials For DCC
+    // ================================================================================
+    static final String APP_ID_FOR_DCC = "mivbnCh6tcXhrc6hrUxb3SU8bYQPl9pd";
+    static final String APP_KEY_FOR_DCC = "Yf6MJDNJKiqObYAb";
     // ================================================================================
 
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
@@ -92,6 +100,11 @@ public class BaseGpApiTest {
         AvsCheckTestCards(String cardNumber) {
             this.avsCardNumber = cardNumber;
         }
+    }
+
+    @SneakyThrows
+    protected void waitForGpApiReplication() {
+        Thread.sleep(2000);
     }
 
 }

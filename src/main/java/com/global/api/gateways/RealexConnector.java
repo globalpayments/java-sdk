@@ -11,13 +11,19 @@ import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.*;
+import lombok.var;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.*;
 
+import static com.global.api.utils.CardUtils.getBaseCardType;
 import static com.global.api.utils.StringUtils.extractDigits;
 
 public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider, IReportingService {
+    private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
+        put("DinersClub", "Diners");
+    }};
+
     private String merchantId;
     private String accountId;
     private String rebatePassword;
@@ -110,7 +116,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(cardElement, "number", card.getNumber());
                 et.subElement(cardElement, "expdate", card.getShortExpiry());
                 et.subElement(cardElement, "chname").text(card.getCardHolderName());
-                et.subElement(cardElement, "type", card.getCardType().toUpperCase());
+                et.subElement(cardElement, "type", mapCardType(getBaseCardType(card.getCardType())).toUpperCase());
 
                 if (card.getCvn() != null) {
                     Element cvnElement = et.subElement(cardElement, "cvn");
@@ -136,24 +142,23 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             }
             et.subElement(request, "sha1hash", hash);
         }
-        else if (builder.getPaymentMethod() instanceof AlternatePaymentMethod) {
-            AlternatePaymentMethod apm = (AlternatePaymentMethod) builder.getPaymentMethod();
-
-            et.subElement(request, "paymentmethod", apm.getAlternativePaymentMethodType().toString());
-
-            Element paymentmethoddetails = et.subElement(request, "paymentmethoddetails");
-            et.subElement(paymentmethoddetails, "returnurl", apm.getReturnUrl());
-            et.subElement(paymentmethoddetails, "statusupdateurl", apm.getStatusUpdateUrl());
-            et.subElement(paymentmethoddetails, "descriptor", apm.getDescriptor());
-            et.subElement(paymentmethoddetails, "country", apm.getCountry());
-            et.subElement(paymentmethoddetails, "accountholdername", apm.getAccountHolderName());
-
-            // issueno
-            String hash;
-            hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), apm.getAlternativePaymentMethodType().toString());
-            et.subElement(request, "sha1hash").text(hash);
+        else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
+            this.buildAlternativePaymentMethod(builder, request, et);
         }
         //</editor-fold>
+
+        //<editor-fold desc="DESCRIPTION">
+        if (builder.getDescription() != null) {
+            Element comments = et.subElement(request, "comments");
+            et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
+        }
+        //</editor-fold>
+
+        if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
+            String hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), ((AlternativePaymentMethod) builder.getPaymentMethod()).getAlternativePaymentMethodType().getValue());
+            et.subElement(request, "sha1hash").text(hash);
+        }
+
         //<editor-fold desc="RECURRING PAYMENT METHOD">
         if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
             RecurringPaymentMethod recurring = (RecurringPaymentMethod) builder.getPaymentMethod();
@@ -223,13 +228,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(dccInfo, "amount", dccRateData.getCardHolderAmount())
                         .set("currency", dccRateData.getCardHolderCurrency());
             }
-        }
-        //</editor-fold>
-
-        //<editor-fold desc="DESCRIPTION">
-        if(builder.getDescription() != null) {
-            Element comments = et.subElement(request, "comments");
-            et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
         //</editor-fold>
 
@@ -422,17 +420,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
-            AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
-            AlternativePaymentType paymentTypesValues;
-            StringBuffer paymentValues = new StringBuffer();
-            if (paymentTypesKey != null)
-                for (int arr = 0; arr < paymentTypesKey.length; arr++) {
-                    paymentTypesValues = paymentTypesKey[arr];
-                    paymentValues.append(paymentTypesValues.getValue());
-                    if (arr != paymentTypesKey.length - 1) {
-                        paymentValues.append("|");
-                    }
-                }
+
             request.set("CUST_NUM", paymentData.getCustomerNumber());
             if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null) {
                 request.set("HPP_SELECT_STORED_CARD", paymentData.getCustomerKey());
@@ -448,12 +436,28 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             }
             request.set("PMT_REF", paymentData.getPaymentKey());
             request.set("PROD_ID", paymentData.getProductId());
+
+            // APMs Fields
             request.set("HPP_CUSTOMER_COUNTRY", paymentData.getCustomerCountry());
             request.set("HPP_CUSTOMER_FIRSTNAME", paymentData.getCustomerFirstName());
             request.set("HPP_CUSTOMER_LASTNAME", paymentData.getCustomerLastName());
             request.set("MERCHANT_RESPONSE_URL", paymentData.getMerchantResponseUrl());
             request.set("HPP_TX_STATUS_URL", paymentData.getTransactionStatusUrl());
+
+            AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
+            AlternativePaymentType paymentTypesValues;
+            StringBuffer paymentValues = new StringBuffer();
+            if (paymentTypesKey != null) {
+                for (int arr = 0; arr < paymentTypesKey.length; arr++) {
+                    paymentTypesValues = paymentTypesKey[arr];
+                    paymentValues.append(paymentTypesValues.getValue());
+                    if (arr != paymentTypesKey.length - 1) {
+                        paymentValues.append("|");
+                    }
+                }
+            }
             request.set("PM_METHODS", paymentValues.toString());
+            // end APMs Fields
 
             // 3DSv2
             request.set("HPP_CUSTOMER_EMAIL", paymentData.getCustomerEmail());
@@ -555,11 +559,15 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             }
         }
 
-        if(hostedPaymentConfig.getFraudFilterMode() != null && hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
+        if (    hostedPaymentConfig.getFraudFilterMode() != null &&
+                hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
             toHash.add(hostedPaymentConfig.getFraudFilterMode().getValue());
         }
 
-        request.set("CHARGE_DESCRIPTION", builder.getDynamicDescriptor());
+        if (builder.getDynamicDescriptor() != null) {
+            request.set("CHARGE_DESCRIPTION", builder.getDynamicDescriptor());
+        }
+
         request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, toHash.toArray(new String[toHash.size()])));
 
         return request.toString();
@@ -613,11 +621,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
         //</editor-fold>
 
-        // payment method for APM
-        if(builder.getAlternativePaymentType() != null) {
-            et.subElement(request, "paymentmethod", builder.getAlternativePaymentType().getValue());
-        }
-
         // payer authentication response
         if(builder.getTransactionType().equals(TransactionType.VerifySignature)) {
             et.subElement(request, "pares", builder.getPayerAuthenticationResponse());
@@ -626,6 +629,21 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         // reason code
         if(builder.getReasonCode() != null) {
             et.subElement(request, "reasoncode").text(builder.getReasonCode());
+        }
+
+        if (builder.getAlternativePaymentType() != null) {
+            et.subElement(request, "paymentmethod", builder.getAlternativePaymentType());
+
+            if (builder.getTransactionType() == TransactionType.Confirm) {
+                Element paymentMethodDetails = et.subElement(request, "paymentmethoddetails");
+
+                AlternativePaymentResponse apmResponse = ((TransactionReference) builder.getPaymentMethod()).getAlternativePaymentResponse();
+
+                if (builder.getAlternativePaymentType() == AlternativePaymentType.PAYPAL) {
+                    et.subElement(paymentMethodDetails, "Token", apmResponse.getSessionToken());
+                    et.subElement(paymentMethodDetails, "PayerID", apmResponse.getProviderReference());
+                }
+            }
         }
 
         if(builder.getDescription() != null) {
@@ -735,7 +753,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                     et.subElement(cardElement, "number").text(card.getNumber());
                     et.subElement(cardElement, "expdate").text(expiry);
                     et.subElement(cardElement, "chname").text(card.getCardHolderName());
-                    et.subElement(cardElement, "type").text(card.getCardType());
+                    et.subElement(cardElement, "type").text(mapCardType(getBaseCardType(card.getCardType())));
 
                     String sha1hash;
                     if (builder.getTransactionType() == TransactionType.Create)
@@ -816,16 +834,54 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         transReference.setBatchNumber(root.getInt("batchid"));
         result.setTransactionReference(transReference);
 
+        // alternativePaymentResponse
         Element paymentMethodDetails = root.get("paymentmethoddetails");
-        result.setAlternativePaymentResponse(
-                new AlternativePaymentResponse()
-                        .setBankAccount(paymentMethodDetails != null ? paymentMethodDetails.getString("bankaccount") : null)
-                        .setAccountHolderName(paymentMethodDetails != null ? paymentMethodDetails.getString("accountholdername") : null)
-                        .setCountry(paymentMethodDetails != null ? paymentMethodDetails.getString("country") : null)
-                        .setRedirectUrl(paymentMethodDetails != null ? paymentMethodDetails.getString("redirecturl") : null)
-                        .setPaymentPurpose(paymentMethodDetails != null ? paymentMethodDetails.getString("paymentpurpose") : null)
-                        .setPaymentMethod(paymentMethodDetails != null ? paymentMethodDetails.getString("paymentmethod"): null)
-        );
+
+        if(paymentMethodDetails != null) {
+
+            AlternativePaymentResponse alternativePaymentResponse = new AlternativePaymentResponse();
+
+            alternativePaymentResponse.setPaymentMethod(paymentMethodDetails.getString("paymentmethod"));
+            alternativePaymentResponse.setBankAccount(paymentMethodDetails.getString("bankaccount"));
+            alternativePaymentResponse.setAccountHolderName(paymentMethodDetails.getString("accountholdername"));
+            alternativePaymentResponse.setCountry(paymentMethodDetails.getString("country"));
+            alternativePaymentResponse.setRedirectUrl(paymentMethodDetails.getString("redirecturl"));
+            alternativePaymentResponse.setPaymentPurpose(paymentMethodDetails.getString("paymentpurpose"));
+            alternativePaymentResponse.setPaymentMethod(paymentMethodDetails.getString("paymentmethod"));
+            alternativePaymentResponse.setProviderName(root.getString("paymentmethod"));
+
+            Element apmResponseDetails = null;
+            if (paymentMethodDetails.getElement() != null && paymentMethodDetails.get("SetExpressCheckoutResponse").getElement() != null) {
+                apmResponseDetails = paymentMethodDetails.get("SetExpressCheckoutResponse");
+            } else if (paymentMethodDetails.getElement() != null && paymentMethodDetails.get("DoExpressCheckoutPaymentResponse").getElement() != null) {
+                apmResponseDetails = paymentMethodDetails.get("DoExpressCheckoutPaymentResponse");
+            }
+
+            if (apmResponseDetails != null) {
+                alternativePaymentResponse.setSessionToken(apmResponseDetails.getString("Token"));
+                alternativePaymentResponse.setAck(apmResponseDetails.getString("Ack"));
+                alternativePaymentResponse.setTimeCreatedReference(apmResponseDetails.getDateTime("Timestamp"));
+                alternativePaymentResponse.setCorrelationReference(apmResponseDetails.getString("CorrelationID"));
+                alternativePaymentResponse.setVersionReference(apmResponseDetails.getString("Version"));
+                alternativePaymentResponse.setBuildReference(apmResponseDetails.getString("Build"));
+
+                Element paymentInfo = apmResponseDetails.get("PaymentInfo");
+                if (paymentInfo != null) {
+                    alternativePaymentResponse.setTransactionReference(paymentInfo.getString("TransactionID"));
+                    alternativePaymentResponse.setPaymentType(paymentInfo.getString("PaymentType"));
+                    alternativePaymentResponse.setPaymentTimeReference(paymentInfo.getDateTime("PaymentDate"));
+                    alternativePaymentResponse.setGrossAmount(paymentInfo.getDecimal("GrossAmount"));
+                    alternativePaymentResponse.setFeeAmount(paymentInfo.getDecimal("TaxAmount"));
+                    alternativePaymentResponse.setPaymentStatus(paymentInfo.getString("PaymentStatus"));
+                    alternativePaymentResponse.setPendingReason(paymentInfo.getString("PendingReason"));
+                    alternativePaymentResponse.setReasonCode(paymentInfo.getString("ReasonCode"));
+                    alternativePaymentResponse.setAuthProtectionEligibility(paymentInfo.getString("ProtectionEligibility"));
+                    alternativePaymentResponse.setAuthProtectionEligibilityType(paymentInfo.getString("ProtectionEligibilityType"));
+                }
+            }
+
+            result.setAlternativePaymentResponse(alternativePaymentResponse);
+        }
 
         // fraud response
         if(root.has("fraudresponse")) {
@@ -985,7 +1041,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                         return "auth-mobile";
                     }
                     return "auth";
-                } else if (payment instanceof AlternatePaymentMethod) {
+                } else if (payment instanceof AlternativePaymentMethod) {
                     return "payment-set";
                 }
                 return "receipt-in";
@@ -1045,6 +1101,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 return "void";
             case VerifySignature:
                 return "3ds-verifysig";
+            case Confirm:
+                return "payment-do";
             default:
                 return "unknown";
         }
@@ -1089,15 +1147,54 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         }
     }
 
+    private String mapCardType(String cardType) {
+        for (var map : mapCardType.keySet()) {
+            if (cardType.equals(map)) {
+                return mapCardType.get(map);
+            }
+        }
+        return cardType;
+    }
+
     private List<String> mapAcceptedCodes(String transactionType) {
         switch (transactionType) {
             case "3ds-verifysig":
             case "3ds-verifyenrolled":
                 return Arrays.asList("00", "110");
             case "payment-set":
-                return Arrays.asList("01");
+                return Arrays.asList("01", "00");
             default:
                 return Arrays.asList("00");
+        }
+    }
+
+    public void buildAlternativePaymentMethod(AuthorizationBuilder builder, Element request, ElementTree et) {
+        AlternativePaymentMethod apm = (AlternativePaymentMethod) builder.getPaymentMethod();
+
+        et.subElement(request, "paymentmethod", apm.getAlternativePaymentMethodType().getValue());
+
+        Element paymentmethoddetails = et.subElement(request, "paymentmethoddetails");
+
+        List<String> apmUrls = this.mapAPMUrls(apm.getAlternativePaymentMethodType());
+        String returnUrl = apmUrls.get(0);
+        String statusUpdateUrl = apmUrls.get(1);
+        String cancelUrl = apmUrls.get(2);
+
+        et.subElement(paymentmethoddetails, returnUrl, apm.getReturnUrl());
+        et.subElement(paymentmethoddetails, statusUpdateUrl, apm.getStatusUpdateUrl());
+        et.subElement(paymentmethoddetails, cancelUrl, apm.getCancelUrl());
+
+        et.subElement(paymentmethoddetails, "descriptor", apm.getDescriptor());
+        et.subElement(paymentmethoddetails, "country", apm.getCountry());
+        et.subElement(paymentmethoddetails, "accountholdername", apm.getAccountHolderName());
+    }
+
+    private List<String> mapAPMUrls(AlternativePaymentType paymentMethodType) {
+        switch (paymentMethodType) {
+            case PAYPAL:
+                return Arrays.asList("ReturnURL", "StatusUpdateURL", "CancelURL");
+            default:
+              return Arrays.asList("returnurl", "statusupdateurl", "cancelurl");
         }
     }
 

@@ -1,7 +1,8 @@
 package com.global.api.entities.enums;
 
-public enum DccProcessor implements IStringConstant {	
-	Fexco("fexco"),
+public enum DccProcessor implements IStringConstant {
+    None("none"),
+    Fexco("fexco"),
 	Euroconex("euroconex");
 	
     String value;

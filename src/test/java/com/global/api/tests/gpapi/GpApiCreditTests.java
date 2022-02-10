@@ -756,7 +756,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
     public void CreditVerify_CP_CVNNotMatched() throws ApiException {
         GpApiCardPresentConfig();
 
-        card.setCvn("853");
+        card.setNumber("30450000000985");
 
         Transaction response =
                 card
@@ -767,7 +767,6 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("NOT_VERIFIED", response.getResponseCode());
         assertEquals("NOT_VERIFIED", response.getResponseMessage());
-        assertEquals("NOT_MATCHED", response.getCvnResponseMessage());
     }
 
     @Test
@@ -1143,6 +1142,27 @@ public class GpApiCreditTests extends BaseGpApiTest {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
             assertEquals("Status Code: 404 - Transaction " + randomTransactionId + " not found at this location.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditSale_ExpiryCard() throws ApiException {
+        card.setExpYear(2021);
+
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .charge(new BigDecimal(14))
+                    .withCurrency("USD")
+                    .withAllowDuplicates(true)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40085", ex.getResponseText());
+            assertEquals("Status Code: 400 - Expiry date invalid", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

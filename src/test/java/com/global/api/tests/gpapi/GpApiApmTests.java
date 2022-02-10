@@ -6,7 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.reporting.SearchCriteria;
-import com.global.api.paymentMethods.AlternatePaymentMethod;
+import com.global.api.paymentMethods.AlternativePaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public class GpApiApmTests extends BaseGpApiTest {
 
-    private AlternatePaymentMethod paymentMethod;
+    private AlternativePaymentMethod paymentMethod;
     private String currency;
     private Address shippingAddress = null;
 
@@ -51,7 +51,7 @@ public class GpApiApmTests extends BaseGpApiTest {
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 
         paymentMethod =
-                new AlternatePaymentMethod()
+                new AlternativePaymentMethod()
                         .setAlternativePaymentMethodType(AlternativePaymentType.PAYPAL)
                         .setReturnUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net")
                         .setStatusUpdateUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net")

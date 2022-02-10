@@ -1,6 +1,7 @@
 package com.global.api.entities.enums;
 
-public enum DccRateType  implements IStringConstant {	
+public enum DccRateType  implements IStringConstant {
+    None("None"),
 	Sale("S"),
 	Refund("R");
 	
