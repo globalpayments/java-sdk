@@ -10,10 +10,8 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.StringUtils;
 import org.junit.Assert;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -148,18 +146,21 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     @Test
     public void UpdateTokenizedPaymentMethodWrongId() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken("PMT_" + UUID.randomUUID().toString());
+        tokenizedCard.setToken("PMT_" + UUID.randomUUID());
 
+        boolean exceptionCaught = false;
         try {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
                     .execute(GP_API_CONFIG_NAME);
-
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("40116", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("Status Code: 404 - payment_method " + tokenizedCard.getToken() + " not found at this location.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 

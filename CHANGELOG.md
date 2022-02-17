@@ -4,6 +4,16 @@
 
 ### Enhancements:
 
+- Add IN_APP value for entry_mode on GP-API
+- Add LNK_ID in Create Transaction Request
+- Update Misc Tests
+
+---
+
+## v6.3.2 (10/02/2022)
+
+### Enhancements:
+
 - Dynamic Currency Conversion on GP-API Connector
 - Add Alternative Payment Methods (APMs) to HPP
 - Misc tests updated

@@ -26,28 +26,26 @@ import java.util.UUID;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static org.junit.Assert.*;
 
-public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
+public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingTest {
 
     private static String token;
     private static CreditCardData card;
 
     public GpApiReportingStoredPaymentMethodsTests() throws ApiException {
-
         GpApiConfig config = new GpApiConfig();
 
         // GP-API settings
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
-
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("123");
 
         try {
@@ -73,14 +71,18 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     public void ReportStoredPaymentMethodDetailWithNonExistentId() throws ApiException {
         String storedPaymentMethodId = "PMT_" + UUID.randomUUID();
 
+        boolean exceptionCaught = false;
         try {
             ReportingService
                     .storedPaymentMethodDetail(storedPaymentMethodId)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40118", ex.getResponseText());
             assertEquals("Status Code: 404 - PAYMENT_METHODS " + storedPaymentMethodId + " not found at this /ucp/payment-methods/" + storedPaymentMethodId, ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -107,7 +109,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
     public void ReportFindStoredPaymentMethodsPaged_By_Id() throws ApiException {
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StoredPaymentMethodId, token)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -123,7 +125,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StoredPaymentMethodId, storedPaymentMethodId)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -140,7 +142,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 10)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -159,7 +161,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 10)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -178,7 +180,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ReferenceNumber, response.getReference())
                         .execute(GP_API_CONFIG_NAME);
 
@@ -194,7 +196,7 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StoredPaymentMethodStatus, status)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -206,51 +208,43 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -30);
-        Date endDate = DateUtils.addDays(new Date(), -10);
-
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
-                        .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, endDate)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(SearchCriteria.StartDate, REPORTING_START_DATE)
+                        .and(SearchCriteria.EndDate, REPORTING_LAST_MONTH_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), startDate));
-            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), endDate));
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_LAST_MONTH_DATE));
         }
     }
 
     @Test
     public void ReportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate_CurrentDay() throws ApiException {
-        Date currentDay = new Date();
-
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
-                        .where(SearchCriteria.StartDate, currentDay)
-                        .and(SearchCriteria.EndDate, currentDay)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(SearchCriteria.StartDate, REPORTING_START_DATE)
+                        .and(SearchCriteria.EndDate, REPORTING_END_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), currentDay));
-            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), currentDay));
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_END_DATE));
         }
     }
 
     @Test
     public void ReportFindStoredPaymentMethodsPaged_By_StartLastUpdatedDate_And_EndLastUpdatedDate() throws ApiException {
-        Date startLastUpdatedDate = DateUtils.addDays(new Date(), -30);
-        Date endLastUpdatedDate = DateUtils.addDays(new Date(), -10);
-
         StoredPaymentMethodSummaryPaged result =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
-                        .where(DataServiceCriteria.StartLastUpdatedDate, startLastUpdatedDate)
-                        .and(DataServiceCriteria.EndLastUpdatedDate, endLastUpdatedDate)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartLastUpdatedDate, REPORTING_START_DATE)
+                        .and(DataServiceCriteria.EndLastUpdatedDate, REPORTING_LAST_MONTH_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
@@ -259,42 +253,38 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindStoredPaymentMethodsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
-        StoredPaymentMethodSummaryPaged result =
+        StoredPaymentMethodSummaryPaged storedPaymentMethodSummaryAscending =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Ascending)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(result.getResults());
+        assertNotNull(storedPaymentMethodSummaryAscending.getResults());
 
-        List<StoredPaymentMethodSummary> results = result.getResults();
+        List<StoredPaymentMethodSummary> results = storedPaymentMethodSummaryAscending.getResults();
         for (int i = 0; i < results.size() - 1; i++) {
-            assertTrue(DateUtils.isBeforeOrEquals(results.get(0).getTimeCreated(), results.get(i + 1).getTimeCreated()));
+            Date current = results.get(i).getTimeCreated();
+            Date next = results.get(i + 1).getTimeCreated();
+            assertTrue(DateUtils.isBeforeOrEquals(current, next));
         }
     }
 
     @Test
     public void ReportFindStoredPaymentMethodsPaged_OrderBy_TimeCreated_Descending() throws ApiException {
-        StoredPaymentMethodSummaryPaged result =
+        StoredPaymentMethodSummaryPaged storedPaymentMethodSummaryDescending =
                 ReportingService
-                        .findStoredPaymentMethodsPaged(1, 25)
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(result.getResults());
+        assertNotNull(storedPaymentMethodSummaryDescending.getResults());
 
-        List<StoredPaymentMethodSummary> results = result.getResults();
+        List<StoredPaymentMethodSummary> results = storedPaymentMethodSummaryDescending.getResults();
         for (int i = 0; i < results.size() - 1; i++) {
-            assertTrue(DateUtils.isAfterOrEquals(results.get(0).getTimeCreated(), results.get(i + 1).getTimeCreated()));
+            Date current = results.get(i).getTimeCreated();
+            Date next = results.get(i + 1).getTimeCreated();
+            assertTrue(DateUtils.isAfterOrEquals(current, next));
         }
-    }
-
-    // @AfterClass
-    // The used credentials have no permissions to delete a tokenized card
-    public static void cleanup() throws ApiException {
-        CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(token);
-        assertTrue(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
     }
 
 }

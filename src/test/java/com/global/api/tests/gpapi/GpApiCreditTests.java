@@ -91,6 +91,21 @@ public class GpApiCreditTests extends BaseGpApiTest {
     }
 
     @Test
+    public void CreditAuthorizationWithPaymentLinkId() throws ApiException {
+        var transaction =
+                card
+                        .authorize(14)
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withPaymentLinkId("LNK_W1xgWehivDP8P779cFDDTZwzL01EEw4")
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(transaction);
+        assertEquals(SUCCESS, transaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
+    }
+
+    @Test
     public void CreditAuthorization_CaptureLowerAmount() throws ApiException {
         Transaction transaction =
                 card

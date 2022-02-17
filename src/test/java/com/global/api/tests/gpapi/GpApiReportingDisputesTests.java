@@ -15,27 +15,16 @@ import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
+import org.joda.time.LocalDate;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.Random;
 
-import static com.global.api.gateways.GpApiConnector.DATE_SDF;
 import static org.junit.Assert.*;
 
-public class GpApiReportingDisputesTests extends BaseGpApiTest {
-
-    private static Date DATE_2020_01_01 = null;
-
-    static {
-        try {
-            DATE_2020_01_01 = DATE_SDF.parse("2020-01-01");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
+public class GpApiReportingDisputesTests extends BaseGpApiReportingTest {
 
     public GpApiReportingDisputesTests() throws ApiException {
         GpApiConfig config = new GpApiConfig();
@@ -85,18 +74,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Id() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
 
         DisputeSummaryPaged disputesAscending =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAscending);
@@ -105,18 +94,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void ReportFindDisputesPaged_OrderBy_ARN() throws ApiException, ParseException {
+    public void ReportFindDisputesPaged_OrderBy_ARN() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ARN, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
-                        .and(DataServiceCriteria.EndStageDate, DATE_SDF.parse("2020-06-22"))
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
+                        .and(DataServiceCriteria.EndStageDate, LocalDate.now().minusMonths(1).toDate())
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), DATE_2020_01_01));
+            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), REPORTING_START_DATE));
         }
     }
 
@@ -124,9 +113,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Brand() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -136,9 +125,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Status() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -148,9 +137,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Stage() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -162,9 +151,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -174,9 +163,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -186,9 +175,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -198,9 +187,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -210,9 +199,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -224,7 +213,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.AquirerReferenceNumber, arn)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -244,9 +233,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -261,10 +249,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         for (String cardBrand : cardBrands) {
             DisputeSummaryPaged disputes =
                     ReportingService
-                            .findDisputesPaged(1, 10)
+                            .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                             .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
-                            .withPaging(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                            .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.CardBrand, cardBrand)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -280,14 +267,11 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindDisputesPaged_FilterBy_Status() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -15);
-
         for (DisputeStatus disputeStatus : DisputeStatus.values()) {
             DisputeSummaryPaged disputes =
                     ReportingService
-                            .findDisputesPaged(1, 10)
-                            .withPaging(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, startDate)
+                            .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                            .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStatus, disputeStatus)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -308,10 +292,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
             DisputeSummaryPaged disputes =
                     ReportingService
-                            .findDisputesPaged(1, 10)
+                            .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                             .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
-                            .withPaging(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                            .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStage, disputeStage)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -326,9 +309,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_FilterBy_From_And_To_Stage_Time_Created() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndStageDate, new Date())
                         .execute(GP_API_CONFIG_NAME);
 
@@ -342,9 +324,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
                         .execute(GP_API_CONFIG_NAME);
@@ -360,9 +341,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_FilterBy_WrongMerchantId() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, Integer.toString(new Random().nextInt(999999999)))
                         .execute(GP_API_CONFIG_NAME);
 
@@ -375,9 +355,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
         String hierarchy = "111-23-099-001-009";
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, hierarchy)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -389,7 +368,7 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_Without_FromStageTimeCreated() throws ApiException {
         try {
             ReportingService
-                    .findDisputesPaged(1, 10)
+                    .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                     .execute(GP_API_CONFIG_NAME);
 
         } catch (GatewayException ex) {
@@ -403,10 +382,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Id_With_Brand_VISA() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.CardBrand, "VISA")
                         .execute(GP_API_CONFIG_NAME);
 
@@ -417,10 +395,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.UnderReview)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -431,10 +408,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindDisputesPaged_OrderBy_Id_With_Stage_Chargeback() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findDisputesPaged(1, 10)
+                        .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
-                        .withPaging(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, DisputeStage.Chargeback)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -477,9 +453,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_Id() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -489,9 +465,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_ARN() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ARN, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
@@ -501,9 +477,9 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_Id_With_Status_UnderReview() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.UnderReview)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -514,18 +490,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_Brand() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -537,18 +513,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_Status() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -560,18 +536,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_Stage() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -584,18 +560,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_FromStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -608,18 +584,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_ToStageTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -632,18 +608,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_AdjustmentFunding() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -656,18 +632,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_FromAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -680,18 +656,18 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_OrderBy_ToAdjustmentTimeCreated() throws ApiException {
         DisputeSummaryPaged disputesAsc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Ascending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesAsc);
 
         DisputeSummaryPaged disputesDesc =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputesDesc);
@@ -705,8 +681,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -722,8 +698,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -739,8 +715,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
             DisputeSummaryPaged disputes =
                     ReportingService
-                            .findSettlementDisputesPaged(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                            .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                            .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.CardBrand, cardBrand)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -761,8 +737,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.CardBrand, cardBrand)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -774,8 +750,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     public void ReportFindSettlementDisputesPaged_FilterBy_Status() throws ApiException {
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.Funded)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -786,33 +762,29 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
     }
 
     @Test
-    public void ReportFindSettlementDisputesPaged_By_DepositDate() throws ParseException, ApiException {
-        Date startDepositDate = DATE_SDF.parse("2021-01-01");
-        Date endDepositDate = DATE_SDF.parse("2021-07-30");
-
+    public void ReportFindSettlementDisputesPaged_By_DepositDate() throws ApiException {
         PagedResult<DisputeSummary> result =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
-                        .where(DataServiceCriteria.StartDepositDate, startDepositDate)
-                        .and(DataServiceCriteria.EndDepositDate, endDepositDate)
+                        .where(DataServiceCriteria.StartDepositDate, REPORTING_START_DATE)
+                        .and(DataServiceCriteria.EndDepositDate, REPORTING_LAST_MONTH_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());
         for (DisputeSummary disputeSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), startDepositDate));
-            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getDepositDate(), endDepositDate));
+            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getDepositDate(), REPORTING_LAST_MONTH_DATE));
         }
     }
 
     @Test
     public void ReportFindSettlementDisputesPaged_FilterBy_AllStages() throws ApiException {
         for (DisputeStage disputeStage : DisputeStage.values()) {
-
             DisputeSummaryPaged disputes =
                     ReportingService
-                            .findSettlementDisputesPaged(1, 10)
-                            .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                            .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                            .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStage, disputeStage)
                             .execute(GP_API_CONFIG_NAME);
 
@@ -829,8 +801,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, disputeStage)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -843,8 +815,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputesReversal =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, disputeStageReversal)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -858,32 +830,29 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindSettlementDisputesPaged_FilterBy_FromAndToStageTimeCreated() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -40);
-        Date endDate = DateUtils.addDays(new Date(), -20);
-
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, startDate)
-                        .and(DataServiceCriteria.EndStageDate, endDate)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
+                        .and(DataServiceCriteria.EndStageDate, REPORTING_LAST_MONTH_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getCaseTime(), startDate));
+            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getCaseTime(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getCaseTime(), REPORTING_LAST_MONTH_DATE));
         }
     }
 
     @Test
     public void ReportFindSettlementDisputesPaged_FilterBy_SystemMidAndHierarchy() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -10);
         String merchantId = "101023947262";
         String systemHierarchy = "055-70-024-011-019";
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, startDate)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
                         .execute(GP_API_CONFIG_NAME);
@@ -897,13 +866,12 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindSettlementDisputesPaged_FilterBy_WrongSystemMerchantId() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -10);
         String merchantId = "000023947222";
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, startDate)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -913,13 +881,12 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
     @Test
     public void ReportFindSettlementDisputesPaged_FilterBy_WrongSystemHierarchy() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -10);
         String systemHierarchy = "000-70-024-011-111";
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, startDate)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -933,8 +900,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiTest {
 
         DisputeSummaryPaged disputes =
                 ReportingService
-                        .findSettlementDisputesPaged(1, 10)
-                        .where(DataServiceCriteria.StartStageDate, DATE_2020_01_01)
+                        .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.DepositReference, DEPOSIT_ID)
                         .execute(GP_API_CONFIG_NAME);
 

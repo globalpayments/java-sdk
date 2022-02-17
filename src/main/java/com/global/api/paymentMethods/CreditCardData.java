@@ -89,6 +89,10 @@ public class CreditCardData extends Credit implements ICardData {
                 .withDccRateData(dccRateData);
     }
 
+    public boolean hasInAppPaymentData() {
+        return !StringUtils.isNullOrEmpty(this.getToken()) && this.getMobileType() != null;
+    }
+
     public boolean verifyEnrolled(BigDecimal amount, String currency) throws ApiException {
         return verifyEnrolled(amount, currency, null, "default");
     }

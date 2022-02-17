@@ -1,6 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import lombok.SneakyThrows;
+import org.joda.time.DateTime;
 import org.junit.Ignore;
 
 public class BaseGpApiTest {
@@ -33,6 +34,9 @@ public class BaseGpApiTest {
     static final String DECLINED = "DECLINED";
     static final String VERIFIED = "VERIFIED";
     static final String CLOSED = "CLOSED";
+
+    static final int expMonth = DateTime.now().getMonthOfYear();
+    static final int expYear = DateTime.now().getYear() + 1;
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {

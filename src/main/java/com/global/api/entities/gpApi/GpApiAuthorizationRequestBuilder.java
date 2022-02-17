@@ -356,7 +356,9 @@ public class GpApiAuthorizationRequestBuilder {
                 .set("ip_address", builder.getCustomerIpAddress())
                 .set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null)
                 //.set("site_reference", "") //
-                .set("payment_method", paymentMethod);
+                .set("payment_method", paymentMethod)
+                .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
+                        new JsonDoc().set("id", builder.getPaymentLinkId()) : null);
 
         if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod) {
             data.set("payer", setPayerInformation(builder));
@@ -483,6 +485,7 @@ public class GpApiAuthorizationRequestBuilder {
         else {
             if (builderPaymentMethod instanceof ICardData) {
                 ICardData paymentMethod = (ICardData) builderPaymentMethod;
+
                 if (paymentMethod.isReaderPresent()) {
                     return "ECOM";
                 }
@@ -500,7 +503,15 @@ public class GpApiAuthorizationRequestBuilder {
                         }
                     }
                 }
+
+                if (    builder.getTransactionModifier() == TransactionModifier.EncryptedMobile &&
+                        builderPaymentMethod instanceof CreditCardData &&
+                        ((CreditCardData) builder.getPaymentMethod()).hasInAppPaymentData()
+                ) {
+                    return "IN_APP";
+                }
             }
+
             return "ECOM";
         }
     }

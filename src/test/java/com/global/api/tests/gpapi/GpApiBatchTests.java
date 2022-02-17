@@ -26,7 +26,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
     private final CreditTrackData creditCard;
     private final BigDecimal amount = new BigDecimal("1.00");
-    private final String CURRENCY = "USD";
+    private final String currency = "USD";
     private final String TAG_DATA = "82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019";
 
     public GpApiBatchTests() throws ConfigurationException {
@@ -38,7 +38,6 @@ public class GpApiBatchTests extends BaseGpApiTest {
                 .setAppId(APP_ID_FOR_BATCH)
                 .setAppKey(APP_KEY_FOR_BATCH)
                 .setChannel(Channel.CardPresent.getValue());
-
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
@@ -54,13 +53,12 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction chargeTransaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(chargeTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -72,13 +70,13 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .withTagData(TAG_DATA)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -90,20 +88,19 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction authTransaction =
                 creditCard
                         .authorize(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(authTransaction, TransactionStatus.Preauthorized);
 
         Transaction captureTransaction =
                 authTransaction
                         .capture(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(captureTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(captureTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -120,15 +117,14 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 debitCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .withTagData(TAG_DATA)
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -140,21 +136,19 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction firstTransaction =
                 creditCard
                         .charge(new BigDecimal("1.25"))
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(firstTransaction, TransactionStatus.Captured);
 
         Transaction secondTransaction =
                 creditCard
                         .charge(new BigDecimal("2.03"))
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(secondTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(secondTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, new BigDecimal("3.28"));
@@ -166,21 +160,19 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction refundTransaction =
                 transaction
                         .refund()
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(refundTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(refundTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, new BigDecimal("0"));
@@ -197,14 +189,13 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 debitCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -221,20 +212,18 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 debitCard
                         .authorize(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         Transaction reverseTransaction = transaction
                 .reverse()
-                .withCurrency(CURRENCY)
+                .withCurrency(currency)
                 .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(reverseTransaction, TransactionStatus.Reversed);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         boolean exceptionCaught = false;
         try {
@@ -254,21 +243,20 @@ public class GpApiBatchTests extends BaseGpApiTest {
     public void CloseBatch_WithCardNumberDetails() {
         CreditCardData card = new CreditCardData();
         card.setNumber("4263970000005262");
-        card.setExpMonth(05);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("123");
         card.setCardPresent(true);
 
         Transaction chargeTransaction =
                 card
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(chargeTransaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(3000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(chargeTransaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
@@ -280,23 +268,22 @@ public class GpApiBatchTests extends BaseGpApiTest {
     public void CloseBatch_WithCardNumberDetails_DeclinedTransaction() {
         CreditCardData card = new CreditCardData();
         card.setNumber("38865000000705");
-        card.setExpMonth(05);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("8512");
         card.setCardPresent(true);
 
         Transaction chargeTransaction =
                 card
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertNotNull(chargeTransaction);
         assertEquals("DECLINED", chargeTransaction.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), chargeTransaction.getResponseMessage());
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         boolean exceptionCaught = false;
         try {
@@ -320,9 +307,8 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
@@ -340,19 +326,18 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         BatchSummary batchSummary = BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         assertBatchCloseResponse(batchSummary, amount);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         boolean exceptionCaught = false;
         try {
@@ -373,9 +358,8 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .verify()
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(VERIFIED, transaction.getResponseMessage());
@@ -407,20 +391,19 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         CreditCardData creditCardData = new CreditCardData();
         creditCardData.setNumber("5425230000004415");
-        creditCardData.setExpMonth(05);
-        creditCardData.setExpYear(2025);
+        creditCardData.setExpMonth(expMonth);
+        creditCardData.setExpYear(expYear);
         creditCardData.setCvn("852");
 
         Transaction transaction =
                 creditCardData
                         .charge(amount)
-                        .withCurrency(CURRENCY)
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
-        Thread.sleep(1000);
+        waitForGpApiReplication();
 
         boolean exceptionCaught = false;
         try {
@@ -464,7 +447,6 @@ public class GpApiBatchTests extends BaseGpApiTest {
                 .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
                 .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardPresent.getValue());
-
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
@@ -472,12 +454,11 @@ public class GpApiBatchTests extends BaseGpApiTest {
         Transaction transaction =
                 creditCard
                         .charge(amount)
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
-
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         boolean exceptionCaught = false;
         try {

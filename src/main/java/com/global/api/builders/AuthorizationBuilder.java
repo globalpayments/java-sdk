@@ -74,6 +74,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private PhoneNumber workPhone;
     @Getter @Setter private PhoneNumber shippingPhone;
     @Getter @Setter private PhoneNumber mobilePhone;
+    @Getter @Setter private String paymentLinkId;
     private String posSequenceNumber;
     private String productId;
     private ArrayList<Product> miscProductData;
@@ -729,6 +730,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withUniqueDeviceId(String value) {
         uniqueDeviceId = value;
+        return this;
+    }
+    public AuthorizationBuilder withPaymentLinkId(String value) {
+        paymentLinkId = value;
         return this;
     }
     public AuthorizationBuilder(TransactionType type) {
