@@ -35,6 +35,9 @@ public enum AccountType implements IMappedConstant {
         if(value.containsKey(target)) {
             return this.value.get(target);
         }
+        if (value.containsKey(Target.DEFAULT)) {
+            return this.value.get(Target.DEFAULT);
+        }
         return null;
     }
 }

@@ -227,7 +227,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     if(builder.getEmvChipCondition() != null)
                         chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
 
-                    et.subElement(block1, "AccountType", builder.getAccountType());
+                    et.subElement(block1, "AccountType",
+                            EnumUtils.getMapping(Target.Portico, builder.getAccountType()));
                     et.subElement(block1, "EMVChipCondition", chipCondition);
                     et.subElement(block1, "MessageAuthenticationCode", builder.getMessageAuthenticationCode());
                     et.subElement(block1, "PosSequenceNbr", builder.getPosSequenceNumber());
@@ -275,7 +276,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(accountInfo, "AccountNumber", check.getAccountNumber());
                 et.subElement(accountInfo, "CheckNumber", check.getCheckNumber());
                 et.subElement(accountInfo, "MICRData", check.getMicrNumber());
-                et.subElement(accountInfo, "AccountType", check.getAccountType());
+                et.subElement(accountInfo, "AccountType", EnumUtils.getMapping(Target.Portico,
+                        check.getAccountType()));
             }
             else et.subElement(block1, "TokenValue").text(tokenValue);
 
