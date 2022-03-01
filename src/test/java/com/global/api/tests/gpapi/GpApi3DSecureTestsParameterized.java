@@ -65,8 +65,8 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
             ServicesContainer.configureService(config);
 
             card = new CreditCardData();
-            card.setExpMonth(12);
-            card.setExpYear(2025);
+            card.setExpMonth(expMonth);
+            card.setExpYear(expYear);
             card.setCardHolderName("John Smith");
 
             shippingAddress = new Address();

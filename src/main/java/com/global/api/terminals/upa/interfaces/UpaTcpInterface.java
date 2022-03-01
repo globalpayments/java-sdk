@@ -13,10 +13,10 @@ import java.util.concurrent.TimeoutException;
 
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.MessageException;
+import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
-import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.utils.JsonDoc;
@@ -26,18 +26,17 @@ public class UpaTcpInterface implements IDeviceCommInterface {
     private Socket client;
     private DataOutputStream out;
     private DataInputStream in;
-    private ITerminalConfiguration settings;
+    private final ConnectionConfig settings;
     private IMessageSentInterface onMessageSent;
     private MessageWriter data;
     private String responseMessageString;
-    private byte[] buffer;
     private boolean readyReceived;
 
     public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
     }
 
-    public UpaTcpInterface(ITerminalConfiguration settings) {
+    public UpaTcpInterface(ConnectionConfig settings) {
         this.settings = settings;
     }
 
@@ -84,8 +83,16 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         byte[] sendBuffer = message.getSendBuffer();
 
         try {
-            if(onMessageSent != null)
-                onMessageSent.messageSent(message.toString());
+            if(onMessageSent != null) {
+                long currentMillis = System.currentTimeMillis();
+                Timestamp t = new Timestamp(currentMillis);
+                onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
+            }
+
+            if(settings.getRequestLogger() != null) {
+                String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
+                settings.getRequestLogger().RequestSent(formMsg);
+            }
 
             out.write(sendBuffer);
             out.flush();
@@ -118,35 +125,29 @@ public class UpaTcpInterface implements IDeviceCommInterface {
     }
 
     private void getTerminalResponse() throws Exception {
-        Timestamp timestamp;
-
         try {
             validateResponsePacket();
-            buffer = data.toArray();
+            byte[] buffer = data.toArray();
 
             if(buffer.length > 0) {
                 JsonDoc responseObj = JsonDoc.parse(
                     new String(data.toArray(), StandardCharsets.UTF_8)
                 );
 
-                timestamp = new Timestamp(System.currentTimeMillis());
-                System.out.println(timestamp.toString() + " Received: " + responseObj);
-                System.out.println("");
-
                 String message = responseObj.getString("message");
+
+                if(settings.getRequestLogger() != null) {
+                    String formMsg = new String(buffer, StandardCharsets.UTF_8);
+                    settings.getRequestLogger().ResponseReceived(formMsg);
+                }
 
                 switch (message) {
                     case Constants.ACK_MESSAGE:
-                        break;
                     case Constants.NAK_MESSAGE:
-                        break;
-                    case Constants.READY_MESSAGE:
-                        readyReceived = true;                                     
-                        break;
-                    case Constants.BUSY_MESSAGE:
-                        break;
                     case Constants.TIMEOUT_MESSAGE:
                         break;
+                    case Constants.BUSY_MESSAGE:
+                        throw new Exception("Device is busy");
                     case Constants.DATA_MESSAGE:
                         responseMessageString = new String(buffer, StandardCharsets.UTF_8);
                         String eval = responseObj.get("data").getString("response");
@@ -154,6 +155,9 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                             readyReceived = true; // since reboot doesn't return READY
                         }
                         sendAckMessageToDevice();
+                        break;
+                    case Constants.READY_MESSAGE:
+                        readyReceived = true;
                         break;
                     default:
                         throw new Exception("Message field value is unknown in API Response.");
@@ -188,7 +192,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
             for (int i = 0; i < buffer.length; i++) {
                 if (i < 2) {
                     if (buffer[i] != stx && buffer[i + 1] != lf) {
-                        throw new IOException("The bytes of the start response packet is not the expected bytes.");
+                        throw new IOException("The bytes of the start response packet are not the expected bytes.");
                     }
 
                     i += 1;
@@ -197,7 +201,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
 
                 if (buffer[i] == etx) {
                     if ((buffer[i - 1] & buffer[i + 1]) != lf) {
-                        throw new IOException("The bytes of the end response packet is not the expected bytes.");
+                        throw new IOException("The bytes of the end response packet are not the expected bytes.");
                     }
 
                     break;
@@ -218,9 +222,17 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         IDeviceMessage message = TerminalUtilities.compileMessage(body);
         byte[] sendBuffer = message.getSendBuffer();
 
+        if(settings.getRequestLogger() != null) {
+            String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
+            settings.getRequestLogger().RequestSent(formMsg);
+        }
+
         try {
-            if(onMessageSent != null)
-                onMessageSent.messageSent(message.toString());
+            if(onMessageSent != null) {
+                long currentMillis = System.currentTimeMillis();
+                Timestamp t = new Timestamp(currentMillis);
+                onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
+            }
 
             out.write(sendBuffer);
             out.flush();

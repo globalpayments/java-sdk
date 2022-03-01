@@ -17,5 +17,6 @@ public enum UpaMessageId {
     GetBatchReport,
     Ping,
     PreAuth,
-    Restart
+    Restart,
+    AuthCompletion
 }

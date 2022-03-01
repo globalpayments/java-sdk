@@ -64,8 +64,8 @@ public class GpApiDigitalWalletsTests extends BaseGpApiTest {
         for(MobilePaymentMethodType mobilePaymentMethodType : mobilePaymentMethodTypes) {
             card.setToken("5167300431085507");
             card.setMobileType(mobilePaymentMethodType);
-            card.setExpMonth(05);
-            card.setExpYear(2025);
+            card.setExpMonth(expMonth);
+            card.setExpYear(expYear);
             card.setCryptogram("234234234");
 
             Transaction transaction =

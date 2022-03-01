@@ -48,6 +48,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String ticketNumber;
     protected String paymentType;
     protected BigDecimal merchantFee;
+    protected String cardBrandTransactionId;
 
     // EMV
     protected String applicationPreferredName;
@@ -401,4 +402,8 @@ public abstract class TerminalResponse implements IDeviceResponse {
     public void setCardType(CardType value) {
         this.cardType = value;
     }
+
+    public String getCardBrandTransactionId() { return cardBrandTransactionId; }
+
+    public void setCardBrandTransactionId(String value) { this.cardBrandTransactionId = value; }
 }

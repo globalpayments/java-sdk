@@ -50,8 +50,8 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         // Create card data
         card = new CreditCardData();
         card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCardHolderName("John Smith");
     }
 

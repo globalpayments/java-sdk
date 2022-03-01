@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
-public class PorticoConnector extends XmlGateway implements IPaymentGateway {
+public class PorticoConnector extends XmlGateway implements IPaymentGateway, IReportingService {
     private int siteId;
     private int licenseId;
     private int deviceId;

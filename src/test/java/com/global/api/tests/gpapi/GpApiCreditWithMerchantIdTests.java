@@ -23,8 +23,8 @@ import static org.junit.Assert.*;
 
 public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
 
-    CreditCardData card;
-    String merchantId = "MER_c4c0df11039c48a9b63701adeaa296c3";
+    private CreditCardData card;
+    private final String merchantId = "MER_c4c0df11039c48a9b63701adeaa296c3";
 
     @Before
     public void initialize() throws ConfigurationException {
@@ -58,8 +58,8 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
-        card.setExpMonth(DateTime.now().getMonthOfYear());
-        card.setExpYear(DateTime.now().getYear() + 1);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("852");
     }
     
@@ -940,8 +940,8 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
 
         CreditCardData creditCardData = new CreditCardData();
         creditCardData.setNumber("4263970000005262");
-        creditCardData.setExpMonth(05);
-        creditCardData.setExpYear(2025);
+        creditCardData.setExpMonth(expMonth);
+        creditCardData.setExpYear(expYear);
 
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(creditCardData.tokenize(GP_API_CONFIG_NAME));

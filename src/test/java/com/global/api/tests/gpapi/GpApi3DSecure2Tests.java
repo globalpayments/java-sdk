@@ -54,8 +54,8 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
         // Create card data
         card = new CreditCardData();
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_2.cardNumber);
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCardHolderName("John Smith");
 
         // Shipping address

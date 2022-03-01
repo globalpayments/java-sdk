@@ -6,6 +6,7 @@ import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.enums.ServiceEndpoints;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
+import com.global.api.logging.IRequestLogger;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import lombok.experimental.Accessors;
 public class GatewayConfig extends Configuration {
     // portico & gp-ecom
     private boolean enableLogging;
+    protected IRequestLogger requestLogger;
 
 	// portico
     private int siteId;
@@ -139,6 +141,10 @@ public class GatewayConfig extends Configuration {
     public void setHostedPaymentConfig(HostedPaymentConfig hostedPaymentConfig) {
         this.hostedPaymentConfig = hostedPaymentConfig;
     }
+    public void setRequestLogger(IRequestLogger requestLogger) {
+        this.requestLogger = requestLogger;
+    }
+    public IRequestLogger getRequestLogger() { return requestLogger; }
 
     // 3DS
     public String getChallengeNotificationUrl() {
@@ -236,6 +242,7 @@ public class GatewayConfig extends Configuration {
             gateway.setTimeout(timeout);
             gateway.setServiceUrl(serviceUrl + "/Hps.Exchange.PosGateway/PosGatewayService.asmx");
             gateway.setEnableLogging(enableLogging);
+            gateway.setRequestLogger(requestLogger);
             services.setGatewayConnector(gateway);
 
             PayPlanConnector payplan = new PayPlanConnector();
