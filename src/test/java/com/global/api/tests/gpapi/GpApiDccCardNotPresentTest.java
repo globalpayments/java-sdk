@@ -11,6 +11,7 @@ import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import org.joda.time.DateTime;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -115,6 +116,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Ignore
     public void CreditDccRateReversal() throws ApiException {
         Transaction dccDetails =
                 card
@@ -142,6 +144,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Ignore
     public void CreditDccRateRefund() throws ApiException {
         Transaction dccDetails =
                 card
@@ -171,6 +174,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Ignore
     public void CreditDccRateAuthorizationThenCapture() throws ApiException {
         Transaction dccDetails =
                 card
@@ -259,6 +263,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Ignore
     public void CreditGetDccInfo_RateNotAvailable() throws ApiException {
         card.setNumber("4263970000005262");
 

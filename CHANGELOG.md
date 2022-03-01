@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest: v6.3.4 (03/01/2022)
+## Latest: v6.3.5 (03/01/2022)
+
+### Bug Fixes:
+
+- Fix "AccountType" mapping with HPS/Portico integrations
+
+---
+
+## v6.3.4 (03/01/2022)
 
 ### Enhancements:
 
