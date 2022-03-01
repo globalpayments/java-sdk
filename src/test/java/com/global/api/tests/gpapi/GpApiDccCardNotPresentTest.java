@@ -46,8 +46,8 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
 
         card = new CreditCardData();
         card.setNumber("4006097467207025");
-        card.setExpMonth(DateTime.now().getMonthOfYear());
-        card.setExpYear(DateTime.now().getYear() + 1);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCardHolderName("James Mason");
     }
 
@@ -269,7 +269,6 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
 
-        BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertNotNull(dccDetails);
         assertEquals(SUCCESS, dccDetails.getResponseCode());
         assertEquals("NOT_AVAILABLE", dccDetails.getResponseMessage());
@@ -280,7 +279,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                 .withCurrency(currency)
                 .withDccRateData(dccDetails.getDccRateData())
                 .execute(GP_API_CONFIG_NAME);
-        assertTransactionResponse(transaction, TransactionStatus.Captured, expectedDccAmountValue);
+        assertTransactionResponse(transaction, TransactionStatus.Captured, valueOf(amount));
     }
 
     @Test

@@ -2,10 +2,8 @@ package com.global.api.terminals.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
-import com.global.api.entities.enums.CurrencyType;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TaxType;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.AutoSubstantiation;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -21,7 +19,11 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private boolean allowDuplicates;
     private BigDecimal amount;
     private String authCode;
+    private AutoSubstantiation autoSubstantiation;
+    private StoredCredentialInitiator cardBrandStorage;
+    private String cardBrandTransactionId;
     private BigDecimal cashBackAmount;
+    private boolean commercialRequest;
     private CurrencyType currency;
     private String customerCode;
     private BigDecimal gratuity;
@@ -50,9 +52,13 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             return ((TransactionReference)paymentMethod).getAuthCode();
         return null;
     }
+    public AutoSubstantiation getAutoSubstantiation() { return autoSubstantiation; }
     public BigDecimal getCashBackAmount() {
         return cashBackAmount;
     }
+    public StoredCredentialInitiator getCardBrandStorage() { return cardBrandStorage; }
+    public String getCardBrandTransactionId() { return cardBrandTransactionId; }
+    public boolean getCommercialRequest() { return commercialRequest; }
     public CurrencyType getCurrency() {
         return currency;
     }
@@ -69,9 +75,10 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return signatureCapture;
     }
     public String getTransactionId() {
-        if(paymentMethod instanceof TransactionReference)
-            ((TransactionReference)paymentMethod).getTransactionId();
-        return null;
+        if(paymentMethod instanceof TransactionReference) {
+            return ((TransactionReference) paymentMethod).getTransactionId();
+        }
+        return transactionId;
     }
     public String getCustomerCode() {
         return customerCode;
@@ -88,13 +95,13 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     public String getTaxExemptId() {
         return taxExemptId;
     }
-
     public Integer getTokenRequest() {
         return this.tokenRequest;
     }
-
     public String getTokenValue() {
-        return this.tokenValue;
+        if (paymentMethod instanceof CreditCardData)
+            return ((CreditCardData)paymentMethod).getToken();
+        return null;
     }
 
     public TerminalAuthBuilder withTokenRequest(Integer tokenRequest)
@@ -128,8 +135,25 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.authCode = value;
         return this;
     }
+    public TerminalAuthBuilder withAutoSubstantiation(AutoSubstantiation healthcare) {
+        this.autoSubstantiation = healthcare;
+        return this;
+    }
     public TerminalAuthBuilder withCashBack(BigDecimal value) {
         this.cashBackAmount = value;
+        return this;
+    }
+    public TerminalAuthBuilder withCardBrandStorage(StoredCredentialInitiator value) {
+        this.cardBrandStorage = value;
+        return this;
+    }
+    public TerminalAuthBuilder withCardBrandStorage(StoredCredentialInitiator initiatorValue, String cardBrandTransId) {
+        this.cardBrandStorage = initiatorValue;
+        this.cardBrandTransactionId = cardBrandTransId;
+        return this;
+    }
+    public TerminalAuthBuilder withCommercialRequest(boolean value) {
+        this.commercialRequest = value;
         return this;
     }
     public TerminalAuthBuilder withCurrency(CurrencyType value) {
@@ -206,8 +230,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.validations.of(TransactionType.Refund).check("amount").isNotNull();
         this.validations.of(TransactionType.Auth)
                 .with(PaymentMethodType.Credit)
-                .when("transactionId").isNotNull()
-                .check("authCode").isNotNull();
+                .when("transactionId").isNotNull();
+//                .check("authCode").isNotNull();
         this.validations.of(TransactionType.Refund)
                 .with(PaymentMethodType.Credit)
                 .when("transactionId").isNotNull()

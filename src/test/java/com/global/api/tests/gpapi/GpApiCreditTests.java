@@ -16,6 +16,7 @@ import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.var;
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -54,8 +55,8 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
-        card.setExpMonth(5);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("123");
         card.setCardPresent(true);
     }
@@ -1164,7 +1165,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
 
     @Test
     public void CreditSale_ExpiryCard() throws ApiException {
-        card.setExpYear(2021);
+        card.setExpYear(DateTime.now().getYear() - 1);
 
         boolean exceptionCaught = false;
         try {

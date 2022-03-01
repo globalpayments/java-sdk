@@ -19,13 +19,13 @@ import static org.junit.Assert.*;
 
 public class GpApiAuthenticationTests extends BaseGpApiTest {
 
-    final CreditCardData card = new CreditCardData();
+    private final CreditCardData card = new CreditCardData();
 
     @Before
     public void Initialize() {
         card.setNumber("4263970000005262");
-        card.setExpMonth(05);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("852");
     }
 

@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class GpApiEbtTest extends BaseGpApiTest {
-    EBTCardData ebtCardData;
-    EBTTrackData ebtTrackData;
+    private EBTCardData ebtCardData;
+    private EBTTrackData ebtTrackData;
 
     private final String CURRENCY = "USD";
     private final BigDecimal AMOUNT = new BigDecimal(10);
@@ -44,8 +44,8 @@ public class GpApiEbtTest extends BaseGpApiTest {
     public void testInitialize() {
         ebtCardData = new EBTCardData();
         ebtCardData.setNumber("4012002000060016");
-        ebtCardData.setExpMonth(12);
-        ebtCardData.setExpYear(2025);
+        ebtCardData.setExpMonth(expMonth);
+        ebtCardData.setExpYear(expYear);
         ebtCardData.setPinBlock("32539F50C245A6A93D123412324000AA");
         ebtCardData.setCardHolderName("Jane Doe");
         ebtCardData.setCardPresent(true);

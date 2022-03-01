@@ -10,25 +10,44 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
+import com.global.api.utils.RequestFileLogger;
 
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class UpaAdminTests {
     IDeviceInterface device;
 
-    public UpaAdminTests() throws ApiException {
+    public UpaAdminTests() throws ApiException, IOException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.101");
+        config.setIpAddress("192.168.0.199");
         config.setTimeout(20000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_SATURN_1000);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
+        String currentPath = new java.io.File(".").getCanonicalPath();
+
+        config.setRequestLogger(
+                new RequestFileLogger(
+                        currentPath + "\\output.txt"
+                )
+        );
+
         device = DeviceService.create(config);
         assertNotNull(device);
-    }
+
+        device.setOnMessageSent(new IMessageSentInterface() {
+            @Override
+            public void messageSent(String message) {
+                System.out.println(message);
+            }
+        });
+    };
 
     @Test
     public void Ping() throws ApiException {

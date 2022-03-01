@@ -47,8 +47,8 @@ public class GpApiAvsCheckTests extends BaseGpApiTest {
             ServicesContainer.configureService(config);
 
             card = new CreditCardData();
-            card.setExpMonth(12);
-            card.setExpYear(2025);
+            card.setExpMonth(expMonth);
+            card.setExpYear(expYear);
             card.setCardHolderName("John Smith");
 
             address = new Address();
@@ -98,7 +98,7 @@ public class GpApiAvsCheckTests extends BaseGpApiTest {
             });
         }
 
-        @Parameterized.Parameter(0)
+        @Parameterized.Parameter()
         public String cardNumber;
         @Parameterized.Parameter(1)
         public String cvnResponseMessage;

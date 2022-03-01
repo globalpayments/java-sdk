@@ -3,6 +3,7 @@ package com.global.api.terminals;
 import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.logging.IRequestLogger;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.hpa.HpaController;
@@ -20,6 +21,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private int port;
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
+    private IRequestLogger requestLogger;
 
     public ConnectionModes getConnectionMode() {
         return connectionMode;
@@ -75,6 +77,10 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
 		this.requestIdProvider = requestIdProvider;
 	}
+    public void setRequestLogger(IRequestLogger requestLogger) {
+        this.requestLogger = requestLogger;
+    }
+    public IRequestLogger getRequestLogger() { return requestLogger; }
 
     public ConnectionConfig(){
         timeout = 30000;
@@ -89,6 +95,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
                 services.setDeviceController(new HpaController(this));
                 break;
             case UPA_SATURN_1000:
+            case UPA_VERIFONE_T650P:
                 services.setDeviceController(new UpaController(this));
             default:
                 break;

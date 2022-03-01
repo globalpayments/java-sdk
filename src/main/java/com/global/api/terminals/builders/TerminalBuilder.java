@@ -14,6 +14,7 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
      * @var int
      */
     protected Integer clerkId;
+    protected String referenceNumber;
 
     public PaymentMethodType getPaymentMethodType() {
         return paymentMethodType;
@@ -21,13 +22,18 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     public Integer getRequestId() {
         return requestId;
     }
-
     public Integer getClerkId() {
         return this.clerkId;
     }
+    public String getReferenceNumber() { return this.referenceNumber; }
 
     public TerminalBuilder<T> withClerkId(Integer value) {
         clerkId = value;
+        return this;
+    }
+
+    public TerminalBuilder<T> withReferenceNumber(String value) {
+        referenceNumber = value;
         return this;
     }
 

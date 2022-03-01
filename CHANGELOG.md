@@ -1,6 +1,19 @@
 # Changelog
 
-## Latest
+## Latest: v6.3.4 (03/01/2022)
+
+### Enhancements:
+
+- Improved support for UPA Terminals/Devices
+- Added logging functionality; supports easier output to file
+
+### Bug Fixes:
+
+- Fix reporting functionality bug for Heartland/Portico integrations
+
+---
+
+## v6.3.3 (02/17/2022)
 
 ### Enhancements:
 
@@ -10,7 +23,7 @@
 
 ---
 
-## v6.3.2 (10/02/2022)
+## v6.3.2 (02/10/2022)
 
 ### Enhancements:
 
@@ -25,7 +38,7 @@
 
 ---
 
-## v6.3.1 (16/12/2021)
+## v6.3.1 (12/16/2021)
 
 ### Enhancements:
 

@@ -7,15 +7,12 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.terminals.DeviceController;
-import com.global.api.terminals.DeviceMessage;
-import com.global.api.terminals.TerminalResponse;
-import com.global.api.terminals.TerminalUtilities;
+import com.global.api.terminals.*;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
-import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
@@ -25,9 +22,13 @@ import com.global.api.utils.JsonDoc;
 
 public class UpaController extends DeviceController {
     private IDeviceInterface _device;
-    private byte[] resp;
+    private IMessageSentInterface onMessageSent;
 
-    public UpaController(ITerminalConfiguration settings) throws ConfigurationException {
+    void setMessageSentHandler(IMessageSentInterface onMessageSent) {
+        this.onMessageSent = onMessageSent;
+    }
+
+    public UpaController(ConnectionConfig settings) throws ConfigurationException {
         super(settings);
 
         if(_device == null) {
@@ -41,6 +42,13 @@ public class UpaController extends DeviceController {
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
+
+        _interface.setMessageSentHandler(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                if(onMessageSent != null)
+                    onMessageSent.messageSent(message);
+            }
+        });
     }
 
     public Integer getRequestId() {
@@ -61,6 +69,7 @@ public class UpaController extends DeviceController {
 
     private UpaTransactionResponse doTransaction(
         UpaMessageId messageId,
+        Integer requestId,
         RequestParamFields paramFields,
         RequestTransactionFields transactionFields
     ) throws ApiException {
@@ -74,12 +83,16 @@ public class UpaController extends DeviceController {
             body.set("transaction", transactionFields.getElementsJson());
         }
 
+        String requestIdAsString = requestId != null ? requestId.toString() : getRequestId().toString();
+
         DeviceMessage message = TerminalUtilities.buildMessage(
             messageId,
-            getRequestId().toString(),
+            requestIdAsString,
             body
         );
 
+        byte[] resp;
+      
         try {
             resp = send(message);
         } catch (ApiException e) {
@@ -93,11 +106,13 @@ public class UpaController extends DeviceController {
                 new String(resp, StandardCharsets.UTF_8)
         );
 
-        return new UpaTransactionResponse(responseObj.get("data").get("data"));
+        return new UpaTransactionResponse(responseObj.get("data"));
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());      
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());
+
+        Integer requestId = builder.getRequestId();
 
         RequestParamFields requestParamFields = new RequestParamFields();
         requestParamFields.setParams(builder);
@@ -105,7 +120,7 @@ public class UpaController extends DeviceController {
         RequestTransactionFields requestTransactionFields = new RequestTransactionFields();
         requestTransactionFields.setParams(builder);
 
-        return doTransaction(messageId, requestParamFields, requestTransactionFields);
+        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields);
     }
 
     private UpaMessageId mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
@@ -126,6 +141,8 @@ public class UpaController extends DeviceController {
                 return UpaMessageId.Reversal;
             case Balance:
                 return UpaMessageId.BalanceInquiry;
+            case Capture:
+                return UpaMessageId.AuthCompletion;
             default:
                 throw new UnsupportedTransactionException("Selected gateway does not support this transaction type");            
         }
@@ -133,7 +150,9 @@ public class UpaController extends DeviceController {
 
     @Override
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());     
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());
+
+        Integer requestId = builder.getRequestId();
 
         RequestParamFields requestParamFields = new RequestParamFields();
         requestParamFields.setParams(builder);
@@ -141,6 +160,6 @@ public class UpaController extends DeviceController {
         RequestTransactionFields requestTransactionFields = new RequestTransactionFields();
         requestTransactionFields.setParams(builder);
 
-        return doTransaction(messageId, requestParamFields, requestTransactionFields);
+        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields);
     }
 }

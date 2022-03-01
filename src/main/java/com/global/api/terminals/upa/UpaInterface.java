@@ -98,6 +98,24 @@ public class UpaInterface implements IDeviceInterface {
         controller.send(message);
     }
 
+    public TerminalAuthBuilder creditAuth() throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit);
+    }
+
+    public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit)
+                .withAmount(amount);
+    }
+
+    public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit)
+                .withAmount(amount);
+    }
+
+    public TerminalManageBuilder creditCapture() throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit);
+    }
+
     public TerminalAuthBuilder creditRefund() throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit);
     }
@@ -134,11 +152,11 @@ public class UpaInterface implements IDeviceInterface {
     }
 
     public TerminalAuthBuilder debitSale() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Debit);
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit);
     }
 
     public TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Debit)
+        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit)
             .withAmount(amount);
     }
 
@@ -262,7 +280,7 @@ public class UpaInterface implements IDeviceInterface {
     }
 
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
-        // TODO: implement this
+        controller.setMessageSentHandler(onMessageSent);
     }
 
     public IDeviceResponse disableHostResponseBeep() throws ApiException {
@@ -310,22 +328,6 @@ public class UpaInterface implements IDeviceInterface {
     }
 
     public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public TerminalAuthBuilder creditAuth() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public TerminalManageBuilder creditCapture() throws ApiException {
         throw new UnsupportedTransactionException();
     }
 

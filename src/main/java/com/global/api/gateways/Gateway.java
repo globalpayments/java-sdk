@@ -1,6 +1,7 @@
 package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.logging.IRequestLogger;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.StringUtils;
 import com.google.gson.Gson;
@@ -23,6 +24,9 @@ import java.util.zip.GZIPInputStream;
 public abstract class Gateway {
     private String contentType;
     private boolean enableLogging;
+    private IRequestLogger requestLogger;
+    private StringBuilder logEntry = new StringBuilder();
+    private final String lSChar = System.getProperty("line.separator");
     protected HashMap<String, String> headers;
     protected HashMap<String, String> dynamicHeaders;
     protected int timeout;
@@ -43,6 +47,9 @@ public abstract class Gateway {
     public void setEnableLogging(boolean enableLogging) {
 		this.enableLogging = enableLogging;
 	}
+    public void setRequestLogger(IRequestLogger requestLogger) {
+        this.requestLogger = requestLogger;
+    }
 	public HashMap<String, String> getHeaders() {
         return headers;
     }
@@ -116,12 +123,12 @@ public abstract class Gateway {
                 }
             }
 
-            if (this.enableLogging) {
-                System.out.println("================================================================================");
-                System.out.println("Endpoint:       " + endpoint);
-                System.out.println("Verb:           " + verb);
-                System.out.println("Headers:        " + conn.getRequestProperties());
-                System.out.println("Proxy:          " + ((proxy != null) ? proxy.toString() : "none"));
+            if (this.enableLogging || this.requestLogger != null) {
+                logEntry.append("================================================================================").append(lSChar);
+                logEntry.append("Endpoint:       ").append(endpoint).append(lSChar);
+                logEntry.append("Verb:           ").append(verb).append(lSChar);
+                logEntry.append("Headers:        ").append(conn.getRequestProperties()).append(lSChar);
+                logEntry.append("Proxy:          ").append((proxy != null) ? proxy.toString() : "none").append(lSChar);
             }
 
             if (!verb.equals("GET")) {
@@ -130,22 +137,25 @@ public abstract class Gateway {
                 conn.setDoOutput(true);
                 conn.addRequestProperty("Content-Length", String.valueOf(request.length));
 
-                if (this.enableLogging) {
+                if (this.enableLogging || this.requestLogger != null) {
                     if (acceptJson()) {
                         if (!StringUtils.isNullOrEmpty(data)) {
-                            System.out.println("Request Body: " + System.getProperty("line.separator") + toPrettyJson(data));
+                            logEntry.append("Request Body: ").append(lSChar).append(toPrettyJson(data)).append(lSChar).append(lSChar);
                         }
                     } else {
-                        System.out.println("Request Body: " + StringUtils.mask(data));
+                        logEntry.append("Request Body: ").append(StringUtils.mask(data)).append(lSChar).append(lSChar);
                     }
+
+                    outputLogging(true);
                 }
+
                 DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream());
                 requestStream.write(request);
                 requestStream.flush();
                 requestStream.close();
             }
-            else if (this.enableLogging) {
-                System.out.println("Request Params: " + queryString);
+            else if (this.enableLogging || this.requestLogger != null) {
+                logEntry.append("Request Params: ").append(queryString).append(lSChar);
             }
 
             InputStream responseStream = conn.getInputStream();
@@ -153,15 +163,17 @@ public abstract class Gateway {
             String rawResponse = getRawResponse(responseStream);
 
             responseStream.close();
-            if (this.enableLogging) {
+            if (this.enableLogging || this.requestLogger != null) {
                 if (acceptJson()) {
-                    System.out.println("--------------------------------------------------------------------------------");
-                    System.out.println("Response Code: " + conn.getResponseCode() + " " + conn.getResponseMessage());
-                    System.out.println("Response: " + System.getProperty("line.separator") + toPrettyJson(rawResponse));
-                    System.out.println("================================================================================" + System.getProperty("line.separator"));
+                    logEntry.append("--------------------------------------------------------------------------------").append(lSChar);
+                    logEntry.append("Response Code: ").append(conn.getResponseCode()).append(" ").append(conn.getResponseMessage()).append(lSChar);
+                    logEntry.append("Response: ").append(toPrettyJson(rawResponse)).append(lSChar);
+                    logEntry.append("================================================================================").append(lSChar);
                 } else {
-                    System.out.println("Response: " + rawResponse);
+                    logEntry.append(rawResponse).append(lSChar);
                 }
+
+                outputLogging(false);
             }
 
             GatewayResponse response = new GatewayResponse();
@@ -170,13 +182,16 @@ public abstract class Gateway {
             return response;
         }
         catch(Exception exc) {
-            if (this.enableLogging) {
-                System.out.println("--------------------------------------------------------------------------------");
-                System.out.println("Response: " + System.getProperty("line.separator") + exc.getMessage());
-                System.out.println("================================================================================" + System.getProperty("line.separator"));
+            if (this.enableLogging || this.requestLogger != null) {
+                logEntry.append("--------------------------------------------------------------------------------").append(lSChar);
+                logEntry.append(exc.getMessage()).append(lSChar);
+                logEntry.append("================================================================================").append(lSChar);
+
+                outputLogging(false);
             }
 
             try {
+                assert conn != null;
                 throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(conn.getErrorStream()));
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
@@ -217,8 +232,11 @@ public abstract class Gateway {
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
             OutputStream out = conn.getOutputStream();
-			if (this.enableLogging) {
-                System.out.println("Request: " + content);
+			if (this.enableLogging || this.requestLogger != null) {
+                logEntry.append("================================================================================").append(lSChar);
+                logEntry.append("Request: ").append(content).append(lSChar);
+
+                outputLogging(true);
             }
             content.writeTo(out);
             out.flush();
@@ -227,8 +245,10 @@ public abstract class Gateway {
             InputStream responseStream = conn.getInputStream();
             String rawResponse = IOUtils.readFully(responseStream);
             responseStream.close();
-			if (this.enableLogging) {
-                System.out.println("Response: " + rawResponse);
+            if (this.enableLogging || this.requestLogger != null) {
+                logEntry.append(content).append(lSChar);
+
+                outputLogging(false);
             }
 
             GatewayResponse response = new GatewayResponse();
@@ -312,6 +332,26 @@ public abstract class Gateway {
                                                                 endpoint.endsWith("/acceptance")
                                                 )
                         );
+    }
+
+    private void outputLogging(boolean isRequest) {
+        if (this.enableLogging) {
+            System.out.print(logEntry);
+        }
+
+        if (this.requestLogger != null) {
+            try {
+                if (isRequest) {
+                    this.requestLogger.RequestSent(logEntry.toString());
+                } else {
+                    this.requestLogger.ResponseReceived(logEntry.toString());
+                }
+            } catch (IOException e) {
+                //eat the exception
+            }
+        }
+
+        logEntry.delete(0, logEntry.length());
     }
 
 }

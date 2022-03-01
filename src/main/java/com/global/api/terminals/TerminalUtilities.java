@@ -162,11 +162,6 @@ public class TerminalUtilities {
         buffer.add(ControlCodes.ETX.getByte());
         buffer.add(ControlCodes.LF.getByte());
 
-        long currentMillis = System.currentTimeMillis();
-        Timestamp t = new Timestamp(currentMillis);
-        System.out.println(t.toString() + " Sent: " + body);
-        System.out.println("");
-
         return new DeviceMessage(buffer.toArray());
     }
 }

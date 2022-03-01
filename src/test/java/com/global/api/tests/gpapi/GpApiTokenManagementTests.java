@@ -39,8 +39,8 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpMonth(expMonth);
+        card.setExpYear(expYear);
         card.setCvn("123");
 
         try {
@@ -54,7 +54,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
 
     @Test
     public void TokenizePaymentMethod() throws ApiException {
-        card.setExpYear(2021);
+        card.setExpYear(expYear);
 
         String response =
                 card

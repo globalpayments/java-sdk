@@ -12,6 +12,7 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.Test;
@@ -22,14 +23,21 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.115");
+        config.setIpAddress("192.168.0.198");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
-        config.setDeviceType(DeviceType.UPA_SATURN_1000);
+        config.setDeviceType(DeviceType.UPA_VERIFONE_T650P);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
         device = DeviceService.create(config);
         assertNotNull(device);
+
+        device.setOnMessageSent(new IMessageSentInterface() {
+            @Override
+            public void messageSent(String message) {
+                System.out.println(message);
+            }
+        });
     }
 
     @Test
@@ -37,6 +45,7 @@ public class UpaCreditTests {
     {
         try {
             TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
+                .withGratuity(new BigDecimal("0.00"))
                 .execute();
 
             assertNotNull(response);
@@ -54,6 +63,7 @@ public class UpaCreditTests {
     {
         try {
             TerminalResponse response = device.creditSale(new BigDecimal("12.02"))
+                .withRequestId(1202)
                 .execute();
 
             assertNotNull(response);
@@ -176,23 +186,47 @@ public class UpaCreditTests {
         }
     }
 
+    /**
+     * Procedure: press the red 'X' button on the terminal when the terminal display prompts to present the card
+     *
+     * @throws ApiException
+     */
     @Test
     public void reverseTerminalTrans() throws ApiException
     {
-        try {
-            TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
+        TerminalResponse response = device.creditSale(new BigDecimal("12.34"))
+            .execute();
+
+        assertNotNull(response);
+        assertEquals("Failed", response.getStatus());
+        assertEquals("APP001", response.getDeviceResponseCode());
+        assertEquals("TRANSACTION CANCELLED BY USER", response.getResponseText());
+    }
+
+    @Test
+    public void incrementalAuths() throws ApiException
+    { // doesn't seem to work as described in 1.30 docs
+        TerminalResponse response1 = device.creditAuth(new BigDecimal("10.00"))
                 .execute();
 
-            TerminalResponse response2 = device.reverse()
-                .withTerminalRefNumber(response1.getTerminalRefNumber())
+        TerminalResponse response2 = device.creditAuth(new BigDecimal("5.00"))
+                .withTransactionId(response1.getTransactionId())
                 .execute();
 
-            assertNotNull(response2);
-            assertEquals("00", response2.getResponseCode());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        assertNotNull(response2);
+        assertEquals("00", response2.getResponseCode());
+    }
+
+    @Test
+    public void cancelledTrans() throws ApiException
+    {
+        TerminalResponse response = device.creditSale(new BigDecimal("12.34"))
+                .withGratuity(new BigDecimal("0.00"))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("Failed", response.getStatus());
+        assertEquals("APP001", response.getDeviceResponseCode());
+        assertEquals("TRANSACTION CANCELLED BY USER", response.getDeviceResponseText());
     }
 }
