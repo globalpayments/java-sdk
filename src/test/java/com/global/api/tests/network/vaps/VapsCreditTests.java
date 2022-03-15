@@ -783,6 +783,37 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
+    @Test
+    public void test_030_ready_link_reversal() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+        Transaction response = null;
+
+        response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Host_Authorized),
+                track,
+                response.getProcessingCode()
+        );
+        Transaction reversal = transaction.reverse(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+        PriorMessageInformation pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("600008", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4021", pmi.getMessageReasonCode());
+    }
 
     @Test
     public void test_031_pudding() throws ApiException {

@@ -69,7 +69,7 @@ public class EmvData {
 
     public boolean isContactlessMsd() {
         var entryMode = getEntryMode();
-        return (entryMode != null) ? entryMode == "91" : false;
+        return (entryMode != null) ? entryMode.equals("91") : false;
     }
 
     public String getEntryMode() {

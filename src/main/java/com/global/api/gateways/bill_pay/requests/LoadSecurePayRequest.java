@@ -43,7 +43,7 @@ public class LoadSecurePayRequest extends BillPayRequestBase {
             }
 
             et.subElement(requestElement, "bdms:SecurePayPaymentType_ID", hostedPaymentData.getHostedPaymentType().ordinal());
-            et.subElement(requestElement, "bdms:ReturnURL", hostedPaymentData.getReturnUrl());
+            et.subElement(requestElement, "bdms:ReturnURL", hostedPaymentData.getMerchantResponseUrl());
             et.subElement(requestElement, "bdms:CancelURL", hostedPaymentData.getCancelUrl());
 
             String merchantCustomerId = null;

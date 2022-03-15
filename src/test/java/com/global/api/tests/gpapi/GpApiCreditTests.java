@@ -676,6 +676,7 @@ public class GpApiCreditTests extends BaseGpApiTest {
         assertNotNull(authorization);
         assertEquals(SUCCESS, authorization.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), authorization.getResponseMessage());
+        assertTrue(authorization.isMultiCapture());
 
         Transaction capture1 =
                 authorization

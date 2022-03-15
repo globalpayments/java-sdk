@@ -12,6 +12,7 @@ import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.IOUtils;
+import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     private final Address billingAddress;
     private final BrowserData browserData;
     private final StoredCredential storedCredential;
+    private final MobileData mobileData;
 
     private static final BigDecimal amount = new BigDecimal("10.01");
     private static final String currency = "GBP";
@@ -110,6 +112,25 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         storedCredential.setType(StoredCredentialType.Recurring);
         storedCredential.setSequence(StoredCredentialSequence.Subsequent);
         storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        // Mobile data
+        mobileData =
+                new MobileData()
+                        .setEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")
+                        .setApplicationReference("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
+                        .setSdkInterface(SdkInterface.Both)
+                        .setSdkUiTypes(SdkUiType.OOB)
+                        .setEphemeralPublicKey(
+                                JsonDoc.parse(  "{" +
+                                        "\"kty\":\"EC\"," +
+                                        "\"crv\":\"P-256\"," +
+                                        "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\",\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
+                                        "}"
+                                )
+                        )
+                        .setMaximumTimeout(50)
+                        .setReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
+                        .setSdkTransReference("b2385523-a66c-4907-ac3c-91848e8c0067");
     }
 
     @Test
@@ -592,6 +613,66 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     }
 
     @Test
+    public void FullCycle_v2_WithMobileSdk() throws ApiException {
+        // Frictionless scenario
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
+
+        // Check enrollment
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+
+        // Initiate authentication
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .withMobileData(mobileData)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(initAuth);
+        assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        // Get authentication data
+        secureEcom =
+                Secure3dService
+                        .getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        card.setThreeDSecure(secureEcom);
+
+        // Create transaction
+        Transaction response =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
     public void CardHolderEnrolled_ChallengeRequired_v2() throws Exception {
         // Challenge required scenario
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
@@ -628,6 +709,76 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertTrue(initAuth.isChallengeMandated());
         assertNotNull(initAuth.getIssuerAcsUrl());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
+
+        // Perform ACS authentication
+        GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());
+        String authResponse = acsClient.authenticate_v2(initAuth);
+        assertEquals("{\"success\":true}", authResponse);
+
+        // Get authentication data
+        secureEcom =
+                Secure3dService
+                        .getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(secureEcom);
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        card.setThreeDSecure(secureEcom);
+
+        // Create transaction
+        Transaction response =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void CardHolderEnrolled_ChallengeRequired_v2_WithMobileSdk() throws Exception {
+        // Challenge required scenario
+        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
+
+        // Check enrollment
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+
+        // Initiate authentication
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .withMobileData(mobileData)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(initAuth);
+        assertEquals(CHALLENGE_REQUIRED, initAuth.getStatus());
+        assertTrue(initAuth.isChallengeMandated());
+        assertNotNull(initAuth.getIssuerAcsUrl());
+        assertNotNull(initAuth.getPayerAuthenticationRequest());
+        assertNotNull(initAuth.getAcsInterface());
+        assertNotNull(initAuth.getAcsUiTemplate());
 
         // Perform ACS authentication
         GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());

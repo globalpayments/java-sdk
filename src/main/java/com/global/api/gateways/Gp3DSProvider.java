@@ -2,10 +2,7 @@ package com.global.api.gateways;
 
 import com.global.api.builders.Secure3dBuilder;
 import com.global.api.entities.*;
-import com.global.api.entities.enums.ExemptReason;
-import com.global.api.entities.enums.ExemptStatus;
-import com.global.api.entities.enums.Secure3dVersion;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
@@ -305,7 +302,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 if(builder.getSdkInterface() != null || builder.getSdkUiTypes() != null) {
                     sdkInformationElement.subElement("device_render_options")
                             .set("sdk_interface", builder.getSdkInterface())
-                            .set("sdk_ui_type", builder.getSdkUiTypes());
+                            .set("sdk_ui_type", SdkUiType.getSdkUiTypes(builder.getSdkUiTypes(), Target.DEFAULT));
                 }
             }
 

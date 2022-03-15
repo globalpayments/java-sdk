@@ -75,7 +75,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("number_first6", trb.getSearchBuilder().getCardNumberFirstSix());
                     request.addQueryStringParam("number_last4", trb.getSearchBuilder().getCardNumberLastFour());
                     request.addQueryStringParam("deposit_status", getValueIfNotNull(trb.getSearchBuilder().getDepositStatus()));
-                    request.addQueryStringParam("account_name", gateway.getDataAccountName());
+                    request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
                     request.addQueryStringParam("brand", trb.getSearchBuilder().getCardBrand());
                     request.addQueryStringParam("arn", trb.getSearchBuilder().getAquirerReferenceNumber());
                     request.addQueryStringParam("brand_reference", trb.getSearchBuilder().getBrandReference());
@@ -108,7 +108,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
                     request.addQueryStringParam("order_by", getValueIfNotNull(trb.getDepositOrderBy()));
                     request.addQueryStringParam("order", getValueIfNotNull(trb.getOrder()));
-                    request.addQueryStringParam("account_name", gateway.getDataAccountName());
+                    request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
                     request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getStartDate()));
                     request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getEndDate()));
                     request.addQueryStringParam("id", trb.getSearchBuilder().getDepositReference());
@@ -155,7 +155,7 @@ public class GpApiReportRequestBuilder {
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + "/settlement/disputes");
 
-                    request.addQueryStringParam("account_name", gateway.getDataAccountName());
+                    request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
                     request.addQueryStringParam("deposit_id", trb.getSearchBuilder().getDepositReference());
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));

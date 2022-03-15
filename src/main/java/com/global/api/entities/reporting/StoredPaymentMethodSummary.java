@@ -2,13 +2,12 @@ package com.global.api.entities.reporting;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Date;
+import org.joda.time.DateTime;
 
 public class StoredPaymentMethodSummary {
 
     @Getter @Setter private String id;
-    @Getter @Setter private Date timeCreated;
+    @Getter @Setter private DateTime timeCreated;
     @Getter @Setter private String status;
     @Getter @Setter private String reference;
     @Getter @Setter private String name;

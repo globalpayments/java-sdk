@@ -3,6 +3,10 @@ package com.global.api.entities.gpApi;
 import com.global.api.builders.Secure3dBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.BrowserData;
+import com.global.api.entities.MobileData;
+import com.global.api.entities.enums.AuthenticationSource;
+import com.global.api.entities.enums.SdkUiType;
+import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
@@ -57,7 +61,7 @@ public class GpApiSecure3DRequestBuilder {
 
                 JsonDoc data =
                         new JsonDoc()
-                                .set("account_name", gateway.getTransactionProcessingAccountName())
+                                .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                                 .set("reference", isNullOrEmpty(builder.getReferenceNumber()) ? java.util.UUID.randomUUID().toString() : builder.getReferenceNumber())
                                 .set("channel", gateway.getGpApiConfig().getChannel())
                                 .set("amount", StringUtils.toNumeric(builder.getAmount()))
@@ -68,7 +72,7 @@ public class GpApiSecure3DRequestBuilder {
                                 .set("initator", builder.getStoredCredential() != null ? getValueIfNotNull(builder.getStoredCredential().getInitiator()) : null)
                                 .set("stored_credential", storedCredential.getKeys() != null ? storedCredential : null)
                                 .set("payment_method", paymentMethod)
-                                .set("notifications", notifications);
+                                .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null);
 
                 return new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
@@ -206,6 +210,20 @@ public class GpApiSecure3DRequestBuilder {
                             .set("user_agent", builderBrowserData.getUserAgent());
                 }
 
+                JsonDoc mobileData = new JsonDoc();
+                MobileData builderMobileData = builder.getMobileData();
+                if (builderMobileData != null) {
+                    mobileData
+                            .set("encoded_data", builderMobileData.getEncodedData())
+                            .set("application_reference", builderMobileData.getApplicationReference())
+                            .set("sdk_interface", builderMobileData.getSdkInterface())
+                            .set("sdk_ui_type", SdkUiType.getSdkUiTypes(builderMobileData.getSdkUiTypes(), Target.GP_API))
+                            .set("ephemeral_public_key", builderMobileData.getEphemeralPublicKey()) // Maybe .toString() needed
+                            .set("maximum_timeout", builderMobileData.getMaximumTimeout())
+                            .set("reference_number", builderMobileData.getReferenceNumber())
+                            .set("sdk_trans_reference", builderMobileData.getSdkTransReference());
+                }
+
                 JsonDoc threeDS =
                         new JsonDoc()
                                 .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
@@ -219,13 +237,14 @@ public class GpApiSecure3DRequestBuilder {
                                 .set("stored_credential", !storedCredential.getKeys().isEmpty() ? storedCredential : null)
                                 .set("method_url_completion_status", builder.getMethodUrlCompletion() != null ? getValueIfNotNull(builder.getMethodUrlCompletion()) : null)
                                 .set("payment_method", !paymentMethod.getKeys().isEmpty() ? paymentMethod : null)
-                                .set("notifications", notifications)
+                                .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null)
                                 .set("order", !order.getKeys().isEmpty() ? order : null)
                                 .set("payer", !payer.getKeys().isEmpty() ? payer : null)
                                 .set("payer_prior_three_ds_authentication_data", !payerPrior3DSAuthenticationData.getKeys().isEmpty() ? payerPrior3DSAuthenticationData : null)
                                 .set("recurring_authorization_data", !recurringAuthorizationData.getKeys().isEmpty() ? recurringAuthorizationData : null)
                                 .set("payer_login_data", !payerLoginData.getKeys().isEmpty() ? payerLoginData : null)
-                                .set("browser_data", !browserData.getKeys().isEmpty() ? browserData : null)
+                                .set("browser_data", !browserData.getKeys().isEmpty() && builder.getAuthenticationSource() != AuthenticationSource.MobileSDK ? browserData : null)
+                                .set("mobile_data", !mobileData.getKeys().isEmpty() && builder.getAuthenticationSource() == AuthenticationSource.MobileSDK ? mobileData : null)
                                 .set("merchant_contact_url", gateway.getGpApiConfig().getMerchantContactUrl());
 
                 return

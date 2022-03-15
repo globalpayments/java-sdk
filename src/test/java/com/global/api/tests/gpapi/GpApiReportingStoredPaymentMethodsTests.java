@@ -217,8 +217,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_START_DATE));
-            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_LAST_MONTH_DATE));
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), REPORTING_LAST_MONTH_DATE));
         }
     }
 
@@ -233,8 +233,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_START_DATE));
-            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated(), REPORTING_END_DATE));
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), REPORTING_END_DATE));
         }
     }
 
@@ -263,8 +263,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
 
         List<StoredPaymentMethodSummary> results = storedPaymentMethodSummaryAscending.getResults();
         for (int i = 0; i < results.size() - 1; i++) {
-            Date current = results.get(i).getTimeCreated();
-            Date next = results.get(i + 1).getTimeCreated();
+            Date current = results.get(i).getTimeCreated().toDate();
+            Date next = results.get(i + 1).getTimeCreated().toDate();
             assertTrue(DateUtils.isBeforeOrEquals(current, next));
         }
     }
@@ -281,8 +281,8 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
 
         List<StoredPaymentMethodSummary> results = storedPaymentMethodSummaryDescending.getResults();
         for (int i = 0; i < results.size() - 1; i++) {
-            Date current = results.get(i).getTimeCreated();
-            Date next = results.get(i + 1).getTimeCreated();
+            Date current = results.get(i).getTimeCreated().toDate();
+            Date next = results.get(i + 1).getTimeCreated().toDate();
             assertTrue(DateUtils.isAfterOrEquals(current, next));
         }
     }

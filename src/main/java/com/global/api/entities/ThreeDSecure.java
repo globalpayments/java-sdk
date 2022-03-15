@@ -4,6 +4,8 @@ import com.global.api.entities.enums.ExemptStatus;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.utils.ReverseStringEnumMap;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ public class ThreeDSecure {
     private String acsEndVersion;
     private String acsStartVersion;
     private ArrayList<String> acsInfoIndicator;
+    @Getter @Setter private String acsInterface;
+    @Getter @Setter private String acsUiTemplate;
     private int algorithm;
     private BigDecimal amount;
     private String authenticationSource;
@@ -344,6 +348,8 @@ public class ThreeDSecure {
             this.acsTransactionId = mergeValue(acsTransactionId, secureEcom.getAcsTransactionId());
             this.acsEndVersion = mergeValue(acsEndVersion, secureEcom.getAcsEndVersion());
             this.acsStartVersion = mergeValue(acsStartVersion, secureEcom.getAcsStartVersion());
+            this.acsInterface = mergeValue(acsInterface, secureEcom.getAcsInterface());
+            this.acsUiTemplate = mergeValue(acsUiTemplate, secureEcom.getAcsUiTemplate());
             this.algorithm = mergeValue(algorithm, secureEcom.getAlgorithm());
             this.amount = mergeValue(amount, secureEcom.getAmount());
             this.authenticationSource = mergeValue(authenticationSource, secureEcom.getAuthenticationSource());

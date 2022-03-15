@@ -257,10 +257,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
         return this;
     }
-    public ManagementBuilder withMultiCapture(int sequence, int paymentCount) {
+    public ManagementBuilder withMultiCapture(Integer sequence, Integer paymentCount) {
         this.multiCapture = true;
-        this.multiCaptureSequence = sequence;
-        this.multiCapturePaymentCount = paymentCount;
+        this.multiCaptureSequence = (sequence != null) ? sequence : 1;
+        this.multiCapturePaymentCount = (paymentCount != null) ? paymentCount : 1;
 
         return this;
     }

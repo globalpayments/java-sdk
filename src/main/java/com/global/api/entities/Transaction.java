@@ -49,9 +49,6 @@ public class Transaction {
     private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
     @Getter @Setter private boolean multiCapture;
-    public boolean isMultiCapture() {
-        return (multiCapturePaymentCount != null && multiCapturePaymentCount != null);
-    }
     @Getter @Setter private Integer multiCapturePaymentCount;
     @Getter @Setter private Integer multiCaptureSequence;
     private HashMap<CardIssuerEntryTag, String> issuerData;

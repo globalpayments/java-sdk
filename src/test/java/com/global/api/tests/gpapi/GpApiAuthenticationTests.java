@@ -62,7 +62,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
                         .generateTransactionKey(config);
 
         assertNotNull(info);
-        assertNotNull(info.getToken());
+        assertNotNull(info.getAccessToken());
         assertEquals("tokenization", info.getTokenizationAccountName());
         assertNull(info.getDataAccountName());
         assertNull(info.getDisputeManagementAccountName());
@@ -225,7 +225,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         GpApiConfig gpApiConfig = configAccessTokenCall();
 
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setToken("INVALID_Token_w23e9sd93w3d");
+        accessTokenInfo.setAccessToken("INVALID_Token_w23e9sd93w3d");
         accessTokenInfo.setDataAccountName("dataAccount");
         accessTokenInfo.setDisputeManagementAccountName("disputeAccount");
         accessTokenInfo.setTokenizationAccountName("tokenizationAccount");
@@ -253,7 +253,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         GpApiConfig gpApiConfig = configAccessTokenCall();
 
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setToken("r1SzGAx2K9z5FNiMHkrapfRh8BC8");
+        accessTokenInfo.setAccessToken("r1SzGAx2K9z5FNiMHkrapfRh8BC8");
         accessTokenInfo.setDataAccountName("Settlement Reporting");
         accessTokenInfo.setDisputeManagementAccountName("Dispute Management");
         accessTokenInfo.setTokenizationAccountName("Tokenization");
@@ -286,7 +286,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(gpApiConfig);
 
         assertNotNull(accessTokenInfo);
-        assertNotNull(accessTokenInfo.getToken());
+        assertNotNull(accessTokenInfo.getAccessToken());
 
         ServicesContainer.configureService(gpApiConfig, "GpApiConfig_2");
 
@@ -308,7 +308,7 @@ public class GpApiAuthenticationTests extends BaseGpApiTest {
 
     private void assertAccessTokenResponse(AccessTokenInfo accessTokenInfo) {
         assertNotNull(accessTokenInfo);
-        assertNotNull(accessTokenInfo.getToken());
+        assertNotNull(accessTokenInfo.getAccessToken());
         assertEquals("transaction_processing", accessTokenInfo.getTransactionProcessingAccountName());
         assertEquals("settlement_reporting", accessTokenInfo.getDataAccountName());
         assertEquals("dispute_management", accessTokenInfo.getDisputeManagementAccountName());

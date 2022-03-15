@@ -15,7 +15,7 @@ public class GpApiService {
 
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
 
-        accessTokenInfo.setToken(data.getToken());
+        accessTokenInfo.setAccessToken(data.getToken());
         accessTokenInfo.setDataAccountName(data.getDataAccountName());
         accessTokenInfo.setDisputeManagementAccountName(data.getDisputeManagementAccountName());
         accessTokenInfo.setTokenizationAccountName(data.getTokenizationAccountName());

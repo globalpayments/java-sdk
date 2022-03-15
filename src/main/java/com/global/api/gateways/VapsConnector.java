@@ -2348,14 +2348,7 @@ public class VapsConnector extends NetworkGateway implements IPaymentGateway {
                 return DE48_CardType.VisaFleet;
             }
             else if(card.getCardType().equals("VisaReadyLink")) {
-                if(transactionType != null) {
-                    if(transactionType.equals(TransactionType.AddValue)
-                            || transactionType.equals(TransactionType.LoadReversal)
-                            || transactionType.equals(TransactionType.PreAuthCompletion)) {
-                        return DE48_CardType.PINDebitCard;
-                    }
-                }
-                return DE48_CardType.ReadyLink;
+                return DE48_CardType.PINDebitCard;
             }
             else if(card.getCardType().equals("DinersClub")) {
                 return DE48_CardType.DinersClub;

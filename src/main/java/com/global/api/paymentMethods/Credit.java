@@ -86,7 +86,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return new AuthorizationBuilder(TransactionType.Refund, this).withAmount(amount);
     }
     public AuthorizationBuilder refund(double amount) {
-        return charge(new BigDecimal(amount));
+        return refund(new BigDecimal(amount));
     }
 
     public AuthorizationBuilder reverse() { return reverse(null); }
@@ -94,7 +94,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return new AuthorizationBuilder(TransactionType.Reversal, this).withAmount(amount);
     }
     public AuthorizationBuilder reverse(double amount) {
-        return charge(new BigDecimal(amount));
+        return reverse(new BigDecimal(amount));
     }
     public AuthorizationBuilder verify() {
         return new AuthorizationBuilder(TransactionType.Verify, this);

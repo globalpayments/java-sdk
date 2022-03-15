@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 public class AccessTokenInfo {
-    private String token;
+    private String accessToken;
     private String dataAccountName;
     private String disputeManagementAccountName;
     private String tokenizationAccountName;

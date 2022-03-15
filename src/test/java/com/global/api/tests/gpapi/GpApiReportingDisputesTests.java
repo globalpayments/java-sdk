@@ -839,8 +839,8 @@ public class GpApiReportingDisputesTests extends BaseGpApiReportingTest {
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
-            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getCaseTime(), REPORTING_START_DATE));
-            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getCaseTime(), REPORTING_LAST_MONTH_DATE));
+            assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getCaseTime().toDate(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getCaseTime().toDate(), REPORTING_LAST_MONTH_DATE));
         }
     }
 

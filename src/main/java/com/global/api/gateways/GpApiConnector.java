@@ -10,6 +10,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.*;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
@@ -56,58 +57,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     private String accessToken;
     @Getter GpApiConfig gpApiConfig; // Contains: appId, appKey, secondsToExpire, intervalToExpire, channel and language
 
-    private static String dataAccountName;
-
-    public String getDataAccountName() throws GatewayException {
-        if (StringUtils.isNullOrEmpty(dataAccountName)) {
-            throw new GatewayException("dataAccountName is not set");
-        }
-        return dataAccountName;
-    }
-
-    public void setDataAccountName(String value) {
-        dataAccountName = value;
-    }
-
-    private static String disputeManagementAccountName;
-
-    public String getDisputeManagementAccountName() throws GatewayException {
-        if (StringUtils.isNullOrEmpty(disputeManagementAccountName)) {
-            throw new GatewayException("disputeManagementAccountName is not set");
-        }
-        return disputeManagementAccountName;
-    }
-
-    public void setDisputeManagementAccountName(String value) {
-        disputeManagementAccountName = value;
-    }
-
-    private static String tokenizationAccountName;
-
-    public String getTokenizationAccountName() throws GatewayException {
-        if (StringUtils.isNullOrEmpty(tokenizationAccountName)) {
-            throw new GatewayException("tokenizationAccountName is not set");
-        }
-        return tokenizationAccountName;
-    }
-
-    public void setTokenizationAccountName(String value) {
-        tokenizationAccountName = value;
-    }
-
-    static String transactionProcessingAccountName;
-
-    public String getTransactionProcessingAccountName() throws GatewayException {
-        if (StringUtils.isNullOrEmpty(transactionProcessingAccountName)) {
-            throw new GatewayException("transactionProcessingAccountName is not set");
-        }
-        return transactionProcessingAccountName;
-    }
-
-    public void setTransactionProcessingAccountName(String value) {
-        transactionProcessingAccountName = value;
-    }
-
     public String getMerchantUrl() {
         return !StringUtils.isNullOrEmpty(gpApiConfig.getMerchantId()) ? "/merchants/" + gpApiConfig.getMerchantId() : "";
     }
@@ -126,14 +75,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         setProxy(gpApiConfig.getProxy());
         setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
 
-        if (gpApiConfig.getAccessTokenInfo() != null) {
-            accessToken = gpApiConfig.getAccessTokenInfo().getToken();
-            dataAccountName = gpApiConfig.getAccessTokenInfo().getDataAccountName();
-            disputeManagementAccountName = gpApiConfig.getAccessTokenInfo().getDisputeManagementAccountName();
-            tokenizationAccountName = gpApiConfig.getAccessTokenInfo().getTokenizationAccountName();
-            transactionProcessingAccountName = gpApiConfig.getAccessTokenInfo().getTransactionProcessingAccountName();
-        }
-
         setEnableLogging(gpApiConfig.isEnableLogging());
 
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
@@ -141,7 +82,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         headers.put("X-GP-Version", GP_API_VERSION);
         headers.put("x-gp-sdk", "java;version=" + getReleaseVersion());
 
-        dynamicHeaders = config.getDynamicHeaders();
+        dynamicHeaders = gpApiConfig.getDynamicHeaders();
     }
 
     // Get the SDK release version
@@ -159,27 +100,46 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     }
 
     void signIn() throws GatewayException {
-        if (StringUtils.isNullOrEmpty(accessToken)) {
-            GpApiTokenResponse response = getAccessToken();
+        AccessTokenInfo accessTokenInfo = gpApiConfig.getAccessTokenInfo();
 
-            accessToken = response.getToken();
-
-            if (!StringUtils.isNullOrEmpty(response.getDataAccountName()) && dataAccountName != response.getDataAccountName()) {
-                dataAccountName = response.getDataAccountName();
-            }
-            if (!StringUtils.isNullOrEmpty(response.getDisputeManagementAccountName()) && disputeManagementAccountName != response.getDisputeManagementAccountName()) {
-                disputeManagementAccountName = response.getDisputeManagementAccountName();
-            }
-            if (!StringUtils.isNullOrEmpty(response.getTokenizationAccountName()) && tokenizationAccountName != response.getTokenizationAccountName()) {
-                tokenizationAccountName = response.getTokenizationAccountName();
-            }
-            if (!StringUtils.isNullOrEmpty(response.getTransactionProcessingAccountName()) && transactionProcessingAccountName != response.getTransactionProcessingAccountName()) {
-                transactionProcessingAccountName = response.getTransactionProcessingAccountName();
-            }
+        if (accessTokenInfo != null && !isNullOrEmpty(accessTokenInfo.getAccessToken())) {
+            accessToken = accessTokenInfo.getAccessToken();
+            return;
         }
+
+        GpApiTokenResponse response = getAccessToken();
+
+        accessToken = response.getToken();
+        headers.put("Authorization", String.format("Bearer %s", accessToken));
+
+        if (accessTokenInfo == null) {
+            accessTokenInfo = new AccessTokenInfo();
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getAccessToken())) {
+            accessTokenInfo.setAccessToken(response.getToken());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getDataAccountName())) {
+            accessTokenInfo.setDataAccountName(response.getDataAccountName());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getTokenizationAccountName())) {
+            accessTokenInfo.setTokenizationAccountName(response.getTokenizationAccountName());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountName())) {
+            accessTokenInfo.setTransactionProcessingAccountName(response.getTransactionProcessingAccountName());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountName())) {
+            accessTokenInfo.setDisputeManagementAccountName(response.getDisputeManagementAccountName());
+        }
+
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
     }
 
-    public GpApiRequest SignOut() throws UnsupportedTransactionException {
+    public GpApiRequest signOut() throws UnsupportedTransactionException {
         return GpApiSessionInfo.signOut();
     }
 
@@ -214,8 +174,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (isNullOrEmpty(accessToken)) {
             signIn();
         }
-        // TODO: Check if we can move this into singIn()
-        headers.put("Authorization", String.format("Bearer %s", accessToken));
 
         try {
             return doTransactionWithIdempotencyKey(verb, endpoint, data, queryStringParams, idempotencyKey);
@@ -226,7 +184,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                     !isNullOrEmpty(gpApiConfig.getAppKey())
             ) {
                 signIn();
-                headers.put("Authorization", String.format("Bearer %s", accessToken));
 
                 return doTransactionWithIdempotencyKey(verb, endpoint, data, queryStringParams, idempotencyKey);
             }
@@ -266,7 +223,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (isNullOrEmpty(accessToken)) {
             signIn();
         }
-        headers.put("Authorization", String.format("Bearer %s", accessToken));
 
         GpApiRequest request = GpApiAuthorizationRequestBuilder.buildRequest(builder, this);
 
@@ -286,7 +242,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (StringUtils.isNullOrEmpty(accessToken)) {
             signIn();
         }
-        headers.put("Authorization", String.format("Bearer %s", accessToken));
 
         GpApiRequest request = GpApiManagementRequestBuilder.buildRequest(builder, this);
 
@@ -307,7 +262,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (StringUtils.isNullOrEmpty(accessToken)) {
             signIn();
         }
-        headers.put("Authorization", String.format("Bearer %s", accessToken));
 
         GpApiRequest request = GpApiReportRequestBuilder.buildRequest(builder, this);
 
@@ -327,7 +281,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (StringUtils.isNullOrEmpty(accessToken)) {
             signIn();
         }
-        headers.put("Authorization", String.format("Bearer %s", accessToken));
 
         GpApiRequest request = GpApiSecure3DRequestBuilder.buildRequest(builder, this);
 

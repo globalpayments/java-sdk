@@ -4,12 +4,13 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ChallengeRequest;
 import com.global.api.entities.enums.HostedPaymentType;
-import com.global.api.paymentMethods.AlternativePaymentMethod;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class HostedPaymentData extends AlternativePaymentMethod {
+public class HostedPaymentData {
     private Boolean addressesMatch;
     private List<Bill> bills;
     private ChallengeRequest challengeRequestIndicator;
@@ -24,13 +25,14 @@ public class HostedPaymentData extends AlternativePaymentMethod {
     private String customerLastName;
     private String customerPhoneMobile;
     private HostedPaymentType hostedPaymentType;
-    private String merchantResponseUrl;
     private Boolean offerToSaveCard;
     private String paymentKey;
     private String productId;
     private AlternativePaymentType[] presetPaymentMethods;
     private HashMap<String, String> supplementaryData;
     private String transactionStatusUrl;
+    @Getter @Setter private String cancelUrl;
+    private String merchantResponseUrl;
 
     public Boolean getAddressesMatch() {
         return addressesMatch;

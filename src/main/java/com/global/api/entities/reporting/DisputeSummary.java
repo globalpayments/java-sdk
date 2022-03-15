@@ -6,6 +6,7 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.paymentMethods.TransactionReference;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,15 +30,15 @@ public class DisputeSummary {
     private String caseStatus;
     private String caseDescription;
     private String transactionOrderId;
-    private Date transactionLocalTime;
-    private Date transactionTime;
+    private DateTime transactionLocalTime;
+    private DateTime transactionTime;
     private String transactionType;
     private BigDecimal transactionAmount;
     private String transactionCurrency;
     private String caseNumber;
-    private Date caseTime;
+    private DateTime caseTime;
     private String caseId;
-    private Date caseIdTime;
+    private DateTime caseIdTime;
     private String caseMerchantId;
     private String caseTerminalId;
     private String transactionARN;
@@ -55,7 +56,7 @@ public class DisputeSummary {
     private String disputeCurrency;
     private BigDecimal disputeCustomerAmount;
     private String disputeCustomerCurrency;
-    private Date respondByDate;
+    private DateTime respondByDate;
     private String caseOriginalReference;
     private BigDecimal lastAdjustmentAmount;
     private String lastAdjustmentCurrency;

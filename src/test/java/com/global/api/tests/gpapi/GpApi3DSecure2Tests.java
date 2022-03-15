@@ -1,10 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.BrowserData;
-import com.global.api.entities.StoredCredential;
-import com.global.api.entities.ThreeDSecure;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
@@ -12,14 +9,14 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
+import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_2;
-import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_CHALLENGE_REQUIRED_V2_2;
+import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static org.junit.Assert.*;
 
 public class GpApi3DSecure2Tests extends BaseGpApiTest {
@@ -32,6 +29,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
     private CreditCardData card;
     private final Address shippingAddress;
     private final BrowserData browserData;
+    private final MobileData mobileData;
 
     private final BigDecimal amount = new BigDecimal("10.01");
     private final String currency = "GBP";
@@ -81,6 +79,26 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
         browserData.setChallengeWindowSize(ChallengeWindowSize.Windowed_600x400);
         browserData.setTimezone("0");
         browserData.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36");
+
+        // Mobile data
+        mobileData =
+                new MobileData()
+                        .setEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")
+                        .setApplicationReference("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
+                        .setSdkInterface(SdkInterface.Both)
+                        .setSdkUiTypes(SdkUiType.OOB)
+                        .setEphemeralPublicKey(
+                                JsonDoc.parse(  "{" +
+                                                    "\"kty\":\"EC\"," +
+                                                    "\"crv\":\"P-256\"," +
+                                                    "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\"," +
+                                                    "\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
+                                                "}"
+                                )
+                        )
+                        .setMaximumTimeout(50)
+                        .setReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
+                        .setSdkTransReference("b2385523-a66c-4907-ac3c-91848e8c0067");
     }
 
     @Test
@@ -985,6 +1003,150 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertNotNull(secureEcom);
+    }
+
+    @Test
+    public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MobileSDK() throws ApiException {
+        CreditCardData challengeCard = new CreditCardData();
+        challengeCard.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
+        challengeCard.setExpMonth(expMonth);
+        challengeCard.setExpYear(expYear);
+        challengeCard.setCardHolderName("James Mason");
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(challengeCard)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(challengeCard, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .withMobileData(mobileData)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
+        assertNotNull(initAuth.getPayerAuthenticationRequest());
+        assertNotNull(initAuth.getAcsInterface());
+        assertNotNull(initAuth.getAcsUiTemplate());
+    }
+
+    @Test
+    public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MobileDataAndBrowserData() throws ApiException {
+        CreditCardData challengeCard = new CreditCardData();
+        challengeCard.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
+        challengeCard.setExpMonth(expMonth);
+        challengeCard.setExpYear(expYear);
+        challengeCard.setCardHolderName("James Mason");
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(challengeCard)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(challengeCard, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMobileData(mobileData)
+                        .withBrowserData(browserData)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
+        assertNotNull(initAuth.getPayerAuthenticationRequest());
+    }
+
+    @Test
+    public void CardHolderEnrolled_Frictionless_v2_Initiate_With_MobileData_SourceBrowser() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+
+        boolean exceptionCaught = false;
+        try {
+            Secure3dService
+                    .initiateAuthentication(card, secureEcom)
+                    .withCurrency(currency)
+                    .withAmount(amount)
+                    .withAuthenticationSource(AuthenticationSource.Browser)
+                    .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                    .withOrderCreateDate(DateTime.now())
+                    .withAddress(shippingAddress, AddressType.Shipping)
+                    .withMobileData(mobileData)
+                    .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40233", ex.getResponseText());
+            assert(ex.getMessage().startsWith("Status Code: 400 - Required Data Element browser_data."));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CardHolderEnrolled_Frictionless_v2_Initiate_SourceMobileSdk_WithoutMobileData() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+
+        boolean exceptionCaught = false;
+        try {
+            Secure3dService
+                    .initiateAuthentication(card, secureEcom)
+                    .withCurrency(currency)
+                    .withAmount(amount)
+                    .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                    .withOrderCreateDate(DateTime.now())
+                    .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40233", ex.getResponseText());
+            assertEquals("Status Code: 400 - Required Data Element sdk_information", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     public void assertThreeDSResponse(ThreeDSecure secureEcom, String status, Secure3dVersion secure3dVersion) {

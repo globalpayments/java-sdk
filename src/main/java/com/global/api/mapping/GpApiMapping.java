@@ -79,6 +79,7 @@ public class GpApiMapping {
             transaction.setResponseMessage(json.getString("status"));
             transaction.setReferenceNumber(json.getString("reference"));
             transaction.setClientTransactionId(json.getString("reference"));
+            transaction.setMultiCapture("MULTIPLE".equals(json.getString("capture_mode")));
 
             BatchSummary batchSummary = new BatchSummary();
             batchSummary.setBatchReference(json.getString("batch_id"));
@@ -392,7 +393,7 @@ public class GpApiMapping {
         DisputeSummary summary = new DisputeSummary();
 
         summary.setCaseId(doc.getString("id"));
-        summary.setCaseIdTime(parseGpApiDate(doc.getString("time_created")));
+        summary.setCaseIdTime(parseGpApiDateTime(doc.getString("time_created")));
         summary.setCaseStatus(doc.getString("status"));
         summary.setCaseStage(doc.getString("stage"));
         summary.setCaseAmount(doc.getAmount("amount"));
@@ -430,7 +431,7 @@ public class GpApiMapping {
 
         String timeToRespondBy = doc.getString("time_to_respond_by");
         if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
-            summary.setRespondByDate(parseGpApiDate(timeToRespondBy));
+            summary.setRespondByDate(parseGpApiDateTime(timeToRespondBy));
         }
 
         return summary;
@@ -439,14 +440,14 @@ public class GpApiMapping {
     public static DisputeSummary mapSettlementDisputeSummary(JsonDoc doc) throws GatewayException {
         DisputeSummary summary = mapDisputeSummary(doc);
 
-        summary.setCaseIdTime(parseGpApiDate(doc.getString("stage_time_created")));
-        summary.setDepositDate(doc.getDate("deposit_time_created", "yyyy-MM-dd"));
+        summary.setCaseIdTime(parseGpApiDateTime(doc.getString("stage_time_created")));
+        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setDepositReference(doc.getString("deposit_id"));
 
         if (doc.has("transaction")) {
             JsonDoc transaction = doc.get("transaction");
 
-            summary.setTransactionTime(parseGpApiDate(transaction.getString("time_created")));
+            summary.setTransactionTime(parseGpApiDateTime(transaction.getString("time_created")));
             summary.setTransactionType(transaction.getString("type"));
             summary.setTransactionAmount(transaction.getAmount("amount"));
             summary.setTransactionCurrency(transaction.getString("currency"));
@@ -540,6 +541,22 @@ public class GpApiMapping {
                                         (!StringUtils.isNullOrEmpty(three_ds.get("method_data").getString("encoded_method_data")) ? three_ds.get("method_data").getString("encoded_method_data") : null) :
                                         null
                 );
+
+                // Mobile data
+                if (!StringUtils.isNullOrEmpty(json.getString("source")) && json.getString("source").equals("MOBILE_SDK")) {
+                    if (three_ds.has("mobile_data")) {
+                        JsonDoc mobile_data = three_ds.get("mobile_data");
+
+                        threeDSecure.setPayerAuthenticationRequest(mobile_data.getString("acs_signed_content"));
+
+                        if (mobile_data.has("acs_rendering_type")) {
+                            JsonDoc acs_rendering_type = mobile_data.get("acs_rendering_type");
+                            threeDSecure.setAcsInterface(acs_rendering_type.getString("acs_interface"));
+                            threeDSecure.setAcsUiTemplate(acs_rendering_type.getString("acs_ui_template"));
+                        }
+                    }
+                }
+
                 threeDSecure.setIssuerAcsUrl(
                         !StringUtils.isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
                                 three_ds.getString("acs_challenge_request_url") :
@@ -595,7 +612,7 @@ public class GpApiMapping {
         StoredPaymentMethodSummary storedPaymentMethodSummary = new StoredPaymentMethodSummary();
 
         storedPaymentMethodSummary.setId(doc.getString("id"));
-        storedPaymentMethodSummary.setTimeCreated(parseGpApiDate(doc.getString("time_created")));
+        storedPaymentMethodSummary.setTimeCreated(parseGpApiDateTime(doc.getString("time_created")));
         storedPaymentMethodSummary.setStatus(doc.getString("status"));
         storedPaymentMethodSummary.setReference(doc.getString("reference"));
         storedPaymentMethodSummary.setName(doc.getString("name"));

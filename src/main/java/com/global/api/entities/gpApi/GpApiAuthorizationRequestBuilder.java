@@ -88,11 +88,14 @@ public class GpApiAuthorizationRequestBuilder {
                     card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
                 }
 
-                paymentMethod.set("card", card);
+                if (    builderPaymentMethod instanceof CreditCardData && StringUtils.isNullOrEmpty(((CreditCardData) cardData).getToken()) ||
+                        builderPaymentMethod instanceof EBT) {
+                    paymentMethod.set("card", card);
+                }
 
                 if (builderTransactionType == TransactionType.Tokenize) {
                     JsonDoc tokenizationData = new JsonDoc();
-                    tokenizationData.set("account_name", gateway.getTokenizationAccountName());
+                    tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("name", "");
@@ -115,7 +118,7 @@ public class GpApiAuthorizationRequestBuilder {
 
                     var requestData =
                             new JsonDoc()
-                                    .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName() != null ? gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName() : gateway.getTransactionProcessingAccountName())
+                                    .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                                     .set("channel", gateway.getGpApiConfig().getChannel())
                                     .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
                                     .set("amount", StringUtils.toNumeric(builder.getAmount()))
@@ -132,7 +135,7 @@ public class GpApiAuthorizationRequestBuilder {
                 else if (builderTransactionType == TransactionType.Verify) {
                     if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
                         JsonDoc tokenizationData = new JsonDoc();
-                        tokenizationData.set("account_name", gateway.getTokenizationAccountName());
+                        tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
                         tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                         tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                         tokenizationData.set("name", "");
@@ -148,7 +151,7 @@ public class GpApiAuthorizationRequestBuilder {
                     else {
                         JsonDoc verificationData =
                                 new JsonDoc()
-                                        .set("account_name", gateway.getTransactionProcessingAccountName())
+                                        .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                                         .set("channel", gateway.getGpApiConfig().getChannel())
                                         .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
                                         .set("currency", builder.getCurrency())
@@ -190,7 +193,7 @@ public class GpApiAuthorizationRequestBuilder {
                     paymentMethod.set("card", card);
 
                     JsonDoc verificationData = new JsonDoc()
-                            .set("account_name", gateway.getTransactionProcessingAccountName())
+                            .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                             .set("channel", gateway.getGpApiConfig().getChannel())
                             .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? UUID.randomUUID().toString() : builder.getClientTransactionId())
                             .set("currency", builder.getCurrency())
@@ -336,7 +339,7 @@ public class GpApiAuthorizationRequestBuilder {
         }
 
         JsonDoc data = new JsonDoc()
-                .set("account_name", gateway.getTransactionProcessingAccountName())
+                .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                 .set("type", builderTransactionType == Refund ? "REFUND" : "SALE") // [SALE, REFUND]
                 .set("channel", gateway.getGpApiConfig().getChannel()) // [CP, CNP]
                 .set("capture_mode", getCaptureMode(builder)) // [AUTO, LATER, MULTIPLE]

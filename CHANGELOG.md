@@ -1,6 +1,24 @@
 # Changelog
 
-## Latest: v6.3.5 (03/01/2022)
+## v6.3.6 (15/03/2022)
+
+### Enhancements:
+
+- MOBILE_SDK source in the 3DS flow (initiate step)
+- AccessTokenInfo Refactor
+- Misc Tests Updated
+
+### Bug Fixes:
+
+- Incorrect entry_mode set when doing a Contactless Swipe transaction
+- ReadyLink card type issue
+- On Stored payments method TimeCreated field should be DateTime instead of Date
+- Card object sent into request when using tokenized card
+- Multi capture information are not mapped on the response of Authorize transaction
+
+---
+
+## v6.3.5 (03/01/2022)
 
 ### Bug Fixes:
 
