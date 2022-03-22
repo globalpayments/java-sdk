@@ -85,4 +85,10 @@ public interface IDeviceInterface extends IDisposable {
     
     // report calls
     SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException;
+    IBatchReportResponse getBatchSummary() throws ApiException;
+    IBatchReportResponse getBatchSummary(String batchId) throws ApiException;
+    IBatchReportResponse getBatchDetails() throws ApiException;
+    IBatchReportResponse getBatchDetails(String batchId) throws ApiException;
+    IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException;
+    IBatchReportResponse getOpenTabDetails() throws ApiException;
 }

@@ -15,6 +15,8 @@ public enum UpaMessageId {
     SendSAF,
     GetSAFReport,
     GetBatchReport,
+    GetBatchDetails,
+    GetOpenTabDetails,
     Ping,
     PreAuth,
     Restart,

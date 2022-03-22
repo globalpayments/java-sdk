@@ -1,6 +1,19 @@
 # Changelog
 
-## v6.3.6 (15/03/2022)
+## v6.3.7 (03/22/2022)
+
+### Enhancements:
+
+- UPA devices: add support for batch summary report, batch detail report, and open tab details report
+- UPA devices: various modifications to account for latest UPA version's changes
+
+### Bug Fixes:
+
+- UPA devices: fix potential error from disconnect attempt
+
+---
+
+## v6.3.6 (03/15/2022)
 
 ### Enhancements:
 

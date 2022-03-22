@@ -5,21 +5,20 @@ import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.utils.JsonDoc;
 
 public class UpaDeviceResponse extends TerminalResponse {
-    protected JsonDoc responseObj;
     protected UpaMessageId messageId;
 
     public UpaDeviceResponse(JsonDoc responseObj, UpaMessageId messageId) {
         this.messageId = messageId;
-        parseResponse(responseObj);
-    }
+        JsonDoc data = responseObj.get("data");
 
-    protected void parseResponse(JsonDoc jsonToParse) {
-        String result = jsonToParse.get("data")
-            .get("cmdResult")
-            .getString("result");
+        if (data != null) {
+            JsonDoc cmdResult = data.get("cmdResult");
 
-        if (result.equals("Success")) {
-            this.setDeviceResponseCode("00");
+            if (cmdResult != null) {
+                status = cmdResult.getString("result");
+
+                if (status.equalsIgnoreCase("success")) deviceResponseCode = "00";
+            }
         }
     }
 }

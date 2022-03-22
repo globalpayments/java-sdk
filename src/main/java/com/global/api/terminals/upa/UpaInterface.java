@@ -14,13 +14,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.IBatchCloseResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.terminals.abstractions.IEODResponse;
-import com.global.api.terminals.abstractions.IInitializeResponse;
-import com.global.api.terminals.abstractions.ISAFResponse;
-import com.global.api.terminals.abstractions.ISignatureResponse;
+import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
@@ -31,10 +25,11 @@ import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.builders.UpaTerminalManageBuilder;
 import com.global.api.terminals.upa.responses.UpaDeviceResponse;
 import com.global.api.terminals.upa.responses.UpaEODResponse;
+import com.global.api.terminals.upa.responses.UpaReportResponse;
 import com.global.api.utils.JsonDoc;
 
 public class UpaInterface implements IDeviceInterface {
-    private UpaController controller;
+    private final UpaController controller;
 
     public UpaInterface(UpaController _controller) {
         super();
@@ -196,6 +191,83 @@ public class UpaInterface implements IDeviceInterface {
         );
         
         return new UpaEODResponse(responseObj);
+    }
+
+    public IBatchReportResponse getBatchSummary() throws ApiException {
+        return getBatchSummary(null);
+    }
+
+    public IBatchReportResponse getBatchSummary(String value) throws ApiException {
+        JsonDoc body = new JsonDoc();
+
+        if (value != null) {
+            JsonDoc param = new JsonDoc();
+            param.set("batch", value);
+            body.set("params", param);
+        } else {
+            body.set("params", "");
+        }
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.GetBatchReport,
+                controller.getRequestId().toString(),
+                body
+        );
+
+        message.setAwaitResponse(true);
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+
+        return new UpaReportResponse(responseObj);
+    }
+
+    public IBatchReportResponse getBatchDetails() throws ApiException {
+        return getBatchDetails(null, false);
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
+        return getBatchDetails(batchId, false);
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc param = new JsonDoc();
+
+        if (batchId != null) param.set("batch", batchId);
+        if (printReport) param.set("reportOutput", "Print|ReturnData");
+        body.set("params", param);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+            UpaMessageId.GetBatchDetails,
+            controller.getRequestId().toString(),
+            body
+        );
+
+        message.setAwaitResponse(true);
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+
+        return new UpaReportResponse(responseObj);
+    }
+
+    public IBatchReportResponse getOpenTabDetails() throws ApiException {
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.GetOpenTabDetails,
+                controller.getRequestId().toString(),
+                null
+        );
+
+        message.setAwaitResponse(true);
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+
+        return new UpaReportResponse(responseObj);
     }
 
     public IDeviceResponse ping() throws ApiException {

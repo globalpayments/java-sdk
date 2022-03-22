@@ -9,67 +9,55 @@ import com.global.api.utils.JsonDoc;
 
 public class UpaEODResponse implements IEODResponse {
     protected String batchId;
+    protected String deviceResponseCode;
+    protected String deviceResponseText;
     protected UpaMessageId messageId;
-    protected String responseCode;    
+    protected String responseCode;
+    protected String status;
 
     public UpaEODResponse(JsonDoc responseObj) {
         messageId = UpaMessageId.EODProcessing;
-        batchId = responseObj.get("data").get("data").get("host").getString("batchId");
+        JsonDoc outerData = responseObj.get("data");
 
-        if (responseObj.get("data").get("cmdResult").getString("result").equals("Success"))
-            responseCode = "00";
+        if (outerData != null) {
+            JsonDoc cmdResult = outerData.get("cmdResult");
+
+            if (cmdResult != null) {
+                status = cmdResult.getString("result");
+                deviceResponseCode = status.equalsIgnoreCase("success") ? "00" : cmdResult.getString("errorCode");
+                deviceResponseText = cmdResult.getString("errorMessage");
+            }
+
+            JsonDoc innerData = outerData.get("data");
+
+            if (innerData != null) {
+                JsonDoc host = innerData.get("host");
+
+                if (host != null) {
+                    batchId = host.getString("batchId");
+                }
+            }
+        }
     }
 
     public String getBatchId() {
         return batchId;
     }
-    
+
+    public String getDeviceResponseCode() {
+        return deviceResponseCode;
+    }
+
+    public String getDeviceResponseText() {
+        return deviceResponseText;
+    }
+
     public UpaMessageId getMessageId() {
         return messageId;
     }
 
-    public String getResponseCode() {
-        return responseCode;
-    }
-
     public String getStatus() {
-        return null;
-    }
-
-    public void setStatus(String status) {
-        // Unused
-    }
-
-    public String getCommand() {
-        return null;
-    }
-
-    public void setCommand(String command) {
-        // Unused
-    }
-
-    public String getVersion() {
-        return null;
-    }
-
-    public void setVersion(String version) {
-        // Unused
-    }
-
-    public String getDeviceResponseCode() {
-        return null;
-    }
-
-    public void setDeviceResponseCode(String deviceResponseCode) {
-        // Unused
-    }
-
-    public String getDeviceResponseText() {
-        return null;
-    }
-
-    public void setDeviceResponseText(String deviceResponseMessage) {
-        // Unused
+        return status;
     }
 
     public IDeviceResponse getAttachmentResponse() {
@@ -108,6 +96,18 @@ public class UpaEODResponse implements IEODResponse {
         return null;
     }
 
+    public void setDeviceResponseCode(String deviceResponseCode) {
+
+    }
+
+    public void setDeviceResponseText(String deviceResponseMessage) {
+
+    }
+
+    public String getResponseCode() {
+        return null;
+    }
+
     public String getAttachmentResponseText() {
         return null;
     }
@@ -138,5 +138,25 @@ public class UpaEODResponse implements IEODResponse {
 
     public String getSafResponseText() {
         return null;
-    }    
+    }
+
+    public void setStatus(String status) {
+
+    }
+
+    public String getCommand() {
+        return null;
+    }
+
+    public void setCommand(String command) {
+
+    }
+
+    public String getVersion() {
+        return null;
+    }
+
+    public void setVersion(String version) {
+
+    }
 }

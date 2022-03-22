@@ -1,22 +1,26 @@
 package com.global.api.tests.terminals.upa;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.math.BigDecimal;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.StoredCredentialInitiator;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
+import com.global.api.utils.RequestFileLogger;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
+import static org.junit.Assert.*;
+
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UpaCreditTests {
     IDeviceInterface device;
 
@@ -24,183 +28,131 @@ public class UpaCreditTests {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
         config.setIpAddress("192.168.0.198");
-        config.setTimeout(30000);
+        config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_VERIFONE_T650P);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
+//        config.setRequestLogger(new RequestFileLogger("creditTests.txt"));
+
         device = DeviceService.create(config);
         assertNotNull(device);
 
-        device.setOnMessageSent(new IMessageSentInterface() {
-            @Override
-            public void messageSent(String message) {
-                System.out.println(message);
-            }
-        });
+        device.setOnMessageSent(System.out::println);
     }
 
     @Test
     public void creditSaleSwipe() throws ApiException
     {
-        try {
-            TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
-                .withGratuity(new BigDecimal("0.00"))
-                .execute();
+        TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
+            .withGratuity(new BigDecimal("0.00"))
+            .execute();
 
-            assertNotNull(response);
-            assertEquals("00", response.getResponseCode());
-            assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
     }
 
     @Test
     public void creditSaleChip() throws ApiException
     {
-        try {
-            TerminalResponse response = device.creditSale(new BigDecimal("12.02"))
-                .withRequestId(1202)
-                .execute();
+        TerminalResponse response = device.creditSale(new BigDecimal("12.02"))
+            .withRequestId(1202)
+            .execute();
 
-            assertNotNull(response);
-            assertEquals("00", response.getResponseCode());
-            assertEquals(new BigDecimal("12.02"), response.getTransactionAmount());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.02"), response.getTransactionAmount());
     }
 
     @Test
     public void creditSaleContactless() throws ApiException
     {
-        try {
-            TerminalResponse response = device.creditSale(new BigDecimal("12.03"))
-                .execute();
+        TerminalResponse response = device.creditSale(new BigDecimal("12.03"))
+            .execute();
 
-            assertNotNull(response);
-            assertEquals("00", response.getResponseCode());
-            assertEquals(new BigDecimal("12.03"), response.getTransactionAmount());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.03"), response.getTransactionAmount());
     }
 
     @Test
     public void CardVerify() throws ApiException
     {
-        // MUT generation is dependent on the test account in use
-        try {
-            TerminalResponse response = device.creditVerify()
-                .withRequestMultiUseToken(true)
-                .withClerkId(1234)
-                .execute();
+        // use Visa card
+        TerminalResponse response = device.creditVerify()
+            .withCardBrandStorage(StoredCredentialInitiator.Merchant)
+            .withRequestMultiUseToken(true)
+            .withClerkId(1234)
+            .execute();
 
-            assertNotNull(response);
-            assertNotNull(response.getToken()); // will fail if MUTs aren't enabled
-            assertEquals("85", response.getResponseCode()); // used Discover
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(response);
+        assertNotNull(response.getToken()); // will fail if MUTs aren't enabled
     }
 
     @Test
     public void BalanceInquiry() throws ApiException {
-        try {
-            TerminalResponse response = device.ebtBalance()
-                .execute();
+        TerminalResponse response = device.ebtBalance()
+            .execute();
 
-            assertNotNull(response);
-            assertEquals("00", response.getResponseCode());
-            assertNotNull(response.getBalanceAmount());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(response);
+        assertNotNull(response.getBalanceAmount());
     }
 
     @Test
-    public void RefundToCard() throws ApiException
+    public void BlindRefund() throws ApiException
     {
-        try {
-            TerminalResponse response = device.creditRefund(new BigDecimal("1.23"))
-                .execute();
-
-            assertNotNull(response);
-            assertEquals("00", response.getResponseCode());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        runBasicTests(
+            device.creditRefund(new BigDecimal("1.23"))
+                    .execute()
+        );
     }
 
     @Test
     public void TipAdjust() throws ApiException
     {
-        try {
-            TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
-                .execute();
+        TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
+            .execute();
 
-            TerminalResponse response2 = device.tipAdjust(new BigDecimal("1.50"))
-                .withTerminalRefNumber(response1.getTerminalRefNumber())
-                .withClerkId(420)
-                .execute();
+        runBasicTests(response1);
 
-            assertNotNull(response2);
-            assertEquals("00", response2.getResponseCode());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+        TerminalResponse response2 = device.tipAdjust(new BigDecimal("1.50"))
+            .withTerminalRefNumber(response1.getTerminalRefNumber())
+            .withClerkId(420)
+            .execute();
+
+        runBasicTests(response2);
+        assertEquals(new BigDecimal("1.50"), response2.getTipAmount());
+        assertEquals(new BigDecimal("13.84"), response2.getTransactionAmount());
     }
 
     @Test
     public void VoidTerminalTrans() throws ApiException
     {
-        try {
-            TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
-                .execute();
+        TerminalResponse response1 = device.creditSale(new BigDecimal("12.34"))
+            .withGratuity(new BigDecimal("0.00"))
+            .execute();
 
-            TerminalResponse response2 = device.creditVoid()
+        runBasicTests(response1);
+
+        runBasicTests(
+            device.creditVoid()
                 .withTerminalRefNumber(response1.getTerminalRefNumber())
-                .execute();
-
-            assertNotNull(response2);
-            assertEquals("00", response2.getResponseCode());
-        } catch (Exception e) {
-            device = null;
-            System.out.println(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
+                .execute()
+        );
     }
 
     /**
      * Procedure: press the red 'X' button on the terminal when the terminal display prompts to present the card
-     *
-     * @throws ApiException
      */
     @Test
-    public void reverseTerminalTrans() throws ApiException
+    public void cancelledTrans() throws ApiException
     {
         TerminalResponse response = device.creditSale(new BigDecimal("12.34"))
+            .withGratuity(new BigDecimal("0.00"))
             .execute();
 
         assertNotNull(response);
         assertEquals("Failed", response.getStatus());
         assertEquals("APP001", response.getDeviceResponseCode());
-        assertEquals("TRANSACTION CANCELLED BY USER", response.getResponseText());
+        assertEquals("TRANSACTION CANCELLED BY USER", response.getDeviceResponseText());
     }
 
     @Test
@@ -217,16 +169,9 @@ public class UpaCreditTests {
         assertEquals("00", response2.getResponseCode());
     }
 
-    @Test
-    public void cancelledTrans() throws ApiException
-    {
-        TerminalResponse response = device.creditSale(new BigDecimal("12.34"))
-                .withGratuity(new BigDecimal("0.00"))
-                .execute();
-
+    public void runBasicTests(IDeviceResponse response) {
         assertNotNull(response);
-        assertEquals("Failed", response.getStatus());
-        assertEquals("APP001", response.getDeviceResponseCode());
-        assertEquals("TRANSACTION CANCELLED BY USER", response.getDeviceResponseText());
+        assertEquals("00", response.getDeviceResponseCode());
+        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
     }
 }

@@ -23,6 +23,7 @@ public class TransactionSummary {
     private BigDecimal authorizedAmount;
     private String authCode;
     private String avsResponseCode;
+    private BigDecimal baseAmount;
     private DateTime batchCloseDate;
     private String batchId;
     private String batchSequenceNumber;

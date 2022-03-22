@@ -114,7 +114,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
             throw new MessageException(exc.getMessage(), exc);
         }
         finally {
-            disconnect();
+            if (client != null) disconnect();
             try {
                 // a little padding here
                 Thread.sleep(250);

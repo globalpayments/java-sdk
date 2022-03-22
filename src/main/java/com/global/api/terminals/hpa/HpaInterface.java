@@ -316,6 +316,30 @@ public class HpaInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
 
+    public IBatchReportResponse getBatchSummary() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchSummary(String batchId) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getOpenTabDetails() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
     }

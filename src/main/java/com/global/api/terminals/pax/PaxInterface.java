@@ -314,6 +314,30 @@ class PaxInterface implements IDeviceInterface {
         return summaryResponse;
     }
 
+    public IBatchReportResponse getBatchSummary() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchSummary(String batchId) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public IBatchReportResponse getOpenTabDetails() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
     }

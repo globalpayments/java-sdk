@@ -8,10 +8,10 @@ import java.util.ArrayList;
 
 public interface IBatchReportResponse extends IDeviceResponse {
     BatchSummary getBatchSummary();
-    CardBrandSummary getVisaSummary();
-    CardBrandSummary getMastercardSummary();
-    CardBrandSummary getAmexSummary();
-    CardBrandSummary getDiscoverSummary();
-    CardBrandSummary getPaypalSummary();
+    ICardBrandSummary getVisaSummary();
+    ICardBrandSummary getMastercardSummary();
+    ICardBrandSummary getAmexSummary();
+    ICardBrandSummary getDiscoverSummary();
+    ICardBrandSummary getPaypalSummary();
     ArrayList<TransactionSummary> getTransactionSummaries();
 }
