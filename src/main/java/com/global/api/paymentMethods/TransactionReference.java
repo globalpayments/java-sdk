@@ -4,12 +4,15 @@ import com.global.api.entities.AlternativePaymentResponse;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.enums.TransactionCode;
+import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.network.entities.NtsData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Accessors(chain = true)
 @Getter
@@ -36,7 +39,15 @@ public class TransactionReference implements IPaymentMethod {
     private int sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
+    private String originalTrasactionDate;
+    private String responseCode;
     private boolean useAuthorizedAmount;
+
+    private String approvalCode;
+    private String originalMessageCode;
+    private Map<String, String> userDataTag;
+    private TransactionCode originalTransactionCode;
+    private TransactionTypeIndicator originalTransactionTypeIndicator;
 
     public void setNtsData(NtsData ntsData) {
         this.ntsData = ntsData;
@@ -59,5 +70,6 @@ public class TransactionReference implements IPaymentMethod {
         }
         return paymentMethodType;
     }
+
 
 }

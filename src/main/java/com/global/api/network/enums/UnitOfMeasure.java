@@ -12,7 +12,9 @@ public enum UnitOfMeasure implements IStringConstant {
     Pounds("P"),
     Quarts("Q"),
     Units("U"),
-    Ounces("Z");
+    Ounces("Z"),
+    ImperialGallons("I"),
+    NoFuelPurchased(" ");
 
     private final String value;
     UnitOfMeasure(String value) { this.value = value; }

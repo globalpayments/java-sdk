@@ -357,7 +357,7 @@ public class TestCards {
     }
     public static CreditTrackData DiscoverSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%B6011000990156527^DIS TEST CARD^25121011000062111401?;6011000990156527=25121011000062111401?");
+        rvalue.setValue("%B6011000990156527^DIS TEST CARD^25121011000062111401?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -485,6 +485,33 @@ public class TestCards {
     public static CreditTrackData VoyagerSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
         rvalue.setValue("%07088869008250005056^VOYAGER TEST ACCT THREE  ^1912100000000000000?");
+        rvalue.setEntryMethod(entryMethod);
+        return rvalue;
+    }
+
+    /*
+    Fuelman
+    */
+    public static CreditTrackData FuelmanFleet() {
+        return FuelmanFleet(EntryMethod.Swipe);
+    }
+    public static CreditTrackData FuelmanFleet(EntryMethod entryMethod) {
+        CreditTrackData rvalue = new CreditTrackData();
+        rvalue.setValue("70764912345100040=4912");
+        rvalue.setEntryMethod(entryMethod);
+        return rvalue;
+    }
+
+    /*
+  Fleetwide
+  */
+
+    public static CreditTrackData FleetWide() {
+        return FleetWide(EntryMethod.Swipe);
+    }
+    public static CreditTrackData FleetWide(EntryMethod entryMethod) {
+        CreditTrackData rvalue = new CreditTrackData();
+        rvalue.setValue("70768512345200005=99120");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }

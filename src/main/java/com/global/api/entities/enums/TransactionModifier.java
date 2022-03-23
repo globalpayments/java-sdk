@@ -17,6 +17,7 @@ public enum TransactionModifier implements IFlag {
     HostedRequest,
     Recurring,
     EncryptedMobile,
+    Fallback,
     Level_III,
     DecryptedMobile,
     AlternativePaymentMethod;

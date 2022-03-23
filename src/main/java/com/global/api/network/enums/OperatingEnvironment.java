@@ -12,7 +12,11 @@ public enum OperatingEnvironment implements IStringConstant {
     OnPremises_CardAcceptor_Unattended_Mobile("9"),
     Internet_With_SSL("S"),
     Internet_Without_SSL("T"),
-    OnPremises_CardAcceptor_Attended_Mobile("U");
+    OnPremises_CardAcceptor_Attended_Mobile("U"),
+    Attended("attended"),
+    UnattendedAfd("unattendedAfd"),
+    UnattendedCat("unattendedCat"),
+    UnattendedOffPremise("unattendedOffPremise");
 
     private final String value;
     OperatingEnvironment(String value) { this.value = value; }

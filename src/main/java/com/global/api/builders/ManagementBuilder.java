@@ -1,18 +1,13 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.DccRateData;
-import com.global.api.entities.DisputeDocument;
-import com.global.api.entities.LodgingData;
-import com.global.api.entities.Transaction;
-import com.global.api.entities.billing.Bill;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
+import com.global.api.entities.billing.Bill;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
-import com.global.api.network.entities.FleetData;
-import com.global.api.network.entities.PriorMessageInformation;
-import com.global.api.network.entities.ProductData;
-import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.network.entities.*;
+import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
@@ -70,7 +65,32 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private BigDecimal totalDebits;
     @Getter private String batchReference;
     private List<Bill> bills;
+    @Getter
+    private EcommerceInfo ecommerceInfo;
+    @Getter
+    private StoredCredential storedCredential;
 
+    //Nts block
+    @Getter
+    private int dataCollectResponseCode;
+    @Getter
+    private String approvalcode;
+    @Getter
+    protected BigDecimal settlementAmount;
+    @Getter
+    private BigDecimal totalSales;
+    @Getter
+    private BigDecimal totalReturns;
+    @Getter
+    private NtsRequestsToBalanceRequest ntsRequestsToBalance;
+    @Getter
+    private NtsRequestToBalanceData ntsRequestsToBalanceData;
+
+
+    public ManagementBuilder withCardSequenceNumber(String value) {
+        this.cardSequenceNumber = value;
+        return this;
+    }
     public AlternativePaymentType getAlternativePaymentType() {
 		return alternativePaymentType;
 	}
@@ -207,6 +227,53 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return totalDebits;
     }
 
+    public ManagementBuilder withSettlementAmount(BigDecimal value)
+    {
+        this.settlementAmount = value;
+        return this;
+    }
+    public ManagementBuilder withTransactiontype(TransactionType type) {
+        transactionType = type;
+        return this;
+    }
+    public ManagementBuilder withNtsNetworkMessageHeader(NtsNetworkMessageHeader value) {
+        this.ntsNetworkMessageHeader = value;
+        return this;
+    }
+    public ManagementBuilder withNtsRequestMessageHeader(NtsRequestMessageHeader value) {
+        this.ntsRequestMessageHeader = value;
+        return this;
+    }
+    public ManagementBuilder withNtsDataCollectRequest(NtsDataCollectRequest value) {
+        this.ntsDataCollectRequest = value;
+        return this;
+    }
+    public ManagementBuilder withNtsRequestsToBalance(NtsRequestsToBalanceRequest value) {
+        ntsRequestsToBalance = value;
+        return this;
+    }
+
+    public ManagementBuilder withNtsRequestsToBalanceData(NtsRequestToBalanceData value) {
+        this.ntsRequestsToBalanceData = value;
+        return this;
+    }
+    public ManagementBuilder withApprovalCode(String value) {
+        approvalcode = value;
+        return this;
+    }
+    public ManagementBuilder withDataCollectResponseCode(int value) {
+        dataCollectResponseCode = value;
+        return this;
+    }
+    public ManagementBuilder withTransactionDate(String value) {
+        transactionDate = value;
+        return this;
+    }
+    public ManagementBuilder withTransactionTime(String value) {
+        transactionTime = value;
+        return this;
+    }
+
     public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
 		this.alternativePaymentType = value;
 		return this;
@@ -236,6 +303,13 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.totalDebits = totalDebits;
         this.totalCredits = totalCredits;
 
+        return this;
+    }
+
+    public ManagementBuilder withBatchTotalTransaction(int transactionCount, BigDecimal totalSales, BigDecimal totalRetuens) {
+        this.transactionCount = transactionCount;
+        this.totalSales = totalSales;
+        this.totalReturns = totalRetuens;
         return this;
     }
     public ManagementBuilder withBatchReference(String value) {
@@ -412,6 +486,37 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         shiftNumber = value;
         return this;
     }
+
+    public ManagementBuilder withNtsTag16(NtsTag16 tag16) {
+        ntsTag16 = tag16;
+        return this;
+    }
+
+    public ManagementBuilder withNtsProductData(NtsProductData ntsProductData) {
+        this.ntsProductData = ntsProductData;
+        return this;
+    }
+    public ManagementBuilder withEcommerceAuthIndicator(String ecommerceAuthIndicator) {
+        this.ecommerceAuthIndicator = ecommerceAuthIndicator;
+        return this;
+    }
+    public ManagementBuilder withEcommerceData1(String ecommerceData1) {
+        this.ecommerceData1 = ecommerceData1;
+        return  this;
+    }
+
+    public ManagementBuilder withEcommerceData2(String ecommerceData2) {
+        this.ecommerceData2 = ecommerceData2;
+        return this;
+    }
+    public ManagementBuilder withEcommerceInfo(EcommerceInfo value) {
+        this.ecommerceInfo = value;
+        return this;
+    }
+    public ManagementBuilder withStoredCredential(StoredCredential value) {
+        this.storedCredential = value;
+        return this;
+    }
     public ManagementBuilder withSimulatedHostErrors(Host host, HostError... errors) {
         if(simulatedHostErrors == null) {
             simulatedHostErrors = new HashMap<Host, ArrayList<HostError>>();
@@ -494,6 +599,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withTransactionMatchingData(TransactionMatchingData value) {
         transactionMatchingData = value;
+        return this;
+    }
+    public ManagementBuilder withEmvMaxPinEntry(String emvMaxPinEntry){
+        this.emvMaxPinEntry = emvMaxPinEntry;
         return this;
     }
 

@@ -6,6 +6,8 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.BatchCloseType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.NtsRequestToBalanceData;
 
 import java.math.BigDecimal;
 
@@ -71,6 +73,18 @@ public class BatchService {
                 .withBatchTotals(transactionTotal, totalDebits, totalCredits)
                 .withBatchCloseType(closeType);
     }
+
+    public static ManagementBuilder closeBatch(BatchCloseType closeType, NtsRequestMessageHeader ntsRequestMessageHeader, int batchNumber,
+                                               int transactionCount, BigDecimal totalSales, BigDecimal totalReturns, NtsRequestToBalanceData requestToBalanceData) {
+        return new ManagementBuilder(TransactionType.BatchClose)
+                .withBatchNumber(batchNumber)
+                .withBatchTotalTransaction(transactionCount, totalSales, totalReturns)
+                .withBatchCloseType(closeType)
+                .withNtsRequestsToBalanceData(requestToBalanceData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader);
+
+    }
+
     public static BatchSummary closeBatch(String batchReference, String configName) throws ApiException {
         Transaction response =
                 new ManagementBuilder(TransactionType.BatchClose)

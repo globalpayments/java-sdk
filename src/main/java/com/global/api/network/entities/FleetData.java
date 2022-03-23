@@ -1,5 +1,8 @@
 package com.global.api.network.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class FleetData {
     private String department;
     private String driverId;
@@ -15,7 +18,9 @@ public class FleetData {
     private String unitNumber;
     private String tripNumber;
     private String trailerReferHours;
-
+    private String referenceNumber;
+    @Setter @Getter
+    private String genericIdentificationNo;
     public String getTrailerReferHours() {
         return trailerReferHours;
     }
@@ -106,5 +111,12 @@ public class FleetData {
     }
     public void setVehicleTag(String vehicleTag) {
         this.vehicleTag = vehicleTag;
-    }
+	}
+	public String getReferenceNumber() {
+		return referenceNumber;
+	}
+	public void setReferenceNumber(String referenceNumber) {
+		this.referenceNumber = referenceNumber;
+	}
+
 }

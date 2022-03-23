@@ -16,6 +16,7 @@ import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.serviceConfigs.AcceptorConfig;
+import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.network.elements.*;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-public class VapsConnector extends NetworkGateway implements IPaymentGateway {
+public class VapsConnector extends GatewayConnectorConfig {
     private AcceptorConfig acceptorConfig;
     private IBatchProvider batchProvider;
     private CharacterSet characterSet = CharacterSet.ASCII;

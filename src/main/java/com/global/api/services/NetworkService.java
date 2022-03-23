@@ -1,11 +1,14 @@
 package com.global.api.services;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.builders.ResubmitBuilder;
 import com.global.api.entities.enums.TransactionType;
+
+import java.math.BigDecimal;
 
 public class NetworkService {
     public static ResubmitBuilder resubmitBatchClose(String transactionToken) {
@@ -42,5 +45,24 @@ public class NetworkService {
     	  IPaymentGateway gateway = ServicesContainer.getInstance().getGateway(configName);
         return gateway.sendKeepAlive();
         
+    }
+
+    public static AuthorizationBuilder sendMail(BigDecimal amount){
+        return new AuthorizationBuilder(TransactionType.Mail).withAmount(amount);
+    }
+
+    public static AuthorizationBuilder fetchPDL(TransactionType transactionType){
+        return new AuthorizationBuilder(transactionType).withAmount(new BigDecimal(0));
+    }
+    public static AuthorizationBuilder sendUtilityMessage(){
+        return new AuthorizationBuilder(TransactionType.UtilityMessage);
+    }
+
+    /**
+     * This method is used to send the POS Site Configurations.
+     * @return
+     */
+    public static AuthorizationBuilder sendSiteConfiguration(){
+        return new AuthorizationBuilder(TransactionType.PosSiteConfiguration);
     }
 }

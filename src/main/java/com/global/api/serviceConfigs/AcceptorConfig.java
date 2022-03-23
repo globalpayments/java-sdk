@@ -2,8 +2,13 @@ package com.global.api.serviceConfigs;
 
 import com.global.api.entities.Address;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
+import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
+import com.global.api.network.enums.nts.AvailableProductsCapability;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class AcceptorConfig {
     // DE22 - POS DATA CODE
@@ -15,7 +20,9 @@ public class AcceptorConfig {
     private CardDataOutputCapability cardDataOutputCapability = CardDataOutputCapability.None;
     private TerminalOutputCapability terminalOutputCapability = TerminalOutputCapability.None;
     private PinCaptureCapability pinCaptureCapability = PinCaptureCapability.TwelveCharacters;
-
+    @Setter
+    @Getter
+    private AvailableProductsCapability availableProductCapability=AvailableProductsCapability.DeviceIsAvailableProductsCapable;
     // DE32 - Acquiring Institution Identification Code
     private String acquiringInstitutionIdentificationCode;
 
@@ -34,6 +41,10 @@ public class AcceptorConfig {
     private Boolean supportsDiscoverNetworkReferenceId;
     private Boolean supportsAvsCnvVoidReferrals;
     private Boolean supportsEmvPin;
+    private Boolean capableAmexRemainingBalance;
+    private Boolean capableVoid;
+
+    //NTS Message Header
     private Boolean pinlessDebit;
 
     //DE48_34
@@ -213,6 +224,23 @@ public class AcceptorConfig {
     public void setPinlessDebit(Boolean pinlessDebit) {
         this.pinlessDebit = pinlessDebit;
     }
+
+    public Boolean getCapableAmexRemainingBalance() {
+        return capableAmexRemainingBalance;
+    }
+
+    public void setCapableAmexRemainingBalance(Boolean capableAmexRemainingBalance) {
+        this.capableAmexRemainingBalance = capableAmexRemainingBalance;
+    }
+
+    public Boolean getCapableVoid() {
+        return capableVoid;
+    }
+
+    public void setCapableVoid(Boolean capableVoid) {
+        this.capableVoid = capableVoid;
+    }
+
     public boolean hasPosConfiguration_MessageControl() {
         return (!StringUtils.isNullOrEmpty(timezone)
                 || supportsPartialApproval != null
@@ -235,6 +263,16 @@ public class AcceptorConfig {
                 || echoSettlementData != null
                 || includeLoyaltyData != null;
     }
+
+    public boolean hasPosConfiguration_BankcardData() {
+        return (supportsPartialApproval != null
+                || supportsShutOffAmount != null
+                || capableAmexRemainingBalance != null
+                || supportsDiscoverNetworkReferenceId != null
+                || capableVoid != null
+                || supportsEmvPin != null
+                || mobileDevice != null);
+    }
     public String getPosConfigForIssuerData() {
         String rvalue = supportsPartialApproval != null ? supportsPartialApproval ? "Y" : "N" : "N";
         rvalue = rvalue.concat(supportsShutOffAmount != null ? supportsShutOffAmount ? "Y" : "N" : "N")
@@ -245,6 +283,19 @@ public class AcceptorConfig {
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N");
+        return rvalue;
+    }
+
+    public String getTerminalCapabilityForBankcard() {
+        String rvalue = supportsPartialApproval != null ? supportsPartialApproval ? "Y" : "N" : "N";
+        rvalue = rvalue.concat(supportsShutOffAmount != null ? supportsShutOffAmount ? "Y" : "N" : "N")
+                .concat("N")
+                .concat(capableAmexRemainingBalance != null ? capableAmexRemainingBalance ? "Y" : "N" : "N")
+                .concat(supportsDiscoverNetworkReferenceId != null ? supportsDiscoverNetworkReferenceId ? "Y" : "N" : "N")
+                .concat(capableVoid != null ? capableVoid ? "Y" : "N" : "N")
+                .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
+                .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
+                .concat("N");
         return rvalue;
     }
 

@@ -8,7 +8,11 @@ public enum ServiceLevel implements IStringConstant {
     MiniServe("N"),
     Other_NonFuel("O"),
     SelfServe("S"),
-    MaxiServe("X");
+    MaxiServe("X"),
+    NonFuelTransaction(" "),
+    Other("2"),
+    Unknown("9"),
+    NoFuelPurchased("0");
 
     private final String value;
     ServiceLevel(String value) { this.value = value; }

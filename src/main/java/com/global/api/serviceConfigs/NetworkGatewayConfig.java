@@ -1,6 +1,10 @@
 package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
+import com.global.api.entities.enums.LogicProcessFlag;
+import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.TerminalType;
+import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
@@ -8,6 +12,7 @@ import com.global.api.network.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.VapsConnector;
 import com.global.api.utils.StringUtils;
+import lombok.Setter;
 
 public class NetworkGatewayConfig extends Configuration {
     private AcceptorConfig acceptorConfig;
@@ -27,7 +32,33 @@ public class NetworkGatewayConfig extends Configuration {
     private String uniqueDeviceId;
     private Boolean persistentConnection = false;
 
-    public AcceptorConfig getAcceptorConfig() {
+    @Setter
+    private Target target;
+    @Setter
+    private String binTerminalId;
+    @Setter
+    private String binTerminalType;
+    @Setter
+    private String unitNumber;
+    @Setter
+    private CardDataInputCapability inputCapabilityCode;
+    @Setter
+    private String softwareVersion;
+    @Setter
+    private LogicProcessFlag logicProcessFlag;
+    @Setter
+    private TerminalType terminalType;
+
+
+    public NetworkGatewayConfig() {
+        this(Target.VAPS);
+    }
+
+    public NetworkGatewayConfig(Target gateway) {
+		target = gateway;
+	}
+
+	public AcceptorConfig getAcceptorConfig() {
         return acceptorConfig;
     }
     public void setAcceptorConfig(AcceptorConfig acceptorConfig) {
@@ -128,9 +159,24 @@ public class NetworkGatewayConfig extends Configuration {
     public void setPersistentConnection(Boolean persistentConnection) {
         this.persistentConnection = persistentConnection;
     }
-    
+
     public void configureContainer(ConfiguredServices services) {
-        VapsConnector gateway = new VapsConnector();
+        //System.out.println("Target: " + target);
+        GatewayConnectorConfig gateway;
+        if(target.equals(Target.VAPS)) {
+            gateway = new VapsConnector();
+        } else {
+            gateway = new NtsConnector();
+
+            // NTS related fields
+            gateway.setBinTerminalId(binTerminalId);
+            gateway.setBinTerminalType(binTerminalType);
+            gateway.setUnitNumber(unitNumber);
+            gateway.setInputCapabilityCode(inputCapabilityCode);
+            gateway.setSoftwareVersion(softwareVersion);
+            gateway.setLogicProcessFlag(logicProcessFlag);
+            gateway.setTerminalType(terminalType);
+        }
         // connection fields
         gateway.setPrimaryEndpoint(serviceUrl);
         gateway.setPrimaryPort(primaryPort);
@@ -150,7 +196,8 @@ public class NetworkGatewayConfig extends Configuration {
         gateway.setMerchantType(merchantType);
         gateway.setUniqueDeviceId(uniqueDeviceId);
         gateway.setProcessingFlag(persistentConnection ? NetworkProcessingFlag.PersistentConnection : NetworkProcessingFlag.NonPersistentConnection);
-        
+
+
         // acceptor config
         if(acceptorConfig == null) {
             acceptorConfig = new AcceptorConfig();

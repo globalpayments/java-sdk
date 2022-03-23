@@ -7,15 +7,16 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IPaymentGateway;
-import com.global.api.network.entities.FleetData;
-import com.global.api.network.entities.PriorMessageInformation;
-import com.global.api.network.entities.ProductData;
-import com.global.api.network.entities.TransactionMatchingData;
+
+import com.global.api.network.entities.nts.*;
+import com.global.api.network.entities.*;
+
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
+
 import lombok.Setter;
 import lombok.var;
 
@@ -59,6 +60,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 //    @Getter @Setter private HashMap<String, FraudFilterMode> fraudRules;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
+
+
     @Getter @Setter private String idempotencyKey;
     private String invoiceNumber;
     private boolean level2Request;
@@ -105,6 +108,63 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String shiftNumber;
     private String transportData;
 
+    //Nts
+    @Getter
+    private NtsUtilityMessageRequest ntsUtilityMessageRequest;
+
+    public AuthorizationBuilder withNtsUtilityMessageRequest(NtsUtilityMessageRequest value) {
+        ntsUtilityMessageRequest = value;
+        return this;
+    }
+
+    @Getter
+    private NtsPDLData ntsPDLData;
+    @Getter
+    private EBTVoucherEntryData voucherEntryData;
+    @Getter
+    private NtsMailData ntsMailData;
+    @Getter
+    private NtsMailRequest ntsMailRequest;
+    @Getter
+    private String goodsSold;
+    @Getter
+    private NtsPOSSiteConfigurationData ntsPosSiteConfiguration;
+
+    public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
+        this.ntsProductData = ntsProductData;
+        return this;
+    }
+    public AuthorizationBuilder withEcommerceAuthIndicator(String ecommerceAuthIndicator) {
+        this.ecommerceAuthIndicator = ecommerceAuthIndicator;
+        return this;
+    }
+    public AuthorizationBuilder withEcommerceData1(String ecommerceData1) {
+        this.ecommerceData1 = ecommerceData1;
+        return  this;
+    }
+
+    public AuthorizationBuilder withEcommerceData2(String ecommerceData2) {
+        this.ecommerceData2 = ecommerceData2;
+        return this;
+    }
+    public AuthorizationBuilder withNtsMailData(NtsMailData value) {
+        ntsMailData = value;
+        return this;
+    }
+    public AuthorizationBuilder withNtsPOSSiteConfigData(NtsPOSSiteConfigurationData value) {
+        this.ntsPosSiteConfiguration = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withTransactionDate(String value) {
+        transactionDate = value;
+        return this;
+    }
+    public AuthorizationBuilder withTransactionTime(String value) {
+        transactionTime = value;
+        return this;
+    }
+
     public String getAlias() {
         return alias;
     }
@@ -141,9 +201,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public String getCardBrandTransactionId( ) {
         return cardBrandTransactionId;
     }
+
     public BigDecimal getCashBackAmount() {
         return cashBackAmount;
     }
+
     public String getClerkId() {
         return clerkId;
     }
@@ -407,6 +469,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.currency = value;
         return this;
     }
+
+    public AuthorizationBuilder withNtsNetworkMessageHeader(NtsNetworkMessageHeader value) {
+        this.ntsNetworkMessageHeader = value;
+        return this;
+    }
+    public AuthorizationBuilder withNtsRequestMessageHeader(NtsRequestMessageHeader value) {
+        this.ntsRequestMessageHeader = value;
+        return this;
+    }
+    public AuthorizationBuilder withNtsDataCollectRequest(NtsDataCollectRequest value) {
+        this.ntsDataCollectRequest = value;
+        return this;
+    }
     public AuthorizationBuilder withCustomer(Customer value) {
         return withCustomerData(value);
     }
@@ -433,6 +508,20 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.cvn = value;
         return this;
     }
+
+    public AuthorizationBuilder withCardSequenceNumber(String value) {
+        this.cardSequenceNumber = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withVoucherEntryData(EBTVoucherEntryData voucherEntryData) {
+        this.voucherEntryData = voucherEntryData;
+        return this;
+    }
+    public AuthorizationBuilder withPDLData(NtsPDLData pdlData) {
+        this.ntsPDLData = pdlData;
+        return this;
+    }
     public AuthorizationBuilder withDccRateData(DccRateData dccRateData) {
         this.dccRateData = dccRateData;
         return this;
@@ -453,6 +542,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.ecommerceInfo = value;
         return this;
     }
+
     public AuthorizationBuilder withFraudFilter(FraudFilterMode fraudFilterMode) {
         return withFraudFilter(fraudFilterMode, null);
     }
@@ -732,10 +822,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         uniqueDeviceId = value;
         return this;
     }
+
+
     public AuthorizationBuilder withPaymentLinkId(String value) {
         paymentLinkId = value;
         return this;
     }
+
+    public AuthorizationBuilder withTransactiontype(TransactionType type) {
+        transactionType = type;
+        return this;
+    }
+
+
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);
     }
@@ -824,5 +923,27 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(PaymentMethodType.Credit)
                 .with(TransactionType.LoadReversal)
                 .check("paymentMethod").propertyOf(Credit.class, "cardType").isEqualTo("VisaReadyLink");
+
+    }
+
+
+    public AuthorizationBuilder withEmvMaxPinEntry(String emvMaxPinEntry){
+        this.emvMaxPinEntry = emvMaxPinEntry;
+        return this;
+    }
+
+    public AuthorizationBuilder withNtsTag16(NtsTag16 tag){
+        this.ntsTag16 = tag;
+        return this;
+    }
+
+    public AuthorizationBuilder withServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
+        return this;
+    }
+
+    public AuthorizationBuilder withGoodsSold(String goodsSold) {
+        this.goodsSold = goodsSold;
+        return this;
     }
 }

@@ -122,4 +122,12 @@ public class StringParser {
         }
         return null;
     }
+
+    public String getBuffer() {
+        return buffer;
+    }
+
+    public Integer getRemainingLength(){
+        return buffer.length() - position;
+    }
 }

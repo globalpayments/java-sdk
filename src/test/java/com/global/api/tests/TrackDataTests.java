@@ -165,6 +165,31 @@ public class TrackDataTests {
     }
 
     @Test
+    public void fuelman_fleet_track2() {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("70764912345100040=4912");
+
+        assertEquals("FuelmanFleet", track.getCardType());
+        assertEquals("70764912345100040", track.getPan());
+        assertEquals("4912", track.getExpiry());
+        assertTrue(track.isFleet());
+        assertNotNull(track.getTrackData());
+    }
+
+    @Test
+    public void fleetWide_fleet_track2() {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("70768512345200005=99120");
+
+        assertEquals("FleetWide", track.getCardType()); //FleetWideFleet
+        assertEquals("70768512345200005", track.getPan());
+        assertEquals("9912", track.getExpiry());
+        assertTrue(track.isFleet());
+        assertNotNull(track.getTrackData());
+    }
+
+
+    @Test
     public void valueLink_track1() {
         GiftCard track = new GiftCard();
         track.setValue("B6010560000001113^VALUE LINK TEST^20121019999888877712");

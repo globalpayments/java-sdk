@@ -46,11 +46,18 @@ public enum TransactionType implements IFlag {
     DisputeAcceptance,
     DisputeChallenge,
     LoadReversal,
+
     // In .NET, we have many more enum types
-    Reauth;
+    Reauth,
+    Mail,
+    PDL,
+    UtilityMessage,
+    MagnumPDL,
+    EmvPdl,
+    PosSiteConfiguration;
 
     public long getLongValue() {
-        return 1 << this.ordinal();
+        return 1L << this.ordinal();
     }
 
     public static Set<TransactionType> getSet(long value) {

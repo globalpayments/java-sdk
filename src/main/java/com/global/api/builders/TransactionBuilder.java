@@ -1,16 +1,15 @@
 package com.global.api.builders;
 
-import com.global.api.entities.enums.Host;
-import com.global.api.entities.enums.HostError;
-import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.enums.TransactionType;
-import com.global.api.network.entities.FleetData;
-import com.global.api.network.entities.PriorMessageInformation;
-import com.global.api.network.entities.ProductData;
-import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.entities.enums.*;
+import com.global.api.network.entities.nts.NtsDataCollectRequest;
+import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
+import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.*;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
+import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +33,50 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected String uniqueDeviceId;
     protected TransactionMatchingData transactionMatchingData;
     protected boolean terminalError;
+    //Nts
+    @Getter
+    protected String invoiceNumber;
+    @Getter
+    protected String cvn;
+    @Getter
+    protected BigDecimal amount;
+    @Getter
+    protected String tagData;
+    //Emv
+    @Getter
+    protected String emvMaxPinEntry;
+
+    // P66 Tag 16
+    @Getter
+    protected NtsTag16 ntsTag16;
+    @Getter
+    private String posSequenceNumber;
+    @Getter
+    protected String serviceCode;
+    @Getter
+    protected String cardSequenceNumber;     // Card Sequence number.
+    @Getter
+    protected NtsProductData ntsProductData;
+    @Getter
+    protected String ecommerceAuthIndicator;
+    @Getter
+    protected String ecommerceData1;
+    @Getter
+    protected String ecommerceData2;
+    @Getter
+    protected NtsNetworkMessageHeader ntsNetworkMessageHeader;
+    @Getter
+    protected NtsRequestMessageHeader ntsRequestMessageHeader;
+    @Getter
+    protected NtsDataCollectRequest ntsDataCollectRequest;
+    @Getter
+    protected String transactionDate;
+    @Getter
+    protected String transactionTime;
+
+    public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
+        this.ntsRequestMessageHeader = ntsRequestMessageHeader;
+    }
 
     public TransactionType getTransactionType() {
         return transactionType;
@@ -96,12 +139,34 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
         return terminalError;
     }
 
-    public TransactionBuilder(TransactionType type) {
+    protected TransactionBuilder(TransactionType type) {
         this(type, null);
     }
-    public TransactionBuilder(TransactionType type, IPaymentMethod paymentMethod){
+    protected TransactionBuilder(TransactionType type, IPaymentMethod paymentMethod){
         super();
         this.transactionType = type;
         this.paymentMethod = paymentMethod;
+    }
+
+    public TransactionBuilder<TResult> withServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
+        return this;
+    }
+    public TransactionBuilder<TResult> withNtsProductData(NtsProductData ntsProductData) {
+        this.ntsProductData = ntsProductData;
+        return this;
+    }
+    public TransactionBuilder<TResult> withEcommerceAuthIndicator(String ecommerceAuthIndicator) {
+        this.ecommerceAuthIndicator = ecommerceAuthIndicator;
+        return this;
+    }
+    public TransactionBuilder<TResult> withEcommerceData1(String ecommerceData1) {
+        this.ecommerceData1 = ecommerceData1;
+        return  this;
+    }
+
+    public TransactionBuilder<TResult> withEcommerceData2(String ecommerceData2) {
+        this.ecommerceData2 = ecommerceData2;
+        return this;
     }
 }

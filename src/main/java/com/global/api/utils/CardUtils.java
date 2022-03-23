@@ -21,6 +21,8 @@ public class CardUtils {
     private static final Pattern JcbRegex = Pattern.compile("^(?:2131|1800|35\\d{3})");
     private static final Pattern VoyagerRegex = Pattern.compile("^70888[5-9]");
     private static final Pattern WexRegex = Pattern.compile("^(?:690046|707138)");
+    private static final Pattern FuelmanRegex = Pattern.compile("^707649[0-9]");
+    private static final Pattern FleetwideRegex = Pattern.compile("^707685[0-9]");
     private static final Pattern StoredValueRegex = Pattern.compile("^(?:600649|603261|603571|627600|639470)");
     private static final Pattern ValueLinkRegex = Pattern.compile("^(?:601056|603225)");
     private static final Pattern HeartlandGiftRegex = Pattern.compile("^(?:502244|627720|708355)");
@@ -43,6 +45,8 @@ public class CardUtils {
         regexMap.put("Jcb", JcbRegex);
         regexMap.put("Voyager", VoyagerRegex);
         regexMap.put("Wex", WexRegex);
+        regexMap.put("Fuelman", FuelmanRegex);
+        regexMap.put("FleetWide", FleetwideRegex);
         regexMap.put("StoredValue", StoredValueRegex);
         regexMap.put("ValueLink", ValueLinkRegex);
         regexMap.put("HeartlandGift", HeartlandGiftRegex);
@@ -115,6 +119,16 @@ public class CardUtils {
         Map<String, String> voyagerFleetMap = new HashMap<String, String>();
         voyagerFleetMap.put("708885", "708889");
         fleetBinMap.put("Voyager", voyagerFleetMap);
+
+        //Fuelman fleet
+        Map<String, String> fuelmanFleetMap = new HashMap<String, String>();
+        fuelmanFleetMap.put("707649", "707649");
+        fleetBinMap.put("Fuelman", fuelmanFleetMap);
+
+        //FleetWide
+        Map<String, String> fleetWideMap = new HashMap<String, String>();
+        fleetWideMap.put("707685", "707685");
+        fleetBinMap.put("FleetWide", fleetWideMap);
     }
 
     public static boolean isFleet(String cardType, String pan) {
@@ -158,7 +172,8 @@ public class CardUtils {
 
             // we have a card type, check if it's a fleet card
             if(!rvalue.equals("Unknown")) {
-                if(isFleet(rvalue, pan)) {
+               // if(isFleet(rvalue, pan)){
+                if(isFleet(rvalue, pan)&&(!rvalue.equals("FleetWide"))) {
                     rvalue += "Fleet";
                 }
                 else if(isReadyLink(pan)) {

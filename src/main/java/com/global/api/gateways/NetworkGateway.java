@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.*;
 import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -72,11 +73,12 @@ public class NetworkGateway {
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
-    boolean isEnableLogging() {
+    protected boolean isEnableLogging() {
         return enableLogging;
     }
     public void setEnableLogging(boolean enableLogging) {
         this.enableLogging = enableLogging;
+        NtsUtils.enableLogging();
     }
     public void setGatewayEventHandler(IGatewayEventHandler eventHandler) { this.gatewayEventHandler = eventHandler; }
     public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {

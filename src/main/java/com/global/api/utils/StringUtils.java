@@ -4,6 +4,8 @@ import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.IStringConstant;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,6 +84,15 @@ public class StringUtils {
         String rvalue = toNumeric(amount);
         return padLeft(rvalue, length, '0');
     }
+
+    public static String toDecimal(BigDecimal amount, int length) {
+        String pattern = "##.###";
+        DecimalFormat decimalFormat = new DecimalFormat(pattern);
+        decimalFormat.setMinimumFractionDigits(3);
+        String format = decimalFormat.format(amount);
+        return padLeft(format.replaceAll("[^0-9]", ""), length, '0');
+    }
+
     public static String toFractionalNumeric(BigDecimal amount) {
         if(amount == null) {
             return "";
@@ -226,4 +237,10 @@ public class StringUtils {
         return StringUtils.isNullOrEmpty(str) ? str : str.replaceAll("[^0-9]", "");
     }
 
+    public static String toFormatDigit(BigDecimal value,int totalLength,int digitAfterDecimal)
+    {
+        String value1 = value.setScale(digitAfterDecimal, RoundingMode.HALF_UP).toString();
+        value1=value1.replaceAll("[^0-9]","");
+        return StringUtils.padLeft(value1,totalLength,'0');
+    }
 }

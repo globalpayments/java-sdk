@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.nts.NtsResponse;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -69,7 +70,49 @@ public class Transaction {
     private String token;
     private GiftCard giftCard;
     private TransactionReference transactionReference;
+    private NtsResponse ntsResponse;
+    private String transactionDate;
+    private String transactionTime;
+    private String transactionCode;
 
+    public BigDecimal getOrigionalAmount() {
+        return origionalAmount;
+    }
+
+    public void setOrigionalAmount(BigDecimal origionalAmount) {
+        this.origionalAmount = origionalAmount;
+    }
+
+    private BigDecimal origionalAmount;
+    public String getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(String transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public String getTransactionTime() {
+        return transactionTime;
+    }
+
+    public void setTransactionTime(String transactionTime) {
+        this.transactionTime = transactionTime;
+    }
+    public String getTransactionCode() {
+        return transactionCode;
+    }
+    public void setTransactionCode(String transactionCode) {
+        this.transactionCode = transactionCode;
+    }
+
+    public NtsResponse getNtsResponse() {
+        return ntsResponse;
+    }
+
+    public void setNtsResponse(NtsResponse ntsResponse) {
+        this.ntsResponse = ntsResponse;
+    }
     public String getAdditionalResponseCode() {
         return additionalResponseCode;
     }
@@ -238,12 +281,12 @@ public class Transaction {
         this.cvnResponseMessage = cvnResponseMessage;
     }
     public DccRateData getDccRateData() {
-		return dccRateData;
-	}
-	public void setDccRateData(DccRateData dccRateData) {
-		this.dccRateData = dccRateData;
-	}
-	public DebitMac getDebitMac() {
+        return dccRateData;
+    }
+    public void setDccRateData(DccRateData dccRateData) {
+        this.dccRateData = dccRateData;
+    }
+    public DebitMac getDebitMac() {
         return debitMac;
     }
     public void setDebitMac(DebitMac debitMac) {
@@ -288,7 +331,8 @@ public class Transaction {
         }
         transactionReference.setMessageTypeIndicator(value);
     }
-	public HashMap<String, String> getResponseValues() {
+
+    public HashMap<String, String> getResponseValues() {
         return responseValues;
     }
     public void setResponseValues(HashMap<String, String> responseValues) {

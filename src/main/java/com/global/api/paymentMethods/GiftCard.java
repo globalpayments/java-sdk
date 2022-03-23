@@ -167,6 +167,11 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     public AuthorizationBuilder charge(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Sale, this).withAmount(amount);
     }
+    public AuthorizationBuilder capture() { return capture(null); }
+    public AuthorizationBuilder capture(BigDecimal amount) {
+        return new AuthorizationBuilder(TransactionType.Capture, this).withAmount(amount);
+    }
+
 
     public AuthorizationBuilder deactivate() {
         return new AuthorizationBuilder(TransactionType.Deactivate, this);

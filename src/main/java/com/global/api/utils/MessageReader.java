@@ -50,6 +50,20 @@ public class MessageReader {
         return rvalue;
     }
 
+    public byte[] readRemainingBytes(){
+        byte[] rvalue = new byte[(int) (length-position)];
+
+        try {
+            for (int i = 0; i < length; i++)
+                rvalue[i] = buffer[position++];
+        }
+        catch(ArrayIndexOutOfBoundsException e) {
+            // eat this exception and return what we have
+        }
+
+        return rvalue;
+    }
+
     public char readChar(){
         return (char)buffer[position++];
     }
