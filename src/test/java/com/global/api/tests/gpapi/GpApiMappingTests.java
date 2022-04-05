@@ -255,7 +255,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
 
         // Assert
         assertEquals(doc.getString("id"), dispute.getCaseId());
-        assertEquals(parseGpApiDate(doc.getString("stage_time_created")), dispute.getCaseIdTime());
+        assertEquals(parseGpApiDateTime(doc.getString("stage_time_created")), dispute.getCaseIdTime());
         assertEquals(doc.getString("status"), dispute.getCaseStatus());
         assertEquals(doc.getString("stage"), dispute.getCaseStage());
         assertEquals(doc.getAmount("amount"), dispute.getCaseAmount());
@@ -265,7 +265,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("last_adjustment_currency"), dispute.getLastAdjustmentCurrency());
         assertEquals(doc.getString("last_adjustment_funding"), dispute.getLastAdjustmentFunding());
 
-        if(doc.has("system")) {
+        if (doc.has("system")) {
             JsonDoc system = doc.get("system");
 
             assertEquals(system.getString("mid"), dispute.getCaseMerchantId());
@@ -277,10 +277,10 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("reason_description"), dispute.getReason());
         assertEquals(doc.getString("result"), dispute.getResult());
 
-        if(doc.has("transaction")) {
+        if (doc.has("transaction")) {
             JsonDoc transaction = doc.get("transaction");
 
-            assertEquals(parseGpApiDate(transaction.getString("time_created")), dispute.getTransactionTime());
+            assertEquals(parseGpApiDateTime(transaction.getString("time_created")), dispute.getTransactionTime());
             assertEquals(transaction.getString("type"), dispute.getTransactionType());
             assertEquals(transaction.getAmount("amount"), dispute.getTransactionAmount());
             assertEquals(transaction.getString("currency"), dispute.getTransactionCurrency());
@@ -300,7 +300,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
             }
         }
 
-        assertEquals(parseGpApiDate(doc.getString("time_to_respond_by")), dispute.getRespondByDate());
+        assertEquals(parseGpApiDateTime(doc.getString("time_to_respond_by")), dispute.getRespondByDate());
         assertEquals(doc.getDate("deposit_time_created", "yyyy-MM-dd"), dispute.getDepositDate());
         assertEquals(doc.getString("deposit_id"), dispute.getDepositReference());
     }
@@ -321,12 +321,12 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("status"), paymentMethod.getStatus());
         assertEquals(doc.getString("reference"), paymentMethod.getReference());
         assertEquals(doc.getString("name"), paymentMethod.getName());
-        if(doc.has("card")) {
+        if (doc.has("card")) {
             JsonDoc card = doc.get("card");
             assertEquals(card.getString("number_last4"), paymentMethod.getCardLast4());
             assertEquals(card.getString("brand"), paymentMethod.getCardType());
-            assertEquals(card.getString ("expiry_month"), paymentMethod.getCardExpMonth());
-            assertEquals(card.getString ("expiry_year"), paymentMethod.getCardExpYear());
+            assertEquals(card.getString("expiry_month"), paymentMethod.getCardExpMonth());
+            assertEquals(card.getString("expiry_year"), paymentMethod.getCardExpYear());
         }
     }
 
@@ -357,7 +357,7 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("merchant_name"), action.getMerchantName());
     }
 
-@Test
+    @Test
     public void MapResponseTest_CreateTransaction() throws GatewayException {
         // Arrange
         String rawJson = "{\"id\":\"TRN_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"type\":\"SALE\",\"status\":\"PREAUTHORIZED\",\"channel\":\"CNP\",\"capture_mode\":\"LATER\",\"amount\":\"1400\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"reference\":\"15fbcdd9-8626-4e29-aae8-050f823f995f\",\"payment_method\":{\"id\":\"PMT_9a8f1b66-58e3-409d-86df-ed5fb14ad2f6\",\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"card\":{\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"PSkAnccWLNMTcRmm\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\"}},\"batch_id\":\"\",\"action\":{\"id\":\"ACT_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"type\":\"PREAUTHORIZE\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"Uyq6PzRbkorv2D4RQGlldEtunEeGNZll\",\"app_name\":\"sample_app_CERT\"}}";
@@ -375,11 +375,11 @@ public class GpApiMappingTests extends BaseGpApiTest {
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
         assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getBatchReference());
         assertEquals(doc.get("action").getString("result_code"), transaction.getResponseCode());
-        if(doc.has("payment_method")) {
+        if (doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
             assertEquals(paymentMethod.getString("id"), transaction.getToken());
             assertEquals(paymentMethod.getString("result"), transaction.getAuthorizationCode());
-            if(paymentMethod.has("card")) {
+            if (paymentMethod.has("card")) {
                 JsonDoc card = paymentMethod.get("card");
                 assertEquals(card.getString("brand"), transaction.getCardType());
                 assertEquals(card.getString("masked_number_last4"), transaction.getCardLast4());

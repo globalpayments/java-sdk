@@ -88,8 +88,14 @@ public class GpApiAuthorizationRequestBuilder {
                     card.set("funding", builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.Debit ? "DEBIT" : "CREDIT"); // [DEBIT, CREDIT]
                 }
 
-                if (    builderPaymentMethod instanceof CreditCardData && StringUtils.isNullOrEmpty(((CreditCardData) cardData).getToken()) ||
-                        builderPaymentMethod instanceof EBT) {
+                boolean hasToken = false;
+                if (paymentMethod instanceof ITokenizable) {
+                    ITokenizable tokenData = (ITokenizable) paymentMethod;
+                    hasToken = (tokenData != null) && !StringUtils.isNullOrEmpty(tokenData.getToken());
+
+                }
+
+                if (!hasToken) {
                     paymentMethod.set("card", card);
                 }
 

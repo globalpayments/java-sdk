@@ -26,12 +26,10 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 @RunWith(Enclosed.class)
-public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
+public class GpApi3DSecureParameterizedTests extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
     private final static String ENROLLED = "ENROLLED";
-    private final static String AUTHENTICATION_COULD_NOT_BE_PERFORMED = "AUTHENTICATION_COULD_NOT_BE_PERFORMED";
-    private final static String AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED";
     private final static String NOT_AUTHENTICATED = "NOT_AUTHENTICATED";
     private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
     private final static String SUCCESS = "SUCCESS";
@@ -105,7 +103,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
             });
         }
 
-        @Parameterized.Parameter(0)
+        @Parameterized.Parameter()
         public String cardNumber;
         @Parameterized.Parameter(1)
         public String status;
@@ -181,7 +179,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
             });
         }
 
-        @Parameterized.Parameter(0)
+        @Parameterized.Parameter()
         public String cardNumber;
         @Parameterized.Parameter(1)
         public String status;
@@ -253,7 +251,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
             });
         }
 
-        @Parameterized.Parameter(0)
+        @Parameterized.Parameter()
         public String cardNumber;
         @Parameterized.Parameter(1)
         public String status;
@@ -307,7 +305,7 @@ public class GpApi3DSecureTestsParameterized extends BaseGpApiTest {
             });
         }
 
-        @Parameterized.Parameter(0)
+        @Parameterized.Parameter()
         public String cardNumber;
 
         @Test

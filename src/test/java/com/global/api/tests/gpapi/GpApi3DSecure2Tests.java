@@ -88,12 +88,12 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .setSdkInterface(SdkInterface.Both)
                         .setSdkUiTypes(SdkUiType.OOB)
                         .setEphemeralPublicKey(
-                                JsonDoc.parse(  "{" +
-                                                    "\"kty\":\"EC\"," +
-                                                    "\"crv\":\"P-256\"," +
-                                                    "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\"," +
-                                                    "\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
-                                                "}"
+                                JsonDoc.parse("{" +
+                                        "\"kty\":\"EC\"," +
+                                        "\"crv\":\"P-256\"," +
+                                        "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\"," +
+                                        "\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
+                                        "}"
                                 )
                         )
                         .setMaximumTimeout(50)
@@ -126,7 +126,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         boolean exceptionCaught = false;
         try {
@@ -161,7 +160,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
     }
 
     @Test
@@ -176,7 +174,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                             .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
             assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 //            assertNull(secureEcom.getPreference());
         }
     }
@@ -198,7 +195,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
     }
 
     @Test
@@ -213,7 +209,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                             .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
             assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         }
     }
 
@@ -250,7 +245,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
     }
 
     @Test
@@ -267,7 +261,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         boolean exceptionCaught = false;
         try {
@@ -304,7 +297,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
     }
 
     @Test
@@ -321,7 +313,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                             .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
             assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         }
     }
 
@@ -344,7 +335,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
     }
 
     /**
@@ -360,7 +350,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -377,7 +366,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -392,7 +380,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -410,7 +397,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
 
         boolean exceptionCaught = false;
         try {
@@ -450,7 +436,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -467,7 +452,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -480,7 +464,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -497,7 +480,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -524,7 +506,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -550,7 +531,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -636,9 +616,9 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         ThreeDSecure getAuthData =
                 Secure3dService
-                    .getAuthenticationData()
-                    .withServerTransactionId(initAuth.getServerTransactionId())
-                    .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertEquals(CHALLENGE_REQUIRED, getAuthData.getStatus());
     }
@@ -677,7 +657,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
             assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
             assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
         }
     }
 
@@ -689,6 +668,8 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withAmount(amount)
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -707,7 +688,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
+        assertNull(secureEcom.getEci());
     }
 
     @Test
@@ -720,7 +701,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -738,7 +718,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -751,7 +730,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -770,7 +748,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
 
         assertThreeDSResponse(initAuth, CHALLENGE_REQUIRED, Secure3dVersion.TWO);
         assertTrue(initAuth.isChallengeMandated());
-//        assertEquals("05",secureEcom.getEci());
     }
 
     @Test
@@ -785,7 +762,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -835,7 +811,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                             .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
             assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertFalse(secureEcom.isChallengeMandated());
 
             ThreeDSecure initAuth =
@@ -859,7 +834,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
             assertNotNull(initAuth.getChallengeReturnUrl());
             assertNotNull(initAuth.getMessageType());
             assertNotNull(initAuth.getSessionDataFieldName());
-            // assertEquals("05",secureEcom.getEci());
+            assertEquals("05", secureEcom.getEci());
         }
     }
 
@@ -943,6 +918,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
         assertNotNull(secureEcom.getChallengeReturnUrl());
         assertNotNull(secureEcom.getMessageType());
         assertNotNull(secureEcom.getSessionDataFieldName());
+        assertEquals("05", secureEcom.getEci());
 
         boolean exceptionCaught = false;
         try {
@@ -1021,7 +997,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -1058,7 +1033,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -1091,7 +1065,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         boolean exceptionCaught = false;
         try {
@@ -1109,7 +1082,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40233", ex.getResponseText());
-            assert(ex.getMessage().startsWith("Status Code: 400 - Required Data Element browser_data."));
+            assert (ex.getMessage().startsWith("Status Code: 400 - Required Data Element browser_data."));
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -1128,7 +1101,6 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
                         .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
 
         assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
 
         boolean exceptionCaught = false;
         try {

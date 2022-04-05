@@ -148,7 +148,7 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // Credentials on this test have not permissions to delete a tokenized card
+    // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void DeleteTokenizedPaymentMethod_WithNonExistingId() throws ApiException {
@@ -182,7 +182,7 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // Credentials on this test have not permissions to delete a tokenized card
+    // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void DeleteTokenizedPaymentMethod_WithRandomId() throws ApiException {
@@ -208,7 +208,7 @@ public class GpApiTokenManagementErrorTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // Credentials on this test have not permissions to delete a tokenized card
+    // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void DeleteTokenizedPaymentMethod_WithMalformedId() throws ApiException {

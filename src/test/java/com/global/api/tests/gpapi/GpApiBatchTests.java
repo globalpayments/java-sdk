@@ -443,7 +443,7 @@ public class GpApiBatchTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                // These credentials have NOT permissions for executing BATCH
+                // These credentials have NO permissions for executing BATCH
                 .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
                 .setAppKey("qM31FmlFiyXRHGYh")
                 .setChannel(Channel.CardPresent.getValue());

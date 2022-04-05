@@ -1,5 +1,31 @@
 # Changelog
 
+## v7.0.1 (04/05/2022)
+
+### Enhancements:
+
+- Added challenge request indicator on 3DS2 initiate step on Gp3DSProvider
+- Aligned processAuthorization() logic of an APM to .NET & PHP SDKs.
+- Updated Misc Tests
+- Deprecate verifySignature() and VerifyEnrolled() from CreditCardData 
+- Updated BaseGpApiTest Credentials
+- Changed TimeCreated field on Stored Payments Method from Date to DateTime
+
+#### Bug Fixes:
+
+- Fixed Multicapture information on the response of Authorize transaction (GpApi)
+- Fixed for card information not to be sent into request when using tokenized card (GpApi)
+
+---
+
+## v7.0.0 (03/24/2022)
+
+### Enhancements:
+
+- NTS Connector Phase 1
+
+---
+
 ## v6.3.7 (03/22/2022)
 
 ### Enhancements:

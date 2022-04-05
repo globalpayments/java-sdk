@@ -111,7 +111,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("merchant_id", merchantId)
                     .set("account_id", accountId)
                     .set("challenge_notification_url", challengeNotificationUrl)
-                    .set("challenge_request_indicator", builder.getChallengeRequestIndicator())
+                    .set("challenge_request_indicator", builder.getChallengeRequestIndicator().getValue())
                     .set("method_url_completion", builder.getMethodUrlCompletion() != null ? builder.getMethodUrlCompletion().getValue() : "")
                     .set("merchant_contact_url", merchantContactUrl)
                     .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? builder.getMerchantInitiatedRequestType().getValue() : "")

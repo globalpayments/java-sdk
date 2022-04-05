@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * How to have a success running test. When you will run the test in the console it will be printed the
- * Paypal redirect url. You need to copy the link and open it in a browser, do the login wih your Paypal
- * credentials and authorize the payment in the Paypal form. You will be redirected to a blank page with a
+ * PayPal redirect url. You need to copy the link and open it in a browser, do the login wih your PayPal
+ * credentials and authorize the payment in the PayPal form. You will be redirected to a blank page with a
  * printed message like this: { "success": true }. This has to be done within a 25 seconds timeframe.
  * In case you need more time update the sleep() to what you need.
  */

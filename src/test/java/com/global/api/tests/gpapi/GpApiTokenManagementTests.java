@@ -223,7 +223,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // Credentials on this test have not permissions to delete a tokenized card
+    // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void DeleteToken() throws ApiException {
@@ -244,7 +244,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
     }
 
     @Ignore
-    // Credentials on this test have not permissions to delete a tokenized card
+    // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
     public void DeleteToken_WithIdempotencyKey() throws ApiException {

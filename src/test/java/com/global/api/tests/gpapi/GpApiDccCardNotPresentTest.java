@@ -10,7 +10,6 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -357,7 +356,8 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(transactionStatus.getValue(), transaction.getResponseMessage());
-        assertEquals(expectedDccAmountValue, transaction.getDccRateData().getCardHolderAmount());
+        if (!transactionStatus.equals(TransactionStatus.Reversed))
+            assertEquals(expectedDccAmountValue, transaction.getDccRateData().getCardHolderAmount());
     }
 
 }

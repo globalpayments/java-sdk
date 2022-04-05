@@ -37,7 +37,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
     private final static String NOT_ENROLLED = "NOT_ENROLLED";
     private final static String SUCCESS_AUTHENTICATED = "SUCCESS_AUTHENTICATED";
 
-    private CreditCardData card;
+    private final CreditCardData card;
     private final Address shippingAddress;
     private final Address billingAddress;
     private final BrowserData browserData;
@@ -379,7 +379,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
             assertNotNull(secureEcom);
             assertEquals(status[i], secureEcom.getStatus());
-            String liabilityShift = (status[i] == "SUCCESS_ATTEMPT_MADE") ? "YES" : "NO";
+            String liabilityShift = (status[i].equals("SUCCESS_ATTEMPT_MADE")) ? "YES" : "NO";
             assertEquals(liabilityShift, secureEcom.getLiabilityShift());
         }
     }
@@ -709,76 +709,6 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertTrue(initAuth.isChallengeMandated());
         assertNotNull(initAuth.getIssuerAcsUrl());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
-
-        // Perform ACS authentication
-        GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());
-        String authResponse = acsClient.authenticate_v2(initAuth);
-        assertEquals("{\"success\":true}", authResponse);
-
-        // Get authentication data
-        secureEcom =
-                Secure3dService
-                        .getAuthenticationData()
-                        .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
-
-        assertNotNull(secureEcom);
-        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
-        assertEquals("YES", secureEcom.getLiabilityShift());
-
-        card.setThreeDSecure(secureEcom);
-
-        // Create transaction
-        Transaction response =
-                card
-                        .charge(amount)
-                        .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
-
-        assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
-    }
-
-    @Test
-    public void CardHolderEnrolled_ChallengeRequired_v2_WithMobileSdk() throws Exception {
-        // Challenge required scenario
-        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
-
-        // Check enrollment
-        ThreeDSecure secureEcom =
-                Secure3dService
-                        .checkEnrollment(card)
-                        .withCurrency(currency)
-                        .withAmount(amount)
-                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
-
-        assertNotNull(secureEcom);
-        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
-        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
-        assertEquals(AVAILABLE, secureEcom.getStatus());
-
-        // Initiate authentication
-        ThreeDSecure initAuth =
-                Secure3dService
-                        .initiateAuthentication(card, secureEcom)
-                        .withAmount(amount)
-                        .withCurrency(currency)
-                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
-                        .withMobileData(mobileData)
-                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
-                        .withOrderCreateDate(DateTime.now())
-                        .withAddress(shippingAddress, AddressType.Shipping)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
-
-        assertNotNull(initAuth);
-        assertEquals(CHALLENGE_REQUIRED, initAuth.getStatus());
-        assertTrue(initAuth.isChallengeMandated());
-        assertNotNull(initAuth.getIssuerAcsUrl());
-        assertNotNull(initAuth.getPayerAuthenticationRequest());
-        assertNotNull(initAuth.getAcsInterface());
-        assertNotNull(initAuth.getAcsUiTemplate());
 
         // Perform ACS authentication
         GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());

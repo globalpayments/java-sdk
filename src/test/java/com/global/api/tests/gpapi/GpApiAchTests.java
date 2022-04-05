@@ -11,9 +11,8 @@ import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import com.global.api.utils.DateUtils;
 import lombok.var;
-import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,9 +24,9 @@ import static org.junit.Assert.assertNotNull;
 
 public class GpApiAchTests extends BaseGpApiTest {
 
-    eCheck eCheck;
-    Address address;
-    Customer customer;
+    private eCheck eCheck;
+    private Address address;
+    private Customer customer;
 
     private final String CURRENCY = "USD";
     private final BigDecimal AMOUNT = new BigDecimal(10);
@@ -97,7 +96,7 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .withCustomer(customer)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertResponse(response, TransactionStatus.Captured);
+        assertResponse(response);
     }
 
     @Test
@@ -110,20 +109,20 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .withCustomer(customer)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertResponse(response, TransactionStatus.Captured);
+        assertResponse(response);
     }
 
     @Test
     @Ignore("GP-API sandbox limitation")
     public void CheckRefundExistingSale() throws ApiException {
-        var amount = new BigDecimal(1.29);
+        var amount = new BigDecimal("1.29");
 
         var response =
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -1))
-                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(), -2))
+                        .where(SearchCriteria.StartDate, LocalDate.now().minusDays(2).toDate())
+                        .and(SearchCriteria.EndDate, LocalDate.now().minusDays(2).toDate())
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
                         .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)
@@ -141,10 +140,10 @@ public class GpApiAchTests extends BaseGpApiTest {
         var resp =
                 transaction
                         .refund()
-                        .withCurrency("USD")
+                        .withCurrency(CURRENCY)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertResponse(resp, TransactionStatus.Captured);
+        assertResponse(resp);
     }
 
     @Test
@@ -160,8 +159,8 @@ public class GpApiAchTests extends BaseGpApiTest {
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                        .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -365))
-                        .and(SearchCriteria.EndDate, DateUtils.addDays(DateTime.now().toDate(), -2))
+                        .where(SearchCriteria.StartDate, LocalDate.now().minusYears(1).toDate())
+                        .and(SearchCriteria.EndDate, LocalDate.now().minusDays(2).toDate())
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
                         .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)
@@ -185,13 +184,13 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .withBankTransferDetails(eCheckReauth)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertResponse(resp, TransactionStatus.Captured);
+        assertResponse(resp);
     }
 
-    private void assertResponse(Transaction response, TransactionStatus transactionStatus) {
+    private void assertResponse(Transaction response) {
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals(transactionStatus.getValue(), response.getResponseMessage());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
 }

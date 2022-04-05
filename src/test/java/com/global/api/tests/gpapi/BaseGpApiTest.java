@@ -9,8 +9,8 @@ public class BaseGpApiTest {
     // ================================================================================
     // Latest Credentials
     // ================================================================================
-    static final String APP_ID = "yDkdruxQ7hUjm8p76SaeBVAUnahESP5P";
-    static final String APP_KEY = "o8C8CYrgXNELI46x";
+    static final String APP_ID = "x0lQh0iLV0fOkmeAyIDyBqrP9U5QaiKc";
+    static final String APP_KEY = "DYcEE2GpSzblo0ib";
     // ================================================================================
 
     // ================================================================================

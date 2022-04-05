@@ -239,8 +239,8 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
     @Test
     public void ReportFindTransactionsPaged_By_Amount_And_Currency_And_Country() throws ApiException {
         BigDecimal amount = new BigDecimal("1.12");
-        String currency = "aud"; //This is case sensitive
-        String country = "AU"; //This is case sensitive
+        String currency = "aud"; //This is case-sensitive
+        String country = "AU"; //This is case-sensitive
 
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -260,7 +260,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
 
     @Test
     public void ReportFindTransactionsPaged_By_WrongCurrency() throws ApiException {
-        String currency = "aUd"; //This is case sensitive
+        String currency = "aUd"; //This is case-sensitive
 
         TransactionSummaryPaged transactions =
                 ReportingService

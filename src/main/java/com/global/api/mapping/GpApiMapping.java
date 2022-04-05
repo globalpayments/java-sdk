@@ -102,6 +102,7 @@ public class GpApiMapping {
                     transaction.setAvsAddressResponse(card.getString("avs_address_result"));
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
                     transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
+                    transaction.setMultiCapturePaymentCount(getIsMultiCapture(json));
                     transaction.setPaymentMethodType(getPaymentMehodType(json) != null ? getPaymentMehodType(json) : transaction.getPaymentMethodType());
                     transaction.setDccRateData(mapDccInfo(json));
                 }
@@ -109,6 +110,18 @@ public class GpApiMapping {
         }
 
         return transaction;
+    }
+
+    private static Integer getIsMultiCapture(JsonDoc json) {
+        if (!StringUtils.isNullOrEmpty(json.getString("capture_mode"))) {
+            switch (json.getString("capture_mode")) {
+                case "MULTIPLE":
+                    return 1;
+                default:
+                    return null;
+            }
+        }
+        return null;
     }
 
     private static PaymentMethodType getPaymentMehodType(JsonDoc json) {

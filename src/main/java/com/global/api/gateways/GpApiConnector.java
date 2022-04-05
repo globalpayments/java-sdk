@@ -229,7 +229,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
-            if (builder.getPaymentMethod() instanceof AlternativePaymentMethod && builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.APM) {
+            if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
                 return GpApiMapping.MapResponseAPM(response);
             }
 

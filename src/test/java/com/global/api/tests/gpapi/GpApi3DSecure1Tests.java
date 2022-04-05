@@ -201,7 +201,7 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
         assertEquals(NOT_ENROLLED, secureEcom.getStatus());
         assertFalse(secureEcom.isChallengeMandated());
-        // assertEquals("6", secureEcom.getEci());
+        assertEquals("6", secureEcom.getEci());
     }
 
     /**
@@ -338,7 +338,7 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
         assertEquals(NOT_ENROLLED, secureEcom.getStatus());
         assertFalse(secureEcom.isChallengeMandated());
-//        assertEquals("6", secureEcom.getEci());
+        assertEquals("6", secureEcom.getEci());
 
         boolean exceptionCaught = false;
         try {
@@ -395,5 +395,6 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNotNull(secureEcom.getMessageType());
         assertEquals("1.0.0", secureEcom.getMessageVersion());
+        assertNull(secureEcom.getEci());
     }
 }
