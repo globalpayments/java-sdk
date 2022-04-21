@@ -25,8 +25,8 @@ public class GpApiSdkCertification {
     public void setupGpApi() throws ApiException {
         GpApiConfig gpApiConfig = new GpApiConfig();
         gpApiConfig
-                .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
-                .setAppKey("qM31FmlFiyXRHGYh")
+                .setAppId("x0lQh0iLV0fOkmeAyIDyBqrP9U5QaiKc")
+                .setAppKey("DYcEE2GpSzblo0ib")
                 .setChannel(Channel.CardNotPresent.getValue());
 
         gpApiConfig.setEnableLogging(true);
@@ -499,6 +499,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 
@@ -515,6 +516,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50024", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - currency card combination not allowed", ex.getMessage());
         }
     }
 
@@ -534,6 +536,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 
@@ -553,9 +556,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
-//            assertEquals("Error occurred while communicating with gateway.", ex.getMessage());
-//            assertEquals("502", ex.getResponseCode());
-//            assertEquals("Server returned HTTP response code: 502 for URL: https://apis.sandbox.globalpay.com/ucp/transactions", ex.getResponseText());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 
@@ -573,6 +574,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 
@@ -592,6 +594,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 
@@ -611,6 +614,7 @@ public class GpApiSdkCertification {
         } catch (GatewayException ex) {
             assertEquals("50013", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
         }
     }
 

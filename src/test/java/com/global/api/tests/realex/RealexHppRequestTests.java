@@ -107,6 +107,44 @@ public class RealexHppRequestTests {
         assertEquals("00", parsedResponse.getResponseCode());
     }
 
+    @Test
+    public void creditVerify_3DS() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("3dsecure");
+        config.setSharedSecret("secret");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerEmail("james.mason@example.com");
+        testHostedPaymentData.setCustomerPhoneMobile("44|07123456789");
+        testHostedPaymentData.setAddressesMatch(false);
+        testHostedPaymentData.setCustomerCountry("GB");
+        testHostedPaymentData.setCustomerFirstName("Jason");
+        testHostedPaymentData.setCustomerLastName("Mason");
+        testHostedPaymentData.setMerchantResponseUrl("http://requestb.in/10q2bjb1");
+        testHostedPaymentData.setTransactionStatusUrl("http://requestb.in/10q2bjb1");
+
+        _service = new HostedService(config, "3ds");
+
+        String json = _service.verify(new BigDecimal("0"))
+                .withCurrency("EUR")
+                .withCustomerId("123456")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withHostedPaymentData(testHostedPaymentData)
+                .serialize("3ds");
+        assertNotNull(json);
+
+        String response = _client.sendRequest(json);
+        Transaction parsedResponse = _service.parseResponse(response, true, "3ds");
+        assertNotNull(response);
+        assertEquals("00", parsedResponse.getResponseCode());
+    }
+
     @Test(expected = BuilderException.class)
     public void authNoAmount() throws ApiException {
         _service.authorize(null).withCurrency("USD").serialize();

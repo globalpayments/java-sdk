@@ -88,6 +88,9 @@ public class GpApiMapping {
             if (json.has("payment_method")) {
                 JsonDoc paymentMethod = json.get("payment_method");
 
+                transaction.setFingerPrint(paymentMethod.getString("fingerprint"));
+                transaction.setFingerPrintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
+
                 transaction.setToken(paymentMethod.getString("id"));
                 transaction.setAuthorizationCode(paymentMethod.getString("result"));
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## v7.0.2 (04/21/2022)
+
+### Enhancements:
+
+- Added Fingerprint 
+- Updated code for Secure3D and WalletData Element
+- Added Challenge Indicator Nullity validation
+- Fixed comments on verfifySignature methods
+- Aligned HostedPaymentData constructor with other SDKs
+- Updated Misc Tests
+
 ## v7.0.1 (04/05/2022)
 
 ### Enhancements:

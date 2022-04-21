@@ -118,7 +118,7 @@ public class RealexHppClient {
 
         // build request
         AuthorizationBuilder gatewayRequest = null;
-        if (amount == null) {
+        if (amount == null || amount.equals("000")) {
             boolean validate = json.getString("VALIDATE_CARD_ONLY").equals("1");
             if (validate) {
                 gatewayRequest = ((CreditCardData) paymentMethod).verify();

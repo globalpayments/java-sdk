@@ -2,6 +2,7 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.Customer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.TransactionStatus;
@@ -62,6 +63,96 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
+    }
+
+    @Test
+    public void CreditSaleWithFingerPrint() throws ApiException {
+        Address address = new Address();
+        address.setStreetAddress1("123 Main St.");
+        address.setCity("Downtown");
+        address.setState("NJ");
+        address.setCountry("US");
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setDeviceFingerPrint("ALWAYS");
+
+        Transaction response =
+                card
+                        .charge(69)
+                        .withCurrency("GBP")
+                        .withAddress(address)
+                        .withCustomerData(customer)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+        assertNotNull(response.getFingerPrint());
+        assertNotNull(response.getFingerPrintIndicator());
+        assertEquals("EXISTS",response.getFingerPrintIndicator());
+    }
+
+    @Test
+    public void VerifyTokenizedPaymentMethodWithFingerprint() throws ApiException {
+        Customer customer = new Customer();
+        customer.setDeviceFingerPrint("ALWAYS");
+
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+
+        Transaction response =
+                tokenizedCard
+                        .verify()
+                        .withCurrency("GBP")
+                        .withCustomerData(customer)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("VERIFIED", response.getResponseMessage());
+        assertNotNull(response.getFingerPrint());
+    }
+
+    @Test
+    public void CreditSaleWithFingerPrint_OnSuccess() throws ApiException {
+        Customer customer = new Customer();
+        customer.setDeviceFingerPrint("ON_SUCCESS");
+
+        Transaction response =
+                card
+                        .charge(2)
+                        .withCurrency("GBP")
+                        .withCustomerData(customer)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+        assertNotNull(response.getFingerPrint());
+        assertNotNull(response.getFingerPrintIndicator());
+        assertEquals("EXISTS",response.getFingerPrintIndicator());
+    }
+
+    @Test
+    public void CreditSaleWithFingerPrint_OnSuccess_WithDeclinedAuth() throws ApiException {
+        card.setNumber("4000120000001154");
+
+        Customer customer = new Customer();
+        customer.setDeviceFingerPrint("ON_SUCCESS");
+
+        Transaction response =
+                card
+                        .charge(2)
+                        .withCurrency("GBP")
+                        .withCustomerData(customer)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(DECLINED, response.getResponseCode());
+        assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
+        assertEquals("",response.getFingerPrint());
+        assertEquals("",response.getFingerPrintIndicator());
     }
 
     @Test
@@ -450,6 +541,25 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
             assertEquals(String.format("Status Code: 404 - Transaction %s not found at this location.", charge.getTransactionId()), ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditRefund_ZeroAmount() throws ApiException {
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .refund(0)
+                    .withCurrency(currency)
+                    .execute(GP_API_CONFIG_NAME);
+
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("50020", ex.getResponseText());
+            assertEquals("Status Code: 400 - Zero negative or insufficient amount specified ", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

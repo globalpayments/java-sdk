@@ -185,12 +185,25 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             if(card instanceof CreditCardData) {
                 ThreeDSecure secureEcom = ((CreditCardData)card).getThreeDSecure();
                 if(secureEcom != null) {
-                    Element secureEcommerce = et.subElement(block1, "SecureECommerce");
-                    et.subElement(secureEcommerce, "PaymentDataSource", secureEcom.getPaymentDataSource());
-                    et.subElement(secureEcommerce, "TypeOfPaymentData", secureEcom.getPaymentDataType());
-                    et.subElement(secureEcommerce, "PaymentData", secureEcom.getCavv());
-                    et.subElement(secureEcommerce, "ECommerceIndicator", secureEcom.getEci());
-                    et.subElement(secureEcommerce, "XID", secureEcom.getXid());
+                    // 3d Secure Element
+                    if(!StringUtils.isNullOrEmpty(secureEcom.getEci())) {
+                        Element secure3D = et.subElement(block1, "Secure3D");
+                        et.subElement(secure3D, "Version", getSecure3DVersion(secureEcom.getVersion()));
+                        et.subElement(secure3D, "AuthenticationValue", secureEcom.getCavv());
+                        et.subElement(secure3D, "ECI", secureEcom.getEci());
+                        et.subElement(secure3D, "DirectoryServerTxnId", secureEcom.getXid());
+                    }
+
+                    // WalletData Element
+                    if(!StringUtils.isNullOrEmpty(secureEcom.getPaymentDataSource())) {
+                        Element walletData = et.subElement(block1, "WalletData");
+                        et.subElement(walletData, "PaymentSource", secureEcom.getPaymentDataSource());
+                        et.subElement(walletData, "Cryptogram", secureEcom.getCavv());
+                        et.subElement(walletData, "ECI", secureEcom.getEci());
+                        if (((CreditCardData) card).getMobileType() != null) {
+                            et.subElement(walletData, "DigitalPaymentToken", ((CreditCardData)card).getToken());
+                        }
+                    }
                 }
             }
 
@@ -877,8 +890,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         return "CreditOfflineSale";
                     else if(modifier.equals(TransactionModifier.Recurring))
                         return "RecurringBilling";
-                    else if(modifier.equals(TransactionModifier.EncryptedMobile))
-                        throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                     else return "CreditSale";
                 }
                 else if (paymentMethodType.equals(PaymentMethodType.Recurring)) {
@@ -1141,5 +1152,19 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         };
 
         return dateFormat.format(new Date()).replace("::", ":");
+    }
+
+    private int getSecure3DVersion(Secure3dVersion version){
+        if(version == null){
+            return 1;
+        }
+        switch (version){
+            case TWO:
+                return 2;
+            case ONE:
+            case ANY:
+            default:
+                return 1;
+        }
     }
 }

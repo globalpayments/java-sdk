@@ -28,7 +28,6 @@ public class BaseGpApiTest {
     // ================================================================================
 
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
-    static final String GP_API_CONFIG_NAME_CARD_PRESENT = "GP_API_CONFIG_CARD_PRESENT";
 
     static final String SUCCESS = "SUCCESS";
     static final String DECLINED = "DECLINED";

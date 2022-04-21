@@ -140,13 +140,13 @@ public class CreditCardData extends Credit implements ICardData {
     }
 
     /**
-     * @deprecated verifySignature is deprecated. Please use CheckEnrollment from Secure3dService
+     * @deprecated verifySignature is deprecated. Please use getAuthenticationData from Secure3dService
      */
     public boolean verifySignature(String authorizationResponse, BigDecimal amount, String currency, String orderId) throws ApiException {
         return verifySignature(authorizationResponse, amount, currency, orderId, "default");
     }
     /**
-     * @deprecated verifySignature is deprecated. Please use CheckEnrollment from Secure3dService
+     * @deprecated verifySignature is deprecated. Please use getAuthenticationData from Secure3dService
      */
     public boolean verifySignature(String authorizationResponse, BigDecimal amount, String currency, String orderId, String configName) throws ApiException {
         // ensure we have an object
@@ -160,19 +160,19 @@ public class CreditCardData extends Credit implements ICardData {
         return verifySignature(authorizationResponse, null, configName);
     }
     /**
-     * @deprecated verifySignature is deprecated. Please use CheckEnrollment from Secure3dService
+     * @deprecated verifySignature is deprecated. Please use getAuthenticationData from Secure3dService
      */
     public boolean verifySignature(String authorizationResponse) throws ApiException {
         return verifySignature(authorizationResponse, null, "default");
     }
     /**
-     * @deprecated verifySignature is deprecated. Please use CheckEnrollment from Secure3dService
+     * @deprecated verifySignature is deprecated. Please use getAuthenticationData from Secure3dService
      */
     public boolean verifySignature(String authorizationResponse, MerchantDataCollection merchantData) throws ApiException {
         return verifySignature(authorizationResponse, merchantData, "default");
     }
     /**
-     * @deprecated verifySignature is deprecated. Please use CheckEnrollment from Secure3dService
+     * @deprecated verifySignature is deprecated. Please use getAuthenticationData from Secure3dService
      */
     public boolean verifySignature(String authorizationResponse, MerchantDataCollection merchantData, String configName) throws ApiException {
         // ensure we have an object

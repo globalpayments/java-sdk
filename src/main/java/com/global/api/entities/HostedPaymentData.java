@@ -161,8 +161,6 @@ public class HostedPaymentData {
 		this.transactionStatusUrl = transactionStatusUrl;
 	}
 	public HostedPaymentData() {
-        supplementaryData = new HashMap<String, String>();
-        customerIsEditable = false;
-        customerExists = true;
+        supplementaryData = new HashMap<>();
     }
 }

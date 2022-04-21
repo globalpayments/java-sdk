@@ -104,7 +104,6 @@ public class GpApiAuthorizationRequestBuilder {
                     tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
-                    tokenizationData.set("name", "");
                     tokenizationData.set("card", card);
 
                     return
@@ -144,7 +143,7 @@ public class GpApiAuthorizationRequestBuilder {
                         tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
                         tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                         tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
-                        tokenizationData.set("name", "");
+                        tokenizationData.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
                         tokenizationData.set("card", card);
 
                         return
@@ -168,10 +167,9 @@ public class GpApiAuthorizationRequestBuilder {
                             verificationData.remove("payment_method");
                             verificationData.set("payment_method",
                                     new JsonDoc()
-                                            //.set("entry_mode", getEntryMode(builder, Channel.valueOf(gateway.getGpApiConfig().getChannel())))
                                             .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel()))
                                             .set("id", ((ITokenizable) builderPaymentMethod).getToken())
-                            );
+                                            .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null));
                         }
 
                         return
@@ -204,7 +202,8 @@ public class GpApiAuthorizationRequestBuilder {
                             .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? UUID.randomUUID().toString() : builder.getClientTransactionId())
                             .set("currency", builder.getCurrency())
                             .set("country", gateway.getGpApiConfig().getCountry())
-                            .set("payment_method", paymentMethod);
+                            .set("payment_method", paymentMethod)
+                            .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
 
                     return
                             new GpApiRequest()
@@ -262,6 +261,8 @@ public class GpApiAuthorizationRequestBuilder {
 
                 paymentMethod.set("authentication", authentication);
             }
+
+            paymentMethod.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
         }
 
         if(builderPaymentMethod instanceof EBT) {
@@ -363,8 +364,8 @@ public class GpApiAuthorizationRequestBuilder {
                 .set("country", gateway.getGpApiConfig().getCountry())
                 //.set("language", language)
                 .set("ip_address", builder.getCustomerIpAddress())
+                //.set("site_reference", "")
                 .set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null)
-                //.set("site_reference", "") //
                 .set("payment_method", paymentMethod)
                 .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
                         new JsonDoc().set("id", builder.getPaymentLinkId()) : null);

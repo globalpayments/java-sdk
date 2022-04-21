@@ -35,6 +35,8 @@ public class Transaction {
     private AlternativePaymentResponse alternativePaymentResponse;
     private String cardType;
     private String cardLast4;
+    @Getter @Setter private String fingerPrint;
+    @Getter @Setter private String fingerPrintIndicator;
     private String cardNumber;
     private int cardExpMonth;
     private int cardExpYear;
