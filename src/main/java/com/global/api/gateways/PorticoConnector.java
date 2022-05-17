@@ -506,20 +506,27 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             // Transaction ID
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
-            // reversal
-            if(type.equals(TransactionType.Reversal)) {
+            // reversal and Capture
+            if(type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture)) {
                 // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
 
                 // reversal reason code & PosSequenceNumber
                 if(paymentType.equals(PaymentMethodType.Debit)) {
+                    if(builder.getEmvChipCondition() != null) {
+                        String chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
+                        et.subElement(root, "EMVChipCondition", chipCondition);
+                    }
                     et.subElement(root, "ReversalReasonCode", builder.getReversalReasonCode());
                     et.subElement(root, "PosSequenceNbr", builder.getPosSequenceNumber());
+                    et.subElement(root, "AccountType",
+                            EnumUtils.getMapping(Target.Portico, builder.getAccountType()));
 
                     // track data
                     if(paymentMethod != null) {
                         DebitTrackData track = (DebitTrackData)paymentMethod;
-                        et.subElement(root, "TrackData", track.getValue());
+                        if(type.equals(TransactionType.Reversal))
+                            et.subElement(root, "TrackData", track.getValue());
                         et.subElement(root, "PinBlock", track.getPinBlock());
 
                         EncryptionData encryptionData = track.getEncryptionData();
@@ -566,27 +573,31 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             // Token Management
-            if (builder.getTransactionType() == TransactionType.TokenUpdate || builder.getTransactionType() == TransactionType.TokenDelete) {
-                ITokenizable token = (ITokenizable) builder.getPaymentMethod();
+            if (builder.getTransactionType() == TransactionType.TokenUpdate
+                        || builder.getTransactionType() == TransactionType.TokenDelete
+                        || builder.getTransactionType() == TransactionType.Capture) {
+                if(builder.getPaymentMethod() instanceof ITokenizable) {
+                    ITokenizable token = (ITokenizable) builder.getPaymentMethod();
 
-                // Set the token value
-                et.subElement(root, "TokenValue", token.getToken());
+                    // Set the token value
+                    et.subElement(root, "TokenValue", token.getToken());
 
-                Element tokenActions = et.subElement(root, "TokenActions");
-                if (builder.getTransactionType() == TransactionType.TokenUpdate) {
-                    CreditCardData card = (CreditCardData) builder.getPaymentMethod();
+                    Element tokenActions = et.subElement(root, "TokenActions");
+                    if (builder.getTransactionType() == TransactionType.TokenUpdate) {
+                        CreditCardData card = (CreditCardData) builder.getPaymentMethod();
 
-                    Element setElement = et.subElement(tokenActions, "Set");
+                        Element setElement = et.subElement(tokenActions, "Set");
 
-                    Element expMonth = et.subElement(setElement, "Attribute");
-                    et.subElement(expMonth, "Name", "expmonth");
-                    et.subElement(expMonth, "Value", card.getExpMonth());
+                        Element expMonth = et.subElement(setElement, "Attribute");
+                        et.subElement(expMonth, "Name", "expmonth");
+                        et.subElement(expMonth, "Value", card.getExpMonth());
 
-                    Element expYear = et.subElement(setElement, "Attribute");
-                    et.subElement(expYear, "Name", "expyear");
-                    et.subElement(expYear, "Value", card.getExpYear());
-                } else {
-                    et.subElement(tokenActions, "Delete");
+                        Element expYear = et.subElement(setElement, "Attribute");
+                        et.subElement(expYear, "Name", "expyear");
+                        et.subElement(expYear, "Value", card.getExpYear());
+                    } else {
+                        et.subElement(tokenActions, "Delete");
+                    }
                 }
             }
 
@@ -866,7 +877,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 return "CreditAccountVerify";
             case Capture:
-                return "CreditAddToBatch";
+                if(paymentMethodType.equals(PaymentMethodType.Credit))
+                    return "CreditAddToBatch";
+                else if(paymentMethodType.equals(PaymentMethodType.Debit))
+                    return "DebitAddToBatch";
+                throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
             case Auth:
                 if(paymentMethodType.equals(PaymentMethodType.Credit)) {
                     if(modifier.equals(TransactionModifier.Additional))
@@ -883,6 +898,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
                 else if(paymentMethodType.equals(PaymentMethodType.Recurring))
                     return "RecurringBillingAuth";
+                else if(paymentMethodType.equals(PaymentMethodType.Debit))
+                    return "DebitAuth";
                 throw new UnsupportedTransactionException();
             case Sale:
                 if (paymentMethodType.equals(PaymentMethodType.Credit)) {

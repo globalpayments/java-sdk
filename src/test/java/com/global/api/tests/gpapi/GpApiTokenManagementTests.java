@@ -272,7 +272,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
         // process an auto-capture authorization
         String tokenId =
                 card
-                        .tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.Single);
+                        .tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.SINGLE);
 
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(tokenId);

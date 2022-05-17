@@ -1,8 +1,8 @@
 package com.global.api.entities.enums;
 
 public enum PaymentMethodUsageMode implements IStringConstant {
-    Single("SINGLE"),
-    Multiple("MULTIPLE");
+    SINGLE("SINGLE"),
+    MULTIPLE("MULTIPLE");
 
     String value;
     PaymentMethodUsageMode(String value) {

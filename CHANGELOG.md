@@ -1,5 +1,13 @@
 # Changelog
 
+## v7.0.3 (05/16/2022)
+
+### Enhancements:
+
+- Update Payment Token
+- Portico: added DebitAuth and DebitAddToBatch
+- Portico: Updated the existing DebitReversal request with Track 2 Data
+
 ## v7.0.2 (04/21/2022)
 
 ### Enhancements:

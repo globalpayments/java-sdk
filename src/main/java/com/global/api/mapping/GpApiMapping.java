@@ -53,6 +53,9 @@ public class GpApiMapping {
                 case PAYMENT_METHOD_EDIT:
                 case PAYMENT_METHOD_DELETE:
                     transaction.setToken(json.getString("id"));
+                    if (!StringUtils.isNullOrEmpty(json.getString("usage_mode"))) {
+                        transaction.setTokenUsageMode(PaymentMethodUsageMode.valueOf(json.getString("usage_mode")));
+                    }
                     transaction.setTimestamp(json.getString("time_created"));
                     transaction.setReferenceNumber(json.getString("reference"));
 
@@ -62,11 +65,15 @@ public class GpApiMapping {
                         transaction.setCardType(card.getString("brand"));
                         transaction.setCardNumber(card.getString("number"));
                         transaction.setCardLast4(card.getString("masked_number_last4"));
-                        transaction.setCardExpMonth(card.getInt("expiry_month"));
-                        transaction.setCardExpYear(card.getInt("expiry_year"));
+                        if (!StringUtils.isNullOrEmpty(card.getString("expiry_month"))) {
+                            transaction.setCardExpMonth(card.getInt("expiry_month"));
+                        }
+                        if (!StringUtils.isNullOrEmpty(card.getString("expiry_year"))) {
+                            transaction.setCardExpYear(card.getInt("expiry_year"));
+                        }
                     }
 
-                    return transaction;
+                    break;
 
                 default:
                     break;

@@ -3,6 +3,7 @@ package com.global.api.entities;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionRebuilder;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
@@ -70,6 +71,7 @@ public class Transaction {
     private String transactionDescriptor;
     private String transactionToken;
     private String token;
+    @Getter @Setter private PaymentMethodUsageMode tokenUsageMode;
     private GiftCard giftCard;
     private TransactionReference transactionReference;
     private NtsResponse ntsResponse;
@@ -666,6 +668,15 @@ public class Transaction {
                 .withPaymentMethodType(paymentMethodType)
                 .build();
     }
+
+    public static Transaction fromId(String transactionId, PaymentMethodType paymentMethodType, IPaymentMethod paymentMethod) {
+        return new TransactionRebuilder()
+                .withTransactionId(transactionId)
+                .withPaymentMethod(paymentMethod)
+                .withPaymentMethodType(paymentMethodType)
+                .build();
+    }
+
 
     public static Transaction fromClientTransactionId(String clientTransactionId) {
         return fromClientTransactionId(clientTransactionId, null, PaymentMethodType.Credit);

@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
+    @Getter private AccountType accountType;
 	private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
@@ -56,6 +57,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
     private String tagData;
+    @Getter private PaymentMethodUsageMode paymentMethodUsageMode;
     private BigDecimal taxAmount;
     private TaxType taxType;
     private String timestamp;
@@ -553,6 +555,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.tagData = value;
         return this;
     }
+    public ManagementBuilder withPaymentMethodUsageMode(PaymentMethodUsageMode value) {
+        this.paymentMethodUsageMode = value;
+        return this;
+    }
     public ManagementBuilder withTaxAmount(BigDecimal value) {
         this.transactionModifier = TransactionModifier.LevelII;
         this.taxAmount = value;
@@ -605,7 +611,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.emvMaxPinEntry = emvMaxPinEntry;
         return this;
     }
-
+    public ManagementBuilder withAccountType(AccountType value) {
+        this.accountType = value;
+        return this;
+    }
     public ManagementBuilder(TransactionType type) {
         super(type, null);
     }

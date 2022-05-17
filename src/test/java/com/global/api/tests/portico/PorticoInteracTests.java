@@ -2,9 +2,7 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.AccountType;
-import com.global.api.entities.enums.EmvChipCondition;
-import com.global.api.entities.enums.EntryMethod;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.DebitTrackData;
@@ -21,20 +19,22 @@ public class PorticoInteracTests {
 
     public PorticoInteracTests() throws ApiException {
         GatewayConfig config = new GatewayConfig();
-        config.setLicenseId(139906);
-        config.setSiteId(139968);
-        config.setDeviceId(374);
-        config.setUsername("gateway382988");
-        config.setPassword("$Test123");
+        config.setLicenseId(374209);
+        config.setSiteId(374391);
+        config.setDeviceId(5246);
+        config.setUsername("gateway1082907");
+        config.setPassword("$Test1234");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 
         track = new DebitTrackData();
-        track.setValue(";4024720012345671=18125025432198712345?");
-        track.setEntryMethod(EntryMethod.Proximity);
-        track.setPinBlock("AFEC374574FC90623D010000116001EE");
+//        track.setValue(";4024720012345671=18125025432198712345?");
+//        track.setValue(";0012030000000003=2812220?");
+        track.setValue(";0012030000000003=2812220016290740?");
+        track.setEntryMethod(EntryMethod.Swipe);
+//        track.setPinBlock("AFEC374574FC90623D010000116001EE");
 
         tagData = "82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019";
     }
@@ -177,5 +177,135 @@ public class PorticoInteracTests {
                 .execute();
         assertNotNull(reversal);
         assertEquals(reversal.getResponseMessage(), "00", reversal.getResponseCode());
+    }
+
+    @Test
+    public void debitAuth() throws ApiException {
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("100"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withCardHolderLanguage("ENGLISH")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Savings)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitAddToBatch() throws ApiException {
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("14.01"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withCardHolderLanguage("ENGLISH")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Savings)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction transaction =
+                Transaction.fromId(
+                    response.getTransactionId(),
+                    PaymentMethodType.Debit,
+                    track
+                );
+
+        Transaction capture =
+                transaction
+                        .capture(new BigDecimal(16))
+                        .withCurrency("USD")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Savings)
+                        .withChipCondition(EmvChipCondition.ChipFailPreviousFail)
+                        .execute();
+        assertNotNull(capture);
+
+        assertEquals("00", capture.getResponseCode());
+    }
+
+    @Test
+    public void debitAuthChipConditionFailedTwice() throws ApiException {
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withCardHolderLanguage("ENGLISH")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Savings)
+                        .withChipCondition(EmvChipCondition.ChipFailPreviousFail)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+
+    @Test
+    public void debitAuthAccountTypeSavings() throws ApiException {
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withCardHolderLanguage("ENGLISH")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Savings)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitAuthAccountTypeChecking() throws ApiException {
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withCardHolderLanguage("ENGLISH")
+                        .withPosSequenceNumber("000010010180")
+                        .withTagData(tagData)
+                        .withAccountType(AccountType.Checking)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitReversalWithTransactionIDAndTrackData() throws ApiException {
+
+        // Preparing reversal transaction form the ID.
+        Transaction reversal = Transaction.fromId(
+                "1619977752",
+                PaymentMethodType.Debit,
+                track);
+
+        // Performing the reversal for the generated transaction.
+        Transaction response = reversal
+                .reverse(new BigDecimal("12.21"))
+                .withCurrency("USD")
+                .withTagData(tagData)
+                .withPosSequenceNumber("000010010130")
+                .withReversalReasonCode(ReversalReasonCode.ChipCardDecline)
+                .withInvoiceNumber("000027")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

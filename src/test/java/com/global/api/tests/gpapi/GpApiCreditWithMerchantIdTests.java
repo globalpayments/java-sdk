@@ -604,7 +604,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
 
     @Test
     public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
-        String token = card.tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.Single);
+        String token = card.tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.SINGLE);
 
         assertNotNull(token);
 

@@ -63,17 +63,24 @@ public class GpApiManagementRequestBuilder {
                             .setRequestBody(data.toString());
 
         }
-        else if (builderTransactionType == TransactionType.TokenUpdate && builderPaymentMethod instanceof CreditCardData) {
+        else if (builderTransactionType == TransactionType.TokenUpdate) {
+            if (!(builderPaymentMethod instanceof CreditCardData)) {
+                throw new GatewayException("Payment method doesn't support this action!");
+            }
+
             CreditCardData cardData = (CreditCardData) builderPaymentMethod;
 
             JsonDoc card =
                     new JsonDoc()
                             .set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : "")
-                            .set("expiry_year", cardData.getExpYear() != null ? StringUtils.padLeft(cardData.getExpYear().toString(), 4, '0').substring(2, 4) : "");
+                            .set("expiry_year", cardData.getExpYear() != null ? StringUtils.padLeft(cardData.getExpYear().toString(), 4, '0').substring(2, 4) : "")
+                            .set("number", cardData.getNumber() != null ? cardData.getNumber() : null);
 
             data =
                     new JsonDoc()
-                            .set("card", card);
+                            .set("card", card)
+                            .set("usage_mode", builder.getPaymentMethodUsageMode() != null ? builder.getPaymentMethodUsageMode() : null)
+                            .set("name", cardData.getCardHolderName() != null ? cardData.getCardHolderName() : null);
 
             return
                     new GpApiRequest()

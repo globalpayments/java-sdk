@@ -111,7 +111,23 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
 
     @Override
     public String tokenize(boolean verifyCard, String configName) throws ApiException {
-        return tokenize(verifyCard, configName, PaymentMethodUsageMode.Multiple);
+        return tokenize(verifyCard, configName, PaymentMethodUsageMode.MULTIPLE);
+    }
+
+    public AuthorizationBuilder tokenize(Boolean verifyCard, PaymentMethodUsageMode usageMode) {
+        if (verifyCard == null) {
+            verifyCard = true;
+        }
+
+        if (usageMode == null) {
+            usageMode = PaymentMethodUsageMode.MULTIPLE;
+        }
+
+        TransactionType type = verifyCard ? TransactionType.Verify : TransactionType.Tokenize;
+
+        return new AuthorizationBuilder(type, this)
+                .withRequestMultiUseToken(true)
+                .withPaymentMethodUsageMode(usageMode);
     }
 
     public String tokenize(boolean verifyCard, String configName, PaymentMethodUsageMode paymentMethodUsageMode) throws ApiException {
@@ -153,6 +169,16 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
                         .execute(configName);
 
         return true;
+    }
+
+    public ManagementBuilder updateToken() throws BuilderException {
+        if (StringUtils.isNullOrEmpty(this.getToken())) {
+            throw new BuilderException("Token cannot be null");
+        }
+
+        return
+                new ManagementBuilder(TransactionType.TokenUpdate)
+                        .withPaymentMethod(this);
     }
 
     public boolean deleteToken() throws ApiException {

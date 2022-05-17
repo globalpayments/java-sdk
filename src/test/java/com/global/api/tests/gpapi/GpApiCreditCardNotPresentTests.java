@@ -4,17 +4,21 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.TransactionStatus;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
+import com.global.api.services.ReportingService;
+import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
+import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -153,6 +157,120 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
         assertEquals("",response.getFingerPrint());
         assertEquals("",response.getFingerPrintIndicator());
+    }
+
+    @Test
+    public void UpdatePaymentToken() throws ApiException {
+        Date startDate = DateUtils.addDays(new Date(), -30);
+        Date endDate = DateUtils.addDays(new Date(), -3);
+
+
+        var response =
+                ReportingService
+                        .findStoredPaymentMethodsPaged(1, 1)
+                        .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertEquals(1, response.getResults().size());
+        String pmtToken = response.getResults().get(0).getId();     // Check if id or other field
+        assertNotNull(pmtToken);
+        assertNotNull(pmtToken);
+        var tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(pmtToken);
+        tokenizedCard.setCardHolderName("James BondUp");
+        tokenizedCard.setExpYear(DateTime.now().getYear() +1 );
+        tokenizedCard.setExpMonth(DateTime.now().getMonthOfYear());
+        tokenizedCard.setNumber("4263970000005262");
+
+        Transaction response2 =
+                tokenizedCard
+                        .updateToken()
+                        .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertEquals("SUCCESS", response2.getResponseCode());
+        assertEquals("ACTIVE", response2.getResponseMessage());
+        assertEquals(pmtToken, response2.getToken());
+        assertEquals(PaymentMethodUsageMode.MULTIPLE, response2.getTokenUsageMode());
+    }
+
+    @Test
+    public void CardTokenizationThenUpdateAndThenCharge() throws ApiException {
+        Transaction response =
+                card
+                        .tokenize(null, null)
+                        .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                        .execute(GP_API_CONFIG_NAME);
+
+        String tokenId = response.getToken();
+
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(tokenId);
+        tokenizedCard.setCardHolderName("GpApi");
+
+        Transaction responseUpdateToken =
+                tokenizedCard
+                        .updateToken()
+                        .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(responseUpdateToken);
+        assertEquals("SUCCESS", responseUpdateToken.getResponseCode());
+        assertEquals("ACTIVE", responseUpdateToken.getResponseMessage());
+        assertEquals("MULTIPLE", responseUpdateToken.getTokenUsageMode().getValue());
+
+        Transaction chargeResponse =
+                tokenizedCard
+                        .charge(1)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(chargeResponse);
+        assertEquals("SUCCESS", chargeResponse.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), chargeResponse.getResponseMessage());
+    }
+
+    @Test
+    public void CardTokenizationThenUpdateToSingleUsage() throws ApiException {
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken("PMT_" + UUID.randomUUID());
+
+        boolean exceptionCaught = false;
+
+        try {
+            tokenizedCard
+                    .updateToken()
+                    .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("50020", e.getResponseText());
+            assertEquals("Status Code: 400 - Tokentype can only be MULTI", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CardTokenizationThenUpdateWithoutUsageMode() throws ApiException {
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken("PMT_" + UUID.randomUUID());
+
+        boolean exceptionCaught = false;
+
+        try {
+            tokenizedCard
+                    .updateToken()
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("50021", e.getResponseText());
+            assertEquals("Status Code: 400 - Mandatory Fields missing [card expdate] See Developers Guide", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     @Test
