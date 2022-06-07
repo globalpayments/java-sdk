@@ -1,5 +1,15 @@
 # Changelog
 
+## v7.0.4 (06/07/2022)
+
+### Enhancements:
+
+- Adjust Sale Transaction
+- Adjust POST Search Payment Method
+- Adjust GET Dispute Document
+- Add New HPP Fields in the SDKs for HPP Capture Billing enhancement
+- Update VerifyTokenizedPaymentMethodWithFingerprint() test
+
 ## v7.0.3 (05/16/2022)
 
 ### Enhancements:

@@ -1,11 +1,12 @@
 package com.global.api.services;
 
-import com.global.api.entities.ActivityReport;
-import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.reporting.*;
-import com.global.api.entities.enums.ReportType;
 import com.global.api.builders.TransactionReportBuilder;
+import com.global.api.entities.ActivityReport;
+import com.global.api.entities.DisputeDocument;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.TransactionSummaryList;
+import com.global.api.entities.enums.ReportType;
+import com.global.api.entities.reporting.*;
 
 public class ReportingService {
 
@@ -34,6 +35,11 @@ public class ReportingService {
 
     public static TransactionReportBuilder<DisputeSummary> disputeDetail(String disputeId) {
         return new TransactionReportBuilder<DisputeSummary>(ReportType.DisputeDetail, DisputeSummary.class)
+                .withDisputeId(disputeId);
+    }
+
+    public static TransactionReportBuilder<DisputeDocument> documentDisputeDetail(String disputeId) {
+        return new TransactionReportBuilder<DisputeDocument>(ReportType.DocumentDisputeDetail, DisputeDocument.class)
                 .withDisputeId(disputeId);
     }
 

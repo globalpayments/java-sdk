@@ -23,7 +23,8 @@ public enum ReportType implements IFlag {
     StoredPaymentMethodDetail,
     FindStoredPaymentMethodsPaged,
     ActionDetail,
-    FindActionsPaged;
+    FindActionsPaged,
+    DocumentDisputeDetail;
 
     public long getLongValue() {
         return 1 << this.ordinal();

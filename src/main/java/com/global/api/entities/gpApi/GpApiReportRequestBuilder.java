@@ -7,7 +7,9 @@ import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
+import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.utils.EnumUtils;
+import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
@@ -59,7 +61,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("batch_id", trb.getSearchBuilder().getBatchId());
                     request.addQueryStringParam("entry_mode", getValueIfNotNull(trb.getSearchBuilder().getPaymentEntryMode()));
                     request.addQueryStringParam("name", trb.getSearchBuilder().getName());
-                    request.addQueryStringParam("payment_method", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getPaymentMethod()));
+                    request.addQueryStringParam("payment_method", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getPaymentMethodName()));
 
                     return request;
 
@@ -125,6 +127,12 @@ public class GpApiReportRequestBuilder {
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + "/disputes/" + trb.getSearchBuilder().getDisputeId());
 
+                case DocumentDisputeDetail:
+                    return request
+                            .setVerb(GpApiRequest.HttpMethod.Get)
+                            .setEndpoint(merchantUrl + "/disputes/" + trb.getSearchBuilder().getDisputeId() +
+                                    "/documents/" + trb.getSearchBuilder().getDisputeDocumentId());
+
                 case FindDisputesPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
@@ -181,6 +189,32 @@ public class GpApiReportRequestBuilder {
                                     .setEndpoint(merchantUrl + "/payment-methods/" + trb.getSearchBuilder().getStoredPaymentMethodId());
 
                 case FindStoredPaymentMethodsPaged:
+
+                    if (trb.getSearchBuilder().getPaymentMethod() instanceof CreditCardData) {
+
+                        CreditCardData paymentMethod = (CreditCardData) trb.getSearchBuilder().getPaymentMethod();
+
+                        JsonDoc card =
+                                new JsonDoc()
+                                        .set("number", paymentMethod.getNumber())
+                                        .set("expiry_month", paymentMethod.getExpMonth() != null ? StringUtils.padLeft(paymentMethod.getExpMonth().toString(), 2, '0') : null)
+                                        .set("expiry_year", paymentMethod.getExpYear() != null ? StringUtils.padLeft(paymentMethod.getExpYear().toString(), 4, '0').substring(2, 4) : null);
+
+                        JsonDoc data =
+                                new JsonDoc()
+                                        .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName())
+                                        .set("reference", trb.getSearchBuilder().getReferenceNumber())
+                                        .set("card", card != null ? card : null);
+
+                        request
+                                .setVerb(GpApiRequest.HttpMethod.Post)
+                                .setEndpoint(merchantUrl + "/payment-methods/" + "search")
+                                .setRequestBody(data.toString());
+
+                        return request;
+                    }
+
+
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + "/payment-methods");

@@ -428,7 +428,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             if(paymentData.isOfferToSaveCard() != null) {
                 request.set("OFFER_SAVE_CARD", paymentData.isOfferToSaveCard() ? "1" : "0");
             }
-            if(paymentData.isCustomerExists()) {
+            if(paymentData.isCustomerExists() != null) {
                 request.set("PAYER_EXIST", paymentData.isCustomerExists() ? "1" : "0");
             }
             if(hostedPaymentConfig.isDisplaySavedCards() == null) {
@@ -441,6 +441,9 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_CUSTOMER_COUNTRY", paymentData.getCustomerCountry());
             request.set("HPP_CUSTOMER_FIRSTNAME", paymentData.getCustomerFirstName());
             request.set("HPP_CUSTOMER_LASTNAME", paymentData.getCustomerLastName());
+            if (!StringUtils.isNullOrEmpty(paymentData.getCustomerFirstName()) && !StringUtils.isNullOrEmpty(paymentData.getCustomerLastName())) {
+                request.set("HPP_NAME", paymentData.getCustomerFirstName() + " " + paymentData.getCustomerLastName());
+            }
             request.set("MERCHANT_RESPONSE_URL", paymentData.getMerchantResponseUrl());
             request.set("HPP_TX_STATUS_URL", paymentData.getTransactionStatusUrl());
 
@@ -462,6 +465,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             // 3DSv2
             request.set("HPP_CUSTOMER_EMAIL", paymentData.getCustomerEmail());
             request.set("HPP_CUSTOMER_PHONENUMBER_MOBILE", paymentData.getCustomerPhoneMobile());
+            request.set("HPP_PHONE", paymentData.getCustomerPhoneMobile());
             request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator());
             if(paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
@@ -556,6 +560,14 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             if (hostedPaymentConfig.isCardStorageEnabled() != null || builder.getHostedPaymentData().isOfferToSaveCard() != null || hostedPaymentConfig.isDisplaySavedCards() != null) {
                 toHash.add(builder.getHostedPaymentData().getCustomerKey() != null ? builder.getHostedPaymentData().getCustomerKey() : null);
                 toHash.add(builder.getHostedPaymentData().getPaymentKey() != null ? builder.getHostedPaymentData().getPaymentKey() : null);
+            }
+
+            if (builder.getHostedPaymentData().getAddressCapture() != null) {
+                request.set("HPP_CAPTURE_ADDRESS", builder.getHostedPaymentData().getAddressCapture());
+            }
+
+            if (builder.getHostedPaymentData().getReturnAddress() != null) {
+                request.set("HPP_DO_NOT_RETURN_ADDRESS", builder.getHostedPaymentData().getReturnAddress());
             }
         }
 

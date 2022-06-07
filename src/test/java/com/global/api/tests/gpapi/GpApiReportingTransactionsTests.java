@@ -573,7 +573,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
                         .where(SearchCriteria.TokenFirstSix, token_first6)
                         .and(SearchCriteria.TokenLastFour, token_last4)
-                        .and(SearchCriteria.PaymentMethod, PaymentMethodName.DigitalWallet)
+                        .and(SearchCriteria.PaymentMethodName, PaymentMethodName.DigitalWallet)
                         .execute(GP_API_CONFIG_NAME);
         assertNotNull(transactions);
         for (TransactionSummary transactionSummary : transactions.getResults()) {
@@ -596,7 +596,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
                     .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
                     .where(SearchCriteria.TokenFirstSix, token_first6)
                     .and(SearchCriteria.TokenLastFour, token_last4)
-                    .and(SearchCriteria.PaymentMethod, PaymentMethodName.Card)
+                    .and(SearchCriteria.PaymentMethodName, PaymentMethodName.Card)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -713,7 +713,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
                     ReportingService
                             .findTransactionsPaged(FIRST_PAGE, PAGE_SIZE)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .where(SearchCriteria.PaymentMethod, paymentMethodName)
+                            .where(SearchCriteria.PaymentMethodName, paymentMethodName)
                             .execute(GP_API_CONFIG_NAME);
             assertNotNull(transactions);
         }

@@ -1,6 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.enums.DisputeSortProperty;
 import com.global.api.entities.enums.DisputeStage;
 import com.global.api.entities.enums.DisputeStatus;
@@ -415,6 +416,23 @@ public class GpApiReportingDisputesTests extends BaseGpApiReportingTest {
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
+    }
+
+    @Test
+    public void FindDocumentAssociatedWithDispute() throws ApiException {
+        String disputeId = "DIS_SAND_abcd1235";
+        String documentId = "DOC_MyEvidence_234234AVCDE-1";
+
+        DisputeDocument response =
+                ReportingService
+                        .documentDisputeDetail(disputeId)
+                        .where(SearchCriteria.DisputeDocumentId, documentId)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(documentId, response.getId());
+        assertEquals("DOCUMENT_SINGLE", response.getType());
+        assertNotNull(response.getBase64Content());
     }
 
     // ================================================================================

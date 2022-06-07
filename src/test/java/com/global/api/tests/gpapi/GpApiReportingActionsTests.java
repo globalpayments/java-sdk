@@ -189,6 +189,7 @@ public class GpApiReportingActionsTests extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ResourceId, resourceId)
+                        .and(SearchCriteria.Resource, "TRANSACTION")
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(result.getResults());

@@ -190,6 +190,25 @@ public class GpApiManagementRequestBuilder {
                         .setRequestBody(data.toString());
             }
         }
+        else if (builderTransactionType == TransactionType.Edit) {
+            var card =
+                    new JsonDoc()
+                            .set("tag", builder.getTagData());
+
+            var payment_method =
+                    new JsonDoc()
+                            .set("card", card);
+
+            data
+                    .set("amount",  StringUtils.toNumeric(builder.getAmount()))
+                    .set("gratuity_amount",  StringUtils.toNumeric(builder.getGratuity()))
+                    .set("payment_method",  payment_method);
+
+            return new GpApiRequest()
+                    .setVerb(GpApiRequest.HttpMethod.Post)
+                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/adjustment")
+                    .setRequestBody(data.toString());
+        }
 
         return null;
     }

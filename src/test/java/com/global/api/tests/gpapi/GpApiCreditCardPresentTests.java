@@ -14,6 +14,7 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
+import lombok.var;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -264,6 +265,229 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40029", ex.getResponseText());
             assertEquals("Status Code: 400 - 34,Transaction rejected because the provided data was invalid. Online PINBlock Authentication not supported on offline transaction.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void AdjustSaleTransaction() throws ApiException {
+        var card = new CreditTrackData();
+        card.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        card.setEntryMethod(EntryMethod.Proximity);
+
+        var tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
+
+        Transaction transaction =
+                card
+                        .charge(10)
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withTagData(tagData)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withAmount(new BigDecimal("10.01"))
+                        .withTagData(tagData)
+                        .withGratuity(new BigDecimal("5.01"))
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustAuthTransaction() throws ApiException {
+        var card = initCreditTrackData(EntryMethod.Proximity);
+        var tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
+
+        Transaction transaction =
+                card
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .withTagData(tagData)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withAmount(new BigDecimal("10.01"))
+                        .withTagData(tagData)
+                        .withGratuity(new BigDecimal("5.01"))
+                        .withMultiCapture(1, 1)
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Preauthorized);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_AdjustAmountHigherThanSale() throws ApiException {
+        var card = initCreditTrackData();
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction,TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withAmount(amount.add(new BigDecimal(2)))
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_AdjustOnlyTag() throws ApiException {
+        var card = initCreditTrackData(EntryMethod.Proximity);
+        var tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withTagData(tagData)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withTagData(tagData)
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_AdjustOnlyGratuity() throws ApiException {
+        var card = initCreditTrackData();
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        //.withChipCondition(EmvLastChipRead.SUCCESSFUL)
+                        .withLastChipRead(EmvLastChipRead.SUCCESSFUL)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withGratuity(new BigDecimal("1"))
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_AdjustAmountToZero() throws ApiException {
+        var card = initCreditTrackData();
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        //.withChipCondition(EmvLastChipRead.SUCCESSFUL)
+                        .withLastChipRead(EmvLastChipRead.SUCCESSFUL)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withAmount(new BigDecimal("0"))
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_AdjustGratuityToZero() throws ApiException {
+        var card = initCreditTrackData();
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        //.withChipCondition(EmvLastChipRead.SUCCESSFUL)
+                        .withLastChipRead(EmvLastChipRead.SUCCESSFUL)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        Transaction response =
+                transaction
+                        .edit()
+                        .withGratuity(new BigDecimal("0"))
+                        .execute();
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    public void AdjustSaleTransaction_WithoutMandatory() throws ApiException {
+        var card = initCreditTrackData();
+
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        //.withChipCondition(EmvLastChipRead.SUCCESSFUL)
+                        .withLastChipRead(EmvLastChipRead.SUCCESSFUL)
+                        .withAllowDuplicates(true)
+                        .execute();
+
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+
+        boolean exceptionCaught = false;
+
+        try {
+            transaction
+                    .edit()
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("40005", e.getResponseText());
+            assertEquals("Status Code: 400 - Request expects the following fields [amount or tag or gratuityAmount]", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void AdjustSaleTransaction_TransactionNotFound() throws ApiException {
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId(UUID.randomUUID().toString());
+
+        boolean exceptionCaught = false;
+        try {
+            transaction
+                    .edit()
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("40008", e.getResponseText());
+            assertEquals("Status Code: 404 - Transaction " + transaction.getTransactionId() + " not found at this location.", e.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -633,6 +857,18 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(transactionStatus.getValue(), transaction.getResponseMessage());
+    }
+
+    private CreditTrackData initCreditTrackData() {
+        return initCreditTrackData(EntryMethod.Swipe);
+    }
+
+    private CreditTrackData initCreditTrackData(EntryMethod entryMethod) {
+        var card = new CreditTrackData();
+        card.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        card.setEntryMethod(entryMethod);
+
+        return card;
     }
 
 }

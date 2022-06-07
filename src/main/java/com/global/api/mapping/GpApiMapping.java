@@ -306,6 +306,9 @@ public class GpApiMapping {
             case DisputeDetail:
                 return (T) mapDisputeSummary(json);
 
+            case DocumentDisputeDetail:
+                return (T) mapDisputeDocument(json) ;
+
             case SettlementDisputeDetail:
                 return (T) mapSettlementDisputeSummary(json);
 
@@ -412,6 +415,16 @@ public class GpApiMapping {
         return summary;
     }
 
+    public static DisputeDocument mapDisputeDocument(JsonDoc doc)
+    {
+        DisputeDocument document = new DisputeDocument();
+        document.setId(doc.getString("id"));
+        document.setType(doc.get("action") != null ? doc.get("action").getString("type") : "");
+        document.setBase64Content(doc.getString("b64_content"));
+
+        return document;
+    }
+
     public static DisputeSummary mapDisputeSummary(JsonDoc doc) throws GatewayException {
         DisputeSummary summary = new DisputeSummary();
 
@@ -455,6 +468,23 @@ public class GpApiMapping {
         String timeToRespondBy = doc.getString("time_to_respond_by");
         if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
             summary.setRespondByDate(parseGpApiDateTime(timeToRespondBy));
+        }
+
+        if (doc.has("documents")) {
+            ArrayList<JsonDoc> documents = (ArrayList<JsonDoc>) doc.getEnumerator("documents");
+
+            ArrayList disputeDocuments = new ArrayList<DisputeDocument>();
+            for (JsonDoc document : documents) {
+                if (document.getString("id") != null) {
+                    DisputeDocument disputeDocument = new DisputeDocument();
+                    disputeDocument.setId(document.getString("id"));
+                    disputeDocument.setType(document.getString("type") != null ? document.getString("type") : null);
+
+                    disputeDocuments.add(disputeDocument);
+                }
+            }
+
+            summary.setDocuments(disputeDocuments);
         }
 
         return summary;

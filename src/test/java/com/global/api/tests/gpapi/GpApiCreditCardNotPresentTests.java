@@ -103,7 +103,15 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         customer.setDeviceFingerPrint("ALWAYS");
 
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+
+        String token =
+                card
+                        .tokenize(true, PaymentMethodUsageMode.MULTIPLE)
+                        .withCustomerData(customer)
+                        .execute(GP_API_CONFIG_NAME)
+                        .getToken();
+
+        tokenizedCard.setToken(token);
 
         Transaction response =
                 tokenizedCard
@@ -116,26 +124,6 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("VERIFIED", response.getResponseMessage());
         assertNotNull(response.getFingerPrint());
-    }
-
-    @Test
-    public void CreditSaleWithFingerPrint_OnSuccess() throws ApiException {
-        Customer customer = new Customer();
-        customer.setDeviceFingerPrint("ON_SUCCESS");
-
-        Transaction response =
-                card
-                        .charge(2)
-                        .withCurrency("GBP")
-                        .withCustomerData(customer)
-                        .execute(GP_API_CONFIG_NAME);
-
-        assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
-        assertNotNull(response.getFingerPrint());
-        assertNotNull(response.getFingerPrintIndicator());
-        assertEquals("EXISTS",response.getFingerPrintIndicator());
     }
 
     @Test

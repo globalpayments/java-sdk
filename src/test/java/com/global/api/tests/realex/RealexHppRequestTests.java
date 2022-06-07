@@ -1533,4 +1533,42 @@ public class RealexHppRequestTests {
         assertEquals(hostedPaymentData.getMerchantResponseUrl(), parsedResponse.getResponseValues().get("MERCHANT_RESPONSE_URL"));
     }
 
+    @Test
+    public void captureBillingAndShippingInformation() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setRefundPassword("refund");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+
+        hostedPaymentConfig.setLanguage("GB");
+        hostedPaymentConfig.setResponseUrl("https://www.example.com/response");
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        HostedService service = new HostedService(config);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setAddressCapture(true);
+        hostedPaymentData.setReturnAddress(false);
+
+        String json =
+                service
+                        .charge(new BigDecimal(19.99))
+                        .withCurrency("EUR")
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withHostedPaymentData(hostedPaymentData)
+                        .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(json);
+
+        assertTrue(jsonResponse.getBool("HPP_CAPTURE_ADDRESS"));
+        assertFalse(jsonResponse.getBool("HPP_DO_NOT_RETURN_ADDRESS"));
+    }
+
 }

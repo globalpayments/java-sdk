@@ -12,6 +12,8 @@ import java.util.List;
 
 public class HostedPaymentData {
     private Boolean addressesMatch;
+    // Determines whether the address forms will be displayed on the HPP
+    @Getter @Setter private Boolean addressCapture;
     private List<Bill> bills;
     private ChallengeRequest challengeRequestIndicator;
     private Boolean customerExists;
@@ -28,6 +30,8 @@ public class HostedPaymentData {
     private Boolean offerToSaveCard;
     private String paymentKey;
     private String productId;
+    // Determines whether the HPP response will contain the address and contact information
+    @Getter @Setter private Boolean returnAddress = false;
     private AlternativePaymentType[] presetPaymentMethods;
     private HashMap<String, String> supplementaryData;
     private String transactionStatusUrl;
@@ -58,10 +62,10 @@ public class HostedPaymentData {
     public void setCustomerEmail(String customerEmail) {
         this.customerEmail = customerEmail;
     }
-    public boolean isCustomerExists() {
+    public Boolean isCustomerExists() {
         return customerExists;
     }
-    public void setCustomerExists(boolean customerExists) {
+    public void setCustomerExists(Boolean customerExists) {
         this.customerExists = customerExists;
     }
     public boolean isCustomerEditable() {

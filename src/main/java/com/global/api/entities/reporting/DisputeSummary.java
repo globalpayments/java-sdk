@@ -61,6 +61,7 @@ public class DisputeSummary {
     private BigDecimal lastAdjustmentAmount;
     private String lastAdjustmentCurrency;
     private String lastAdjustmentFunding;
+    private ArrayList<DisputeDocument> documents;
 
     public ManagementBuilder accept() {
         return new ManagementBuilder(TransactionType.DisputeAcceptance, new TransactionReference())

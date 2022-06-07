@@ -150,5 +150,7 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
                 .check("transactionId").isNotNull();
 
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
+        this.validations.of(ReportType.DocumentDisputeDetail)
+                .check("_searchBuilder").propertyOf(String.class, "disputeDocumentId").isNotNull();
     }
 }

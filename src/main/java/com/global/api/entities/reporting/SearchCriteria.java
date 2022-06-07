@@ -46,6 +46,7 @@ public enum SearchCriteria {
     PaymentMethodKey,
     PaymentType,
     PaymentMethod,
+    PaymentMethodName,
     ReferenceNumber,
     Resource,
     ResourceStatus,
@@ -61,6 +62,7 @@ public enum SearchCriteria {
     TransactionStatus,
     DisputeStage,
     DisputeStatus,
+    DisputeDocumentId,
     UniqueDeviceId,
     Username,
     Version

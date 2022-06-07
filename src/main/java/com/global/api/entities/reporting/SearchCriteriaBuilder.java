@@ -3,6 +3,7 @@ package com.global.api.entities.reporting;
 import com.global.api.builders.TransactionReportBuilder;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.paymentMethods.IPaymentMethod;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,6 +60,7 @@ public class SearchCriteriaBuilder<TResult> {
     private String disputeId;
     private DisputeStage disputeStage;
     private DisputeStatus disputeStatus;
+    private String disputeDocumentId;
     private Date endBatchDate;
     private Date endDate;
     private Date endDepositDate;
@@ -83,7 +85,8 @@ public class SearchCriteriaBuilder<TResult> {
     private PaymentEntryMode paymentEntryMode;
     private String paymentMethodKey;
     private PaymentType paymentType;
-    private PaymentMethodName paymentMethod;
+    private PaymentMethodName paymentMethodName;
+    private IPaymentMethod paymentMethod;
     private ArrayList<PaymentMethodType> paymentTypes;
     private String referenceNumber;
     private String resource;

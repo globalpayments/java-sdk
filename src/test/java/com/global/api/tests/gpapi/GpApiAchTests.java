@@ -124,7 +124,7 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .where(SearchCriteria.StartDate, LocalDate.now().minusDays(2).toDate())
                         .and(SearchCriteria.EndDate, LocalDate.now().minusDays(2).toDate())
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
-                        .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
+                        .and(SearchCriteria.PaymentMethodName, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)
                         .execute(GP_API_CONFIG_NAME);
 
@@ -162,7 +162,7 @@ public class GpApiAchTests extends BaseGpApiTest {
                         .where(SearchCriteria.StartDate, LocalDate.now().minusYears(1).toDate())
                         .and(SearchCriteria.EndDate, LocalDate.now().minusDays(2).toDate())
                         .and(SearchCriteria.PaymentType, PaymentType.Sale)
-                        .and(SearchCriteria.PaymentMethod, PaymentMethodName.BankTransfer)
+                        .and(SearchCriteria.PaymentMethodName, PaymentMethodName.BankTransfer)
                         .and(DataServiceCriteria.Amount, amount)
                         .execute(GP_API_CONFIG_NAME);
 
