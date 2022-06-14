@@ -1,5 +1,11 @@
 # Changelog
 
+## v7.0.5 (06/14/2022)
+
+### Enhancements:
+
+- Portico: Add support for AdditionalDuplicateData response element
+
 ## v7.0.4 (06/07/2022)
 
 ### Enhancements:

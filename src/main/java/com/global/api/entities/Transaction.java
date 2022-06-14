@@ -78,6 +78,7 @@ public class Transaction {
     private String transactionDate;
     private String transactionTime;
     private String transactionCode;
+    @Getter @Setter private AdditionalDuplicateData additionalDuplicateData;
 
     public BigDecimal getOrigionalAmount() {
         return origionalAmount;

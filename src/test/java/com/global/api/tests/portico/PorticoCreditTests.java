@@ -634,4 +634,23 @@ public class PorticoCreditTests {
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
+
+    @Test
+    public void creditSaleAdditionalDuplicateData() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = card.charge(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(false)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(nextResponse);
+        assertNotNull(nextResponse.getAdditionalDuplicateData());
+    }
 }

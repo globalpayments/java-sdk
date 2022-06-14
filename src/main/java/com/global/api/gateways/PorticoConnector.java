@@ -711,6 +711,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         acceptedCodes.add("0");
         acceptedCodes.add("85");
         acceptedCodes.add("10");
+        acceptedCodes.add("02");
+        acceptedCodes.add("2");
 
         // check gateway responses
         String gatewayRspCode = normalizeResponse(root.getString("GatewayRspCode"));
@@ -797,6 +799,22 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
                 // add the track data for debit interact
                 result.getTransactionReference().setOriginalPaymentMethod(paymentMethod);
+            }
+
+            //duplicate transaction
+            if(root.has("AdditionalDuplicateData")) {
+                AdditionalDuplicateData additionalDuplicateData = new AdditionalDuplicateData();
+                additionalDuplicateData.setOriginalGatewayTxnId(root.getString("OriginalGatewayTxnId"));
+                additionalDuplicateData.setOriginalRspDT(root.getDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"), "OriginalRspDT").toString());
+                additionalDuplicateData.setOriginalClientTxnId(root.getString("OriginalClientTxnId"));
+                additionalDuplicateData.setOriginalAuthCode(root.getString("OriginalAuthCode"));
+                additionalDuplicateData.setOriginalRefNbr(root.getString("OriginalRefNbr"));
+                additionalDuplicateData.setOriginalAuthAmt(root.getDecimal("OriginalAuthAmt"));
+                additionalDuplicateData.setOriginalCardType(root.getString("OriginalCardType"));
+                additionalDuplicateData.setOriginalCardNbrLast4(root.getString("OriginalCardNbrLast4"));
+
+                // add the duplicate data
+                result.setAdditionalDuplicateData(additionalDuplicateData);
             }
         }
         return result;
