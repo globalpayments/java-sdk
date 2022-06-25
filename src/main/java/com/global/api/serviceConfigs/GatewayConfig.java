@@ -218,6 +218,7 @@ public class GatewayConfig extends Configuration {
                 secure3d2.setMethodNotificationUrl(methodNotificationUrl);
                 secure3d2.setChallengeNotificationUrl(challengeNotificationUrl);
                 secure3d2.setEnableLogging(enableLogging);
+                secure3d2.setProxy(proxy);
 
                 services.setSecure3dProvider(Secure3dVersion.TWO, secure3d2);
             }
