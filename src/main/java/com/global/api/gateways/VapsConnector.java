@@ -20,6 +20,7 @@ import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.network.elements.*;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
+import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceMessage;

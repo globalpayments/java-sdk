@@ -7,6 +7,7 @@ import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
+import com.global.api.network.entities.gnap.GnapResponse;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsResponse;
@@ -74,6 +75,9 @@ public class Transaction {
     @Getter @Setter private PaymentMethodUsageMode tokenUsageMode;
     private GiftCard giftCard;
     private TransactionReference transactionReference;
+    @Getter
+    @Setter
+    private GnapResponse gnapResponse;
     private NtsResponse ntsResponse;
     private String transactionDate;
     private String transactionTime;

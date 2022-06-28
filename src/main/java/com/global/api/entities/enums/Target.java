@@ -8,6 +8,7 @@ public enum Target implements IFlag {
     Portico,
     Realex,
     GP_API,
+    GNAP,
     NTS;
 
     public long getLongValue() {

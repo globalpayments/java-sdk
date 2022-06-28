@@ -6,6 +6,7 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
 
 import com.global.api.network.entities.nts.*;
@@ -822,7 +823,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         uniqueDeviceId = value;
         return this;
     }
+    public AuthorizationBuilder withGnapRequestData(GnapRequestData gnapRequestData) {
+        this.gnapRequestData = gnapRequestData;
+        return this;
+    }
+    public AuthorizationBuilder withTaxAmount(BigDecimal taxAmount) {
+        this.taxAmount = taxAmount;
+        return this;
+    }
 
+    public AuthorizationBuilder withTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+        return this;
+    }
 
     public AuthorizationBuilder withPaymentLinkId(String value) {
         paymentLinkId = value;

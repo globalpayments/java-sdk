@@ -5,6 +5,7 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.entities.*;
 import com.global.api.network.entities.nts.*;
@@ -364,6 +365,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withCurrency(String value) {
         this.currency = value;
+        return this;
+    }
+    public ManagementBuilder withGnapRequestData(GnapRequestData gnapRequestData) {
+        this.gnapRequestData = gnapRequestData;
         return this;
     }
     public ManagementBuilder withCustomerId(String value) {

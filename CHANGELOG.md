@@ -1,5 +1,12 @@
 # Changelog
 
+## v8.0.0 (06/27/2022)
+
+### Enhancements:
+
+- GNAP Connector Implementation
+
+
 ## v7.0.5 (06/14/2022)
 
 ### Enhancements:

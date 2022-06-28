@@ -43,6 +43,161 @@ public class EmvData {
         }
         return false;
     }
+
+    public String getTransactionCurrencyCode() {
+        TlvData currencyCode=getTag("5F2A");
+        if(currencyCode!=null) {
+            return currencyCode.getValue();
+        }
+        return null;
+    }
+
+    public String getCryptogramInformationData() {
+        TlvData data=getTag("9F27");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getTerminalCountryCode() {
+        TlvData data=getTag("9F1A");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getEMVTransactionDate() {
+        TlvData data=getTag("9A");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getEMVTrack2Data() {
+        TlvData data=getRemoveTag("57");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getApplicationCryptogram() {
+        TlvData data=getTag("9F26");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getApplicationInterchangeProfile() {
+        TlvData data=getTag("82");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getApplicationTransactionCounter() {
+        TlvData data=getTag("9F36");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getUnpredictableNumber() {
+        TlvData data=getTag("9F37");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getTerminalVerificationResults() {
+        TlvData data=getTag("95");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getEMVTransactionType() {
+        TlvData data=getTag("9C");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getCryptogramAmount() {
+        TlvData data=getTag("9F02");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getIssuerApplicationData() {
+        TlvData data=getTag("9F10");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getEMVTerminalType() {
+        TlvData data=getTag("9F35");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getApplicationVersionNumber() {
+        TlvData data=getTag("9F09");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getDedicatedFileName() {
+        TlvData data=getTag("84");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+
+    public String getFormFactorIndicator() {
+        TlvData data=getTag("9F6E");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+
+    public String getLanguageCode() {
+        TlvData data = getTag("5F2D");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+    public String getIsoResponseCode() {
+        TlvData data=getTag("8A");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+
+    public String getDeviceTypeIndicator(){
+        TlvData data=getTag("9F63");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+
+    public String getApprovalCode(){
+        TlvData data=getTag("89");
+        if(data!=null) {
+            return data.getValue();
+        }
+        return null;
+    }
+
+
     public LinkedHashMap<String, TlvData> getRemovedTags() {
         return removedTags;
     }
@@ -59,6 +214,13 @@ public class EmvData {
     public TlvData getTag(String tagName) {
         if(tlvData.containsKey(tagName)) {
             return tlvData.get(tagName);
+        }
+        return null;
+    }
+
+    public TlvData getRemoveTag(String tagName) {
+        if(removedTags.containsKey(tagName)) {
+            return removedTags.get(tagName);
         }
         return null;
     }

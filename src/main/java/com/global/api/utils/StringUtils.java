@@ -64,7 +64,13 @@ public class StringUtils {
         return qty.divide(new BigDecimal(shiftValue));
     }
 
-    public static String toNumeric(String str) {
+    public static BigDecimal toString(String value,int decimalPlace) {
+        StringBuilder sb = new StringBuilder(value);
+        sb.insert(value.length() - decimalPlace, '.');
+        return BigDecimal.valueOf(Double.valueOf(sb.toString()));
+    }
+
+        public static String toNumeric(String str) {
         return extractDigits(str);
     }
 

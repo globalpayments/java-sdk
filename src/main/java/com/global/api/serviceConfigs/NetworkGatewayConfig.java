@@ -1,8 +1,9 @@
 package com.global.api.serviceConfigs;
 
 import com.global.api.ConfiguredServices;
-import com.global.api.entities.enums.LogicProcessFlag;
 import com.global.api.entities.enums.Target;
+import com.global.api.gateways.GnapConnector;
+import com.global.api.entities.enums.LogicProcessFlag;
 import com.global.api.entities.enums.TerminalType;
 import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.events.IGatewayEventHandler;
@@ -31,7 +32,6 @@ public class NetworkGatewayConfig extends Configuration {
     private String terminalId;
     private String uniqueDeviceId;
     private Boolean persistentConnection = false;
-
     @Setter
     private Target target;
     @Setter
@@ -162,10 +162,12 @@ public class NetworkGatewayConfig extends Configuration {
 
     public void configureContainer(ConfiguredServices services) {
         //System.out.println("Target: " + target);
-        GatewayConnectorConfig gateway;
+        GatewayConnectorConfig gateway = null;
         if(target.equals(Target.VAPS)) {
             gateway = new VapsConnector();
-        } else {
+        } else if(target.equals(Target.GNAP)) {
+            gateway = new GnapConnector();
+        }else if(target.equals(Target.NTS)) {
             gateway = new NtsConnector();
 
             // NTS related fields
@@ -183,6 +185,7 @@ public class NetworkGatewayConfig extends Configuration {
         gateway.setSecondaryEndpoint(secondaryEndpoint);
         gateway.setSecondaryPort(secondaryPort);
         gateway.setTimeout(timeout);
+        gateway.setTarget(target);
         gateway.setEnableLogging(enableLogging);
         gateway.setSimulatedHostErrors(simulatedHostErrors);
 

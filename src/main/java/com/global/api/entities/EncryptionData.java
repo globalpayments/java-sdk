@@ -46,4 +46,12 @@ public class EncryptionData {
         rvalue.setKtb(ktb);
         return rvalue;
     }
+
+    public static EncryptionData add(String ksn,String trackNumber){
+        EncryptionData rvalue = new EncryptionData();
+        rvalue.setTrackNumber(trackNumber);
+        rvalue.setKsn(ksn);
+        return rvalue;
+    }
+
 }

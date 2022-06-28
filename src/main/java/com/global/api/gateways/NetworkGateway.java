@@ -2,14 +2,16 @@ package com.global.api.gateways;
 
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
-import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayComsException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.*;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import com.global.api.utils.GnapUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -17,9 +19,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.math.BigInteger;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,6 +42,8 @@ public class NetworkGateway {
 
     private String connectorName = "NetworkGateway";
     private IGatewayEventHandler gatewayEventHandler;
+    @Getter @Setter
+    private Target target;
 
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
@@ -78,7 +80,12 @@ public class NetworkGateway {
     }
     public void setEnableLogging(boolean enableLogging) {
         this.enableLogging = enableLogging;
-        NtsUtils.enableLogging();
+        if(target.equals(Target.GNAP))
+        {
+            GnapUtils.enableLogging(enableLogging);
+        }else if(target.equals(Target.NTS)){
+            NtsUtils.enableLogging();
+        }
     }
     public void setGatewayEventHandler(IGatewayEventHandler eventHandler) { this.gatewayEventHandler = eventHandler; }
     public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {
@@ -276,7 +283,11 @@ public class NetworkGateway {
                 byte[] lengthBuffer = new byte[2];
                 int length = in.read(lengthBuffer, 0, 2);
                 if(length == 2) {
-                    messageLength = new BigInteger(lengthBuffer).intValue() - 2;
+                    if(target!=null && target.equals(Target.GNAP)) {
+                        messageLength = new BigInteger(lengthBuffer).intValue();
+                    }else{
+                        messageLength = new BigInteger(lengthBuffer).intValue() - 2;
+                    }
                 }
             }
 

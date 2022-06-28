@@ -5,6 +5,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
+import com.global.api.network.enums.gnap.PINCapability;
 import com.global.api.network.enums.nts.AvailableProductsCapability;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
@@ -46,6 +47,16 @@ public class AcceptorConfig {
 
     //NTS Message Header
     private Boolean pinlessDebit;
+    @Getter @Setter
+    private PINCapability pinCapability;
+    @Getter @Setter
+    private boolean emvCapable;
+    @Getter @Setter
+    private String pinPadSerialNumber;
+    @Getter @Setter
+    private boolean supportsE2EEEncryption;
+    @Getter @Setter
+    private String deviceType="9.";
 
     //DE48_34
     private Boolean echoSettlementData;

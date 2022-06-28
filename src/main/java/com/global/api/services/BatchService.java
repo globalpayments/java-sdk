@@ -6,9 +6,9 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.BatchCloseType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
-
 import java.math.BigDecimal;
 
 public class BatchService {
@@ -93,7 +93,12 @@ public class BatchService {
 
         return response.getBatchSummary();
     }
-
+    public static ManagementBuilder closeBatch(BatchCloseType closeType, GnapRequestData data) {
+        return new ManagementBuilder(TransactionType.BatchClose)
+                .withCurrency("USD")
+                .withGnapRequestData(data)
+                .withBatchCloseType(closeType);
+    }
 //    public static BatchSummary closeBatch(BatchCloseType closeType) throws ApiException {
 //        return closeBatch(closeType, "default");
 //    }

@@ -1,5 +1,7 @@
 package com.global.api.paymentMethods;
 
+import com.global.api.entities.enums.TransactionType;
+import com.global.api.network.entities.gnap.GnapPosDetails;
 import com.global.api.entities.AlternativePaymentResponse;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
@@ -7,6 +9,8 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.enums.TransactionCode;
 import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.network.entities.NtsData;
+import com.global.api.network.enums.gnap.MessageSubType;
+import com.global.api.network.enums.gnap.ISOResponseCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -42,6 +46,12 @@ public class TransactionReference implements IPaymentMethod {
     private String originalTrasactionDate;
     private String responseCode;
     private boolean useAuthorizedAmount;
+    private String transactionIdentifier;
+    private String originalInvoiceNumber;
+    private String originalTransactionInfo;
+    private String originalPosEntryMode;
+    private TransactionType originalTransactionType;
+    private ISOResponseCode isoResponseCode;
 
     private String approvalCode;
     private String originalMessageCode;

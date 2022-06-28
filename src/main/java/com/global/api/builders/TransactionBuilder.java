@@ -1,5 +1,14 @@
 package com.global.api.builders;
 
+import com.global.api.entities.enums.Host;
+import com.global.api.entities.enums.HostError;
+import com.global.api.entities.enums.TransactionModifier;
+import com.global.api.entities.enums.TransactionType;
+import com.global.api.network.entities.gnap.GnapRequestData;
+import com.global.api.network.entities.FleetData;
+import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.ProductData;
+import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.entities.enums.*;
 import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
@@ -33,6 +42,16 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected String uniqueDeviceId;
     protected TransactionMatchingData transactionMatchingData;
     protected boolean terminalError;
+    @Getter
+    protected GnapRequestData gnapRequestData;
+    @Getter
+    protected BigDecimal taxAmount;
+    @Getter
+    protected BigDecimal tipAmount;
+    @Getter
+    protected BigDecimal surchargeAmount;
+    @Getter
+    protected BigDecimal cashBackAmount;
     //Nts
     @Getter
     protected String invoiceNumber;
@@ -77,7 +96,6 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
         this.ntsRequestMessageHeader = ntsRequestMessageHeader;
     }
-
     public TransactionType getTransactionType() {
         return transactionType;
     }

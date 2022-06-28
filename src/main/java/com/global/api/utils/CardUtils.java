@@ -26,6 +26,7 @@ public class CardUtils {
     private static final Pattern StoredValueRegex = Pattern.compile("^(?:600649|603261|603571|627600|639470)");
     private static final Pattern ValueLinkRegex = Pattern.compile("^(?:601056|603225)");
     private static final Pattern HeartlandGiftRegex = Pattern.compile("^(?:502244|627720|708355)");
+    private static final Pattern UnionPayRegex = Pattern.compile("^(?:62[0-8]|81[0-8])");
 
     private static final Pattern trackOnePattern = Pattern.compile("%?[B0]?([\\d]+)\\^[^\\^]+\\^([\\d]{4})([^?]+)?/?");
     private static final Pattern trackTwoPattern = Pattern.compile(";?([\\d]+)[=|[dD]](\\d{4})([^?]+)?/?");
@@ -50,6 +51,7 @@ public class CardUtils {
         regexMap.put("StoredValue", StoredValueRegex);
         regexMap.put("ValueLink", ValueLinkRegex);
         regexMap.put("HeartlandGift", HeartlandGiftRegex);
+        regexMap.put("UnionPay", UnionPayRegex);
 
         // ReadyLink
         readyLinkBinMap = new ArrayList<String>();
@@ -130,7 +132,6 @@ public class CardUtils {
         fleetWideMap.put("707685", "707685");
         fleetBinMap.put("FleetWide", fleetWideMap);
     }
-
     public static boolean isFleet(String cardType, String pan) {
         if (!StringUtils.isNullOrEmpty(pan)) {
             int compareValue = Integer.parseInt(pan.substring(0, 6));
