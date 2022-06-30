@@ -716,6 +716,21 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
     }
 
     @Test
+    public void CreditSale_WithDynamicDescriptor() throws ApiException {
+        var dynamicDescriptor = "My company";
+        var response =
+                card
+                        .charge(50)
+                        .withCurrency("EUR")
+                        .withDynamicDescriptor(dynamicDescriptor)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
     public void CreditReverseTransactionWrongId() throws ApiException {
         Transaction charge = new Transaction();
         charge.setTransactionId(UUID.randomUUID().toString());
@@ -977,6 +992,26 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         } finally {
             assertTrue(exceptionCaught);
         }
+    }
+
+    @Test
+    public void CreditSale_For_Android() throws ApiException {
+        // GP-API settings for Android SDK
+        GpApiConfig config =
+                new GpApiConfig()
+                        .setAppId(APP_ID)
+                        .setAppKey(APP_KEY)
+                        .setAndroid(true);
+
+        config.setEnableLogging(true);
+
+        final String GP_API_CONFIG_FOR_ANDROID_SDK = "GP_API_CONFIG_FOR_ANDROID_SDK";
+        ServicesContainer.configureService(config, GP_API_CONFIG_FOR_ANDROID_SDK);
+
+        card
+                .charge(amount)
+                .withCurrency(currency)
+                .execute(GP_API_CONFIG_FOR_ANDROID_SDK);
     }
 
     private void assertTransactionResponse(Transaction transaction, TransactionStatus transactionStatus) {

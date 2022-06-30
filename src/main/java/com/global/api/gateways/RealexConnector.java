@@ -467,6 +467,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_CUSTOMER_PHONENUMBER_MOBILE", paymentData.getCustomerPhoneMobile());
             request.set("HPP_PHONE", paymentData.getCustomerPhoneMobile());
             request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator());
+            request.set("HPP_ENABLE_EXEMPTION_OPTIMIZATION", builder.getHostedPaymentData().getEnableExemptionOptimization());
             if(paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
             }

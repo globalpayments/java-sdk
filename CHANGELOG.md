@@ -1,11 +1,18 @@
 # Changelog
 
+## v8.0.1 (06/29/2022)
+
+### Enhancements:
+
+- GP-API Dynamic Descriptor 
+- HPP EnableExemptionOptimization field
+- Flag to do not insert "x-gp-sdk" header on GpApiConnector requests for Android SDK
+
 ## v8.0.0 (06/27/2022)
 
 ### Enhancements:
 
 - GNAP Connector Implementation
-
 
 ## v7.0.5 (06/14/2022)
 

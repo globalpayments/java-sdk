@@ -67,6 +67,10 @@ public class GpApiConfig extends GatewayConfig {
     // will become to:  /ucp/merchants/merchantId/transactions
     private String merchantId;
 
+    @Accessors(chain = true)
+    // When true the header key: "x-gp-sdk" with value: "java;version=X.Y.Z" will be not be inserted on GpApiConnector requests
+    private boolean isAndroid;
+
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
             serviceUrl =

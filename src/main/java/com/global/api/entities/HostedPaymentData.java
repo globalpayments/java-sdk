@@ -32,6 +32,7 @@ public class HostedPaymentData {
     private String productId;
     // Determines whether the HPP response will contain the address and contact information
     @Getter @Setter private Boolean returnAddress = false;
+    @Getter @Setter private Boolean enableExemptionOptimization;
     private AlternativePaymentType[] presetPaymentMethods;
     private HashMap<String, String> supplementaryData;
     private String transactionStatusUrl;

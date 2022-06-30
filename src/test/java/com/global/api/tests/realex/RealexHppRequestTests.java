@@ -10,6 +10,7 @@ import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
 import com.global.api.tests.realex.hpp.RealexHppClient;
 import com.global.api.utils.JsonDoc;
+import lombok.var;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -1569,6 +1570,64 @@ public class RealexHppRequestTests {
 
         assertTrue(jsonResponse.getBool("HPP_CAPTURE_ADDRESS"));
         assertFalse(jsonResponse.getBool("HPP_DO_NOT_RETURN_ADDRESS"));
+    }
+
+    @Test
+    public void threeDSExemption() throws ApiException {
+        GatewayConfig config = new GatewayConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("3dsecure");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setEnableLogging(true);
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setLanguage("GB");
+        hostedPaymentConfig.setResponseUrl("https://www.example.com/response");
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        // data to be passed to the HPP along with transaction level settings
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setEnableExemptionOptimization(true);
+        hostedPaymentData.setChallengeRequestIndicator(ChallengeRequest.NoChallengeRequested);
+
+        var shippingAddress = new Address();
+        shippingAddress.setStreetAddress1("Apartment 852");
+        shippingAddress.setStreetAddress2("Complex 741");
+        shippingAddress.setStreetAddress3("no");
+        shippingAddress.setCity("Chicago");
+        shippingAddress.setPostalCode("5001");
+        shippingAddress.setState("IL");
+        shippingAddress.setCountry("840");
+
+        var billingAddress = new Address();
+
+        billingAddress.setStreetAddress1("Flat 123");
+        billingAddress.setStreetAddress2("House 456");
+        billingAddress.setStreetAddress3("Cul-De-Sac");
+        billingAddress.setCity("Halifax");
+        billingAddress.setProvince("West Yorkshire");
+        billingAddress.setState("Yorkshire and the Humber");
+        billingAddress.setCountry("826");
+        billingAddress.setPostalCode("E77 4QJ");
+
+        HostedService service = new HostedService(config);
+
+        //serialize the request
+        var json =
+                service
+                        .charge(new BigDecimal("10.01"))
+                        .withCurrency("EUR")
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withHostedPaymentData(hostedPaymentData)
+                        .serialize();
+
+        assertNotNull(json);
+
+        assertTrue(json.contains("\"HPP_ENABLE_EXEMPTION_OPTIMIZATION\":true"));
     }
 
 }

@@ -80,7 +80,9 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
         headers.put(org.apache.http.HttpHeaders.ACCEPT_ENCODING, "gzip");
         headers.put("X-GP-Version", GP_API_VERSION);
-        headers.put("x-gp-sdk", "java;version=" + getReleaseVersion());
+        if (!gpApiConfig.isAndroid()) {
+            headers.put("x-gp-sdk", "java;version=" + getReleaseVersion());
+        }
 
         dynamicHeaders = gpApiConfig.getDynamicHeaders();
     }
