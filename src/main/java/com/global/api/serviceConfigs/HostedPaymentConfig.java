@@ -19,6 +19,7 @@ public class HostedPaymentConfig {
     private String responseUrl;
     private Boolean requestTransactionStabilityScore;
     private HppVersion version;
+    @Getter @Setter private Boolean enableBankTransfer = false;
 
     public Boolean isCardStorageEnabled() {
         return cardStorageEnabled;

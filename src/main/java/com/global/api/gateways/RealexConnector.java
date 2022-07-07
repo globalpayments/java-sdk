@@ -11,6 +11,8 @@ import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.var;
 import org.joda.time.format.DateTimeFormat;
 
@@ -31,6 +33,8 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     private String sharedSecret;
     private String channel;
     private HostedPaymentConfig hostedPaymentConfig;
+    @Getter @Setter private String paymentValues;
+    @Getter @Setter private ShaHashType shaHashType;
 
     public Secure3dVersion getVersion() { return Secure3dVersion.ONE; }
 
@@ -400,6 +404,10 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         if (builder.getTransactionType() != TransactionType.Sale && builder.getTransactionType() != TransactionType.Auth && builder.getTransactionType() != TransactionType.Verify)
             throw new UnsupportedTransactionException("Only Charge and Authorize are supported through hpp.");
 
+        if (builder.getPaymentMethod() instanceof BankPayment && builder.getTransactionType() != TransactionType.Sale) {
+            throw new UnsupportedTransactionException("Only Charge is supported for Bank Payment through HPP.");
+        }
+
         request.set("MERCHANT_ID", merchantId);
         request.set("ACCOUNT", accountId);
         request.set("HPP_CHANNEL", channel);
@@ -459,6 +467,17 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                     }
                 }
             }
+
+            HostedPaymentMethods[] hostedPaymentMethods = paymentData.getHostedPaymentMethods();
+            if (hostedPaymentMethods != null) {
+                for (int arr = 0; arr < hostedPaymentMethods.length; arr++) {
+                    if (arr != hostedPaymentMethods.length - 1) {
+                        paymentValues.append("|");
+                    }
+                    paymentValues.append(hostedPaymentMethods[arr].getValue());
+                }
+            }
+
             request.set("PM_METHODS", paymentValues.toString());
             // end APMs Fields
 
@@ -563,18 +582,47 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 toHash.add(builder.getHostedPaymentData().getPaymentKey() != null ? builder.getHostedPaymentData().getPaymentKey() : null);
             }
 
-            if (builder.getHostedPaymentData().getAddressCapture() != null) {
-                request.set("HPP_CAPTURE_ADDRESS", builder.getHostedPaymentData().getAddressCapture());
+            if (builder.getHostedPaymentData().getCaptureAddress() != null) {
+                request.set("HPP_CAPTURE_ADDRESS", builder.getHostedPaymentData().getCaptureAddress().booleanValue() ? "TRUE" : "FALSE");
             }
 
             if (builder.getHostedPaymentData().getReturnAddress() != null) {
-                request.set("HPP_DO_NOT_RETURN_ADDRESS", builder.getHostedPaymentData().getReturnAddress());
+                request.set("HPP_DO_NOT_RETURN_ADDRESS", builder.getHostedPaymentData().getReturnAddress().booleanValue() ? "TRUE" : "FALSE");
             }
         }
 
         if (    hostedPaymentConfig.getFraudFilterMode() != null &&
                 hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
             toHash.add(hostedPaymentConfig.getFraudFilterMode().getValue());
+        }
+
+        if (builder.getPaymentMethod() instanceof BankPayment) {
+            BankPayment bankPaymentMethod = (BankPayment) builder.getPaymentMethod();
+
+            request.set("HPP_OB_PAYMENT_SCHEME", bankPaymentMethod.getBankPaymentType() != null ? bankPaymentMethod.getBankPaymentType().toString() : OpenBankingProvider.getBankPaymentType(builder.getCurrency()).toString());
+            request.set("HPP_OB_REMITTANCE_REF_TYPE", builder.getRemittanceReferenceType().toString());
+            request.set("HPP_OB_REMITTANCE_REF_VALUE", builder.getRemittanceReferenceValue());
+            request.set("HPP_OB_DST_ACCOUNT_IBAN", bankPaymentMethod.getIban());
+            request.set("HPP_OB_DST_ACCOUNT_NAME", bankPaymentMethod.getAccountName());
+            request.set("HPP_OB_DST_ACCOUNT_NUMBER", bankPaymentMethod.getAccountNumber());
+            request.set("HPP_OB_DST_ACCOUNT_SORT_CODE", bankPaymentMethod.getSortCode());
+
+            if (builder.getHostedPaymentData() != null) {
+                var hostedPaymentData = builder.getHostedPaymentData();
+
+                request.set("HPP_OB_CUSTOMER_COUNTRIES", hostedPaymentData.getCustomerCountry());
+            }
+
+
+            if (!StringUtils.isNullOrEmpty(bankPaymentMethod.getSortCode())) {
+                toHash.add(bankPaymentMethod.getSortCode());
+            }
+            if (!StringUtils.isNullOrEmpty(bankPaymentMethod.getAccountNumber())) {
+                toHash.add(bankPaymentMethod.getAccountNumber());
+            }
+            if (!StringUtils.isNullOrEmpty(bankPaymentMethod.getIban())) {
+                toHash.add(bankPaymentMethod.getIban());
+            }
         }
 
         if (builder.getDynamicDescriptor() != null) {

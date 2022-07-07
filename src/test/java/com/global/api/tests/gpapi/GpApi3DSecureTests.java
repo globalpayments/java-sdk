@@ -647,6 +647,7 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
+        assertNotNull(initAuth.getProviderServerTransRef());
 
         // Get authentication data
         secureEcom =

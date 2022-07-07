@@ -58,7 +58,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private EmvLastChipRead emvLastChipRead;
     private FraudFilterMode fraudFilterMode;
     @Getter @Setter private FraudRuleCollection fraudRules;
-//    @Getter @Setter private HashMap<String, FraudFilterMode> fraudRules;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
 
@@ -79,7 +78,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private PhoneNumber shippingPhone;
     @Getter @Setter private PhoneNumber mobilePhone;
     @Getter @Setter private String paymentLinkId;
-    private String posSequenceNumber;
+    @Getter @Setter private RemittanceReferenceType remittanceReferenceType;
+    @Getter @Setter private String remittanceReferenceValue;
     private String productId;
     private ArrayList<Product> miscProductData;
     private RecurringSequence recurringSequence;
@@ -329,7 +329,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return multiCapture;
     }
     public String getPosSequenceNumber() {
-        return posSequenceNumber;
+        return super.getPosSequenceNumber();
     }
     public ArrayList<Product> getMiscProductData() {
         return miscProductData;
@@ -597,7 +597,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withPosSequenceNumber(String value) {
-        this.posSequenceNumber = value;
+        super.setPosSequenceNumber(value);
         return this;
     }
     public AuthorizationBuilder withMiscProductData(ArrayList<Product> values) {
@@ -839,6 +839,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withPaymentLinkId(String value) {
         paymentLinkId = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withRemittanceReference(RemittanceReferenceType remittanceReferenceType, String remittanceReferenceValue) {
+        this.remittanceReferenceType = remittanceReferenceType;
+        this.remittanceReferenceValue = remittanceReferenceValue;
         return this;
     }
 

@@ -4,6 +4,7 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.ChallengeRequest;
 import com.global.api.entities.enums.HostedPaymentType;
+import com.global.api.entities.enums.HostedPaymentMethods;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,7 @@ public class HostedPaymentData {
     @Getter @Setter private Boolean addressCapture;
     private List<Bill> bills;
     private ChallengeRequest challengeRequestIndicator;
-    private Boolean customerExists;
+    private Boolean customerExists = false;
     private Boolean customerIsEditable;
     private Address customerAddress;
     private String customerEmail;
@@ -30,6 +31,7 @@ public class HostedPaymentData {
     private Boolean offerToSaveCard;
     private String paymentKey;
     private String productId;
+    @Getter @Setter private Boolean captureAddress;
     // Determines whether the HPP response will contain the address and contact information
     @Getter @Setter private Boolean returnAddress = false;
     @Getter @Setter private Boolean enableExemptionOptimization;
@@ -38,6 +40,7 @@ public class HostedPaymentData {
     private String transactionStatusUrl;
     @Getter @Setter private String cancelUrl;
     private String merchantResponseUrl;
+    @Getter @Setter private HostedPaymentMethods[] hostedPaymentMethods;
 
     public Boolean getAddressesMatch() {
         return addressesMatch;

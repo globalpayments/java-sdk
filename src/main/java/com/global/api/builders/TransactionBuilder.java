@@ -17,6 +17,7 @@ import com.global.api.network.entities.*;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.paymentMethods.IPaymentMethod;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     // P66 Tag 16
     @Getter
     protected NtsTag16 ntsTag16;
-    @Getter
+    @Getter @Setter
     private String posSequenceNumber;
     @Getter
     protected String serviceCode;

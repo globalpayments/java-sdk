@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+import com.global.api.entities.enums.ShaHashType;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -70,23 +71,52 @@ public class GenerationUtils {
      *
      * @param toHash The value to hash
      * @param secret The shared secret to use in the second pass
+     * @param shaType The SHA hash type
      * @return the hash as a hex string
      */
-    static public String generateHash(String toHash, String secret) {
+    static public String generateHash(String toHash, String secret, ShaHashType shaType) {
         if(toHash == null)
             return null;
 
+        if(shaType == null)
+            shaType = ShaHashType.SHA1;
+
         //first pass hashes the String of required fields
-        String toHashFirstPass = DigestUtils.sha1Hex(toHash);
+        String toHashFirstPass = shaHex(toHash, shaType);
 
         //second pass takes the first hash, adds the secret and hashes again
-        String toHashSecondPass = new StringBuilder().append(toHashFirstPass).append(".").append(secret).toString();
-        return DigestUtils.sha1Hex(toHashSecondPass);
+        if (secret != null) {
+            String toHashSecondPass = new StringBuilder(toHashFirstPass).append(".").append(secret).toString();
+            return shaHex(toHashSecondPass, shaType);
+        }
+        return toHashFirstPass;
     }
 
     static public String generateHash(String secret, String... fields) {
         String toHash = StringUtils.join(".", fields);
-        return generateHash(toHash, secret);
+        return generateHash(toHash, secret, ShaHashType.SHA1);
+    }
+
+    public static String generateHash(String secret, ShaHashType shaType, String... fields) {
+        if(shaType == null)
+            shaType= ShaHashType.SHA1;
+
+        String toHash = StringUtils.join(".", fields);
+        return generateHash(toHash, secret, shaType);
+    }
+
+    public static String shaHex(String toHash, ShaHashType shaType) {
+        if (shaType == null)
+            shaType = ShaHashType.SHA1;
+
+        switch (shaType) {
+            case SHA256:
+                return DigestUtils.sha256Hex(toHash);
+            case SHA512:
+                return DigestUtils.sha512Hex(toHash);
+            default:
+                return DigestUtils.sha1Hex(toHash);
+        }
     }
 
     /**

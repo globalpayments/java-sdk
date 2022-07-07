@@ -20,7 +20,9 @@ public enum TransactionModifier implements IFlag {
     Fallback,
     Level_III,
     DecryptedMobile,
-    AlternativePaymentMethod;
+    AlternativePaymentMethod,
+    DeletePreAuth,
+    BankPayment;
 
     public long getLongValue() {
         return 1 << this.ordinal();

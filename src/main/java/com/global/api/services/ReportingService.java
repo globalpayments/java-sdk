@@ -45,7 +45,7 @@ public class ReportingService {
 
     public static TransactionReportBuilder<DisputeSummary> settlementDisputeDetail(String settlementDisputeId) {
         return new TransactionReportBuilder<DisputeSummary>(ReportType.SettlementDisputeDetail, DisputeSummary.class)
-                .WithSettlementDisputeId(settlementDisputeId);
+                .withSettlementDisputeId(settlementDisputeId);
     }
 
     public static TransactionReportBuilder<StoredPaymentMethodSummary> storedPaymentMethodDetail(String storedPaymentMethodId) {
@@ -56,6 +56,18 @@ public class ReportingService {
     public static TransactionReportBuilder<ActionSummary> actionDetail(String actionId) {
         return new TransactionReportBuilder<>(ReportType.ActionDetail, ActionSummary.class)
                 .withActionId(actionId);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryPaged> bankPaymentDetail(String bankPaymentId, int page, int pageSize) {
+        return new TransactionReportBuilder<>(ReportType.FindBankPayment, TransactionSummaryPaged.class)
+                .withBankPaymentId(bankPaymentId)
+                .withPaging(page, pageSize);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryPaged> findBankPaymentTransactions(int page, int pageSize)
+    {
+        return new TransactionReportBuilder<>(ReportType.FindBankPayment, TransactionSummaryPaged.class)
+                .withPaging(page, pageSize);
     }
 
     public static TransactionReportBuilder<TransactionSummaryPaged> findTransactionsPaged(int page, int pageSize) {

@@ -12,6 +12,7 @@ import com.global.api.terminals.abstractions.IDisposable;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServicesContainer implements IDisposable {
+
     private ConcurrentHashMap<String, ConfiguredServices> configurations;
     private static ServicesContainer instance;
 
@@ -61,6 +62,13 @@ public class ServicesContainer implements IDisposable {
         }
 
         throw new ConfigurationException("The specified configuration has not been configured for gateway processing.");
+    }
+
+    public IOpenBankingProvider getOpenBankingClient(String configName) throws ConfigurationException {
+        if (configurations.containsKey(configName))
+            return configurations.get(configName).getOpenBankingProvider();
+
+        throw new ConfigurationException("OpenBankingProvider is not configured.");
     }
 
     public static ServicesContainer getInstance() {

@@ -89,6 +89,8 @@ public class SearchCriteriaBuilder<TResult> {
     private IPaymentMethod paymentMethod;
     private ArrayList<PaymentMethodType> paymentTypes;
     private String referenceNumber;
+    @Getter @Setter private String bankPaymentId;
+    @Getter @Setter private Boolean returnPII;
     private String resource;
     private String resourceStatus;
     private String resourceId;
@@ -109,6 +111,7 @@ public class SearchCriteriaBuilder<TResult> {
     private String tokenFirstSix;
     private String tokenLastFour;
     private TransactionStatus transactionStatus;
+    private BankPaymentStatus bankPaymentStatus;
     private String uniqueDeviceId;
     private String username;
     String timezone;

@@ -31,7 +31,7 @@ public class RealexReportingTests {
 
     @Test
     public void GetTransactionDetail() throws ApiException {
-        String transactionId = "u2RjrtEmaU2f0pB-aGw4Eg";
+        String transactionId = "7tph6EbeQGSHnbn_ksrIoA";
 
         TransactionSummary response =
                 ReportingService

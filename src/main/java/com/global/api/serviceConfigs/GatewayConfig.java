@@ -4,6 +4,7 @@ import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.enums.ServiceEndpoints;
+import com.global.api.entities.enums.ShaHashType;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
 import com.global.api.logging.IRequestLogger;
@@ -44,6 +45,9 @@ public class GatewayConfig extends Configuration {
     private String merchantContactUrl;
     private String methodNotificationUrl;
     private Secure3dVersion secure3dVersion;
+    // Open Banking Service
+    @Getter @Setter private ShaHashType shaHashType;
+    @Getter @Setter public boolean enableBankPayment = false;
 
     public int getSiteId() {
         return siteId;
@@ -188,6 +192,7 @@ public class GatewayConfig extends Configuration {
             gateway.setChannel(channel);
             gateway.setRebatePassword(rebatePassword);
             gateway.setRefundPassword(refundPassword);
+            gateway.setShaHashType(shaHashType);
             gateway.setTimeout(timeout);
             gateway.setServiceUrl(serviceUrl);
             gateway.setProxy(proxy);
@@ -220,6 +225,22 @@ public class GatewayConfig extends Configuration {
                 secure3d2.setEnableLogging(enableLogging);
 
                 services.setSecure3dProvider(Secure3dVersion.TWO, secure3d2);
+            }
+
+            if (enableBankPayment) {
+                OpenBankingProvider openBankingProvider = new OpenBankingProvider();
+
+                openBankingProvider.setMerchantId(merchantId);
+                openBankingProvider.setAccountId(accountId);
+                openBankingProvider.setSharedSecret(sharedSecret);
+                openBankingProvider.setShaHashType(shaHashType != null ? shaHashType : ShaHashType.SHA1);
+                openBankingProvider.setServiceUrl(environment.equals(Environment.PRODUCTION) ? ServiceEndpoints.OPEN_BANKING_PRODUCTION.getValue() : ServiceEndpoints.OPEN_BANKING_TEST.getValue());
+                openBankingProvider.setTimeout(timeout);
+                openBankingProvider.setProxy(proxy);
+                openBankingProvider.setEnableLogging(enableLogging);
+                openBankingProvider.setRequestLogger(requestLogger);
+
+                services.setOpenBankingProvider(openBankingProvider);
             }
         }
         else {

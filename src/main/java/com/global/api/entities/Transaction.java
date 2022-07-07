@@ -35,6 +35,7 @@ public class Transaction {
     private BatchSummary batchSummary;
     private String cardBrandTransactionId;
     private AlternativePaymentResponse alternativePaymentResponse;
+    @Getter @Setter private BankPaymentResponse bankPaymentResponse;
     private String cardType;
     private String cardLast4;
     @Getter @Setter private String fingerPrint;

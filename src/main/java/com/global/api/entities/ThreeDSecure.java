@@ -18,6 +18,7 @@ public class ThreeDSecure {
     private ArrayList<String> acsInfoIndicator;
     @Getter @Setter private String acsInterface;
     @Getter @Setter private String acsUiTemplate;
+    @Getter @Setter private String acsReferenceNumber;
     private int algorithm;
     private BigDecimal amount;
     private String authenticationSource;
@@ -57,6 +58,7 @@ public class ThreeDSecure {
     private String whitelistStatus;
     private String xid;
     private String liabilityShift;
+    @Getter @Setter private String providerServerTransRef;
 
     public String getAcsTransactionId() {
         return acsTransactionId;
@@ -350,6 +352,7 @@ public class ThreeDSecure {
             this.acsStartVersion = mergeValue(acsStartVersion, secureEcom.getAcsStartVersion());
             this.acsInterface = mergeValue(acsInterface, secureEcom.getAcsInterface());
             this.acsUiTemplate = mergeValue(acsUiTemplate, secureEcom.getAcsUiTemplate());
+            this.acsReferenceNumber = mergeValue(acsReferenceNumber, secureEcom.getAcsReferenceNumber());
             this.algorithm = mergeValue(algorithm, secureEcom.getAlgorithm());
             this.amount = mergeValue(amount, secureEcom.getAmount());
             this.authenticationSource = mergeValue(authenticationSource, secureEcom.getAuthenticationSource());
@@ -386,6 +389,7 @@ public class ThreeDSecure {
             this.xid = mergeValue(xid, secureEcom.getXid());
             this.liabilityShift = mergeValue(liabilityShift, secureEcom.getLiabilityShift());
             //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());
+            this.providerServerTransRef = mergeValue(providerServerTransRef, secureEcom.getProviderServerTransRef());
         }
     }
 

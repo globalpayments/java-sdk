@@ -1,5 +1,14 @@
 # Changelog
 
+## v8.0.2 (07/05/2022)
+
+### Enhancements:
+
+- GP-ECOM/REALEX: Added Open Banking as new payment method
+- GP-API: Added "acsReferenceNumber" mapping for 3DS Initiate Authentication flow
+- PORTICO: Added EBT reversal support
+- GP-API: Mapped providerServerTransRef field on ThreeDSecure class
+
 ## v8.0.1 (06/29/2022)
 
 ### Enhancements:

@@ -32,8 +32,18 @@ public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
 
     public TResult execute(String configName) throws ApiException {
         super.execute(configName);
+        Object client;
 
-        IReportingService client = (IReportingService) ServicesContainer.getInstance().getGateway(configName);
-        return client.processReport(this, clazz);
+        switch (reportType) {
+            case FindBankPayment:
+                client = ServicesContainer.getInstance().getOpenBankingClient(configName);
+                break;
+
+            default:
+                client = ServicesContainer.getInstance().getGateway(configName);
+        }
+
+        return ((IReportingService) client).processReport(this, clazz);
     }
+
 }

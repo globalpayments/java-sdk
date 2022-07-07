@@ -16,8 +16,8 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 
 public class PorticoEbtTests {
-    private EBTCardData card;
-    private EBTTrackData track;
+    private final EBTCardData card;
+    private final EBTTrackData track;
     
     public PorticoEbtTests() throws ApiException {
         GatewayConfig config = new GatewayConfig();
@@ -72,6 +72,18 @@ public class PorticoEbtTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void ebtReversal() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("9"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction.fromId(response.getTransactionId(), PaymentMethodType.EBT).reverse(new BigDecimal("9")).execute();
     }
 
     @Test

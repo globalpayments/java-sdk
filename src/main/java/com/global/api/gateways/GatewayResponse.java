@@ -1,6 +1,6 @@
 package com.global.api.gateways;
 
-class GatewayResponse {
+public class GatewayResponse {
     private int statusCode;
     private String rawResponse;
 

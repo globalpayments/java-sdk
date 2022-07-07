@@ -975,6 +975,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
                 else if (paymentMethodType.equals(PaymentMethodType.Gift))
                     return "GiftCardReversal";
+                else if (paymentMethodType.equals(PaymentMethodType.EBT))
+                    return "EBTFSReversal";
                 throw new UnsupportedTransactionException();
             case Edit:
                 if (modifier.equals(TransactionModifier.LevelII))

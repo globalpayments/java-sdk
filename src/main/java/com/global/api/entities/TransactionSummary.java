@@ -115,10 +115,11 @@ public class TransactionSummary {
     private String accountNumberLast4;
     private String accountType;
     private AlternativePaymentResponse alternativePaymentResponse;
+    private BankPaymentResponse bankPaymentResponse;
     private String transactionType;
     private String CardEntryMethod;
     private BigDecimal amountDue;
-    public String country;
+    private String country;
 
 	public String getOrderId() {
 	    return this.clientTransactionId;

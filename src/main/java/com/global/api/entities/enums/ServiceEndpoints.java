@@ -15,7 +15,9 @@ public enum ServiceEndpoints implements IStringConstant {
     GP_API_TEST("https://apis.sandbox.globalpay.com/ucp"),
     BILLPAY_TEST("https://testing.heartlandpaymentservices.net"),
     BILLPAY_CERTIFICATION("https://staging.heartlandpaymentservices.net"),
-    BILLPAY_PRODUCTION("https://heartlandpaymentservices.net");
+    BILLPAY_PRODUCTION("https://heartlandpaymentservices.net"),
+    OPEN_BANKING_TEST("https://api.sandbox.globalpay-ecommerce.com/openbanking"),
+    OPEN_BANKING_PRODUCTION("https://api.globalpay-ecommerce.com/openbanking");
 
     String value;
     ServiceEndpoints(String value) { this.value = value; }

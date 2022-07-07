@@ -562,9 +562,8 @@ public class GpApiMapping {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             ThreeDSecure threeDSecure = new ThreeDSecure();
-            threeDSecure.setServerTransactionId(
-                    !StringUtils.isNullOrEmpty(json.getString("id")) ?
-                            json.getString("id") :
+            threeDSecure.setServerTransactionId(json.getString("id"));
+            threeDSecure.setProviderServerTransRef(
                             !StringUtils.isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
                                     json.get("three_ds").getString("server_trans_ref") :
                                     null);
@@ -581,6 +580,7 @@ public class GpApiMapping {
                 threeDSecure.setDirectoryServerEndVersion(three_ds.getString("ds_protocol_version_end"));
                 threeDSecure.setAcsStartVersion(three_ds.getString("acs_protocol_version_start"));
                 threeDSecure.setAcsEndVersion(three_ds.getString("acs_protocol_version_end"));
+                threeDSecure.setAcsReferenceNumber(three_ds.getString("acs_reference_number"));
                 // In other SDKs, enrolled is simply a String.
                 // In JAVA, enrolled was used in another connectors as boolean. So enrolledStatus was created as String for that purpose.
                 threeDSecure.setEnrolledStatus(three_ds.getString("enrolled_status"));

@@ -104,13 +104,18 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
-    public TransactionReportBuilder<TResult> WithSettlementDisputeId(String value) {
+    public TransactionReportBuilder<TResult> withSettlementDisputeId(String value) {
         getSearchBuilder().setSettlementDisputeId(value);
         return this;
     }
 
     public TransactionReportBuilder<TResult> withStoredPaymentMethodId(String value) {
         getSearchBuilder().setStoredPaymentMethodId(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withBankPaymentId(String bankPaymentId) {
+        getSearchBuilder().setBankPaymentId(bankPaymentId);
         return this;
     }
 

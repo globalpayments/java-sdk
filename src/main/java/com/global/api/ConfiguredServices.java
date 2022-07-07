@@ -21,6 +21,7 @@ public class ConfiguredServices implements IDisposable {
     private PayrollConnector payrollConnector;
     private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     private IBillingProvider billingProvider;
+    @Getter @Setter private IOpenBankingProvider openBankingProvider;
 
     IPaymentGateway getGatewayConnector() {
         return gatewayConnector;

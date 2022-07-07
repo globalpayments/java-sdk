@@ -81,7 +81,7 @@ public class ThreeDSecureAcsClient {
         if(raw == null)
             return null;
 
-        String searchString = String.format("NAME=\"%s\" VALUE=\"", inputValue);
+        String searchString = String.format("name=\"%s\" value=\"", inputValue);
 
         int index = raw.indexOf(searchString);
         if (index > -1) {
