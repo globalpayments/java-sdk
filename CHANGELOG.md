@@ -1,5 +1,12 @@
 # Changelog
 
+## v8.0.3 (07/14/2022)
+
+### Enhancements:
+
+- GP-ECOM/REALEX: Updated unit test for SupplementaryData
+- GP-API: Added Incremental Auth
+
 ## v8.0.2 (07/05/2022)
 
 ### Enhancements:

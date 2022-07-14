@@ -526,6 +526,11 @@ public class Transaction {
     public ManagementBuilder additionalAuth() {
         return additionalAuth(null);
     }
+
+    public ManagementBuilder additionalAuth(double amount) {
+        return additionalAuth(new BigDecimal(amount));
+    }
+
     public ManagementBuilder additionalAuth(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Auth)
                 .withPaymentMethod(transactionReference)

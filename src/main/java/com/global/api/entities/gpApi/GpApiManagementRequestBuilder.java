@@ -20,6 +20,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.var;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class GpApiManagementRequestBuilder {
 
     public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException {
@@ -187,6 +190,42 @@ public class GpApiManagementRequestBuilder {
                 return new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/confirmation")
+                        .setRequestBody(data.toString());
+            }
+        }
+        else if (builderTransactionType == TransactionType.Auth) {
+            data.set("amount", builder.getAmount());
+
+            if (builder.getLodgingData() != null) {
+                var lodging = builder.getLodgingData();
+                if (lodging.getItems() != null) {
+                    var lodginItems = new ArrayList<HashMap<String, Object>>();
+
+                    for (var item : lodging.getItems()) {
+                        HashMap<String, Object> item2 = new HashMap<>();
+                        item2.put("Types", item.getTypes());
+                        item2.put("Reference", item.getReference());
+                        item2.put("TotalAmount", item.getTotalAmount());
+                        item2.put("paymentMethodProgramCodes", item.getPaymentMethodProgramCodes());
+
+                        lodginItems.add(item2);
+                    }
+
+                    var lodgingData =
+                            new JsonDoc()
+                                    .set("booking_reference", lodging.getBookingReference())
+                                    .set("duration_days", lodging.getStayDuration())
+                                    .set("date_checked_in", lodging.getCheckInDate() != null ? lodging.getCheckInDate().toString("yyyy-MM-dd") : null)
+                                    .set("date_checked_out", lodging.getCheckOutDate() != null ? lodging.getCheckOutDate().toString("yyyy-MM-dd") : null)
+                                    .set("daily_rate_amount", StringUtils.toNumeric(lodging.getRate()))
+                                    .set("charge_items", lodginItems);
+
+                    data.set("lodging", lodgingData);
+                }
+
+                return new GpApiRequest()
+                        .setVerb(GpApiRequest.HttpMethod.Post)
+                        .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/incremental")
                         .setRequestBody(data.toString());
             }
         }

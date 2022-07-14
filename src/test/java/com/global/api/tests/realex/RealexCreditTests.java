@@ -357,27 +357,28 @@ public class RealexCreditTests {
     }
 
     @Test
-    public void supplementaryData_Authorize() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal("129.99"))
-                .withCurrency("EUR")
-                .withSupplementaryData("taxInfo", "VATREF", "763637283332")
-                .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
-                .execute();
+    public void Credit_SupplementaryData() throws ApiException {
+        Transaction authorize =
+                card
+                        .authorize(10)
+                        .withCurrency("GBP")
+                        .withSupplementaryData("taxInfo", "VATREF", "763637283332")
+                        .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
+                        .withSupplementaryData("RANDOM_KEY1", "Passport", "PPS736353")
+                        .execute();
 
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
-    }
+        assertNotNull(authorize);
+        assertEquals("00", authorize.getResponseCode());
 
-    @Test
-    public void supplementaryData_Charge() throws ApiException {
-        Transaction response = card.charge(new BigDecimal("129.99"))
-                .withCurrency("EUR")
-                .withSupplementaryData("taxInfo", "VATREF", "763637283332")
-                .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
-                .execute();
+        Transaction capture =
+                authorize
+                        .capture(10)
+                        .withCurrency("GBP")
+                        .withSupplementaryData("taxInfo", "VATREF", "763637283332")
+                        .execute();
 
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
     }
 
     @Test

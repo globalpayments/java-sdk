@@ -3,10 +3,13 @@ package com.global.api.entities;
 import com.global.api.entities.enums.AdvancedDepositType;
 import com.global.api.entities.enums.ExtraChargeType;
 import com.global.api.entities.enums.PrestigiousPropertyLimit;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 
 public class LodgingData {
     private AdvancedDepositType advancedDepositType;
@@ -20,6 +23,8 @@ public class LodgingData {
     private BigDecimal rate;
     private Integer stayDuration;
     private String lodgingDataEdit;
+    @Getter @Setter private String bookingReference;
+    @Getter @Setter private List<LodgingItems> items;
 
     public AdvancedDepositType getAdvancedDepositType() {
         return advancedDepositType;
@@ -65,6 +70,9 @@ public class LodgingData {
     }
     public BigDecimal getRate() {
         return rate;
+    }
+    public void setRate(double rate) {
+        this.rate = new BigDecimal(rate);
     }
     public void setRate(BigDecimal rate) {
         this.rate = rate;

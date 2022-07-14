@@ -82,6 +82,10 @@ public class GpApiMapping {
 
             transaction.setTransactionId(json.getString("id"));
             transaction.setBalanceAmount(json.getAmount("amount"));
+            transaction.setAuthorizedAmount(
+                    json.getString("status").toUpperCase().equals(TransactionStatus.Preauthorized.getValue().toUpperCase()) &&
+                    !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
+            );
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setResponseMessage(json.getString("status"));
             transaction.setReferenceNumber(json.getString("reference"));

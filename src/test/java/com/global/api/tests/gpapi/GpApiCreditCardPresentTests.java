@@ -2,6 +2,8 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
+import com.global.api.entities.LodgingData;
+import com.global.api.entities.LodgingItems;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -15,11 +17,13 @@ import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.var;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
@@ -844,6 +848,56 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
         } finally {
             assertTrue(exceptionCaught);
         }
+    }
+
+    @Test
+    public void IncrementalAuth() throws ApiException {
+        var transaction =
+                card
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute();
+
+        assertNotNull(transaction);
+        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
+
+        var lodgingInfo = new LodgingData();
+        lodgingInfo.setBookingReference("s9RpaDwXq1sPRkbP");
+        lodgingInfo.setStayDuration(10);
+        lodgingInfo.setCheckInDate(DateTime.now());
+        lodgingInfo.setCheckOutDate(new DateTime(DateUtils.addDays(DateTime.now().toDate(), 7)));
+        lodgingInfo.setRate(new BigDecimal("13.49"));
+
+        ArrayList<LodgingItems> items = new ArrayList<>();
+        items.add(
+                new LodgingItems()
+                        .setTypes(LodgingItemType.NO_SHOW.toString())
+                        .setReference("item_1")
+                        .setTotalAmount("13.49")
+                        .setPaymentMethodProgramCodes(new String[]{PaymentMethodProgram.ASSURED_RESERVATION.toString()}));
+        lodgingInfo.setItems(items);
+
+        transaction =
+                transaction
+                        .additionalAuth(10)
+                        .withCurrency(currency)
+                        .withLodgingData(lodgingInfo)
+                        .execute();
+
+        assertNotNull(transaction);
+        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
+        assertEquals(new BigDecimal("22.02"), transaction.getAuthorizedAmount());
+
+        var capture =
+                transaction
+                        .capture()
+                        .execute();
+
+        assertNotNull(capture);
+        assertEquals("SUCCESS", capture.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
     }
     //endregion
 
