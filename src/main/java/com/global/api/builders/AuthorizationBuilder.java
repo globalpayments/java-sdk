@@ -49,7 +49,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String customerIpAddress;
     private String cvn;
     private DccRateData dccRateData;
-    private String description;
     private DecisionManager decisionManager;
     private String dynamicDescriptor;
     private EcommerceInfo ecommerceInfo;
@@ -77,7 +76,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private PhoneNumber workPhone;
     @Getter @Setter private PhoneNumber shippingPhone;
     @Getter @Setter private PhoneNumber mobilePhone;
-    @Getter @Setter private String paymentLinkId;
     @Getter @Setter private RemittanceReferenceType remittanceReferenceType;
     @Getter @Setter private String remittanceReferenceValue;
     private String productId;
@@ -834,6 +832,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withTipAmount(BigDecimal tipAmount) {
         this.tipAmount = tipAmount;
+        return this;
+    }
+
+    public AuthorizationBuilder withPayLinkData(PayLinkData payLinkData)
+    {
+        this.payLinkData = payLinkData;
         return this;
     }
 

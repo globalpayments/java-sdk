@@ -37,19 +37,28 @@ import java.util.HashMap;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider {
-    public static final String DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";  // Standard expected GP API DateTime format
+    public static final String DATE_PATTERN = "yyyy-MM-dd";
+
+    public static final String DATE_TIME_PATTERN   = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";// Standard expected GP API DateTime format
     public static final String DATE_TIME_PATTERN_2 = "yyyy-MM-dd'T'HH:mm:ss.SSS";   // Slightly different GP API DateTime format
     public static final String DATE_TIME_PATTERN_3 = "yyyy-MM-dd'T'HH:mm:ss'Z'";    // Another slightly different GP API DateTime format. Appears in Paypal.
     public static final String DATE_TIME_PATTERN_4 = "yyyy-MM-dd'T'HH:mm:ss";       // Another slightly different GP API DateTime format
     public static final String DATE_TIME_PATTERN_5 = "yyyy-MM-dd'T'HH:mm";          // Another slightly different GP API DateTime format
+    public static final String DATE_TIME_PATTERN_6 = DATE_PATTERN;                  // Another slightly different GP API DateTime format
+    public static final String DATE_TIME_PATTERN_7 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"; // Another slightly different GP API DateTime format
+    public static final String DATE_TIME_PATTERN_8 = "yyyy-MM-dd'T'HH:mm:ss+SS:SS";     // Another slightly different GP API DateTime format
 
-    public static final String DATE_PATTERN = "yyyy-MM-dd";
+
+    public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_PATTERN);
+
     public static final DateTimeFormatter DATE_TIME_DTF = DateTimeFormat.forPattern(DATE_TIME_PATTERN);
     public static final DateTimeFormatter DATE_TIME_DTF_2 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_2);
     public static final DateTimeFormatter DATE_TIME_DTF_3 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_3);
     public static final DateTimeFormatter DATE_TIME_DTF_4 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_4);
     public static final DateTimeFormatter DATE_TIME_DTF_5 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_5);
-    public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_PATTERN);
+    public static final DateTimeFormatter DATE_TIME_DTF_6 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_6);
+    public static final DateTimeFormatter DATE_TIME_DTF_7 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_7);
+    public static final DateTimeFormatter DATE_TIME_DTF_8 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_8);
 
     private static final String GP_API_VERSION = "2021-03-22";
     private static final String IDEMPOTENCY_HEADER = "x-gp-idempotency";
@@ -369,7 +378,19 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                         try {
                             return GpApiConnector.DATE_TIME_DTF_5.parseDateTime(dateValue);
                         } catch (IllegalArgumentException ex5) {
-                            throw new GatewayException("DateTime format is not supported.", ex5);
+                            try {
+                                return GpApiConnector.DATE_TIME_DTF_6.parseDateTime(dateValue);
+                            } catch (IllegalArgumentException ex6) {
+                                try {
+                                    return GpApiConnector.DATE_TIME_DTF_7.parseDateTime(dateValue);
+                                } catch (IllegalArgumentException ex7) {
+                                    try {
+                                        return GpApiConnector.DATE_TIME_DTF_8.parseDateTime(dateValue);
+                                    } catch (IllegalArgumentException ex8) {
+                                        throw new GatewayException("DateTime format is not supported.", ex8);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

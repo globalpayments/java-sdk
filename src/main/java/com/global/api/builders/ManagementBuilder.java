@@ -88,7 +88,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private NtsRequestsToBalanceRequest ntsRequestsToBalance;
     @Getter
     private NtsRequestToBalanceData ntsRequestsToBalanceData;
-
+    // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
+    @Getter @Setter protected PaymentMethodUsageMode usageMode;
+    @Getter @Setter protected Integer usageLimit;
+    @Getter @Setter protected PayLinkType type;
 
     public ManagementBuilder withCardSequenceNumber(String value) {
         this.cardSequenceNumber = value;
@@ -477,6 +480,20 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.productId = value;
         return this;
     }
+    public ManagementBuilder withPaymentLinkId(String value)
+    {
+        this.paymentLinkId = value;
+        return this;
+    }
+    public ManagementBuilder withPayLinkData(PayLinkData payLinkData)
+    {
+        this.payLinkData = payLinkData;
+        // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
+        this.usageMode = payLinkData != null ? payLinkData.getUsageMode() : null;
+        this.usageLimit = payLinkData != null ? payLinkData.getUsageLimit() : null;
+        this.type = payLinkData != null ?payLinkData.getType() : null;
+        return this;
+    }
     public ManagementBuilder withReasonCode(ReasonCode value) {
         this.reasonCode = value;
         return this;
@@ -664,5 +681,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         // Validations extracted from .NET SDK to be aligned between different SDKs
         this.validations.of(EnumSet.of(TransactionType.TokenUpdate))
                 .check("paymentMethod").isInstanceOf(CreditCardData.class);
+
+        this.validations.of(TransactionType.PayLinkUpdate)
+                .check("amount").isNotNull()
+                .check("payLinkData").isNotNull()
+                .check("usageMode").isNotNull()
+                .check("usageLimit").isNotNull()
+                .check("type").isNotNull();
     }
 }

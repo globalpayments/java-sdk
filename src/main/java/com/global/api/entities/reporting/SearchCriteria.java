@@ -47,6 +47,7 @@ public enum SearchCriteria {
     PaymentType,
     PaymentMethod,
     PaymentMethodName,
+    PayLinkId,
     ReturnPII,
     ReferenceNumber,
     Resource,

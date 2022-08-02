@@ -1,8 +1,11 @@
 package com.global.api.tests.gpapi;
 
+import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
+
+import java.util.Date;
 
 public class BaseGpApiTest {
 
@@ -36,6 +39,9 @@ public class BaseGpApiTest {
 
     static final int expMonth = DateTime.now().getMonthOfYear();
     static final int expYear = DateTime.now().getYear() + 1;
+
+    static final Date startDate = DateUtils.addDays(new Date(), -30);
+    static final Date endDate = new Date();
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {

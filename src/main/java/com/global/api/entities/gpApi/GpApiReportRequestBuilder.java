@@ -235,10 +235,9 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case ActionDetail:
-                    request
+                    return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + "/actions/" + trb.getSearchBuilder().getActionId());
-                    return request;
 
                 case FindActionsPaged:
                     request
@@ -264,6 +263,23 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("http_response_code", trb.getSearchBuilder().getHttpResponseCode());
 
                     return request;
+
+                case PayLinkDetail:
+                    return
+                            request
+                                    .setVerb(GpApiRequest.HttpMethod.Get)
+                                    .setEndpoint(merchantUrl + "/links/" + trb.getSearchBuilder().getPayLinkId());
+
+                case FindPayLinkPaged:
+                    request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartDate()));
+                    request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndDate()));
+                    request.addQueryStringParam("order", trb.getOrder().getValue());
+                    request.addQueryStringParam("order_by", EnumUtils.getMapping(Target.GP_API, trb.getActionOrderBy()));
+
+                    return
+                            request
+                                    .setVerb(GpApiRequest.HttpMethod.Get)
+                                    .setEndpoint(merchantUrl + "/links");
 
                 default:
                     throw new UnsupportedTransactionException();

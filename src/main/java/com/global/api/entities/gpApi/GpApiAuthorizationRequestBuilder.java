@@ -1,10 +1,7 @@
 package com.global.api.entities.gpApi;
 
 import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.entities.Address;
-import com.global.api.entities.EncryptionData;
-import com.global.api.entities.Product;
-import com.global.api.entities.ThreeDSecure;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
@@ -22,6 +19,7 @@ import java.util.UUID;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
 import static com.global.api.entities.gpApi.GpApiManagementRequestBuilder.getDccId;
+import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
@@ -345,6 +343,50 @@ public class GpApiAuthorizationRequestBuilder {
                     paymentMethod.set("encryption", encryption);
                 }
             }
+        }
+
+        if (builderTransactionType == TransactionType.Create && builder.getPayLinkData() instanceof PayLinkData) {
+            var payLinkData = builder.getPayLinkData();
+
+            var requestData =
+                    new JsonDoc()
+                            .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                            .set("type", payLinkData.getType().toString())
+                            .set("usage_mode", payLinkData.getUsageMode() != null ? payLinkData.getUsageMode().getValue() : null)
+                            .set("usage_limit",  payLinkData.getUsageLimit() != null ? payLinkData.getUsageLimit() : null)
+                            .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : java.util.UUID.randomUUID().toString())
+                            .set("name", payLinkData.getName() != null ? payLinkData.getName() : null)
+                            .set("description", builder.getDescription() != null ? builder.getDescription() : null)
+                            .set("shippable", payLinkData.isShippable() != null ? payLinkData.isShippable().toString().toUpperCase() : Boolean.FALSE.toString())
+                            .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()))
+                            .set("expiration_date", payLinkData.getExpirationDate() != null ? getDateIfNotNull(payLinkData.getExpirationDate()) : null)
+                            // .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
+                            .set("status", PayLinkStatus.ACTIVE.toString())
+                            .set("images", payLinkData.getImages() != null ? payLinkData.getImages().toString() : null);
+
+            var transactions =
+                    new JsonDoc()
+                            .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                            .set("channel", gateway.getGpApiConfig().getChannel())
+                            .set("currency", builder.getCurrency())
+                            .set("country", gateway.getGpApiConfig().getCountry())
+                            .set("allowed_payment_methods", payLinkData.getAllowedPaymentMethods());
+
+            var notifications =
+                    new JsonDoc()
+                            .set("cancel_url", payLinkData.getCancelUrl())
+                            .set("return_url", payLinkData.getReturnUrl())
+                            .set("status_url", payLinkData.getStatusUpdateUrl());
+
+            requestData.set("transactions", transactions);
+            requestData.set("notifications", notifications);
+
+            return
+                    new GpApiRequest()
+                            .setVerb(GpApiRequest.HttpMethod.Post)
+                            .setEndpoint(merchantUrl + "/links")
+                            .setRequestBody(requestData.toString());
+
         }
 
         JsonDoc data = new JsonDoc()

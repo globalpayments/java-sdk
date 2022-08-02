@@ -248,6 +248,35 @@ public class GpApiManagementRequestBuilder {
                     .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/adjustment")
                     .setRequestBody(data.toString());
         }
+        else if (builderTransactionType == TransactionType.PayLinkUpdate) {
+            var payLinkData = builder.getPayLinkData();
+
+            data =
+                    new JsonDoc()
+                            .set("usage_mode", payLinkData.getUsageMode() != null ? payLinkData.getUsageMode().getValue() : null)
+                            .set("usage_limit", payLinkData.getUsageLimit() != null ? payLinkData.getUsageLimit() : null)
+                            .set("name", payLinkData.getName() != null ? payLinkData.getName() : null)
+                            .set("description", builder.getDescription() != null ? builder.getDescription() : null)
+                            .set("type", payLinkData.getType() != null ? payLinkData.getType().toString() : null)
+                            .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
+                            .set("shippable", payLinkData.isShippable() != null  ? payLinkData.isShippable().toString().toUpperCase() : null)
+                            .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()));
+
+            var transactions =
+                    new JsonDoc()
+                            .set("amount", builder.getAmount() != null ? StringUtils.toNumeric(builder.getAmount()) : null);
+
+            data
+                    .set("transactions", transactions)
+                    .set("expiration_date", payLinkData.getExpirationDate() != null ? payLinkData.getExpirationDate().toString("yyyy-MM-dd") : null)
+                    .set("images", payLinkData.getImages() != null ? payLinkData.getImages().toString() : null);
+
+            return new GpApiRequest()
+                    .setVerb(GpApiRequest.HttpMethod.Patch)
+                    .setEndpoint(merchantUrl + "/links/" + builder.getPaymentLinkId())
+                    .setRequestBody(data.toString());
+
+        }
 
         return null;
     }

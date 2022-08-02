@@ -1,5 +1,11 @@
 # Changelog
 
+## v8.0.4 (08/02/2022)
+
+### Enhancements:
+
+- GP-API: Added PayLink API that allows you to generate single or multi-use unique payment links.
+
 ## v8.0.3 (07/14/2022)
 
 ### Enhancements:

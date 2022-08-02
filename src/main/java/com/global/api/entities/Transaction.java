@@ -59,6 +59,7 @@ public class Transaction {
     @Getter @Setter private Integer multiCaptureSequence;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
+    @Getter @Setter private PayLinkResponse payLinkResponse;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;
     private String recurringDataCode;

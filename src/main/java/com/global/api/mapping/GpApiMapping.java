@@ -9,13 +9,13 @@ import com.global.api.entities.reporting.*;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
+import org.joda.time.DateTime;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
-import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
+import static com.global.api.gateways.GpApiConnector.*;
 
 public class GpApiMapping {
 
@@ -24,6 +24,8 @@ public class GpApiMapping {
     private static final String PAYMENT_METHOD_DETOKENIZE = "PAYMENT_METHOD_DETOKENIZE";
     private static final String PAYMENT_METHOD_EDIT = "PAYMENT_METHOD_EDIT";
     private static final String PAYMENT_METHOD_DELETE = "PAYMENT_METHOD_DELETE";
+    private static final String LINK_CREATE = "LINK_CREATE";
+    private static final String LINK_EDIT = "LINK_EDIT";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -32,6 +34,17 @@ public class GpApiMapping {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             transaction.setResponseCode(json.get("action").getString("result_code"));
+            transaction.setTransactionId(json.getString("id"));
+            transaction.setBalanceAmount(json.getAmount("amount"));
+            transaction.setAuthorizedAmount(
+                    json.getString("status").toUpperCase().equals(TransactionStatus.Preauthorized.getValue().toUpperCase()) &&
+                            !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
+            );
+            transaction.setTimestamp(json.getString("time_created"));
+            transaction.setResponseMessage(json.getString("status"));
+            transaction.setReferenceNumber(json.getString("reference"));
+            transaction.setClientTransactionId(json.getString("reference"));
+            transaction.setMultiCapture("MULTIPLE".equals(json.getString("capture_mode")));
 
             String actionType = json.get("action").getString("type");
 
@@ -54,7 +67,7 @@ public class GpApiMapping {
                 case PAYMENT_METHOD_DELETE:
                     transaction.setToken(json.getString("id"));
                     if (!StringUtils.isNullOrEmpty(json.getString("usage_mode"))) {
-                        transaction.setTokenUsageMode(PaymentMethodUsageMode.valueOf(json.getString("usage_mode")));
+                        transaction.setTokenUsageMode(getPaymentMethodUsageMode(json));
                     }
                     transaction.setTimestamp(json.getString("time_created"));
                     transaction.setReferenceNumber(json.getString("reference"));
@@ -75,22 +88,25 @@ public class GpApiMapping {
 
                     break;
 
+                case LINK_CREATE:
+                case LINK_EDIT:
+
+                    PayLinkResponse payLinkResponse = mapPayLinkResponse(json);
+
+                    if (json.has("transactions")) {
+                        JsonDoc trn = json.get("transactions");
+                        transaction.setBalanceAmount(trn.getString("amount") != null ? trn.getAmount("amount") : null);
+                        payLinkResponse.setAllowedPaymentMethods(trn.getStringArrayList("allowed_payment_methods").toArray(new String[0]));
+                    }
+
+                    transaction.setPayLinkResponse(payLinkResponse);
+
+                    break;
+
                 default:
                     break;
 
             }
-
-            transaction.setTransactionId(json.getString("id"));
-            transaction.setBalanceAmount(json.getAmount("amount"));
-            transaction.setAuthorizedAmount(
-                    json.getString("status").toUpperCase().equals(TransactionStatus.Preauthorized.getValue().toUpperCase()) &&
-                    !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
-            );
-            transaction.setTimestamp(json.getString("time_created"));
-            transaction.setResponseMessage(json.getString("status"));
-            transaction.setReferenceNumber(json.getString("reference"));
-            transaction.setClientTransactionId(json.getString("reference"));
-            transaction.setMultiCapture("MULTIPLE".equals(json.getString("capture_mode")));
 
             BatchSummary batchSummary = new BatchSummary();
             batchSummary.setBatchReference(json.getString("batch_id"));
@@ -117,7 +133,7 @@ public class GpApiMapping {
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
                     transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                     transaction.setMultiCapturePaymentCount(getIsMultiCapture(json));
-                    transaction.setPaymentMethodType(getPaymentMehodType(json) != null ? getPaymentMehodType(json) : transaction.getPaymentMethodType());
+                    transaction.setPaymentMethodType(getPaymentMethodType(json) != null ? getPaymentMethodType(json) : transaction.getPaymentMethodType());
                     transaction.setDccRateData(mapDccInfo(json));
                 }
             }
@@ -138,11 +154,18 @@ public class GpApiMapping {
         return null;
     }
 
-    private static PaymentMethodType getPaymentMehodType(JsonDoc json) {
+    private static PaymentMethodType getPaymentMethodType(JsonDoc json) {
         if (json.get("payment_method").has("bank_transfer")) {
             return PaymentMethodType.ACH;
         } else if (json.get("payment_method").has("apm")) {
             return PaymentMethodType.APM;
+        }
+        return null;
+    }
+
+    private static PaymentMethodUsageMode getPaymentMethodUsageMode(JsonDoc json) {
+        if (json.has("usage_mode")) {
+            return PaymentMethodUsageMode.valueOf(json.getString("usage_mode"));
         }
         return null;
     }
@@ -198,19 +221,8 @@ public class GpApiMapping {
     }
 
     public static TransactionSummary mapTransactionSummary(JsonDoc doc) throws GatewayException {
-        TransactionSummary summary = new TransactionSummary();
+        TransactionSummary summary = createTransactionSummary(doc);
 
-        summary.setTransactionId(doc.getString("id"));
-        summary.setDepositReference(doc.getString("deposit_id"));
-        summary.setTransactionDate(parseGpApiDateTime(doc.getString("time_created")));
-        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
-        summary.setTransactionStatus(doc.getString("status"));
-        summary.setDepositStatus(doc.getString("deposit_status"));
-        summary.setTransactionType(doc.getString("type"));
-        summary.setChannel(doc.getString("channel"));
-        summary.setAmount(doc.getAmount("amount"));
-        summary.setCurrency(doc.getString("currency"));
-        summary.setReferenceNumber(doc.getString("reference"));
         summary.setClientTransactionId(doc.getString("reference"));
         summary.setTransactionLocalDate(parseGpApiDateTime(doc.getString("time_created_reference")));
         summary.setBatchSequenceNumber(doc.getString("batch_id"));
@@ -218,6 +230,7 @@ public class GpApiMapping {
         summary.setOriginalTransactionId(doc.getString("parent_resource_id"));
         summary.setDepositReference(doc.getString("deposit_id"));
         summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
+        summary.setDepositStatus(doc.getString("deposit_status"));
 
         if (doc.has("payment_method")) {
             final JsonDoc paymentMethod = doc.get("payment_method");
@@ -290,6 +303,87 @@ public class GpApiMapping {
         return summary;
     }
 
+    public static PayLinkSummary mapPayLinkSummary(JsonDoc doc) throws GatewayException {
+        var summary = new PayLinkSummary();
+
+        summary.setId(doc.getString("id"));
+        summary.setMerchantId(doc.getString("merchant_id"));
+        summary.setMerchantName(doc.getString("merchant_name"));
+        summary.setAccountId(doc.getString("account_id"));
+        summary.setAccountName(doc.getString("account_name"));
+        summary.setUrl(doc.getString("url"));
+        summary.setStatus(PayLinkStatus.valueOf(doc.getString("status")));
+        summary.setType(PayLinkType.valueOf(doc.getString("type").toUpperCase()));
+        summary.setAllowedPaymentMethods(getAllowedPaymentMethods(doc));
+        summary.setUsageMode(getPaymentMethodUsageMode(doc));
+        summary.setUsageCount(doc.getString("usage_count"));
+        summary.setReference(doc.getString("reference"));
+        summary.setName(doc.getString("name"));
+        summary.setDescription(doc.getString("description"));
+        summary.setShippable(doc.getString("shippable"));
+        summary.setViewedCount(doc.getString("viewed_count"));
+        summary.setExpirationDate(doc.getDateTime("expiration_date"));
+        summary.setImages(doc.getStringArrayList("images"));
+
+        if (doc.has("transactions")) {
+            List<TransactionSummary> transactionSummaryList = new ArrayList<>();
+            for (var transaction : doc.getEnumerator("transactions")) {
+                transactionSummaryList.add(createTransactionSummary(transaction));
+            }
+            summary.setTransactions(transactionSummaryList);
+        }
+
+        return summary;
+    }
+
+    private static PayLinkResponse mapPayLinkResponse(JsonDoc doc) throws GatewayException {
+        var payLinkResponse =
+                new PayLinkResponse()
+                        .setId(doc.getString("id"))
+                        .setAccountName(doc.getString("account_name"))
+                        .setUrl(doc.getString("url"))
+                        .setStatus(PayLinkStatus.valueOf(doc.getString("status")))
+                        .setType(PayLinkType.valueOf(doc.getString("type")))
+                        .setUsageMode(PaymentMethodUsageMode.valueOf(doc.getString("usage_mode")))
+                        .setUsageLimit(doc.getInt("usage_limit"))
+                        .setReference(doc.getString("reference"))
+                        .setName(doc.getString("name"))
+                        .setDescription(doc.getString("description"))
+                        .setIsShippable(doc.getBool("shippable"))
+                        .setViewedCount(doc.getString("viewed_count"))
+                        .setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
+
+        return payLinkResponse;
+    }
+
+    private static TransactionSummary createTransactionSummary(JsonDoc doc) throws GatewayException {
+        var transaction = new TransactionSummary();
+
+        transaction.setTransactionId(doc.getString("id"));
+        transaction.setTransactionDate(parseGpApiDateTime(doc.getString("time_created")));
+        transaction.setTransactionStatus(doc.getString("status"));
+        transaction.setTransactionType(doc.getString("type"));
+        transaction.setChannel(doc.getString("channel"));
+        transaction.setAmount(doc.getAmount("amount"));
+        transaction.setCurrency(doc.getString("currency"));
+        transaction.setReferenceNumber(doc.getString("reference"));
+
+        return transaction;
+    }
+
+    private static List<PaymentMethodName> getAllowedPaymentMethods(JsonDoc doc) {
+        List<PaymentMethodName> list = new ArrayList<>();
+        for (String item : doc.getStringArrayList("allowed_payment_methods")) {
+            for (PaymentMethodName paymentMethodName : PaymentMethodName.values()) {
+                if (paymentMethodName.getValue(Target.GP_API).equals(item)) {
+                    list.add(paymentMethodName);
+                }
+            }
+        }
+
+        return list;
+    }
+
     public static <T> T mapReportResponse(String rawResponse, ReportType reportType) throws GatewayException {
         JsonDoc json = JsonDoc.parse(rawResponse);
 
@@ -333,6 +427,13 @@ public class GpApiMapping {
 
             case FindActionsPaged:
                 return (T) mapActions(json);
+
+            case PayLinkDetail:
+                return (T) mapPayLinkSummary(json);
+
+            case FindPayLinkPaged:
+                return (T) mapPayLinks(json);
+
             default:
                 throw new NotImplementedException();
         }
@@ -768,6 +869,17 @@ public class GpApiMapping {
 
         for (JsonDoc element : doc.getEnumerator("actions")) {
             pagedResult.add(mapActionSummary(element));
+        }
+
+        return pagedResult;
+    }
+
+    public static PayLinkSummaryPaged mapPayLinks(JsonDoc doc) throws GatewayException {
+        PayLinkSummaryPaged pagedResult = new PayLinkSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc transaction : doc.getEnumerator("links")) {
+            pagedResult.add(mapPayLinkSummary(transaction));
         }
 
         return pagedResult;

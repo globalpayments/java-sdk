@@ -90,6 +90,7 @@ public class SearchCriteriaBuilder<TResult> {
     private ArrayList<PaymentMethodType> paymentTypes;
     private String referenceNumber;
     @Getter @Setter private String bankPaymentId;
+    @Getter @Setter private String payLinkId;
     @Getter @Setter private Boolean returnPII;
     private String resource;
     private String resourceStatus;

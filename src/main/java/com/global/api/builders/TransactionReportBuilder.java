@@ -23,6 +23,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     @Getter @Setter private StoredPaymentMethodSortProperty storedPaymentMethodOrderBy;
     @Getter @Setter private SortDirection storedPaymentMethodOrder;
     @Getter @Setter private ActionSortProperty actionOrderBy;
+    @Getter @Setter private PayLinkSortProperty payLinkOrderBy;
+    @Getter @Setter private String payLinkId;
 
     private SearchCriteriaBuilder<TResult> _searchBuilder;
 
@@ -119,6 +121,12 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
+    public TransactionReportBuilder<TResult> withPayLinkId(String payLinkId) {
+        getSearchBuilder().setPayLinkId(payLinkId);
+        this.payLinkId = payLinkId;
+        return this;
+    }
+
     public TransactionReportBuilder<TResult> orderBy(TransactionSortProperty orderBy, SortDirection direction)
     {
         transactionOrderBy = orderBy;
@@ -150,6 +158,12 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
+    public TransactionReportBuilder<TResult> orderBy(PayLinkSortProperty orderBy, SortDirection direction) {
+        payLinkOrderBy = orderBy;
+        order = (direction != null) ? direction : SortDirection.Ascending;
+        return this;
+    }
+
     public void setupValidations() {
         this.validations.of(ReportType.TransactionDetail)
                 .check("transactionId").isNotNull();
@@ -157,5 +171,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
         this.validations.of(ReportType.DocumentDisputeDetail)
                 .check("_searchBuilder").propertyOf(String.class, "disputeDocumentId").isNotNull();
+        this.validations.of(ReportType.DocumentDisputeDetail)
+                .check("_searchBuilder").propertyOf(String.class, "payLinkId").isNotNull();
+        this.validations.of(ReportType.PayLinkDetail).check("payLinkId").isNotNull();
     }
 }
