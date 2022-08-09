@@ -62,7 +62,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         card.setExpYear(expYear);
         card.setCvn("852");
     }
-    
+
     @Test
     public void CreditAuthorization() throws ApiException {
         Transaction transaction =
@@ -93,8 +93,8 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                 card
                         .authorize(new BigDecimal("5"))
                         .withCurrency("USD")
-                .withAllowDuplicates(true)
-                .execute(GP_API_CONFIG_NAME);
+                        .withAllowDuplicates(true)
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -111,7 +111,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
     }
 
-@Test
+    @Test
     public void CreditAuthorization_CaptureHigherAmount() throws ApiException {
         BigDecimal amount = new BigDecimal("10");
         Transaction transaction =
@@ -207,7 +207,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
-        
+
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
@@ -276,13 +276,13 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId() + ", status=CAPTURED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
     }
 
-@Test
+    @Test
     public void CreditRefundTransaction_RefundLowerAmount() throws ApiException {
         Transaction transaction =
                 card
@@ -290,7 +290,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
                         .execute(GP_API_CONFIG_NAME);
-        
+
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
@@ -325,15 +325,14 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     .refund(new BigDecimal(amount.doubleValue() * 1.1))
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             assertEquals("40087", ex.getResponseText());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - You may only refund up to 100% of the original amount ", ex.getMessage());
         }
     }
 
-@Test
+    @Test
     public void CreditRefundTransactionWrongId() throws ApiException {
         Transaction transaction =
                 card
@@ -351,8 +350,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     .withCurrency("USD")
                     //.withAllowDuplicates(true)
                     .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             assertEquals("40008", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("Status Code: 404 - Transaction " + transaction.getTransactionId() + " not found at this location.", ex.getMessage());
@@ -417,7 +415,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId() + ", status=REVERSED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -441,8 +439,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     .withCurrency("USD")
                     //.withAllowDuplicates(true)
                     .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
             assertEquals("Status Code: 404 - Transaction " + transaction.getTransactionId() + " not found at this location.", ex.getMessage());
@@ -551,7 +548,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + capture.getTransactionId() + ", status=CAPTURED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + capture.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -649,7 +646,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         assertEquals(VERIFIED, response.getResponseMessage());
     }
 
-@Test
+    @Test
     public void CreditVerify_WithAddress() throws ApiException {
         Address address = new Address();
         address.setPostalCode("750241234");
@@ -693,7 +690,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId() + ", status=VERIFIED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -706,8 +703,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     card
                             .verify()
                             .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
             assertEquals("Status Code: 400 - Request expects the following fields currency", ex.getMessage());
@@ -726,8 +722,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     .verify()
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40085", ex.getResponseText());
@@ -749,8 +744,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
                     .verify()
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
-        }
-        catch (GatewayException ex) {
+        } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
             assertEquals("50018", ex.getResponseText());
@@ -774,7 +768,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         gpApiConfig.setMerchantId(merchantId);
 
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName( "transaction_processing");
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
         accessTokenInfo.setTokenizationAccountName("transaction_processing");
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
         gpApiConfig.setEnableLogging(true);
@@ -797,7 +791,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
     @Ignore
     @Test
     public void CreditSaleWithEntryMethod() throws ApiException {
-        for (EntryMethod entryMethod : EntryMethod.values()){
+        for (EntryMethod entryMethod : EntryMethod.values()) {
 
             GpApiConfig gpApiConfig = new GpApiConfig();
             gpApiConfig.setEnvironment(Environment.TEST);
@@ -870,16 +864,16 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
     public void CreditChargeTransactions_WithSameIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
-        Transaction transaction1 =
+        Transaction transaction =
                 card
                         .charge(4.95)
                         .withCurrency("USD")
                         .withIdempotencyKey(idempotencyKey)
                         .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(transaction1);
-        assertEquals(SUCCESS, transaction1.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), transaction1.getResponseMessage());
+        assertNotNull(transaction);
+        assertEquals(SUCCESS, transaction.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
         try {
             card
@@ -890,7 +884,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         } catch (GatewayException ex) {
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction1.getTransactionId() + ", status=CAPTURED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         }
     }
 

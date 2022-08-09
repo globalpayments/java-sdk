@@ -3,6 +3,7 @@ package com.global.api.tests.realex;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
+import com.global.api.entities.StoredCredential;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.DccProcessor;
 import com.global.api.entities.enums.DccRateType;
@@ -22,6 +23,7 @@ import org.junit.runners.MethodSorters;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -105,6 +107,26 @@ public class RealexRecurringTests {
     }
 
     @Test
+    public void Test_001c_CreatePaymentMethodWithStoredCredential() throws ApiException {
+        try {
+            StoredCredential storedCredential = new StoredCredential();
+            storedCredential.setSchemeId("YOUR_DESIRED_SCHEME_ID");
+
+            RecurringPaymentMethod paymentMethod =
+                    new_customer
+                            .addPaymentMethod(paymentId("Credit") + UUID.randomUUID().toString().substring(0, 5), card, storedCredential)
+                            .create("test");
+
+            assertNotNull(paymentMethod);
+        }
+        catch (GatewayException exc) {
+            // check for already created
+            if(!exc.getResponseCode().equals("520"))
+                throw exc;
+        }
+    }
+
+    @Test
     public void Test_002a_EditCustomer() throws ApiException {
         Customer customer = new Customer();
         customer.setKey(customerId());
@@ -122,6 +144,22 @@ public class RealexRecurringTests {
         newCard.setCardHolderName("Philip Marlowe");
 
         paymentMethod.setPaymentMethod(newCard);
+        paymentMethod.saveChanges("test");
+    }
+
+    @Test
+    public void Test_002c_EditPaymentMethodWithStoredCredential() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        CreditCardData newCard = new CreditCardData();
+        newCard.setNumber("5425230000004415");
+        newCard.setExpMonth(10);
+        newCard.setExpYear(2025);
+        newCard.setCardHolderName("Philip Marlowe");
+
+        paymentMethod.setPaymentMethod(newCard);
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setSchemeId("YOUR_DESIRED_SCHEME_ID");
+        paymentMethod.setStoredCredential(storedCredential);
         paymentMethod.saveChanges("test");
     }
 

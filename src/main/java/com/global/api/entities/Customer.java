@@ -106,6 +106,10 @@ public class Customer extends RecurringEntity<Customer> {
     }
 
     public RecurringPaymentMethod addPaymentMethod(String paymentId, IPaymentMethod paymentMethod) {
+        return addPaymentMethod(paymentId, paymentMethod, null);
+    }
+
+    public RecurringPaymentMethod addPaymentMethod(String paymentId, IPaymentMethod paymentMethod, StoredCredential storedCredential) {
         String nameOnAccount = String.format("%s %s", firstName, lastName);
         if(StringUtils.isNullOrEmpty(nameOnAccount))
             nameOnAccount = company;
@@ -115,6 +119,7 @@ public class Customer extends RecurringEntity<Customer> {
         method.setCustomerKey(key);
         method.setId(paymentId);
         method.setNameOnAccount(nameOnAccount);
+        method.setStoredCredential(storedCredential);
         return method;
     }
 }

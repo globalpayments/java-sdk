@@ -5,6 +5,7 @@ import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.enums.StoredPaymentMethodSortProperty;
 import com.global.api.entities.enums.StoredPaymentMethodStatus;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -100,6 +101,21 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40213", ex.getResponseText());
             assertEquals("Status Code: 400 - payment_method.id: " + storedPaymentMethodId + " contains unexpected data", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void ReportStoredPaymentMethodDetail_WithNullId() throws ApiException {
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .storedPaymentMethodDetail(null)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (BuilderException ex) {
+            exceptionCaught = true;
+            assertEquals("storedPaymentMethodId cannot be null for this transaction type.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

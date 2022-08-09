@@ -808,20 +808,26 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(cardElement, "ref").text(payment.getKey());
                 et.subElement(cardElement, "payerref").text(payment.getCustomerKey());
 
+                CreditCardData card = (CreditCardData)payment.getPaymentMethod();
+                String expiry = card.getShortExpiry();
+
                 if (payment.getPaymentMethod() != null) {
-                    CreditCardData card = (CreditCardData)payment.getPaymentMethod();
-                    String expiry = card.getShortExpiry();
                     et.subElement(cardElement, "number").text(card.getNumber());
                     et.subElement(cardElement, "expdate").text(expiry);
                     et.subElement(cardElement, "chname").text(card.getCardHolderName());
                     et.subElement(cardElement, "type").text(mapCardType(getBaseCardType(card.getCardType())));
-
-                    String sha1hash;
-                    if (builder.getTransactionType() == TransactionType.Create)
-                        sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, null, null, payment.getCustomerKey(), card.getCardHolderName(), card.getNumber());
-                    else sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey(), expiry, card.getNumber());
-                    et.subElement(request, "sha1hash").text(sha1hash);
                 }
+
+                if (payment.getStoredCredential() != null) {
+                    Element storedCredentialElement = et.subElement(request, "storedcredential");
+                    et.subElement(storedCredentialElement, "srd", payment.getStoredCredential().getSchemeId());
+                }
+
+                String sha1hash;
+                if (builder.getTransactionType() == TransactionType.Create)
+                    sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, null, null, payment.getCustomerKey(), card.getCardHolderName(), card.getNumber());
+                else sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey(), expiry, card.getNumber());
+                et.subElement(request, "sha1hash").text(sha1hash);
             }
         }
         else if (builder.getTransactionType() == TransactionType.Delete) {

@@ -5,6 +5,7 @@ import com.global.api.entities.enums.DepositSortProperty;
 import com.global.api.entities.enums.DepositStatus;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.DepositSummary;
@@ -61,6 +62,21 @@ public class GpApiReportingDepositsTests extends BaseGpApiReportingTest {
             assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("Status Code: 404 - Deposits DEP_234242342 not found at this /ucp/settlement/deposits/DEP_234242342", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void ReportDepositDetail_NullId() throws ApiException {
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .depositDetail(null)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (BuilderException ex) {
+            exceptionCaught = true;
+            assertEquals("depositId cannot be null for this transaction type.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

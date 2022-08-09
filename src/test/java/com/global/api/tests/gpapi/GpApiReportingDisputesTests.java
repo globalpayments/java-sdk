@@ -7,6 +7,7 @@ import com.global.api.entities.enums.DisputeStage;
 import com.global.api.entities.enums.DisputeStatus;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.PagedResult;
 import com.global.api.entities.reporting.DataServiceCriteria;
@@ -22,6 +23,7 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -435,6 +437,65 @@ public class GpApiReportingDisputesTests extends BaseGpApiReportingTest {
         assertNotNull(response.getBase64Content());
     }
 
+    @Test
+    public void FindDocumentAssociatedWithDispute_RandomDisputeId() throws ApiException {
+        String disputeId = UUID.randomUUID().toString();
+        String documentId = "DOC_MyEvidence_234234AVCDE-1";
+
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .documentDisputeDetail(disputeId)
+                    .where(SearchCriteria.DisputeDocumentId, documentId)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40073", ex.getResponseText());
+            assertEquals("Status Code: 400 - 101,Unable to locate dispute record for that ID. Please recheck the ID provided.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void FindDocumentAssociatedWithDispute_RandomDocumentId() throws ApiException {
+        String disputeId = "DIS_SAND_abcd1235";
+        String documentId = UUID.randomUUID().toString();
+
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .documentDisputeDetail(disputeId)
+                    .where(SearchCriteria.DisputeDocumentId, documentId)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("40071", ex.getResponseText());
+            assertEquals("Status Code: 400 - 128,No document found, please recheck the values provided", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void FindDocumentAssociatedWithDispute_MissingDocId() throws ApiException {
+        String disputeId = "DIS_SAND_abcd1235";
+
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .documentDisputeDetail(disputeId)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (BuilderException e) {
+            exceptionCaught = true;
+            assertEquals("disputeDocumentId cannot be null for this transaction type.", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
     // ================================================================================
     // Settlement disputes
     // ================================================================================
@@ -455,14 +516,35 @@ public class GpApiReportingDisputesTests extends BaseGpApiReportingTest {
     public void ReportSettlementDisputeDetail_WrongID() throws ApiException {
         String disputeId = "DIS_666";
 
+        boolean exceptionCaught = false;
         try {
             ReportingService
                     .settlementDisputeDetail(disputeId)
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40118", ex.getResponseText());
             assertEquals("Status Code: 404 - Disputes " + disputeId + " not found at this /ucp/settlement/disputes/DIS_666", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void ReportSettlementDisputeDetail_NullID() throws ApiException {
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .settlementDisputeDetail(null)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("40005", ex.getResponseText());
+            assertEquals("Status Code: 400 - Request expects the following fields - account_id or account_name", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 

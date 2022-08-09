@@ -250,7 +250,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
             assertEquals(
-                    "Status Code: 409 - Idempotency Key seen before: id=" + dccDetails.getTransactionId() + ", status=AVAILABLE",
+                    "Status Code: 409 - Idempotency Key seen before: id=" + dccDetails.getTransactionId(),
                     ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);

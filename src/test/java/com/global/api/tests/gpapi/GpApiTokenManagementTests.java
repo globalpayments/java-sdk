@@ -113,7 +113,7 @@ public class GpApiTokenManagementTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

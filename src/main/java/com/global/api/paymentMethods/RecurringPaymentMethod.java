@@ -8,6 +8,8 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.RecurringService;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +26,7 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     private String status;
     private String taxType;
     private ThreeDSecure threeDSecure;
+    @Getter @Setter private StoredCredential storedCredential;
 
     public Address getAddress() {
         return address;

@@ -1,5 +1,14 @@
 # Changelog
 
+## v8.0.5 (08/09/2022)
+
+### Enhancements:
+
+- GP-ECOM/REALEX: Supported Stored Credential when creating a new card
+- Security changes: Set TLS 1.2 as default for socket connections
+- GP-API: Updated Misc Tests
+- 
+
 ## v8.0.4 (08/02/2022)
 
 ### Enhancements:

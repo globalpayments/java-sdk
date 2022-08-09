@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.enums.ActionSortProperty;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.ActionSummary;
 import com.global.api.entities.reporting.ActionSummaryPaged;
@@ -69,6 +70,22 @@ public class GpApiReportingActionsTests extends BaseGpApiReportingTest {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40118", ex.getResponseText());
             assertEquals("Status Code: 404 - Actions " + actionId + " not found at this /ucp/actions/" + actionId, ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void ReportActionDetail_NullId() throws ApiException {
+        boolean exceptionCaught = false;
+
+        try {
+            ReportingService
+                    .actionDetail(null)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (BuilderException ex) {
+            exceptionCaught = true;
+            assertEquals("actionId cannot be null for this transaction type.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

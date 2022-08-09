@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -69,6 +70,21 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
             assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("Status Code: 404 - Transactions " + transactionId + " not found at this /ucp/transactions/" + transactionId + "", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void ReportTransactionDetail_NullId() throws ApiException {
+        boolean exceptionCaught = false;
+        try {
+            ReportingService
+                    .transactionDetail(null)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (BuilderException ex) {
+            exceptionCaught = true;
+            assertEquals("transactionId cannot be null for this transaction type.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -374,23 +390,22 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
     @Test
     public void ReportFindTransactionsPaged_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
-        String[] cardBrandsShort = {"VISA", "MC", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
-        for (int index = 0; index < cardBrands.length; index++) {
+        for (String cardBrand : cardBrands) {
             // Although documentation allows DINERS and JCB values, the real endpoint does not.
             // TODO: Report error to GP-API team. Enable it when fixed.
-            if (("DINERS").equals(cardBrands[index]) || "JCB".equals(cardBrands[index]))
+            if (("DINERS").equals(cardBrand) || "JCB".equals(cardBrand))
                 continue;
 
             TransactionSummaryPaged transactions =
                     ReportingService
                             .findTransactionsPaged(FIRST_PAGE, PAGE_SIZE)
                             .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
-                            .where(SearchCriteria.CardBrand, cardBrands[index])
+                            .where(SearchCriteria.CardBrand, cardBrand)
                             .execute(GP_API_CONFIG_NAME);
             assertNotNull(transactions);
             for (TransactionSummary transactionSummary : transactions.getResults()) {
-                assertEquals(cardBrandsShort[index], transactionSummary.getCardType());
+                assertEquals(cardBrand, transactionSummary.getCardType());
             }
         }
     }

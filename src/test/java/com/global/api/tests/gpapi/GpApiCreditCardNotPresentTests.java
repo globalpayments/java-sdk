@@ -94,7 +94,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         assertNotNull(response.getFingerPrint());
         assertNotNull(response.getFingerPrintIndicator());
-        assertEquals("EXISTS",response.getFingerPrintIndicator());
+        assertEquals("EXISTS", response.getFingerPrintIndicator());
     }
 
     @Test
@@ -143,8 +143,8 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
-        assertEquals("",response.getFingerPrint());
-        assertEquals("",response.getFingerPrintIndicator());
+        assertEquals("", response.getFingerPrint());
+        assertEquals("", response.getFingerPrintIndicator());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         var tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(pmtToken);
         tokenizedCard.setCardHolderName("James BondUp");
-        tokenizedCard.setExpYear(DateTime.now().getYear() +1 );
+        tokenizedCard.setExpYear(DateTime.now().getYear() + 1);
         tokenizedCard.setExpMonth(DateTime.now().getMonthOfYear());
         tokenizedCard.setNumber("4263970000005262");
 
@@ -372,7 +372,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -401,7 +401,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -624,7 +624,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -709,7 +709,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -861,7 +861,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + response.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -948,7 +948,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -971,6 +971,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
                         .withIdempotencyKey(UUID.randomUUID().toString())
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(response, TransactionStatus.Captured);
+        assertNotEquals(response.getTransactionId(), transaction.getTransactionId());
     }
 
     @Test

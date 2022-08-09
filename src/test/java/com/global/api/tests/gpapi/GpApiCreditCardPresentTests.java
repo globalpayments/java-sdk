@@ -341,7 +341,7 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
                         .withAllowDuplicates(true)
                         .execute();
 
-        assertTransactionResponse(transaction,TransactionStatus.Captured);
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
                 transaction
@@ -773,7 +773,7 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + reAuthTransaction.getTransactionId() + ", status=CAPTURED", ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + reAuthTransaction.getTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

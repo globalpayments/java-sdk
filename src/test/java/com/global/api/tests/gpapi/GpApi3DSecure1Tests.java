@@ -93,7 +93,7 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + secureEcom.getServerTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -289,7 +289,7 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertTrue(ex.getMessage().startsWith("Status Code: 409 - Idempotency Key seen before:"));
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + postAuthResultSecureEcom.getServerTransactionId(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

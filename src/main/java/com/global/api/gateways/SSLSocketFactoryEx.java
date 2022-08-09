@@ -117,7 +117,7 @@ public class SSLSocketFactoryEx extends SSLSocketFactory
     private void initSSLSocketFactoryEx(KeyManager[] km, TrustManager[] tm, SecureRandom random)
             throws NoSuchAlgorithmException, KeyManagementException
     {
-        m_ctx = SSLContext.getInstance("TLS");
+        m_ctx = SSLContext.getInstance("TLSv1.2");
         m_ctx.init(km, tm, random);
 
         m_protocols = GetProtocolList();
