@@ -1324,7 +1324,18 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
         Element addressNode = et.element("address").set("type", address.getType().equals(AddressType.Billing) ? "billing" : "shipping");
         et.subElement(addressNode, "code").text(code);
         et.subElement(addressNode, "country").text(address.getCountry());
-
+        if (!StringUtils.isNullOrEmpty(address.getState())) {
+            et.subElement(addressNode, "state").text(address.getState());
+        }
+        if (!StringUtils.isNullOrEmpty(address.getState())) {
+            et.subElement(addressNode, "city").text(address.getCity());
+        }
+        if (!StringUtils.isNullOrEmpty(address.getState())) {
+            et.subElement(addressNode, "postalcode").text(address.getPostalCode());
+        }
+        if (!StringUtils.isNullOrEmpty(address.getState())) {
+            et.subElement(addressNode, "street1").text(address.getStreetAddress1());
+        }
         return addressNode;
     }
 
