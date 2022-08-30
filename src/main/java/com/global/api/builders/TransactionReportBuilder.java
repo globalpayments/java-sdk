@@ -171,8 +171,6 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
         this.validations.of(ReportType.DocumentDisputeDetail)
                 .check("_searchBuilder").propertyOf(String.class, "disputeDocumentId").isNotNull();
-        this.validations.of(ReportType.DocumentDisputeDetail)
-                .check("_searchBuilder").propertyOf(String.class, "payLinkId").isNotNull();
         this.validations.of(ReportType.PayLinkDetail).check("payLinkId").isNotNull();
     }
 }

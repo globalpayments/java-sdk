@@ -26,7 +26,8 @@ public enum DE48_CustomerDataType implements IStringConstant {
     PassportNumber("T"),
     JobNumber("U"),
     Department("V"),
-    LoyaltyInformation("W");
+    LoyaltyInformation("W"),
+    MerchantOrderNumber("Z");
 
     private final String value;
     DE48_CustomerDataType(String value) { this.value = value; }

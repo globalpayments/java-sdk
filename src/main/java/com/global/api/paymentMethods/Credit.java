@@ -3,6 +3,7 @@ package com.global.api.paymentMethods;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.EncryptionData;
+import com.global.api.entities.PaymentDataSourceType;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
@@ -31,6 +32,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     private boolean purchaseCard;
     private boolean readyLinkCard;
     private String pinBlock;
+    private PaymentDataSourceType paymentDataSourceType;
 
     public boolean isFleet() {
         return fleetCard;

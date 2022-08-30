@@ -71,6 +71,11 @@ public class ElementTree {
             return null;
         return subElement(parent, tagName).text(value);
     }
+    public Element subElementCdata(Element parent, String tagName, String value) {
+        if(value == null || value.equals(""))
+            return null;
+        return subElement(parent, tagName).cData(value);
+    }
     public Element subElement(Element parent, String tagName, int value) {
         if(value == 0)
             return null;

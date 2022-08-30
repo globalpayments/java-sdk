@@ -78,7 +78,7 @@ public class StringUtils {
         if(amount == null) {
             return "";
         }
-        else if (amount.toString().equals("0")) {
+        else if (amount.compareTo(BigDecimal.ZERO) == 0) {
             return "000";
         }
 

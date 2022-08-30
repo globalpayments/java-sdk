@@ -26,8 +26,9 @@ public enum ConnectionType implements IByteConstant {
     EchoSat_Smartlink (0x41),
     MPLS (0x42),
     SSL_Gateway (0x43),
-    Native_SSL (0x44);
-
+    Native_SSL (0x44),
+    Sagenet(0x45),
+    Cybera(0x46);
     private final byte value;
     ConnectionType(int value) { this.value = (byte)value; }
     public byte getByte() {

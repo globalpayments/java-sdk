@@ -88,10 +88,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private NtsRequestsToBalanceRequest ntsRequestsToBalance;
     @Getter
     private NtsRequestToBalanceData ntsRequestsToBalanceData;
-    // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
-    @Getter @Setter protected PaymentMethodUsageMode usageMode;
-    @Getter @Setter protected Integer usageLimit;
-    @Getter @Setter protected PayLinkType type;
 
     public ManagementBuilder withCardSequenceNumber(String value) {
         this.cardSequenceNumber = value;
@@ -488,10 +484,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public ManagementBuilder withPayLinkData(PayLinkData payLinkData)
     {
         this.payLinkData = payLinkData;
-        // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
-        this.usageMode = payLinkData != null ? payLinkData.getUsageMode() : null;
-        this.usageLimit = payLinkData != null ? payLinkData.getUsageLimit() : null;
-        this.type = payLinkData != null ?payLinkData.getType() : null;
         return this;
     }
     public ManagementBuilder withReasonCode(ReasonCode value) {
@@ -685,8 +677,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(TransactionType.PayLinkUpdate)
                 .check("amount").isNotNull()
                 .check("payLinkData").isNotNull()
-                .check("usageMode").isNotNull()
-                .check("usageLimit").isNotNull()
-                .check("type").isNotNull();
+                .check("payLinkData").propertyOf(PaymentMethodUsageMode.class, "usageMode").isNotNull()
+                .check("payLinkData").propertyOf(Integer.class, "usageLimit").isNotNull()
+                .check("payLinkData").propertyOf(PayLinkType.class, "type").isNotNull();
+
     }
 }

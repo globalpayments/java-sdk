@@ -4,10 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.network.entities.FleetData;
-import com.global.api.network.entities.NtsData;
-import com.global.api.network.entities.ProductData;
-import com.global.api.network.entities.TransactionMatchingData;
+import com.global.api.network.entities.*;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
@@ -22,9 +19,7 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsWexTests {
@@ -2508,5 +2503,51 @@ public class VapsWexTests {
                 .execute("outside");
         assertNotNull(capture);
         assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
+    //void of partial approval
+    @Test
+    public void test_000_credit_Void_partial_approval() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460420006149231=19021003073200002");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("12");
+        fleetData.setOdometerReading("896520");
+        fleetData.setVehicleNumber("78563");
+        fleetData.setDriverId("745212");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("014", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        Transaction response = card.charge(new BigDecimal("40"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute("outside");
+        assertNotNull(response);
+        assertEquals("002", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        BigDecimal authorizedAmount = response.getAuthorizedAmount();
+        assertNotEquals(new BigDecimal("40"), authorizedAmount);
+
+        Transaction voidResponse = response.voidTransaction(authorizedAmount)
+                .withCurrency("USD")
+                .withReferenceNumber(response.getReferenceNumber())
+                .withCustomerInitiated(true)
+                .withPartialApproval(true)
+                .execute("outside");
+        assertNotNull(voidResponse);
+
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        // check message data
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4353", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
     }
 }

@@ -47,7 +47,7 @@ public class ThreeDSecure {
     private String messageVersion;
     private String orderId;
     private String payerAuthenticationRequest;
-    private String paymentDataSource;
+    private PaymentDataSourceType paymentDataSource;
     private String paymentDataType;
     private String sdkInterface;
     private String sdkUiType;
@@ -273,10 +273,10 @@ public class ThreeDSecure {
     public void setPayerAuthenticationRequest(String payerAuthenticationRequest) {
         this.payerAuthenticationRequest = payerAuthenticationRequest;
     }
-    public String getPaymentDataSource() {
+    public PaymentDataSourceType getPaymentDataSource() {
         return paymentDataSource;
     }
-    public void setPaymentDataSource(String paymentDataSource) {
+    public void setPaymentDataSource(PaymentDataSourceType paymentDataSource) {
         this.paymentDataSource = paymentDataSource;
     }
     public String getPaymentDataType() {

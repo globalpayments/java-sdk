@@ -12,7 +12,8 @@ public enum DE22_CardHolderAuthenticationMethod implements IStringConstant {
     Other("6"),
     OnCard_SecurityCode("9"),
     Authenticated("S"),
-    AuthenticationAttempted("T");
+    AuthenticationAttempted("T"),
+    AuthenticationFailed_AmexOnly("U");
 
     private final String value;
     DE22_CardHolderAuthenticationMethod(String value) { this.value = value; }

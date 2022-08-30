@@ -51,6 +51,12 @@ public class Element {
         this.element.appendChild(doc.createTextNode(text));
         return this;
     }
+    public Element cData(String text){
+        if(text == null)
+            text = "";
+        this.element.appendChild(doc.createCDATASection(text));
+        return this;
+    }
     public Element text(IStringConstant text) {
         return text(text.getValue());
     }

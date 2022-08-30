@@ -380,6 +380,89 @@ public class VapsFleetTests {
         assertEquals("000", captureResponse.getResponseCode());*/
     }
 
+    //void of partial approval
+    @Test
+    public void test_000_credit_VISAFleet_Void_partial_approval() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("014", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal("40"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals("002", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        BigDecimal authorizedAmount = response.getAuthorizedAmount();
+        assertNotEquals(new BigDecimal("40"), authorizedAmount);
+
+        Transaction voidResponse = response.voidTransaction(authorizedAmount)
+                .withCurrency("USD")
+                .withReferenceNumber(response.getReferenceNumber())
+                .withCustomerInitiated(true)
+                .withPartialApproval(true)
+                .execute();
+        assertNotNull(voidResponse);
+
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        // check message data
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4353", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_000_credit_MC_Void_partial_approval() throws ApiException {
+        card = TestCards.MasterCardFleetManual(true, true);
+        track = TestCards.MasterCardFleetSwipe();
+
+        fleetData.setOdometerReading("000004");
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("005365");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("02", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal("40"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals("002", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        BigDecimal authorizedAmount = response.getAuthorizedAmount();
+        assertNotEquals(new BigDecimal("40"), authorizedAmount);
+
+        Transaction voidResponse = response.voidTransaction(authorizedAmount)
+                .withCurrency("USD")
+                .withReferenceNumber(response.getReferenceNumber())
+                .withCustomerInitiated(true)
+                .withPartialApproval(true)
+                .execute();
+        assertNotNull(voidResponse);
+
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        // check message data
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4353", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+    
     @Test
     public void test_009_swipe_sale_product_01() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);

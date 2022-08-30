@@ -184,9 +184,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             // secure 3d
             if(card instanceof CreditCardData) {
                 ThreeDSecure secureEcom = ((CreditCardData)card).getThreeDSecure();
+                CreditCardData creditCardData = (CreditCardData) card;
                 if(secureEcom != null) {
                     // 3d Secure Element
-                    if(!StringUtils.isNullOrEmpty(secureEcom.getEci())) {
+                    if(!StringUtils.isNullOrEmpty(secureEcom.getEci()) && !isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
                         Element secure3D = et.subElement(block1, "Secure3D");
                         et.subElement(secure3D, "Version", getSecure3DVersion(secureEcom.getVersion()));
                         et.subElement(secure3D, "AuthenticationValue", secureEcom.getCavv());
@@ -195,16 +196,40 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     }
 
                     // WalletData Element
-                    if(!StringUtils.isNullOrEmpty(secureEcom.getPaymentDataSource())) {
+                    if(isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
                         Element walletData = et.subElement(block1, "WalletData");
                         et.subElement(walletData, "PaymentSource", secureEcom.getPaymentDataSource());
                         et.subElement(walletData, "Cryptogram", secureEcom.getCavv());
                         et.subElement(walletData, "ECI", secureEcom.getEci());
-                        if (((CreditCardData) card).getMobileType() != null) {
-                            et.subElement(walletData, "DigitalPaymentToken", ((CreditCardData)card).getToken());
+                    }
+                }
+
+                //WalletData Element
+                if (
+                        (
+                                creditCardData.getMobileType() == MobilePaymentMethodType.APPLEPAY
+                                || creditCardData.getMobileType() == MobilePaymentMethodType.GOOGLEPAY
+                        )
+                        && creditCardData.getPaymentDataSourceType() != null
+                        && isAppleOrGooglePay(creditCardData.getPaymentDataSourceType())
+                ){
+                    Element walletData = et.subElement(block1, "WalletData");
+                    et.subElement(walletData, "PaymentSource", creditCardData.getPaymentDataSourceType());
+                    et.subElement(walletData, "Cryptogram", secureEcom != null? secureEcom.getCavv(): null);
+                    et.subElement(walletData, "ECI", creditCardData.getEci());
+                    if (creditCardData.getMobileType() != null)
+                    {
+
+                        et.subElementCdata(walletData, "DigitalPaymentToken", creditCardData.getToken());
+                        if(block1.has("CardData")) {
+                            block1.remove("CardData");
+                        }
+                        if(block1.has("CardHolderData")) {
+                            block1.remove("CardHolderData");
                         }
                     }
                 }
+
             }
 
             // recurring data
@@ -1203,5 +1228,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             default:
                 return 1;
         }
+    }
+
+    private boolean isAppleOrGooglePay(PaymentDataSourceType paymentDataSource)
+    {
+        return paymentDataSource == PaymentDataSourceType.APPLEPAY
+                || paymentDataSource == PaymentDataSourceType.APPLEPAYAPP
+                || paymentDataSource == PaymentDataSourceType.APPLEPAYWEB
+                || paymentDataSource == PaymentDataSourceType.GOOGLEPAYAPP
+                || paymentDataSource == PaymentDataSourceType.GOOGLEPAYWEB;
     }
 }

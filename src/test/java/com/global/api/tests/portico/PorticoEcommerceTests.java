@@ -2,6 +2,7 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EcommerceInfo;
+import com.global.api.entities.PaymentDataSourceType;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EcommerceChannel;
@@ -97,7 +98,7 @@ public class PorticoEcommerceTests {
     @Test
     public void ecomWithSecureEcommerce() throws ApiException {
         ThreeDSecure ecom = new ThreeDSecure();
-        ecom.setPaymentDataSource("ApplePay");
+        ecom.setPaymentDataSource(PaymentDataSourceType.APPLEPAY);
         ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
         ecom.setEci("5");
         card.setThreeDSecure(ecom);
@@ -114,7 +115,7 @@ public class PorticoEcommerceTests {
     @Test
     public void ecomWithWalletData_02() throws ApiException {
         ThreeDSecure ecom = new ThreeDSecure();
-        ecom.setPaymentDataSource("ApplePay");
+        ecom.setPaymentDataSource(PaymentDataSourceType.APPLEPAY);
         ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
         card.setThreeDSecure(ecom);
 
@@ -148,12 +149,9 @@ public class PorticoEcommerceTests {
     @Test
     @Ignore("Having the token invalidate known error for mobile transactions.")
     public void ecomWithWalletData_with_mobileType_04() throws ApiException {
-        ThreeDSecure ecom = new ThreeDSecure();
-        ecom.setPaymentDataSource("ApplePay");
-        ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
-        card.setThreeDSecure(ecom);
-        card.setMobileType(MobilePaymentMethodType.APPLEPAY);
-        card.setToken(token);
+        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+        card.setPaymentDataSourceType(PaymentDataSourceType.GOOGLEPAYWEB);
+        card.setToken("{\"signature\":\"MEYCIQDn1WUTJSbe0HTenhQBanye9MNlEEbJ9nvk2YDE11JO1wIhAOkA99r3sMpuHsQqdR1C8u9R7C7dm9w7wNniXtYr01gv\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"BxaNW7Rxei+P0lBvb2jvE8+HQ04/uAFrHIXynZqsM7p6rxFDmgt7JxE8XnTnGacTyOXAITFlHnqD5eZJ6dQGMn/DHdhjmi/El25J2rpOzZiJPQk394YQLY2xjUm1xIDR3GB1ATfBIRKoqtf2iXiYQ/u50XINut0ivK/u+qc3lbDAC3IrDUq5DED7uPcPhijF2snKL5sROatKiecfTQRzWMJioTZXDaYfQseoWhhFVvO/UpEcK5CZh5b3CQT89yzDPPdwa1XSH+8DYK6UxvBoelaLYIxpLUNBFcUurLukBM24VlzG5Rs8os8hOXXLixcIcDuiFH4MS7wMIAW4DtKvZF7E78xvh2IvlxckoJ6uZsVuyGBgXgjIgbn95lqeMZsR398YcY/lDl5N/HCpxDJbvSQfd7YNf/hEK/NAa15AAScQ6sorFYcFF1W1iU3+gBR+fuIODT/1VQ\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BLTKhwsuoS/Izu5fYd08D+HAd2TAc+FTmEpa7L4wo45p3hQbZ3agZ9J60v8agMsXiDIXpbN1VlBpibKezSFxfoU\\\\u003d\\\",\\\"tag\\\":\\\"hbkBnamtgcDYeDrJvY3IKAzOU4E4aFS2cJUK4f5VVxM\\\\u003d\\\"}\"}");
 
         Transaction response = card.charge(new BigDecimal("10"))
                 .withCurrency("USD")

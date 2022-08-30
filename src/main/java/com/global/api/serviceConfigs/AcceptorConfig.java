@@ -319,8 +319,7 @@ public class AcceptorConfig {
     }
 
     public boolean isAttended() {
-        return operatingEnvironment.equals(OperatingEnvironment.OnPremises_CardAcceptor_Attended_Mobile) ||
-                operatingEnvironment.equals(OperatingEnvironment.OnPremises_CardAcceptor_Attended);
+        return operatingEnvironment.equals(OperatingEnvironment.OnPremises_CardAcceptor_Attended);
     }
 
     public void validate() throws ConfigurationException {

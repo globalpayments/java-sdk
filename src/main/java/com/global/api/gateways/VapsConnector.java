@@ -1408,6 +1408,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     if (cardIssuerData != null) {
                         reference.setNtsData(cardIssuerData.get("NTS"));
                         result.setReferenceNumber(cardIssuerData.get("IRR"));
+                        reference.setMastercardBanknetRefNo(cardIssuerData.get(CardIssuerEntryTag.NTS_MastercardBankNet_ReferenceNumber));
+                        reference.setMastercardBanknetSettlementDate(cardIssuerData.get(CardIssuerEntryTag.NTS_MastercardBankNet_SettlementDate));
                     }
 
                     // authorization builder
@@ -2270,6 +2272,14 @@ public class VapsConnector extends GatewayConnectorConfig {
                         }
                     }
                 }
+                // Mastercard Banknet Reference Number
+                if (reference.getMastercardBanknetRefNo() != null){
+                    cardIssuerData.add(CardIssuerEntryTag.NTS_MastercardBankNet_ReferenceNumber,reference.getMastercardBanknetRefNo());
+                }
+                // Mastercard Banknet Settlement Date
+                if (reference.getMastercardBanknetSettlementDate() != null){
+                    cardIssuerData.add(CardIssuerEntryTag.NTS_MastercardBankNet_SettlementDate,reference.getMastercardBanknetSettlementDate());
+                }
             }
         }
         else {
@@ -2362,7 +2372,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 return DE48_CardType.JCB;
             }
             else if(card.getCardType().equals("VoyagerFleet")) {
-                return DE48_CardType.Voyager_VAPS;
+                return DE48_CardType.Voyager;
             }
         }
         else if(paymentMethod instanceof GiftCard) {

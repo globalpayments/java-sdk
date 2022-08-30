@@ -1,5 +1,13 @@
 # Changelog
 
+## v8.0.6 (08/29/2022)
+
+### Enhancements:
+
+- VAPS: 19.1 specification update.
+- PORTICO: 3DS and wallet data tags updated.
+- VAPS: Batch close issue fixed.
+
 ## v8.0.5 (08/09/2022)
 
 ### Enhancements:

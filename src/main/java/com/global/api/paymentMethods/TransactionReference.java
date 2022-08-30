@@ -58,6 +58,8 @@ public class TransactionReference implements IPaymentMethod {
     private Map<String, String> userDataTag;
     private TransactionCode originalTransactionCode;
     private TransactionTypeIndicator originalTransactionTypeIndicator;
+    private String mastercardBanknetRefNo;
+    private String mastercardBanknetSettlementDate;
 
     public void setNtsData(NtsData ntsData) {
         this.ntsData = ntsData;

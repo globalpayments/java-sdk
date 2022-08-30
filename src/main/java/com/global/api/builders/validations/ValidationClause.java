@@ -1,5 +1,6 @@
 package com.global.api.builders.validations;
 
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.utils.StringUtils;
 
 import java.lang.reflect.Field;
@@ -62,6 +63,17 @@ public class ValidationClause {
                 try {
                     Field f = getField(builder.getClass(), propertyName);
                     Object value = f.get(builder);
+
+                    // check sub-field
+                    if(!StringUtils.isNullOrEmpty(subPropertyName)) {
+                        Field subField = getField(value.getClass(), subPropertyName);
+                        value = subField.get(value);
+
+                        if(value != null && !propertyClass.isInstance(value)) {
+                            return false;
+                        }
+                    }
+
                     return value != null;
                 }
                 catch(NoSuchFieldException exc) {
@@ -69,7 +81,7 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s cannot be null for this transaction type.", propertyName);
+        this.message = (message != null) ? message : String.format("%s cannot be null for this transaction type.", !StringUtils.isNullOrEmpty(subPropertyName) ? subPropertyName : propertyName);
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
