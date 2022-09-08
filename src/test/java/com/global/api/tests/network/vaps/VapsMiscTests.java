@@ -95,6 +95,21 @@ public class VapsMiscTests {
     }
 
     @Test
+    public void storedValue_Sale_DataCollect() throws ApiException {
+        GiftCard gift = TestCards.ValueLinkSwipe();
+
+        Transaction response = gift.charge(new BigDecimal(1))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0201")
+                .execute();
+        assertNotNull(response);
+
+        Transaction charge = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(charge);
+    }
+    @Test
     public void preAuthCompletion_Reversal() throws ApiException {
         CreditTrackData track = TestCards.VisaSwipe();
 

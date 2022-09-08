@@ -1,4 +1,4 @@
-package com.global.api.network.entities.gnap;
+package com.global.api.network.enums.gnap;
 
 import com.global.api.entities.enums.IStringConstant;
 

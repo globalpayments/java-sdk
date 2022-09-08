@@ -2,6 +2,7 @@ package com.global.api.services;
 
 import com.global.api.ServicesContainer;
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.NetworkMessageHeader;
@@ -64,5 +65,9 @@ public class NetworkService {
      */
     public static AuthorizationBuilder sendSiteConfiguration(){
         return new AuthorizationBuilder(TransactionType.PosSiteConfiguration);
+    }
+
+    public static ManagementBuilder timeRequest(){
+        return new ManagementBuilder(TransactionType.TimeRequest);
     }
 }

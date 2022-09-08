@@ -21,6 +21,12 @@ public class FleetData {
     private String referenceNumber;
     @Setter @Getter
     private String genericIdentificationNo;
+    @Setter @Getter
+    private String maintenanceNumber;
+    @Setter @Getter
+    private String trailerNumber;
+    @Setter @Getter
+    private String hubometerNumber;
     public String getTrailerReferHours() {
         return trailerReferHours;
     }

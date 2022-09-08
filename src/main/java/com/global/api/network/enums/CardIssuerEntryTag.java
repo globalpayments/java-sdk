@@ -50,8 +50,8 @@ public enum CardIssuerEntryTag implements IStringConstant {
     SwipeIndicator("NSI"),
     TerminalError("NTE"),
     NTS_System("NTS"),
-    VisaTransactionId("NV1");
-
+    VisaTransactionId("NV1"),
+    HeartlandTimeRequest("HTR");
     private final String value;
     CardIssuerEntryTag(String value) { this.value = value; }
     public String getValue() {

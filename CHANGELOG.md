@@ -1,5 +1,13 @@
 # Changelog
 
+## v8.0.7 (09/08/2022)
+
+### Enhancements:
+
+- VAPS: 20.1 specification update.
+- Realex: Set CountryCode for country node
+- Realex: Set ChallengeRequestIndicator value for HPP_CHALLENGE_REQUEST_INDICATOR property
+
 ## v8.0.6 (08/29/2022)
 
 ### Enhancements:
@@ -7,6 +15,7 @@
 - VAPS: 19.1 specification update.
 - PORTICO: 3DS and wallet data tags updated.
 - VAPS: Batch close issue fixed.
+- isNotNullInSubProperty validation on Builders
 
 ## v8.0.5 (08/09/2022)
 

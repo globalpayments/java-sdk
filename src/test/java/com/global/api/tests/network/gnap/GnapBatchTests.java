@@ -1,22 +1,18 @@
 package com.global.api.tests.network.gnap;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.BatchCloseType;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.MessageException;
 import com.global.api.network.entities.gnap.*;
 import com.global.api.network.enums.gnap.*;
-import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.GnapTestCards;
-import com.global.api.tests.testdata.TestCards;
 import org.joda.time.DateTime;
 import org.junit.Test;
 

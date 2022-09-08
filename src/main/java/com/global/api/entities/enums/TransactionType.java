@@ -54,7 +54,8 @@ public enum TransactionType implements IFlag {
     MagnumPDL,
     EmvPdl,
     PosSiteConfiguration,
-    PayLinkUpdate;
+    PayLinkUpdate,
+    TimeRequest;
 
     public long getLongValue() {
         return 1L << this.ordinal();

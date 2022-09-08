@@ -656,8 +656,10 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
         }
 
+        boolean isNeitherBatchCloseNorTimeRequest = !transactionType.equals(TransactionType.BatchClose) && !transactionType.equals(TransactionType.TimeRequest);
+
         // DE 3: Processing Code - n6 (n2: TRANSACTION TYPE, n2: ACCOUNT TYPE 1, n2: ACCOUNT TYPE 2) // M 1100, 1200, 1220, 1420
-        if(!transactionType.equals(TransactionType.BatchClose)) {
+        if(isNeitherBatchCloseNorTimeRequest) {
             DE3_ProcessingCode processingCode = mapProcessingCode(builder);
             request.set(DataElementId.DE_003, processingCode);
 
@@ -704,7 +706,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 19: Country Code, Acquiring Institution - n3 (ISO 3166) // C Config value perhaps? Same for each message
         //request.set(DataElementId.DE_019, "840");
 
-        if(!transactionType.equals(TransactionType.BatchClose)) {
+        if(isNeitherBatchCloseNorTimeRequest) {
         /* DE 22: Point of Service Data Code - an12 //  M 1100, 1200, 1220, 1420 // C 1300, 1320 // O 1500, 1520
             22.1 CARD DATA INPUT CAPABILITY an1 The devices/methods available for card/check data input.
             22.2 CARDHOLDER AUTHENTICATION CAPABILITY an1 The methods available for authenticating the cardholder.
@@ -747,11 +749,6 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 25: Message Reason Code - n4 // C 1100, 1120, 1200, 1220, 1300, 1320, 1420, 16XX, 18XX
         DE25_MessageReasonCode reasonCode = mapMessageReasonCode(builder);
         request.set(DataElementId.DE_025, reasonCode);
-
-        // DE 28: Date, Reconciliation - n6 (YYMMDD)
-        if(transactionType.equals(TransactionType.BatchClose)) {
-            request.set(DataElementId.DE_028, DateTime.now(DateTimeZone.UTC).toString("yyMMdd"));
-        }
 
         /* DE 30: Amounts, Original - n24
             30.1 ORIGINAL AMOUNT, TRANSACTION n12 A copy of amount, transaction (DE 4) from the original transaction.
@@ -942,7 +939,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         request.set(DataElementId.DE_059, builder.getTransportData());
 
         // DE 62: Card Issuer Data - LLLVAR ans..999
-        if(!transactionType.equals(TransactionType.BatchClose)) {
+        if(isNeitherBatchCloseNorTimeRequest) {
             DE62_CardIssuerData cardIssuerData = mapCardIssuerData(builder);
             request.set(DataElementId.DE_062, cardIssuerData);
         }
@@ -1554,6 +1551,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             case BatchClose: {
                 mtiValue += "5";
             } break;
+            case TimeRequest:{
+                mtiValue+="6";
+            }break;
             default:
                 mtiValue += "0";
         }
@@ -1607,8 +1607,13 @@ public class VapsConnector extends GatewayConnectorConfig {
             5 Reserved for Heartland use
             6–9 Reserved for ISO use
         */
-        mtiValue += "0";
-
+        switch (builder.getTransactionType()) {
+            case TimeRequest:
+                mtiValue += "4";
+                break;
+            default:
+                mtiValue += "0";
+        }
         return mtiValue;
     }
     private <T extends TransactionBuilder<Transaction>> DE3_ProcessingCode mapProcessingCode(T builder) throws ApiException {
@@ -1853,6 +1858,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Void: {
                 return "441";
             }
+            case TimeRequest:{
+                return "641";
+            }
             default: {
                 return "000";
             }
@@ -1893,9 +1901,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     case CouldNotCommunicateWithHost:
                     case Received_IssuerTimeout:
                     case Received_IssuerUnavailable:
-                    case Received_SystemMalfunction: {
-                        reasonCode = DE25_MessageReasonCode.StandInCapture;
-                    } break;
+                    case Received_SystemMalfunction:
+                        break;
                     default: {
                         if(builder.isForceToHost()) {
                             reasonCode = DE25_MessageReasonCode.Forced_AuthCapture;
@@ -1969,6 +1976,7 @@ public class VapsConnector extends GatewayConnectorConfig {
     }
     private <T extends TransactionBuilder<Transaction>> DE48_MessageControl mapMessageControl(T builder) throws BatchFullException {
         DE48_MessageControl messageControl = new DE48_MessageControl();
+        boolean isTimeRequest=builder.getTransactionType().equals(TransactionType.TimeRequest);
 
         /* DE 48: Message Control - LLLVAR ans..999
             48-0 BIT MAP b8 C Specifies which data elements are present.
@@ -2005,7 +2013,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         messageControl.setHardwareSoftwareConfig(hardwareSoftwareConfig);
 
         // DE48-4 (Sequence Number & Batch Number)
-        if(!builder.getTransactionType().equals(TransactionType.Auth)) {
+        if(!builder.getTransactionType().equals(TransactionType.Auth) && !isTimeRequest) {
             int sequenceNumber = 0;
             if(!builder.getTransactionType().equals(TransactionType.BatchClose)) {
                 sequenceNumber = builder.getSequenceNumber();
@@ -2057,10 +2065,10 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
 
             customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
-            customerData.set(DE48_CustomerDataType.Vehicle_Trailer_Number, fleetData.getVehicleNumber());
+            customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
             customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
             customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
-            customerData.set(DE48_CustomerDataType.Odometer_Hub_Reading, fleetData.getOdometerReading());
+            customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
             customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
             customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());
             customerData.set(DE48_CustomerDataType.EnteredData_Numeric, fleetData.getEnteredData());
@@ -2069,6 +2077,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             customerData.set(DE48_CustomerDataType.Department, fleetData.getDepartment());
             customerData.set(DE48_CustomerDataType.TripNumber, fleetData.getTripNumber());
             customerData.set(DE48_CustomerDataType.UnitNumber, fleetData.getUnitNumber());
+            customerData.set(DE48_CustomerDataType.MaintenanceNumber,fleetData.getMaintenanceNumber());
+            customerData.set(DE48_CustomerDataType.TrailerNumber,fleetData.getTrailerNumber());
+            customerData.set(DE48_CustomerDataType.HubometerNumber,fleetData.getHubometerNumber());
         }
 
         // cvn number
@@ -2115,7 +2126,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
 
         // DE48-33
-        if(acceptorConfig.hasPosConfiguration_MessageControl()) {
+        if(acceptorConfig.hasPosConfiguration_MessageControl() && !isTimeRequest) {
             DE48_33_PosConfiguration posConfiguration = new DE48_33_PosConfiguration();
             posConfiguration.setTimezone(posConfiguration.getTimezone());
             posConfiguration.setSupportsPartialApproval(acceptorConfig.getSupportsPartialApproval());
@@ -2126,7 +2137,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
 
         // DE48-34 // Message Configuration Fields
-        if(acceptorConfig.hasPosConfiguration_MessageData()) {
+        if(acceptorConfig.hasPosConfiguration_MessageData() && !isTimeRequest) {
             DE48_34_MessageConfiguration messageConfigData = new DE48_34_MessageConfiguration();
             messageConfigData.setPerformDateCheck(acceptorConfig.getPerformDateCheck());
             messageConfigData.setEchoSettlementData(acceptorConfig.getEchoSettlementData());
@@ -2204,16 +2215,8 @@ public class VapsConnector extends GatewayConnectorConfig {
 
             if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("WexFleet")) {
 
-                if(builder instanceof AuthorizationBuilder){
-                    AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
-                    if(!StringUtils.isNullOrEmpty(authBuilder.getTagData())){
-                        cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0401");
-                    }else{
-                        cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0202");
-                    }
-                }else{
-                    cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0202");
-                }
+                cardIssuerData.add(CardIssuerEntryTag.Wex_SpecVersionSupport, "0401");
+
                 if(builder.getTransactionType().equals(TransactionType.Refund)) {
                     cardIssuerData.add(CardIssuerEntryTag.IssuerSpecificTransactionMatchData, builder.getTransactionMatchingData().getElementData());
                 }

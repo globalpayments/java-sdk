@@ -485,7 +485,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_CUSTOMER_EMAIL", paymentData.getCustomerEmail());
             request.set("HPP_CUSTOMER_PHONENUMBER_MOBILE", paymentData.getCustomerPhoneMobile());
             request.set("HPP_PHONE", paymentData.getCustomerPhoneMobile());
-            request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator());
+            request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator() != null ? paymentData.getChallengeRequestIndicator().getValue() : null);
             request.set("HPP_ENABLE_EXEMPTION_OPTIMIZATION", builder.getHostedPaymentData().getEnableExemptionOptimization());
             if(paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
@@ -1323,7 +1323,7 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
 
         Element addressNode = et.element("address").set("type", address.getType().equals(AddressType.Billing) ? "billing" : "shipping");
         et.subElement(addressNode, "code").text(code);
-        et.subElement(addressNode, "country").text(address.getCountry());
+        et.subElement(addressNode, "country").text(address.getCountryCode());
 
         return addressNode;
     }

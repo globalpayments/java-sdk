@@ -6,10 +6,11 @@ public enum TerminalType implements IStringConstant{
 	Ibm("03"),
 	VerifonePearl("04"),
 	VerifoneRuby("05"),
+	ConvenientAutomation("6"),
 	NetworkDataDec("07"),
 	ConsolidatedApplication("08"),
 	DataCard740("09"),
-	DataCard840Or940("10"),
+	Verifone("10"),
 	DbrSystems("11"),
 	WayneNucleus("12"),
 	Ingenico("13"),
@@ -68,6 +69,7 @@ public enum TerminalType implements IStringConstant{
 	Ncr("72"),
 	Petrovend("74"),
 	LocSoftware("75"),
+	HostToHost("76"),
 	Ingenico3500("77"),
 	AppliedTech("78"),
 	SunTronicsLease("79"),
@@ -85,7 +87,9 @@ public enum TerminalType implements IStringConstant{
 	VerifoneSapphire("93"),
 	VerifoneOmni490Isdn("94"),
 	VerifoneOmni490Dial("95"),
-	SchlumbergerPro("98");
+	SchlumbergerPro("98"),
+	SDKMobilePayment("S1"),
+	SDKDex("S2");
 	
 	String value;
 	TerminalType(String value) {

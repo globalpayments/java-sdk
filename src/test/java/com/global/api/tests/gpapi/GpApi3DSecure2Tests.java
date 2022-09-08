@@ -1016,6 +1016,7 @@ public class GpApi3DSecure2Tests extends BaseGpApiTest {
         assertNotNull(initAuth.getAcsInterface());
         assertNotNull(initAuth.getAcsUiTemplate());
         assertNotNull(initAuth.getAcsReferenceNumber());
+        assertNotNull(initAuth.getProviderServerTransRef());
     }
 
     @Test

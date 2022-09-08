@@ -1,5 +1,6 @@
 package com.global.api.network.entities.gnap;
 
+import com.global.api.network.enums.gnap.BatchTotalSign;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
