@@ -11,7 +11,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.Secure3dService;
 import com.global.api.tests.AcsResponse;
 import com.global.api.tests.ThreeDSecureAcsClient;
@@ -31,7 +31,7 @@ public class Secure3dServiceTests {
     private BrowserData browserData;
 
     public Secure3dServiceTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
         config.setAccountId("ecom3ds");
         config.setSharedSecret("secret");

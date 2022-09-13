@@ -9,7 +9,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.utils.DateUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class PorticoRecurringTests {
     }
     
     public PorticoRecurringTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
@@ -453,7 +453,7 @@ public class PorticoRecurringTests {
 
     @Test
     public void Test_008g_CreditCharge_WithNewCryptoURL() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
         ServicesContainer.configureService(config);
@@ -470,7 +470,7 @@ public class PorticoRecurringTests {
 
     @Test
     public void Test_PROD_endpoint() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://api2.heartlandportico.com");
         config.setEnvironment(Environment.PRODUCTION);

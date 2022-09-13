@@ -11,7 +11,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.Secure3dService;
 import org.joda.time.DateTime;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ public class Secure3dServiceExemptionTests {
 
     public Secure3dServiceExemptionTests() throws ConfigurationException {
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
         config.setAccountId("ecomeos");
         config.setSharedSecret("secret");

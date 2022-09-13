@@ -4,7 +4,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.CreditService;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class CreditServiceTests {
     private CreditCardData card;
 
     public CreditServiceTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         service = new CreditService(config);

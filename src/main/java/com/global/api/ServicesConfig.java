@@ -1,15 +1,11 @@
 package com.global.api;
 
-import com.global.api.entities.enums.TableServiceProviders;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.gateways.TableServiceConnector;
 import com.global.api.serviceConfigs.BoardingConfig;
 import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.serviceConfigs.PayrollConfig;
 import com.global.api.serviceConfigs.TableServiceConfig;
-import com.global.api.services.TableService;
 import com.global.api.terminals.ConnectionConfig;
-import com.global.api.utils.StringUtils;
 
 public class ServicesConfig {
     private GatewayConfig gatewayConfig;

@@ -14,25 +14,29 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.var;
 import org.apache.http.HttpStatus;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
+@Accessors(chain = true)
+@Getter
+@Setter
 public class OpenBankingProvider extends RestGateway implements IOpenBankingProvider, IReportingService {
     static final String DATE_TIME_PATTERN = "yyyyMMddHHmmss";
     static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_TIME_PATTERN);
 
-    @Getter @Setter private String merchantId;
-    @Getter @Setter private String accountId;
-    @Getter @Setter private String sharedSecret;
+    private String merchantId;
+    private String accountId;
+    private String sharedSecret;
 
     @Override
     public boolean supportsHostedPayments() {
         return false;
     }
 
-    @Getter @Setter private ShaHashType shaHashType;
+    private ShaHashType shaHashType;
 
     public OpenBankingProvider() {
         super();

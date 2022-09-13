@@ -10,7 +10,7 @@ import com.global.api.entities.enums.ReversalReasonCode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.DebitTrackData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -22,7 +22,7 @@ public class PorticoDebitTests {
     private DebitTrackData track;
 
     public PorticoDebitTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
@@ -197,7 +197,7 @@ public class PorticoDebitTests {
 
     @Test
     public void debitSaleWithNewCryptoURL() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 

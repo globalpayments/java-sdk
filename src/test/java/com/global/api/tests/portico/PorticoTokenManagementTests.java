@@ -1,29 +1,19 @@
 package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.TransactionSummaryList;
-import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.serviceConfigs.GatewayConfig;
-import com.global.api.services.ReportingService;
-import com.global.api.utils.DateUtils;
+
+import com.global.api.serviceConfigs.PorticoConfig;
 import org.joda.time.DateTime;
 import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class PorticoTokenManagementTests {
     public PorticoTokenManagementTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);

@@ -9,7 +9,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.GiftCard;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Assert;
@@ -33,7 +33,7 @@ public class EcomCertification {
     private String amex_token;
 
     public EcomCertification() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 

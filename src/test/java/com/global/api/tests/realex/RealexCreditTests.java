@@ -6,7 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import lombok.var;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class RealexCreditTests {
 
     // Similar to ApiCaseTest.php file in the PHP-SDK
     public RealexCreditTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");
         config.setSharedSecret("secret");

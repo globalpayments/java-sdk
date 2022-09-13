@@ -10,7 +10,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.BankPayment;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
 import lombok.var;
 import org.joda.time.LocalDate;
@@ -28,7 +28,7 @@ public class OpenBankingTests {
     private final String currency = "GBP";
 
     public OpenBankingTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("openbankingsandbox");
         config.setSharedSecret("sharedsecret");
         config.setAccountId("internet");
@@ -70,7 +70,7 @@ public class OpenBankingTests {
     @Test
     public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
         for(ShaHashType shaHashType : ShaHashType.values()) {
-            var config = new GatewayConfig();
+            var config = new GpEcomConfig();
             config.setMerchantId("openbankingsandbox");
             config.setSharedSecret("sharedsecret");
             config.setAccountId("internet");

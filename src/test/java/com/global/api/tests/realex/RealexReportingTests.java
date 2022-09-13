@@ -4,7 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RealexReportingTests {
     public RealexReportingTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");
         config.setSharedSecret("secret");

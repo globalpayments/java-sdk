@@ -6,7 +6,7 @@ import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import org.junit.Test;
@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class PorticoReportingTests {
     public PorticoReportingTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
@@ -52,7 +52,7 @@ public class PorticoReportingTests {
 
     @Test
     public void ReportActivityWithNewCryptoURL() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 

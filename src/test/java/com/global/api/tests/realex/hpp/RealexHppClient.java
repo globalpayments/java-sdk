@@ -8,7 +8,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.gateways.GatewayResponse;
 import com.global.api.paymentMethods.*;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.utils.*;
 import lombok.var;
 import org.apache.http.HttpStatus;
@@ -142,7 +142,7 @@ public class RealexHppClient {
         }
 
         // configure the container
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId(merchantId);
         config.setAccountId(account);
         config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");

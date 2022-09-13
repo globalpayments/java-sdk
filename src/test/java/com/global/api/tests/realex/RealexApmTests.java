@@ -7,7 +7,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class RealexApmTests {
 
     @Before
     public void Init() throws ConfigurationException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
 
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");

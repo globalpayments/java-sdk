@@ -3,7 +3,7 @@ package com.global.api.tests.services;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.EBTTrackData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.EbtService;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class EbtServiceTests {
     private EBTTrackData card;
 
     public EbtServiceTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         service = new EbtService(config);

@@ -14,7 +14,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class RealexRecurringTests {
     }
 
     public RealexRecurringTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("api");
         config.setSharedSecret("secret");

@@ -3,14 +3,17 @@ package com.global.api.terminals;
 import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.logging.IRequestLogger;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.pax.PaxController;
 import com.global.api.terminals.upa.UpaController;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
+@Accessors(chain = true)
+@Getter
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
     private ConnectionModes connectionMode;
     private BaudRate baudRate;
@@ -21,66 +24,34 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private int port;
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
-    private IRequestLogger requestLogger;
 
-    public ConnectionModes getConnectionMode() {
-        return connectionMode;
-    }
     public void setConnectionMode(ConnectionModes connectionModes) {
         this.connectionMode = connectionModes;
-    }
-    public BaudRate getBaudRate() {
-        return baudRate;
     }
     public void setBaudRate(BaudRate baudRate) {
         this.baudRate = baudRate;
     }
-    public Parity getParity() {
-        return parity;
-    }
     public void setParity(Parity parity) {
         this.parity = parity;
-    }
-    public StopBits getStopBits() {
-        return stopBits;
     }
     public void setStopBits(StopBits stopBits) {
         this.stopBits = stopBits;
     }
-    public DataBits getDataBits() {
-        return dataBits;
-    }
     public void setDataBits(DataBits dataBits) {
         this.dataBits = dataBits;
-    }
-    public String getIpAddress() {
-        return ipAddress;
     }
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
-    public int getPort() {
-        return port;
-    }
     public void setPort(int port) {
         this.port = port;
-    }
-    public DeviceType getDeviceType() {
-        return deviceType;
     }
     public void setDeviceType(DeviceType deviceType) {
         this.deviceType = deviceType;
     }
-    public IRequestIdProvider getRequestIdProvider() {
-		return requestIdProvider;
-	}
     public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
-		this.requestIdProvider = requestIdProvider;
-	}
-    public void setRequestLogger(IRequestLogger requestLogger) {
-        this.requestLogger = requestLogger;
+        this.requestIdProvider = requestIdProvider;
     }
-    public IRequestLogger getRequestLogger() { return requestLogger; }
 
     public ConnectionConfig(){
         timeout = 30000;

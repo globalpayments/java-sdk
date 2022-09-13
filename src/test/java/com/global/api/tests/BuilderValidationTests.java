@@ -7,7 +7,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.eCheck;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class BuilderValidationTests {
     CreditCardData card;
     
     public BuilderValidationTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com/Hps.Exchange.PosGateway/PosGatewayService.asmx");
         

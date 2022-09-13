@@ -1,6 +1,6 @@
 package com.global.api.tests.realex;
 
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
@@ -21,7 +21,7 @@ public class RealexHppResponseTests {
         hostedConfig.setLanguage("GB");
         hostedConfig.setResponseUrl("http://requestb.in/10q2bjb1");
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");

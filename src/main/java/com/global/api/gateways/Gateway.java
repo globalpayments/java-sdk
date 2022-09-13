@@ -8,6 +8,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.http.entity.mime.MultipartEntity;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -21,6 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+@Accessors(chain = true)
+@Getter
+@Setter
 public abstract class Gateway {
     private String contentType;
     private boolean enableLogging;
@@ -31,7 +37,7 @@ public abstract class Gateway {
     protected HashMap<String, String> dynamicHeaders;
     protected int timeout;
     protected String serviceUrl;
-    protected Proxy proxy;
+    protected Proxy webProxy;
 
     // ----------------------------------------------------------------------
     // TODO: Remove if it is not more useful
@@ -44,36 +50,7 @@ public abstract class Gateway {
         return gson.toJson(json);
     }
     // ----------------------------------------------------------------------
-    public void setEnableLogging(boolean enableLogging) {
-		this.enableLogging = enableLogging;
-	}
-    public void setRequestLogger(IRequestLogger requestLogger) {
-        this.requestLogger = requestLogger;
-    }
-	public HashMap<String, String> getHeaders() {
-        return headers;
-    }
-    public void setHeaders(HashMap<String, String> headers) {
-        this.headers = headers;
-    }
-    public int getTimeout() {
-        return timeout;
-    }
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
-    }
-    public Proxy getProxy() {
-        return this.proxy;
-    }
-    public void setProxy(Proxy proxy) {
-        this.proxy = proxy;
-    }
+
     public Gateway(String contentType) {
         headers = new HashMap<>();
         dynamicHeaders = new HashMap<>();
@@ -90,8 +67,8 @@ public abstract class Gateway {
         HttpsURLConnection conn = null;
         try{
             String queryString = buildQueryString(queryStringParams);
-            if (proxy != null) {
-                conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection(proxy);
+            if (webProxy != null) {
+                conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection(webProxy);
             } else {
                 conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection();
             }
@@ -128,7 +105,7 @@ public abstract class Gateway {
                 logEntry.append("Endpoint:       ").append(endpoint).append(lSChar);
                 logEntry.append("Verb:           ").append(verb).append(lSChar);
                 logEntry.append("Headers:        ").append(conn.getRequestProperties()).append(lSChar);
-                logEntry.append("Proxy:          ").append((proxy != null) ? proxy.toString() : "none").append(lSChar);
+                logEntry.append("Proxy:          ").append((webProxy != null) ? webProxy.toString() : "none").append(lSChar);
             }
 
             if (!verb.equals("GET")) {

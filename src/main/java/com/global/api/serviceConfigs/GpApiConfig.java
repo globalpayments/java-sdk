@@ -10,8 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.HashMap;
-
 @Getter
 @Setter
 public class GpApiConfig extends GatewayConfig {
@@ -60,8 +58,6 @@ public class GpApiConfig extends GatewayConfig {
     // 3DSecure merchant contact url
     private String merchantContactUrl;
 
-    private HashMap<String, String> dynamicHeaders;
-
     // When set, this Merchant ID will be prefixed all endpoint's urls. Example:
     // Endpoint:        /ucp/transactions
     // will become to:  /ucp/merchants/merchantId/transactions
@@ -70,6 +66,10 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     // When true the header key: "x-gp-sdk" with value: "java;version=X.Y.Z" will be not be inserted on GpApiConnector requests
     private boolean isAndroid;
+
+    public GpApiConfig() {
+        super(GatewayProvider.GP_API);
+    }
 
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {

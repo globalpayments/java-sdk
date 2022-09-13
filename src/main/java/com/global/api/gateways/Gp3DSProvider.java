@@ -13,6 +13,8 @@ import com.global.api.utils.CardUtils;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+@Accessors(chain = true)
+@Setter
 public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
     private String accountId;
     private String challengeNotificationUrl;
@@ -29,25 +33,6 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
     private String sharedSecret;
 
     public Secure3dVersion getVersion() { return Secure3dVersion.TWO; }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-    public void setMerchantId(String merchantId) {
-        this.merchantId = merchantId;
-    }
-    public void setSharedSecret(String sharedSecret) {
-        this.sharedSecret = sharedSecret;
-    }
-    public void setChallengeNotificationUrl(String challengeNotificationUrl) {
-        this.challengeNotificationUrl = challengeNotificationUrl;
-    }
-    public void setMerchantContactUrl(String merchantContactUrl) {
-        this.merchantContactUrl = merchantContactUrl;
-    }
-    public void setMethodNotificationUrl(String methodNotificationUrl) {
-        this.methodNotificationUrl = methodNotificationUrl;
-    }
 
     public Transaction processSecure3d(Secure3dBuilder builder) throws ApiException {
         TransactionType transType = builder.getTransactionType();

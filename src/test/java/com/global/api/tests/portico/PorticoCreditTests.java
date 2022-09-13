@@ -9,7 +9,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class PorticoCreditTests {
 	private CreditTrackData track;
 
 	public PorticoCreditTests() throws ApiException {
-		GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
 		config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
 		config.setServiceUrl("https://cert.api2.heartlandportico.com");
 		config.setDeveloperId("002914");
@@ -102,7 +102,7 @@ public class PorticoCreditTests {
 	
 	@Test
 	public void creditTestWithNewCryptoURL() throws ApiException {
-		GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
 		config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
 		config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 
@@ -122,7 +122,7 @@ public class PorticoCreditTests {
 
 	@Test
 	public void creditTokenization() throws ApiException {
-		GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
 		config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
 		config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 		config.setEnableLogging(true);
@@ -134,7 +134,7 @@ public class PorticoCreditTests {
 	}
 	@Test
 	public void creditTokenizationWithVerify() throws ApiException {
-	    GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
 	    config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
 	    config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 	    config.setEnableLogging(true);
@@ -146,7 +146,7 @@ public class PorticoCreditTests {
 	}
 	@Test
 	public void creditTokenizationWithoutVerify() throws ApiException {
-		GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
 		config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
 		config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 		config.setEnableLogging(true);
@@ -417,7 +417,7 @@ public class PorticoCreditTests {
 
     @Test
     public void creditTestManualWithOneName() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
         config.setEnableLogging(true);
@@ -444,7 +444,7 @@ public class PorticoCreditTests {
 
     @Test
     public void creditTestManualWithTwoNames() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 
@@ -471,7 +471,7 @@ public class PorticoCreditTests {
 
     @Test
     public void creditTestManualWithThreeNames() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 
@@ -498,7 +498,7 @@ public class PorticoCreditTests {
 
     @Test
     public void creditSaleWithTDESDukptEMV() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
@@ -523,7 +523,7 @@ public class PorticoCreditTests {
     
     @Test
     public void creditSaleWithTDESDukptEMV_postAuthChipDecline() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);

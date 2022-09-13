@@ -1,5 +1,12 @@
 # Changelog
 
+## v9.0.0 (09/13/2022)
+
+### Enhancements:
+
+- PORTICO: Added PorticoConfig for Portico Configuration instead of GatewayConfig 
+- GP-ECOM/REALEX: Added GpEcomConfig for GP-ECOM/Realex Configuration instead of GatewayConfig 
+
 ## v8.0.7 (09/08/2022)
 
 ### Enhancements:

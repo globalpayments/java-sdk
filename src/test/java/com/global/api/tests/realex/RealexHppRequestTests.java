@@ -5,7 +5,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.BankPayment;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
@@ -31,7 +31,7 @@ public class RealexHppRequestTests {
         hostedConfig.setLanguage("GB");
         hostedConfig.setResponseUrl("http://requestb.in/10q2bjb1");
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");
@@ -114,7 +114,7 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("3dsecure");
         config.setSharedSecret("secret");
@@ -183,7 +183,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -209,7 +209,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -238,7 +238,7 @@ public class RealexHppRequestTests {
         hostedConfig.setLanguage("EN");
         hostedConfig.setPaymentButtonText("Place Order");
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -272,7 +272,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -303,7 +303,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -335,7 +335,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -367,7 +367,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -400,7 +400,7 @@ public class RealexHppRequestTests {
         hostedConfig .setVersion(HppVersion.Version2);
         hostedConfig .setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -431,7 +431,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -463,7 +463,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -495,7 +495,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setCardStorageEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -528,7 +528,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDisplaySavedCards(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -560,7 +560,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDisplaySavedCards(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -592,7 +592,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -622,7 +622,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -652,7 +652,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -688,7 +688,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -714,7 +714,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Off);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -740,7 +740,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.None);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -766,7 +766,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Active);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -788,7 +788,7 @@ public class RealexHppRequestTests {
 
     @Test
     public void FraudManagementRequestWithRules() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -856,7 +856,7 @@ public class RealexHppRequestTests {
         hostedPaymentConfig.setFraudFilterMode(FraudFilterMode.Passive);
         hostedPaymentConfig.setFraudFilterRules(fraudRuleCollection);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");
@@ -883,7 +883,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDynamicCurrencyConversionEnabled(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -909,7 +909,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setDynamicCurrencyConversionEnabled(false);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -935,7 +935,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setRequestTransactionStabilityScore(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -961,7 +961,7 @@ public class RealexHppRequestTests {
         hostedConfig.setVersion(HppVersion.Version2);
         hostedConfig.setRequestTransactionStabilityScore(false);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -986,7 +986,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1034,7 +1034,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1066,7 +1066,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1097,7 +1097,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.Passive);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1128,7 +1128,7 @@ public class RealexHppRequestTests {
         hostedConfig.setCardStorageEnabled(true);
         hostedConfig.setFraudFilterMode(FraudFilterMode.None);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1164,7 +1164,7 @@ public class RealexHppRequestTests {
         hostedConfig.setPaymentButtonText("Place Order");
         hostedConfig.setRequestTransactionStabilityScore(true);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1209,7 +1209,7 @@ public class RealexHppRequestTests {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
 		hostedConfig.setVersion(HppVersion.Version2);
 
-		GatewayConfig config = new GatewayConfig();
+		GpEcomConfig config = new GpEcomConfig();
 		config.setMerchantId("heartlandgpsandbox");
 		config.setAccountId("hpp");
 		config.setSharedSecret("secret");
@@ -1243,7 +1243,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1270,7 +1270,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1297,7 +1297,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1351,7 +1351,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1404,7 +1404,7 @@ public class RealexHppRequestTests {
         hostedConfig.setResponseUrl("https://www.example.com/response");
         hostedConfig.setVersion(HppVersion.Version2);
 
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1430,7 +1430,7 @@ public class RealexHppRequestTests {
 
     @Test
     public void testNetherlandsAntillesCountry() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setSharedSecret("secret");
@@ -1476,7 +1476,7 @@ public class RealexHppRequestTests {
      * entry from the list as an example for our unit test, in this case will be "sofort"
      */
     public void testBasicChargeAlternativePayment() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("hpp");
         config.setSharedSecret("secret");
@@ -1537,7 +1537,7 @@ public class RealexHppRequestTests {
 
     @Test
     public void openBankingInitiate() throws ApiException {
-        var config = new GatewayConfig();
+        var config = new GpEcomConfig();
         config.setMerchantId("openbankingsandbox");
         config.setSharedSecret("sharedsecret");
         config.setAccountId("internet");
@@ -1586,7 +1586,7 @@ public class RealexHppRequestTests {
 
     @Test
     public void captureBillingAndShippingInformation() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
         config.setAccountId("internet");
         config.setRefundPassword("refund");
@@ -1624,7 +1624,7 @@ public class RealexHppRequestTests {
 
     @Test
     public void threeDSExemption() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
         config.setAccountId("3dsecure");
         config.setSharedSecret("secret");

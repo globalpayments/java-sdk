@@ -81,7 +81,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
         gpApiConfig = config;
 
-        setProxy(gpApiConfig.getProxy());
+        setWebProxy(gpApiConfig.getWebProxy());
         setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
 
         setEnableLogging(gpApiConfig.isEnableLogging());

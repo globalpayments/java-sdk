@@ -8,7 +8,7 @@ import com.global.api.entities.enums.CheckType;
 import com.global.api.entities.enums.SecCode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.eCheck;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.tests.testdata.TestChecks;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -25,7 +25,7 @@ public class CheckCertification {
     private Address address;
 
     public CheckCertification() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);

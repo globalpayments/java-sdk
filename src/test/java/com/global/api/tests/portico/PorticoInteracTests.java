@@ -6,7 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.DebitTrackData;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -18,7 +18,7 @@ public class PorticoInteracTests {
     private String tagData;
 
     public PorticoInteracTests() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setLicenseId(374209);
         config.setSiteId(374391);
         config.setDeviceId(5246);

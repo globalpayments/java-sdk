@@ -16,6 +16,9 @@ import com.global.api.utils.ElementTree;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.text.FieldPosition;
@@ -25,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
+@Accessors(chain = true)
+@Setter
 public class PorticoConnector extends XmlGateway implements IPaymentGateway, IReportingService {
     private int siteId;
     private int licenseId;
@@ -36,31 +41,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String secretApiKey;
 
     public boolean supportsHostedPayments() { return false; }
-
-    public void setSiteId(int siteId) {
-        this.siteId = siteId;
-    }
-    public void setLicenseId(int licenseId) {
-        this.licenseId = licenseId;
-    }
-    public void setDeviceId(int deviceId) {
-        this.deviceId = deviceId;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    public void setDeveloperId(String developerId) {
-        this.developerId = developerId;
-    }
-    public void setVersionNumber(String versionNumber) {
-        this.versionNumber = versionNumber;
-    }
-    public void setSecretApiKey(String secretApiKey) {
-        this.secretApiKey = secretApiKey;
-    }
 
     public Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException {
         ElementTree et = new ElementTree();

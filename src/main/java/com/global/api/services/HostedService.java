@@ -7,7 +7,7 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
@@ -16,14 +16,14 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 
 public class HostedService {
-    GatewayConfig _config;
+    GpEcomConfig _config;
 
-    public HostedService(GatewayConfig config) throws ApiException {
+    public HostedService(GpEcomConfig config) throws ApiException {
         _config = config;
         ServicesContainer.configureService(config); // Configure the default Service
     }
 
-    public HostedService(GatewayConfig config, String configName) throws ApiException {
+    public HostedService(GpEcomConfig config, String configName) throws ApiException {
         _config = config;
         ServicesContainer.configureService(config, configName); // Configure a new service with the given configName
     }

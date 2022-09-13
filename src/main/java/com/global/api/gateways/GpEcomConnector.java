@@ -13,6 +13,7 @@ import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.var;
 import org.joda.time.format.DateTimeFormat;
 
@@ -21,7 +22,9 @@ import java.util.*;
 import static com.global.api.utils.CardUtils.getBaseCardType;
 import static com.global.api.utils.StringUtils.extractDigits;
 
-public class RealexConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider, IReportingService {
+@Accessors(chain = true)
+@Setter
+public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider, IReportingService {
     private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
         put("DinersClub", "Diners");
     }};
@@ -37,29 +40,6 @@ public class RealexConnector extends XmlGateway implements IPaymentGateway, IRec
     @Getter @Setter private ShaHashType shaHashType;
 
     public Secure3dVersion getVersion() { return Secure3dVersion.ONE; }
-
-    public void setMerchantId(String merchantId) {
-        this.merchantId = merchantId;
-    }
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-    public void setRebatePassword(String rebatePassword) {
-        this.rebatePassword = rebatePassword;
-    }
-    public void setRefundPassword(String refundPassword) {
-        this.refundPassword = refundPassword;
-    }
-    public void setSharedSecret(String sharedSecret) {
-        this.sharedSecret = sharedSecret;
-    }
-    public void setChannel(String channel) {
-        this.channel = channel;
-    }
-    public void setHostedPaymentConfig(HostedPaymentConfig config) {
-        this.hostedPaymentConfig = config;
-    }
-
     public boolean supportsRetrieval() { return false; }
     public boolean supportsUpdatePaymentDetails() { return true; }
     public boolean supportsHostedPayments() { return true; }

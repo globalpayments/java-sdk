@@ -10,7 +10,7 @@ import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.*;
-import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
 import junit.framework.TestCase;
@@ -34,7 +34,7 @@ public class RetailCertification {
     private String amex_token;
     
     public RetailCertification() throws ApiException {
-        GatewayConfig config = new GatewayConfig();
+        PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
