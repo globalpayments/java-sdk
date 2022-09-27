@@ -1,6 +1,7 @@
 package com.global.api.network.enums;
 
 import com.global.api.entities.enums.IStringConstant;
+import com.global.api.utils.StringUtils;
 
 public enum ProductCode implements IStringConstant {
     Unleaded_Gas("01"),
@@ -83,5 +84,7 @@ public enum ProductCode implements IStringConstant {
     }
 
     public String getValue() { return this.value; }
+    public String getLongValue() { return StringUtils.padLeft(this.value,3,'0'); }
+
     public byte[] getBytes() { return this.value.getBytes(); }
 }

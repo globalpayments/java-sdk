@@ -1,5 +1,13 @@
 # Changelog
 
+## v9.0.1 (09/27/2022)
+
+### Enhancements:
+
+- VAPS: Added support for FleetCor 
+- VAPS: Added Support for DE49 and DE50 Currency Code
+- NTS: Added Terminal Types N1 and N2
+
 ## v9.0.0 (09/13/2022)
 
 ### Enhancements:

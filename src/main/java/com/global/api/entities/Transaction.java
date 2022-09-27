@@ -85,6 +85,7 @@ public class Transaction {
     private String transactionTime;
     private String transactionCode;
     @Getter @Setter private AdditionalDuplicateData additionalDuplicateData;
+    private String receiptText;
 
     public BigDecimal getOrigionalAmount() {
         return origionalAmount;
@@ -440,6 +441,14 @@ public class Transaction {
     }
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
+    }
+    public String getReceiptText() {
+        HashMap<CardIssuerEntryTag, String> issData = getIssuerData();
+        String tagData = issData.get(CardIssuerEntryTag.ReceiptText);
+        return tagData;
+    }
+    public void setReceiptText(String receiptText) {
+        this.receiptText = receiptText;
     }
     public String getResponseCode() {
         return responseCode;

@@ -484,7 +484,7 @@ public class TestCards {
     }
     public static CreditTrackData VoyagerSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%07088869008250005056^VOYAGER TEST ACCT THREE  ^1912100000000000000?");
+        rvalue.setValue("%07088869008250005056^VOYAGER TEST ACCT THREE  ^2212100000000000000?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -492,6 +492,21 @@ public class TestCards {
     /*
     Fuelman
     */
+
+    public static CreditCardData FuelmanFleetManual() {
+        return FuelmanFleetManual(false, false);
+    }
+    public static CreditCardData FuelmanFleetManual(boolean cardPresent, boolean readerPresent) {
+        CreditCardData rvalue = new CreditCardData();
+        rvalue.setNumber("70764912345100040");
+        rvalue.setExpMonth(12);
+        rvalue.setExpYear(2049);
+        rvalue.setCvn("123");
+        rvalue.setCardPresent(cardPresent);
+        rvalue.setReaderPresent(readerPresent);
+        return rvalue;
+    }
+
     public static CreditTrackData FuelmanFleet() {
         return FuelmanFleet(EntryMethod.Swipe);
     }
@@ -505,6 +520,20 @@ public class TestCards {
     /*
   Fleetwide
   */
+
+    public static CreditCardData FleetWideManual() {
+        return FleetWideManual(false, false);
+    }
+    public static CreditCardData FleetWideManual(boolean cardPresent, boolean readerPresent) {
+        CreditCardData rvalue = new CreditCardData();
+        rvalue.setNumber("70768512345200005");
+        rvalue.setExpMonth(12);
+        rvalue.setExpYear(2099);
+        rvalue.setCvn("123");
+        rvalue.setCardPresent(cardPresent);
+        rvalue.setReaderPresent(readerPresent);
+        return rvalue;
+    }
 
     public static CreditTrackData FleetWide() {
         return FleetWide(EntryMethod.Swipe);

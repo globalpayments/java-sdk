@@ -827,4 +827,29 @@ public class VapsCreditTests {
         Transaction response = trans.capture()
                 .execute();
     }
+
+    @Test
+    public void test_001_DE49_swipe_partial_void() throws ApiException {
+        Transaction sale = track.charge(new BigDecimal(142))
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(sale);
+        //assertEquals("002", sale.getResponseCode());
+
+        Transaction response = sale.voidTransaction()
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
 }

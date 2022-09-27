@@ -424,6 +424,8 @@ public class VapsConnector extends GatewayConnectorConfig {
         request.set(DataElementId.DE_048, messageControl);
 
         // DE 49: Currency Code, Transaction - n3
+        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && builder.getAmount()!=null)
+        request.set(DataElementId.DE_049,currencyCode.getValue());
         // DE 50: Currency Code, Reconciliation - n3
 
         /* DE 54: Amounts, Additional - LLVAR ans..120
@@ -862,7 +864,13 @@ public class VapsConnector extends GatewayConnectorConfig {
         request.set(DataElementId.DE_048, messageControl);
 
         // DE 49: Currency Code, Transaction - n3
+        //String currencyCode=Iso4217_CurrencyCode.valueOf(builder.getCurrency()).getValue();
+        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && transactionAmount!=null)
+            request.set(DataElementId.DE_049,currencyCode.getValue());
         // DE 50: Currency Code, Reconciliation - n3
+        if(transactionType.equals(TransactionType.BatchClose) && !currencyCode.equals(Iso4217_CurrencyCode.USD)) {
+            request.set(DataElementId.DE_050,currencyCode.getValue());
+        }
 
         // DE 52: Personal Identification Number (PIN)
         if(paymentMethod instanceof TransactionReference) {
@@ -2376,6 +2384,12 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             else if(card.getCardType().equals("VoyagerFleet")) {
                 return DE48_CardType.Voyager;
+            }
+            else if(card.getCardType().equals("FuelmanFleet")) {
+                return DE48_CardType.FleetCorFuelmanPlus;
+            }
+            else if(card.getCardType().equals("FleetWide")) {
+                return DE48_CardType.FleetCorFleetwide;
             }
         }
         else if(paymentMethod instanceof GiftCard) {
