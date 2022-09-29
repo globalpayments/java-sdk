@@ -1,5 +1,11 @@
 # Changelog
 
+## v9.0.2 (09/29/2022)
+
+### Enhancements:
+
+- Genius/Merchantware: Added initial support
+
 ## v9.0.1 (09/27/2022)
 
 ### Enhancements:

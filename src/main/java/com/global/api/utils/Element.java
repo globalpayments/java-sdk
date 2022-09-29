@@ -145,7 +145,7 @@ public class Element {
 
     public BigDecimal getDecimal(String tagName) {
         org.w3c.dom.Element element = getElementByTagName(tagName);
-        if(element != null) {
+        if(element != null && !StringUtils.isNullOrEmpty(element.getTextContent())) {
             return new BigDecimal(element.getTextContent());
         } return null;
     }

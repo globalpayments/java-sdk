@@ -9,7 +9,8 @@ public enum Target implements IFlag {
     Realex,
     GP_API,
     GNAP,
-    NTS;
+    NTS,
+    Genius;
 
     public long getLongValue() {
         return 1 << this.ordinal();

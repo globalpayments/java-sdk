@@ -8,21 +8,21 @@ import com.global.api.entities.enums.AuthenticationSource;
 import com.global.api.entities.enums.SdkUiType;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TransactionType;
-import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.ICardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiSecure3DRequestBuilder {
 
-    public static GpApiRequest buildRequest(Secure3dBuilder builder, GpApiConnector gateway) throws GatewayException {
+    public static GpApiRequest buildRequest(Secure3dBuilder builder, GpApiConnector gateway) throws ApiException {
         String merchantUrl = gateway.getMerchantUrl();
         TransactionType builderTransactionType = builder.getTransactionType();
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
@@ -267,7 +267,7 @@ public class GpApiSecure3DRequestBuilder {
                                 .setRequestBody(data.toString());
             }
             default:
-                throw new NotImplementedException();
+                throw new UnsupportedTransactionException();
         }
     }
 }
