@@ -6,7 +6,6 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
@@ -181,17 +180,13 @@ public class NtsWexFleetTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.CreditAdjustment, response, new BigDecimal(10));
-        ntsDataCollectRequest.setOriginalTransactionDate(response.getTransactionReference().getOriginalTrasactionDate());
-        ntsDataCollectRequest.setOriginalTransactionTime(response.getOriginalTransactionTime());
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .withFleetData(fleetData)
                 .execute();
         assertNotNull(dataCollectResponse);
@@ -223,16 +218,15 @@ public class NtsWexFleetTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = card.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .withNtsProductData(getProductDataForNonFleetBankCards(card))
                 .withFleetData(fleetData)
                 .execute();
@@ -264,17 +258,14 @@ public class NtsWexFleetTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withFleetData(fleetData)
                 .execute();
@@ -307,16 +298,15 @@ public class NtsWexFleetTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withFleetData(fleetData)
                 .withTagData(emvTagData)

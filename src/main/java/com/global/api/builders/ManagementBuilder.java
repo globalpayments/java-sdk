@@ -88,6 +88,8 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private NtsRequestsToBalanceRequest ntsRequestsToBalance;
     @Getter
     private NtsRequestToBalanceData ntsRequestsToBalanceData;
+    @Getter
+    private EBTVoucherEntryData voucherEntryData;
 
     public ManagementBuilder withCardSequenceNumber(String value) {
         this.cardSequenceNumber = value;
@@ -244,10 +246,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withNtsRequestMessageHeader(NtsRequestMessageHeader value) {
         this.ntsRequestMessageHeader = value;
-        return this;
-    }
-    public ManagementBuilder withNtsDataCollectRequest(NtsDataCollectRequest value) {
-        this.ntsDataCollectRequest = value;
         return this;
     }
     public ManagementBuilder withNtsRequestsToBalance(NtsRequestsToBalanceRequest value) {
@@ -681,5 +679,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
                 .check("payLinkData").propertyOf(Integer.class, "usageLimit").isNotNull()
                 .check("payLinkData").propertyOf(PayLinkType.class, "type").isNotNull();
 
+    }
+
+    public ManagementBuilder withVoucherEntryData(EBTVoucherEntryData data) {
+        this.voucherEntryData = data;
+        return this;
     }
 }

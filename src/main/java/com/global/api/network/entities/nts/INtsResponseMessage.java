@@ -32,7 +32,7 @@ public interface INtsResponseMessage {
         ntsMessageHeader.setTerminalId(sp.readInt(2));
 
         ntsResponseMessageHeader.setNtsNetworkMessageHeader(ntsMessageHeader);
-        ntsResponseMessageHeader.setPendingRequestInidicator(sp.readStringConstant(1, PendingRequestIndicator.class));
+        ntsResponseMessageHeader.setPendingRequestIndicator(sp.readStringConstant(1, PendingRequestIndicator.class));
         ntsResponseMessageHeader.setTransactionDate(sp.readString(4));
         ntsResponseMessageHeader.setTransactionTime(sp.readString(6));
         ntsResponseMessageHeader.setServicingHostName(sp.readStringConstant(1, ServicingHostName.class));

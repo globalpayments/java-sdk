@@ -117,11 +117,13 @@ public class NtsConnector extends GatewayConnectorConfig {
             reference.setSystemTraceAuditNumber(responseParser.readString(6));
             userData.put("RemainingBalance", responseParser.readString(6));
         } else if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)
-                && transactionType != TransactionType.DataCollect){
+                && transactionType != TransactionType.DataCollect
+                && transactionType != TransactionType.Capture){
             NtsDebitResponse ntsDebitResponse = (NtsDebitResponse) ntsResponse.getNtsResponseMessage();
             reference.setOriginalTransactionCode(ntsDebitResponse.getTransactionCode());
         } else if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.EBT)
-            && transactionType != TransactionType.DataCollect){
+                && transactionType != TransactionType.DataCollect
+                && transactionType != TransactionType.Capture){
             NtsEbtResponse ntsEbtResponse = (NtsEbtResponse) ntsResponse.getNtsResponseMessage();
             reference.setOriginalTransactionCode(ntsEbtResponse.getTransactionCode());
         }
@@ -173,7 +175,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         if (cardType != null && isUserDataPresent(builder, paymentMethod, cardType)) {
             messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();
             if (isNonBankCard(cardType)
-
                     || isDataCollectForNonFleetBankCard(cardType, builder.getTransactionType())) {
                 userData = UserDataTag.getNonBankCardUserData(builder, cardType, messageCode, acceptorConfig);
                 NtsUtils.log("Non Bank Card user Data :", userData);
@@ -230,6 +231,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
             result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
             result.setNtsResponse(ntsResponse);
+            result.setPendingRequestIndicator(ntsResponseMessageHeader.getPendingRequestIndicator());
             if (paymentMethod != null) {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
@@ -320,13 +322,18 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @return True: if card type is non-fleet BankCard and DataCollect.
      */
     private boolean isDataCollectForNonFleetBankCard(NTSCardTypes cardType, TransactionType transactionType) {
-        return transactionType == TransactionType.DataCollect
-                && (cardType == NTSCardTypes.Mastercard
-                || cardType == NTSCardTypes.Visa
-                || cardType == NTSCardTypes.AmericanExpress
-                || cardType == NTSCardTypes.Discover
-                || cardType == NTSCardTypes.StoredValueOrHeartlandGiftCard
-                || cardType == NTSCardTypes.PinDebit);
+        return (
+                    transactionType == TransactionType.DataCollect
+                    || transactionType == TransactionType.Capture
+                )
+                && (
+                        cardType == NTSCardTypes.Mastercard
+                        || cardType == NTSCardTypes.Visa
+                        || cardType == NTSCardTypes.AmericanExpress
+                        || cardType == NTSCardTypes.Discover
+                        || cardType == NTSCardTypes.StoredValueOrHeartlandGiftCard
+                        || cardType == NTSCardTypes.PinDebit
+        );
     }
 
     private boolean isUserDataPresent(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) {

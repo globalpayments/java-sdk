@@ -23,7 +23,7 @@ public class NtsResponseMessageHeader {
     private String priorMessageCode;
     @Getter
     @Setter
-    private PendingRequestIndicator pendingRequestInidicator;
+    private PendingRequestIndicator pendingRequestIndicator;
     @Getter
     @Setter
     private ServicingHostName servicingHostName;

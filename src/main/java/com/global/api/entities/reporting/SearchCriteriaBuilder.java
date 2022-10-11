@@ -7,6 +7,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -56,6 +57,7 @@ public class SearchCriteriaBuilder<TResult> {
     private String customerId;
     private String depositReference;
     private DepositStatus depositStatus;
+    private String description;
     private String displayName;
     private String disputeId;
     private DisputeStage disputeStage;
@@ -66,6 +68,7 @@ public class SearchCriteriaBuilder<TResult> {
     private Date endDepositDate;
     private Date endLastUpdatedDate;
     private Date endStageDate;
+    private DateTime expirationDate;
     private boolean fullyCaptured;
     private String giftCurrency;
     private String giftMaskedAlias;
@@ -82,16 +85,18 @@ public class SearchCriteriaBuilder<TResult> {
     private String name;
     private boolean oneTime;
     private String orderId;
+    private String payLinkStatus;
     private PaymentEntryMode paymentEntryMode;
     private String paymentMethodKey;
     private PaymentType paymentType;
     private PaymentMethodName paymentMethodName;
+    private String paymentMethodUsageMode;
     private IPaymentMethod paymentMethod;
     private ArrayList<PaymentMethodType> paymentTypes;
     private String referenceNumber;
-    @Getter @Setter private String bankPaymentId;
-    @Getter @Setter private String payLinkId;
-    @Getter @Setter private Boolean returnPII;
+    private String bankPaymentId;
+    private String payLinkId;
+    private Boolean returnPII;
     private String resource;
     private String resourceStatus;
     private String resourceId;

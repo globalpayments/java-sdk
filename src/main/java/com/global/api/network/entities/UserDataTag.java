@@ -7,7 +7,6 @@ import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.elements.DE63_ProductDataEntry;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
@@ -86,7 +85,7 @@ public class UserDataTag {
                 && paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             sb.append(UserDataTagId.Stan.getValue()).append("\\");
-            sb.append(reference.getUserDataTag().get("03")).append("\\"); // Get from host response area
+            sb.append(reference.getSystemTraceAuditNumber()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
@@ -108,7 +107,9 @@ public class UserDataTag {
         if (cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet)) {
             FleetData fleetData = builder.getFleetData();
             if ((transactionType.equals(TransactionType.Auth) ||
-                    transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.DataCollect)) && fleetData != null) {
+                    transactionType.equals(TransactionType.Sale) ||
+                    transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))
+                    && fleetData != null) {
                 sb.append(UserDataTagId.FleetAuthData.getValue()).append("\\");
                 sb.append(getFleetDataTag08(fleetData, cardType));
                 sb.append("\\");
@@ -118,7 +119,8 @@ public class UserDataTag {
 
         //09
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
-                && ((transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.DataCollect))
+                && ((transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.DataCollect)
+                || transactionType.equals(TransactionType.Capture))
                 && builder.getNtsProductData() != null)) {
             sb.append(UserDataTagId.ProductDataTag.getValue()).append("\\");
             sb.append(getProductDataTag09(builder, cardType));
@@ -148,10 +150,10 @@ public class UserDataTag {
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             sb.append(UserDataTagId.BanknetRefId.getValue()).append("\\");
-            sb.append(reference.getUserDataTag().get("11")).append("\\"); // Get from host response area
+            sb.append(reference.getMastercardBanknetRefNo()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
             sb.append(UserDataTagId.SettlementDate.getValue()).append("\\"); // 12 Settlement Date
-            sb.append(reference.getUserDataTag().get("12")).append("\\"); // Get from host response area
+            sb.append(reference.getMastercardBanknetSettlementDate()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
@@ -176,7 +178,7 @@ public class UserDataTag {
                 messageCode == NtsMessageCode.ForceReversalOrForceVoid)) && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             sb.append(UserDataTagId.DiscoverNetworkRefId.getValue()).append("\\");
-            sb.append(reference.getUserDataTag().get("14") + "\\"); // Get from host response area
+            sb.append(reference.getDiscoverNetworkRefId() + "\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
 
         }
@@ -202,7 +204,7 @@ public class UserDataTag {
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             sb.append(UserDataTagId.VisaTransactionId.getValue()).append("\\");
-            sb.append(reference.getUserDataTag().get("18")).append("\\"); // Get from host response area (left justify)
+            sb.append(reference.getVisaTransactionId()).append("\\"); // Get from host response area (left justify)
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
@@ -211,9 +213,9 @@ public class UserDataTag {
         // 20 Cash Over Amount
         if ((cardType.equals(NTSCardTypes.Discover))
                 && (transactionType.equals(TransactionType.Sale)
-                && ((AuthorizationBuilder) builder).getCashBackAmount() != null)) {
+                && builder.getCashBackAmount() != null)) {
             sb.append(UserDataTagId.CashOverAmount.getValue()).append("\\");
-            sb.append(StringUtils.toNumeric(((AuthorizationBuilder) builder).getCashBackAmount(), 6)).append("\\"); // Check desc
+            sb.append(StringUtils.toNumeric(builder.getCashBackAmount(), 6)).append("\\"); // Check desc
             totalNoOfTags++; // Increment the counter if tag is used.
 
         }
@@ -303,7 +305,7 @@ public class UserDataTag {
                 cardType.equals(NTSCardTypes.MastercardPurchasing)) && (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)))
                 && (paymentMethod instanceof ITrackData)) {
             ITrackData trackData = (ITrackData) builder.getPaymentMethod();
-            NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),acceptorConfig.getOperatingEnvironment());
+            NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), acceptorConfig.getOperatingEnvironment());
             if (entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
@@ -324,7 +326,7 @@ public class UserDataTag {
         // 33 Ecommerce Auth Indicator & 34 Ecommerce Merchant Order No
         if ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)) && ((cardType.equals(NTSCardTypes.VisaFleet)) || (cardType.equals(NTSCardTypes.MastercardFleet))) && (paymentMethod instanceof ITrackData)) {
             ITrackData trackData = (ITrackData) builder.getPaymentMethod();
-            NTSEntryMethod entryMethod= NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),acceptorConfig.getOperatingEnvironment());
+            NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), acceptorConfig.getOperatingEnvironment());
             if (entryMethod == NTSEntryMethod.ECommerceNoTrackDataAttended ||
                     entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattendedAfd ||
                     entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattended ||
@@ -363,9 +365,8 @@ public class UserDataTag {
         return StringUtils.padLeft(totalNoOfTags, 2, '0') + "\\" + sb.toString();
     }
 
-    private static int mapServiceByCardType(ServiceLevel serviceLevel,NTSCardTypes ntsCardTypes) {
-        switch (ntsCardTypes)
-        {
+    private static int mapServiceByCardType(ServiceLevel serviceLevel, NTSCardTypes ntsCardTypes) {
+        switch (ntsCardTypes) {
             case VoyagerFleet:
                 return mapServiceVoyager(serviceLevel);
             case WexFleet:
@@ -378,6 +379,7 @@ public class UserDataTag {
                 return 0;
         }
     }
+
     public static int mapService(ServiceLevel serviceLevel) {
         switch (serviceLevel) {
             case SelfServe:
@@ -391,6 +393,7 @@ public class UserDataTag {
                 return 0;
         }
     }
+
     public static int mapServiceWexFleet(ServiceLevel serviceLevel) {
         switch (serviceLevel) {
             case FullServe:
@@ -442,6 +445,7 @@ public class UserDataTag {
                 return 0;
         }
     }
+
     public static int mapUnitMeasureFleet(UnitOfMeasure unitOfMeasure) {
         switch (unitOfMeasure) {
             case Gallons:
@@ -521,8 +525,8 @@ public class UserDataTag {
         List<DE63_ProductDataEntry> nonFuel = productData.getNonFuelDataEntries();
         PurchaseType purchaseType = productData.getPurchaseType();
         ServiceLevel serviceLevelVisaFleet = productData.getServiceLevel();
-        boolean fuelFlag= fuel != null;
-        int serviceLevel = mapServiceByCardType(productData.getServiceLevel(),ntsCardTypes);
+        boolean fuelFlag = fuel != null;
+        int serviceLevel = mapServiceByCardType(productData.getServiceLevel(), ntsCardTypes);
         switch (ntsCardTypes) {
             case VisaFleet:
                 sb.append(purchaseType.getValue());
@@ -539,8 +543,8 @@ public class UserDataTag {
                         sb.append(String.format("%06d", 0));
                         sb.append(String.format("%05d", 0));
                         sb.append(String.format("%09d", 0));
-                        }
                     }
+                }
                 sb.append(serviceLevelVisaFleet.getValue());
                 sb.append(getRollUpData(builder, ntsCardTypes, productData, 3));
                 if (productData.getSalesTax() != null)
@@ -551,7 +555,7 @@ public class UserDataTag {
 
             case MastercardFleet:
                 sb.append(productData.getProductCodeType().getValue());
-                for(int i=0; i<1; i++) {
+                for (int i = 0; i < 1; i++) {
                     if (fuelFlag && i < fuel.size()) {
 
                         sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, '0'));
@@ -680,7 +684,7 @@ public class UserDataTag {
         String referenceMessageCode = null;
         FleetData fleetData = builder.getFleetData();
         if (productData != null) {
-            serviceLevel = mapServiceByCardType(productData.getServiceLevel(),cardType);
+            serviceLevel = mapServiceByCardType(productData.getServiceLevel(), cardType);
             if (productData.getSalesTax() != null)
                 salesTax = productData.getSalesTax();
             if (productData.getDiscount() != null)
@@ -697,7 +701,8 @@ public class UserDataTag {
             case Discover:
             case StoredValueOrHeartlandGiftCard:
             case PinDebit:
-                if (builder.getTransactionType() == TransactionType.DataCollect) {
+                if (builder.getTransactionType() == TransactionType.DataCollect
+                        || builder.getTransactionType() == TransactionType.Capture) {
                     // Data Collect user data for non-fleet bankcards.
                     sb.append(getTagData16(builder.getNtsTag16()));
                     if (acceptorConfig.getAddress() != null) {
@@ -712,7 +717,8 @@ public class UserDataTag {
                     }
                     sb.append(getProductDataTag09(builder, cardType).toString());
                 } else {
-                    if (!builder.getTransactionType().equals(TransactionType.DataCollect)) {
+                    if (!builder.getTransactionType().equals(TransactionType.DataCollect)
+                            || !builder.getTransactionType().equals(TransactionType.Capture)) {
                         TransactionTypeIndicator indicator = NtsUtils.getTransactionTypeIndicatorForTransaction(builder);
                         sb.append(StringUtils.padRight(indicator.getValue(), 8, ' '));
                         sb.append(StringUtils.padLeft(builder.getSystemTraceAuditNumber(), 6, '0'));
@@ -722,13 +728,15 @@ public class UserDataTag {
             case FuelmanFleet:
 
             case FleetWide:
-                if ((builder.getTransactionType().equals(TransactionType.DataCollect) || builder.getTransactionType().equals(TransactionType.Sale)) && (!messageCode.equals(NtsMessageCode.CreditAdjustment))) {
+                if ((builder.getTransactionType().equals(TransactionType.DataCollect)
+                        || builder.getTransactionType().equals(TransactionType.Capture)
+                        || builder.getTransactionType().equals(TransactionType.Sale)) && (!messageCode.equals(NtsMessageCode.CreditAdjustment))) {
                     if (fleetData.getDriverId() != null)
                         sb.append(StringUtils.padRight(fleetData.getDriverId(), 5, '0'));
                     if (fleetData.getOdometerReading() != null)
                         sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 6, '0'));
-                    sb.append(getFleetCorList(builder,cardType));
-                    sb.append(getRollUpData(builder,cardType, productData, 4));
+                    sb.append(getFleetCorList(builder, cardType));
+                    sb.append(getRollUpData(builder, cardType, productData, 4));
 
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                 } else if (builder.getTransactionType().equals(TransactionType.Auth)) {
@@ -754,7 +762,8 @@ public class UserDataTag {
                         sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
                         sb.append(builder.getTagData());
                     }
-                } else if ((builder.getTransactionType().equals(TransactionType.DataCollect)
+                } else if ((builder.getTransactionType().equals(TransactionType.DataCollect) ||
+                        builder.getTransactionType().equals(TransactionType.Capture)
                         || builder.getTransactionType().equals(TransactionType.Sale))
                         && !messageCode.equals(NtsMessageCode.CreditAdjustment)) {
                     List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
@@ -767,11 +776,9 @@ public class UserDataTag {
                                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, '0'));
                                 sb.append(StringUtils.toFormatDigit(fuelList.get(i).getQuantity(), 7, 3));
                                 sb.append(StringUtils.toNumeric(fuelList.get(i).getAmount(), 7));
-                            }else if(i==2) {
+                            } else if (i == 2) {
                                 break;
-                            }
-
-                            else {
+                            } else {
                                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, '0'));
                                 sb.append(StringUtils.padLeft(mapUnitMeasure(fuelList.get(i).getUnitOfMeasure()), 1, '0'));
                                 sb.append(StringUtils.toFormatDigit(fuelList.get(i).getQuantity(), 6, 3));
@@ -785,7 +792,7 @@ public class UserDataTag {
                         sb.append(String.format("%07d", 0));
                         sb.append(String.format("%07d", 0));
                     }
-                    int rollUp=fuelList!=null?fuelList.size()>= 2?6:7:7;
+                    int rollUp = fuelList != null ? fuelList.size() >= 2 ? 6 : 7 : 7;
                     sb.append(getRollUpData(builder, cardType, productData, rollUp));
                     sb.append(fleetData.getPurchaseDeviceSequenceNumber());
                     sb.append(StringUtils.toNumeric(salesTax, 5));
@@ -802,9 +809,10 @@ public class UserDataTag {
                         sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, ' '));
                     else
                         sb.append(StringUtils.padRight("", 6, '0'));
-                    sb.append(StringUtils.padLeft(builder.getNtsDataCollectRequest().getBatchNumber(), 2, '0'));
-                    sb.append(StringUtils.padLeft(builder.getNtsDataCollectRequest().getSequenceNumber(), 3, '0'));
-                    sb.append(builder.getNtsDataCollectRequest().getOriginalTransactionDate());
+                    sb.append(StringUtils.padLeft(builder.getBatchNumber(), 2, '0'));
+                    sb.append(StringUtils.padLeft(builder.getSequenceNumber(), 3, '0'));
+                    TransactionReference transactionReference = (TransactionReference) builder.getPaymentMethod();
+                    sb.append(transactionReference.getOriginalTransactionDate());
                 } else if (referenceMessageCode != null && referenceMessageCode.equals("01")
                         && builder.getTransactionType().equals(TransactionType.Reversal)) {
 
@@ -852,7 +860,8 @@ public class UserDataTag {
                     if (fleetData.getVehicleNumber() != null)
                         sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 6, '0'));
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
-                        || builder.getTransactionType().equals(TransactionType.Sale)) {
+                        || builder.getTransactionType().equals(TransactionType.Sale) ||
+                        builder.getTransactionType().equals(TransactionType.Capture)) {
                     if (messageCode.equals(NtsMessageCode.DataCollectOrSale)) {
                         if (fleetData.getOdometerReading() != null)
                             sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 7, '0'));
@@ -1094,14 +1103,18 @@ public class UserDataTag {
 
     private static StringBuffer getFleetCorCreditAdjustment(TransactionBuilder<Transaction> builder) {
         StringBuffer sb = new StringBuffer();
-        NtsDataCollectRequest getNtsDataCollect = builder.getNtsDataCollectRequest();
-        sb.append(StringUtils.padLeft(getNtsDataCollect.getApprovalCode(), 6, '0'));
-        sb.append(StringUtils.padLeft(getNtsDataCollect.getBatchNumber(), 2, '0'));
-        sb.append(StringUtils.padLeft(getNtsDataCollect.getSequenceNumber(), 3, '0'));
+        TransactionReference reference = null;
+        if (builder.getPaymentMethod() instanceof TransactionReference) {
+            reference = (TransactionReference) builder.getPaymentMethod();
+            sb.append(StringUtils.padLeft(reference.getApprovalCode(), 6, '0'));
+            sb.append(StringUtils.padLeft(reference.getBatchNumber(), 2, '0'));
+            sb.append(StringUtils.padLeft(reference.getSequenceNumber(), 3, '0'));
+        }
         sb.append(DateTime.now().toString("yyMMdd"));
         sb.append(DateTime.now().toString("HHmmss"));
         return sb;
     }
+
     private static StringBuffer getWexFleetPromptList(TransactionBuilder<Transaction> builder) {
         StringBuffer sb = new StringBuffer();
         LinkedHashMap<ProductCodeType, String> promptList = null;
@@ -1110,8 +1123,8 @@ public class UserDataTag {
         if (productData != null) {
             promptList = productData.getPromptList();
         }
-        int promptSize=0;
-        if(promptList!=null) {
+        int promptSize = 0;
+        if (promptList != null) {
             promptSize = builder.getTagData() != null ?
                     Math.min(promptList.size(), 6) :
                     Math.min(promptList.size(), 3);
@@ -1123,7 +1136,7 @@ public class UserDataTag {
                 sb.append(StringUtils.padLeft(list.getValue(), 12, '0'));
             });
         }
-        int remainingPrompt=builder.getTagData()!=null?
+        int remainingPrompt = builder.getTagData() != null ?
                 Math.max(promptSize, 6) :
                 Math.max(promptSize, 3);
         for (int i = promptSize; i < remainingPrompt; i++) {
@@ -1133,12 +1146,13 @@ public class UserDataTag {
         }
         return sb;
     }
+
     private static StringBuffer getVoyagerFleetFuelList(TransactionBuilder<Transaction> builder) {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
-        for (int i = 0; i <2; i++) {
-            if(fuelList!=null && i< fuelList.size()) {
+        for (int i = 0; i < 2; i++) {
+            if (fuelList != null && i < fuelList.size()) {
 
                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 2, '0'));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getQuantity(), 5));
@@ -1151,21 +1165,21 @@ public class UserDataTag {
         }
         return sb;
     }
-    private static StringBuffer getFleetCorList(TransactionBuilder<Transaction> builder,NTSCardTypes ntsCardTypes){
+
+    private static StringBuffer getFleetCorList(TransactionBuilder<Transaction> builder, NTSCardTypes ntsCardTypes) {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
-        int serviceLevel = mapServiceByCardType(productData.getServiceLevel(),ntsCardTypes);
-        for (int i = 0; i <1; i++) {
-            if(fuelList!=null && i< fuelList.size()) {
+        int serviceLevel = mapServiceByCardType(productData.getServiceLevel(), ntsCardTypes);
+        for (int i = 0; i < 1; i++) {
+            if (fuelList != null && i < fuelList.size()) {
                 sb.append(mapUnitMeasureFleet(fuelList.get(i).getUnitOfMeasure()));
                 sb.append(serviceLevel);
                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, ' '));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getPrice(), 5));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getQuantity(), 6));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getAmount(), 5));
-                            }
-            else {
+            } else {
                 sb.append(String.format("%1s", "0"));
                 sb.append(serviceLevel);
                 sb.append(String.format("%3s", " "));

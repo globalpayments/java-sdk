@@ -259,7 +259,7 @@ public class GpApiManagementRequestBuilder {
                             .set("description", builder.getDescription() != null ? builder.getDescription() : null)
                             .set("type", payLinkData.getType() != null ? payLinkData.getType().toString() : null)
                             .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
-                            .set("shippable", payLinkData.isShippable() != null  ? payLinkData.isShippable().toString().toUpperCase() : null)
+                            .set("shippable", payLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
                             .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()));
 
             var transactions =

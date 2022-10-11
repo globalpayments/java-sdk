@@ -2,9 +2,13 @@ package com.global.api.builders;
 
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.network.entities.NtsData;
+import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -19,12 +23,34 @@ public class TransactionRebuilder {
     private IPaymentMethod originalPaymentMethod;
     private String originalProcessingCode;
     private String originalTransactionTime;
+    @Getter
+    private String originalTransactionDate;
     private boolean partialApproval;
     private PaymentMethodType paymentMethodType = PaymentMethodType.Credit;
     private String posDataCode;
     private String systemTraceAuditNumber;
     private String transactionId;
     private boolean useAuthorizedAmount;
+    @Getter
+    private String approvalCode;
+    @Getter
+    private AuthorizerCode authorizer;
+    @Getter
+    private String debitAuthorizer;
+    @Getter
+    private String banknetRefId;
+    @Getter
+    private String settlementDate;
+    @Getter
+    private String visaTransactionId;
+    @Getter
+    private String discoverNetworkRefId;
+    @Getter
+    private String originalMessageCode;
+    @Getter
+    private TransactionTypeIndicator transactionTypeIndicator;
+
+
 
     public TransactionRebuilder withAuthorizationCode(String value) {
         authCode = value;
@@ -91,6 +117,51 @@ public class TransactionRebuilder {
         return this;
     }
 
+    public TransactionRebuilder withApprovalCode(String value) {
+        this.approvalCode = value;
+        return this;
+    }
+
+    public TransactionRebuilder withAuthorizer(AuthorizerCode value) {
+        this.authorizer = value;
+        return this;
+    }
+
+    public TransactionRebuilder withDebitAuthorizer(String value) {
+        this.debitAuthorizer = value;
+        return this;
+    }
+
+    public TransactionRebuilder withSettlementDate(String value) {
+        this.settlementDate = value;
+        return this;
+    }
+    public TransactionRebuilder withBanknetRefId(String value) {
+        this.banknetRefId = value;
+        return this;
+    }
+    public TransactionRebuilder withVisaTransactionId(String value) {
+        this.visaTransactionId = value;
+        return this;
+    }
+    public TransactionRebuilder withDiscoverNetworkRefId(String value) {
+        this.discoverNetworkRefId = value;
+        return this;
+    }
+    public TransactionRebuilder withOriginalTransactionDate(String value) {
+        this.originalTransactionDate = value;
+        return this;
+    }
+    public TransactionRebuilder withOriginalMessageCode(String value) {
+        this.originalMessageCode = value;
+        return this;
+    }
+
+    public TransactionRebuilder withTransactionTypeIndicator(TransactionTypeIndicator value) {
+        this.transactionTypeIndicator = value;
+        return this;
+    }
+
     public Transaction build() {
         TransactionReference reference = new TransactionReference();
         reference.setAcquiringInstitutionId(acquirerId);
@@ -109,6 +180,19 @@ public class TransactionRebuilder {
         reference.setSystemTraceAuditNumber(systemTraceAuditNumber);
         reference.setTransactionId(transactionId);
         reference.setUseAuthorizedAmount(useAuthorizedAmount);
+        reference.setAuthorizer(authorizer);
+        reference.setDebitAuthorizer(debitAuthorizer);
+        reference.setOriginalTransactionDate(originalTransactionDate);
+        reference.setApprovalCode(approvalCode);
+        reference.setOriginalTransactionDate(originalTransactionDate);
+        reference.setOriginalTransactionDate(originalTransactionDate);
+        reference.setMastercardBanknetRefNo(banknetRefId);
+        reference.setMastercardBanknetSettlementDate(settlementDate);
+        reference.setVisaTransactionId(visaTransactionId);
+        reference.setDiscoverNetworkRefId(discoverNetworkRefId);
+        reference.setOriginalMessageCode(originalMessageCode);
+        reference.setOriginalTransactionTypeIndicator(transactionTypeIndicator);
+
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);

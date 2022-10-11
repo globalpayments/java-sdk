@@ -7,7 +7,6 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.nts.NtsAuthCreditResponseMapper;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
@@ -171,9 +170,21 @@ public class NtsGiftTests {
         assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
         System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
-        response = response.voidTransaction(new BigDecimal(10))
+        Transaction transaction = Transaction.fromBuilder()
+                .withTransactionTypeIndicator(response.getTransactionReference().getOriginalTransactionTypeIndicator())
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(card)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate(response.getTransactionReference().getOriginalTransactionDate())
+                .build();
+
+        response = transaction.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
 
         // check response
@@ -251,9 +262,7 @@ public class NtsGiftTests {
     @Test
     public void test_SVS_Issue_005() throws ApiException {
 
-//
-
-        Transaction response = card.capture(new BigDecimal(10))
+        Transaction response = card.issue(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Stan)
@@ -274,9 +283,7 @@ public class NtsGiftTests {
     @Test
     public void test_SVS_Issue_Cancellation_006() throws ApiException {
 
-
-
-        Transaction response = card.capture(new BigDecimal(10))
+        Transaction response = card.issue(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Stan)
@@ -314,7 +321,7 @@ public class NtsGiftTests {
 
 
 
-        Transaction response = card.capture(new BigDecimal(10))
+        Transaction response = card.issue(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Stan)
@@ -385,32 +392,30 @@ public class NtsGiftTests {
         assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
         System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
-        response = response.preAuthCompletion(new BigDecimal(10))
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(10))
+                .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber( Integer.parseInt( response.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
 
         // check response
-        assertEquals("00", response.getResponseCode());
+        assertEquals("00", completionResponse.getResponseCode());
 
-        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
-        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
-        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
-        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = card.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .withNtsProductData(getProductDataForNonFleetBankCards(card))
                 .withNtsTag16(getTag16())
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
@@ -497,34 +502,31 @@ public class NtsGiftTests {
         assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
         System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
-        response = response.preAuthCompletion(new BigDecimal(10))
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
 
         // check response
-        assertEquals("00", response.getResponseCode());
+        assertEquals("00", completionResponse.getResponseCode());
 
-        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
-        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
-        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
-        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = card.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(card))
                 .withNtsTag16(getTag16())
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(dataCollectResponse);
@@ -585,22 +587,26 @@ public class NtsGiftTests {
         assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
         System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
 
-        NtsAuthCreditResponseMapper responseMapper = (NtsAuthCreditResponseMapper) response.getNtsResponse().getNtsResponseMessage();
-
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = card.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction transaction = Transaction.fromNetwork(response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getTransactionReference().getOriginalTransactionTypeIndicator(),
+                response.getTransactionReference().getSystemTraceAuditNumber(),
+                response.getTransactionReference().getOriginalTransactionDate(),
+                response.getTransactionReference().getOriginalTransactionTime(),
+                card);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(card))
                 .withNtsTag16(getTag16())
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
-                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -804,18 +810,14 @@ public class NtsGiftTests {
         NtsAuthCreditResponseMapper responseMapper = (NtsAuthCreditResponseMapper) response.getNtsResponse().getNtsResponseMessage();
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
-
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = card.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(card))
                 .withNtsTag16(getTag16())
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(dataCollectResponse);

@@ -10,7 +10,6 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
@@ -22,7 +21,6 @@ import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.NtsTestCards;
 import com.global.api.tests.testdata.TestCards;
-import com.global.api.utils.NtsUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -260,12 +258,12 @@ public class NtsCreditTest {
 
         productData = getProductDataForNonFleetBankCards(track);
 
-       Transaction response = track.charge(new BigDecimal(90.90))
+        Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
-               .withNtsRequestMessageHeader(header)
+                .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
-               .withNtsProductData(productData)
-               .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
                 .withCvn("123")
                 .execute();
         assertNotNull(response);
@@ -273,19 +271,23 @@ public class NtsCreditTest {
         // check response
         assertEquals("00", response.getResponseCode());
 
-        // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.ForceCreditAdjustment, response, new BigDecimal(10));
-        header.setPinIndicator(PinIndicator.WithoutPin);
-        header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction transaction = Transaction.fromNetwork(
+                response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getOriginalTransactionDate(),
+                response.getOriginalTransactionTime(),
+                track
+        );
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(90.90))
                 .withCurrency("USD")
-                
-                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -597,9 +599,23 @@ public class NtsCreditTest {
 
         assertNotNull(response);
 
+        // Re-creating the transaction.
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate( response.getTransactionReference().getOriginalTransactionDate())
+                .withBanknetRefId(response.getTransactionReference().getMastercardBanknetRefNo())
+                .withSettlementDate(response.getTransactionReference().getMastercardBanknetSettlementDate())
+                .build();
+
         header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
 
-        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+        Transaction voidResponse = transaction.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
                 .execute();
@@ -894,18 +910,14 @@ public class NtsCreditTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
-
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -927,23 +939,26 @@ public class NtsCreditTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("30", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
-        ntsDataCollectRequest.setAuthorizer(AuthorizerCode.Voice_Authorized);
-        ntsDataCollectRequest.setApprovalCode("123456"); // Set by the voice authorization
+        Transaction transaction = Transaction.fromNetwork(
+                AuthorizerCode.Voice_Authorized,
+                "123456", // Set by the voice authorization
+                response.getResponseCode(),
+                response.getOriginalTransactionDate(),
+                response.getOriginalTransactionTime(),
+                track
+        );
 
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -981,18 +996,14 @@ public class NtsCreditTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
-
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1038,8 +1049,20 @@ public class NtsCreditTest {
 
         header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
 
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate( response.getTransactionReference().getOriginalTransactionDate())
+                .withVisaTransactionId(response.getTransactionReference().getVisaTransactionId())
+                .build();
 
-        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+
+        Transaction voidResponse = transaction.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
                 .execute();
@@ -1332,7 +1355,7 @@ public class NtsCreditTest {
     }
 
 
-    @Test //working
+    @Test
     public void test_ICR_Auth_Approval_AmexCard_Credit() throws ApiException {
         track = new CreditTrackData();
         track.setValue("%B372700699251018^AMEX TEST CARD^2512990502700?"); // sample test track 1 data.
@@ -1351,19 +1374,23 @@ public class NtsCreditTest {
         assertEquals("00", authResponse.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.CreditAdjustment, authResponse, new BigDecimal(10));
-        ntsDataCollectRequest.setAuthorizationResponseCode("08");
+        Transaction transaction = Transaction.fromNetwork(
+                authResponse.getTransactionReference().getAuthorizer(),
+                authResponse.getTransactionReference().getApprovalCode(),
+                "08",
+                authResponse.getOriginalTransactionDate(),
+                authResponse.getOriginalTransactionTime(),
+                track
+        );
 
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute("ICR");
         assertNotNull(dataCollectResponse);
 
@@ -1798,17 +1825,14 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", chargeResponse.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCollect, chargeResponse, new BigDecimal(10));
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1838,18 +1862,14 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         // check response
         assertEquals("00", chargeResponse.getResponseCode());
 
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, chargeResponse, new BigDecimal(10));
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
-                
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1878,18 +1898,14 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", chargeResponse.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, chargeResponse, new BigDecimal(10));
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.RetransmitDataCollect);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
-                
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1921,16 +1937,11 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         header.setNtsMessageCode(NtsMessageCode.RetransmitCreditAdjustment);
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, chargeResponse, new BigDecimal(10));
-
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
-                
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1961,15 +1972,11 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, chargeResponse, new BigDecimal(10));
-
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1996,18 +2003,14 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", chargeResponse.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, chargeResponse, new BigDecimal(10));
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
                 .withCurrency("USD")
-                
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -2069,6 +2072,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
                 .withNtsTag16(tag)
+                .withGoodsSold("1000")
                 .withCvn("123")
                 .execute();
 
@@ -2076,7 +2080,21 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
 
-        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+        // Re-creating the transaction.
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate( response.getTransactionReference().getOriginalTransactionDate())
+                .build();
+
+
+
+        Transaction voidResponse = transaction.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
                 .execute();
@@ -2403,18 +2421,14 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
-                
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -2468,7 +2482,20 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
 
-        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+        // Re-creating the transaction.
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate( response.getTransactionReference().getOriginalTransactionDate())
+                .withDiscoverNetworkRefId(response.getTransactionReference().getDiscoverNetworkRefId())
+                .build();
+
+        Transaction voidResponse = transaction.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(header)
                 .withNtsTag16(tag)
                 .execute();

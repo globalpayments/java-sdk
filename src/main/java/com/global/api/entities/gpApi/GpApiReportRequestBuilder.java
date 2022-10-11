@@ -275,6 +275,15 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndDate()));
                     request.addQueryStringParam("order", trb.getOrder().getValue());
                     request.addQueryStringParam("order_by", EnumUtils.getMapping(Target.GP_API, trb.getActionOrderBy()));
+                    request.addQueryStringParam("status", trb.getSearchBuilder().getPayLinkStatus());
+                    request.addQueryStringParam("usage_mode", trb.getSearchBuilder().getPaymentMethodUsageMode());
+                    request.addQueryStringParam("name", trb.getSearchBuilder().getDisplayName());
+                    request.addQueryStringParam("amount", StringUtils.toNumeric(trb.getSearchBuilder().getAmount()));;
+                    request.addQueryStringParam("description", trb.getSearchBuilder().getDescription());
+                    request.addQueryStringParam("reference", trb.getSearchBuilder().getReferenceNumber());
+                    request.addQueryStringParam("country", trb.getSearchBuilder().getCountry());
+                    request.addQueryStringParam("currency", trb.getSearchBuilder().getCurrency());
+                    request.addQueryStringParam("expiration_date", getDateIfNotNull(trb.getSearchBuilder().getExpirationDate()));
 
                     return
                             request

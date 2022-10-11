@@ -46,6 +46,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     public static final String DATE_TIME_PATTERN_6 = DATE_PATTERN;                  // Another slightly different GP API DateTime format
     public static final String DATE_TIME_PATTERN_7 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"; // Another slightly different GP API DateTime format
     public static final String DATE_TIME_PATTERN_8 = "yyyy-MM-dd'T'HH:mm:ss+SS:SS";     // Another slightly different GP API DateTime format
+    public static final String DATE_TIME_PATTERN_9 = "yyyy-mm-dd";                   // Another slightly different GP API DateTime format
 
 
     public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat(DATE_PATTERN);
@@ -58,6 +59,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     public static final DateTimeFormatter DATE_TIME_DTF_6 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_6);
     public static final DateTimeFormatter DATE_TIME_DTF_7 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_7);
     public static final DateTimeFormatter DATE_TIME_DTF_8 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_8);
+    public static final DateTimeFormatter DATE_TIME_DTF_9 = DateTimeFormat.forPattern(DATE_TIME_PATTERN_9);
 
     private static final String GP_API_VERSION = "2021-03-22";
     private static final String IDEMPOTENCY_HEADER = "x-gp-idempotency";
@@ -240,7 +242,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
-                return GpApiMapping.MapResponseAPM(response);
+                return GpApiMapping.mapResponseAPM(response);
             }
 
             return GpApiMapping.mapResponse(response);
@@ -259,7 +261,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             if (builder.getPaymentMethod() instanceof TransactionReference && builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.APM) {
-                return GpApiMapping.MapResponseAPM(response);
+                return GpApiMapping.mapResponseAPM(response);
             }
 
             return GpApiMapping.mapResponse(response);
@@ -386,7 +388,11 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                                     try {
                                         return GpApiConnector.DATE_TIME_DTF_8.parseDateTime(dateValue);
                                     } catch (IllegalArgumentException ex8) {
-                                        throw new GatewayException("DateTime format is not supported.", ex8);
+                                        try {
+                                            return GpApiConnector.DATE_TIME_DTF_9.parseDateTime(dateValue);
+                                        } catch (IllegalArgumentException ex9) {
+                                            throw new GatewayException("DateTime format is not supported.", ex9);
+                                        }
                                     }
                                 }
                             }

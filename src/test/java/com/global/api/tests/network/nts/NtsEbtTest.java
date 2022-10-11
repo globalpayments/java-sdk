@@ -7,7 +7,6 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.EBTVoucherEntryData;
 import com.global.api.network.entities.NtsProductData;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.EBTCardData;
@@ -170,17 +169,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -203,17 +201,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -246,17 +243,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -280,17 +276,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = cashTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(cashTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -314,17 +309,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = cashTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(cashTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -346,31 +340,30 @@ public class NtsEbtTest {
 
         // check response
         assertEquals("00", response.getResponseCode());
-        response = response.reverse()
+        Transaction reverseResponse = response.reverse()
                 .withAmount(new BigDecimal(10))
                 .withCashBackAmount(new BigDecimal(3))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .execute();
 
-        assertNotNull(response);
+        assertNotNull(reverseResponse);
 
         // check response
-        assertEquals("00", response.getResponseCode());
+        assertEquals("00", reverseResponse.getResponseCode());
 
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = cashTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(cashTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -395,17 +388,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -429,17 +421,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -519,17 +510,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -555,17 +545,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = cashTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(cashTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -592,17 +581,16 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = cashTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(cashTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -721,18 +709,17 @@ public class NtsEbtTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
+        
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withVoucherEntryData(data)
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+                
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -767,17 +754,14 @@ public class NtsEbtTest {
         String transactionTime = response.getNtsResponse().getNtsResponseMessageHeader().getTransactionTime();
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = foodTrack.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(foodTrack))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 

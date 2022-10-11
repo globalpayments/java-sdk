@@ -3,12 +3,9 @@ package com.global.api.network.entities.nts;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
-import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.network.entities.NtsObjectParam;
-import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
-import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
@@ -112,13 +109,15 @@ public interface INtsRequestMessage {
                     || manageBuilder.getTransactionType() == TransactionType.PreAuthCompletion)
                     ) {
                 // Transaction Date
-                NtsUtils.log("Transaction Date", transactionReference.getOriginalTrasactionDate());
-                headerRequest.addRange(transactionReference.getOriginalTrasactionDate(), 4);
+                NtsUtils.log("Transaction Date", transactionReference.getOriginalTransactionDate());
+                headerRequest.addRange(transactionReference.getOriginalTransactionDate(), 4);
 
                 // Transaction Time
                 NtsUtils.log("Transaction Time", transactionReference.getOriginalTransactionTime());
                 headerRequest.addRange(transactionReference.getOriginalTransactionTime(), 6);
-            } else if (manageBuilder.getTransactionType() == TransactionType.BatchClose) {
+            } else if (manageBuilder.getTransactionType() == TransactionType.BatchClose
+                        ||manageBuilder.getTransactionType() == TransactionType.Capture
+                        || manageBuilder.getTransactionType() == TransactionType.DataCollect) {
                 // Transaction Date
                 NtsUtils.log("Transaction Date", String.valueOf(ntsRequestMessageHeader.getTransactionDate()));
                 headerRequest.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);

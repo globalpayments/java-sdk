@@ -170,7 +170,7 @@ public class GpApiMapping {
         return null;
     }
 
-    public static Transaction MapResponseAPM(String rawResponse) throws GatewayException {
+    public static Transaction mapResponseAPM(String rawResponse) throws GatewayException {
         AlternativePaymentResponse apm = new AlternativePaymentResponse();
         Transaction transaction = mapResponse(rawResponse);
 
@@ -204,7 +204,7 @@ public class GpApiMapping {
         JsonDoc authorization = json.get("payment_method").get("authorization");
         if (authorization != null) {
             apm.setAuthStatus(authorization.getString("status"));
-            apm.setAuthAmount(authorization.getAmount("amount"));
+            apm.setAuthAmount(StringUtils.toAmount(authorization.getAmount("amount").toString()));
             apm.setAuthAck(authorization.getString("ack"));
             apm.setAuthCorrelationReference(authorization.getString("correlation_reference"));
             apm.setAuthVersionReference(authorization.getString("version_reference"));
@@ -324,13 +324,21 @@ public class GpApiMapping {
         summary.setViewedCount(doc.getString("viewed_count"));
         summary.setExpirationDate(doc.getDateTime("expiration_date"));
         summary.setImages(doc.getStringArrayList("images"));
+        summary.setShippable(doc.getString("shippable"));
+        summary.setUsageCount(doc.getString("usage_count"));
+        summary.setImages(doc.getStringArrayList("images"));
+        summary.setShippingAmount(doc.getString("shipping_amount"));
 
         if (doc.has("transactions")) {
-            List<TransactionSummary> transactionSummaryList = new ArrayList<>();
-            for (JsonDoc transaction : doc.getEnumerator("transactions")) {
-                transactionSummaryList.add(createTransactionSummary(transaction));
+            JsonDoc transactions = doc.get("transactions");
+            if(transactions.has("transaction_list")) {
+                List<TransactionSummary> transactionSummaryList = new ArrayList<>();
+                for (JsonDoc transaction : transactions.getEnumerator("transaction_list")) {
+                    transactionSummaryList.add(createTransactionSummary(transaction));
+                }
+                summary.setTransactions(transactionSummaryList);
+                summary.setAmount(transactions.getAmount("amount"));
             }
-            summary.setTransactions(transactionSummaryList);
         }
 
         return summary;
@@ -360,7 +368,7 @@ public class GpApiMapping {
         TransactionSummary transaction = new TransactionSummary();
 
         transaction.setTransactionId(doc.getString("id"));
-        transaction.setTransactionDate(parseGpApiDateTime(doc.getString("time_created")));
+        transaction.setTransactionDate(doc.getString("time_created") != null ? parseGpApiDateTime(doc.getString("time_created")) : null);
         transaction.setTransactionStatus(doc.getString("status"));
         transaction.setTransactionType(doc.getString("type"));
         transaction.setChannel(doc.getString("channel"));
@@ -373,7 +381,7 @@ public class GpApiMapping {
 
     private static List<PaymentMethodName> getAllowedPaymentMethods(JsonDoc doc) {
         List<PaymentMethodName> list = new ArrayList<>();
-        for (String item : doc.getStringArrayList("allowed_payment_methods")) {
+        for (String item : doc.get("transactions").getStringArrayList("allowed_payment_methods")) {
             for (PaymentMethodName paymentMethodName : PaymentMethodName.values()) {
                 if (paymentMethodName.getValue(Target.GP_API).equals(item)) {
                     list.add(paymentMethodName);

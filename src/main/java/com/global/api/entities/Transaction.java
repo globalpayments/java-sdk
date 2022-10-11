@@ -5,13 +5,16 @@ import com.global.api.builders.TransactionRebuilder;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.gnap.GnapResponse;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsResponse;
+import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.CardIssuerEntryTag;
+import com.global.api.network.enums.nts.PendingRequestIndicator;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
@@ -81,6 +84,9 @@ public class Transaction {
     @Setter
     private GnapResponse gnapResponse;
     private NtsResponse ntsResponse;
+    @Getter
+    @Setter
+    private PendingRequestIndicator pendingRequestIndicator;
     private String transactionDate;
     private String transactionTime;
     private String transactionCode;
@@ -389,6 +395,13 @@ public class Transaction {
             transactionReference = new TransactionReference();
         }
         transactionReference.setOriginalTransactionTime(value);
+    }
+
+    public String getOriginalTransactionDate() {
+        if(transactionReference != null) {
+            return transactionReference.getOriginalTransactionDate();
+        }
+        return null;
     }
     public PaymentMethodType getPaymentMethodType() {
         if(transactionReference != null)
@@ -743,6 +756,33 @@ public class Transaction {
                 .withTransactionTime(originalTransactionTime)
                 .withProcessingCode(originalProcessingCode)
                 .withAcquirerId(acquirerId)
+                .build();
+    }
+
+    public static Transaction fromNetwork( AuthorizerCode authorizer, String approvalCode, String debitAuthorizer,String originalTransactionDate, String originalTransactionTime, IPaymentMethod paymentMethod){
+        return new TransactionRebuilder()
+                .withPaymentMethod(paymentMethod)
+                .withAuthorizer(authorizer)
+                .withApprovalCode(approvalCode)
+                .withDebitAuthorizer(debitAuthorizer)
+                .withAuthorizationCode(debitAuthorizer)
+                .withOriginalTransactionDate(originalTransactionDate)
+                .withTransactionTime(originalTransactionTime)
+                .build();
+    }
+
+    public static Transaction fromNetwork(AuthorizerCode authorizer, String approvalCode, String debitAuthorizer, TransactionTypeIndicator transactionTypeIndicator,
+                                          String originalTransactionDate, String originalTransactionTime, String systemTraceAuditNumber, IPaymentMethod paymentMethod) {
+        return new TransactionRebuilder()
+                .withPaymentMethod(paymentMethod)
+                .withAuthorizer(authorizer)
+                .withApprovalCode(approvalCode)
+                .withDebitAuthorizer(debitAuthorizer)
+                .withAuthorizationCode(debitAuthorizer)
+                .withOriginalTransactionDate(originalTransactionDate)
+                .withTransactionTime(originalTransactionTime)
+                .withTransactionTypeIndicator(transactionTypeIndicator)
+                .withSystemTraceAuditNumber(systemTraceAuditNumber)
                 .build();
     }
 

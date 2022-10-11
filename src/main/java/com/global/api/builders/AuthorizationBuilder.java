@@ -477,10 +477,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.ntsRequestMessageHeader = value;
         return this;
     }
-    public AuthorizationBuilder withNtsDataCollectRequest(NtsDataCollectRequest value) {
-        this.ntsDataCollectRequest = value;
-        return this;
-    }
     public AuthorizationBuilder withCustomer(Customer value) {
         return withCustomerData(value);
     }

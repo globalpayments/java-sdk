@@ -48,7 +48,8 @@ public class NtsResponseObjectFactory {
                 || NtsUtils.isSVSGiftCard(transactionType, paymentMethodType))) {
             ntsResponseMessage = new NtsAuthCreditResponseMapper();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
-        } else if (transactionType.equals(TransactionType.DataCollect)) {
+        } else if (transactionType.equals(TransactionType.DataCollect)
+                || transactionType.equals(TransactionType.Capture)) {
             ntsResponseMessage = new NtsDataCollectResponse();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         } else if (transactionType.equals(TransactionType.BatchClose)) {

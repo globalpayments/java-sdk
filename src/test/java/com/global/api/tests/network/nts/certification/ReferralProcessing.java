@@ -7,7 +7,6 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsTag16;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.enums.*;
@@ -154,20 +153,24 @@ public class ReferralProcessing {
         assertEquals("30", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
-        ntsDataCollectRequest.setAuthorizer(AuthorizerCode.Voice_Authorized);
-        ntsDataCollectRequest.setApprovalCode("123456"); // Set by the voice authorization
+        Transaction transaction = Transaction.fromNetwork(
+                AuthorizerCode.Voice_Authorized,
+                "123456",
+                response.getResponseCode(),
+                response.getOriginalTransactionDate(),
+                response.getOriginalTransactionTime(),
+                track
+        );
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -226,20 +229,25 @@ public class ReferralProcessing {
         assertEquals("30", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
-        ntsDataCollectRequest.setAuthorizer(AuthorizerCode.Voice_Authorized);
-        ntsDataCollectRequest.setApprovalCode("123456"); // Set by the voice authorization
+
+        Transaction transaction = Transaction.fromNetwork(
+                AuthorizerCode.Voice_Authorized,
+                "123456",
+                response.getResponseCode(),
+                response.getOriginalTransactionTime(),
+                response.getOriginalTransactionDate(),
+                track
+        );
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -271,20 +279,24 @@ public class ReferralProcessing {
         assertEquals("30", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.DataCollectOrSale, response, new BigDecimal(10));
-        ntsDataCollectRequest.setAuthorizer(AuthorizerCode.Voice_Authorized);
-        ntsDataCollectRequest.setApprovalCode("123456"); // Set by the voice authorization
+        Transaction transaction = Transaction.fromNetwork(
+                AuthorizerCode.Voice_Authorized,
+                "123456",
+                response.getResponseCode(),
+                response.getOriginalTransactionDate(),
+                response.getOriginalTransactionTime(),
+                track
+        );
 
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
+
                 .execute();
         assertNotNull(dataCollectResponse);
 

@@ -10,7 +10,6 @@ import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.entities.TransactionMatchingData;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.*;
@@ -92,8 +91,6 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected NtsNetworkMessageHeader ntsNetworkMessageHeader;
     @Getter
     protected NtsRequestMessageHeader ntsRequestMessageHeader;
-    @Getter
-    protected NtsDataCollectRequest ntsDataCollectRequest;
     @Getter
     protected String transactionDate;
     @Getter

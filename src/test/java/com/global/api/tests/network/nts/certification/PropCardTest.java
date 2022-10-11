@@ -7,7 +7,6 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsProductData;
-import com.global.api.network.entities.nts.NtsDataCollectRequest;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.enums.*;
@@ -205,17 +204,14 @@ public class PropCardTest {
         assertEquals("00", response.getResponseCode());
 
         // Data-Collect request preparation.
-        NtsDataCollectRequest ntsDataCollectRequest = new NtsDataCollectRequest(NtsMessageCode.RetransmitForceCreditAdjustment, response, new BigDecimal(10));
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
 
-        Transaction dataCollectResponse = track.charge(new BigDecimal(10))
-                .withTransactiontype(TransactionType.DataCollect)
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-                .withNtsDataCollectRequest(ntsDataCollectRequest)
                 .execute();
         assertNotNull(dataCollectResponse);
 

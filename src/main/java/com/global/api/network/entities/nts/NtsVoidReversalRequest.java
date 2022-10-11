@@ -112,8 +112,8 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
 
 
         // ORIGINAL TRANSACTION DATE
-        request.addRange(transactionReference.getOriginalTrasactionDate(), 4);
-        NtsUtils.log("ORIGINAL TRANSACTION DATE", transactionReference.getOriginalTrasactionDate());
+        request.addRange(transactionReference.getOriginalTransactionDate(), 4);
+        NtsUtils.log("ORIGINAL TRANSACTION DATE", transactionReference.getOriginalTransactionDate());
 
         // ORIGINAL TRANSACTION TIME
         request.addRange(transactionReference.getOriginalTransactionTime(), 6);

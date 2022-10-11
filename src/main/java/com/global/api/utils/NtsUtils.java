@@ -5,9 +5,8 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
-import com.global.api.network.entities.nts.NtsAuthCreditResponseMapper;
-import com.global.api.network.entities.nts.NtsResponse;
-import com.global.api.network.entities.nts.NtsSaleCreditResponseMapper;
+import com.global.api.network.entities.nts.*;
+import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
@@ -91,25 +90,47 @@ public class NtsUtils {
         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = null;
         String approvalCode = null;
         String hostResponseArea = null;
+        AuthorizerCode authorizer = null;
+        String debitAuthorizer = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
 
         TransactionReference reference = new TransactionReference();
         if (ntsResponse.getNtsResponseMessage() instanceof NtsAuthCreditResponseMapper) {
             ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
             approvalCode = getOrDefault(ntsAuthCreditResponseMapper.getCreditMapper().getApprovalCode(), "");
             hostResponseArea = getOrDefault(ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea(), "");
+            authorizer = ntsAuthCreditResponseMapper.getCreditMapper().getAuthorizer();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsSaleCreditResponseMapper) {
             ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
             approvalCode = getOrDefault(ntsSaleCreditResponseMapper.getCreditMapper().getApprovalCode(), "");
             hostResponseArea = getOrDefault(ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea(), "");
+            authorizer =  ntsSaleCreditResponseMapper.getCreditMapper().getAuthorizer();
+        } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDebitResponse) {
+            authorizer = AuthorizerCode.Terminal_Authorized;
+            approvalCode = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getCode();
+            debitAuthorizer = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+        } else if (ntsResponse.getNtsResponseMessage() instanceof NtsEbtResponse) {
+            authorizer = AuthorizerCode.Terminal_Authorized;
+            approvalCode = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
+            debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
         }
 
         reference.setApprovalCode(approvalCode);
         reference.setOriginalMessageCode(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getNtsMessageCode().getValue(), "")); // 01 for auth transaction.
         reference.setAuthCode(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(), ""));
-        reference.setOriginalTrasactionDate(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getTransactionDate(), ""));
+        reference.setOriginalTransactionDate(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getTransactionDate(), ""));
+        reference.setOriginalTransactionTime(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getTransactionTime(), ""));
+        reference.setAuthorizer(authorizer);
+        reference.setDebitAuthorizer(debitAuthorizer);
+        reference.setAuthCode(debitAuthorizer);
         reference.setOriginalTransactionTime(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getTransactionTime(), ""));
         if (!StringUtils.isNullOrEmpty(hostResponseArea)) {
-            reference.setUserDataTag(mapUserData(hostResponseArea));
+            Map<String, String> userData = mapUserData(hostResponseArea);
+            reference.setUserDataTag(userData);
+            reference.setSystemTraceAuditNumber(userData.getOrDefault("03", ""));
+            reference.setMastercardBanknetRefNo(userData.getOrDefault("11", ""));
+            reference.setMastercardBanknetSettlementDate(userData.getOrDefault("12", ""));
+            reference.setVisaTransactionId(userData.getOrDefault("18", ""));
+            reference.setDiscoverNetworkRefId(userData.getOrDefault("14", ""));
         }
         return reference;
     }
@@ -229,8 +250,8 @@ public class NtsUtils {
         return (transactionType.equals(TransactionType.Activate)
                 || transactionType.equals(TransactionType.Auth)
                 || transactionType.equals(TransactionType.Sale)
-                || transactionType.equals(TransactionType.Capture)
                 || transactionType.equals(TransactionType.AddValue)
+                || transactionType.equals(TransactionType.Issue)
                 || transactionType.equals(TransactionType.Refund)
                 || transactionType.equals(TransactionType.Void)
                 || transactionType.equals(TransactionType.Balance)
@@ -239,7 +260,7 @@ public class NtsUtils {
                 && Objects.equals(paymentMethodType, PaymentMethodType.Gift);
     }
 
-    public static Boolean isEBTCard(TransactionType transactionType, PaymentMethodType paymentMethod) {
+    public static boolean isEBTCard(TransactionType transactionType, PaymentMethodType paymentMethod) {
         return (transactionType.equals(TransactionType.Sale)
                 || transactionType.equals(TransactionType.Auth)
                 || transactionType.equals(TransactionType.Balance)
@@ -319,7 +340,7 @@ public class NtsUtils {
                 return TransactionTypeIndicator.PreAuthorizationCompletion;
             case AddValue:
                 return TransactionTypeIndicator.RechargeCardBalance;
-            case Capture:
+            case Issue:
                 return TransactionTypeIndicator.CardIssue;
             case Reversal:
                 if (originalTransactionTypeIndicator != null) {

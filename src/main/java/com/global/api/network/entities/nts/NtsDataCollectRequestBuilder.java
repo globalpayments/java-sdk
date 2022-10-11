@@ -3,15 +3,13 @@ package com.global.api.network.entities.nts;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.enums.DebitAuthorizerCode;
 import com.global.api.entities.enums.NTSEntryMethod;
+import com.global.api.entities.enums.NtsMessageCode;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.entities.NtsObjectParam;
 import com.global.api.network.enums.NTSCardTypes;
-import com.global.api.paymentMethods.GiftCard;
-import com.global.api.paymentMethods.ICardData;
-import com.global.api.paymentMethods.IPaymentMethod;
-import com.global.api.paymentMethods.ITrackData;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
@@ -26,8 +24,14 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
         NtsRequestMessageHeader ntsRequestMessageHeader = builder.getNtsRequestMessageHeader();
 
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
+        TransactionReference transactionReference = null;
+        if(paymentMethod instanceof TransactionReference){
+            transactionReference = (TransactionReference) paymentMethod;
+            paymentMethod = transactionReference.getOriginalPaymentMethod();
+        }
+
         if (paymentMethod instanceof ITrackData) {
-            ITrackData trackData = (ITrackData) builder.getPaymentMethod();
+            ITrackData trackData = (ITrackData) paymentMethod;
             if (trackData.getEntryMethod() != null) {
                 NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
                 request.addRange(entryMethod.getValue(), 1);
@@ -49,16 +53,16 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             NtsUtils.log("CardType : ", cardType.getValue());
             request.addRange(cardType.getValue(), 2);
         }
-        NtsDataCollectRequest ntsDataCollectRequest = builder.getNtsDataCollectRequest();
-        if (ntsDataCollectRequest != null) {
+
+        if (transactionReference != null) {
 
             IBatchProvider batchProvider = ntsObjectParam.getNtsBatchProvider();
             int batchNumber = builder.getBatchNumber();
             int sequenceNumber = 0;
 
-            if (!StringUtils.isNullOrEmpty(ntsDataCollectRequest.getDebitAuthorizer())) {
-                request.addRange(ntsDataCollectRequest.getDebitAuthorizer(), 2); // Response value from ebt or pin debit authorizer
-                NtsUtils.log("DebitAuthorizer", ntsDataCollectRequest.getDebitAuthorizer());
+            if (!StringUtils.isNullOrEmpty(transactionReference.getDebitAuthorizer())) {
+                request.addRange(transactionReference.getDebitAuthorizer(), 2); // Response value from ebt or pin debit authorizer
+                NtsUtils.log("DebitAuthorizer", transactionReference.getDebitAuthorizer());
             } else {
                 request.addRange(DebitAuthorizerCode.NonPinDebitCard.getValue(), 2);
                 NtsUtils.log("DebitAuthorizer", DebitAuthorizerCode.NonPinDebitCard.getValue());
@@ -99,27 +103,37 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                 request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
             }
 
-            request.addRange(ntsDataCollectRequest.getApprovalCode(), 6);
-            NtsUtils.log("ApprovalCode", ntsDataCollectRequest.getApprovalCode());
+            request.addRange(transactionReference.getApprovalCode(), 6);
+            NtsUtils.log("ApprovalCode", transactionReference.getApprovalCode());
 
-            request.addRange(ntsDataCollectRequest.getAuthorizer().getValue(), 1);
-            NtsUtils.log("Authorizer", ntsDataCollectRequest.getAuthorizer().getValue());
+            request.addRange(transactionReference.getAuthorizer().getValue(), 1);
+            NtsUtils.log("Authorizer", transactionReference.getAuthorizer().getValue());
 
-            request.addRange(StringUtils.toNumeric(ntsDataCollectRequest.getAmount(), 6), 7);
-            NtsUtils.log("Amount", StringUtils.toNumeric(ntsDataCollectRequest.getAmount(), 6));
+            request.addRange(StringUtils.toNumeric(builder.getAmount(), 6), 7);
+            NtsUtils.log("Amount", StringUtils.toNumeric(builder.getAmount(), 6));
 
-            request.addRange(ntsDataCollectRequest.getMessageCode().getValue(), 2);
-            NtsUtils.log("MessageCode", ntsDataCollectRequest.getMessageCode().getValue());
+            request.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
+            NtsUtils.log("MessageCode", ntsRequestMessageHeader.getNtsMessageCode().getValue());
 
-            request.addRange(ntsDataCollectRequest.getAuthorizationResponseCode(), 2);
-            NtsUtils.log("AuthorizationResponseCode", ntsDataCollectRequest.getAuthorizationResponseCode());
+            request.addRange(transactionReference.getAuthCode(), 2);
+            NtsUtils.log("AuthorizationResponseCode", transactionReference.getAuthCode());
 
-            request.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
-            NtsUtils.log("OriginalTransactionDate", ntsRequestMessageHeader.getTransactionDate());
+            if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.CreditAdjustment ||
+                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitCreditAdjustment ||
+                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.ForceCreditAdjustment ||
+                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitForceCreditAdjustment) {
+                request.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
+                NtsUtils.log("OriginalTransactionDate", ntsRequestMessageHeader.getTransactionDate());
 
-            request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
-            NtsUtils.log("OriginalTransactionTime", ntsRequestMessageHeader.getTransactionTime());
+                request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
+                NtsUtils.log("OriginalTransactionTime", ntsRequestMessageHeader.getTransactionTime());
+            } else {
+                request.addRange(transactionReference.getOriginalTransactionDate(), 4);
+                NtsUtils.log("OriginalTransactionDate", transactionReference.getOriginalTransactionDate());
 
+                request.addRange(transactionReference.getOriginalTransactionTime(), 6);
+                NtsUtils.log("OriginalTransactionTime", transactionReference.getOriginalTransactionTime());
+            }
             if (batchNumber == 0 && batchProvider != null) {
                 batchNumber = batchProvider.getBatchNumber();
             }

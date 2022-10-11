@@ -10,6 +10,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Accessors(chain = true)
@@ -31,8 +33,11 @@ public class PayLinkSummary {
     private String name;
     private String description;
     private String shippable;
+    public String shippingAmount;
     private String viewedCount;
     private DateTime expirationDate;
     private List<String> images;
-    private List<TransactionSummary> transactions;
+    public BigDecimal amount;
+    public String currency;
+    private List<TransactionSummary> transactions = new ArrayList<>();
 }

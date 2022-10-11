@@ -216,4 +216,8 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
             return response.getGiftCard();
         throw new GatewayException("Failed to create gift card.", response.getResponseCode(), response.getResponseMessage());
     }
+
+    public AuthorizationBuilder issue(BigDecimal amount) {
+        return new AuthorizationBuilder(TransactionType.Issue, this).withAmount(amount);
+    }
 }

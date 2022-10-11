@@ -1,5 +1,12 @@
 # Changelog
 
+## v9.0.3 (10/11/2022)
+
+### Enhancements:
+
+- NTS : Added Changes for DataCollect & Void transaction
+- GP-API: PayLink enhancements
+
 ## v9.0.2 (09/29/2022)
 
 ### Enhancements:

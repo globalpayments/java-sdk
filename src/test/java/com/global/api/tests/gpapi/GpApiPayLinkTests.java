@@ -7,8 +7,11 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.PayLinkSummary;
+import com.global.api.entities.reporting.PayLinkSummaryPaged;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayLinkService;
@@ -19,9 +22,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_1;
 import static org.junit.Assert.*;
@@ -29,11 +30,12 @@ import static org.junit.Assert.*;
 public class GpApiPayLinkTests extends BaseGpApiTest {
 
     private final CreditCardData card;
-    private final PayLinkData payLink;
+    private PayLinkData payLink;
     private final Address shippingAddress;
     private final BrowserData browserData;
-    private final BigDecimal amount = new BigDecimal("2.11");
+    private BigDecimal amount = new BigDecimal("2.11");
     private final String currency = "GBP";
+    private String payLinkId = null;
 
     public GpApiPayLinkTests() throws ApiException {
 
@@ -58,11 +60,10 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         ServicesContainer.configureService(config);
 
         payLink = new PayLinkData();
-
         payLink.setType(PayLinkType.PAYMENT);
         payLink.setUsageMode(PaymentMethodUsageMode.SINGLE);
         payLink.setAllowedPaymentMethods(new String[]{PaymentMethodName.Card.getValue(Target.GP_API)});
-        payLink.setUsageLimit(1);
+        payLink.setUsageLimit(3);
         payLink.setName("Mobile Bill Payment");
         payLink.isShippable(true);
         payLink.setShippingAmount(new BigDecimal(1.23));
@@ -99,6 +100,18 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         browserData.setChallengeWindowSize(ChallengeWindowSize.Windowed_600x400);
         browserData.setTimezone("0");
         browserData.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36");
+
+        PayLinkSummaryPaged response =
+            PayLinkService
+                    .findPayLink(1, 1)
+                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                    .where(SearchCriteria.StartDate, this.startDate)
+                    .and(SearchCriteria.EndDate, this.endDate)
+                    .execute();
+
+        if (response.getResults().size() >= 1) {
+            payLinkId = response.getResults().get(0).getId();
+        }
     }
 
     @Test
@@ -540,18 +553,19 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         payLink.setType(PayLinkType.PAYMENT);
         payLink.setUsageLimit(5);
         payLink.isShippable(false);
-        var amount = new BigDecimal("10.08");
+        var newAmount = new BigDecimal("10.08");
+
         var editResponse =
                 PayLinkService
                         .edit(randomPayLink.getId())
-                        .withAmount(amount)
+                        .withAmount(newAmount)
                         .withPayLinkData(payLink)
                         .withDescription("Update Paylink description")
                         .execute();
 
         assertEquals("SUCCESS", editResponse.getResponseCode());
         assertEquals(PayLinkStatus.ACTIVE.toString(), editResponse.getResponseMessage());
-        assertEquals(amount, editResponse.getBalanceAmount());
+        assertEquals(newAmount, editResponse.getBalanceAmount());
         assertNotNull(editResponse.getPayLinkResponse().getUrl());
         assertNotNull(editResponse.getPayLinkResponse().getId());
     }
@@ -688,12 +702,14 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
     @Test
     public void EditPayLink_MissingType() throws ApiException {
+        assertNotNull(payLinkId);
+
         payLink.setType(null);
 
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(payLink)
                     .withDescription("Update Paylink description")
@@ -713,7 +729,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(payLink)
                     .withDescription("Update Paylink description")
@@ -728,12 +744,14 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
     @Test
     public void EditPayLink_MissingName() throws ApiException {
+        assertNotNull(payLinkId);
+
         payLink.setName(null);
 
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(payLink)
                     .withDescription("Update Paylink description")
@@ -750,12 +768,14 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
     //TODO - usageLimit is incorrect set as optional
     @Test
     public void EditPayLink_MissingUsageLimit() throws ApiException {
+        assertNotNull(payLinkId);
+
         payLink.setUsageLimit(null);
 
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(payLink)
                     .withDescription("Update Paylink description")
@@ -770,10 +790,12 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
     @Test
     public void EditPayLink_MissingDescription() throws ApiException {
+        assertNotNull(payLinkId);
+
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(payLink)
                     .execute();
@@ -788,10 +810,12 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
     @Test
     public void EditPayLink_MissingAmount() throws ApiException {
+        assertNotNull(payLinkId);
+
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(null)
                     .withPayLinkData(payLink)
                     .withDescription("Update Paylink description")
@@ -806,10 +830,12 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
     @Test
     public void EditPayLink_MissingPayLinkData() throws ApiException {
+        assertNotNull(payLinkId);
+
         boolean exceptionCaught = false;
         try {
             PayLinkService
-                    .edit(UUID.randomUUID().toString())
+                    .edit(payLinkId)
                     .withAmount(amount)
                     .withPayLinkData(null)
                     .withDescription("Update Paylink description")
@@ -839,6 +865,86 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         } finally {
             assertTrue(exceptionCaught);
         }
+    }
+
+    @Test
+    public void FindPayLinkByStatus() throws ApiException {
+        PayLinkSummaryPaged response =
+                PayLinkService
+                    .findPayLink(1, 10)
+                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                    .where(SearchCriteria.StartDate, startDate)
+                    .and(SearchCriteria.EndDate, endDate)
+                    .and(SearchCriteria.PayLinkStatus, PayLinkStatus.EXPIRED.toString())
+                    .execute();
+
+        assertNotNull(response);
+        assertNotNull(response.getResults());
+        PayLinkSummary randomPayLink = response.getResults().get((new Random()).ints(0, response.getResults().size()).findFirst().getAsInt());
+        assertNotNull(randomPayLink);
+        assertEquals(PayLinkStatus.EXPIRED, randomPayLink.getStatus());
+    }
+
+    @Test
+    public void FindPayLinkUsageModeAndName() throws ApiException {
+        String name = "iphone 14";
+
+        PayLinkSummaryPaged response =
+                PayLinkService
+                        .findPayLink(1, 10)
+                        .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.PaymentMethodUsageMode, PaymentMethodUsageMode.SINGLE.toString())
+                        .and(SearchCriteria.DisplayName, name)
+                        .execute();
+
+        assertNotNull(response);
+        assertNotNull(response.getResults());
+        PayLinkSummary randomPayLink = response.getResults().get((new Random()).ints(0, response.getResults().size()).findFirst().getAsInt());
+        assertNotNull(randomPayLink);
+        assertEquals(PaymentMethodUsageMode.SINGLE, randomPayLink.getUsageMode());
+        assertEquals(name, randomPayLink.getName());
+    }
+
+    @Test
+    public void FindPayLinkByAmount() throws ApiException {
+        amount = new BigDecimal("10.01");
+
+        PayLinkSummaryPaged response =
+                PayLinkService
+                        .findPayLink(1, 10)
+                        .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(DataServiceCriteria.Amount, amount)
+                        .execute();
+
+        assertNotNull(response);
+        assertNotNull(response.getResults());
+        PayLinkSummary randomPayLink = response.getResults().get((new Random()).ints(0, response.getResults().size()).findFirst().getAsInt());
+        assertNotNull(randomPayLink);
+        assertEquals(amount, randomPayLink.getAmount());
+    }
+
+    @Test
+    public void FindPayLinkByExpireDate() throws ApiException {
+        DateTime date = new DateTime("2024-05-09");
+
+        PayLinkSummaryPaged response =
+                PayLinkService
+                    .findPayLink(1, 10)
+                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                    .where(SearchCriteria.StartDate, startDate)
+                    .and(SearchCriteria.EndDate, endDate)
+                    .and(SearchCriteria.ExpirationDate, date)
+                    .execute();
+
+        assertNotNull(response);
+        assertNotNull(response.getResults());
+        PayLinkSummary randomPayLink = response.getResults().get((new Random()).ints(0, response.getResults().size()).findFirst().getAsInt());
+        assertNotNull(randomPayLink);
+        assertEquals(GpApiConnector.parseGpApiDate(date.toString()), GpApiConnector.parseGpApiDate(randomPayLink.getExpirationDate().toString()));
     }
 
     private void assertPayLinkResponse(Transaction response) {

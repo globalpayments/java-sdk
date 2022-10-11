@@ -357,7 +357,7 @@ public class GpApiAuthorizationRequestBuilder {
                             .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : java.util.UUID.randomUUID().toString())
                             .set("name", payLinkData.getName() != null ? payLinkData.getName() : null)
                             .set("description", builder.getDescription() != null ? builder.getDescription() : null)
-                            .set("shippable", payLinkData.isShippable() != null ? payLinkData.isShippable().toString().toUpperCase() : Boolean.FALSE.toString())
+                            .set("shippable", payLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
                             .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()))
                             .set("expiration_date", payLinkData.getExpirationDate() != null ? getDateIfNotNull(payLinkData.getExpirationDate()) : null)
                             // .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
