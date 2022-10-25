@@ -12,26 +12,10 @@ public class BaseGpApiTest {
     // ================================================================================
     // Latest Credentials
     // ================================================================================
-    static final String APP_ID = "x0lQh0iLV0fOkmeAyIDyBqrP9U5QaiKc";
-    static final String APP_KEY = "DYcEE2GpSzblo0ib";
+    static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
+    static final String APP_KEY = "FQyJA5VuEQfcji2M";
     // ================================================================================
-
-    // ================================================================================
-    // Credentials For Batch Actions
-    // ================================================================================
-    static final String APP_ID_FOR_BATCH = "P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg";
-    static final String APP_KEY_FOR_BATCH = "ockJr6pv6KFoGiZA";
-    // ================================================================================
-
-    // ================================================================================
-    // Credentials For DCC
-    // ================================================================================
-    static final String APP_ID_FOR_DCC = "mivbnCh6tcXhrc6hrUxb3SU8bYQPl9pd";
-    static final String APP_KEY_FOR_DCC = "Yf6MJDNJKiqObYAb";
-    // ================================================================================
-
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
-
     static final String SUCCESS = "SUCCESS";
     static final String DECLINED = "DECLINED";
     static final String VERIFIED = "VERIFIED";
@@ -45,7 +29,6 @@ public class BaseGpApiTest {
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {
-
         CARDHOLDER_NOT_ENROLLED_V1("4917000000000087"),
         CARDHOLDER_ENROLLED_V1("4012001037141112"),
 

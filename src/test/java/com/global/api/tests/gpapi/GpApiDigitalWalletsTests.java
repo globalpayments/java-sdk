@@ -26,8 +26,8 @@ public class GpApiDigitalWalletsTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll")
-                .setAppKey("QDsW1ETQKHX6Y4TA")
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
 
         config.setEnableLogging(true);

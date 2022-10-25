@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.0.0 (25/11/2022)
+
+### Enhancements:
+
+- GP-API, GP-ECOM/REALEX: Sunset 3DS1 
+- Java Server Demo for a Client app
+- GP-API: Update unit tests with new set of credentials for GP-API
+
 ## v9.0.3 (10/11/2022)
 
 ### Enhancements:

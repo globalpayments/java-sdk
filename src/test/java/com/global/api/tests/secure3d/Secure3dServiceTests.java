@@ -95,35 +95,19 @@ public class Secure3dServiceTests {
         card.setExpYear(2025);
         card.setCardHolderName("John Smith");
 
-        ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
-                .withAmount(new BigDecimal(1))
-                .withCurrency("USD")
-                .execute(Secure3dVersion.ONE);
-        assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
-
-        if (secureEcom.isEnrolled()) {
-            // authenticate
-            ThreeDSecureAcsClient authClient = new ThreeDSecureAcsClient(secureEcom.getIssuerAcsUrl());
-            AcsResponse authResponse = authClient.authenticate(secureEcom.getPayerAuthenticationRequest(), secureEcom.getMerchantData().toString());
-
-            String payerAuthenticationResponse = authResponse.getAuthResponse();
-            MerchantDataCollection md = MerchantDataCollection.parse(authResponse.getMerchantData());
-
-            // verify signature through the service and affix to the card object
-            secureEcom = Secure3dService.getAuthenticationData()
-                    .withPayerAuthenticationResponse(payerAuthenticationResponse)
-                    .withMerchantData(md)
-                    .execute();
-            card.setThreeDSecure(secureEcom);
-
-            if(secureEcom.getStatus().equals("Y")) {
-                Transaction response = card.charge().execute();
-                assertNotNull(response);
-                assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
+        boolean errorFound = false;
+        try {
+            Secure3dService
+                    .checkEnrollment(card)
+                    .withAmount(new BigDecimal("10.01"))
+                    .withCurrency("USD")
+                    .execute(Secure3dVersion.ONE, "default");
+        } catch (BuilderException e) {
+            errorFound = true;
+            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
+        } finally {
+            assertTrue(errorFound);
         }
-        else fail("Card not enrolled.");
     }
 
     @Test
@@ -703,14 +687,24 @@ public class Secure3dServiceTests {
     @Test
     public void checkVersion_Not_Enrolled() throws ApiException {
         CreditCardData card = new CreditCardData();
-        card.setNumber("4012001037141112");
+        card.setNumber("4917000000000087");
         card.setExpMonth(12);
         card.setExpYear(2025);
 
-        ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
-                .execute(Secure3dVersion.ANY);
-        assertNotNull(secureEcom);
-        assertFalse(secureEcom.isEnrolled());
+        boolean errorFound = false;
+        try {
+            Secure3dService
+                    .checkEnrollment(card)
+                    .withAmount(new BigDecimal("10.01"))
+                    .withCurrency("USD")
+                    .execute(Secure3dVersion.ONE, "default");
+        } catch (BuilderException e) {
+            errorFound = true;
+            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+
     }
 
     @Test(expected = BuilderException.class)
@@ -731,8 +725,8 @@ public class Secure3dServiceTests {
 
         // add the 3D Secure 2 data to the card object
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
-                "e193c21a-ce64-4820-b5b6-8f46715de931",
-                "10c3e089-fa98-4352-bc4e-4b37f7dcf108"
+                "20190809-Realex",
+                "20190809-Realex-Credit"
         );
         paymentMethod.setThreeDSecure(threeDSecureData);
 

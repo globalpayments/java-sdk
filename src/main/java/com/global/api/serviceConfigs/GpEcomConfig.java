@@ -78,12 +78,7 @@ public class GpEcomConfig extends GatewayConfig {
 
         // set default
         if (secure3dVersion == null) {
-            secure3dVersion = Secure3dVersion.ONE;
-        }
-
-        // secure 3d v1
-        if (secure3dVersion.equals(Secure3dVersion.ONE) || secure3dVersion.equals(Secure3dVersion.ANY)) {
-            services.setSecure3dProvider(Secure3dVersion.ONE, gateway);
+            secure3dVersion = Secure3dVersion.TWO;
         }
 
         // secure 3d v2

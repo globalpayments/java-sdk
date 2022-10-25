@@ -24,7 +24,7 @@ import static com.global.api.utils.StringUtils.extractDigits;
 
 @Accessors(chain = true)
 @Setter
-public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, ISecure3dProvider, IReportingService {
+public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, IReportingService {
     private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
         put("DinersClub", "Diners");
     }};
@@ -824,34 +824,6 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         String response = doTransaction(et.toString(request));
         return mapRecurringResponse(response, builder);
-    }
-
-    public  Transaction processSecure3d(Secure3dBuilder builder) throws ApiException {
-        TransactionType transType = builder.getTransactionType();
-        if(transType.equals(TransactionType.VerifyEnrolled)) {
-            AuthorizationBuilder authBuilder = new AuthorizationBuilder(transType, builder.getPaymentMethod())
-                    .withAmount(builder.getAmount())
-                    .withCurrency(builder.getCurrency())
-                    .withOrderId(builder.getOrderId());
-
-            return processAuthorization(authBuilder);
-        }
-        else if(transType.equals(TransactionType.VerifySignature)) {
-            // get our three d secure object
-            ThreeDSecure secureEcom = builder.getThreeDSecure();
-
-            // create our transaction reference
-            TransactionReference reference = new TransactionReference();
-            reference.setOrderId(secureEcom.getOrderId());
-
-            ManagementBuilder managementBuilder = new ManagementBuilder(transType)
-                    .withAmount(secureEcom.getAmount())
-                    .withCurrency(secureEcom.getCurrency())
-                    .withPayerAuthenticationResponse(builder.getPayerAuthenticationResponse())
-                    .withPaymentMethod(reference);
-            return manageTransaction(managementBuilder);
-        }
-        throw new UnsupportedTransactionException(String.format("Unknown transaction type %s", transType));
     }
 
     private Transaction mapResponse(String rawResponse, TransactionBuilder<Transaction> builder) throws ApiException {

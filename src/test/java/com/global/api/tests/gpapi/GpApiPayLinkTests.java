@@ -43,8 +43,8 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK")
-                .setAppKey("oKZpWitk6tORoCVT")
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
 
         config.setEnvironment(Environment.TEST);
@@ -223,6 +223,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         assertEquals(amount, response.getBalanceAmount());
         assertNotNull(response.getPayLinkResponse().getUrl());
         assertNotNull(response.getPayLinkResponse().getId());
+        assertTrue(response.getPayLinkResponse().getIsShippable());
     }
 
     @Test

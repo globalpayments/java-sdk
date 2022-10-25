@@ -31,8 +31,8 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId(APP_ID_FOR_DCC)
-                .setAppKey(APP_KEY_FOR_DCC)
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setCountry("GB")
                 .setEnvironment(Environment.TEST);
         config.setChannel(Channel.CardNotPresent.getValue());

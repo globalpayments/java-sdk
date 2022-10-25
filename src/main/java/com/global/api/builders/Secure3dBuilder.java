@@ -4,8 +4,11 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.gateways.GpApiConnector;
+import com.global.api.gateways.GpEcomConnector;
 import com.global.api.gateways.ISecure3dProvider;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.ISecure3d;
@@ -754,9 +757,15 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
 
         // get the provider
         ISecure3dProvider provider = ServicesContainer.getInstance().getSecure3d(configName, version);
+
+        if (version == Secure3dVersion.ONE && (provider instanceof GpApiConnector || provider instanceof GpEcomConnector)) {
+            throw new BuilderException("3D Secure " + version + " is no longer supported!");
+        }
+
         if(provider != null) {
             boolean canDowngrade = false;
-            if(provider.getVersion().equals(Secure3dVersion.TWO) && version.equals(Secure3dVersion.ANY)){
+            if (provider.getVersion().equals(Secure3dVersion.TWO) && version.equals(Secure3dVersion.ANY) &&
+                    (!(provider instanceof GpEcomConnector) && !(provider instanceof GpApiConnector))) {
                 try{
                     ISecure3dProvider oneProvider = ServicesContainer.getInstance().getSecure3d(configName, Secure3dVersion.ONE);
                     canDowngrade = (oneProvider != null);

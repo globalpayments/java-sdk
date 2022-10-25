@@ -35,8 +35,8 @@ public class GpApiBatchTests extends BaseGpApiTest {
         // GP-API settings
         config
                 // These credentials have permissions for executing BATCH
-                .setAppId(APP_ID_FOR_BATCH)
-                .setAppKey(APP_KEY_FOR_BATCH)
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardPresent.getValue());
         config.setEnableLogging(true);
 
@@ -381,8 +381,8 @@ public class GpApiBatchTests extends BaseGpApiTest {
     @Test
     public void CloseBatch_CardNotPresentChannel() {
         GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setAppId(APP_ID_FOR_BATCH);
-        gpApiConfig.setAppKey(APP_KEY_FOR_BATCH);
+        gpApiConfig.setAppId(APP_ID);
+        gpApiConfig.setAppKey(APP_KEY);
         gpApiConfig.setChannel(Channel.CardNotPresent.getValue());
 
         gpApiConfig.setEnableLogging(true);

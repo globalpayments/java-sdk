@@ -43,8 +43,8 @@ public class GpApiApmTests extends BaseGpApiTest {
     public void initialize() throws ConfigurationException {
 
         GpApiConfig config = new GpApiConfig();
-        config.setAppId("Uyq6PzRbkorv2D4RQGlldEtunEeGNZll");
-        config.setAppKey("QDsW1ETQKHX6Y4TA");
+        config.setAppId(APP_ID);
+        config.setAppKey(APP_KEY);
         config.setChannel(Channel.CardNotPresent.getValue());
         config.setEnableLogging(true);
 
