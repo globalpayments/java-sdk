@@ -62,18 +62,18 @@ public class NtsEbtRequest implements INtsRequestMessage {
             EBTTrackData trackData = (EBTTrackData) paymentMethod;
             NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
             request.addRange(entryMethod.getValue(), 1);
-            NtsUtils.log("Entry Method", entryMethod.getValue());
+            NtsUtils.log("Entry Method", entryMethod);
         } else if (paymentMethod instanceof EBTCardData) {
             request.addRange(NTSEntryMethod.ManualAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended.getValue());
+            NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended);
         }
 
         // Card Type
-        NtsUtils.log("CardType : ", cardType.getValue());
+        NtsUtils.log("CardType : ", cardType);
         request.addRange(cardType.getValue(), 2);
         
         // Transaction Code
-        NtsUtils.log("Transaction Code", transactionCode.getValue());
+        NtsUtils.log("Transaction Code", transactionCode);
         request.addRange(transactionCode.getValue(), 2);
 
         // Address

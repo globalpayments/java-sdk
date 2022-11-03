@@ -26,7 +26,7 @@ public interface INtsRequestMessage {
         NtsRequestMessageHeader ntsRequestMessageHeader = builder.getNtsRequestMessageHeader();
         String strSpace = "";
 
-        NtsUtils.log("###########", "Request Header");
+        NtsUtils.log("--------------------- REQUEST HEADER ---------------------");
         // Message Type
         NtsUtils.log("message type", String.valueOf(MESSAGE_TYPE));
         headerRequest.addRange(MESSAGE_TYPE, 1);
@@ -56,7 +56,7 @@ public interface INtsRequestMessage {
         NtsUtils.log("Filler", String.format("%1s", strSpace));
         headerRequest.addRange(String.format("%1s", strSpace), 1);
         //Input Capability Code
-        NtsUtils.log("Input Capability Code", String.valueOf(params.getInputCapabilityCode().getValue()));
+        NtsUtils.log("Input Capability Code", params.getInputCapabilityCode());
         headerRequest.addRange(String.valueOf(params.getInputCapabilityCode().getValue()), 1);
         // Filler
         NtsUtils.log("Filler", String.format("%1s", strSpace));
@@ -68,16 +68,16 @@ public interface INtsRequestMessage {
         NtsUtils.log("Software Version", params.getSoftwareVersion());
         headerRequest.addRange(params.getSoftwareVersion(), 2);
         // Pin Indicator
-        NtsUtils.log("Pin Indicator", ntsRequestMessageHeader.getPinIndicator().getValue());
+        NtsUtils.log("Pin Indicator", ntsRequestMessageHeader.getPinIndicator());
         headerRequest.addRange(ntsRequestMessageHeader.getPinIndicator().getValue(), 1);
         // Logic Process Flag or Store_And_Forward_Indicator
-        NtsUtils.log("Logic Process Flag or Store_And_Forward_Indicator", params.getLogicProcessFlag().getValue());
+        NtsUtils.log("Logic Process Flag or Store_And_Forward_Indicator", params.getLogicProcessFlag());
         headerRequest.addRange(params.getLogicProcessFlag().getValue(), 1);
         // Message Code
-        NtsUtils.log("Message Code", ntsRequestMessageHeader.getNtsMessageCode().getValue());
+        NtsUtils.log("Message Code", ntsRequestMessageHeader.getNtsMessageCode());
         headerRequest.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
         // Terminal Type
-        NtsUtils.log("Terminal Type", params.getTerminalType().getValue());
+        NtsUtils.log("Terminal Type", params.getTerminalType());
         headerRequest.addRange(params.getTerminalType().getValue(), 2);
         // Unit Number
         NtsUtils.log("Unit Number", String.valueOf(params.getUnitNumber()));

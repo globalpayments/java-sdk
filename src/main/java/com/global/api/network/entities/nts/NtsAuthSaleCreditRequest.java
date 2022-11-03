@@ -36,26 +36,26 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             ITrackData trackData = (ITrackData) builder.getPaymentMethod();
             NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), operatingEnvironment);
             request.addRange(entryMethod.getValue(), 1);
-            NtsUtils.log("Entry Method", entryMethod.getValue());
+            NtsUtils.log("Entry Method", entryMethod);
         } else if (paymentMethod instanceof ICardData) {
             EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
             if (method != null) {
                 NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, operatingEnvironment);
                 if (entryMethod != null){
                     request.addRange(entryMethod.getValue(), 1);
-                    NtsUtils.log("Entry Method", entryMethod.getValue());
+                    NtsUtils.log("Entry Method", entryMethod);
                 }
             } else {
                 request.addRange(NTSEntryMethod.ManualAttended.getValue(), 1);
-                NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended.getValue());
+                NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended);
             }
         } else if (paymentMethod instanceof GiftCard){
             request.addRange(NTSEntryMethod.MagneticStripeTrack2DataAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack2DataAttended.getValue());
+            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack2DataAttended);
         }
 
         // Card Type
-        NtsUtils.log("CardType : ", cardType.getValue());
+        NtsUtils.log("CardType : ", cardType);
         request.addRange(cardType.getValue(), 2);
 
         // Account No & Expiration Date

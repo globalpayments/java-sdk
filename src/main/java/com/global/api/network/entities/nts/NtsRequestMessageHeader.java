@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class NtsRequestMessageHeader {
     @Getter
     @Setter
@@ -17,9 +20,9 @@ public class NtsRequestMessageHeader {
     @Setter
     private NtsMessageCode ntsMessageCode;
     @Getter
-    private String transactionDate=DateTime.now().toString("MMdd");
+    private final String transactionDate = DateTime.now().toString("MMdd");
     @Getter
-    private String transactionTime=DateTime.now().toString("hhmmss");
+    private final String transactionTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
     @Getter
     @Setter
     private int priorMessageResponseTime;

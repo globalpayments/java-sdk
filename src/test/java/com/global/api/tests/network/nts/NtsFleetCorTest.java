@@ -421,7 +421,7 @@ public class NtsFleetCorTest {
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .execute();
 
-        System.out.println(response.getTransactionReference().getUserDataTag().get("ApprovedAmount"));
+        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -456,7 +456,7 @@ public class NtsFleetCorTest {
                 .withCvn("123")
                 .execute();
 
-        System.out.println(response.getTransactionReference().getUserDataTag().get("ApprovedAmount"));
+        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -959,7 +959,7 @@ public class NtsFleetCorTest {
                 .withCvn("123")
                 .execute();
 
-        System.out.println(response.getTransactionReference().getUserDataTag().get("ApprovedAmount"));
+        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }

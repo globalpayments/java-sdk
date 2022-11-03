@@ -145,8 +145,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -167,8 +167,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         Transaction transaction = Transaction.fromBuilder()
                 .withTransactionTypeIndicator(response.getTransactionReference().getOriginalTransactionTypeIndicator())
@@ -194,8 +194,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -215,8 +215,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -231,8 +231,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -254,8 +254,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -275,8 +275,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -296,8 +296,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -311,8 +311,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -334,8 +334,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -349,8 +349,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -369,8 +369,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -389,8 +389,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         Transaction completionResponse = response.preAuthCompletion(new BigDecimal(10))
                 .withCurrency("USD")
@@ -405,8 +405,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         // Data-Collect request preparation.
 
@@ -441,8 +441,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -456,8 +456,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -477,8 +477,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
     }
 
@@ -499,8 +499,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         Transaction completionResponse = response.preAuthCompletion(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -514,8 +514,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         // Data-Collect request preparation.
 
@@ -550,8 +550,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -565,8 +565,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -584,8 +584,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         // Data-Collect request preparation.
 
@@ -630,8 +630,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.voidTransaction(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -645,8 +645,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -664,8 +664,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -679,8 +679,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -698,8 +698,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -717,8 +717,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -732,8 +732,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -751,8 +751,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -770,8 +770,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -785,8 +785,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
     @Test
@@ -804,8 +804,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         NtsAuthCreditResponseMapper responseMapper = (NtsAuthCreditResponseMapper) response.getNtsResponse().getNtsResponseMessage();
 
@@ -841,8 +841,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = response.reverse(new BigDecimal(100))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -856,8 +856,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
 
@@ -878,8 +878,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
 
         response = card.addValue(new BigDecimal(50))
                 .withCurrency("USD")
@@ -894,8 +894,8 @@ public class NtsGiftTests {
         System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
         assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
         System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
-        assertNotNull(response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
-        System.out.println("RemainingBalance: " + response.getTransactionReference().getUserDataTag().get("RemainingBalance"));
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
 }

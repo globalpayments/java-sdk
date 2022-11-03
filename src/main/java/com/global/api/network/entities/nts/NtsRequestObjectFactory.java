@@ -24,6 +24,7 @@ public class NtsRequestObjectFactory {
         request = INtsRequestMessage.prepareHeader(ntsObjectParam);
         ntsObjectParam.setNtsRequest(request);
 
+        NtsUtils.log("--------------------- REQUEST PAYLOAD ---------------------");
         if ((transactionType.equals(TransactionType.Sale)
                 || transactionType.equals(TransactionType.Auth)
                 || transactionType.equals(TransactionType.Void)

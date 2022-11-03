@@ -1,5 +1,6 @@
 package com.global.api.network.entities.nts;
 
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,12 +37,26 @@ public class NtsRequestToBalanceResponse implements INtsResponseMessage {
 		StringParser sp = new StringParser(buffer);
 
 		response.setBatchNumber(sp.readInt(2));
+		NtsUtils.log("Batch Number", response.getBatchNumber());
+
 		response.setTotalTransaction(sp.readInt(3));
+		NtsUtils.log("Total Transaction", response.getTotalTransaction());
+
 		response.setTotalSales(sp.readInt(9));
+		NtsUtils.log("Total Sales", response.getTotalSales());
+
 		response.setTotalReturns(sp.readInt(9));
+		NtsUtils.log("Total Return", response.getTotalReturns());
+
 		response.setHostTransactionCount(sp.readInt(3));
+		NtsUtils.log("Host Transaction Count", response.getHostTransactionCount());
+
 		response.setHostTotalSales(sp.readInt(9));
+		NtsUtils.log("Host Total Sales", response.getHostTotalSales());
+
 		response.setHostTotalReturns(sp.readInt(9));
+		NtsUtils.log("Host Total Return", response.getHostTotalReturns());
+
 		return response;
 	}
 }

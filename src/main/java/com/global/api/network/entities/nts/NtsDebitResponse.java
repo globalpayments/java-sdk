@@ -3,6 +3,7 @@ package com.global.api.network.entities.nts;
 import com.global.api.entities.enums.DebitAuthorizerCode;
 import com.global.api.entities.enums.TransactionCode;
 import com.global.api.network.enums.NTSCardTypes;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,17 +43,35 @@ public class NtsDebitResponse implements INtsResponseMessage {
         StringParser sp = new StringParser(buffer);
 
         ntsDebitResponse.setCardType(sp.readStringConstant(2, NTSCardTypes.class));
+        NtsUtils.log("Card Type", ntsDebitResponse.getCardType());
+
         ntsDebitResponse.setTransactionCode(sp.readStringConstant(2, TransactionCode.class));
+        NtsUtils.log("Transaction Code", ntsDebitResponse.getTransactionCode());
+
         ntsDebitResponse.setAccountType(sp.readString(3));
+        NtsUtils.log("Account Type", ntsDebitResponse.getAccountType());
+
         ntsDebitResponse.setCode(sp.readString(6));
+        NtsUtils.log("Approval Code", ntsDebitResponse.getCode());
+
         ntsDebitResponse.setAuthorizerCode(sp.readStringConstant(2, DebitAuthorizerCode.class));
+        NtsUtils.log("Debit Authorizer", ntsDebitResponse.getAuthorizerCode());
+
         ntsDebitResponse.setTerminalSequenceNumber(sp.readString(6));
+        NtsUtils.log("Terminal Sequence Number", ntsDebitResponse.getTerminalSequenceNumber());
+
         String sAvailableAmount = sp.readString(7).trim();
         Integer iAvailableAmount = sAvailableAmount.length() > 0 ? Integer.parseInt(sAvailableAmount):Integer.parseInt("0");
         ntsDebitResponse.setAmount(iAvailableAmount);
+        NtsUtils.log("Available Amount", ntsDebitResponse.getAmount());
+
         if(buffer.length > 89 && emvFlag) {
             ntsDebitResponse.setEmvDataLength(sp.readInt(4)); // Emv
+            NtsUtils.log("EMV Data Length", ntsDebitResponse.getEmvDataLength());
+
             ntsDebitResponse.setEmvData(sp.readRemaining()); // Emv
+            NtsUtils.log("EMV Data", ntsDebitResponse.getEmvData());
+
         }
         return ntsDebitResponse;
     }

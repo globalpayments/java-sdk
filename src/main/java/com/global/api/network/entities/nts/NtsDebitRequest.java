@@ -62,16 +62,16 @@ public class NtsDebitRequest implements INtsRequestMessage {
             if (trackData.getEntryMethod() != null) {
                 entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
                 request.addRange(entryMethod.getValue(), 1);
-                NtsUtils.log("Entry Method", entryMethod.getValue());
+                NtsUtils.log("Entry Method", entryMethod);
             }
         }
         // Card Type
         if (cardType != null) {
-            NtsUtils.log("CardType : ", cardType.getValue());
+            NtsUtils.log("CardType : ", cardType);
             request.addRange(cardType.getValue(), 2);
         }
         if (transactionCode != null) {
-            NtsUtils.log("Transaction Code", transactionCode.getValue());
+            NtsUtils.log("Transaction Code", transactionCode);
             request.addRange(transactionCode.getValue(), 2);
         }
 

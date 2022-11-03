@@ -2,15 +2,14 @@ package com.global.api.gateways;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
-import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.NetworkMessageHeader;
+import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
-import com.global.api.network.entities.UserDataTag;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -32,17 +31,17 @@ public class NtsConnector extends GatewayConnectorConfig {
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
         TransactionType transactionType = builder.getTransactionType();
         AuthorizationBuilder authBuilder;
-        Map<String, String> userData = new HashMap<>();
+        Map<UserDataTag, String> userData = new HashMap<>();
         TransactionReference reference = NtsUtils.prepareTransactionReference(ntsResponse);
         if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) &&
                 (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))) {
             if (cardTypes.equals(NTSCardTypes.MastercardFleet) || cardTypes.equals(NTSCardTypes.VisaFleet) || cardTypes.equals(NTSCardTypes.Mastercard) || cardTypes.equals(NTSCardTypes.Visa) || cardTypes.equals(NTSCardTypes.AmericanExpress) || cardTypes.equals(NTSCardTypes.Discover)) {
                 reference = NtsUtils.prepareTransactionReference(ntsResponse);
-                userData = reference.getUserDataTag();
+                userData = reference.getBankcardData();
                 if (userData != null) {
-                    reference.setSystemTraceAuditNumber(userData.get("03"));
-                    reference.setPartialApproval(userData.getOrDefault("04", "N").equals("Y"));
-                    reference.setOriginalApprovedAmount(StringUtils.toAmount(userData.get("05")));
+                    reference.setSystemTraceAuditNumber(userData.getOrDefault(UserDataTag.Stan, ""));
+                    reference.setPartialApproval(userData.getOrDefault(UserDataTag.PartiallyApproved, "N").equals("Y"));
+                    reference.setOriginalApprovedAmount(StringUtils.toAmount(userData.get(UserDataTag.ApprovedAmount)));
                 }
                 // authorization builder
                 if (builder instanceof AuthorizationBuilder) {
@@ -61,12 +60,12 @@ public class NtsConnector extends GatewayConnectorConfig {
                         if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
-                            userData.put("ApprovedAmount", amount);
+                            userData.put(UserDataTag.ApprovedAmount, amount);
                             reference.setOriginalApprovedAmount(new BigDecimal(amount));
                             if (builder.getTagData() != null) {
-                                userData.put("AvailableProducts", responseParser.readString(49));
-                                userData.put("EmvDataLength", responseParser.readString(4));
-                                userData.put("EvmData", responseParser.readRemaining());
+                                userData.put(UserDataTag.AvailableProducts, responseParser.readString(49));
+                                userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
+                                userData.put(UserDataTag.EvmData, responseParser.readRemaining());
                             }
                         }
                     } else if (transactionType.equals(TransactionType.Sale)) {
@@ -75,12 +74,12 @@ public class NtsConnector extends GatewayConnectorConfig {
                         if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
-                            userData.put("ApprovedAmount", amount);
+                            userData.put(UserDataTag.ApprovedAmount, amount);
                             reference.setOriginalApprovedAmount(new BigDecimal(amount));
-                            userData.put("ReceiptText", responseParser.readRemaining());
+                            userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                             if (builder.getTagData() != null) {
-                                userData.put("EmvDataLength", responseParser.readString(4));
-                                userData.put("EvmData", responseParser.readRemaining());
+                                userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
+                                userData.put(UserDataTag.EvmData, responseParser.readRemaining());
                             }
                         }
                     }
@@ -90,17 +89,17 @@ public class NtsConnector extends GatewayConnectorConfig {
                         String hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
                         StringParser responseParser = new StringParser(hostResponseArea);
                         String amount = responseParser.readString(7);
-                        userData.put("ApprovedAmount", amount);
+                        userData.put(UserDataTag.ApprovedAmount, amount);
                         reference.setOriginalApprovedAmount(new BigDecimal(amount));
-                        userData.put("ReceiptText", responseParser.readRemaining());
+                        userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                     } else if (transactionType.equals(TransactionType.Sale) && userData != null) {
                         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
                         String hostResponseArea = ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea();
                         StringParser responseParser = new StringParser(hostResponseArea);
                         String amount = responseParser.readString(7);
-                        userData.put("ApprovedAmount", amount);
+                        userData.put(UserDataTag.ApprovedAmount, amount);
                         reference.setOriginalApprovedAmount(new BigDecimal(amount));
-                        userData.put("ReceiptText", responseParser.readRemaining());
+                        userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                     }
                 }
             }
@@ -115,7 +114,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             StringParser responseParser = new StringParser(hostResponseArea);
             reference.setOriginalTransactionTypeIndicator(ReverseStringEnumMap.parse(responseParser.readString(8).trim(), TransactionTypeIndicator.class));
             reference.setSystemTraceAuditNumber(responseParser.readString(6));
-            userData.put("RemainingBalance", responseParser.readString(6));
+            userData.put(UserDataTag.RemainingBalance, responseParser.readString(6));
         } else if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)
                 && transactionType != TransactionType.DataCollect
                 && transactionType != TransactionType.Capture){
@@ -133,7 +132,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             reference.setOriginalPaymentMethod(authBuilder.getPaymentMethod());
             reference.setPaymentMethodType(authBuilder.getPaymentMethod().getPaymentMethodType());
         }
-        reference.setUserDataTag(userData);
+        reference.setBankcardData(userData);
         return reference;
     }
 
@@ -166,7 +165,6 @@ public class NtsConnector extends GatewayConnectorConfig {
 
         //Preparing the request
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
-        NtsUtils.log("Request with header in text ", request.getMessageRequest().toString());
         return sendRequest(request, builder);
     }
 
@@ -176,21 +174,19 @@ public class NtsConnector extends GatewayConnectorConfig {
             messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();
             if (isNonBankCard(cardType)
                     || isDataCollectForNonFleetBankCard(cardType, builder.getTransactionType())) {
-                userData = UserDataTag.getNonBankCardUserData(builder, cardType, messageCode, acceptorConfig);
-                NtsUtils.log("Non Bank Card user Data :", userData);
+                userData = NTSUserData.getNonBankCardUserData(builder, cardType, messageCode, acceptorConfig);
             } else {
-                userData = UserDataTag.getBankCardUserData(builder, paymentMethod, cardType, messageCode, acceptorConfig);
-                NtsUtils.log("Bank card user Data :", userData);
+                userData = NTSUserData.getBankCardUserData(builder, paymentMethod, cardType, messageCode, acceptorConfig);
             }
         } else if (builder.getTransactionType() == TransactionType.BatchClose) {
-            userData = UserDataTag.getRequestToBalanceUserData(builder);
-            NtsUtils.log("Request to balance user Data :", userData);
+            userData = NTSUserData.getRequestToBalanceUserData(builder);
         }
         return userData;
     }
 
     private <T extends TransactionBuilder<Transaction>> Transaction sendRequest(MessageWriter messageData, T builder) throws ApiException {
-        NtsUtils.log("Request Message length:", String.valueOf(messageData.getMessageRequest().length()));
+        NtsUtils.log("--------------------- FINAL REQUEST ---------------------");
+        NtsUtils.log("Request length:", String.valueOf(messageData.getMessageRequest().length()));
 
         try {
             int messageLength = messageData.getMessageRequest().length() + 2;
@@ -199,7 +195,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             req.add(messageData.getMessageRequest().toString());
 
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
-            NtsUtils.log("Final Request with header and data", buildMessage.toString());
+            NtsUtils.log("Request", buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
             return mapResponse(responseBuffer, builder);
 
@@ -218,7 +214,8 @@ public class NtsConnector extends GatewayConnectorConfig {
         MessageReader mr = new MessageReader(buffer);
         NTSCardTypes cardType = NtsUtils.mapCardType(paymentMethod);
         StringParser sp = new StringParser(buffer);
-        NtsUtils.log("Final Response", sp.getBuffer());
+        NtsUtils.log("--------------------- RESPONSE ---------------------");
+        NtsUtils.log("Response", sp.getBuffer());
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
 
         if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))) {
@@ -249,8 +246,6 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {
         //message header section
-        NtsUtils.log("###########", "Management Builder Request Header");
-
         messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();
 
         //message body
@@ -278,12 +273,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalId(terminalId);
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
-        NtsUtils.log("Request with header in text ", request.getMessageRequest().toString());
         return sendRequest(request, builder);
-    }
-
-    public <T> T processReport(ReportBuilder<T> builder, Class<T> clazz) throws ApiException {
-        return null;
     }
 
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {

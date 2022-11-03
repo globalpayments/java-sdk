@@ -1,12 +1,8 @@
 package com.global.api.paymentMethods;
 
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.AlternativePaymentResponse;
-import com.global.api.entities.enums.EmvChipCondition;
-import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.enums.TransactionCode;
-import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.gnap.ISOResponseCode;
@@ -54,7 +50,7 @@ public class TransactionReference implements IPaymentMethod {
 
     private String approvalCode;
     private String originalMessageCode;
-    private Map<String, String> userDataTag;
+    private Map<UserDataTag, String> bankcardData;
     private TransactionCode originalTransactionCode;
     private TransactionTypeIndicator originalTransactionTypeIndicator;
     private String mastercardBanknetRefNo;

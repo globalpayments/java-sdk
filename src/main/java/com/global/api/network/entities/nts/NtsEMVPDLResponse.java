@@ -6,6 +6,7 @@ import com.global.api.network.entities.emvpdl.IEMVPDLTable;
 import com.global.api.network.enums.nts.EmvPDLCardType;
 import com.global.api.network.enums.nts.PDLEndOfTableFlag;
 import com.global.api.network.enums.nts.PDLTableID;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,15 +61,31 @@ public class NtsEMVPDLResponse implements INtsResponseMessage {
 
         // Common fields
         pdlResponse.setEmvPdlResponseCode(sp.readString(2));
+        NtsUtils.log("EMV PDL Response Code ", pdlResponse.getEmvPdlResponseCode());
+
         pdlResponse.setEmvPdlStatusCode(sp.readString(2));
+        NtsUtils.log("EMV PDL Status Code", pdlResponse.getEmvPdlStatusCode());
+
         pdlResponse.setEmvPdlParameterVersion(sp.readString(3));
+        NtsUtils.log("EMV PDL Parameter Version ", pdlResponse.getEmvPdlParameterVersion());
+
         if (this.isPdlV2) {
             pdlResponse.setEmvPdlConfigurationName(sp.readString(40));
+            NtsUtils.log("EMV PDL Config Name", pdlResponse.getEmvPdlConfigurationName());
+
         }
         pdlResponse.setEmvPdlBlockSequenceNumber(sp.readInt(2));
+        NtsUtils.log("Block Sequence Number", pdlResponse.getEmvPdlBlockSequenceNumber());
+
         pdlResponse.setEmvPdlTableId(sp.readStringConstant(2, PDLTableID.class));
+        NtsUtils.log("Table ID ", pdlResponse.getEmvPdlTableId());
+
         pdlResponse.setEmvPdlCardType(sp.readStringConstant(2, EmvPDLCardType.class));
+        NtsUtils.log("EMV PDL Card Type ", pdlResponse.getEmvPdlCardType());
+
         pdlResponse.setEmvPdlEndOfTableFlag(sp.readStringConstant(1, PDLEndOfTableFlag.class));
+        NtsUtils.log("End Of table flag", pdlResponse.getEmvPdlEndOfTableFlag());
+
         if (!pdlResponse.getEmvPdlEndOfTableFlag().equals(PDLEndOfTableFlag.DownloadConfirmation)) {
             if (pdlResponse.getEmvPdlTableId().equals(PDLTableID.Table10)) {
                 if (this.isPdlV2) {

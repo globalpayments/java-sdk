@@ -35,22 +35,22 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             if (trackData.getEntryMethod() != null) {
                 NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
                 request.addRange(entryMethod.getValue(), 1);
-                NtsUtils.log("Entry Method", entryMethod.getValue());
+                NtsUtils.log("Entry Method", entryMethod);
             } else {
                 request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
-                NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue());
+                NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended);
             }
         } else if (paymentMethod instanceof ICardData) {
             request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue());
+            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended);
         } else if (paymentMethod instanceof GiftCard) {
             request.addRange(NTSEntryMethod.MagneticStripeTrack1DataAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack1DataAttended.getValue());
+            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack1DataAttended);
         }
 
         // Card Type
         if (cardType != null) {
-            NtsUtils.log("CardType : ", cardType.getValue());
+            NtsUtils.log("CardType : ", cardType);
             request.addRange(cardType.getValue(), 2);
         }
 
@@ -65,7 +65,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                 NtsUtils.log("DebitAuthorizer", transactionReference.getDebitAuthorizer());
             } else {
                 request.addRange(DebitAuthorizerCode.NonPinDebitCard.getValue(), 2);
-                NtsUtils.log("DebitAuthorizer", DebitAuthorizerCode.NonPinDebitCard.getValue());
+                NtsUtils.log("DebitAuthorizer", DebitAuthorizerCode.NonPinDebitCard);
             }
 
             if (paymentMethod instanceof ICardData) {
@@ -107,13 +107,13 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             NtsUtils.log("ApprovalCode", transactionReference.getApprovalCode());
 
             request.addRange(transactionReference.getAuthorizer().getValue(), 1);
-            NtsUtils.log("Authorizer", transactionReference.getAuthorizer().getValue());
+            NtsUtils.log("Authorizer", transactionReference.getAuthorizer());
 
             request.addRange(StringUtils.toNumeric(builder.getAmount(), 6), 7);
             NtsUtils.log("Amount", StringUtils.toNumeric(builder.getAmount(), 6));
 
             request.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
-            NtsUtils.log("MessageCode", ntsRequestMessageHeader.getNtsMessageCode().getValue());
+            NtsUtils.log("MessageCode", ntsRequestMessageHeader.getNtsMessageCode());
 
             request.addRange(transactionReference.getAuthCode(), 2);
             NtsUtils.log("AuthorizationResponseCode", transactionReference.getAuthCode());
@@ -152,19 +152,16 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             NtsUtils.log("Sequence Number", String.valueOf(sequenceNumber));
 
             if (!StringUtils.isNullOrEmpty(userData)) {
-                if (userData.length() > 99 && userData.length() <= 170) {
-                    request.addRange(userData.length(), 3);
+                if (userData.length() <= 85) {
+                    request.addRange(userData.length(), 2);
                     NtsUtils.log("User Data Length", Integer.toString(userData.length()));
-                } else if (userData.length() > 170 ){
+                } else {
                     // Extended user data flag
                     request.addRange("E", 1);
                     NtsUtils.log("Extended user data flag", "E");
 
                     // User data length
-                    request.addRange(userData.length(), 4);
-                    NtsUtils.log("User Data Length", Integer.toString(userData.length()));
-                } else {
-                    request.addRange(userData.length(), 2);
+                    request.addRange(userData.length(), 3);
                     NtsUtils.log("User Data Length", Integer.toString(userData.length()));
                 }
 

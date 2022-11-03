@@ -17,13 +17,15 @@ import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class UserDataTag {
+public class NTSUserData {
 
-    private UserDataTag() {
-        throw new IllegalStateException("UserDataTag.class");
+    private NTSUserData() {
+        throw new IllegalStateException("NTSUserData.class");
     }
 
     public static String getBankCardUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod,
@@ -68,7 +70,7 @@ public class UserDataTag {
             }
             if (!StringUtils.isNullOrEmpty(functionCode)) {
                 totalNoOfTags++; // Increment the counter if tag is used.
-                sb.append(UserDataTagId.FunctionCode.getValue()).append("\\");
+                sb.append(UserDataTag.FunctionCode.getValue()).append("\\");
                 sb.append(functionCode).append("\\");
             }
         }
@@ -76,7 +78,7 @@ public class UserDataTag {
 
         // 02 TerminalCapability
         if (acceptorConfig.hasPosConfiguration_BankcardData()) {
-            sb.append(UserDataTagId.TerminalCapability.getValue()).append("\\");
+            sb.append(UserDataTag.TerminalCapability.getValue()).append("\\");
             sb.append(acceptorConfig.getTerminalCapabilityForBankcard()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -84,7 +86,7 @@ public class UserDataTag {
         if ((messageCode == NtsMessageCode.ReversalOrVoid || messageCode == NtsMessageCode.ForceReversalOrForceVoid)
                 && paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTagId.Stan.getValue()).append("\\");
+            sb.append(UserDataTag.Stan.getValue()).append("\\");
             sb.append(reference.getSystemTraceAuditNumber()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -97,7 +99,7 @@ public class UserDataTag {
                 && isAVSUsed
                 && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
                 && acceptorConfig.getAddress() != null)) {
-            sb.append(UserDataTagId.ZipCode.getValue()).append("\\");
+            sb.append(UserDataTag.ZipCode.getValue()).append("\\");
             sb.append(StringUtils.padRight(acceptorConfig.getAddress().getPostalCode(), 9, ' ')).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -110,7 +112,7 @@ public class UserDataTag {
                     transactionType.equals(TransactionType.Sale) ||
                     transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))
                     && fleetData != null) {
-                sb.append(UserDataTagId.FleetAuthData.getValue()).append("\\");
+                sb.append(UserDataTag.FleetAuthData.getValue()).append("\\");
                 sb.append(getFleetDataTag08(fleetData, cardType));
                 sb.append("\\");
                 totalNoOfTags++;
@@ -122,7 +124,7 @@ public class UserDataTag {
                 && ((transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.DataCollect)
                 || transactionType.equals(TransactionType.Capture))
                 && builder.getNtsProductData() != null)) {
-            sb.append(UserDataTagId.ProductDataTag.getValue()).append("\\");
+            sb.append(UserDataTag.ProductDataTag.getValue()).append("\\");
             sb.append(getProductDataTag09(builder, cardType));
             sb.append("?");
             sb.append("\\"); // Added separator
@@ -134,7 +136,7 @@ public class UserDataTag {
                 || cardType.equals(NTSCardTypes.Discover))
                 && (transactionType.equals(TransactionType.Sale)
                 && builder.getNtsProductData() != null)) {
-            sb.append(UserDataTagId.ProductDataTag.getValue()).append("\\");
+            sb.append(UserDataTag.ProductDataTag.getValue()).append("\\");
             sb.append(getProductDataTag09(builder, cardType));
             sb.append("\\"); // Added separator
             totalNoOfTags++;
@@ -143,16 +145,16 @@ public class UserDataTag {
 
         // 10 Reserved
 
-        //11 BanknetRefId & 12 Settlement Date
+        //11 MasterCardBanknetRefId & 12 Settlement Date
         if ((cardType.equals(NTSCardTypes.Mastercard) || cardType.equals(NTSCardTypes.MastercardFleet))
                 && (transactionType.equals(TransactionType.Void) ||
                 transactionType.equals(TransactionType.Balance))
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTagId.BanknetRefId.getValue()).append("\\");
+            sb.append(UserDataTag.MasterCardBanknetRefId.getValue()).append("\\");
             sb.append(reference.getMastercardBanknetRefNo()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
-            sb.append(UserDataTagId.SettlementDate.getValue()).append("\\"); // 12 Settlement Date
+            sb.append(UserDataTag.MasterCardSettlementDate.getValue()).append("\\"); // 12 Settlement Date
             sb.append(reference.getMastercardBanknetSettlementDate()).append("\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -167,7 +169,7 @@ public class UserDataTag {
                 && (transactionType.equals(TransactionType.Auth)
                 || transactionType.equals(TransactionType.Sale)
                 || messageCode.equals(NtsMessageCode.AuthorizationOrBalanceInquiry))) {
-            sb.append(UserDataTagId.Cvn.getValue()).append("\\");
+            sb.append(UserDataTag.Cvn.getValue()).append("\\");
             sb.append(cvn).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
 
@@ -177,7 +179,7 @@ public class UserDataTag {
         if ((cardType.equals(NTSCardTypes.Discover) && (messageCode == NtsMessageCode.ReversalOrVoid ||
                 messageCode == NtsMessageCode.ForceReversalOrForceVoid)) && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTagId.DiscoverNetworkRefId.getValue()).append("\\");
+            sb.append(UserDataTag.DiscoverNetworkRefId.getValue()).append("\\");
             sb.append(reference.getDiscoverNetworkRefId() + "\\"); // Get from host response area
             totalNoOfTags++; // Increment the counter if tag is used.
 
@@ -187,14 +189,14 @@ public class UserDataTag {
 
         // 16
         if (builder.getNtsTag16() != null) {
-            sb.append(UserDataTagId.Tag16.getValue()).append("\\");
+            sb.append(UserDataTag.Tag16.getValue()).append("\\");
             sb.append(getTagData16(builder.getNtsTag16())).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
         //17 Card Sequence No // Only for EMV
         if (!StringUtils.isNullOrEmpty(builder.getTagData()) && builder.getCardSequenceNumber() != null) {
-            sb.append(UserDataTagId.CardSequenceNumber.getValue()).append("\\");
+            sb.append(UserDataTag.CardSequenceNumber.getValue()).append("\\");
             sb.append(builder.getCardSequenceNumber()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -203,7 +205,7 @@ public class UserDataTag {
         if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet)) && transactionType.equals(TransactionType.Void)
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTagId.VisaTransactionId.getValue()).append("\\");
+            sb.append(UserDataTag.VisaTransactionId.getValue()).append("\\");
             sb.append(reference.getVisaTransactionId()).append("\\"); // Get from host response area (left justify)
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -214,7 +216,7 @@ public class UserDataTag {
         if ((cardType.equals(NTSCardTypes.Discover))
                 && (transactionType.equals(TransactionType.Sale)
                 && builder.getCashBackAmount() != null)) {
-            sb.append(UserDataTagId.CashOverAmount.getValue()).append("\\");
+            sb.append(UserDataTag.CashOverAmount.getValue()).append("\\");
             sb.append(StringUtils.toNumeric(builder.getCashBackAmount(), 6)).append("\\"); // Check desc
             totalNoOfTags++; // Increment the counter if tag is used.
 
@@ -222,7 +224,7 @@ public class UserDataTag {
 
         // 21 Unique Device Id // Only for EMV
         if (!transactionType.equals(TransactionType.Void) && !StringUtils.isNullOrEmpty(uniqueDeviceId)) {
-            sb.append(UserDataTagId.UniqueDeviceId.getValue()).append("\\");
+            sb.append(UserDataTag.UniqueDeviceId.getValue()).append("\\");
             sb.append(uniqueDeviceId).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -233,7 +235,7 @@ public class UserDataTag {
                 if (paymentMethod instanceof IPinProtected) {
                     String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
                     if (!StringUtils.isNullOrEmpty(pinBlock)) {
-                        sb.append(UserDataTagId.EmvPinBlock.getValue()).append("\\"); // 22 Emv Pin Block
+                        sb.append(UserDataTag.EmvPinBlock.getValue()).append("\\"); // 22 Emv Pin Block
                         sb.append(pinBlock).append("\\");
                         totalNoOfTags++; // Increment the counter if tag is used.
                     }
@@ -241,13 +243,13 @@ public class UserDataTag {
                 if (paymentMethod instanceof IEncryptable) {
                     EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
                     if (encryptionData != null) {
-                        sb.append(UserDataTagId.EmvKsn.getValue()).append("\\"); // 23 Emv Ksn // Only for EMV
+                        sb.append(UserDataTag.EmvKsn.getValue()).append("\\"); // 23 Emv Ksn // Only for EMV
                         sb.append(StringUtils.padLeft(encryptionData.getKsn(), 20, ' ')).append("\\");
                         totalNoOfTags++; // Increment the counter if tag is used.
                     }
                 }
                 if (builder.getEmvMaxPinEntry() != null) {
-                    sb.append(UserDataTagId.EmvMaxPinEntry.getValue()).append("\\"); // 24 Emv Max Pin Entry
+                    sb.append(UserDataTag.EmvMaxPinEntry.getValue()).append("\\"); // 24 Emv Max Pin Entry
                     sb.append(builder.getEmvMaxPinEntry()).append("\\");
                     totalNoOfTags++; // Increment the counter if tag is used.
                 }
@@ -255,7 +257,7 @@ public class UserDataTag {
 
             if (modifier == TransactionModifier.Offline
                     || modifier == TransactionModifier.ChipDecline) {
-                sb.append(UserDataTagId.EmvChipAuthCode.getValue()).append("\\"); // 25 Emv Chip Auth Code
+                sb.append(UserDataTag.EmvChipAuthCode.getValue()).append("\\"); // 25 Emv Chip Auth Code
                 if (messageCode == NtsMessageCode.DataCollectOrSale ||
                         messageCode == NtsMessageCode.ForceCollectOrForceSale)
                     sb.append(EmvAuthCode.OfflineApproved.getValue()).append("\\");
@@ -272,7 +274,7 @@ public class UserDataTag {
 
         // 26 Goods Sold
         if (cardType.equals(NTSCardTypes.AmericanExpress) && (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))) {
-            sb.append(UserDataTagId.GoodsSold.getValue()).append("\\");
+            sb.append(UserDataTag.GoodsSold.getValue()).append("\\");
             sb.append(((AuthorizationBuilder) builder).getGoodsSold()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -285,7 +287,7 @@ public class UserDataTag {
                 cardType.equals(NTSCardTypes.AmericanExpress) || cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal)) &&
                 ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
                         && builder.getEcommerceData1() != null)) {
-            sb.append(UserDataTagId.EcommerceData1.getValue()).append("\\");
+            sb.append(UserDataTag.EcommerceData1.getValue()).append("\\");
             sb.append(builder.getEcommerceData1()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
 
@@ -295,7 +297,7 @@ public class UserDataTag {
         if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet) ||
                 cardType.equals(NTSCardTypes.AmericanExpress) || cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal))
                 && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)) && builder.getEcommerceData2() != null)) {
-            sb.append(UserDataTagId.EcommerceData2.getValue()).append("\\");
+            sb.append(UserDataTag.EcommerceData2.getValue()).append("\\");
             sb.append(builder.getEcommerceData2()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
@@ -310,13 +312,13 @@ public class UserDataTag {
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
-                sb.append(UserDataTagId.MCUCAF.getValue()).append("\\");
+                sb.append(UserDataTag.MCUCAF.getValue()).append("\\");
                 sb.append("" + "\\");
                 totalNoOfTags++; // Increment the counter if tag is used.
-                sb.append(UserDataTagId.MCWalletId.getValue()).append("\\"); // 31 MCWalletId // For all E-com entry methods
+                sb.append(UserDataTag.MCWalletId.getValue()).append("\\"); // 31 MCWalletId // For all E-com entry methods
                 sb.append("" + "\\");
                 totalNoOfTags++; // Increment the counter if tag is used.
-                sb.append(UserDataTagId.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
+                sb.append(UserDataTag.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
                 sb.append("" + "\\");
                 totalNoOfTags++; // Increment the counter if tag is used.
             }
@@ -335,12 +337,12 @@ public class UserDataTag {
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
                     entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
-                sb.append(UserDataTagId.EcommerceAuthIndicator.getValue() + "\\"); // 33 Ecommerce Auth Indicator // For all E-com entry methods
+                sb.append(UserDataTag.EcommerceAuthIndicator.getValue() + "\\"); // 33 Ecommerce Auth Indicator // For all E-com entry methods
                 sb.append(builder.getEcommerceAuthIndicator() + "\\");
                 totalNoOfTags++; // Increment the counter if tag is used.
 
                 if (builder.getInvoiceNumber() != null) {
-                    sb.append(UserDataTagId.EcommerceMerchantOrderNumber.getValue() + "\\"); // 34 Ecommerce Merchant Order No
+                    sb.append(UserDataTag.EcommerceMerchantOrderNumber.getValue() + "\\"); // 34 Ecommerce Merchant Order No
                     sb.append(builder.getInvoiceNumber() + "\\");
                     totalNoOfTags++; // Increment the counter if tag is used.
                 }
@@ -350,7 +352,7 @@ public class UserDataTag {
 
         // 99 Integrated Circuit Card
         if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
-            sb.append(UserDataTagId.IntegratedCircuitCard.getValue()).append("\\");
+            sb.append(UserDataTag.IntegratedCircuitCard.getValue()).append("\\");
             EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), true);
             sb.append(tagData.getAcceptedTagData()); // Check EMV fallback
             totalNoOfTags++; // Increment the counter if tag is used.
@@ -470,7 +472,7 @@ public class UserDataTag {
         sb.append(StringUtils.padLeft(String.valueOf(ntsTag16.getPumpNumber()), 2, '0')); // Pump Number
         sb.append(StringUtils.padLeft(String.valueOf(ntsTag16.getWorkstationId()), 2, '0')); // Workstation Id
         sb.append(DateTime.now().toString("MMddyy"));
-        sb.append(DateTime.now().toString("hhmmss"));
+        sb.append(LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
         sb.append(ntsTag16.getServiceCode().getValue()); // Service Code
         sb.append(ntsTag16.getSecurityData().getValue()); // Security Data
 

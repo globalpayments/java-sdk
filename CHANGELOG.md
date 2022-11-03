@@ -1,6 +1,18 @@
 # Changelog
 
-## v10.0.0 (25/11/2022)
+## v10.0.1 (11/03/2022)
+
+### Enhancements:
+
+- NTS: Added the Extended user data flag to Data collect.
+- NTS: Updated the Header time format to 24 HR.
+- NTS: Updated the STAN for Data collect request.
+- NTS: Updated the `approvalCode` in response for Data collect.
+- NTS: Added `bankcardData` variable to reference object.
+- NTS: Log optimization.
+
+
+## v10.0.0 (10/25/2022)
 
 ### Enhancements:
 

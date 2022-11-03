@@ -42,23 +42,23 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             ITrackData trackData = (ITrackData) paymentMethod;
             NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
             request.addRange(entryMethod.getValue(), 1);
-            NtsUtils.log("Entry Method", entryMethod.getValue());
+            NtsUtils.log("Entry Method", entryMethod);
         } else if (paymentMethod instanceof ICardData) {
             EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
             if(method != null) {
                 NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
                 if(entryMethod != null){
                     request.addRange(entryMethod.getValue(), 1);
-                    NtsUtils.log("Entry Method", entryMethod.getValue());
+                    NtsUtils.log("Entry Method", entryMethod);
                 }
             } else {
                 request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
-                NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue());
+                NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended);
             }
         }
 
         // Card Type
-        NtsUtils.log("CardType : ", cardType.getValue());
+        NtsUtils.log("CardType : ", cardType);
         request.addRange(cardType.getValue(), 2);
 
         // DEBIT AUTHORIZER

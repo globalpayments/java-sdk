@@ -31,6 +31,8 @@ public class NtsResponseObjectFactory {
         // Setting NTS response message header.
         NtsResponseMessageHeader ntsResponseMessageHeader = INtsResponseMessage.getHeader(mr.readBytes(RESPONSE_HEADER));
 
+        NtsUtils.log("--------------------- RESPONSE PAYLOAD ---------------------");
+
         if ((transactionType.equals(TransactionType.Auth)
                 || transactionType.equals(TransactionType.Sale)
                 || transactionType.equals(TransactionType.Void)

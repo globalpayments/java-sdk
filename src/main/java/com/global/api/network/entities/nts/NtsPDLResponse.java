@@ -5,6 +5,7 @@ import com.global.api.network.entities.mpdl.MPDLTable;
 import com.global.api.network.entities.mpdl.MPDLTable10;
 import com.global.api.network.enums.nts.PDLEndOfTableFlag;
 import com.global.api.network.enums.nts.PDLTableID;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,9 +41,16 @@ public class NtsPDLResponse implements INtsResponseMessage {
 
         // Common fields
         pdlResponse.setParameterVersionOrTableVersion(sp.readString(3));
+        NtsUtils.log("Parameter or Table Version ", pdlResponse.getParameterVersionOrTableVersion());
+
         pdlResponse.setBlockSequenceNumber(sp.readInt(2));
+        NtsUtils.log("Block Sequence Number", pdlResponse.getBlockSequenceNumber());
+
         pdlResponse.setTableId(sp.readStringConstant(2, PDLTableID.class));
+        NtsUtils.log("Table ID ", pdlResponse.getTableId());
+
         pdlResponse.setEndOfTableFlag(sp.readStringConstant(1, PDLEndOfTableFlag.class));
+        NtsUtils.log("End Of table flag", pdlResponse.getEndOfTableFlag());
 
         if (pdlResponse.getTableId().equals(PDLTableID.Table10)) {
             IMPDLTable table10 = new MPDLTable10();

@@ -13,6 +13,7 @@ import com.global.api.paymentMethods.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -68,8 +69,24 @@ public class NtsUtils {
      */
     public static void log(String fieldName, String value) {
         if (isEnableLogging) {
-            System.out.println(fieldName + " : " + value);
+            System.out.println( StringUtils.padRight(fieldName.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : " + value);
         }
+    }
+
+    public static <E extends Enum<E>> void log(String fieldName, E value) {
+        if (isEnableLogging && value != null) {
+            System.out.println( StringUtils.padRight(fieldName.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : [ " + value.name() + " - " + ((IStringConstant) value).getValue() + " ]");
+        }
+    }
+
+    public static void log(String value) {
+        if (isEnableLogging) {
+            System.out.println(value);
+        }
+    }
+
+    public static void log(String fieldName, Integer value) {
+        log(fieldName, String.valueOf(value));
     }
 
     /**
@@ -112,6 +129,8 @@ public class NtsUtils {
             authorizer = AuthorizerCode.Terminal_Authorized;
             approvalCode = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
             debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+        } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDataCollectResponse) {
+            approvalCode = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
         }
 
         reference.setApprovalCode(approvalCode);
@@ -124,13 +143,13 @@ public class NtsUtils {
         reference.setAuthCode(debitAuthorizer);
         reference.setOriginalTransactionTime(getOrDefault(ntsResponse.getNtsResponseMessageHeader().getTransactionTime(), ""));
         if (!StringUtils.isNullOrEmpty(hostResponseArea)) {
-            Map<String, String> userData = mapUserData(hostResponseArea);
-            reference.setUserDataTag(userData);
-            reference.setSystemTraceAuditNumber(userData.getOrDefault("03", ""));
-            reference.setMastercardBanknetRefNo(userData.getOrDefault("11", ""));
-            reference.setMastercardBanknetSettlementDate(userData.getOrDefault("12", ""));
-            reference.setVisaTransactionId(userData.getOrDefault("18", ""));
-            reference.setDiscoverNetworkRefId(userData.getOrDefault("14", ""));
+            Map<UserDataTag, String> userData = mapUserData(hostResponseArea);
+            reference.setBankcardData(userData);
+            reference.setSystemTraceAuditNumber(userData.getOrDefault(UserDataTag.Stan, ""));
+            reference.setMastercardBanknetRefNo(userData.getOrDefault(UserDataTag.MasterCardBanknetRefId, ""));
+            reference.setMastercardBanknetSettlementDate(userData.getOrDefault(UserDataTag.MasterCardSettlementDate, ""));
+            reference.setVisaTransactionId(userData.getOrDefault(UserDataTag.VisaTransactionId, ""));
+            reference.setDiscoverNetworkRefId(userData.getOrDefault(UserDataTag.DiscoverNetworkRefId, ""));
         }
         return reference;
     }
@@ -141,11 +160,11 @@ public class NtsUtils {
      * @param userData
      * @return
      */
-    private static Map<String, String> mapUserData(String userData) {
-        Map<String, String> dataMap = new HashMap<>();
+    private static Map<UserDataTag, String> mapUserData(String userData) {
+        Map<UserDataTag, String> dataMap = new HashMap<>();
         String[] res = userData.split("\\\\");
         for (int i = 1; i < res.length; i = i + 2) {
-            dataMap.put(res[i], res[i + 1]);
+            dataMap.put(ReverseStringEnumMap.parse(res[i], UserDataTag.class), res[i + 1]);
         }
         return dataMap;
     }

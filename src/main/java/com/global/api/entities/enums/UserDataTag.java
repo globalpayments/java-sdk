@@ -1,6 +1,6 @@
 package com.global.api.entities.enums;
 
-public enum UserDataTagId implements IStringConstant{
+public enum UserDataTag implements IStringConstant{
 	FunctionCode("01"),
 	TerminalCapability("02"),
 	Stan("03"),
@@ -11,8 +11,8 @@ public enum UserDataTagId implements IStringConstant{
 	FleetAuthData("08"),
 	ProductDataTag("09"),
 	//Reserved("10"),
-	BanknetRefId("11"),
-	SettlementDate("12"),
+	MasterCardBanknetRefId("11"),
+	MasterCardSettlementDate("12"),
 	Cvn("13"),
 	DiscoverNetworkRefId("14"),
 	//Reserved("15"),
@@ -35,10 +35,14 @@ public enum UserDataTagId implements IStringConstant{
 	MCSLI("32"),
 	EcommerceAuthIndicator("33"),
 	EcommerceMerchantOrderNumber("34"),
-	IntegratedCircuitCard("99");
+	IntegratedCircuitCard("99"),
+	AvailableProducts("AvailableProducts"),
+	EmvDataLength("EmvDataLength"),
+	EvmData("EvmData"),
+	ReceiptText("ReceiptText");
 	
 	String value;
-	UserDataTagId(String value) {
+	UserDataTag(String value) {
         this.value = value;
     }
     public String getValue() { return this.value; }
