@@ -63,6 +63,16 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("name", trb.getSearchBuilder().getName());
                     request.addQueryStringParam("payment_method", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getPaymentMethodName()));
 
+                    if (trb.getSearchBuilder().getRiskAssessmentMode() != null) {
+                        request.addQueryStringParam("risk_assessment_mode", trb.getSearchBuilder().getRiskAssessmentMode().getValue());
+                    }
+                    if (trb.getSearchBuilder().getRiskAssessmentResult() != null) {
+                        request.addQueryStringParam("risk_assessment_result", trb.getSearchBuilder().getRiskAssessmentResult().getValue());
+                    }
+                    if (trb.getSearchBuilder().getRiskAssessmentReasonCode() != null) {
+                        request.addQueryStringParam("risk_assessment_reason_code", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getRiskAssessmentReasonCode()));
+                    }
+
                     return request;
 
                 case FindSettlementTransactionsPaged:

@@ -14,6 +14,8 @@ public class BaseGpApiTest {
     // ================================================================================
     static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
     static final String APP_KEY = "FQyJA5VuEQfcji2M";
+    static final String APP_ID_FRAUD = "Q18DcsJvh8TtRo9zxICvg9S78S3RN8u2";
+    static final String APP_KEY_FRAUD = "CFaMNPgpPN4KXibu";
     // ================================================================================
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
     static final String SUCCESS = "SUCCESS";

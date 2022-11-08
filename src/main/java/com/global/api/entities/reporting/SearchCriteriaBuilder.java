@@ -97,6 +97,9 @@ public class SearchCriteriaBuilder<TResult> {
     private String bankPaymentId;
     private String payLinkId;
     private Boolean returnPII;
+    private FraudFilterMode riskAssessmentMode;
+    private FraudFilterResult riskAssessmentResult;
+    private ReasonCode riskAssessmentReasonCode;
     private String resource;
     private String resourceStatus;
     private String resourceId;

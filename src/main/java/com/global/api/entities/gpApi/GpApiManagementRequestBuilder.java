@@ -276,6 +276,21 @@ public class GpApiManagementRequestBuilder {
                     .setEndpoint(merchantUrl + "/links/" + builder.getPaymentLinkId())
                     .setRequestBody(data.toString());
 
+        } else if (builderTransactionType == TransactionType.Release || builderTransactionType == TransactionType.Hold) {
+            var payload =
+                    new JsonDoc()
+                            .set("reason_code", builder.getReasonCode() != null ? EnumUtils.getMapping(Target.GP_API, builder.getReasonCode()) : null);
+
+            var endpoint =
+                    builderTransactionType == TransactionType.Release ?
+                            "release" :
+                            builderTransactionType == TransactionType.Hold ? "hold" : null;
+
+            return
+                    new GpApiRequest()
+                            .setVerb(GpApiRequest.HttpMethod.Post)
+                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/" + endpoint)
+                            .setRequestBody(payload.toString());
         }
 
         return null;

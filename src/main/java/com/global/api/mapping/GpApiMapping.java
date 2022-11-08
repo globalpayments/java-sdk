@@ -13,6 +13,7 @@ import com.global.api.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.var;
 import org.joda.time.DateTime;
 
 import static com.global.api.gateways.GpApiConnector.*;
@@ -137,6 +138,8 @@ public class GpApiMapping {
                     transaction.setDccRateData(mapDccInfo(json));
                 }
             }
+
+            transaction.setFraudFilterResponse(json.has("risk_assessment") ? mapFraudManagement(json) : null);
         }
 
         return transaction;
@@ -299,6 +302,8 @@ public class GpApiMapping {
                 summary.setPaymentType(PaymentMethodName.APM.getValue(Target.GP_API));
             }
         }
+
+        summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);
 
         return summary;
     }
@@ -635,6 +640,48 @@ public class GpApiMapping {
 
         return summary;
     }
+
+    private static FraudManagementResponse mapFraudManagement(JsonDoc response) {
+        var fraudFilterResponse = new FraudManagementResponse();
+
+        if (response.has("risk_assessment")) {
+            var fraudResponses = response.getEnumerator("risk_assessment");
+
+            for (var fraudResponse : fraudResponses) {
+                fraudFilterResponse = mapFraudManagementReport(fraudResponse);
+            }
+
+            return fraudFilterResponse;
+        }
+
+        return null;
+    }
+
+    private static FraudManagementResponse mapFraudManagementReport(JsonDoc response) {
+        var fraudFilterResponse = new FraudManagementResponse();
+        var fraudResponse = response;
+
+        fraudFilterResponse.setFraudResponseMode(fraudResponse.getString("mode"));
+        fraudFilterResponse.setFraudResponseResult(fraudResponse.has("result") ? fraudResponse.getString("result") : "");
+        fraudFilterResponse.setFraudResponseMessage(fraudResponse.getString("message"));
+        if (fraudResponse.has("rules")) {
+            fraudFilterResponse.setFraudResponseRules(new ArrayList<>());
+
+            for(var rule : fraudResponse.getEnumerator("rules")) {
+                var fraudRule = new FraudRule();
+
+                fraudRule.setKey(rule.getString("reference"));
+                fraudRule.setMode(FraudFilterMode.fromString(rule.getString("mode")));
+                fraudRule.setDescription(rule.getString("description"));
+                fraudRule.setResult(rule.has("result") ? rule.getString("result") : null);
+
+                fraudFilterResponse.getFraudResponseRules().add(fraudRule);
+            }
+        }
+
+        return fraudFilterResponse;
+    }
+
 
     public static DccRateData mapDccInfo(JsonDoc response) throws GatewayException {
         JsonDoc currencyConversion = response;

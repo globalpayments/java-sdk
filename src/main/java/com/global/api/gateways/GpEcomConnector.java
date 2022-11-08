@@ -669,7 +669,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // reason code
         if(builder.getReasonCode() != null) {
-            et.subElement(request, "reasoncode").text(builder.getReasonCode());
+            et.subElement(request, "reasoncode").text(builder.getReasonCode().toString());
         }
 
         if (builder.getAlternativePaymentType() != null) {

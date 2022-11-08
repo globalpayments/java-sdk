@@ -116,6 +116,7 @@ public class TransactionSummary {
     private String accountType;
     private AlternativePaymentResponse alternativePaymentResponse;
     private BankPaymentResponse bankPaymentResponse;
+    private FraudManagementResponse fraudManagementResponse;
     private String transactionType;
     private String CardEntryMethod;
     private BigDecimal amountDue;

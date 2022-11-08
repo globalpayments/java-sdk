@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.0.2 (11/08/2022)
+
+### Enhancements:
+
+- GP-API: Fraud Management
+- GP-API: Misc Tests Updated
+
 ## v10.0.1 (11/03/2022)
 
 ### Enhancements:
@@ -10,7 +17,6 @@
 - NTS: Updated the `approvalCode` in response for Data collect.
 - NTS: Added `bankcardData` variable to reference object.
 - NTS: Log optimization.
-
 
 ## v10.0.0 (10/25/2022)
 

@@ -55,6 +55,7 @@ public class Transaction {
     private DebitMac debitMac;
     private String emvIssuerResponse;
     @Getter @Setter private FraudResponse fraudResponse;
+    @Getter @Setter private FraudManagementResponse fraudFilterResponse;
     private LinkedList<IGatewayEvent> gatewayEvents;
     private Date hostResponseDate;
     @Getter @Setter private boolean multiCapture;

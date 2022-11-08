@@ -411,6 +411,7 @@ public class GpApiAuthorizationRequestBuilder {
                 //.set("site_reference", "")
                 .set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null)
                 .set("payment_method", paymentMethod)
+                .set("risk_assessment", builder.getFraudFilterMode() != null ? mapFraudManagement(builder) : null)
                 .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
                         new JsonDoc().set("id", builder.getPaymentLinkId()) : null);
 
@@ -509,6 +510,30 @@ public class GpApiAuthorizationRequestBuilder {
         }
 
         return payer;
+    }
+
+    public static ArrayList<HashMap<String, Object>> mapFraudManagement(AuthorizationBuilder builder) {
+        ArrayList<HashMap<String, Object>> rules = new ArrayList<>();
+        if (builder.getFraudRules() != null) {
+            for (var fraudRule : builder.getFraudRules().getRules()) {
+                HashMap<String, Object> rule = new HashMap<>();
+                rule.put("reference", fraudRule.getKey());
+                rule.put("mode", fraudRule.getMode().getValue());
+                rules.add(rule);
+            }
+        }
+
+        ArrayList<HashMap<String, Object>> result = new ArrayList<>();
+        HashMap<String, Object> item = new HashMap<>();
+        item.put("mode", builder.getFraudFilterMode().getValue());
+
+        if (rules.size() > 0) {
+            item.put("rules", rules);
+        }
+
+        result.add(item);
+
+        return result;
     }
 
     private static String getEntryMode(AuthorizationBuilder builder, String channel) {

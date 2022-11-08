@@ -43,8 +43,8 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
+                .setAppId("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK")
+                .setAppKey("oKZpWitk6tORoCVT")
                 .setChannel(Channel.CardNotPresent.getValue());
 
         config.setEnvironment(Environment.TEST);
@@ -107,6 +107,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
                     .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
                     .where(SearchCriteria.StartDate, this.startDate)
                     .and(SearchCriteria.EndDate, this.endDate)
+                    .and(SearchCriteria.PayLinkStatus, PayLinkStatus.ACTIVE.toString())
                     .execute();
 
         if (response.getResults().size() >= 1) {
@@ -539,6 +540,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
                         .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.PayLinkStatus, PayLinkStatus.ACTIVE.toString())
                         .execute();
 
         assertNotNull(response);

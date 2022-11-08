@@ -3,11 +3,9 @@ package com.global.api.tests.secure3d;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
-import com.global.api.entities.MerchantDataCollection;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
@@ -44,8 +42,8 @@ public class Secure3dServiceTests {
         // create card data
         card = new CreditCardData();
         card.setNumber("4263970000005262");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpMonth(DateTime.now().getMonthOfYear());
+        card.setExpYear(DateTime.now().getYear() + 1);
         card.setCardHolderName("John Smith");
 
         // stored card
@@ -89,11 +87,7 @@ public class Secure3dServiceTests {
 
     @Test
     public void fullCycle_v1() throws ApiException {
-        CreditCardData card = new CreditCardData();
         card.setNumber("4012001037141112");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
-        card.setCardHolderName("John Smith");
 
         boolean errorFound = false;
         try {
@@ -102,12 +96,25 @@ public class Secure3dServiceTests {
                     .withAmount(new BigDecimal("10.01"))
                     .withCurrency("USD")
                     .execute(Secure3dVersion.ONE, "default");
-        } catch (BuilderException e) {
+        } catch (ConfigurationException e) {
             errorFound = true;
-            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
+            assertEquals("Secure 3d is not configured for ONE", e.getMessage());
         } finally {
             assertTrue(errorFound);
         }
+    }
+
+    @Test
+    public void fullCycle_v1_EnrolledFalse() throws ApiException {
+        card.setNumber("4012001037141112");
+
+        ThreeDSecure secureEcom = Secure3dService
+                .checkEnrollment(card)
+                .withAmount(new BigDecimal("10.01"))
+                .withCurrency("USD")
+                .execute();
+
+        assertFalse(secureEcom.isEnrolled());
     }
 
     @Test
@@ -139,16 +146,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -160,7 +165,7 @@ public class Secure3dServiceTests {
         assertNotNull(secureEcom);
 
         if (secureEcom.isEnrolled()) {
-            if(secureEcom.getVersion().equals(Secure3dVersion.TWO)) {
+            if (secureEcom.getVersion().equals(Secure3dVersion.TWO)) {
                 assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
 
                 // initiate authentication
@@ -181,16 +186,14 @@ public class Secure3dServiceTests {
                         .execute();
                 card.setThreeDSecure(secureEcom);
 
-                if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+                if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                     Transaction response = card.charge(new BigDecimal("10.01"))
                             .withCurrency("USD")
                             .execute();
                     assertNotNull(response);
                     assertEquals("00", response.getResponseCode());
-                }
-                else fail("Signature verification failed.");
-            }
-            else {
+                } else fail("Signature verification failed.");
+            } else {
                 // authenticate
                 ThreeDSecureAcsClient authClient = new ThreeDSecureAcsClient(secureEcom.getIssuerAcsUrl());
                 AcsResponse authResponse = authClient.authenticate(secureEcom.getPayerAuthenticationRequest(), secureEcom.getMerchantData().toString());
@@ -205,15 +208,13 @@ public class Secure3dServiceTests {
                         .execute();
                 card.setThreeDSecure(secureEcom);
 
-                if(secureEcom.getStatus().equals("Y")) {
+                if (secureEcom.getStatus().equals("Y")) {
                     Transaction response = card.charge().execute();
                     assertNotNull(response);
                     assertEquals("00", response.getResponseCode());
-                }
-                else fail("Signature verification failed.");
+                } else fail("Signature verification failed.");
             }
-        }
-        else fail("Card not enrolled.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -244,16 +245,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = stored.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -284,16 +283,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.verify()
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -324,16 +321,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = stored.verify()
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -368,16 +363,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -422,16 +415,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -483,16 +474,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -529,16 +518,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -575,16 +562,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -621,16 +606,14 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
@@ -672,24 +655,19 @@ public class Secure3dServiceTests {
                     .execute();
             card.setThreeDSecure(secureEcom);
 
-            if(secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.charge(new BigDecimal("10.01"))
                         .withCurrency("USD")
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else fail("Signature verification failed.");
-        }
-        else fail("Card not enrolled.");
+            } else fail("Signature verification failed.");
+        } else fail("Card not enrolled.");
     }
 
     @Test
     public void checkVersion_Not_Enrolled() throws ApiException {
-        CreditCardData card = new CreditCardData();
         card.setNumber("4917000000000087");
-        card.setExpMonth(12);
-        card.setExpYear(2025);
 
         boolean errorFound = false;
         try {
@@ -698,13 +676,12 @@ public class Secure3dServiceTests {
                     .withAmount(new BigDecimal("10.01"))
                     .withCurrency("USD")
                     .execute(Secure3dVersion.ONE, "default");
-        } catch (BuilderException e) {
+        } catch (ConfigurationException e) {
             errorFound = true;
-            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
+            assertEquals("Secure 3d is not configured for ONE", e.getMessage());
         } finally {
             assertTrue(errorFound);
         }
-
     }
 
     @Test(expected = BuilderException.class)
