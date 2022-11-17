@@ -84,9 +84,17 @@ public class NtsWexFleetIcrTest {
         ntsRequestMessageHeader.setPriorMessageCode("01");
 
         fleetData=new FleetData();
-        fleetData.setOdometerReading("1234567");
-        fleetData.setDriverId("123456789");
-        fleetData.setServicePrompt("0");
+        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("06");
+        fleetData.setVehicleNumber("123456");
+        fleetData.setUserId("123456");
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("123456");
+        fleetData.setDriversLicenseNumber("123456");
+        fleetData.setEnteredData("123456");
+        fleetData.setJobNumber("123456");
+        fleetData.setDepartment("123456");
+        fleetData.setOtherPromptCode("123456");
 
 
         tag = new NtsTag16();
@@ -146,7 +154,6 @@ public class NtsWexFleetIcrTest {
         productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
         productData.add(new BigDecimal("32.33"),new BigDecimal(0));
         return productData;
     }
@@ -165,12 +172,8 @@ public class NtsWexFleetIcrTest {
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,card);
         productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"1234");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"112233");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"9999");
 
-        FleetData fleetData=new FleetData();
-        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("03");
 
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -194,12 +197,8 @@ public class NtsWexFleetIcrTest {
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
         productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"1234");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"112233");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"9999");
 
-        FleetData fleetData=new FleetData();
-        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -224,11 +223,10 @@ public class NtsWexFleetIcrTest {
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
         productData.addFuel(NtsProductCode.MiscFuel, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
 
         productData.setSalesTax(new BigDecimal(8));
-        FleetData fleetData=new FleetData();
         fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("01");
 
         emvTagData="4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F24032212315F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
 
@@ -262,6 +260,7 @@ public class NtsWexFleetIcrTest {
         FleetData fleetData=new FleetData();
         fleetData.setPurchaseDeviceSequenceNumber("12345");
         fleetData.setDriverId("123456");
+        fleetData.setServicePrompt("01");
 
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")

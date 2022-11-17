@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.0.3 (11/17/2022)
+
+### Enhancements:
+
+- Align CountryData & CountryUtils to other SDKs 
+- GP-API: Misc Test Fixed
+- NTS: Added Changes for Wex Fleet Service prompt list & Voyager Fleet Driver ID Update
+
 ## v10.0.2 (11/08/2022)
 
 ### Enhancements:

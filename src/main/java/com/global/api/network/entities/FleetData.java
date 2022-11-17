@@ -27,6 +27,8 @@ public class FleetData {
     private String trailerNumber;
     @Setter @Getter
     private String hubometerNumber;
+    @Setter @Getter
+    private String otherPromptCode;
     public String getTrailerReferHours() {
         return trailerReferHours;
     }

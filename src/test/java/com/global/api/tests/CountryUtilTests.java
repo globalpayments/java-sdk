@@ -82,6 +82,25 @@ public class CountryUtilTests {
     }
 
     @Test
+    public void getPhoneByCountry() {
+        String result = CountryUtils.getPhoneCodesByCountry("United States of America");
+        assertNotNull(result);
+        assertEquals("1", result);
+
+        result = CountryUtils.getPhoneCodesByCountry("840");
+        assertNotNull(result);
+        assertEquals("1", result);
+
+        result = CountryUtils.getPhoneCodesByCountry("US");
+        assertNotNull(result);
+        assertEquals("1", result);
+
+        result = CountryUtils.getPhoneCodesByCountry("USA");
+        assertNotNull(result);
+        assertEquals("1", result);
+    }
+
+    @Test
     public void getCountryCodeByExactNumericCode() {
         String result = CountryUtils.getCountryCodeByCountry("840");
         assertNotNull(result);

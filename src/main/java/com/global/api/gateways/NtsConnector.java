@@ -168,7 +168,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         return sendRequest(request, builder);
     }
 
-    private String setUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) {
+    private String setUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) throws ApiException {
         String userData = "";
         if (cardType != null && isUserDataPresent(builder, paymentMethod, cardType)) {
             messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();

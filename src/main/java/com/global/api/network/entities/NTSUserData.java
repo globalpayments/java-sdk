@@ -6,6 +6,7 @@ import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
 import com.global.api.network.elements.DE63_ProductDataEntry;
 import com.global.api.network.enums.*;
@@ -677,7 +678,7 @@ public class NTSUserData {
         return sb.toString();
     }
 
-    public static String getNonBankCardUserData(TransactionBuilder<Transaction> builder, NTSCardTypes cardType, NtsMessageCode messageCode, AcceptorConfig acceptorConfig) {
+    public static String getNonBankCardUserData(TransactionBuilder<Transaction> builder, NTSCardTypes cardType, NtsMessageCode messageCode, AcceptorConfig acceptorConfig) throws ApiException {
         StringBuilder sb = new StringBuilder();
         NtsProductData productData = builder.getNtsProductData();
         BigDecimal salesTax = new BigDecimal(0);
@@ -859,16 +860,16 @@ public class NTSUserData {
                 if (builder.getTransactionType().equals(TransactionType.Auth)) {
                     if (fleetData.getOdometerReading() != null)
                         sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 7, '0'));
-                    if (fleetData.getVehicleNumber() != null)
-                        sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 6, '0'));
+                    if (fleetData.getDriverId()!= null)
+                        sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, '0'));
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
                         builder.getTransactionType().equals(TransactionType.Capture)) {
                     if (messageCode.equals(NtsMessageCode.DataCollectOrSale)) {
                         if (fleetData.getOdometerReading() != null)
                             sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 7, '0'));
-                        if (fleetData.getVehicleNumber() != null)
-                            sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 6, '0'));
+                        if (fleetData.getDriverId() != null)
+                            sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, '0'));
                         sb.append(serviceLevel);
                         sb.append(getVoyagerFleetFuelList(builder));
                         sb.append(getRollUpData(builder, cardType, productData, 4));
@@ -1117,27 +1118,24 @@ public class NTSUserData {
         return sb;
     }
 
-    private static StringBuffer getWexFleetPromptList(TransactionBuilder<Transaction> builder) {
+    private static StringBuffer getWexFleetPromptList(TransactionBuilder<Transaction> builder) throws ApiException {
         StringBuffer sb = new StringBuffer();
-        LinkedHashMap<ProductCodeType, String> promptList = null;
-        NtsProductData productData = builder.getNtsProductData();
-
-        if (productData != null) {
-            promptList = productData.getPromptList();
-        }
+        FleetData data = builder.getFleetData();
         int promptSize = 0;
-        if (promptList != null) {
-            promptSize = builder.getTagData() != null ?
-                    Math.min(promptList.size(), 6) :
-                    Math.min(promptList.size(), 3);
-            sb.append(promptSize);
-            promptList.entrySet().stream().limit(promptSize).forEach(list -> {
-                sb.append(list.getKey().getValue());
-                int length = list.getValue().length();
-                sb.append(StringUtils.padLeft(length, 2, '0'));
-                sb.append(StringUtils.padLeft(list.getValue(), 12, '0'));
-            });
+        // Adding the provided prompts.
+        int servicePrompt;
+        try {
+            servicePrompt = Integer.parseInt(data.getServicePrompt());
+        } catch (Exception ignored){
+            throw new ApiException("Service prompts required for wex fleet transcations.");
         }
+        promptSize = builder.getTagData() != null ?
+                Math.min(servicePrompt, 6) :
+                Math.min(servicePrompt, 3);
+        sb.append(promptSize);
+        sb.append(getWEXPromptData(data, promptSize));
+
+        // Added remaining 0 for padding purpose.
         int remainingPrompt = builder.getTagData() != null ?
                 Math.max(promptSize, 6) :
                 Math.max(promptSize, 3);
@@ -1192,4 +1190,81 @@ public class NTSUserData {
         }
         return sb;
     }
+    private  static  StringBuffer getWEXPromptData(FleetData data, Integer promptSize){
+        StringBuffer sb = new StringBuffer();
+        int sizeFlag = 0;
+        if(data.getVehicleNumber() != null){
+            sb.append(getWexPrompt(data.getVehicleNumber(), "1"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getUserId() != null){
+            sb.append(getWexPrompt(data.getUserId(), "2"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getDriverId() != null){
+            sb.append(getWexPrompt(data.getDriverId(), "3"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getOdometerReading() != null){
+            sb.append(getWexPrompt(data.getOdometerReading(), "4"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getDriversLicenseNumber() != null){
+            sb.append(getWexPrompt(data.getDriversLicenseNumber(), "5"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getEnteredData() != null){
+            sb.append(getWexPrompt(data.getEnteredData(), "6"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getJobNumber() != null){
+            sb.append(getWexPrompt(data.getJobNumber(), "7"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getDepartment() != null){
+            sb.append(getWexPrompt(data.getDepartment(), "8"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getOtherPromptCode() != null){
+            sb.append(getWexPrompt(data.getOtherPromptCode(), "9"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        return sb;
+    }
+
+    private static StringBuffer getWexPrompt(String data, String promptCode){
+        return new StringBuffer()
+                .append(promptCode) // PromptCode
+                .append(StringUtils.padLeft(data.length(), 2, '0')) // Data Length
+                .append(StringUtils.padLeft(data, 12, '0')); // Actual Data
+
+    }
+
 }

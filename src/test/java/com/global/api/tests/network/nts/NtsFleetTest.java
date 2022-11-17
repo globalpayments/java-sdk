@@ -1239,7 +1239,7 @@ public class NtsFleetTest {
     public void test_001_Voyager_Fleet_auth_without_track_amount_expansion() throws ApiException {
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         card = TestCards.VoyagerManual(true, true);
         card.setExpYear(2025);
@@ -1264,7 +1264,7 @@ public class NtsFleetTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("48000");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1286,7 +1286,7 @@ public class NtsFleetTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1307,7 +1307,7 @@ public class NtsFleetTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -1342,7 +1342,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1370,7 +1370,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1401,7 +1401,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1429,7 +1429,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1457,7 +1457,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1488,7 +1488,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1520,7 +1520,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1550,7 +1550,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = card.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1582,7 +1582,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1633,7 +1633,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
 
         Transaction response = card.charge(new BigDecimal(90.90))
@@ -1672,7 +1672,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         track = new CreditTrackData();
         track.setValue(";7088869008250005031=25120000000000000?");
@@ -1701,7 +1701,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         card = new CreditCardData();
         card.setNumber("7088869008250005031");
@@ -1743,7 +1743,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
 
         Transaction response = track.charge(new BigDecimal(90.90))
@@ -1790,7 +1790,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")
@@ -1839,7 +1839,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
 
         Transaction response = track.charge(new BigDecimal(90.90))
@@ -1890,7 +1890,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("123456");
 
 
         Transaction response = track.charge(new BigDecimal(90.90))
@@ -1930,7 +1930,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setVehicleNumber("123456");
+        fleetData.setDriverId("12345");
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)

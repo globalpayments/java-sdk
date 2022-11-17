@@ -86,7 +86,17 @@ public class NtsWexFleetTest {
 
         fleetData=new FleetData();
         fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("06");
+        fleetData.setVehicleNumber("123456");
+        fleetData.setUserId("123456");
         fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("123456");
+        fleetData.setDriversLicenseNumber("123456");
+        fleetData.setEnteredData("123456");
+        fleetData.setJobNumber("123456");
+        fleetData.setDepartment("123456");
+        fleetData.setOtherPromptCode("123456");
+
 
         tag = new NtsTag16();
         tag.setPumpNumber(1);
@@ -145,12 +155,6 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.Dairy,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.Odometer,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumber,"123456");
-        productData.addPromptList(ProductCodeType.JobNumber,"123456");
         productData.setSalesTax(new BigDecimal(8));
         productData.add(new BigDecimal("32.33"),new BigDecimal(0));
         return productData;
@@ -186,7 +190,6 @@ public class NtsWexFleetTest {
         Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-
                 .withFleetData(fleetData)
                 .execute();
         assertNotNull(dataCollectResponse);
@@ -350,14 +353,9 @@ public class NtsWexFleetTest {
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"1234");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"112233");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"9999");
-
         productData.setSalesTax(new BigDecimal(9));
 
-        FleetData fleetData=new FleetData();
-        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -387,14 +385,10 @@ public class NtsWexFleetTest {
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
         productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"1234");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"112233");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"9999");
         productData.setPurchaseType(PurchaseType.Fuel);
         productData.setSalesTax(new BigDecimal(9));
 
-        FleetData fleetData=new FleetData();
-        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -421,8 +415,7 @@ public class NtsWexFleetTest {
 
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        FleetData fleetData=new FleetData();
-        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("06");
 
         track = new CreditTrackData();
         track.setValue(";6900460430001234566=21121012202100000?");
@@ -524,10 +517,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.BrakeSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -562,10 +554,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.BeerOrAlc,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -604,10 +595,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.EngineSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -646,10 +636,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.BrakeSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -688,10 +677,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.BrakeSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -731,10 +719,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.CigTobaco,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -774,10 +761,9 @@ public class NtsWexFleetTest {
         productData.addNonFuel(NtsProductCode.CigTobaco,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal(32.33),new BigDecimal(5));
-        productData.addPromptList(ProductCodeType.IdnumberAndOdometerOrVehicleId,"123456");
-        productData.addPromptList(ProductCodeType.DriverNumberAndOdometerOrDriverId,"123456");
-        productData.addPromptList(ProductCodeType.VehicleNumberAndOdometerOrUserId,"123456");
         productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")

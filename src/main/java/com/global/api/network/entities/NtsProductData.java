@@ -39,9 +39,6 @@ public class NtsProductData {
     @Setter
     @Getter
     private PurchaseType purchaseType;
-    @Setter
-    @Getter
-    private LinkedHashMap<ProductCodeType, String> promptList;
     @Getter
     @Setter
     private NTSCardTypes cardType;
@@ -49,7 +46,6 @@ public class NtsProductData {
     public NtsProductData() {
         nonFuelDataEntries = new ArrayList<>();
         fuelDataEntries = new ArrayList<>();
-        promptList = new LinkedHashMap<>();
     }
 
     public NtsProductData(ServiceLevel serviceLevel) {
@@ -72,11 +68,7 @@ public class NtsProductData {
         setDiscount(discount);
     }
 
-    public void addPromptList(ProductCodeType productCodeType, String promptValue) {
-        promptList.put(productCodeType, promptValue);
-    }
-
-    public void addToNonFuelList(String productCode, UnitOfMeasure unitOfMeasure, BigDecimal quantity, BigDecimal price, BigDecimal amount) {
+   public void addToNonFuelList(String productCode, UnitOfMeasure unitOfMeasure, BigDecimal quantity, BigDecimal price, BigDecimal amount) {
         DE63_ProductDataEntry entry = new DE63_ProductDataEntry();
         entry.setCode(productCode);
         entry.setUnitOfMeasure(unitOfMeasure);
