@@ -95,8 +95,10 @@ public class GnapConnector extends GatewayConnectorConfig {
             mapFids.addFid(GnapFIDS.FID_B, getTransactionAmount(builder));
 
         //FID_D("Account Type")
-        if((isDebitCard || cardBrand.equals(CardBrand.UnionPay)) && reqData.getAccountType()!=null) {
-            mapFids.addFid(GnapFIDS.FID_D, accountTypeMapping(reqData.getAccountType()));
+        if(cardBrand!=null) {
+            if ((isDebitCard || cardBrand.equals(CardBrand.UnionPay)) && reqData.getAccountType() != null) {
+                mapFids.addFid(GnapFIDS.FID_D, accountTypeMapping(reqData.getAccountType()));
+            }
         }
 
         //FID_F("Approval Code")
@@ -107,8 +109,9 @@ public class GnapConnector extends GatewayConnectorConfig {
         }
 
         //FID_P("Draft Capture Flag")
-        mapFids.addFid(GnapFIDS.FID_P,getDraftCapture(cardBrand,transactionType));
-
+        if(cardBrand!=null) {
+            mapFids.addFid(GnapFIDS.FID_P, getDraftCapture(cardBrand, transactionType));
+        }
         //FID_Q("Echo Data")
         mapFids.addFid(GnapFIDS.FID_Q, reqData.getEchoData());
 
@@ -135,8 +138,9 @@ public class GnapConnector extends GatewayConnectorConfig {
 
 
         //FID_a("Optional Data")
-        if (optionalData != null)
-            mapFids.addFid(GnapFIDS.FID_a, optionalData.getOptionalData(transactionType,header.getTransactionCode(),cardBrand,reqData.getCardType()));
+        if(cardBrand!=null && optionalData != null) {
+            mapFids.addFid(GnapFIDS.FID_a, optionalData.getOptionalData(transactionType, header.getTransactionCode(), cardBrand, reqData.getCardType()));
+        }
 
         //FID_b("PIN Block")
         if(paymentMethod instanceof IPinProtected) {
@@ -182,11 +186,12 @@ public class GnapConnector extends GatewayConnectorConfig {
         mapFids.addFid(GnapFIDS.FID_t, acceptorConfig.getPinPadSerialNumber());
 
         //FID_z("Union Pay Indicator")
-        if (cardBrand.equals(CardBrand.UnionPay))
-            mapFids.addFid(GnapFIDS.FID_z,UnionPayIndicator.UnionPayTransaction);
-        else
-            mapFids.addFid(GnapFIDS.FID_z,UnionPayIndicator.NonUnionPayTransaction);
-
+        if(cardBrand!=null) {
+            if (cardBrand.equals(CardBrand.UnionPay))
+                mapFids.addFid(GnapFIDS.FID_z, UnionPayIndicator.UnionPayTransaction);
+            else
+                mapFids.addFid(GnapFIDS.FID_z, UnionPayIndicator.NonUnionPayTransaction);
+        }
         //FID_4("Message Reason Codes for Merchant Initiated Transactions")
         mapFids.addFid(GnapFIDS.FID_4, reqData.getMerchantReasonCodes());
 
@@ -275,7 +280,9 @@ public class GnapConnector extends GatewayConnectorConfig {
 
         if (paymentMethod instanceof TransactionReference) {
             reference = (TransactionReference) paymentMethod;
-            paymentMethod = reference.getOriginalPaymentMethod();
+            if(reference!=null) {
+                paymentMethod = reference.getOriginalPaymentMethod();
+            }
             isInstanceOfReference=true;
             cardBrand=GnapUtils.getCardBrand(paymentMethod);
             isCreditCard = paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) ||paymentMethod instanceof Credit;
@@ -306,19 +313,22 @@ public class GnapConnector extends GatewayConnectorConfig {
             mapFids.addFid(GnapFIDS.FID_B, getTransactionAmount(builder));
 
             //FID_C("Original Transaction Amount")
-            if (reference.getOriginalApprovedAmount() != reference.getOriginalAmount())
-                mapFids.addFid(GnapFIDS.FID_C, StringUtils.toNumeric(reference.getOriginalApprovedAmount()));
-            else if (transactionType.equals(TransactionType.PreAuthCompletion))
-                mapFids.addFid(GnapFIDS.FID_C, StringUtils.toNumeric(reference.getOriginalAmount()));
-
+            if(reference != null) {
+                if (reference.getOriginalApprovedAmount() != reference.getOriginalAmount())
+                    mapFids.addFid(GnapFIDS.FID_C, StringUtils.toNumeric(reference.getOriginalApprovedAmount()));
+                else if (transactionType.equals(TransactionType.PreAuthCompletion))
+                    mapFids.addFid(GnapFIDS.FID_C, StringUtils.toNumeric(reference.getOriginalAmount()));
+            }
             //FID_D("Account Type")
             if((isDebitCard || cardBrand.equals(CardBrand.UnionPay)) && reqData.getAccountType()!=null) {
                 mapFids.addFid(GnapFIDS.FID_D, accountTypeMapping(reqData.getAccountType()));
             }
 
             //FID_F("Approval Code")
-            if (isInstanceOfReference && reference.getOriginalProcessingCode() != null && isApprovalCodeValid(cardBrand,transactionType)) {
-                mapFids.addFid(GnapFIDS.FID_F, StringUtils.padRight(reference.getOriginalProcessingCode(), 8, ' '));
+            if(reference != null) {
+                if (isInstanceOfReference && reference.getOriginalProcessingCode() != null && isApprovalCodeValid(cardBrand, transactionType)) {
+                    mapFids.addFid(GnapFIDS.FID_F, StringUtils.padRight(reference.getOriginalProcessingCode(), 8, ' '));
+                }
             }
 
             //FID_P("Draft Capture Flag")
@@ -334,9 +344,10 @@ public class GnapConnector extends GatewayConnectorConfig {
             mapFids.addFid(GnapFIDS.FID_S, reqData.getInvoiceNumber());
 
             //FID_T("Original Invoice Number")
-            if (isInstanceOfReference && reference.getOriginalInvoiceNumber() != null)
-                mapFids.addFid(GnapFIDS.FID_T, reference.getOriginalInvoiceNumber());
-
+            if(reference != null) {
+                if (isInstanceOfReference && reference.getOriginalInvoiceNumber() != null)
+                    mapFids.addFid(GnapFIDS.FID_T, reference.getOriginalInvoiceNumber());
+            }
             //FID_U("Language Code")
             if(paymentMethod instanceof Credit){
                 mapFids.addFid(GnapFIDS.FID_U, reqData.getLanguageCode());
@@ -378,9 +389,10 @@ public class GnapConnector extends GatewayConnectorConfig {
             }
 
             //FID_j("Mastercard Banknet Reference Number, Visa Transaction Identifier or Discover Network Reference ID")
-            if (isInstanceOfReference)
-                mapFids.addFid(GnapFIDS.FID_j, reference.getTransactionIdentifier());
-
+            if(reference != null) {
+                if (isInstanceOfReference)
+                    mapFids.addFid(GnapFIDS.FID_j, reference.getTransactionIdentifier());
+            }
             //FID_m("Day Totals")
             if (reqData.getDayTotals() != null)
                 mapFids.addFid(GnapFIDS.FID_m, reqData.getDayTotals().getValue(reqData.getSequenceNumber()));
@@ -430,9 +442,10 @@ public class GnapConnector extends GatewayConnectorConfig {
             mapFids.addFid(GnapFIDS.FID_4, reqData.getMerchantReasonCodes());
 
             //FID_5("Transaction Info")
-            if (isInstanceOfReference)
-                mapFids.addFid(GnapFIDS.FID_5, reference.getOriginalTransactionInfo());
-
+            if(reference != null) {
+                if (isInstanceOfReference)
+                    mapFids.addFid(GnapFIDS.FID_5, reference.getOriginalTransactionInfo());
+            }
             //FID_6("Product Sub-FIDs")
             if (prodSubFids != null) {
                 mapFids.addFid(GnapFIDS.FID_6, "");

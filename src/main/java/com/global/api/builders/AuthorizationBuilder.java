@@ -127,7 +127,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     private String goodsSold;
     @Getter
-    private NtsPOSSiteConfigurationData ntsPosSiteConfiguration;
+    private POSSiteConfigurationData posSiteConfigurationData;
 
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
@@ -150,8 +150,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         ntsMailData = value;
         return this;
     }
-    public AuthorizationBuilder withNtsPOSSiteConfigData(NtsPOSSiteConfigurationData value) {
-        this.ntsPosSiteConfiguration = value;
+    public AuthorizationBuilder withPOSSiteConfigData(POSSiteConfigurationData value) {
+        this.posSiteConfigurationData = value;
         return this;
     }
 

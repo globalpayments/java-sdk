@@ -102,7 +102,6 @@ public enum DE48_CardType implements IStringConstant {
     Mastercard("MC"),
     MastercardFleet("MF"),
     McDuff("MD"),
-    Centego("MH"),
     BMoss("MI"),
     MarksAndMorgan_2("MM"),
     MenardsCard("MN"),

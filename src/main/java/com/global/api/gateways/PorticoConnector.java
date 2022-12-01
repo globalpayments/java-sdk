@@ -26,6 +26,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 @Accessors(chain = true)
@@ -299,7 +300,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
             else et.subElement(block1, "TokenValue").text(tokenValue);
 
-            et.subElement(block1, "DataEntryMode", check.getEntryMode().getValue().toUpperCase());
+            et.subElement(block1, "DataEntryMode", check.getEntryMode().getValue().toUpperCase(Locale.ENGLISH));
             et.subElement(block1, "CheckType", check.getCheckType());
             et.subElement(block1, "SECCode", check.getSecCode());
 
@@ -900,117 +901,127 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 return "CreditAccountVerify";
             case Capture:
-                if(paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "CreditAddToBatch";
-                else if(paymentMethodType.equals(PaymentMethodType.Debit))
-                    return "DebitAddToBatch";
-                throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "CreditAddToBatch";
+                    else if (paymentMethodType.equals(PaymentMethodType.Debit))
+                        return "DebitAddToBatch";
+                    throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
+                }
             case Auth:
-                if(paymentMethodType.equals(PaymentMethodType.Credit)) {
-                    if(modifier.equals(TransactionModifier.Additional))
-                        return "CreditAdditionalAuth";
-                    else if(modifier.equals(TransactionModifier.Incremental))
-                        return "CreditIncrementalAuth";
-                    else if(modifier.equals(TransactionModifier.Offline))
-                        return "CreditOfflineAuth";
-                    else if(modifier.equals(TransactionModifier.Recurring))
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit)) {
+                        if (modifier.equals(TransactionModifier.Additional))
+                            return "CreditAdditionalAuth";
+                        else if (modifier.equals(TransactionModifier.Incremental))
+                            return "CreditIncrementalAuth";
+                        else if (modifier.equals(TransactionModifier.Offline))
+                            return "CreditOfflineAuth";
+                        else if (modifier.equals(TransactionModifier.Recurring))
+                            return "RecurringBillingAuth";
+                        else if (modifier.equals(TransactionModifier.EncryptedMobile))
+                            throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
+                        return "CreditAuth";
+                    } else if (paymentMethodType.equals(PaymentMethodType.Recurring))
                         return "RecurringBillingAuth";
-                    else if(modifier.equals(TransactionModifier.EncryptedMobile))
-                         throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
-                    return "CreditAuth";
+                    else if (paymentMethodType.equals(PaymentMethodType.Debit))
+                        return "DebitAuth";
+                    throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 }
-                else if(paymentMethodType.equals(PaymentMethodType.Recurring))
-                    return "RecurringBillingAuth";
-                else if(paymentMethodType.equals(PaymentMethodType.Debit))
-                    return "DebitAuth";
-                throw new UnsupportedTransactionException();
             case Sale:
-                if (paymentMethodType.equals(PaymentMethodType.Credit)) {
-                    if (modifier.equals(TransactionModifier.Offline))
-                        return "CreditOfflineSale";
-                    else if(modifier.equals(TransactionModifier.Recurring))
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit)) {
+                        if (modifier.equals(TransactionModifier.Offline))
+                            return "CreditOfflineSale";
+                        else if (modifier.equals(TransactionModifier.Recurring))
+                            return "RecurringBilling";
+                        else return "CreditSale";
+                    } else if (paymentMethodType.equals(PaymentMethodType.Recurring)) {
+                        if (((RecurringPaymentMethod) builder.getPaymentMethod()).getPaymentType().equals("ACH"))
+                            return "CheckSale";
                         return "RecurringBilling";
-                    else return "CreditSale";
-                }
-                else if (paymentMethodType.equals(PaymentMethodType.Recurring)) {
-                    if(((RecurringPaymentMethod)builder.getPaymentMethod()).getPaymentType().equals("ACH"))
+                    } else if (paymentMethodType.equals(PaymentMethodType.Debit))
+                        return "DebitSale";
+                    else if (paymentMethodType.equals(PaymentMethodType.Cash))
+                        return "CashSale";
+                    else if (paymentMethodType.equals(PaymentMethodType.ACH))
                         return "CheckSale";
-                    return "RecurringBilling";
+                    else if (paymentMethodType.equals(PaymentMethodType.EBT)) {
+                        if (modifier.equals(TransactionModifier.CashBack))
+                            return "EBTCashBackPurchase";
+                        else if (modifier.equals(TransactionModifier.Voucher))
+                            return "EBTVoucherPurchase";
+                        else return "EBTFSPurchase";
+                    } else if (paymentMethodType.equals(PaymentMethodType.Gift))
+                        return "GiftCardSale";
+                    throw new UnsupportedTransactionException();
                 }
-                else if (paymentMethodType.equals(PaymentMethodType.Debit))
-                    return "DebitSale";
-                else if (paymentMethodType.equals(PaymentMethodType.Cash))
-                    return "CashSale";
-                else if (paymentMethodType.equals(PaymentMethodType.ACH))
-                    return "CheckSale";
-                else if (paymentMethodType.equals(PaymentMethodType.EBT)) {
-                    if (modifier.equals(TransactionModifier.CashBack))
-                        return "EBTCashBackPurchase";
-                    else if (modifier.equals(TransactionModifier.Voucher))
-                        return "EBTVoucherPurchase";
-                    else return "EBTFSPurchase";
-                }
-                else if (paymentMethodType.equals(PaymentMethodType.Gift))
-                    return "GiftCardSale";
-                throw new UnsupportedTransactionException();
             case Refund:
-                if (paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "CreditReturn";
-                else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
-                    if(builder.getPaymentMethod() instanceof TransactionReference)
-                        throw new UnsupportedTransactionException();
-                    return "DebitReturn";
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "CreditReturn";
+                    else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
+                        if (builder.getPaymentMethod() instanceof TransactionReference)
+                            throw new UnsupportedTransactionException();
+                        return "DebitReturn";
+                    } else if (paymentMethodType.equals(PaymentMethodType.Cash))
+                        return "CashReturn";
+                    else if (paymentMethodType.equals(PaymentMethodType.EBT)) {
+                        if (builder.getPaymentMethod() instanceof TransactionReference)
+                            throw new UnsupportedTransactionException();
+                        return "EBTFSReturn";
+                    }
+                    throw new UnsupportedTransactionException();
                 }
-                else if (paymentMethodType.equals(PaymentMethodType.Cash))
-                    return "CashReturn";
-                else if (paymentMethodType.equals(PaymentMethodType.EBT)) {
-                    if(builder.getPaymentMethod() instanceof TransactionReference)
-                        throw new UnsupportedTransactionException();
-                    return "EBTFSReturn";
-                }
-                throw new UnsupportedTransactionException();
             case Reversal:
-                if (paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "CreditReversal";
-                else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "CreditReversal";
+                    else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
 //                    I don't know why this is here, but it doesn't seem to be valid removing for now
 //                    if(builder.getPaymentMethod() instanceof TransactionReference)
 //                        throw new UnsupportedTransactionException();
-                    return "DebitReversal";
+                        return "DebitReversal";
+                    } else if (paymentMethodType.equals(PaymentMethodType.Gift))
+                        return "GiftCardReversal";
+                    else if (paymentMethodType.equals(PaymentMethodType.EBT))
+                        return "EBTFSReversal";
+                    throw new UnsupportedTransactionException();
                 }
-                else if (paymentMethodType.equals(PaymentMethodType.Gift))
-                    return "GiftCardReversal";
-                else if (paymentMethodType.equals(PaymentMethodType.EBT))
-                    return "EBTFSReversal";
-                throw new UnsupportedTransactionException();
             case Edit:
                 if (modifier.equals(TransactionModifier.LevelII))
                     return "CreditCPCEdit";
                 else return "CreditTxnEdit";
             case Void:
-                if (paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "CreditVoid";
-                else if (paymentMethodType.equals(PaymentMethodType.ACH))
-                    return "CheckVoid";
-                else if (paymentMethodType.equals(PaymentMethodType.Gift))
-                    return "GiftCardVoid";
-                throw new UnsupportedTransactionException();
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "CreditVoid";
+                    else if (paymentMethodType.equals(PaymentMethodType.ACH))
+                        return "CheckVoid";
+                    else if (paymentMethodType.equals(PaymentMethodType.Gift))
+                        return "GiftCardVoid";
+                    throw new UnsupportedTransactionException();
+                }
             case AddValue:
-                if (paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "PrePaidAddValue";
-                else if (paymentMethodType.equals(PaymentMethodType.Debit))
-                    return "DebitAddValue";
-                else if (paymentMethodType.equals(PaymentMethodType.Gift))
-                    return "GiftCardAddValue";
-                throw new UnsupportedTransactionException();
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "PrePaidAddValue";
+                    else if (paymentMethodType.equals(PaymentMethodType.Debit))
+                        return "DebitAddValue";
+                    else if (paymentMethodType.equals(PaymentMethodType.Gift))
+                        return "GiftCardAddValue";
+                    throw new UnsupportedTransactionException();
+                }
             case Balance:
-                if (paymentMethodType.equals(PaymentMethodType.EBT))
-                    return "EBTBalanceInquiry";
-                else if (paymentMethodType.equals(PaymentMethodType.Gift))
-                    return "GiftCardBalance";
-                else if (paymentMethodType.equals(PaymentMethodType.Credit))
-                    return "PrePaidBalanceInquiry";
-                throw new UnsupportedTransactionException();
+                if(paymentMethodType != null) {
+                    if (paymentMethodType.equals(PaymentMethodType.EBT))
+                        return "EBTBalanceInquiry";
+                    else if (paymentMethodType.equals(PaymentMethodType.Gift))
+                        return "GiftCardBalance";
+                    else if (paymentMethodType.equals(PaymentMethodType.Credit))
+                        return "PrePaidBalanceInquiry";
+                    throw new UnsupportedTransactionException();
+                }
             case BenefitWithdrawal:
                 return "EBTCashBenefitWithdrawal";
             case Activate:

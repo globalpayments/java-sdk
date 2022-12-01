@@ -1,14 +1,15 @@
-package com.global.api.tests.network.nts;
+package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.*;
+import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.TerminalType;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.POSSiteConfigurationData;
 import com.global.api.network.enums.CardDataInputCapability;
 import com.global.api.network.enums.CardHolderAuthenticationCapability;
+import com.global.api.network.enums.CardHolderAuthenticationEntity;
 import com.global.api.network.enums.TerminalOutputCapability;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
@@ -20,90 +21,61 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+public class VapsPOSSiteConfigTest {
+    POSSiteConfigurationData posSiteConfiguration;
+    public VapsPOSSiteConfigTest() throws ApiException{
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
 
-public class NTSPOSConfigurationMessageTest {
-    private NtsRequestMessageHeader ntsRequestMessageHeader;
-    // gateway config
-    NetworkGatewayConfig config;
-    public NTSPOSConfigurationMessageTest() throws ApiException {
-        {
-            Address address = new Address();
-            address.setName("My STORE            ");
-            address.setStreetAddress1("1 MY STREET       ");
-            address.setCity("JEFFERSONVILLE  ");
-            address.setPostalCode("90210");
-            address.setState("KY");
-            address.setCountry("USA");
+        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig.setAddress(address);
 
-            AcceptorConfig acceptorConfig = new AcceptorConfig();
-            acceptorConfig.setAddress(address);
-            ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        // data code values
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
+        acceptorConfig.setCardHolderAuthenticationEntity(CardHolderAuthenticationEntity.ByMerchant);
+        acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
 
-            ntsRequestMessageHeader.setTerminalDestinationTag("478");
-            ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
-            ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PosSiteConfiguration);
-            ntsRequestMessageHeader.setPriorMessageResponseTime(999);
-            ntsRequestMessageHeader.setPriorMessageConnectTime(999);
-            ntsRequestMessageHeader.setPriorMessageCode("08");
+        // hardware software config values
+        acceptorConfig.setHardwareLevel("34");
+        acceptorConfig.setSoftwareLevel("21205710");
 
-            // data code values
-            // acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);
-            acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
-            acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);
-            acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
+        // pos configuration values
+        acceptorConfig.setSupportsPartialApproval(true);
+        acceptorConfig.setSupportsShutOffAmount(true);
+        acceptorConfig.setSupportsReturnBalance(true);
+        acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
+        acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
+        acceptorConfig.setSupportsEmvPin(true);
 
-            // hardware software config values
-            acceptorConfig.setHardwareLevel("34");
-            acceptorConfig.setSoftwareLevel("21205710");
+        // gateway config
+        NetworkGatewayConfig config = new NetworkGatewayConfig(Target.VAPS);
+        config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
+        config.setPrimaryPort(15031);
+        config.setSecondaryEndpoint("test.txns.secureexchange.net");
+        config.setSecondaryPort(15031);
+        config.setCompanyId("0044");
+        config.setTerminalId("0000912197711");
+        config.setAcceptorConfig(acceptorConfig);
+        config.setEnableLogging(true);
+        config.setStanProvider(StanGenerator.getInstance());
+        config.setBatchProvider(BatchProvider.getInstance());
+//        config.setTerminalType(TerminalType.CastlesSaturn1000S);
 
-            // pos configuration values
-            acceptorConfig.setSupportsPartialApproval(true);
-            acceptorConfig.setSupportsShutOffAmount(true);
-            acceptorConfig.setSupportsReturnBalance(true);
-            acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
-            acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
-
-            // gateway config
-            // gateway config
-            config = new NetworkGatewayConfig(Target.NTS);
-            config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
-            config.setPrimaryPort(15031);
-            config.setSecondaryEndpoint("test.txns.secureexchange.net");
-            config.setSecondaryPort(15031);
-            config.setEnableLogging(true);
-            config.setStanProvider(StanGenerator.getInstance());
-            config.setBatchProvider(BatchProvider.getInstance());
-            config.setAcceptorConfig(acceptorConfig);
-
-            // NTS Related configurations
-            config.setBinTerminalId(" ");
-            config.setBinTerminalType(" ");
-            config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
-            config.setTerminalId("21");
-            config.setUnitNumber("00066654534");
-            config.setSoftwareVersion("21");
-            config.setLogicProcessFlag(LogicProcessFlag.Capable);
-            config.setTerminalType(TerminalType.VerifoneRuby2Ci);
-            
-            ServicesContainer.configureService(config);
-
-            config.setMerchantType("5541");
-            ServicesContainer.configureService(config, "ICR");
-
-            ServicesContainer.configureService(config, "timeout");
-        }
-    }
-
-    @Test
-    public void test_POS_site_configuration() throws ApiException {
+        ServicesContainer.configureService(config);
 
         // Preparing for POS site configuration.
-        POSSiteConfigurationData posSiteConfiguration = new POSSiteConfigurationData();
+        posSiteConfiguration = new POSSiteConfigurationData(Target.VAPS);
         posSiteConfiguration.setMessageVersion("001");
         posSiteConfiguration.setCompanyName("Test Company");
-        posSiteConfiguration.setHeartlandCompanyId("045");
+        posSiteConfiguration.setHeartlandCompanyId("0044");
         posSiteConfiguration.setMerchantFranchiseName("Test Merchant");
-        posSiteConfiguration.setMerchantIdUnitPlusTid("1245#dcdc");
+        posSiteConfiguration.setMerchantIdUnitPlusTid("0000912197711");
         posSiteConfiguration.setMerchantAddressStreet("My Street");
         posSiteConfiguration.setMerchantAddressCity("My City");
         posSiteConfiguration.setMerchantAddressState("US");
@@ -114,11 +86,11 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setMethodOfOperation("A");
         posSiteConfiguration.setPosVendor("VERIFONE");
         posSiteConfiguration.setPosProductNameOrModel("RUBY 2 C1");
-        posSiteConfiguration.setHeartlandPosTerminalType("88");
+        posSiteConfiguration.setHeartlandPosTerminalType("11");
         posSiteConfiguration.setHeartlandPosSoftwareVersion("1.1.1.1");
         posSiteConfiguration.setHeartlandTerminalSpecVersion("0212");
-        posSiteConfiguration.setPosHardwareVersion("0212");
-        posSiteConfiguration.setPosSoftwareVersion("1.1.1");
+        posSiteConfiguration.setPosHardwareVersion("34");
+        posSiteConfiguration.setPosSoftwareVersion("21205710");
         posSiteConfiguration.setPosOperatingSystem("V2");
         posSiteConfiguration.setMiddlewareVendor("Test Vendor");
         posSiteConfiguration.setMiddlewareProductNameOrModel("Model 1");
@@ -180,14 +152,21 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setPeripheral5ProductNameOrModel("product 1");
         posSiteConfiguration.setPeripheral5SoftwareVersion("001");
 
+        // with merchant type
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config, "ICR");
+    }
+
+    @Test
+    public void test_POS_Site_Config() throws ApiException{
+
         Transaction response = NetworkService.sendSiteConfiguration()
                 .withCurrency("USD")
-                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withPOSSiteConfigData(posSiteConfiguration)
                 .execute();
         assertNotNull(response);
 
         // check response
-        assertEquals("00", response.getResponseCode());
+        assertEquals("600", response.getResponseCode());
     }
 }

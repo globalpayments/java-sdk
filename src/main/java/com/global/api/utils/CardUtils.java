@@ -7,6 +7,7 @@ import lombok.var;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -188,7 +189,7 @@ public class CardUtils {
     public static String getBaseCardType(String cardType) {
         var resultCardType = cardType;
         for (String cardTypeKey : regexMap.keySet()) {
-            if (cardType.toUpperCase().startsWith(cardTypeKey.toUpperCase())) {
+            if (cardType.toUpperCase(Locale.ENGLISH).startsWith(cardTypeKey.toUpperCase(Locale.ENGLISH))) {
                 return cardTypeKey;
             }
         }
@@ -225,7 +226,7 @@ public class CardUtils {
             String discretionary = matcher.group(3);
 
             if(!StringUtils.isNullOrEmpty(discretionary)) {
-                if(pan.concat(expiry).concat(discretionary).length() == 37 && discretionary.toLowerCase().endsWith("f")) {
+                if(pan.concat(expiry).concat(discretionary).length() == 37 && discretionary.toLowerCase(Locale.ENGLISH).endsWith("f")) {
                     discretionary = discretionary.substring(0, discretionary.length() - 1);
                 }
             }

@@ -15,7 +15,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         MessageWriter request = ntsObjectParam.getNtsRequest();
 
         // POS Data
-        NtsPOSSiteConfigurationData requestData = builder.getNtsPosSiteConfiguration();
+        POSSiteConfigurationData requestData = builder.getPosSiteConfigurationData();
 
         NtsUtils.log("MESSAGE VERSION ", requestData.getMessageVersion());
         request.addRange(requestData.getMessageVersion(), 3);
@@ -80,8 +80,8 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         NtsUtils.log("HEARTLAND TERMINAL SPEC", requestData.getHeartlandTerminalSpec());
         request.addRange(requestData.getHeartlandTerminalSpec(), 1);
 
-        NtsUtils.log("HEARTLAND NTS TERMINAL SPEC VERSION", requestData.getHeartlandNtsTerminalSpecVersion());
-        request.addRange(StringUtils.padLeft(requestData.getHeartlandNtsTerminalSpecVersion(), 4, '0'), 4);
+        NtsUtils.log("HEARTLAND NTS TERMINAL SPEC VERSION", requestData.getHeartlandTerminalSpecVersion());
+        request.addRange(StringUtils.padLeft(requestData.getHeartlandTerminalSpecVersion(), 4, '0'), 4);
 
         NtsUtils.log("HEARTLAND PAYMENT ENGINE", requestData.getHeartlandPaymentEngine());
         request.addRange(requestData.getHeartlandPaymentEngine(), 1);

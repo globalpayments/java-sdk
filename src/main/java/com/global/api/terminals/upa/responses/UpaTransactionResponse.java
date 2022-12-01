@@ -5,6 +5,8 @@ import com.global.api.entities.enums.CardType;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.utils.JsonDoc;
 
+import java.util.Locale;
+
 public class UpaTransactionResponse extends TerminalResponse {
     public UpaTransactionResponse(JsonDoc responseData) {
         JsonDoc cmdResult = responseData.get("cmdResult");
@@ -43,7 +45,7 @@ public class UpaTransactionResponse extends TerminalResponse {
                 cardHolderName = payment.getString("cardHolderName");
 
                 if (payment.getString("cardType") != null) {
-                    switch (payment.getString("cardType").toUpperCase()) {
+                    switch (payment.getString("cardType").toUpperCase(Locale.ENGLISH)) {
                         case "VISA":
                             cardType = CardType.VISA;
                             break;

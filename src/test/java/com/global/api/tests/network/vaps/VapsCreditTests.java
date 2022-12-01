@@ -6,11 +6,11 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.EmvChipCondition;
-import com.global.api.entities.enums.Host;
-import com.global.api.entities.enums.HostError;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
+import com.global.api.network.abstractions.IBatchProvider;
+import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -20,6 +20,7 @@ import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.TestCards;
@@ -131,7 +132,7 @@ public class VapsCreditTests {
 
     @Test
     public void test_003_manual_authorization() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(1), true)
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -141,7 +142,7 @@ public class VapsCreditTests {
         assertNotNull(pmi);
         assertEquals("1100", pmi.getMessageTransactionIndicator());
         assertEquals("003000", pmi.getProcessingCode());
-        assertEquals("101", pmi.getFunctionCode());
+        assertEquals("100", pmi.getFunctionCode());
 
         // check response
         assertEquals("000", response.getResponseCode());
@@ -263,7 +264,7 @@ public class VapsCreditTests {
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
-                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Host_Authorized),
+                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Terminal_Authorized),
                 track
         );
 
@@ -294,6 +295,7 @@ public class VapsCreditTests {
 
         Transaction response = transaction.capture(new BigDecimal(10))
                 .withCurrency("USD")
+                .withTerminalError(true)
                 .execute();
         assertNotNull(response);
 
@@ -715,6 +717,7 @@ public class VapsCreditTests {
     @Test
     public void test_026_balance_inquiry() throws ApiException {
         Transaction response = track.balanceInquiry()
+                .withCurrency("USD")
                 .execute();
         assertNotNull(response);
 
@@ -796,6 +799,34 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
+        Transaction reversal = response.reverse(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(reversal);
+        PriorMessageInformation pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("600008", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4021", pmi.getMessageReasonCode());
+
+        assertNotNull(reversal);
+        assertEquals("000", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_030_ready_link_force_reversal() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+        Transaction response = null;
+
+        response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
 
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
@@ -806,6 +837,7 @@ public class VapsCreditTests {
         );
         Transaction reversal = transaction.reverse(new BigDecimal(10))
                 .withCurrency("USD")
+                .withForceToHost(true)
                 .execute();
         assertNotNull(reversal);
         PriorMessageInformation pmi = reversal.getMessageInformation();
@@ -829,12 +861,112 @@ public class VapsCreditTests {
     }
 
     @Test
+    public void test_033_ready_link_Data_Collect() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+//                .withTerminalError(true)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("000", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_034_ready_link_reversal_DE56() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+        PriorMessageInformation pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+//        assertEquals("4021", pmi.getMessageReasonCode());
+        assertEquals("400", pmi.getFunctionCode());
+    }
+
+    @Test
+    public void test_034_ready_link_reversal_force_DE56() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(10))
+                .withCurrency("USD")
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(reversal);
+        PriorMessageInformation pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("400", pmi.getFunctionCode());
+    }
+
+    @Test
+    public void test_032_ICR_authorization_Discover() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .withTerminalError(true)
+                .execute("ICR");
+        assertNotNull(captureResponse);
+
+        // check message data
+        pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
+        assertEquals("202", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
     public void test_001_DE49_swipe_partial_void() throws ApiException {
         Transaction sale = track.charge(new BigDecimal(142))
                 .withCurrency("CAD")
                 .execute();
         assertNotNull(sale);
-        //assertEquals("002", sale.getResponseCode());
+        assertEquals("002", sale.getResponseCode());
 
         Transaction response = sale.voidTransaction()
                 .withCurrency("CAD")
@@ -851,5 +983,55 @@ public class VapsCreditTests {
 
         // check response
         assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_refund() throws ApiException {
+        Transaction response = track.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData("4F07A0000000041010500A4D617374657243617264820238008407A00000000410108E0A00000000000000001F00950500008080009A031901099B02E8009C01405F24032212315F25030401015F2A0208405F300202015F3401009F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FF009F090200029F0D05B8508000009F0E0500000000009F0F05B8708098009F10120110A0800F22000065C800000000000000FF9F120A4D6173746572436172649F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030710109F26080631450565A30B759F2701809F330360F0C89F34033F00019F3501219F360200049F3704C6B1A04F9F3901059F4005F000A0B0019F4104000000869F4C0865C862608A23945A9F4E0D54657374204D65726368616E74")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("200030", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_034_ready_link_reversal_DE56_1221() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+        track.setPan("4111111111111111");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(response);
+        assertNotNull(response.getTransactionToken());
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(response.getTransactionToken(),true)
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(capture);
+        PriorMessageInformation pmi = capture.getMessageInformation();
+        assertEquals("1221", pmi.getMessageTransactionIndicator());
+        assertEquals("1381", pmi.getMessageReasonCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        assertEquals("000",capture.getResponseCode());
+
     }
 }

@@ -22,6 +22,7 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.Assert;
@@ -221,6 +222,29 @@ public class VapsDebitTests {
         assertEquals("000800", pmi.getProcessingCode());
         assertEquals("441", pmi.getFunctionCode());
         assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_154_force_void() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        Transaction voidResponse = response.voidTransaction()
+                .withForceToHost(true)
+                .execute();
+
+        // check message data
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4356", pmi.getMessageReasonCode());
 
         // check response
         assertEquals("400", voidResponse.getResponseCode());
@@ -745,6 +769,81 @@ public class VapsDebitTests {
         assertNotNull(capture);
 
         // check response
+        assertEquals("000", capture.getResponseCode());
+    }
+    @Test
+    public void test_176_pre_authorization_with_fee_amount() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(1))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_177_reverse_sale_cashBack_with_fee() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(5))
+                .withCashBack(new BigDecimal(3))
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("400",reversal.getResponseCode());
+    }
+
+    @Test
+    @Ignore
+    public void test_PinDebit_Partial_Amount_Auth_Capture() throws ApiException {
+
+        Transaction response = track.authorize(new BigDecimal(40),true)
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+        response.setNtsData(new NtsData());
+        Transaction capture = response.capture(20)
+                .execute("ICR");
+        assertNotNull(capture);
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
+    }
+    @Test
+    public void test_169_pindebit_1221_datacollect() throws ApiException {
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+//                .withSystemTraceAuditNumber(stan.generateStan())
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(response.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(capture);
         assertEquals("000", capture.getResponseCode());
     }
 }

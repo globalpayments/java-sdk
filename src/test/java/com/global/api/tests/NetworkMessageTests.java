@@ -731,16 +731,6 @@ public class NetworkMessageTests {
     }
 
     @Test
-    public void DE72_DataRecord_tests() {
-        String original = "";
-
-        DE72_DataRecord element = new DE72_DataRecord().fromByteArray(original.getBytes());
-
-        byte[] buffer = element.toByteArray();
-        assertEquals(original, new String(buffer));
-    }
-
-    @Test
     public void DE103_Check_MICR_Data_test() {
         // account and routing
         String original = "222222222\\333444555666";

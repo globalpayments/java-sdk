@@ -1,12 +1,13 @@
 package com.global.api.network.elements;
 
-import com.global.api.network.enums.DE127_ForwardingDataTag;
-import com.global.api.network.enums.EncryptionType;
+import com.global.api.network.enums.*;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DE127_ForwardingDataEntry {
     private DE127_ForwardingDataTag tag;
-
-    private String recordId;
+    @Getter @Setter
+    private RecordId recordId;
     private String recordType;
     private String keyBlockDataType;
     private String encryptedFieldMatrix;
@@ -14,18 +15,24 @@ public class DE127_ForwardingDataEntry {
     private String cardSecurityCode;
     private String etbBlock;
     private String entryData;
+    @Getter @Setter
+    private ServiceType serviceType;
+    @Getter @Setter
+    private OperationType operationType;
+    @Getter @Setter
+    private String serviceCodeOrigin;
+    @Getter @Setter
+    private String serviceResponseCode;
+    @Getter @Setter
+    private String ksn;
+    @Getter @Setter
+    private String encryptedData;
 
     public DE127_ForwardingDataTag getTag() {
         return tag;
     }
     public void setTag(DE127_ForwardingDataTag tag) {
         this.tag = tag;
-    }
-    public String getRecordId() {
-        return recordId;
-    }
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
     }
     public String getRecordType() {
         return recordType;

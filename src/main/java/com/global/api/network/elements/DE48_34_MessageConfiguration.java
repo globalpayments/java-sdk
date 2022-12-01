@@ -34,7 +34,6 @@ public class DE48_34_MessageConfiguration implements IDataElement<DE48_34_Messag
     public void setTransactionGroupId(String transactionGroupId) {
         this.transactionGroupId = transactionGroupId;
     }
-
     public DE48_34_MessageConfiguration fromByteArray(byte[] buffer) {
         StringParser sp = new StringParser(buffer);
 
@@ -42,7 +41,6 @@ public class DE48_34_MessageConfiguration implements IDataElement<DE48_34_Messag
         echoSettlementData = sp.readBoolean();
         includeLoyaltyData = sp.readBoolean();
         transactionGroupId = sp.readString(6);
-
         return this;
     }
 

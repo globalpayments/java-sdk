@@ -54,4 +54,10 @@ public class EncryptionData {
         return rvalue;
     }
 
+    public static EncryptionData setKtbAndKsn(String ktb,String ksn){
+        EncryptionData rvalue = new EncryptionData();
+        rvalue.setKtb(ktb);
+        rvalue.setKsn(ksn);
+        return rvalue;
+    }
 }

@@ -44,6 +44,8 @@ public class AcceptorConfig {
     private Boolean supportsEmvPin;
     private Boolean capableAmexRemainingBalance;
     private Boolean capableVoid;
+    @Getter @Setter
+    private Boolean supportWexAdditionalProducts;
 
     //NTS Message Header
     private Boolean pinlessDebit;
@@ -87,6 +89,10 @@ public class AcceptorConfig {
 
     // DE127 - FORWARDING DATA
     private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
+    @Getter @Setter
+    private ServiceType serviceType;
+    @Getter @Setter
+    private OperationType operationType;
 
     // DE32 - Acquiring Institution Identification Code
     public String getAcquiringInstitutionIdentificationCode() {
@@ -267,7 +273,8 @@ public class AcceptorConfig {
                 || supportsAvsCnvVoidReferrals != null
                 || supportsEmvPin != null
                 || mobileDevice != null
-                || pinlessDebit != null);
+                || pinlessDebit != null
+                || supportWexAdditionalProducts != null);
     }
     public boolean hasPosConfiguration_MessageData(){
         return performDateCheck != null
@@ -293,7 +300,8 @@ public class AcceptorConfig {
                 .concat(supportsAvsCnvVoidReferrals != null ? supportsAvsCnvVoidReferrals ? "Y" : "N" : "N")
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
-                .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N");
+                .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N")
+                .concat(supportWexAdditionalProducts != null ? supportWexAdditionalProducts ? "Y" : "N" : "N");
         return rvalue;
     }
 

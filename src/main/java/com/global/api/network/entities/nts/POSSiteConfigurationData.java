@@ -1,6 +1,7 @@
 package com.global.api.network.entities.nts;
 
 
+import com.global.api.entities.enums.Target;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,8 @@ import org.joda.time.DateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class NtsPOSSiteConfigurationData {
+public class POSSiteConfigurationData {
+    private Target target = Target.NTS;
     private String messageVersion;
     private String transactionDate = DateTime.now().toString("YYYYMMdd");
     private String transactionTime = DateTime.now().toString("hhmmss");
@@ -31,7 +33,7 @@ public class NtsPOSSiteConfigurationData {
     private String heartlandPosTerminalType;
     private String heartlandPosSoftwareVersion;
     private String heartlandTerminalSpec = "N";
-    private String heartlandNtsTerminalSpecVersion;
+    private String heartlandTerminalSpecVersion;
     private String heartlandPaymentEngine = "V";
     private String heartlandPaymentVertical = "C";
     private String posHardwareVersion;
@@ -99,4 +101,12 @@ public class NtsPOSSiteConfigurationData {
     private String peripheral5ProductNameOrModel;
     private String peripheral5SoftwareVersion;
 
+    public POSSiteConfigurationData( Target target){
+        this.target = target;
+        if (this.target == Target.VAPS){
+            merchantType = "5542";
+            heartlandTerminalSpec = "P";
+            heartlandPaymentEngine = "V";
+        }
+    }
 }

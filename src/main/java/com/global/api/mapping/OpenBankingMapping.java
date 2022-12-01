@@ -11,6 +11,8 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.Locale;
+
 public class OpenBankingMapping {
 
     public static Transaction mapResponse(String rawResponse) {
@@ -94,9 +96,9 @@ public class OpenBankingMapping {
 
     private static BankPaymentType getBankPaymentType(JsonDoc response) {
         if (response.has("payment_type")) {
-            if (BankPaymentType.FASTERPAYMENTS.toString().toUpperCase().equals(response.getString("payment_type").toUpperCase())) {
+            if (BankPaymentType.FASTERPAYMENTS.toString().toUpperCase().equalsIgnoreCase(response.getString("payment_type"))) {
                 return BankPaymentType.FASTERPAYMENTS;
-            } else if (BankPaymentType.SEPA.toString().toUpperCase().equals(response.getString("payment_type").toUpperCase())) {
+            } else if (BankPaymentType.SEPA.toString().toUpperCase().equalsIgnoreCase(response.getString("payment_type"))) {
                 return BankPaymentType.SEPA;
             }
         }

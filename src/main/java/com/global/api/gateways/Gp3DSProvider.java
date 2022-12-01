@@ -20,6 +20,7 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Accessors(chain = true)
@@ -52,7 +53,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 CreditCardData cardData = (CreditCardData)paymentMethod;
                 request
                         .set("number", cardData.getNumber())
-                        .set("scheme", mapCardScheme(CardUtils.getBaseCardType(cardData.getCardType()).toUpperCase()));
+                        .set("scheme", mapCardScheme(CardUtils.getBaseCardType(cardData.getCardType()).toUpperCase(Locale.ENGLISH)));
                 hashValue = cardData.getNumber();
             }
             else if(paymentMethod instanceof RecurringPaymentMethod) {

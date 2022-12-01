@@ -46,8 +46,7 @@ class HpaFileUpload {
         
         //File size
         byte[] buffer;
-        try {
-            FileInputStream input = new FileInputStream(file);
+        try(FileInputStream input= new FileInputStream(file);) {
             buffer = new byte[input.available()];
             int bytesRead = input.read(buffer, 0, buffer.length);
         } catch (IOException e) {

@@ -12,6 +12,8 @@ public enum TerminalType implements IStringConstant{
 	DataCard740("09"),
 	Verifone("10"),
 	DbrSystems("11"),
+	DataCard840Or940("10"),
+	VerifoneTrinityT650C("11"),
 	WayneNucleus("12"),
 	Ingenico("13"),
 	SysTech("14"),
@@ -36,10 +38,10 @@ public enum TerminalType implements IStringConstant{
 	SynTechSmu2500("33"),
 	Nec("34"),
 	RadiantLightHouse("35"),
-	AlliedBox("36"),
+	CastlesSaturn1000S("36"),
 	AlliedTdl("37"),
 	VerifoneTopaz("39"),
-	VerifonePearlDial("40"),
+	PaxIm2030300("40"),
 	VerifoneVx570("41"),
 	VerifoneZonXpe("42"),
 	WaynePlus3("43"),
@@ -94,11 +96,12 @@ public enum TerminalType implements IStringConstant{
 	VerifoneOmni490Dial("95"),
 	SchlumbergerPro("98"),
 	SDKMobilePayment("S1"),
+	SDKDex("S2"),
+	SdkBrPos("S3"),
 	DexDispenserExperience("S2"),
 	SdkBrpos("S3"),
 	AnyPinpadsWith7MDOr7POS("N1"),
 	DEXWithAnyCRINDsOrDispensers("N2");
-
 	String value;
 	TerminalType(String value) {
         this.value = value;

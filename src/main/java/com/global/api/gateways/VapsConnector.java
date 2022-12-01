@@ -20,7 +20,6 @@ import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.network.elements.*;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
-import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceMessage;
@@ -112,11 +111,15 @@ public class VapsConnector extends GatewayConnectorConfig {
         byte[] orgCorr1 = new byte[2];
         byte[] orgCorr2 = new byte[8];
 
+        IPaymentMethod paymentMethod = null;
+        PaymentMethodType paymentMethodType = null;
         NetworkMessage request = new NetworkMessage();
-        IPaymentMethod paymentMethod = builder.getPaymentMethod();
-        PaymentMethodType paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
+        paymentMethod = builder.getPaymentMethod();
+        if (paymentMethod != null)
+        paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
         TransactionType transactionType = builder.getTransactionType();
-        Iso4217_CurrencyCode currencyCode = null;
+        boolean isPosSiteConfiguration = transactionType.equals(TransactionType.PosSiteConfiguration);
+        Iso4217_CurrencyCode currencyCode = Iso4217_CurrencyCode.USD;
         EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging());
         if(!StringUtils.isNullOrEmpty(builder.getCurrency())) {
             currencyCode = builder.getCurrency().equalsIgnoreCase("USD") ? Iso4217_CurrencyCode.USD : Iso4217_CurrencyCode.CAD;
@@ -264,15 +267,21 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // DE 1: Secondary Bitmap - b8 // M (AUTO GENERATED IN NetworkMessage)
 
-        // DE 3: Processing Code - n6 (n2: TRANSACTION TYPE, n2: ACCOUNT TYPE 1, n2: ACCOUNT TYPE 2) // M 1100, 1200, 1220, 1420
-        DE3_ProcessingCode processingCode = mapProcessingCode(builder);
-        request.set(DataElementId.DE_003, processingCode);
+        if (!isPosSiteConfiguration) {
+            // DE 3: Processing Code - n6 (n2: TRANSACTION TYPE, n2: ACCOUNT TYPE 1, n2: ACCOUNT TYPE 2) // M 1100, 1200, 1220, 1420
+            DE3_ProcessingCode processingCode = mapProcessingCode(builder);
+            request.set(DataElementId.DE_003, processingCode);
 
-        // DE 4: Amount, Transaction - n12 // C 1100, 1200, 1220, 1420
-        request.set(DataElementId.DE_004, StringUtils.toNumeric(builder.getAmount(), 12));
-
-        // DE 7: Date and Time, Transmission - n10 (MMDDhhmmss) // C
-        request.set(DataElementId.DE_007, DateTime.now(DateTimeZone.UTC).toString("MMddhhmmss"));
+            String functionCode=mapFunctionCode(builder);
+            // DE 4: Amount, Transaction - n12 // C 1100, 1200, 1220, 1420
+            if(functionCode.equals("100")) {
+                request.set(DataElementId.DE_004, StringUtils.toDecimal(builder.getAmount(), 12));
+            }else{
+                request.set(DataElementId.DE_004, StringUtils.toNumeric(builder.getAmount(), 12));
+            }
+            // DE 7: Date and Time, Transmission - n10 (MMDDhhmmss) // C
+            request.set(DataElementId.DE_007, DateTime.now(DateTimeZone.UTC).toString("MMddhhmmss"));
+        }
 
         // DE 11: System Trace Audit Number (STAN) - n6 // M
         int stan = builder.getSystemTraceAuditNumber();
@@ -311,15 +320,17 @@ public class VapsConnector extends GatewayConnectorConfig {
             22.11 TERMINAL OUTPUT CAPABILITY an1 The print/display capabilities of the POS.
             22.12 PIN CAPTURE CAPABILITY an1 Indicates whether the PIN data can be captured and if so the maximum PIN data length that can be captured.
          */
-        dataCode.setCardDataInputCapability(acceptorConfig.getCardDataInputCapability());
-        dataCode.setCardHolderAuthenticationCapability(acceptorConfig.getCardHolderAuthenticationCapability());
-        dataCode.setCardCaptureCapability(acceptorConfig.isCardCaptureCapability());
-        dataCode.setOperatingEnvironment(acceptorConfig.getOperatingEnvironment());
-        dataCode.setCardHolderAuthenticationEntity(acceptorConfig.getCardHolderAuthenticationEntity());
-        dataCode.setCardDataOutputCapability(acceptorConfig.getCardDataOutputCapability());
-        dataCode.setTerminalOutputCapability(acceptorConfig.getTerminalOutputCapability());
-        dataCode.setPinCaptureCapability(acceptorConfig.getPinCaptureCapability());
-        request.set(DataElementId.DE_022, dataCode);
+        if (!isPosSiteConfiguration) {
+            dataCode.setCardDataInputCapability(acceptorConfig.getCardDataInputCapability());
+            dataCode.setCardHolderAuthenticationCapability(acceptorConfig.getCardHolderAuthenticationCapability());
+            dataCode.setCardCaptureCapability(acceptorConfig.isCardCaptureCapability());
+            dataCode.setOperatingEnvironment(acceptorConfig.getOperatingEnvironment());
+            dataCode.setCardHolderAuthenticationEntity(acceptorConfig.getCardHolderAuthenticationEntity());
+            dataCode.setCardDataOutputCapability(acceptorConfig.getCardDataOutputCapability());
+            dataCode.setTerminalOutputCapability(acceptorConfig.getTerminalOutputCapability());
+            dataCode.setPinCaptureCapability(acceptorConfig.getPinCaptureCapability());
+            request.set(DataElementId.DE_022, dataCode);
+        }
 
         // DE 23: Card Sequence Number - n3 // C 1100, 1120, 1200, 1220, 1420 (Applies to EMV cards if the sequence number is returned from the terminal)
 
@@ -362,7 +373,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             43.3 REGION ans3 Two letter state/province code for the United States and Canada. Refer to the Heartland Integrator’s Guide.
             43.4 COUNTRY-CODE a3 See A.30.1 ISO 3166-1: Country Codes, p. 809.
          */
-        if(acceptorConfig.getAddress() != null) {
+        if(acceptorConfig.getAddress() != null && !(transactionType.equals(TransactionType.PosSiteConfiguration))) {
             DE43_CardAcceptorData cardAcceptorData = new DE43_CardAcceptorData();
             cardAcceptorData.setAddress(acceptorConfig.getAddress());
             request.set(DataElementId.DE_043, cardAcceptorData);
@@ -381,13 +392,17 @@ public class VapsConnector extends GatewayConnectorConfig {
             46.5 AMOUNT, RECONCILIATION FEE x+n8
             46.6 CURRENCY CODE, RECONCILIATION FEE n3
          */
-        if(builder.getFeeAmount() != null) {
-            DE46_FeeAmounts feeAmounts = new DE46_FeeAmounts();
-            feeAmounts.setFeeTypeCode(builder.getFeeType());
-            feeAmounts.setCurrencyCode(currencyCode);
-            feeAmounts.setAmount(builder.getFeeAmount());
-            feeAmounts.setReconciliationCurrencyCode(currencyCode);
-            request.set(DataElementId.DE_046, feeAmounts);
+        if(!isPosSiteConfiguration) {
+            if (paymentMethodType.equals(paymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT)) {
+                if (builder.getFeeAmount() != null) {
+                    DE46_FeeAmounts feeAmounts = new DE46_FeeAmounts();
+                    feeAmounts.setFeeTypeCode(builder.getFeeType());
+                    feeAmounts.setCurrencyCode(currencyCode);
+                    feeAmounts.setAmount(builder.getFeeAmount());
+                    feeAmounts.setReconciliationCurrencyCode(currencyCode);
+                    request.set(DataElementId.DE_046, feeAmounts);
+                }
+            }
         }
 
         /* DE 48: Message Control - LLLVAR ans..999
@@ -420,9 +435,10 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE48-5
 //        messageControl.setShiftNumber(builder.getShiftNumber());
 
-        DE48_MessageControl messageControl = mapMessageControl(builder);
-        request.set(DataElementId.DE_048, messageControl);
-
+        if (!isPosSiteConfiguration) {
+            DE48_MessageControl messageControl = mapMessageControl(builder);
+            request.set(DataElementId.DE_048, messageControl);
+        }
         // DE 49: Currency Code, Transaction - n3
         if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && builder.getAmount()!=null)
         request.set(DataElementId.DE_049,currencyCode.getValue());
@@ -481,15 +497,20 @@ public class VapsConnector extends GatewayConnectorConfig {
         request.set(DataElementId.DE_059, builder.getTransportData());
 
         // DE 62: Card Issuer Data - LLLVAR ans..999
-        DE62_CardIssuerData cardIssuerData = mapCardIssuerData(builder);
-        request.set(DataElementId.DE_062, cardIssuerData);
-
+        if (!isPosSiteConfiguration) {
+            DE62_CardIssuerData cardIssuerData = mapCardIssuerData(builder);
+            request.set(DataElementId.DE_062, cardIssuerData);
+        }
         // DE 63: Product Data - LLLVAR ans…999
         if(builder.getProductData() != null) {
             DE63_ProductData productData = builder.getProductData().toDataElement();
             request.set(DataElementId.DE_063, productData);
         }
 
+        if (builder.getPosSiteConfigurationData() != null) {
+            DE72_DataRecord dataRecord = new DE72_DataRecord(builder.getPosSiteConfigurationData());
+            request.set(DataElementId.DE_072, dataRecord.toByteArray());
+        }
         // DE 72: Data Record - LLLVAR ans..999
         // DE 73: Date, Action - n6 (YYMMDD)
         // DE 96: Key Management Data - LLLVAR b..999
@@ -509,13 +530,20 @@ public class VapsConnector extends GatewayConnectorConfig {
             EncryptionData encryptionData = ((IEncryptable)paymentMethod).getEncryptionData();
             if(encryptionData != null) {
                 DE127_ForwardingData forwardingData = new DE127_ForwardingData();
-                forwardingData.addEncryptionData(acceptorConfig.getSupportedEncryptionType(), encryptionData.getKtb());
+                EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                EncryptedFieldMatrix encryptedField=getEncryptionField(paymentMethod,encryptionType);
+                if(encryptionType.equals(EncryptionType.TDES)){
+                    forwardingData.setServiceType(acceptorConfig.getServiceType());
+                    forwardingData.setOperationType(acceptorConfig.getOperationType());
+                }
+                forwardingData.setEncryptedField(encryptedField);
+                forwardingData.addEncryptionData(encryptionType, encryptionData);
 
                 // check for encrypted cid
                 if(paymentMethod instanceof ICardData) {
                     String encryptedCvn = ((ICardData) paymentMethod).getCvn();
                     if(!StringUtils.isNullOrEmpty(encryptedCvn)) {
-                        forwardingData.addEncryptionData(acceptorConfig.getSupportedEncryptionType(), encryptionData.getKtb(), encryptedCvn);
+                        forwardingData.addEncryptionData(encryptionType, encryptionData,encryptedCvn);
                     }
                 }
 
@@ -916,6 +944,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                 String cardSequenceNumber = StringUtils.padLeft(tagData.getCardSequenceNumber(), 3, '0');
                 request.set(DataElementId.DE_023, cardSequenceNumber);
             }
+            if(!(transactionType.equals(TransactionType.PreAuthCompletion)||transactionType.equals(TransactionType.Capture))||
+                    (mapCardType(paymentMethod,builder.getTransactionType()).equals(DE48_CardType.WEX)
+                            && (transactionType.equals(TransactionType.PreAuthCompletion)||transactionType.equals(TransactionType.Capture))))
             request.set(DataElementId.DE_055, tagData.getSendBuffer());
         }
 
@@ -1013,7 +1044,14 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                 if (encryptionData != null) {
                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
-                    forwardingData.addEncryptionData(acceptorConfig.getSupportedEncryptionType(), encryptionData.getKtb());
+                    EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                    if(encryptionType.equals(EncryptionType.TDES)){
+                        forwardingData.setServiceType(acceptorConfig.getServiceType());
+                        forwardingData.setOperationType(acceptorConfig.getOperationType());
+                    }
+                    EncryptedFieldMatrix encryptedField=getEncryptionField(((TransactionReference) paymentMethod).getOriginalPaymentMethod(),encryptionType);
+                    forwardingData.setEncryptedField(encryptedField);
+                    forwardingData.addEncryptionData(encryptionType, encryptionData);
 
                     // check for encrypted cid -- THIS MAY NOT BE VALID FOR FOLLOW ON TRANSACTIONS WHERE THE CVN SHOULD NOT BE STORED
 //                    if (reference.getOriginalPaymentMethod() instanceof ICardData) {
@@ -1117,13 +1155,13 @@ public class VapsConnector extends GatewayConnectorConfig {
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {
         throw new UnsupportedTransactionException("VAPS does not support hosted payments.");
     }
-    
+
     private IDeviceMessage buildMessage(byte[] message, byte[] orgCorr1, byte[] orgCorr2) {
         return buildMessage(message, orgCorr1, orgCorr2, false);
     }
     private IDeviceMessage buildMessage(byte[] message, byte[] orgCorr1, byte[] orgCorr2, Boolean isKeepAlive) {
         int messageLength = message.length + 32;
-        
+
         // build the header
         NetworkMessageBuilder buffer = new NetworkMessageBuilder()
                 .append(messageLength, 2) // EH.1: Total Tran Length
@@ -1161,7 +1199,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         return new DeviceMessage(buffer.toArray());
     }
-    
+
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
         IDeviceMessage keepAlive = buildMessage(new byte[0], new byte[2], new byte[8], true);
         byte[] responseBuffer = send(keepAlive);
@@ -1179,7 +1217,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             return header;
         }
     }
-    
+
     private <T extends TransactionBuilder<Transaction>> Transaction sendRequest(NetworkMessage request, T builder, byte[] orgCorr1, byte[] orgCorr2) throws ApiException {
         byte[] sendBuffer = request.buildMessage();
         if(isEnableLogging()) {
@@ -1559,8 +1597,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             case BatchClose: {
                 mtiValue += "5";
             } break;
-            case TimeRequest:{
-                mtiValue+="6";
+            case PosSiteConfiguration:
+            case TimeRequest: {
+                mtiValue += "6";
             }break;
             default:
                 mtiValue += "0";
@@ -1580,6 +1619,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             case PreAuthCompletion:
             case LoadReversal:
             case Reversal:
+            case PosSiteConfiguration:
             case Void: {
                 mtiValue += "2";
             } break;
@@ -1616,6 +1656,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             6–9 Reserved for ISO use
         */
         switch (builder.getTransactionType()) {
+            case PosSiteConfiguration:
             case TimeRequest:
                 mtiValue += "4";
                 break;
@@ -1866,8 +1907,11 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Void: {
                 return "441";
             }
-            case TimeRequest:{
+            case TimeRequest: {
                 return "641";
+            }
+            case PosSiteConfiguration:{
+                return "692";
             }
             default: {
                 return "000";
@@ -1903,6 +1947,8 @@ public class VapsConnector extends GatewayConnectorConfig {
         else if(transactionType.equals(TransactionType.Capture)) {
             if(authorizerCode != null && authorizerCode.equals(AuthorizerCode.Voice_Authorized)) {
                 reasonCode = DE25_MessageReasonCode.VoiceCapture;
+            }else if (authorizerCode != null && authorizerCode.equals(AuthorizerCode.Terminal_Authorized)) {
+                reasonCode = DE25_MessageReasonCode.StandInCapture;
             }
             else if(fallbackCode != null) {
                 switch (fallbackCode) {
@@ -2101,7 +2147,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(!StringUtils.isNullOrEmpty(card.getCvn())) {
                 String cvn = card.getCvn();
                 if(encryption != null && encryption.getEncryptionData() != null) {
-                    cvn = StringUtils.padLeft("", card.getCvn().length(), ' ');
+                    cvn = StringUtils.padLeft(card.getCvn(), card.getCvn().length(), ' ');
                 }
                 customerData.set(DE48_CustomerDataType.CardPresentSecurityCode, cvn);
             }
@@ -2141,6 +2187,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             posConfiguration.setSupportsReturnBalance(acceptorConfig.getSupportsReturnBalance());
             posConfiguration.setSupportsCashOver(acceptorConfig.getSupportsCashOver());
             posConfiguration.setMobileDevice(acceptorConfig.getMobileDevice());
+            posConfiguration.setSupportWexAdditionalProducts(acceptorConfig.getSupportWexAdditionalProducts());
             messageControl.setPosConfiguration(posConfiguration);
         }
 
@@ -2390,6 +2437,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             else if(card.getCardType().equals("FleetWide")) {
                 return DE48_CardType.FleetCorFleetwide;
+            }else if(card.getCardType().equals("UnionPay")) {
+                return DE48_CardType.DiscoverCard;
             }
         }
         else if(paymentMethod instanceof GiftCard) {
@@ -2457,7 +2506,8 @@ public class VapsConnector extends GatewayConnectorConfig {
         String encodedRequest = null;
         if(builder != null && request.isDataCollect(paymentMethodType)) {
             // check if we need to build the implied data-collect
-            if(transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.Refund)) {
+            if(transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.Refund)
+                    ||transactionType.equals(TransactionType.AddValue)) {
                 NetworkMessage impliedCapture = buildImpliedCapture(request, response, paymentMethod);
 
                 encodedRequest = encodeRequest(impliedCapture);
@@ -2872,7 +2922,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
         else {
             AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
-            if(paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
+            if(paymentMethod !=null && paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
                 if(acceptorConfig.getAddress() == null) {
                     throw new BuilderException("Address is required in acceptor config for Debit/EBT Transactions.");
                 }
@@ -2885,5 +2935,29 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
             }
         }
+    }
+    private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod,EncryptionType encryptionType){
+
+        if(encryptionType.equals(EncryptionType.TDES)){
+            if(paymentMethod instanceof ICardData){
+                return EncryptedFieldMatrix.Pan;
+            }
+            else if(paymentMethod instanceof ITrackData) {
+                TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
+                if (trackType == TrackNumber.TrackOne)
+                    return EncryptedFieldMatrix.Track1;
+                else if (trackType == TrackNumber.TrackTwo)
+                    return EncryptedFieldMatrix.Track2;
+            }
+        }else if (encryptionType.equals(EncryptionType.TEP1)||encryptionType.equals(EncryptionType.TEP2)){
+            if(paymentMethod instanceof ICardData) {
+                String encryptedCvn = ((ICardData) paymentMethod).getCvn();
+                if(!StringUtils.isNullOrEmpty(encryptedCvn))
+                    return EncryptedFieldMatrix.CustomerDataCSV;
+                else
+                    return EncryptedFieldMatrix.CustomerData;
+            }
+        }
+        return EncryptedFieldMatrix.CustomerData;
     }
 }

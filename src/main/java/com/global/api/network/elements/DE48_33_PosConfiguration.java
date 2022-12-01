@@ -3,6 +3,8 @@ package com.global.api.network.elements;
 import com.global.api.network.abstractions.IDataElement;
 import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfiguration> {
     private String timezone;
@@ -10,6 +12,8 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
     private Boolean supportsReturnBalance;
     private Boolean supportsCashOver;
     private Boolean mobileDevice;
+    @Getter @Setter
+    private Boolean supportWexAdditionalProducts;
 
     public String getTimezone() {
         return timezone;
@@ -50,7 +54,7 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         supportsReturnBalance = sp.readBoolean("Y");
         supportsCashOver = sp.readBoolean("2");
         mobileDevice = sp.readBoolean("Y");
-
+        supportWexAdditionalProducts = sp.readBoolean("Y");
         return this;
     }
 
@@ -60,6 +64,7 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         rvalue = rvalue.concat(supportsReturnBalance == null ? " " : supportsReturnBalance ? "Y" : "N");
         rvalue = rvalue.concat(supportsCashOver == null ? " " : supportsCashOver ? "0" : "2");
         rvalue = rvalue.concat(mobileDevice == null ? " " : mobileDevice ? "Y" : "N");
+        rvalue = rvalue.concat(supportWexAdditionalProducts == null ? " " : supportWexAdditionalProducts ? "Y" : "N");
 
         return StringUtils.trimEnd(rvalue).getBytes();
     }

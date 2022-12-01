@@ -39,9 +39,8 @@ public class RealexHppClient {
         IRequestEncoder encoder = request.contains("\"HPP_VERSION\":\"2\"") ? null : JsonEncoders.base64Encoder();
         JsonDoc json = JsonDoc.parse(request, encoder);
 
-        if(json == null)
+        if (json == null)
             throw new ApiException("Failed to parse request.");
-        
         String timestamp = json.getString("TIMESTAMP");
         String merchantId = json.getString("MERCHANT_ID");
         String account = json.getString("ACCOUNT");
@@ -93,8 +92,7 @@ public class RealexHppClient {
                     hashParam.add(card.getAccountNumber());
                 if (!StringUtils.isNullOrEmpty(card.getIban()))
                     hashParam.add(card.getIban());
-            }
-            else {
+            } else {
                 AlternativePaymentMethod apm = new AlternativePaymentMethod(AlternativePaymentType.fromValue(apmType));
                 apm.setReturnUrl(json.getString("MERCHANT_RESPONSE_URL"));
                 apm.setStatusUpdateUrl(json.getString("HPP_TX_STATUS_URL"));
@@ -149,7 +147,6 @@ public class RealexHppClient {
         config.setSharedSecret(sharedSecret);
         // Uncomment/Comment if you need to enable/disable logging the raw request/response
         // config.setEnableLogging(true);
-        
         ServicesContainer.configureService(config, "realexResponder");
 
         // build request
@@ -169,7 +166,7 @@ public class RealexHppClient {
                 if (paymentMethod instanceof AlternativePaymentMethod) {
                     gatewayRequest = ((AlternativePaymentMethod) paymentMethod).charge(StringUtils.toAmount(amount));
                 }
-                if(paymentMethod instanceof BankPayment) {
+                if (paymentMethod instanceof BankPayment) {
                     var gatewayBankRequest =
                             addRemittanceRef(
                                     ((BankPayment) paymentMethod)
@@ -192,36 +189,39 @@ public class RealexHppClient {
         }
 
         Address billing = null;
-        if(billingCode != null || billingCountry != null) {
+        if (billingCode != null || billingCountry != null) {
             billing = new Address();
             billing.setPostalCode(billingCode);
             billing.setCountry(billingCountry);
         }
-        
         Address shipping = null;
-        if(shippingCode != null || shippingCountry != null) {
+        if (shippingCode != null || shippingCountry != null) {
             shipping = new Address();
             shipping.setPostalCode(shippingCode);
             shipping.setCountry(shippingCountry);
         }
+        Transaction gatewayResponse = new Transaction();
+        if(gatewayRequest != null) {
+            gatewayRequest.withCurrency(currency).withOrderId(orderId).withTimestamp(timestamp);
+            if (billing != null)
+                gatewayRequest.withAddress(billing);
+            if (shipping != null)
+                gatewayRequest.withAddress(shipping, AddressType.Shipping);
 
-        gatewayRequest.withCurrency(currency).withOrderId(orderId).withTimestamp(timestamp);
-        if(billing != null)
-            gatewayRequest.withAddress(billing);
-        if(shipping != null)
-            gatewayRequest.withAddress(shipping, AddressType.Shipping);
+            //handle fraud management
+            if (fraudFilterMode != null) {
+                gatewayRequest.withFraudFilter(FraudFilterMode.fromString(fraudFilterMode), getFraudFilterRules(json));
+            }
 
-        //handle fraud management
-        if(fraudFilterMode != null) {
-            gatewayRequest.withFraudFilter(FraudFilterMode.fromString(fraudFilterMode), getFraudFilterRules(json));
+            gatewayResponse = gatewayRequest.execute("realexResponder");
         }
-
-        Transaction gatewayResponse = gatewayRequest.execute("realexResponder");
-        if (gatewayResponse.getResponseCode().equals("00") || gatewayResponse.getResponseCode().equals("01") ) {
-            return convertResponse(json, gatewayResponse);
-        } else {
-            throw new ApiException(gatewayResponse.getResponseMessage());
-        }
+                if (gatewayResponse.getResponseCode().equals("00") || gatewayResponse.getResponseCode().equals("01")) {
+                    return convertResponse(json, gatewayResponse);
+                }
+             else {
+                throw new ApiException(gatewayResponse.getResponseMessage());
+            }
+        
     }
 
     private BankPaymentBuilder addRemittanceRef(BankPaymentBuilder gatewayRequest, JsonDoc json) {

@@ -80,7 +80,7 @@ public class VapsPinlessDebitTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0007367178911");
+        config.setTerminalId("0000912197711");
         config.setUniqueDeviceId("0001");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
@@ -209,6 +209,34 @@ public class VapsPinlessDebitTests {
         // check response
         assertEquals("400", response.getResponseCode());
     }
+
+    @Test
+    public void test_004_reverse() throws ApiException {
+        Transaction response = trackVisa.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(10))
+                .withCashBackAmount(new BigDecimal(3))
+                .withTimestamp(response.getTimestamp())
+                .withTerminalError(true)
+                .withUniqueDeviceId("123456789")
+                .execute();
+        assertNotNull(reversal);
+        assertEquals("400", reversal.getResponseCode());
+    }
+
     @Test
     public void test_005_void_partial_approval_visa() throws ApiException {
         Transaction sale = trackVisa.charge(new BigDecimal(110))
@@ -769,4 +797,19 @@ public class VapsPinlessDebitTests {
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
+    @Test
+    public void test_157_reverse_sale_cashBack() throws ApiException {
+        Transaction response = trackVisa.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .execute();
+        assertNotNull(response);
+        //assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
+    }
 }

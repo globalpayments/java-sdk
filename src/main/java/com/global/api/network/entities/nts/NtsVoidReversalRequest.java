@@ -34,9 +34,9 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         if (paymentMethod instanceof TransactionReference) {
             transactionReference = (TransactionReference) paymentMethod;
         }
-
-        paymentMethod = transactionReference.getOriginalPaymentMethod();
-
+        if(transactionReference!=null) {
+            paymentMethod = transactionReference.getOriginalPaymentMethod();
+        }
         // Entry Method
         if (paymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) paymentMethod;

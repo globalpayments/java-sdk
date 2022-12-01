@@ -2,13 +2,11 @@ package com.global.api.network.enums;
 
 import com.global.api.entities.enums.IStringConstant;
 
-public enum EncryptionType implements IStringConstant {
-    TEP1("1"),
-    TEP2("2"),
-    TDES("1");
+public enum ServiceType implements IStringConstant {
+    GPN_API("G");
 
     String value;
-    EncryptionType(String value) {
+    ServiceType(String value) {
         this.value = value;
     }
     public String getValue() { return this.value; }

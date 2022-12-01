@@ -420,14 +420,16 @@ public class NtsUtils {
                 transactionReference = (TransactionReference) builder.getPaymentMethod();
             }
             if(managementBuilder.getEcommerceInfo() != null && managementBuilder.getEcommerceInfo().getChannel() == EcommerceChannel.Ecom){
-                if(transactionReference.getOriginalPaymentMethod() instanceof CreditCardData){
-                    CreditCardData card = (CreditCardData) transactionReference.getOriginalPaymentMethod();
-                    if(card.getThreeDSecure() != null){
-                        return EntryMethod.SecureEcommerce;
-                    } else if(managementBuilder.getStoredCredential() != null){
-                        return EntryMethod.CardOnFileEcommerce;
+                if(transactionReference!=null) {
+                    if (transactionReference.getOriginalPaymentMethod() instanceof CreditCardData) {
+                        CreditCardData card = (CreditCardData) transactionReference.getOriginalPaymentMethod();
+                        if (card.getThreeDSecure() != null) {
+                            return EntryMethod.SecureEcommerce;
+                        } else if (managementBuilder.getStoredCredential() != null) {
+                            return EntryMethod.CardOnFileEcommerce;
+                        }
+                        return EntryMethod.ECommerce;
                     }
-                    return EntryMethod.ECommerce;
                 }
 
             }

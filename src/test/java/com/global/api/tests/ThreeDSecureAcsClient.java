@@ -39,23 +39,24 @@ public class ThreeDSecureAcsClient {
             conn.setRequestMethod("POST");
             conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             conn.addRequestProperty("Content-Length", postData.length + "");
+            try(DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream());
+                InputStream responseStream = conn.getInputStream();
+            ){
+                requestStream.write(postData);
+                requestStream.flush();
+                requestStream.close();
 
-            DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream());
-            requestStream.write(postData);
-            requestStream.flush();
-            requestStream.close();
+                rawResponse = IOUtils.readFully(responseStream);
 
-            InputStream responseStream = conn.getInputStream();
-            rawResponse = IOUtils.readFully(responseStream);
-            responseStream.close();
-
-            if (conn.getResponseCode() != 200)
-                throw new ApiException(String.format("Acs request failed with response code: %s", conn.getResponseCode()));
+                if (conn.getResponseCode() != 200)
+                    throw new ApiException(String.format("Acs request failed with response code: %s", conn.getResponseCode()));
+            }catch(Exception exc) {
+                throw new ApiException(exc.getMessage(), exc);
+            }
         }
         catch(Exception exc) {
             throw new ApiException(exc.getMessage(), exc);
         }
-
         AcsResponse rvalue = new AcsResponse();
         rvalue.setAuthResponse(GetInputValue(rawResponse, "PaRes"));
         rvalue.setMerchantData(GetInputValue(rawResponse, "MD"));

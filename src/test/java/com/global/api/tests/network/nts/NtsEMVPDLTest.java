@@ -387,6 +387,7 @@ public class NtsEMVPDLTest {
             endOfData = pdlResponse.getEmvPdlEndOfTableFlag();
             table10Data.append(pdlResponse.getEmvPdlTableDataBlockData());
         }
+        assertNotNull(pdlResponse);
         assertEquals(PDLEndOfTableFlag.EndOfTable, pdlResponse.getEmvPdlEndOfTableFlag());
         System.out.println("Table 10 data: " + table10Data);
 
@@ -451,9 +452,12 @@ public class NtsEMVPDLTest {
             // check response
             assertEquals("00", response.getResponseCode());
             pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
-
+            assertNotNull(pdlResponse);
             endOfData = pdlResponse.getEmvPdlEndOfTableFlag();
-            table30Data.append(pdlResponse.getEmvPdlTableDataBlockData());
+            String emvPdlTableDataBlockData= pdlResponse.getEmvPdlTableDataBlockData();
+            assertNotNull(emvPdlTableDataBlockData);
+            table30Data.append(emvPdlTableDataBlockData);
+
         }
         assertEquals(PDLEndOfTableFlag.EndOfTable, pdlResponse.getEmvPdlEndOfTableFlag());
         System.out.println("Table 30 data: " + table30Data);
@@ -645,9 +649,10 @@ public class NtsEMVPDLTest {
             assertNotNull(response);
 
             // check response
+            assertNotNull(response);
             assertEquals("00", response.getResponseCode());
             pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
-
+            assertNotNull(pdlResponse);
             endOfData = pdlResponse.getEmvPdlEndOfTableFlag();
             table60Data.append(pdlResponse.getEmvPdlTableDataBlockData());
         }

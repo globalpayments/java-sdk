@@ -18,6 +18,7 @@ import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.Assert;
@@ -86,6 +87,7 @@ public class VapsEbtTests {
         cashCard.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
         cashCard.setPinBlock("62968D2481D231E1A504010024A00014");
         cashCard.setEncryptionData(EncryptionData.version2("/wECAQEEAoFGAgEH4gcOTDT6jRZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0m+/d4SO9TEshhRGUUQzVBrBvP/Os1qFx+6zdQp1ejjUCoDmzoUMbil9UG73zBxxTOy25f3Px0p8joyCh8PEWhADz1BkROJT3q6JnocQE49yYBHuFK0obm5kqUcYPfTY09vPOpmN+wp45gJY9PhkJF5XvPsMlcxX4/JhtCshegz4AYrcU/sFnI+nDwhy295BdOkVN1rn00jwCbRcE900kj3UsFfyc", "2"));
+        cashCard.setEncryptedPan("4355567063338");
 
         // cash card
         foodCard = new EBTTrackData(EbtCardType.FoodStamp);
@@ -147,7 +149,12 @@ public class VapsEbtTests {
 
     @Test
     public void test_216_swipe_balance_inquiry() throws ApiException {
-        Transaction response = cashCard.balanceInquiry(InquiryType.Cash)
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111123=491200000000?");
+        trackData.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = trackData.balanceInquiry(InquiryType.Cash)
+                .withCurrency("USD")
                 .execute();
         assertNotNull(response);
 
@@ -164,7 +171,11 @@ public class VapsEbtTests {
 
     @Test
     public void test_217_swipe_sale() throws ApiException {
-        Transaction response = cashCard.charge(new BigDecimal(10))
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = trackData.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -216,6 +227,66 @@ public class VapsEbtTests {
 
         // check result
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_219_swipe_sale_capture() throws ApiException {
+        Transaction response = cashCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(5))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("098100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction dataCollectResponse = response.capture()
+                .withReferenceNumber("123456789012345")
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check message data
+        pmi = dataCollectResponse.getMessageInformation();
+        assertNotNull(pmi);
+
+    }
+
+    @Test
+    public void test_219_swipe_sale_capture_1221() throws ApiException {
+        Transaction response = cashCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(5))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("098100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction dataCollectResponse = NetworkService.resubmitDataCollect(response.getTransactionToken())
+//                .withReferenceNumber("123456789012345")
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("000",dataCollectResponse.getResponseMessage());
+
+        // check message data
+        pmi = dataCollectResponse.getMessageInformation();
+        assertNotNull(pmi);
+
     }
 
     @Test

@@ -12,6 +12,7 @@ import com.global.api.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import lombok.var;
 import org.joda.time.DateTime;
@@ -38,7 +39,7 @@ public class GpApiMapping {
             transaction.setTransactionId(json.getString("id"));
             transaction.setBalanceAmount(json.getAmount("amount"));
             transaction.setAuthorizedAmount(
-                    json.getString("status").toUpperCase().equals(TransactionStatus.Preauthorized.getValue().toUpperCase()) &&
+                    json.getString("status").toUpperCase(Locale.ENGLISH).equals(TransactionStatus.Preauthorized.getValue().toUpperCase(Locale.ENGLISH)) &&
                             !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
             );
             transaction.setTimestamp(json.getString("time_created"));

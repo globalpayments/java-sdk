@@ -484,9 +484,7 @@ public class NTSUserData {
         StringBuilder sb = new StringBuilder();
         switch (ntsCardTypes) {
             case VisaFleet:
-                if (fleetData.getOdometerReading() != null) {
                     sb.append(StringUtils.padLeft(fleetData.getOdometerReading() != null ? fleetData.getOdometerReading() : "", 7, '0'));
-                }
                 if (fleetData.getDriverId() != null) {
                     sb.append(StringUtils.padRight(fleetData.getDriverId(), 17, ' '));
                 } else if (fleetData.getVehicleNumber() != null) {

@@ -234,10 +234,10 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
 
                 if (payment.getPaymentMethod() instanceof IEncryptable) {
                     EncryptionData enc = ((IEncryptable)payment.getPaymentMethod()).getEncryptionData();
-                    if (enc != null) {
-                        paymentInfo.set("trackNumber", enc.getTrackNumber());
-                        paymentInfo.set("key", enc.getKtb());
-                        paymentInfo.set("encryptionType", "E3");
+                    if (enc != null && paymentInfo != null) {
+                            paymentInfo.set("trackNumber", enc.getTrackNumber());
+                            paymentInfo.set("key", enc.getKtb());
+                            paymentInfo.set("encryptionType", "E3");
                     }
                 }
             }

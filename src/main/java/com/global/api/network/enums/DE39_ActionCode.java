@@ -157,7 +157,7 @@ public enum DE39_ActionCode implements IStringConstant {
             case 942: return "OFAC (Office of Foreign Assets Control) database hit (terrorist name search)";
             case 943: return "Account information failure";
             case 944: return "Accepted";
-            case 952: return "Encryption Error";
+            case 952: return "Service Error";
             case 953: return "Too many queued / no connection";
             default: return "Unknown action code";
         }

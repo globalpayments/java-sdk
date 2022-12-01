@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.0.4 (12/01/2022)
+
+### Enhancements:
+- VAPS : VAPS Spec update 19.1, 20.1, 21.1 and 21.2.
+- VAPS : Added support for 3DES
+- NTS issue : NTS Visa Fleet Odometer Changes
+- Macroscope Security Issues
+
 ## v10.0.3 (11/17/2022)
 
 ### Enhancements:

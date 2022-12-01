@@ -9,6 +9,7 @@ import com.global.api.utils.JsonDoc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class UpaReportResponse implements IBatchReportResponse {
     private UpaCardBrandSummary amexSummary;
@@ -90,7 +91,7 @@ public class UpaReportResponse implements IBatchReportResponse {
                     if (batchCardSummary != null) {
                         batchCardSummary.forEach((n) -> {
                             JsonDoc record = (JsonDoc) n;
-                            switch (record.getString("cardType").toUpperCase()) {
+                            switch (record.getString("cardType").toUpperCase(Locale.ENGLISH)) {
                                 case "AMEX":
                                 case "AMERICAN EXPRESS":
                                     amexSummary = new UpaCardBrandSummary(record);

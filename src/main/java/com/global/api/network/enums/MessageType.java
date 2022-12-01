@@ -34,7 +34,8 @@ public enum MessageType implements IByteConstant {
     IFCS_Processing (0x31),
     FedChex_Processing (0x32),
     JCP_Private_Label (0x33),
-    SOPUS_8583 (0x34);
+    SOPUS_8583 (0x34),
+    JSON(0x35);
 
     private final byte value;
     MessageType(int value) { this.value = (byte)value; }

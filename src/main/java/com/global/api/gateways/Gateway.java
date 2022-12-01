@@ -125,20 +125,17 @@ public abstract class Gateway {
 
                     outputLogging(true);
                 }
-
-                DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream());
-                requestStream.write(request);
-                requestStream.flush();
-                requestStream.close();
+                try(DataOutputStream requestStream =new DataOutputStream(conn.getOutputStream())) {
+                        requestStream.write(request);
+                        requestStream.flush();
+                }
             }
             else if (this.enableLogging || this.requestLogger != null) {
                 logEntry.append("Request Params: ").append(queryString).append(lSChar);
             }
 
             InputStream responseStream = conn.getInputStream();
-
             String rawResponse = getRawResponse(responseStream);
-
             responseStream.close();
             if (this.enableLogging || this.requestLogger != null) {
                 if (acceptJson()) {
@@ -177,21 +174,28 @@ public abstract class Gateway {
     }
 
     public String getRawResponse(InputStream responseStream) throws IOException {
-        String rawResponse;
-        if (acceptGzipEncoding()) {
-            // Decompress GZIP response
-            GZIPInputStream gzis = new GZIPInputStream(responseStream);
-            InputStreamReader reader = new InputStreamReader(gzis);
-            BufferedReader in = new BufferedReader(reader);
+        String rawResponse = null;
 
-            StringBuilder decompressedResponse = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                decompressedResponse.append(line);
+        if (acceptGzipEncoding()) {
+
+            // Decompress GZIP response
+            try (GZIPInputStream gzis = new GZIPInputStream(responseStream);
+                 InputStreamReader reader = new InputStreamReader(gzis);
+                 BufferedReader in = new BufferedReader(reader)) {
+
+                StringBuilder decompressedResponse = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    decompressedResponse.append(line);
+                }
+                rawResponse = decompressedResponse.toString();
+            } catch (Exception e) {
+                throw new IOException("Error while parsing the response," + e);
             }
-            rawResponse = decompressedResponse.toString();
+
         } else {
             rawResponse = IOUtils.readFully(responseStream);
+
         }
         return rawResponse;
     }
@@ -208,30 +212,32 @@ public abstract class Gateway {
             conn.addRequestProperty("Content-Type", content.getContentType().getValue());
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
-            OutputStream out = conn.getOutputStream();
-			if (this.enableLogging || this.requestLogger != null) {
-                logEntry.append("================================================================================").append(lSChar);
-                logEntry.append("Request: ").append(content).append(lSChar);
+            try(InputStream responseStream = conn.getInputStream();
+                OutputStream out = conn.getOutputStream();) {
 
-                outputLogging(true);
+                if (this.enableLogging || this.requestLogger != null) {
+                    logEntry.append("================================================================================").append(lSChar);
+                    logEntry.append("Request: ").append(content).append(lSChar);
+
+                    outputLogging(true);
+                }
+                content.writeTo(out);
+                out.flush();
+
+                String rawResponse = IOUtils.readFully(responseStream);
+                if (this.enableLogging || this.requestLogger != null) {
+                    logEntry.append(content).append(lSChar);
+
+                    outputLogging(false);
+                }
+
+                GatewayResponse response = new GatewayResponse();
+                response.setStatusCode(conn.getResponseCode());
+                response.setRawResponse(rawResponse);
+                return response;
+            }catch(Exception exc) {
+                throw new GatewayException("Error occurred while sending the request.", exc);
             }
-            content.writeTo(out);
-            out.flush();
-            out.close();
-
-            InputStream responseStream = conn.getInputStream();
-            String rawResponse = IOUtils.readFully(responseStream);
-            responseStream.close();
-            if (this.enableLogging || this.requestLogger != null) {
-                logEntry.append(content).append(lSChar);
-
-                outputLogging(false);
-            }
-
-            GatewayResponse response = new GatewayResponse();
-            response.setStatusCode(conn.getResponseCode());
-            response.setRawResponse(rawResponse);
-            return response;
         }
         catch(Exception exc) {
             throw new GatewayException("Error occurred while communicating with gateway.", exc);

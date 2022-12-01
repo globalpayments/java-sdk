@@ -179,44 +179,46 @@ public class NetworkGatewayConfig extends Configuration {
             gateway.setLogicProcessFlag(logicProcessFlag);
             gateway.setTerminalType(terminalType);
         }
-        // connection fields
-        gateway.setPrimaryEndpoint(serviceUrl);
-        gateway.setPrimaryPort(primaryPort);
-        gateway.setSecondaryEndpoint(secondaryEndpoint);
-        gateway.setSecondaryPort(secondaryPort);
-        gateway.setTimeout(timeout);
-        gateway.setTarget(target);
-        gateway.setEnableLogging(enableLogging);
-        gateway.setSimulatedHostErrors(simulatedHostErrors);
+        if(gateway!=null) {
+            // connection fields
+            gateway.setPrimaryEndpoint(serviceUrl);
+            gateway.setPrimaryPort(primaryPort);
+            gateway.setSecondaryEndpoint(secondaryEndpoint);
+            gateway.setSecondaryPort(secondaryPort);
+            gateway.setTimeout(timeout);
+            gateway.setTarget(target);
+            gateway.setEnableLogging(enableLogging);
+            gateway.setSimulatedHostErrors(simulatedHostErrors);
 
-        // other fields
-        gateway.setCompanyId(companyId);
-        gateway.setConnectionType(connectionType);
-        gateway.setMessageType(messageType);
-        gateway.setNodeIdentification(getNodeIdentification());
-        gateway.setProtocolType(protocolType);
-        gateway.setTerminalId(terminalId);
-        gateway.setMerchantType(merchantType);
-        gateway.setUniqueDeviceId(uniqueDeviceId);
-        gateway.setProcessingFlag(persistentConnection ? NetworkProcessingFlag.PersistentConnection : NetworkProcessingFlag.NonPersistentConnection);
+            // other fields
+            gateway.setCompanyId(companyId);
+            gateway.setConnectionType(connectionType);
+            gateway.setMessageType(messageType);
+            gateway.setNodeIdentification(getNodeIdentification());
+            gateway.setProtocolType(protocolType);
+            gateway.setTerminalId(terminalId);
+            gateway.setMerchantType(merchantType);
+            gateway.setUniqueDeviceId(uniqueDeviceId);
+            gateway.setProcessingFlag(persistentConnection ? NetworkProcessingFlag.PersistentConnection : NetworkProcessingFlag.NonPersistentConnection);
 
 
-        // acceptor config
-        if(acceptorConfig == null) {
-            acceptorConfig = new AcceptorConfig();
+            // acceptor config
+            if (acceptorConfig == null) {
+                acceptorConfig = new AcceptorConfig();
+            }
+            gateway.setAcceptorConfig(acceptorConfig);
+
+            // stan provider
+            gateway.setStanProvider(stanProvider);
+
+            // batch provider
+            gateway.setBatchProvider(batchProvider);
+
+            // event handler
+            gateway.setGatewayEventHandler(gatewayEventHandler);
+
+            services.setGatewayConnector(gateway);
         }
-        gateway.setAcceptorConfig(acceptorConfig);
-
-        // stan provider
-        gateway.setStanProvider(stanProvider);
-
-        // batch provider
-        gateway.setBatchProvider(batchProvider);
-
-        // event handler
-        gateway.setGatewayEventHandler(gatewayEventHandler);
-
-        services.setGatewayConnector(gateway);
     }
 
     @Override

@@ -1,14 +1,17 @@
 package com.global.api.network.enums;
 
+import com.global.api.entities.Customer;
 import com.global.api.entities.enums.IStringConstant;
 
-public enum EncryptionType implements IStringConstant {
-    TEP1("1"),
-    TEP2("2"),
-    TDES("1");
+public enum EncryptedFieldMatrix implements IStringConstant {
+    Track1("1"),
+    Track2("2"),
+    Pan("3"),
+    CustomerData("03"),
+    CustomerDataCSV("04");
 
     String value;
-    EncryptionType(String value) {
+    EncryptedFieldMatrix(String value) {
         this.value = value;
     }
     public String getValue() { return this.value; }

@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import static org.junit.Assert.*;
 
@@ -154,7 +155,7 @@ public class HpaAdminTests {
     }
     
     @Test
-    public void sendFile() throws ApiException {
+    public void sendFile() throws ApiException, IOException {
         IDeviceResponse response = device.sendFile(SendFileType.Logo,"C:\\temp\\IDLELOGO.jpg");
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
