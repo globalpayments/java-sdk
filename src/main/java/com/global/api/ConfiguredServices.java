@@ -22,6 +22,7 @@ public class ConfiguredServices implements IDisposable {
     private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;
+    @Getter @Setter private IPayFacProvider payFacProvider;
 
     IPaymentGateway getGatewayConnector() {
         return gatewayConnector;
@@ -78,6 +79,12 @@ public class ConfiguredServices implements IDisposable {
     }
     public void setBillingProvider(IBillingProvider billingProvider) {
         this.billingProvider = billingProvider;
+    }
+
+    public void setPayFacProvider(IPayFacProvider provider) {
+        if (this.payFacProvider == null) {
+            this.payFacProvider = provider;
+        }
     }
 
     public ConfiguredServices() {

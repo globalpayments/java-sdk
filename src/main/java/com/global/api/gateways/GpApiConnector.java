@@ -1,9 +1,6 @@
 package com.global.api.gateways;
 
-import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.builders.ManagementBuilder;
-import com.global.api.builders.ReportBuilder;
-import com.global.api.builders.Secure3dBuilder;
+import com.global.api.builders.*;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -20,6 +17,7 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.var;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -35,7 +33,7 @@ import java.util.HashMap;
 
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
-public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider {
+public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, IPayFacProvider {
     public static final String DATE_PATTERN = "yyyy-MM-dd";
 
     public static final String DATE_TIME_PATTERN   = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";// Standard expected GP API DateTime format
@@ -302,6 +300,29 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             return GpApiMapping.map3DSecureData(response);
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T processBoardingUser(PayFacBuilder<T> builder) throws ApiException {
+        if (StringUtils.isNullOrEmpty(accessToken)) {
+            signIn();
+        }
+
+        GpApiRequest request = GpApiPayFacRequestBuilder.buildRequest(builder, this);
+
+        if (request != null){
+            var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
+
+            return GpApiMapping.mapMerchantEndpointResponse(response);
+        }
+
+        return null;
+    }
+
+    @Override
+    public <T> T processPayFac(PayFacBuilder<T> builder) throws ApiException {
+        throw new UnsupportedTransactionException("Method processPayFac() not supported");
     }
 
     // --------------------------------------------------------------------------------

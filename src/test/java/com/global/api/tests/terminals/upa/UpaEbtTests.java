@@ -25,7 +25,7 @@ public class UpaEbtTests {
         config.setIpAddress("192.168.0.101");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
-        config.setDeviceType(DeviceType.UPA_SATURN_1000);
+        config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
         device = DeviceService.create(config);

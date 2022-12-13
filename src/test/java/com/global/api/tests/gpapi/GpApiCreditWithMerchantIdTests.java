@@ -1024,4 +1024,43 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response2.getResponseMessage());
     }
 
+    @Test
+    public void CreditSale_WithCardBrandStorage_RecurringPayment() throws ApiException {
+        CreditCardData creditCardData = new CreditCardData();
+        creditCardData.setNumber("4263970000005262");
+        creditCardData.setExpMonth(expMonth);
+        creditCardData.setExpYear(expYear);
+
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(creditCardData.tokenize(GP_API_CONFIG_NAME));
+
+        Transaction response =
+                tokenizedCard
+                        .charge(10.01)
+                        .withCurrency("GBP")
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+
+        Transaction response2 =
+                tokenizedCard
+                        .charge(10.01)
+                        .withCurrency("GBP")
+                        .withStoredCredential(
+                                new StoredCredential()
+                                        .setInitiator(StoredCredentialInitiator.Merchant)
+                                        .setType(StoredCredentialType.Recurring)
+                                        .setSequence(StoredCredentialSequence.Subsequent)
+                                        .setReason(StoredCredentialReason.Incremental))
+                        .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response2);
+        assertEquals(SUCCESS, response2.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response2.getResponseMessage());
+        assertNotNull(response2.getCardBrandTransactionId());
+    }
+
 }

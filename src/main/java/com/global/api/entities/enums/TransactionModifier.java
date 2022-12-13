@@ -22,7 +22,8 @@ public enum TransactionModifier implements IFlag {
     DecryptedMobile,
     AlternativePaymentMethod,
     DeletePreAuth,
-    BankPayment;
+    BankPayment,
+    Merchant;
 
     public long getLongValue() {
         return 1 << this.ordinal();

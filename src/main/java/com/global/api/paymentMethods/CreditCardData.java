@@ -1,20 +1,12 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.DccRateData;
-import com.global.api.entities.MerchantDataCollection;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.utils.CardUtils;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 
 public class CreditCardData extends Credit implements ICardData {
     @Getter @Setter private String cardHolderName;

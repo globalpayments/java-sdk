@@ -26,6 +26,7 @@ import com.global.api.terminals.upa.builders.UpaTerminalManageBuilder;
 import com.global.api.terminals.upa.responses.UpaDeviceResponse;
 import com.global.api.terminals.upa.responses.UpaEODResponse;
 import com.global.api.terminals.upa.responses.UpaReportResponse;
+import com.global.api.terminals.upa.responses.UpaSafResponse;
 import com.global.api.utils.JsonDoc;
 
 public class UpaInterface implements IDeviceInterface {
@@ -316,23 +317,19 @@ public class UpaInterface implements IDeviceInterface {
         return new UpaTerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit);
     }
 
-    public ISAFResponse sendStoreAndForward() throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
+     public ISAFResponse sendStoreAndForward() throws ApiException {
+         DeviceMessage message = TerminalUtilities.buildMessage(
+             UpaMessageId.SendSAF,
+             controller.getRequestId().toString(),
+             null // no body for sendSAF
+         );
 
-    // public ISAFResponse sendStoreAndForward() throws ApiException {
-        // DeviceMessage message = TerminalUtilities.buildMessage(
-        //     UpaMessageId.SendSAF,
-        //     controller.getRequestId().toString(),
-        //     null // no body for sendSAF
-        // );
+         JsonDoc responseObj = JsonDoc.parse(
+             new String(controller.send(message), StandardCharsets.UTF_8)
+         );
 
-        // JsonDoc responseObj = JsonDoc.parse(
-        //     new String(controller.send(message), StandardCharsets.UTF_8)
-        // );
-
-        // return new UpaSAFResponse(responseObj);
-    // }
+         return new UpaSafResponse(responseObj);
+     }
 
     public TerminalManageBuilder tipAdjust(BigDecimal amount) {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)

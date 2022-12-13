@@ -73,7 +73,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
             String hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, builder.getServerTransactionId());
             setAuthHeader(hash);
 
-            HashMap<String, String> queryValues = new HashMap<String, String>();
+            HashMap<String, String> queryValues = new HashMap<>();
             queryValues.put("merchant_id", merchantId);
             queryValues.put("request_timestamp", timestamp);
 
@@ -103,8 +103,8 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? builder.getMerchantInitiatedRequestType().getValue() : "")
                     .set("whitelist_status", builder.getWhitelistStatus() != null ? builder.getWhitelistStatus().toString() : "")
                     .set("decoupled_flow_request", builder.getDecoupledFlowRequest() != null ? builder.getDecoupledFlowRequest().toString() : "")
-                    .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout())
-                    .set("decoupled_notification_url", builder.getDecoupledNotificationUrl())
+                    .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout() != null ? builder.getDecoupledFlowTimeout().toString() : "")
+                    .set("decoupled_notification_url", builder.getDecoupledNotificationUrl() != null ? builder.getDecoupledNotificationUrl() : "")
                     .set("enable_exemption_optimization", builder.isEnableExemptionOptimization());
 
             // card details

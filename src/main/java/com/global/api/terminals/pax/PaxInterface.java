@@ -109,14 +109,14 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public IDeviceResponse closeLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_S300))
-            throw new UnsupportedTransactionException("The S300 does not support this call.");
+        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
+            throw new UnsupportedTransactionException("The device does not support this call.");
         throw new UnsupportedTransactionException();
     }
 
     public IDeviceResponse openLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_S300))
-            throw new UnsupportedTransactionException("The S300 does not support this call.");
+        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
+            throw new UnsupportedTransactionException("The device does not support this call.");
         throw new UnsupportedTransactionException();
     }
 
@@ -125,8 +125,8 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_S300))
-            throw new UnsupportedTransactionException("The S300 does not support this call.");
+        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
+            throw new UnsupportedTransactionException("The device does not support this call.");
         throw new UnsupportedTransactionException();
     }
 

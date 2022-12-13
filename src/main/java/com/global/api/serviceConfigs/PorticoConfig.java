@@ -32,7 +32,8 @@ public class PorticoConfig extends GatewayConfig {
     private String secretApiKey;
     // A unique device id to be passed with each transaction
     private String uniqueDeviceId;
-
+    //Name and Version of the SDK used for integration, where applicable.  Expected for users of the Heartland SDK.
+    private String sdkNameVersion;
     // ProPay CertificationStr Value
     private String certificationStr;
     // ProPay TerminalID Value
@@ -76,7 +77,8 @@ public class PorticoConfig extends GatewayConfig {
                         .setPassword(password)
                         .setSecretApiKey(secretApiKey)
                         .setDeveloperId(developerId)
-                        .setVersionNumber(versionNumber);
+                        .setVersionNumber(versionNumber)
+                        .setSdkNameVersion(sdkNameVersion);
 
         gateway
                         .setTimeout(timeout)

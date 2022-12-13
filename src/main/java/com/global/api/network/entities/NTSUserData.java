@@ -857,17 +857,17 @@ public class NTSUserData {
             case VoyagerFleet:
                 if (builder.getTransactionType().equals(TransactionType.Auth)) {
                     if (fleetData.getOdometerReading() != null)
-                        sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 7, '0'));
+                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'));
                     if (fleetData.getDriverId()!= null)
-                        sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, '0'));
+                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
                         builder.getTransactionType().equals(TransactionType.Capture)) {
                     if (messageCode.equals(NtsMessageCode.DataCollectOrSale)) {
                         if (fleetData.getOdometerReading() != null)
-                            sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 7, '0'));
+                            sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'));
                         if (fleetData.getDriverId() != null)
-                            sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, '0'));
+                            sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
                         sb.append(serviceLevel);
                         sb.append(getVoyagerFleetFuelList(builder));
                         sb.append(getRollUpData(builder, cardType, productData, 4));

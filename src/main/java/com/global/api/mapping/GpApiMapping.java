@@ -6,7 +6,11 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.PagedResult;
+import com.global.api.entities.payFac.Person;
+import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
+import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
@@ -28,6 +32,12 @@ public class GpApiMapping {
     private static final String PAYMENT_METHOD_DELETE = "PAYMENT_METHOD_DELETE";
     private static final String LINK_CREATE = "LINK_CREATE";
     private static final String LINK_EDIT = "LINK_EDIT";
+
+    private static final String MERCHANT_CREATE = "MERCHANT_CREATE";
+    private static final String MERCHANT_LIST = "MERCHANT_LIST";
+    private static final String MERCHANT_SINGLE = "MERCHANT_SINGLE";
+    private static final String MERCHANT_EDIT = "MERCHANT_EDIT";
+    private static final String MERCHANT_EDIT_INITIATED = "MERCHANT_EDIT_INITIATED";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -133,7 +143,10 @@ public class GpApiMapping {
                     transaction.setAvsResponseCode(card.getString("avs_postal_code_result"));
                     transaction.setAvsAddressResponse(card.getString("avs_address_result"));
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
-                    transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
+                    transaction.setPaymentMethodType(!paymentMethod.has("bank_transfer") ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
+                    if (card.has("provider")) {
+                        transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
+                    }
                     transaction.setMultiCapturePaymentCount(getIsMultiCapture(json));
                     transaction.setPaymentMethodType(getPaymentMethodType(json) != null ? getPaymentMethodType(json) : transaction.getPaymentMethodType());
                     transaction.setDccRateData(mapDccInfo(json));
@@ -350,8 +363,8 @@ public class GpApiMapping {
         return summary;
     }
 
-    private static PayLinkResponse mapPayLinkResponse(JsonDoc doc) throws GatewayException {
-        PayLinkResponse payLinkResponse =
+    private static PayLinkResponse mapPayLinkResponse(JsonDoc doc) {
+        return
                 new PayLinkResponse()
                         .setId(doc.getString("id"))
                         .setAccountName(doc.getString("account_name"))
@@ -366,8 +379,6 @@ public class GpApiMapping {
                         .setIsShippable(doc.getBool("shippable"))
                         .setViewedCount(doc.getString("viewed_count"))
                         .setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
-
-        return payLinkResponse;
     }
 
     private static TransactionSummary createTransactionSummary(JsonDoc doc) throws GatewayException {
@@ -398,6 +409,7 @@ public class GpApiMapping {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T mapReportResponse(String rawResponse, ReportType reportType) throws ApiException {
         JsonDoc json = JsonDoc.parse(rawResponse);
 
@@ -447,6 +459,10 @@ public class GpApiMapping {
 
             case FindPayLinkPaged:
                 return (T) mapPayLinks(json);
+
+            case FindMerchantsPaged:
+
+                return (T) mapMerchants(json);
 
             default:
                 throw new UnsupportedTransactionException();
@@ -592,7 +608,7 @@ public class GpApiMapping {
         if (doc.has("documents")) {
             ArrayList<JsonDoc> documents = (ArrayList<JsonDoc>) doc.getEnumerator("documents");
 
-            ArrayList disputeDocuments = new ArrayList<DisputeDocument>();
+            ArrayList<DisputeDocument> disputeDocuments = new ArrayList<>();
             for (JsonDoc document : documents) {
                 if (document.getString("id") != null) {
                     DisputeDocument disputeDocument = new DisputeDocument();
@@ -792,8 +808,9 @@ public class GpApiMapping {
                 threeDSecure.setLiabilityShift(three_ds.getString("liability_shift"));
                 threeDSecure.setAuthenticationSource(three_ds.getString("authentication_source"));
                 threeDSecure.setAuthenticationType(three_ds.getString("authentication_request_type"));
+                threeDSecure.setDecoupledResponseIndicator(three_ds.getString("acs_decoupled_response_indicator"));
                 threeDSecure.setWhitelistStatus(three_ds.getString("whitelist_status"));
-                threeDSecure.setMessageExtensions(new ArrayList<MessageExtension>());
+                threeDSecure.setMessageExtensions(new ArrayList<>());
 
                 List<JsonDoc> messageExtensions = three_ds.getEnumerator("message_extension");
                 List<MessageExtension> msgExtensions = new ArrayList<>();
@@ -939,6 +956,217 @@ public class GpApiMapping {
         }
 
         return pagedResult;
+    }
+
+    public static MerchantSummaryPaged mapMerchants(JsonDoc doc) {
+        MerchantSummaryPaged pagedResult = new MerchantSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc transaction : doc.getEnumerator("merchants")) {
+            pagedResult.add(mapMerchantSummary(transaction));
+        }
+
+        return pagedResult;
+    }
+
+    private static MerchantSummary mapMerchantSummary(JsonDoc merchant) {
+        var merchantInfo = new MerchantSummary();
+        merchantInfo.setId(merchant.getString("id"));
+        merchantInfo.setName(merchant.getString("name"));
+
+        if (merchant.has("status")) {
+            merchantInfo.setStatus((UserStatus.valueOf(merchant.getString("status"))));
+        }
+
+        if (merchant.has("links")) {
+            merchantInfo.setLinks(new ArrayList<>());
+
+            for (var link : merchant.getEnumerator("links")) {
+                var userLink = new UserLinks();
+                if (link.has("rel")) {
+                    userLink.setRel(UserLevelRelationship.valueOf(link.getString("rel").toUpperCase()));
+                }
+                userLink.setHref(link.getString("href"));
+                merchantInfo.getLinks().add(userLink);
+            }
+        }
+
+        return merchantInfo;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T mapMerchantEndpointResponse(String rawResponse) throws GatewayException, UnsupportedTransactionException {
+        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+            JsonDoc json = JsonDoc.parse(rawResponse);
+            String actionType = json.get("action").getString("type");
+
+            switch (actionType) {
+                case MERCHANT_CREATE:
+                case MERCHANT_EDIT:
+                case MERCHANT_EDIT_INITIATED:
+                case MERCHANT_SINGLE:
+                    var user = new User();
+                    user.setUserReference(new UserReference());
+                    user.getUserReference().setUserId(json.getString("id"));
+
+                    user.setName(json.getString("name"));
+                    user.getUserReference().setUserStatus(UserStatus.valueOf(json.getString("status")));
+                    user.getUserReference().setUserType(UserType.valueOf(json.getString("type")));
+                    user.setTimeCreated(json.getDateTime("time_created"));
+                    user.setTimeLastUpdated(json.getDateTime("time_last_updated"));
+                    user.setResponseCode(json.get("action").getString("result_code"));
+                    user.setStatusDescription(json.getString("status_description"));
+                    user.setEmail(json.getString("email"));
+
+                    if (json.has("addresses")) {
+                        user.setAddresses(new ArrayList<>());
+                        for (var address : json.getEnumerator("addresses")) {
+                            var userAddress = mapMerchantAddress(address);
+                            if (address.has("functions")) {
+                                userAddress.setType(AddressType.valueOf(toCamelCase(address.getStringArrayList("functions").get(0))));
+                            }
+                            user.getAddresses().add(userAddress);
+                        }
+                    }
+
+                    if (json.has("payment_methods")) {
+                        user.setPaymentMethods(mapMerchantPaymentMethod(json));
+                    }
+
+                    if (json.has("contact_phone")) {
+                        if (    !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("country_code")) &&
+                                !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("subscriber_number")))
+                        {
+                            PhoneNumber phoneNumber = new PhoneNumber();
+                            phoneNumber.setCountryCode(json.get("contact_phone").getString("country_code"));
+                            phoneNumber.setNumber(json.get("contact_phone").getString("subscriber_number"));
+                            // TODO: Set PhoneNumberType
+                            user.setContactPhone(phoneNumber);
+                        }
+                    }
+
+                    if (json.has("persons")) {
+                        user.setPersonList(mapMerchantPersonList(json));
+                    }
+
+                    return (T) user;
+
+                default:
+                    throw new UnsupportedTransactionException("Unknown transaction type " + actionType);
+            }
+        }
+
+        return null;
+    }
+
+    private static List<PaymentMethodList> mapMerchantPaymentMethod(JsonDoc json) {
+        List<PaymentMethodList> merchantPaymentList = new ArrayList<>();
+
+        for (var payment : json.getEnumerator("payment_methods")) {
+            var merchantPayment = new PaymentMethodList();
+            merchantPayment.setFunction(PaymentMethodFunction.valueOf(payment.getStringArrayList("functions").get(0)));
+
+            if (payment.has("bank_transfer")) {
+                var bankTransfer = payment.get("bank_transfer");
+                var pm = new eCheck();
+
+                if (bankTransfer.has("account_holder_type") && ! StringUtils.isNullOrEmpty(bankTransfer.getString("account_holder_type"))) {
+                    pm.setCheckType(CheckType.valueOf(bankTransfer.getString("account_holder_type")));
+                }
+
+                if (bankTransfer.has("account_type") && ! StringUtils.isNullOrEmpty(bankTransfer.getString("account_type")) ) {
+                    pm.setAccountType(AccountType.valueOf(bankTransfer.getString("account_type")));
+                }
+
+                if (bankTransfer.has("bank")) {
+                    var jsonBank = bankTransfer.get("bank");
+                    pm.setRoutingNumber(jsonBank.getString("code"));
+                    pm.setBankName(jsonBank.getString("name"));
+                }
+
+                pm.setCheckHolderName(payment.getString("name"));
+
+                merchantPayment.setPaymentMethod(pm);
+            }
+
+            if (payment.has("card")) {
+                var card = payment.get("card");
+                var pm = new CreditCardData();
+
+                pm.setCardHolderName(card.getString("name"));
+                pm.setNumber(card.getString("number"));
+                pm.setExpYear(card.getInt("expiry_year"));
+
+                merchantPayment.setPaymentMethod(pm);
+            }
+
+            merchantPaymentList.add(merchantPayment);
+        }
+
+        return merchantPaymentList;
+    }
+
+    private static Address mapMerchantAddress(JsonDoc address) {
+        return
+                new Address()
+                        .setStreetAddress1(address.getString("line_1"))
+                        .setStreetAddress2(address.getString("line_2"))
+                        .setStreetAddress3(address.getString("line_3"))
+                        .setCity(address.getString("city"))
+                        .setState(address.getString("state"))
+                        .setPostalCode(address.getString("postal_code"))
+                        .setCountryCode(address.getString("country"));
+    }
+
+    private static List<Person> mapMerchantPersonList(JsonDoc json) {
+        List<Person> personList = new ArrayList<>();
+
+        for (var person : json.getEnumerator("persons")) {
+            var newPerson = new Person();
+            var functions = person.getStringArrayList("functions");
+
+            newPerson.setFunctions(PersonFunctions.valueOf(functions.get(0)));
+            newPerson.setFirstName(person.getString("first_name"));
+            newPerson.setMiddleName(person.getString("middle_name"));
+            newPerson.setLastName(person.getString("last_name"));
+            newPerson.setEmail(person.getString("email"));
+
+            if (person.has("address")) {
+                var address = person.get("address");
+
+                newPerson.setAddress(mapMerchantAddress(address));
+            }
+
+            if (person.has("work_phone")) {
+                newPerson.setWorkPhone(
+                        new PhoneNumber()
+                                .setNumber(person.get("work_phone").getString("subscriber_number")));
+            }
+
+            if (person.has("contact_phone")) {
+                newPerson.setHomePhone(
+                        new PhoneNumber()
+                                .setNumber(person.get("contact_phone").getString("subscriber_number")));
+            }
+
+            personList.add(newPerson);
+        }
+
+        return personList;
+    }
+
+    private static String toCamelCase(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
+    public static CardIssuerResponse mapCardIssuerResponse(JsonDoc response) {
+        return
+                new CardIssuerResponse()
+                        .setResult(response.getString("result"))
+                        .setAvsResult(response.getString("avs_result"))
+                        .setCvvResult(response.getString("cvv_result"))
+                        .setAvsAddressResult(response.getString("avs_address_result"))
+                        .setAvsPostalCodeResult(response.getString("avs_postal_code_result"));
     }
 
 }

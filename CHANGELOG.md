@@ -1,5 +1,20 @@
 # Changelog
 
+## v10.0.5 (12/13/2022)
+
+### Enhancements:
+- UPA Devices: Added initial support for SendSAF command
+- Portico: SdkNameVersion: Name and Version of the SDK used for integration, where applicable
+- Update device configuration to be generic
+- NTS : Voyager Fleet odometer and driver Id padding changes
+- GP-API: Add mapping for Card issuer result codes from /transaction endpoint
+- GP-API: Decoupled Authentication
+- GP-API: Onboarding Merchant
+
+#### Bug Fixes:
+- GP-API: Brand Reference missed on Recurring Transaction
+- Portico : Pinblock tag issue changes for Credit Sale EMV transactions
+
 ## v10.0.4 (12/01/2022)
 
 ### Enhancements:

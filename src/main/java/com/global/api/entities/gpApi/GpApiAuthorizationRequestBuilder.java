@@ -89,14 +89,23 @@ public class GpApiAuthorizationRequestBuilder {
                 }
 
                 boolean hasToken = false;
-                if (paymentMethod instanceof ITokenizable) {
-                    ITokenizable tokenData = (ITokenizable) paymentMethod;
+                if (builderPaymentMethod instanceof ITokenizable) {
+                    ITokenizable tokenData = (ITokenizable) builderPaymentMethod;
                     hasToken = (tokenData != null) && !StringUtils.isNullOrEmpty(tokenData.getToken());
 
                 }
 
                 if (!hasToken) {
                     paymentMethod.set("card", card);
+                }
+                // Brand reference when card was tokenized
+                else {
+                    JsonDoc brand =
+                            new JsonDoc()
+                                    .set("brand_reference", builder.getCardBrandTransactionId());
+                    if (!brand.getKeys().isEmpty()) {
+                        paymentMethod.set("card", brand);
+                    }
                 }
 
                 if (builderTransactionType == TransactionType.Tokenize) {

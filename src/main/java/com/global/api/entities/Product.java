@@ -20,4 +20,8 @@ public class Product {
     private String type;
     private String risk;
     private BigDecimal taxAmount;
+    private BigDecimal taxPercentage;
+    private BigDecimal discountAmount;
+    private String url;
+    private String imageUrl;
 }

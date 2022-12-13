@@ -71,6 +71,13 @@ public class ServicesContainer implements IDisposable {
         throw new ConfigurationException("OpenBankingProvider is not configured.");
     }
 
+    public IPayFacProvider getPayFac(String configName) throws ConfigurationException {
+        if (configurations.containsKey(configName))
+            return configurations.get(configName).getPayFacProvider();
+
+        throw new ConfigurationException("PayFacProvider is not configured");
+    }
+
     public static ServicesContainer getInstance() {
         if(instance == null)
             instance = new ServicesContainer();

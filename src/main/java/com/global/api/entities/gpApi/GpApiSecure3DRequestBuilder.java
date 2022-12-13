@@ -4,10 +4,7 @@ import com.global.api.builders.Secure3dBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.BrowserData;
 import com.global.api.entities.MobileData;
-import com.global.api.entities.enums.AuthenticationSource;
-import com.global.api.entities.enums.SdkUiType;
-import com.global.api.entities.enums.Target;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
@@ -57,7 +54,8 @@ public class GpApiSecure3DRequestBuilder {
                 JsonDoc notifications =
                         new JsonDoc()
                                 .set("challenge_return_url", gateway.getGpApiConfig().getChallengeNotificationUrl())
-                                .set("three_ds_method_return_url", gateway.getGpApiConfig().getMethodNotificationUrl());
+                                .set("three_ds_method_return_url", gateway.getGpApiConfig().getMethodNotificationUrl())
+                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
 
                 JsonDoc data =
                         new JsonDoc()
@@ -107,7 +105,8 @@ public class GpApiSecure3DRequestBuilder {
                 JsonDoc notifications =
                         new JsonDoc()
                                 .set("challenge_return_url", gateway.getChallengeNotificationUrl())
-                                .set("three_ds_method_return_url", gateway.getMethodNotificationUrl());
+                                .set("three_ds_method_return_url", gateway.getMethodNotificationUrl())
+                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
 
                 JsonDoc order =
                         new JsonDoc()
@@ -238,6 +237,8 @@ public class GpApiSecure3DRequestBuilder {
                                 .set("method_url_completion_status", builder.getMethodUrlCompletion() != null ? getValueIfNotNull(builder.getMethodUrlCompletion()) : null)
                                 .set("payment_method", !paymentMethod.getKeys().isEmpty() ? paymentMethod : null)
                                 .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null)
+                                .set("decoupled_flow_request", builder.getDecoupledFlowRequest() == Boolean.TRUE ? DecoupledFlowRequest.DECOUPLED_PREFERRED.toString() : null)
+                                .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout() != null ? builder.getDecoupledFlowTimeout().toString() : null)
                                 .set("order", !order.getKeys().isEmpty() ? order : null)
                                 .set("payer", !payer.getKeys().isEmpty() ? payer : null)
                                 .set("payer_prior_three_ds_authentication_data", !payerPrior3DSAuthenticationData.getKeys().isEmpty() ? payerPrior3DSAuthenticationData : null)

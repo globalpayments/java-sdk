@@ -24,8 +24,9 @@ public class Address {
     public String getState() {
         return province;
     }
-    public void setState(String province) {
+    public Address setState(String province) {
         this.province = province;
+        return this;
     }
 
     public Address setCountryCode(String countryCode) {
@@ -50,12 +51,12 @@ public class Address {
 
     public Address() { this(null); }
 
-    public Address(String code) {
-        this(null, code);
+    public Address(String postalCode) {
+        this(null, postalCode);
     }
 
-    public Address(String streetAddress1, String code) {
+    public Address(String streetAddress1, String postalCode) {
         this.streetAddress1 = streetAddress1;
-        this.postalCode = code;
+        this.postalCode = postalCode;
     }
 }

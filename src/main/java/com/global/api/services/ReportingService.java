@@ -1,55 +1,58 @@
 package com.global.api.services;
 
+import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionReportBuilder;
+import com.global.api.builders.UserReportBuilder;
 import com.global.api.entities.ActivityReport;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.TransactionSummaryList;
 import com.global.api.entities.enums.ReportType;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.reporting.*;
 
 public class ReportingService {
 
     public static TransactionReportBuilder<TransactionSummaryList> findTransactions() {
-        return new TransactionReportBuilder<TransactionSummaryList>(ReportType.FindTransactions, TransactionSummaryList.class);
+        return new TransactionReportBuilder<>(ReportType.FindTransactions, TransactionSummaryList.class);
     }
 
     public static TransactionReportBuilder<TransactionSummary> findTransactions(String transactionId) {
-        return new TransactionReportBuilder<TransactionSummary>(ReportType.FindTransactions, TransactionSummary.class)
+        return new TransactionReportBuilder<>(ReportType.FindTransactions, TransactionSummary.class)
                 .withTransactionId(transactionId);
     }
 
     public static TransactionReportBuilder<ActivityReport> activity() {
-        return new TransactionReportBuilder<ActivityReport>(ReportType.Activity, ActivityReport.class);
+        return new TransactionReportBuilder<>(ReportType.Activity, ActivityReport.class);
     }
 
     public static TransactionReportBuilder<TransactionSummary> transactionDetail(String transactionId) {
-        return new TransactionReportBuilder<TransactionSummary>(ReportType.TransactionDetail, TransactionSummary.class)
+        return new TransactionReportBuilder<>(ReportType.TransactionDetail, TransactionSummary.class)
                 .withTransactionId(transactionId);
     }
 
     public static TransactionReportBuilder<DepositSummary> depositDetail(String depositId) {
-        return new TransactionReportBuilder<DepositSummary>(ReportType.DepositDetail, DepositSummary.class)
+        return new TransactionReportBuilder<>(ReportType.DepositDetail, DepositSummary.class)
                 .withDepositReference(depositId);
     }
 
     public static TransactionReportBuilder<DisputeSummary> disputeDetail(String disputeId) {
-        return new TransactionReportBuilder<DisputeSummary>(ReportType.DisputeDetail, DisputeSummary.class)
+        return new TransactionReportBuilder<>(ReportType.DisputeDetail, DisputeSummary.class)
                 .withDisputeId(disputeId);
     }
 
     public static TransactionReportBuilder<DisputeDocument> documentDisputeDetail(String disputeId) {
-        return new TransactionReportBuilder<DisputeDocument>(ReportType.DocumentDisputeDetail, DisputeDocument.class)
+        return new TransactionReportBuilder<>(ReportType.DocumentDisputeDetail, DisputeDocument.class)
                 .withDisputeId(disputeId);
     }
 
     public static TransactionReportBuilder<DisputeSummary> settlementDisputeDetail(String settlementDisputeId) {
-        return new TransactionReportBuilder<DisputeSummary>(ReportType.SettlementDisputeDetail, DisputeSummary.class)
+        return new TransactionReportBuilder<>(ReportType.SettlementDisputeDetail, DisputeSummary.class)
                 .withSettlementDisputeId(settlementDisputeId);
     }
 
     public static TransactionReportBuilder<StoredPaymentMethodSummary> storedPaymentMethodDetail(String storedPaymentMethodId) {
-        return new TransactionReportBuilder<StoredPaymentMethodSummary>(ReportType.StoredPaymentMethodDetail, StoredPaymentMethodSummary.class)
+        return new TransactionReportBuilder<>(ReportType.StoredPaymentMethodDetail, StoredPaymentMethodSummary.class)
                 .withStoredPaymentMethodId(storedPaymentMethodId);
     }
 
@@ -64,8 +67,7 @@ public class ReportingService {
                 .withPaging(page, pageSize);
     }
 
-    public static TransactionReportBuilder<TransactionSummaryPaged> findBankPaymentTransactions(int page, int pageSize)
-    {
+    public static TransactionReportBuilder<TransactionSummaryPaged> findBankPaymentTransactions(int page, int pageSize) {
         return new TransactionReportBuilder<>(ReportType.FindBankPayment, TransactionSummaryPaged.class)
                 .withPaging(page, pageSize);
     }
@@ -108,6 +110,12 @@ public class ReportingService {
 
     public static TransactionReportBuilder<ActionSummaryPaged> findActionsPaged(int page, int pageSize) {
         return new TransactionReportBuilder<>(ReportType.FindActionsPaged, ActionSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static ReportBuilder<MerchantSummaryPaged> findMerchants(int page, int pageSize) {
+        return new UserReportBuilder<>(ReportType.FindMerchantsPaged, MerchantSummaryPaged.class)
+                .withModifier(TransactionModifier.Merchant)
                 .withPaging(page, pageSize);
     }
 

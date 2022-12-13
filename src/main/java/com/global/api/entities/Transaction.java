@@ -64,6 +64,7 @@ public class Transaction {
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayLinkResponse payLinkResponse;
+    @Getter @Setter private CardIssuerResponse cardIssuerResponse;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;
     private String recurringDataCode;

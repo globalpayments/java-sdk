@@ -34,7 +34,7 @@ public class PayLinkService {
 
     public static TransactionReportBuilder<PayLinkSummaryPaged> findPayLink(int page, int pageSize) {
         return
-                new TransactionReportBuilder<PayLinkSummaryPaged>(ReportType.FindPayLinkPaged, PayLinkSummaryPaged.class)
+                new TransactionReportBuilder<>(ReportType.FindPayLinkPaged, PayLinkSummaryPaged.class)
                         .withPaging(page, pageSize);
     }
 

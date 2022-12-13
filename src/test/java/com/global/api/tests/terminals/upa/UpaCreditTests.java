@@ -30,7 +30,7 @@ public class UpaCreditTests {
         config.setIpAddress("192.168.0.198");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
-        config.setDeviceType(DeviceType.UPA_VERIFONE_T650P);
+        config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
 //        config.setRequestLogger(new RequestFileLogger("creditTests.txt"));

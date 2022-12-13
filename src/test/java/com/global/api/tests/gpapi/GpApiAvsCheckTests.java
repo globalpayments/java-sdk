@@ -67,34 +67,34 @@ public class GpApiAvsCheckTests extends BaseGpApiTest {
         @Parameterized.Parameters(name = "AvsTestCardTests :: {index} :: card [{0}], cvnResponseMessage [{1}], avsResponseCode [{2}], avsAddressResponse [{3}], status [{4}], transactionStatus [{5}]")
         public static Collection input() {
             return asList(new Object[][]{
-                    {AVS_MasterCard_1.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_2.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_3.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_4.avsCardNumber, "MATCHED", "MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_5.avsCardNumber, "MATCHED", "MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_6.avsCardNumber, "MATCHED", "NOT_MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_7.avsCardNumber, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_8.avsCardNumber, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_9.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_10.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_11.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_12.avsCardNumber, "NOT_MATCHED", "MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_13.avsCardNumber, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_MasterCard_14.avsCardNumber, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured},
-                    {AVS_Visa_1.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_2.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_3.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_4.avsCardNumber, "NOT_CHECKED", "MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_5.avsCardNumber, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_6.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_7.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_8.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_9.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_10.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_11.avsCardNumber, "NOT_CHECKED", "MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_12.avsCardNumber, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_13.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined},
-                    {AVS_Visa_14.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined}
+                    {AVS_MasterCard_1.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "M", "U", "U"},
+                    {AVS_MasterCard_2.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "M", "I", "I"},
+                    {AVS_MasterCard_3.avsCardNumber, "MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "M", "P", "P"},
+                    {AVS_MasterCard_4.avsCardNumber, "MATCHED", "MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured, "M", "M", "M"},
+                    {AVS_MasterCard_5.avsCardNumber, "MATCHED", "MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured, "M", "M", "N"},
+                    {AVS_MasterCard_6.avsCardNumber, "MATCHED", "NOT_MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured, "M", "N", "M"},
+                    {AVS_MasterCard_7.avsCardNumber, "MATCHED", "NOT_MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured, "M", "N", "N"},
+                    {AVS_MasterCard_8.avsCardNumber, "NOT_MATCHED", "NOT_MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured, "N", "N", "M"},
+                    {AVS_MasterCard_9.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "N", "U", "U"},
+                    {AVS_MasterCard_10.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "N", "I", "I"},
+                    {AVS_MasterCard_11.avsCardNumber, "NOT_MATCHED", "NOT_CHECKED", "NOT_CHECKED", SUCCESS, TransactionStatus.Captured, "N", "P", "P"},
+                    {AVS_MasterCard_12.avsCardNumber, "NOT_MATCHED", "MATCHED", "MATCHED", SUCCESS, TransactionStatus.Captured, "N", "M", "M"},
+                    {AVS_MasterCard_13.avsCardNumber, "NOT_MATCHED", "MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured, "N", "M", "N"},
+                    {AVS_MasterCard_14.avsCardNumber, "NOT_MATCHED", "NOT_MATCHED", "NOT_MATCHED", SUCCESS, TransactionStatus.Captured, "N", "N", "N"},
+                    {AVS_Visa_1.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "I", "U", "U"},
+                    {AVS_Visa_2.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "I", "I", "I"},
+                    {AVS_Visa_3.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "I", "P", "P"},
+                    {AVS_Visa_4.avsCardNumber, "NOT_CHECKED", "MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined, "I", "M", "M"},
+                    {AVS_Visa_5.avsCardNumber, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined, "I", "M", "N"},
+                    {AVS_Visa_6.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined, "I", "N", "M"},
+                    {AVS_Visa_7.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined, "I", "N", "N"},
+                    {AVS_Visa_8.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "U", "U", "U"},
+                    {AVS_Visa_9.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "U", "I", "I"},
+                    {AVS_Visa_10.avsCardNumber, "NOT_CHECKED", "NOT_CHECKED", "NOT_CHECKED", DECLINED, TransactionStatus.Declined, "U", "P", "P"},
+                    {AVS_Visa_11.avsCardNumber, "NOT_CHECKED", "MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined, "U", "M", "M"},
+                    {AVS_Visa_12.avsCardNumber, "NOT_CHECKED", "MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined, "U", "M", "N"},
+                    {AVS_Visa_13.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "MATCHED", DECLINED, TransactionStatus.Declined, "U", "N", "M"},
+                    {AVS_Visa_14.avsCardNumber, "NOT_CHECKED", "NOT_MATCHED", "NOT_MATCHED", DECLINED, TransactionStatus.Declined, "U", "N", "N"}
             });
         }
 
@@ -110,6 +110,12 @@ public class GpApiAvsCheckTests extends BaseGpApiTest {
         public String status;
         @Parameterized.Parameter(5)
         public TransactionStatus transactionStatus;
+        @Parameterized.Parameter(6)
+        public String cvvResult;
+        @Parameterized.Parameter(7)
+        public String avsPostcode;
+        @Parameterized.Parameter(8)
+        public String addressResult;
 
         @SneakyThrows
         @Test
@@ -130,6 +136,9 @@ public class GpApiAvsCheckTests extends BaseGpApiTest {
             assertEquals(cvnResponseMessage, response.getCvnResponseMessage());
             assertEquals(avsResponseCode, response.getAvsResponseCode());
             assertEquals(avsAddressResponse, response.getAvsAddressResponse());
+            assertEquals(cvvResult, response.getCardIssuerResponse().getCvvResult());
+            assertEquals(avsPostcode, response.getCardIssuerResponse().getAvsPostalCodeResult());
+            assertEquals(addressResult, response.getCardIssuerResponse().getAvsAddressResult());
         }
     }
 

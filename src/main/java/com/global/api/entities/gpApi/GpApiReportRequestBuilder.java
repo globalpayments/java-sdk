@@ -2,6 +2,7 @@ package com.global.api.entities.gpApi;
 
 import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionReportBuilder;
+import com.global.api.builders.UserReportBuilder;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayException;
@@ -11,6 +12,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.var;
 
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
@@ -19,9 +21,10 @@ public class GpApiReportRequestBuilder {
 
     public static GpApiRequest buildRequest(ReportBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
         String merchantUrl = gateway.getMerchantUrl();
+        var request = new GpApiRequest();
+
         if (builder instanceof TransactionReportBuilder) {
 
-            GpApiRequest request = new GpApiRequest();
             TransactionReportBuilder<TransactionSummary> trb = (TransactionReportBuilder<TransactionSummary>) builder;
 
             switch (builder.getReportType()) {
@@ -288,7 +291,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("status", trb.getSearchBuilder().getPayLinkStatus());
                     request.addQueryStringParam("usage_mode", trb.getSearchBuilder().getPaymentMethodUsageMode());
                     request.addQueryStringParam("name", trb.getSearchBuilder().getDisplayName());
-                    request.addQueryStringParam("amount", StringUtils.toNumeric(trb.getSearchBuilder().getAmount()));;
+                    request.addQueryStringParam("amount", StringUtils.toNumeric(trb.getSearchBuilder().getAmount()));
                     request.addQueryStringParam("description", trb.getSearchBuilder().getDescription());
                     request.addQueryStringParam("reference", trb.getSearchBuilder().getReferenceNumber());
                     request.addQueryStringParam("country", trb.getSearchBuilder().getCountry());
@@ -304,9 +307,27 @@ public class GpApiReportRequestBuilder {
                     throw new UnsupportedTransactionException();
             }
         }
+        else if (builder instanceof UserReportBuilder) {
+
+            UserReportBuilder<TransactionSummary> userTrb = (UserReportBuilder<TransactionSummary>) builder;
+
+            switch (builder.getReportType()) {
+                case FindMerchantsPaged:
+                    request =
+                            new GpApiRequest()
+                                    .setVerb(GpApiRequest.HttpMethod.Get)
+                                    .setEndpoint(merchantUrl + "/merchants");
+
+                    request.addQueryStringParam("page", String.valueOf(userTrb.getPage()));
+                    request.addQueryStringParam("page_size", String.valueOf(userTrb.getPageSize()));
+
+                    return request;
+
+                default:
+                    throw new UnsupportedTransactionException();
+            }
+        }
 
         throw new UnsupportedTransactionException();
-
     }
-
 }

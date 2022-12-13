@@ -1,6 +1,6 @@
 package com.global.api.entities.reporting;
 
-import com.global.api.builders.TransactionReportBuilder;
+import com.global.api.builders.ReportBuilder;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -19,7 +19,7 @@ import java.util.Date;
 public class SearchCriteriaBuilder<TResult> {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
-    private TransactionReportBuilder<TResult> _reportBuilder;
+    private ReportBuilder<TResult> _reportBuilder;
 
     private String accountName;
     private String accountNumberLastFour;
@@ -126,7 +126,7 @@ public class SearchCriteriaBuilder<TResult> {
     String timezone;
     String version;
 
-    public SearchCriteriaBuilder(TransactionReportBuilder<TResult> reportBuilder) {
+    public SearchCriteriaBuilder(ReportBuilder<TResult> reportBuilder) {
         _reportBuilder = reportBuilder;
     }
 

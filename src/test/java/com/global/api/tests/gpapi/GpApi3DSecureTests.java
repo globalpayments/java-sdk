@@ -14,6 +14,7 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.JsonDoc;
+import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -683,6 +684,68 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void DecoupledAuth() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
+
+        var tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setCardHolderName("James Mason");
+
+        var secureEcom =
+                Secure3dService
+                        .checkEnrollment(tokenizedCard)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withDecoupledNotificationUrl("https://www.example.com/decoupledNotification")
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+
+        var initAuth =
+                Secure3dService
+                        .initiateAuthentication(tokenizedCard, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .withDecoupledFlowRequest(true)
+                        .withDecoupledFlowTimeout(9001)
+                        .withDecoupledNotificationUrl("https://www.example.com/decoupledNotification")
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertNotNull(initAuth);
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        secureEcom =
+                Secure3dService
+                        .getAuthenticationData()
+                        .withServerTransactionId(secureEcom.getServerTransactionId())
+                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        tokenizedCard.setThreeDSecure(secureEcom);
+
+        var response =
+                tokenizedCard
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 

@@ -59,14 +59,13 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
 
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
         switch (deviceType) {
-            case PAX_S300:
+            case PAX_DEVICE:
                 services.setDeviceController(new PaxController(this));
                 break;
             case HPA_ISC250:
                 services.setDeviceController(new HpaController(this));
                 break;
-            case UPA_SATURN_1000:
-            case UPA_VERIFONE_T650P:
+            case UPA_DEVICE:
                 services.setDeviceController(new UpaController(this));
             default:
                 break;

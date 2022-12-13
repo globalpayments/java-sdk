@@ -88,6 +88,7 @@ public class GpApiConfig extends GatewayConfig {
 
         services.setReportingService(gpApiConnector);
 
+        services.setPayFacProvider(gpApiConnector);
         services.setSecure3dProvider(Secure3dVersion.ONE, gpApiConnector);
         services.setSecure3dProvider(Secure3dVersion.TWO, gpApiConnector);
     }

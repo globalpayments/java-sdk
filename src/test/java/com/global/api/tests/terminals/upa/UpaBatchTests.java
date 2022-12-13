@@ -32,7 +32,7 @@ public class UpaBatchTests {
         config.setIpAddress("192.168.0.198");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
-        config.setDeviceType(DeviceType.UPA_VERIFONE_T650P);
+        config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
 //        config.setRequestLogger(new RequestFileLogger("batchTests.txt"));

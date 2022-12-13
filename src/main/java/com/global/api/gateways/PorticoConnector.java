@@ -19,7 +19,10 @@ import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -40,6 +43,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String developerId;
     private String versionNumber;
     private String secretApiKey;
+    private String sdkNameVersion;
 
     public boolean supportsHostedPayments() { return false; }
 
@@ -234,11 +238,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         Element tagValues = et.subElement(tagData, "TagValues", builder.getTagData());
                         tagValues.set("source", "chip");
                     }
-
+                    Element emvData = et.subElement(block1, "EMVData");
                     if (builder.getEmvChipCondition() != null) {
                         String chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
-                        Element emvData = et.subElement(block1, "EMVData");
                         et.subElement(emvData, "EMVChipCondition", chipCondition);
+                    }
+                    if (builder.getPaymentMethod() instanceof IPinProtected && (((IPinProtected)builder.getPaymentMethod()).getPinBlock())!=null) {
+                            et.subElement(emvData, "PINBlock", ((IPinProtected)builder.getPaymentMethod()).getPinBlock());
                     }
                 }
                 if (paymentType == PaymentMethodType.Debit) {
@@ -700,6 +706,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "ClientTxnId", clientTransactionId);
 
         et.subElement(header, "PosReqDT", this.getPosReqDT());
+        if(sdkNameVersion!=null){
+            et.subElement(header, "SDKNameVersion", sdkNameVersion);
+        }
+        else{
+            et.subElement(header, "SDKNameVersion", "java;version=" + getReleaseVersion());
+        }
 
         // Transaction
         Element trans = et.subElement(version1, "Transaction");
@@ -1181,7 +1193,19 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         return summary;
     }
-    
+
+    // Get the SDK release version
+    private String getReleaseVersion() {
+        String version = "";
+        try {
+            Document pomXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("pom.xml"));
+            org.w3c.dom.Element pomRoot = (org.w3c.dom.Element) pomXml.getElementsByTagName("project").item(0);
+            version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
+        } catch (Exception ex) {
+            System.out.println("JAVA SDK version could not be extracted from pom.xml file.");
+        }
+        return version;
+    }
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
     	throw new ApiException("Portico does not support KeepAlive.");
     }
