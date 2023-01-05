@@ -11,6 +11,7 @@ import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.eCheck;
+import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
@@ -46,6 +47,7 @@ public class GpApiMapping {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             transaction.setResponseCode(json.get("action").getString("result_code"));
+            transaction.setResponseMessage(json.getString("status"));
             transaction.setTransactionId(json.getString("id"));
             transaction.setBalanceAmount(json.getAmount("amount"));
             transaction.setAuthorizedAmount(
@@ -53,7 +55,6 @@ public class GpApiMapping {
                             !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
             );
             transaction.setTimestamp(json.getString("time_created"));
-            transaction.setResponseMessage(json.getString("status"));
             transaction.setReferenceNumber(json.getString("reference"));
             transaction.setClientTransactionId(json.getString("reference"));
             transaction.setMultiCapture("MULTIPLE".equals(json.getString("capture_mode")));
@@ -127,8 +128,14 @@ public class GpApiMapping {
             if (json.has("payment_method")) {
                 JsonDoc paymentMethod = json.get("payment_method");
 
+                transaction.setMultiCapture(getIsMultiCapture(json));
                 transaction.setFingerPrint(paymentMethod.getString("fingerprint"));
                 transaction.setFingerPrintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
+
+                if (paymentMethod.has("bnpl")) {
+                    mapBNPLResponse(json, transaction);
+                    return transaction;
+                }
 
                 transaction.setToken(paymentMethod.getString("id"));
                 transaction.setAuthorizationCode(paymentMethod.getString("result"));
@@ -143,11 +150,11 @@ public class GpApiMapping {
                     transaction.setAvsResponseCode(card.getString("avs_postal_code_result"));
                     transaction.setAvsAddressResponse(card.getString("avs_address_result"));
                     transaction.setAvsResponseMessage(card.getString("avs_action"));
+                    transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                     transaction.setPaymentMethodType(!paymentMethod.has("bank_transfer") ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                     if (card.has("provider")) {
                         transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
                     }
-                    transaction.setMultiCapturePaymentCount(getIsMultiCapture(json));
                     transaction.setPaymentMethodType(getPaymentMethodType(json) != null ? getPaymentMethodType(json) : transaction.getPaymentMethodType());
                     transaction.setDccRateData(mapDccInfo(json));
                 }
@@ -159,16 +166,16 @@ public class GpApiMapping {
         return transaction;
     }
 
-    private static Integer getIsMultiCapture(JsonDoc json) {
+    private static Boolean getIsMultiCapture(JsonDoc json) {
         if (!StringUtils.isNullOrEmpty(json.getString("capture_mode"))) {
             switch (json.getString("capture_mode")) {
                 case "MULTIPLE":
-                    return 1;
+                    return true;
                 default:
-                    return null;
+                    return false;
             }
         }
-        return null;
+        return false;
     }
 
     private static PaymentMethodType getPaymentMethodType(JsonDoc json) {
@@ -246,8 +253,9 @@ public class GpApiMapping {
         summary.setCountry(doc.getString("country"));
         summary.setOriginalTransactionId(doc.getString("parent_resource_id"));
         summary.setDepositReference(doc.getString("deposit_id"));
-        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setDepositStatus(doc.getString("deposit_status"));
+        summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
+        summary.setOrderId(doc.getString("order_reference"));
 
         if (doc.has("payment_method")) {
             final JsonDoc paymentMethod = doc.get("payment_method");
@@ -314,6 +322,15 @@ public class GpApiMapping {
                 alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
                 summary.setAlternativePaymentResponse(alternativePaymentResponse);
                 summary.setPaymentType(PaymentMethodName.APM.getValue(Target.GP_API));
+            } else if (paymentMethod.has("bnpl")) {
+                JsonDoc bnpl = paymentMethod.get("bnpl");
+
+                var bnplResponse =
+                        new BNPLResponse()
+                                .setProviderName(bnpl.getString("provider"));
+
+                summary.setBNPLResponse(bnplResponse);
+                summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BNPL));
             }
         }
 
@@ -381,6 +398,15 @@ public class GpApiMapping {
                         .setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
     }
 
+    private static void mapBNPLResponse(JsonDoc response, Transaction transaction) {
+        transaction.setPaymentMethodType(PaymentMethodType.BNPL);
+
+        var bnplResponse = new BNPLResponse();
+        bnplResponse.setRedirectUrl(response.get("payment_method").getString("redirect_url"));
+        bnplResponse.setProviderName(response.get("payment_method").get("bnpl").getString("provider"));
+        transaction.setBNPLResponse(bnplResponse);
+    }
+
     private static TransactionSummary createTransactionSummary(JsonDoc doc) throws GatewayException {
         TransactionSummary transaction = new TransactionSummary();
 
@@ -392,6 +418,13 @@ public class GpApiMapping {
         transaction.setAmount(doc.getAmount("amount"));
         transaction.setCurrency(doc.getString("currency"));
         transaction.setReferenceNumber(doc.getString("reference"));
+        transaction.setClientTransactionId(doc.getString("reference"));
+        transaction.setDescription(doc.getString("description"));
+        if (doc.has("payment_method")) {
+            JsonDoc paymentMethod = doc.get("payment_method");
+            transaction.setFingerprint(paymentMethod.getString("fingerprint"));
+            transaction.setFingerprintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
+        }
 
         return transaction;
     }

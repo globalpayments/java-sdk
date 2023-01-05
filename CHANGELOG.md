@@ -1,5 +1,10 @@
 # Changelog
 
+## v10.0.6 (01/05/2023)
+
+### Enhancements:
+- GP-API: Buy Now and Pay Later
+
 ## v10.0.5 (12/13/2022)
 
 ### Enhancements:

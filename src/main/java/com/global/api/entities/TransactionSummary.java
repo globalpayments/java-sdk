@@ -116,9 +116,12 @@ public class TransactionSummary {
     private String accountType;
     private AlternativePaymentResponse alternativePaymentResponse;
     private BankPaymentResponse bankPaymentResponse;
+    private BNPLResponse BNPLResponse;
+    private String fingerprint;
+    private String fingerprintIndicator;
     private FraudManagementResponse fraudManagementResponse;
     private String transactionType;
-    private String CardEntryMethod;
+    private String cardEntryMethod;
     private BigDecimal amountDue;
     private String country;
 

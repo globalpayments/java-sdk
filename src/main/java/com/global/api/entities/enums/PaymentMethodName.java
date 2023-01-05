@@ -21,6 +21,10 @@ public enum PaymentMethodName implements IMappedConstant {
 
     BankPayment(new HashMap<Target, String>() {{
         put(Target.GP_API, "BANK PAYMENT");
+    }}),
+
+    BNPL(new HashMap<Target, String>() {{
+        put(Target.GP_API, "BNPL");
     }});
 
     HashMap<Target, String> value;

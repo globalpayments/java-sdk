@@ -230,6 +230,18 @@ public class Transaction {
         }
         transactionReference.setAlternativePaymentResponse(value);
     }
+
+    public BNPLResponse getBNPLResponse() {
+        return transactionReference.getBNPLResponse();
+    }
+
+    public void setBNPLResponse(BNPLResponse value) {
+        if (transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        transactionReference.setBNPLResponse(value);
+    }
+
     public String getCardLast4() {
         return cardLast4;
     }

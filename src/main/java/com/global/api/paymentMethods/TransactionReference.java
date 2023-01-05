@@ -1,5 +1,7 @@
 package com.global.api.paymentMethods;
 
+import com.global.api.entities.BNPLResponse;
+import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.AlternativePaymentResponse;
 import com.global.api.entities.exceptions.GatewayException;
@@ -25,6 +27,7 @@ public class TransactionReference implements IPaymentMethod {
     private String messageTypeIndicator;
     private NtsData ntsData;
     private AlternativePaymentResponse alternativePaymentResponse;
+    private BNPLResponse BNPLResponse;
     private String orderId;
     private BigDecimal originalAmount;
     private BigDecimal originalApprovedAmount;

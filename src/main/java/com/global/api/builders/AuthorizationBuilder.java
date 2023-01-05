@@ -98,6 +98,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String tagData;
     private String timestamp;
     private StoredCredentialInitiator transactionInitiator;
+    @Getter @Setter private BNPLShippingMethod BNPLShippingMethod;
     private List<Bill> bills;
 
     // network fields
@@ -848,11 +849,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
+    public AuthorizationBuilder withBNPLShippingMethod(BNPLShippingMethod value) throws UnsupportedTransactionException {
+        if (!(paymentMethod instanceof BNPL)) {
+            throw new UnsupportedTransactionException("The selected payment method doesn't support this property!");
+        }
+
+        BNPLShippingMethod = value;
+        return this;
+    }
+
     public AuthorizationBuilder withTransactiontype(TransactionType type) {
         transactionType = type;
         return this;
     }
-
 
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);

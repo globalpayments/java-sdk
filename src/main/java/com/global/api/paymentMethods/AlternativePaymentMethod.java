@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @Getter
 @Setter
-public class AlternativePaymentMethod implements IPaymentMethod, IChargable {
+public class AlternativePaymentMethod implements IPaymentMethod, IChargable, INotificationData {
     private PaymentMethodType paymentMethodType;
     private AlternativePaymentType alternativePaymentMethodType;
     private String returnUrl;

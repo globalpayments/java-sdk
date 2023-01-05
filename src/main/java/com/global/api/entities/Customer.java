@@ -32,6 +32,8 @@ public class Customer extends RecurringEntity<Customer> {
     private String comments;
     private String department;
     private String status;
+    private PhoneNumber phone;
+    private List<CustomerDocument> documents;
     private List<RecurringPaymentMethod> paymentMethods;
 
     public Customer() {

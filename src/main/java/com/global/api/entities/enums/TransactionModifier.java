@@ -23,6 +23,7 @@ public enum TransactionModifier implements IFlag {
     AlternativePaymentMethod,
     DeletePreAuth,
     BankPayment,
+    BuyNowPayLater,
     Merchant;
 
     public long getLongValue() {

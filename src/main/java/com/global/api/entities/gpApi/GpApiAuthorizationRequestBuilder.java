@@ -11,6 +11,7 @@ import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
+import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -329,6 +330,18 @@ public class GpApiAuthorizationRequestBuilder {
             paymentMethod.set("apm", apm);
         }
 
+        if (builderPaymentMethod instanceof BNPL) {
+            BNPL bnpl = (BNPL) builder.getPaymentMethod();
+
+            var bnplType =
+                    new JsonDoc()
+                            .set("provider", EnumUtils.getMapping(Target.GP_API, bnpl.BNPLType));
+
+            paymentMethod
+                    .set("name", builder.getCustomerData() != null ? builder.getCustomerData().getFirstName() + " " + builder.getCustomerData().getLastName() : null)
+                    .set("bnpl", bnplType);
+        }
+
         // Encryption
         if (builderPaymentMethod instanceof IEncryptable) {
             IEncryptable encryptable = (IEncryptable) builderPaymentMethod;
@@ -424,7 +437,7 @@ public class GpApiAuthorizationRequestBuilder {
                 .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
                         new JsonDoc().set("id", builder.getPaymentLinkId()) : null);
 
-        if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod) {
+        if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
             data.set("payer", setPayerInformation(builder));
         }
 
@@ -437,16 +450,24 @@ public class GpApiAuthorizationRequestBuilder {
             data.set("order", order);
         }
 
-        if (builderPaymentMethod instanceof AlternativePaymentMethod) {
+        if (builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
             setOrderInformation(builder, data);
 
-            var alternatepaymentMethod = (AlternativePaymentMethod) builderPaymentMethod;
+            INotificationData payment = null;
+
+            if (builderPaymentMethod instanceof AlternativePaymentMethod) {
+                payment = (AlternativePaymentMethod) builderPaymentMethod;
+            }
+
+            if (builderPaymentMethod instanceof BNPL) {
+                payment = (BNPL) builderPaymentMethod;
+            }
 
             var notifications =
                     new JsonDoc()
-                            .set("return_url", alternatepaymentMethod.getReturnUrl())
-                            .set("status_url", alternatepaymentMethod.getStatusUpdateUrl())
-                            .set("cancel_url", alternatepaymentMethod.getCancelUrl());
+                            .set("return_url", payment.getReturnUrl())
+                            .set("status_url", payment.getStatusUpdateUrl())
+                            .set("cancel_url", payment.getCancelUrl());
 
             data.set("notifications", notifications);
         }
@@ -515,6 +536,57 @@ public class GpApiAuthorizationRequestBuilder {
                                 .set("subscriber_number", builder.getWorkPhone().getNumber());
 
                 payer.set("work_phone", workPhone);
+            }
+        } else if(builder.getPaymentMethod() instanceof BNPL && builder.getCustomerData() != null) {
+            payer
+                    .set("email", builder.getCustomerData().getEmail())
+                    .set("date_of_birth", builder.getCustomerData().getDateOfBirth());
+
+            JsonDoc billing_address = new JsonDoc();
+
+            if (builder.getBillingAddress() != null) {
+                billing_address
+                        .set("line_1", builder.getBillingAddress().getStreetAddress1())
+                        .set("line_2", builder.getBillingAddress().getStreetAddress2())
+                        .set("city", builder.getBillingAddress().getCity())
+                        .set("postal_code", builder.getBillingAddress().getPostalCode())
+                        .set("state", builder.getBillingAddress().getState())
+                        .set("country", builder.getBillingAddress().getCountryCode());
+            }
+
+            if (builder.getCustomerData() != null) {
+                billing_address
+                        .set("first_name", builder.getCustomerData().getFirstName() != null ? builder.getCustomerData().getFirstName() : "")
+                        .set("last_name", builder.getCustomerData().getLastName() != null ? builder.getCustomerData().getLastName() : "");
+
+                payer.set("billing_address", billing_address);
+
+                if (builder.getCustomerData().getPhone() != null) {
+                    JsonDoc homePhone = new JsonDoc();
+
+                    homePhone
+                            .set("country_code", builder.getCustomerData().getPhone().getCountryCode())
+                            .set("subscriber_number", builder.getCustomerData().getPhone().getNumber());
+
+                    payer.set("contact_phone", homePhone);
+
+                }
+
+                if (builder.getCustomerData().getDocuments() != null) {
+
+                    var documents = new ArrayList<HashMap<String, Object>>();
+                    for (var document : builder.getCustomerData().getDocuments()) {
+                        var doc = new HashMap<String, Object>();
+
+                        doc.put("type", document.getType().toString());
+                        doc.put("reference", document.getReference());
+                        doc.put("issuer", document.getIssuer());
+
+                        documents.add(doc);
+                    }
+
+                    payer.set("documents", documents);
+                }
             }
         }
 
@@ -614,6 +686,88 @@ public class GpApiAuthorizationRequestBuilder {
         return "AUTO";
     }
 
+    private static JsonDoc setItemDetailsListForBNPL(AuthorizationBuilder builder, JsonDoc order) {
+        var items = new ArrayList<HashMap<String, Object>>();
+        for (var product : builder.getMiscProductData()) {
+            var item = new HashMap<String, Object>();
+            Integer qta = product.getQuantity() != null ? product.getQuantity() : 0;
+            BigDecimal taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : new BigDecimal(0);
+            BigDecimal unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : new BigDecimal(0);
+            BigDecimal netUnitAmount = product.getNetUnitAmount() != null ? product.getNetUnitAmount() : new BigDecimal(0);
+            BigDecimal discountAmount = product.getDiscountAmount() != null ? product.getDiscountAmount() : new BigDecimal(0);
+
+            item.put("reference", product.getProductId() != null ? product.getProductId() : null);
+            item.put("label", product.getProductName() != null ? product.getProductName() : null);
+            item.put("description", product.getDescription() != null ? product.getDescription() : null);
+            item.put("quantity", qta.toString());
+            item.put("unit_amount", StringUtils.toNumeric(unitAmount));
+            item.put("total_amount", StringUtils.toNumeric(unitAmount.multiply(new BigDecimal(qta))));
+            item.put("tax_amount", StringUtils.toNumeric(taxAmount));
+            item.put("discount_amount", discountAmount != null && !discountAmount.toString().equals("0") ? StringUtils.toNumeric(discountAmount) : "0");
+            item.put("tax_percentage", product.getTaxPercentage() != null && !product.getTaxPercentage().toString().equals("0") ? StringUtils.toNumeric(product.getTaxPercentage()) : "0");
+            item.put("net_unit_amount", StringUtils.toNumeric(netUnitAmount));
+            item.put("gift_card_currency", product.getGiftCardCurrency());
+            item.put("url", product.getUrl());
+            item.put("image_url", product.getImageUrl());
+
+            items.add(item);
+        }
+
+        return order.set("items", items);
+    }
+
+    private static JsonDoc setItemDetailsListForApm(AuthorizationBuilder builder, JsonDoc order) {
+        BigDecimal taxTotalAmount = new BigDecimal(0);
+        BigDecimal itemsAmount = new BigDecimal(0);
+        BigDecimal orderAmount = new BigDecimal(0);
+
+        if (builder.getMiscProductData() != null) {
+            var items = new ArrayList<HashMap<String, Object>>();
+            for (var product : builder.getMiscProductData()) {
+                Integer qta = product.getQuantity() != null ? product.getQuantity() : 0;
+                BigDecimal taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : new BigDecimal(0);
+                BigDecimal unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : new BigDecimal(0);
+
+                var item = new HashMap<String, Object>();
+
+                item.put("reference", product.getProductId());
+                item.put("label", product.getProductName());
+                item.put("description", product.getDescription());
+                item.put("quantity", qta);
+                item.put("unit_amount", StringUtils.toNumeric(unitAmount));
+                item.put("unit_currency", product.getUnitCurrency());
+                item.put("tax_amount", StringUtils.toNumeric(taxAmount));
+                item.put("amount", StringUtils.toNumeric(unitAmount.multiply(new BigDecimal(qta))));
+
+                items.add(item);
+
+                taxTotalAmount = taxTotalAmount.add(taxAmount);
+                itemsAmount = itemsAmount.add(unitAmount);
+            }
+
+            order.set("tax_amount", StringUtils.toNumeric(taxTotalAmount));
+            order.set("item_amount", StringUtils.toNumeric(itemsAmount));
+
+            BigDecimal shippingAmount = builder.getShippingAmount() != null ? builder.getShippingAmount() : new BigDecimal(0);
+
+            order.set("shipping_amount", StringUtils.toNumeric(builder.getShippingAmount()));
+            order.set("insurance_offered", builder.getOrderDetails() != null ? (builder.getOrderDetails().hasInsurance() ? "YES" : "NO") : null);
+            order.set("shipping_discount", StringUtils.toNumeric(builder.getShippingDiscount()));
+            order.set("insurance_amount", StringUtils.toNumeric(builder.getOrderDetails().getInsuranceAmount()));
+            order.set("handling_amount", StringUtils.toNumeric(builder.getOrderDetails().getHandlingAmount()));
+            BigDecimal insuranceAmount = builder.getOrderDetails().getInsuranceAmount() != null ? builder.getOrderDetails().getInsuranceAmount() : new BigDecimal(0);
+            BigDecimal handlingAmount = builder.getOrderDetails().getHandlingAmount() != null ?builder.getOrderDetails().getHandlingAmount() : new BigDecimal(0);
+
+            orderAmount = itemsAmount.add(taxTotalAmount).add(handlingAmount).add(insuranceAmount).add(shippingAmount);
+
+            order.set("amount", StringUtils.toNumeric(orderAmount));
+            order.set("currency", builder.getCurrency());
+            order.set("items", items);
+        }
+
+        return order;
+    }
+
     private static JsonDoc setOrderInformation(AuthorizationBuilder builder, JsonDoc requestBody) {
 
         JsonDoc order;
@@ -627,16 +781,17 @@ public class GpApiAuthorizationRequestBuilder {
             order.set("description", builder.getOrderDetails().getDescription());
         }
 
+        JsonDoc shippingAddress = new JsonDoc();
+
         if (builder.getShippingAddress() != null) {
-            var shippingAddress =
-                    new JsonDoc()
-                            .set("line1", builder.getShippingAddress().getStreetAddress1())
-                            .set("line2", builder.getShippingAddress().getStreetAddress2())
-                            .set("line3", builder.getShippingAddress().getStreetAddress3())
-                            .set("city", builder.getShippingAddress().getCity())
-                            .set("postal_code", builder.getShippingAddress().getPostalCode())
-                            .set("state", builder.getShippingAddress().getProvince())
-                            .set("country", builder.getShippingAddress().getCountryCode());
+            shippingAddress
+                    .set("line_1", builder.getShippingAddress().getStreetAddress1())
+                    .set("line_2", builder.getShippingAddress().getStreetAddress2())
+                    .set("line_3", builder.getShippingAddress().getStreetAddress3())
+                    .set("city", builder.getShippingAddress().getCity())
+                    .set("postal_code", builder.getShippingAddress().getPostalCode())
+                    .set("state", builder.getShippingAddress().getProvince())
+                    .set("country", builder.getShippingAddress().getCountryCode());
 
             order.set("shipping_address", shippingAddress);
         }
@@ -650,55 +805,30 @@ public class GpApiAuthorizationRequestBuilder {
             order.set("shipping_phone", shippingPhone);
         }
 
-        BigDecimal taxTotalAmount = new BigDecimal(0);
-        BigDecimal itemsAmount = new BigDecimal(0);
-        BigDecimal orderAmount = null;
-
-        if (builder.getMiscProductData() != null) {
-            var items = new ArrayList<HashMap<String, Object>>();
-            for (Product product : builder.getMiscProductData()) {
-                var qta = product.getQuantity() != null ? product.getQuantity() : 0;
-                var taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : new BigDecimal(0);
-                var unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : new BigDecimal(0);
-                var item = new HashMap<String, Object>();
-                item.put("reference", product.getProductId());
-                item.put("label", product.getProductName());
-                item.put("description", product.getDescription());
-                item.put("quantity", qta);
-                item.put("unit_amount", StringUtils.toNumeric(unitAmount));
-                item.put("unit_currency", product.getUnitCurrency());
-                item.put("tax_amount", StringUtils.toNumeric(taxAmount));
-                item.put("amount", StringUtils.toNumeric(unitAmount.multiply(new BigDecimal(qta))));
-                items.add(item);
-
-                taxTotalAmount = taxTotalAmount.add(taxAmount);
-                itemsAmount = itemsAmount.add(unitAmount);
+        //AlternativePaymentMethod
+        if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
+            if (builder.getMiscProductData() != null) {
+                setItemDetailsListForApm(builder, order);
             }
-
-            order.set("tax_amount", StringUtils.toNumeric(taxTotalAmount));
-            order.set("item_amount", itemsAmount);
-            var shippingAmount = builder.getShippingAmount();
-            order.set("shipping_amount", builder.getShippingAmount());
-
-            var builderOrderDetails = builder.getOrderDetails();
-            BigDecimal insuranceAmount = null;
-            BigDecimal handlingAmount = null;
-
-            if (builderOrderDetails != null) {
-                order.set("shipping_discount", builder.getShippingDiscount());
-                order.set("insurance_offered", builderOrderDetails.hasInsurance() ? "YES" : "NO");
-                order.set("insurance_amount", builderOrderDetails.getInsuranceAmount());
-                order.set("handling_amount", builderOrderDetails.getHandlingAmount());
-
-                insuranceAmount = builderOrderDetails.getInsuranceAmount();
-                handlingAmount = builderOrderDetails.getHandlingAmount();
-            }
-
-            orderAmount = itemsAmount.add(taxTotalAmount).add(handlingAmount).add(insuranceAmount).add(shippingAmount);
-            order.set("amount", orderAmount);
-            order.set("currency", builder.getCurrency());
-            order.set("items", items);
         }
+
+        //Buy Now Pay Later
+        if (builder.getPaymentMethod() instanceof BNPL) {
+            order
+                    .set("shipping_method", builder.getBNPLShippingMethod() != null ? builder.getBNPLShippingMethod().toString() : null);
+
+            if (builder.getMiscProductData() != null) {
+                setItemDetailsListForBNPL(builder, order);
+            }
+
+            if (builder.getCustomerData() != null) {
+                shippingAddress
+                        .set("first_name", builder.getCustomerData().getFirstName())
+                        .set("last_name", builder.getCustomerData().getLastName());
+            }
+        }
+
+        order.set("shipping_address", shippingAddress);
 
         if (!requestBody.has("order")) {
             requestBody.set("order", order);
