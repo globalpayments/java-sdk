@@ -33,7 +33,6 @@ public class UpaTransactionResponse extends TerminalResponse {
                 cardBrandTransactionId = host.getString("cardBrandTransId");
                 responseCode = host.getString("responseCode");
                 responseText = host.getString("responseText");
-                merchantFee = host.getDecimal("surcharge");
                 terminalRefNumber = host.getString("tranNo");
                 token = host.getString("tokenValue");
                 transactionId = host.getString("referenceNumber");
@@ -106,12 +105,6 @@ public class UpaTransactionResponse extends TerminalResponse {
                 applicationId = emv.getString("9F06");
                 applicationLabel = emv.getString("50");
                 applicationPreferredName = emv.getString("9F12");
-            }
-
-            JsonDoc pan = data.get("PAN");
-
-            if (pan != null) {
-                unmaskedCardNumber = pan.getString("clearPAN");
             }
         }
     }

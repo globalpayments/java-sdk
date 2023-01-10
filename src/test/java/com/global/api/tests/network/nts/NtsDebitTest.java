@@ -674,6 +674,7 @@ public class NtsDebitTest {
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsTag16(getTag16())
+                
                 .withCurrency("USD")
                 .execute();
 

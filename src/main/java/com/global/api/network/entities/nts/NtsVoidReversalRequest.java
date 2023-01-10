@@ -122,14 +122,20 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         // Batch Number & Sequence Number
         if (transactionReference.getOriginalMessageCode().equals("02")) {
             // Batch Number & Sequence Number
-            int batchNumber= transactionReference.getBatchNumber() ;
+            int batchNumber = builder.getBatchNumber();
+            if (batchNumber == 0 && batchProvider != null) {
+                batchNumber = batchProvider.getBatchNumber();
+            }
             request.addRange(batchNumber, 2);
             NtsUtils.log("Batch Number", String.valueOf(batchNumber));
 
 
             int sequenceNumber = 0;
             if (!builder.getTransactionType().equals(TransactionType.BatchClose)) {
-                sequenceNumber = transactionReference.getSequenceNumber();
+                sequenceNumber = builder.getSequenceNumber();
+                if (sequenceNumber == 0 && batchProvider != null) {
+                    sequenceNumber = batchProvider.getSequenceNumber();
+                }
             }
             request.addRange(StringUtils.padLeft(sequenceNumber, 3, '0'), 3);
             NtsUtils.log("Sequence Number", String.valueOf(sequenceNumber));

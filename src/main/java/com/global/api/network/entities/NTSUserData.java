@@ -17,11 +17,10 @@ import com.global.api.utils.EmvUtils;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.text.SimpleDateFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class NTSUserData {
@@ -49,16 +48,6 @@ public class NTSUserData {
         StringBuilder sb = new StringBuilder();
 
         String amount = StringUtils.toNumeric(builder.getAmount());
-        if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
-                && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
-            if (builder.getFleetData() != null) {
-                sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
-            }
-            if (builder.getNtsProductData() != null) {
-                sb.append(getProductDataTag09(builder, cardType));
-            }
-            return sb.append("?").toString();
-        }
 
         int totalNoOfTags = 0; // Tag counter.
 
@@ -110,9 +99,9 @@ public class NTSUserData {
         if (!(cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
                 && isAVSUsed
                 && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
-                && builder.getZipCode() != null)) {
+                && acceptorConfig.getAddress() != null)) {
             sb.append(UserDataTag.ZipCode.getValue()).append("\\");
-            sb.append(StringUtils.padRight(builder.getZipCode(), 9, ' ')).append("\\");
+            sb.append(StringUtils.padRight(acceptorConfig.getAddress().getPostalCode(), 9, ' ')).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
@@ -121,7 +110,8 @@ public class NTSUserData {
         if (cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet)) {
             FleetData fleetData = builder.getFleetData();
             if ((transactionType.equals(TransactionType.Auth) ||
-                    transactionType.equals(TransactionType.Sale))
+                    transactionType.equals(TransactionType.Sale) ||
+                    transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))
                     && fleetData != null) {
                 sb.append(UserDataTag.FleetAuthData.getValue()).append("\\");
                 sb.append(getFleetDataTag08(fleetData, cardType));
@@ -132,8 +122,9 @@ public class NTSUserData {
 
         //09
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
-                && transactionType.equals(TransactionType.Sale)
-                && builder.getNtsProductData() != null) {
+                && ((transactionType.equals(TransactionType.Sale) || transactionType.equals(TransactionType.DataCollect)
+                || transactionType.equals(TransactionType.Capture))
+                && builder.getNtsProductData() != null)) {
             sb.append(UserDataTag.ProductDataTag.getValue()).append("\\");
             sb.append(getProductDataTag09(builder, cardType));
             sb.append("?");
@@ -186,7 +177,7 @@ public class NTSUserData {
         }
 
         // 14 Discover Network Ref Id
-        if (((cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal)) && (messageCode == NtsMessageCode.ReversalOrVoid ||
+        if ((cardType.equals(NTSCardTypes.Discover) && (messageCode == NtsMessageCode.ReversalOrVoid ||
                 messageCode == NtsMessageCode.ForceReversalOrForceVoid)) && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             sb.append(UserDataTag.DiscoverNetworkRefId.getValue()).append("\\");
@@ -481,13 +472,8 @@ public class NTSUserData {
         StringBuilder sb = new StringBuilder();
         sb.append(StringUtils.padLeft(String.valueOf(ntsTag16.getPumpNumber()), 2, '0')); // Pump Number
         sb.append(StringUtils.padLeft(String.valueOf(ntsTag16.getWorkstationId()), 2, '0')); // Workstation Id
-        if(ntsTag16.getTimeStamp()!=null) {
-            sb.append(new SimpleDateFormat("MMddyy").format(ntsTag16.getTimeStamp()));
-            sb.append(new SimpleDateFormat("HHmmss").format(ntsTag16.getTimeStamp()));
-        }else{
-            sb.append(DateTime.now(DateTimeZone.UTC).toString("MMddyy"));
-            sb.append(DateTime.now(DateTimeZone.UTC).toString("HHmmss"));
-        }
+        sb.append(DateTime.now().toString("MMddyy"));
+        sb.append(LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
         sb.append(ntsTag16.getServiceCode().getValue()); // Service Code
         sb.append(ntsTag16.getSecurityData().getValue()); // Security Data
 
@@ -547,7 +533,7 @@ public class NTSUserData {
                 sb.append(purchaseType.getValue());
                 for (int i = 0; i < 1; i++) {
                     if (fuelFlag && i < fuel.size()) {
-                        sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, ' '));
+                        sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, '0'));
                         sb.append(StringUtils.padLeft(purchaseType.equals(PurchaseType.Fuel) ? fuel.get(i).getUnitOfMeasure().getValue() : " ", 1, ' '));
                         sb.append(StringUtils.toNumeric(fuel.get(i).getQuantity(), 6));
                         sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 5, 3));
@@ -565,7 +551,7 @@ public class NTSUserData {
                 if (productData.getSalesTax() != null)
                     sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
                 else
-                    sb.append(String.format("%05d",0));
+                    sb.append(String.format("%5s", "0"));
                 return sb;
 
             case MastercardFleet:
@@ -576,32 +562,24 @@ public class NTSUserData {
                         sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, '0'));
                         if (i == 0)
                             sb.append(serviceLevel);
-                        if(serviceLevel!=3) {
-                            sb.append(StringUtils.padLeft(mapUnitMeasureFleet(fuel.get(i).getUnitOfMeasure()), 1, '0'));
-                            sb.append(StringUtils.toNumeric(fuel.get(i).getPrice(), 5));
-                            sb.append(StringUtils.toNumeric(fuel.get(i).getQuantity(), 6));
-                            sb.append(StringUtils.toNumeric(fuel.get(i).getAmount(), 9));
-                        }else{
-                            sb.append(String.format("%1s", " "));
-                            sb.append(String.format("%5s", " "));
-                            sb.append(String.format("%6s", " "));
-                            sb.append(String.format("%9s", " "));
-                        }
-
+                        sb.append(StringUtils.padLeft(mapUnitMeasureFleet(fuel.get(i).getUnitOfMeasure()), 1, '0'));
+                        sb.append(StringUtils.toNumeric(fuel.get(i).getQuantity(), 6));
+                        sb.append(StringUtils.toNumeric(fuel.get(i).getPrice(), 5));
+                        sb.append(StringUtils.toNumeric(fuel.get(i).getAmount(), 9));
                     } else {
-                        sb.append(String.format("%2d", 0));
+                        sb.append(String.format("%2s", "0"));
                         sb.append("0");
-                        sb.append(String.format("%1d", 0));
-                        sb.append(String.format("%5d", 0));
-                        sb.append(String.format("%6d", 0));
-                        sb.append(String.format("%9d", 0));
+                        sb.append(String.format("%1s", "0"));
+                        sb.append(String.format("%6s", "0"));
+                        sb.append(String.format("%5s", "0"));
+                        sb.append(String.format("%9s", "0"));
                     }
                 }
                 sb.append(getRollUpData(builder, ntsCardTypes, productData, 3));
                 if (productData.getSalesTax() != null)
                     sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
                 else
-                    sb.append(String.format("%05d",0));
+                    sb.append(String.format("%5s", "0"));
                 return sb;
             case Mastercard:
             case Visa:
@@ -724,18 +702,12 @@ public class NTSUserData {
             case Discover:
             case StoredValueOrHeartlandGiftCard:
             case PinDebit:
-                IPaymentMethod paymentMethod =  builder.getPaymentMethod();
-                if(paymentMethod instanceof TransactionReference){
-                    paymentMethod = ((TransactionReference)paymentMethod).getOriginalPaymentMethod();
-                }
-                if ((builder.getTransactionType() == TransactionType.DataCollect
-                        || builder.getTransactionType() == TransactionType.Capture)
-                        && builder.getNtsProductData() != null
-                        && builder.getNtsTag16() != null) {
+                if (builder.getTransactionType() == TransactionType.DataCollect
+                        || builder.getTransactionType() == TransactionType.Capture) {
                     // Data Collect user data for non-fleet bankcards.
                     sb.append(getTagData16(builder.getNtsTag16()));
-                    if (builder.getZipCode() != null) {
-                        sb.append(StringUtils.padRight(builder.getZipCode(), 9, '0'));
+                    if (acceptorConfig.getAddress() != null) {
+                        sb.append(StringUtils.padRight(acceptorConfig.getAddress().getPostalCode(), 9, '0'));
                     } else {
                         sb.append(StringUtils.padRight("", 9, '0'));
                     }
@@ -745,9 +717,9 @@ public class NTSUserData {
                         sb.append(StringUtils.padLeft("", 4, '0'));
                     }
                     sb.append(getProductDataTag09(builder, cardType).toString());
-                }else {
+                } else {
                     if (!builder.getTransactionType().equals(TransactionType.DataCollect)
-                            && !builder.getTransactionType().equals(TransactionType.Capture)) {
+                            || !builder.getTransactionType().equals(TransactionType.Capture)) {
                         TransactionTypeIndicator indicator = NtsUtils.getTransactionTypeIndicatorForTransaction(builder);
                         sb.append(StringUtils.padRight(indicator.getValue(), 8, ' '));
                         sb.append(StringUtils.padLeft(builder.getSystemTraceAuditNumber(), 6, '0'));
@@ -923,7 +895,7 @@ public class NTSUserData {
         List<DE63_ProductDataEntry> nonFuel = productData.getNonFuelDataEntries();
         int nonFuelSize = nonFuel.size();
         float sumAmount = 0.0f;
-        if (cardType.equals(NTSCardTypes.VisaFleet)) {
+        if (cardType.equals(NTSCardTypes.VisaFleet) || cardType.equals(NTSCardTypes.MastercardFleet)) {
             if (nonFuelSize >= rollUpAt) {
                 for (int i = 0; i < nonFuelSize; i++) {
                     if (i < rollUpAt - 1) {
@@ -934,7 +906,10 @@ public class NTSUserData {
                         sumAmount += nonFuel.get(i).getAmount().floatValue();
                     }
                 }
-                sb.append(StringUtils.padLeft(90, 2, ' '));
+                if (cardType.equals(NTSCardTypes.VisaFleet))
+                    sb.append(StringUtils.padLeft(90, 2, ' '));
+                else
+                    sb.append(StringUtils.padLeft(99, 2, ' '));
                 sb.append(StringUtils.padLeft(nonFuelSize - rollUpAt + 1, 2, '0'));
                 sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 6));
             } else {
@@ -945,33 +920,6 @@ public class NTSUserData {
                         sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 6));
                     } else {
                         sb.append(String.format("%2s", " "));
-                        sb.append(String.format("%02d", 0));
-                        sb.append(String.format("%06d", 0));
-                    }
-                }
-            }
-        }else if (cardType.equals(NTSCardTypes.MastercardFleet)) {
-            if (nonFuelSize >= rollUpAt) {
-                for (int i = 0; i < nonFuelSize; i++) {
-                    if (i < rollUpAt - 1) {
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, '0'));
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getQuantity().intValue(), 2, '0'));
-                        sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 6));
-                    } else {
-                        sumAmount += nonFuel.get(i).getAmount().floatValue();
-                    }
-                }
-                sb.append(StringUtils.padLeft(99, 2, '0'));
-                sb.append(StringUtils.padLeft(nonFuelSize - rollUpAt + 1, 2, '0'));
-                sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 6));
-            } else {
-                for (int i = 0; i < rollUpAt; i++) {
-                    if (i < nonFuelSize) {
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, '0'));
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getQuantity().intValue(), 2, '0'));
-                        sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 6));
-                    } else {
-                        sb.append(String.format("%02d", 0));
                         sb.append(String.format("%02d", 0));
                         sb.append(String.format("%06d", 0));
                     }

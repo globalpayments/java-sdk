@@ -16,7 +16,7 @@ import lombok.NonNull;
 
 public interface INtsRequestMessage {
     Integer MESSAGE_TYPE = 9;
-    Integer COMPANY_ID = 45; // Default company ID for P66
+    Integer COMPANY_ID = 45;
 
     static MessageWriter prepareHeader(@NonNull NtsObjectParam params) {
         TransactionBuilder builder = params.getNtsBuilder();
@@ -31,9 +31,8 @@ public interface INtsRequestMessage {
         NtsUtils.log("message type", String.valueOf(MESSAGE_TYPE));
         headerRequest.addRange(MESSAGE_TYPE, 1);
         // Company Number
-        String companyId = params.getCompanyId() != null ? params.getCompanyId() : String.valueOf(COMPANY_ID);
-        NtsUtils.log("company number", String.valueOf(companyId));
-        headerRequest.addRange(companyId, 3);
+        NtsUtils.log("company number", String.valueOf(COMPANY_ID));
+        headerRequest.addRange(COMPANY_ID, 3);
         // Binary TerminalId
         NtsUtils.log("binary terminal id", params.getBinTerminalId());
         headerRequest.addRange(String.format("%1s", params.getBinTerminalId()), 1);

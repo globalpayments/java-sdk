@@ -24,22 +24,6 @@ public class NtsTestCards {
     }
 
     /**
-    GIFT CARDS
-    */
-
-    public static GiftCard GiftCardSwipe() {
-        GiftCard rvalue = new GiftCard();
-        rvalue.setValue(";5022440000000000098=391200081613?");
-        return rvalue;
-    }
-
-    public static GiftCard GiftCardManual() {
-        GiftCard rvalue = new GiftCard();
-        rvalue.setNumber("5022440000000000007");
-        rvalue.setExpiry("1239");
-        return rvalue;
-    }
-    /**
      * Master cards
      */
 
@@ -158,21 +142,7 @@ public class NtsTestCards {
         card.setEbtCardType(EbtCardType.CashBenefit);
         return card;
     }
-    /**
-     * Paypal cards
-     */
-    public static CreditTrackData PaypalTrack2(EntryMethod entryMethod){
-        CreditTrackData track = new CreditTrackData();
-        track.setValue(";6506001000010029=25121010051012345678?");
-        track.setEntryMethod(entryMethod);
-        return track;
-    }
-    public static CreditTrackData PaypalTrack1(EntryMethod entryMethod){
-        CreditTrackData track = new CreditTrackData();
-        track.setValue("%B6506001000010029^TEST CARD/DISCOVER        ^2512101051012345678901999123123?");
-        track.setEntryMethod(entryMethod);
-        return track;
-    }
+
 
 
 }

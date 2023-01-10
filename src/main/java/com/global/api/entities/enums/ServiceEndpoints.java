@@ -16,8 +16,6 @@ public enum ServiceEndpoints implements IStringConstant {
     BILLPAY_TEST("https://testing.heartlandpaymentservices.net"),
     BILLPAY_CERTIFICATION("https://staging.heartlandpaymentservices.net"),
     BILLPAY_PRODUCTION("https://heartlandpaymentservices.net"),
-    TRANSACTION_API_PRODUCTION("https://api.paygateway.com/transactions"),
-    TRANSACTION_API_TEST("https://api.pit.paygateway.com/transactions"),
     OPEN_BANKING_TEST("https://api.sandbox.globalpay-ecommerce.com/openbanking"),
     OPEN_BANKING_PRODUCTION("https://api.globalpay-ecommerce.com/openbanking"),
     GENIUS_API_PRODUCTION("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v46/Credit.asmx"),

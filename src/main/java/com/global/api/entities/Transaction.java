@@ -93,16 +93,6 @@ public class Transaction {
     private String transactionTime;
     private String transactionCode;
     @Getter @Setter private AdditionalDuplicateData additionalDuplicateData;
-    @Getter @Setter private TransactionSummary transactionSummary;
-    @Getter @Setter private String customerReceipt;
-    @Getter @Setter private  String merchantReceipt;
-    @Getter @Setter private String checkNumber;
-    @Getter @Setter private String routingNumber;
-    @Getter @Setter private String bankNumber;
-    @Getter @Setter private String branchTransitNumber;
-    @Getter @Setter private String bsbNumber;
-    @Getter @Setter private String financialInstitutionNumber;
-    @Getter @Setter private BigDecimal customerFeeAmount;
     private String receiptText;
 
     public BigDecimal getOrigionalAmount() {
@@ -584,18 +574,6 @@ public class Transaction {
                 .withAmount(amount);
     }
 
-    public ManagementBuilder fetch() {
-        return fetch(null);
-    }
-    public ManagementBuilder fetch(double amount) {
-        return fetch(new BigDecimal(amount));
-    }
-    public ManagementBuilder fetch(BigDecimal amount) {
-        return new ManagementBuilder(TransactionType.Fetch)
-                        .withPaymentMethod(transactionReference)
-                        .withAmount(amount);
-    }
-
     public ManagementBuilder capture() {
         return capture(null);
     }
@@ -633,15 +611,6 @@ public class Transaction {
     public ManagementBuilder edit() {
         return new ManagementBuilder(TransactionType.Edit)
                 .withPaymentMethod(transactionReference);
-    }
-
-    public ManagementBuilder edit(BigDecimal amount) {
-        return new ManagementBuilder(TransactionType.Edit)
-                .withPaymentMethod(transactionReference)
-                .withAmount(amount);
-    }
-    public ManagementBuilder edit(double amount) {
-        return edit(new BigDecimal(amount));
     }
 
     public ManagementBuilder hold() {
@@ -748,14 +717,6 @@ public class Transaction {
                 .build();
     }
 
-    public static Transaction fromId(String transactionId, PaymentMethodType paymentMethodType, TransactionType transactionType) {
-        return new TransactionRebuilder()
-                .withTransactionId(transactionId)
-                .withPaymentMethodType(paymentMethodType)
-                .withOriginalTransactionType(transactionType)
-                .build();
-    }
-
     public static Transaction fromId(String transactionId, PaymentMethodType paymentMethodType, IPaymentMethod paymentMethod) {
         return new TransactionRebuilder()
                 .withTransactionId(transactionId)
@@ -771,9 +732,6 @@ public class Transaction {
     public static Transaction fromClientTransactionId(String clientTransactionId, PaymentMethodType paymentMethodType) {
         return fromClientTransactionId(clientTransactionId, null, paymentMethodType);
     }
-  /*  public static Transaction fromClientTransactionId(String clientTransactionId, PaymentMethodType paymentMethodType,TransactionType transactionType) {
-        return
-    }*/
     public static Transaction fromClientTransactionId(String clientTransactionId, String orderId) {
         return fromClientTransactionId(clientTransactionId, orderId, PaymentMethodType.Credit);
     }
@@ -782,18 +740,7 @@ public class Transaction {
         reference.setClientTransactionId(clientTransactionId);
         reference.setOrderId(orderId);
         reference.setPaymentMethodType(paymentMethodType);
-        Transaction trans = new Transaction();
-        trans.setTransactionReference(reference);
-        return trans;
-    }
 
-    public static Transaction fromClientTransactionId(String clientTransactionId , PaymentMethodType paymentMethodType,TransactionType transactionType) {
-        TransactionReference reference = new TransactionReference();
-        reference.setClientTransactionId(clientTransactionId);
-        reference.setPaymentMethodType(paymentMethodType);
-        if(transactionType!=null) {
-            reference.setOriginalTransactionType(transactionType);
-        }
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);
 

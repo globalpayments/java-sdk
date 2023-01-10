@@ -31,10 +31,6 @@ public class NtsDebitRequest implements INtsRequestMessage {
         boolean isEnableLogging = ntsObjectParam.isNtsEnableLogging();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
 
-        boolean isReadyLinkEMV = false;
-        boolean isReadyLink = false;
-
-
         //message body
         ManagementBuilder manageBuilder;
         AuthorizationBuilder authorizationBuilder;
@@ -58,10 +54,6 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 transactionCode = TransactionCode.PurchaseReturnReversal;
             }
         }
-        if(paymentMethod instanceof Credit){
-            Credit card = (Credit) paymentMethod;
-            isReadyLink = card.getCardType().equals("VisaReadyLink");
-        }
         TransactionType transactionType = builder.getTransactionType();
         TransactionModifier modifier = builder.getTransactionModifier();
 
@@ -71,18 +63,6 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
                 request.addRange(entryMethod.getValue(), 1);
                 NtsUtils.log("Entry Method", entryMethod);
-            }
-        }else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit)) {
-            if(paymentMethod instanceof ITrackData) {
-                ITrackData trackData = (ITrackData) paymentMethod;
-                if (trackData.getEntryMethod() != null) {
-                    entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
-                    request.addRange(entryMethod.getValue(), 1);
-                    NtsUtils.log("Entry Method", entryMethod);
-                }
-            }else{
-                request.addRange(NTSEntryMethod.ManualAttended.getValue(), 1);
-                NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended);
             }
         }
         // Card Type
@@ -103,11 +83,12 @@ public class NtsDebitRequest implements INtsRequestMessage {
 
             NtsUtils.log("Address", acceptorConfig.getAddress().toString());
         }
-        if (paymentMethod instanceof Debit && paymentMethod instanceof ITrackData) {
+        if (paymentMethod instanceof ITrackData) {
             if (!NtsUtils.isNoTrackEntryMethods(entryMethod)) {
                 ITrackData trackData = (ITrackData) paymentMethod;
                 NtsUtils.log("TrackData 2", trackData.getValue());
                 request.addRange(trackData.getValue(), 40);
+
             } else {
                 ITrackData trackData = (ITrackData) paymentMethod;  //Without Track Data
                 String accNumber = trackData.getPan();
@@ -122,21 +103,10 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 request.addRange(StringUtils.padLeft(" ", 1, ' '), 1);
                 request.addRange(StringUtils.padLeft(" ", 16, ' '), 16);
             }
-        }else  if (paymentMethod instanceof Credit && isReadyLink) {
-            if(paymentMethod instanceof CreditCardData ) {
-                CreditCardData card = (CreditCardData) paymentMethod;
-                String trackFormat = card.getNumber() + "=" + card.getExpYear() + card.getExpMonth();
-                NtsUtils.log("TrackData 2", trackFormat);
-                request.addRange(trackFormat, 40);
-            } else {
-                ITrackData trackData = (ITrackData) paymentMethod;
-                NtsUtils.log("TrackData 2", trackData.getValue());
-                request.addRange(trackData.getValue(), 40);
-            }
         }
 
         // PIN Block Format, PIN Block, Transaction Amount 1, Transaction Amount 2, KSN
-        if (!NtsUtils.isNoTrackEntryMethods(entryMethod) && !isReadyLink) {
+        if (!NtsUtils.isNoTrackEntryMethods(entryMethod)) {
             if (builder.getTransactionModifier().equals(TransactionModifier.Offline)) {
                 NtsUtils.log("PIN Block Format", "0");
                 request.addRange("0", 1);
@@ -161,7 +131,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
             amount = transactionReference.getOriginalAmount();
             NtsUtils.log("Transaction Original Amount1", StringUtils.toNumeric(amount, 7));
             request.addRange(StringUtils.toNumeric(amount, 7), 7);
-        } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit) || isReadyLink) {
+        } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
             NtsUtils.log("Transaction Amount 1", StringUtils.toNumeric(builder.getAmount(), 7));
             request.addRange(StringUtils.toNumeric(builder.getAmount(), 7), 7);
         }
@@ -178,15 +148,14 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 || transactionCode.equals(TransactionCode.PreAuthorizationFunds)
                 || transactionCode.equals(TransactionCode.PurchaseReversal)
                 || transactionCode.equals(TransactionCode.PreAuthCancelation)
-                || transactionCode.equals(TransactionCode.PurchaseReturnReversal)
-                || ( isReadyLink && StringUtils.isNullOrEmpty(builder.getTagData()))) {
+                || transactionCode.equals(TransactionCode.PurchaseReturnReversal)) {
             NtsUtils.log("Transaction Amount 2", "0000000");
             request.addRange("0000000", 7);
         }
-        if (paymentMethod instanceof IEncryptable && !isReadyLink) {
+
+        if (paymentMethod instanceof IEncryptable) {
             EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
-            if (encryptionData != null && !NtsUtils.isNoTrackEntryMethods(entryMethod)
-                    && !builder.getTransactionModifier().equals(TransactionModifier.Offline)) {
+            if (encryptionData != null && !NtsUtils.isNoTrackEntryMethods(entryMethod) && !builder.getTransactionModifier().equals(TransactionModifier.Offline)) {
                 NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padLeft(encryptionData.getKsn(), 20, ' '));
                 request.addRange(StringUtils.padLeft(encryptionData.getKsn(), 20, ' '), 20);
             } else {
@@ -226,9 +195,6 @@ public class NtsDebitRequest implements INtsRequestMessage {
 
             NtsUtils.log("EMV DATA", userData);
             request.addRange(StringUtils.padRight(userData, userData.length(), ' '), userData.length());
-        } else if(isReadyLink){
-            NtsUtils.log("Added FILLER", "");
-            request.addRange("                    ", 20);
         }
         return request;
     }

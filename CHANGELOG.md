@@ -1,16 +1,5 @@
 # Changelog
 
-## v10.0.7 (01/10/2022)
-
-### Enhancements:
-- Transaction API Connector Implementation
-- NTS: NTS phase 2 Implementation except Heartland gift card code changes
-- NTS phase1 Issues: 
-	- Date timestamp
-	- Visa Fleet and Mastercard Fleet user data Data collect(Tag 09 changes)
-	- Zip code changes for tag 07 and user data layout.
-- Add UPA StartCardTransaction command	
-
 ## v10.0.6 (01/05/2023)
 
 ### Enhancements:

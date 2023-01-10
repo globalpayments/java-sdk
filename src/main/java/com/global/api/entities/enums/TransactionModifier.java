@@ -21,7 +21,6 @@ public enum TransactionModifier implements IFlag {
     Level_III,
     DecryptedMobile,
     AlternativePaymentMethod,
-    OfflineDecline,
     DeletePreAuth,
     BankPayment,
     BuyNowPayLater,

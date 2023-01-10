@@ -29,8 +29,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String alias;
     private AliasAction aliasAction;
     private boolean allowDuplicates;
-    @Getter private boolean generateReceipt;
-    @Getter private boolean isAvs;
     private boolean allowPartialAuth;
     private BigDecimal amount;
     private boolean amountEstimated;
@@ -131,12 +129,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String goodsSold;
     @Getter
     private POSSiteConfigurationData posSiteConfigurationData;
-
-    @Getter
-    private String country;
-
-    @Getter
-    private String paymentPurposeCode;
 
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
@@ -386,14 +378,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withAllowDuplicates(boolean value) {
         this.allowDuplicates = value;
-        return this;
-    }
-    public AuthorizationBuilder withGenerateReceipt(boolean value) {
-        this.generateReceipt = value;
-        return this;
-    }
-    public AuthorizationBuilder withAvs(boolean value) {
-        this.isAvs = value;
         return this;
     }
     public AuthorizationBuilder withAllowPartialAuth(boolean value) {
@@ -879,11 +863,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
-    public AuthorizationBuilder withPaymentPurposeCode(String paymentPurposeCode) {
-        this.paymentPurposeCode = paymentPurposeCode;
-        return this;
-    }
-
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);
     }
@@ -993,10 +972,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withGoodsSold(String goodsSold) {
         this.goodsSold = goodsSold;
-        return this;
-    }
-    public AuthorizationBuilder withCountry(String country) {
-        this.country = country;
         return this;
     }
 }

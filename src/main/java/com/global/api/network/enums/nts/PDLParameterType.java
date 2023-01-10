@@ -3,8 +3,6 @@ package com.global.api.network.enums.nts;
 import com.global.api.entities.enums.IStringConstant;
 
 public enum PDLParameterType implements IStringConstant {
-    RequestAllParameter("02"),
-    ConfirmParameterDataReceived("03"),
     RequestMagnumPdl("04"),
     MagnumPDLConfirm("05"),
     RequestEMVPDL("06"),

@@ -72,8 +72,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private EcommerceInfo ecommerceInfo;
     @Getter
     private StoredCredential storedCredential;
-    @Getter
-    private String paymentPurposeCode;
 
     //Nts block
     @Getter
@@ -90,25 +88,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private NtsRequestsToBalanceRequest ntsRequestsToBalance;
     @Getter
     private NtsRequestToBalanceData ntsRequestsToBalanceData;
-    @Getter private boolean allowDuplicates;
-    @Getter private Customer customer;
-    @Getter private String country;
-    @Getter private boolean generateReceipt;
-    // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
-    @Getter @Setter protected PaymentMethodUsageMode usageMode;
-    @Getter @Setter protected Integer usageLimit;
-    @Getter @Setter protected PayLinkType type;
-    @Getter
-    private ArrayList<Product> miscProductData;
-
-    public ManagementBuilder withMiscProductData(ArrayList<Product> values) {
-        this.miscProductData = values;
-        return this;
-    }
-    // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
-    @Getter @Setter protected PaymentMethodUsageMode usageMode;
-    @Getter @Setter protected Integer usageLimit;
-    @Getter @Setter protected PayLinkType type;
     @Getter
     private EBTVoucherEntryData voucherEntryData;
 
@@ -261,12 +240,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         transactionType = type;
         return this;
     }
-
-    public ManagementBuilder withPaymentPurposeCode(String paymentPurposeCode) {
-        this.paymentPurposeCode = paymentPurposeCode;
-        return this;
-    }
-
     public ManagementBuilder withNtsNetworkMessageHeader(NtsNetworkMessageHeader value) {
         this.ntsNetworkMessageHeader = value;
         return this;
@@ -612,7 +585,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         timestamp = value;
         return this;
     }
-    public ManagementBuilder withModifier(TransactionModifier value) {
+    private ManagementBuilder withModifier(TransactionModifier value) {
         this.transactionModifier = value;
         return this;
     }
@@ -708,22 +681,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
     }
 
-    public ManagementBuilder withAllowDuplicates(boolean value) {
-        this.allowDuplicates = value;
-        return this;
-    }
-    public ManagementBuilder withCustomer(Customer value) {
-        this.customer = value;
-        return this;
-    }
-    public ManagementBuilder withCountry(String country) {
-        this.country = country;
-        return this;
-    }
-    public ManagementBuilder withGenerateReceipt(boolean value) {
-        this.generateReceipt = value;
-        return this;
-    }
     public ManagementBuilder withVoucherEntryData(EBTVoucherEntryData data) {
         this.voucherEntryData = data;
         return this;

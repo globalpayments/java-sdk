@@ -2,7 +2,6 @@ package com.global.api.builders;
 
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.enums.AuthorizerCode;
@@ -33,8 +32,6 @@ public class TransactionRebuilder {
     private String transactionId;
     private boolean useAuthorizedAmount;
     @Getter
-    @Setter
-    private TransactionType originalTransactionType;
     private String approvalCode;
     @Getter
     private AuthorizerCode authorizer;
@@ -52,6 +49,7 @@ public class TransactionRebuilder {
     private String originalMessageCode;
     @Getter
     private TransactionTypeIndicator transactionTypeIndicator;
+
 
 
     public TransactionRebuilder withAuthorizationCode(String value) {
@@ -118,11 +116,6 @@ public class TransactionRebuilder {
         transactionId = value;
         return this;
     }
-    public TransactionRebuilder withOriginalTransactionType(TransactionType value) {
-        originalTransactionType = value;
-        return this;
-    }
-
 
     public TransactionRebuilder withApprovalCode(String value) {
         this.approvalCode = value;
@@ -181,14 +174,12 @@ public class TransactionRebuilder {
         reference.setOriginalPaymentMethod(originalPaymentMethod);
         reference.setOriginalProcessingCode(originalProcessingCode);
         reference.setOriginalTransactionTime(originalTransactionTime);
-
         reference.setPartialApproval(partialApproval);
         reference.setPaymentMethodType(paymentMethodType);
         reference.setPosDataCode(posDataCode);
         reference.setSystemTraceAuditNumber(systemTraceAuditNumber);
         reference.setTransactionId(transactionId);
         reference.setUseAuthorizedAmount(useAuthorizedAmount);
-        reference.setOriginalTransactionType(originalTransactionType);
         reference.setAuthorizer(authorizer);
         reference.setDebitAuthorizer(debitAuthorizer);
         reference.setOriginalTransactionDate(originalTransactionDate);
@@ -201,6 +192,7 @@ public class TransactionRebuilder {
         reference.setDiscoverNetworkRefId(discoverNetworkRefId);
         reference.setOriginalMessageCode(originalMessageCode);
         reference.setOriginalTransactionTypeIndicator(transactionTypeIndicator);
+
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);

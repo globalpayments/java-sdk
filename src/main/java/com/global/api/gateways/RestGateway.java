@@ -21,7 +21,7 @@ public class RestGateway extends Gateway {
         return handleResponse(response);
     }
     protected String handleResponse(GatewayResponse response) throws GatewayException {
-        if(response.getStatusCode() != 200 && response.getStatusCode() != 204 && response.getStatusCode() != 201) {
+        if(response.getStatusCode() != 200 && response.getStatusCode() != 204) {
             JsonDoc parsed = JsonDoc.parse(response.getRawResponse());
             if(parsed.has("error")) {
                 JsonDoc error = parsed.get("error");

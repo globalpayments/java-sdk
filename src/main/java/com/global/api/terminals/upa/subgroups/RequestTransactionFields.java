@@ -21,7 +21,6 @@ public class RequestTransactionFields {
     private String totalAmount;
     private String terminalRefNumber;
     private String gatewayRefNumber;
-    private String giftTransactionType;
 
     public void setParams(TerminalManageBuilder builder) {
         if (builder.getTerminalRefNumber() != null) {
@@ -43,7 +42,7 @@ public class RequestTransactionFields {
 
     public void setParams(TerminalAuthBuilder builder) {
         if (builder.getAmount() != null) {
-            if (builder.getTransactionType() == TransactionType.Refund || builder.getTransactionType() == TransactionType.Activate) {
+            if (builder.getTransactionType() == TransactionType.Refund) {
                 this.totalAmount = builder.getAmount().toString();
             } else if (builder.getTransactionType() == TransactionType.Auth) {
                 this.amount = builder.getAmount().toString();
@@ -82,10 +81,6 @@ public class RequestTransactionFields {
 
         if (builder.getCommercialRequest()) {
             this.commercialRequest = builder.getCommercialRequest();
-        }
-
-        if (builder.getGiftTransactionType() != null) {
-            this.giftTransactionType = builder.getGiftTransactionType().name();
         }
     }
 
@@ -166,10 +161,6 @@ public class RequestTransactionFields {
 
         if (commercialRequest) {
             params.set("processCPC", "1");
-        }
-
-        if (giftTransactionType != null) {
-            params.set("transactionType", giftTransactionType);
         }
 
         return hasContents ? params : null;

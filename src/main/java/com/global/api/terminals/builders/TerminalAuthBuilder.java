@@ -37,7 +37,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private Integer tokenRequest;
     private String tokenValue;
     private String transactionId;
-    private TransactionType giftTransactionType;
 
     public Address getAddress() {
         return address;
@@ -104,8 +103,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             return ((CreditCardData)paymentMethod).getToken();
         return null;
     }
-
-    public TransactionType getGiftTransactionType() { return this.giftTransactionType; }
 
     public TerminalAuthBuilder withTokenRequest(Integer tokenRequest)
     {
@@ -214,11 +211,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             paymentMethod = new TransactionReference();
         ((TransactionReference)paymentMethod).setTransactionId(value);
         this.transactionId = value;
-        return this;
-    }
-
-    public TerminalAuthBuilder withGiftTransactionType(TransactionType value) {
-        this.giftTransactionType = value;
         return this;
     }
 

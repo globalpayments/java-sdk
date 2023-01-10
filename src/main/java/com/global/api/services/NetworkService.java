@@ -66,9 +66,6 @@ public class NetworkService {
     public static AuthorizationBuilder sendSiteConfiguration(){
         return new AuthorizationBuilder(TransactionType.PosSiteConfiguration);
     }
-    public static AuthorizationBuilder sendRequestPendingMesssages() {
-        return new AuthorizationBuilder(TransactionType.RequestPendingMessages);
-    }
 
     public static ManagementBuilder timeRequest(){
         return new ManagementBuilder(TransactionType.TimeRequest);

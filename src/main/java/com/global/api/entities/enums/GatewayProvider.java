@@ -5,6 +5,5 @@ public enum GatewayProvider {
     GP_ECOM,
     GENIUS,
     TRANSIT,
-    GP_API,
-    TransactionApi;
+    GP_API;
 }

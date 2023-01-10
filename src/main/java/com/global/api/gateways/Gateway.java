@@ -301,8 +301,7 @@ public abstract class Gateway {
     // For some reason, if Content-Type is added for some GP-API endpoints we get a 502: Bad gateway error
     private boolean contentTypeNotAllowedEndpoints(String verb, String endpoint) {
         return
-                (
-                        serviceUrl.endsWith("globalpay.com/ucp") &&
+                serviceUrl.endsWith("globalpay.com/ucp") &&
                         (
                                 "GET".equalsIgnoreCase(verb) &&
                                         (
@@ -315,8 +314,7 @@ public abstract class Gateway {
                                                         endpoint.startsWith("/disputes") &&
                                                                 endpoint.endsWith("/acceptance")
                                                 )
-                        )
-                ) || serviceUrl.endsWith("paygateway.com/transactions");
+                        );
     }
 
     private void outputLogging(boolean isRequest) {

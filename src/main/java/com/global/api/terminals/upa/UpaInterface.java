@@ -3,7 +3,13 @@ package com.global.api.terminals.upa;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
-import com.global.api.entities.enums.*;
+import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.SafDelete;
+import com.global.api.entities.enums.SafMode;
+import com.global.api.entities.enums.SafReportSummary;
+import com.global.api.entities.enums.SafUpload;
+import com.global.api.entities.enums.SendFileType;
+import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceMessage;
@@ -407,9 +413,7 @@ public class UpaInterface implements IDeviceInterface {
     }
 
     public TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Activate, PaymentMethodType.Gift)
-            .withCurrency(CurrencyType.Currency)
-            .withAmount(amount);
+        throw new UnsupportedTransactionException();
     }
 
     public TerminalManageBuilder giftVoid() throws ApiException {

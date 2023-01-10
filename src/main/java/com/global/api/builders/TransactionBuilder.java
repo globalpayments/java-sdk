@@ -95,8 +95,6 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected String transactionDate;
     @Getter
     protected String transactionTime;
-    @Getter
-    private String zipCode;
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
         this.ntsRequestMessageHeader = ntsRequestMessageHeader;
@@ -191,9 +189,5 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public TransactionBuilder<TResult> withEcommerceData2(String ecommerceData2) {
         this.ecommerceData2 = ecommerceData2;
         return this;
-    }
-    public TransactionBuilder<TResult> withZipCode(String zipCode) {
-        this.zipCode = zipCode;
-        return  this;
     }
 }

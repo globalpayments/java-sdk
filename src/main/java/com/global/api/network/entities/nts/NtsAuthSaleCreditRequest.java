@@ -80,14 +80,6 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 request.addRange(expiryDate, 4);
                 NtsUtils.log("Expiration Date", expiryDate);
             }
-        } else if (paymentMethod instanceof GiftCard) {
-            GiftCard gift = (GiftCard) paymentMethod;
-            if(StringUtils.isNullOrEmpty(gift.getTrackData())) {
-                request.addRange(StringUtils.padRight(gift.getNumber(), 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.padRight(gift.getNumber(), 19, ' '));
-                request.addRange(gift.getExpiry(), 4);
-                NtsUtils.log("Expiration Date", gift.getExpiry());
-            }
         }
 
 
@@ -109,14 +101,12 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             }
         } else if (paymentMethod instanceof GiftCard) {
             GiftCard gift = (GiftCard) paymentMethod;
-            if(!StringUtils.isNullOrEmpty(gift.getTrackData())) {
-                if (gift.getTrackNumber().equals(TrackNumber.TrackOne)) {
-                    request.addRange(StringUtils.padRight(gift.getValue(), 79, ' '), 79);
-                } else {
-                    request.addRange(StringUtils.padRight(gift.getValue(), 40, ' '), 40);
-                }
-                NtsUtils.log("Gift card data: ", gift.getValue());
+            if (gift.getTrackNumber().equals(TrackNumber.TrackOne)) {
+                request.addRange(StringUtils.padRight(gift.getValue(), 79, ' '), 79);
+            } else {
+                request.addRange(StringUtils.padRight(gift.getValue(), 40, ' '), 40);
             }
+            NtsUtils.log("Gift card data: ", gift.getValue());
         }
 
 
