@@ -12,10 +12,9 @@ import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class NtsUtils {
 
@@ -107,6 +106,8 @@ public class NtsUtils {
         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = null;
         String approvalCode = null;
         String hostResponseArea = null;
+        Integer sequenceNumber= null;
+        Integer batchNumber= null;
         AuthorizerCode authorizer = null;
         String debitAuthorizer = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
 
@@ -120,6 +121,8 @@ public class NtsUtils {
             ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
             approvalCode = getOrDefault(ntsSaleCreditResponseMapper.getCreditMapper().getApprovalCode(), "");
             hostResponseArea = getOrDefault(ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea(), "");
+            sequenceNumber = ntsSaleCreditResponseMapper.getSequenceNumber();
+            batchNumber = ntsSaleCreditResponseMapper.getBatchNumber();
             authorizer =  ntsSaleCreditResponseMapper.getCreditMapper().getAuthorizer();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDebitResponse) {
             authorizer = AuthorizerCode.Terminal_Authorized;
@@ -150,6 +153,12 @@ public class NtsUtils {
             reference.setMastercardBanknetSettlementDate(userData.getOrDefault(UserDataTag.MasterCardSettlementDate, ""));
             reference.setVisaTransactionId(userData.getOrDefault(UserDataTag.VisaTransactionId, ""));
             reference.setDiscoverNetworkRefId(userData.getOrDefault(UserDataTag.DiscoverNetworkRefId, ""));
+        }
+        if (sequenceNumber!= null){
+            reference.setSequenceNumber(sequenceNumber);
+        }
+        if (batchNumber!= null){
+            reference.setBatchNumber(batchNumber);
         }
         return reference;
     }
@@ -245,6 +254,10 @@ public class NtsUtils {
                 return NTSCardTypes.FuelmanFleet;
             } else if (card.getCardType().equals("FleetWide")) {
                 return NTSCardTypes.FleetWide;
+            }else if (card.getCardType().equals("PayPal")){
+                return NTSCardTypes.PayPal;
+            } else if (card.getCardType().equals("VisaReadyLink")){
+                return NTSCardTypes.PinDebit;
             }
         } else if (paymentMethod instanceof GiftCard) {
             GiftCard card = (GiftCard) paymentMethod;
@@ -297,6 +310,10 @@ public class NtsUtils {
 
     public static <T extends TransactionBuilder<Transaction>> TransactionCode getTransactionCodeForTransaction(T builder, BigDecimal cashBackAmount, BigDecimal settlementAmount) {
         TransactionType transactionType = builder.getTransactionType();
+        TransactionCode originalCode = null;
+        if(builder.getPaymentMethod() instanceof TransactionReference){
+            originalCode = ((TransactionReference) builder.getPaymentMethod()).getOriginalTransactionCode();
+        }
         switch (transactionType) {
             case Balance:
                 return TransactionCode.BalanceInquiry;
@@ -321,6 +338,8 @@ public class NtsUtils {
             case Reversal:
                 if (settlementAmount != null) {
                     return TransactionCode.PurchaseCashBackReversal;
+                } else if (originalCode == TransactionCode.Load){
+                    return  TransactionCode.LoadReversal;
                 }
                 return TransactionCode.PurchaseReversal;
             case BenefitWithdrawal:
@@ -581,5 +600,16 @@ public class NtsUtils {
                 }
         }
         return null;
+    }
+    public static Date getDateObject(String dateString){
+        Date date=null;
+        SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmss");
+
+        try {
+            date = df.parse(dateString);
+        } catch (ParseException e) {
+            throw new RuntimeException("Failed to parse date: ", e);
+        }
+        return date;
     }
 }

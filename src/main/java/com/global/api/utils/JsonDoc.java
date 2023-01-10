@@ -93,6 +93,17 @@ public class JsonDoc {
         }
         return this;
     }
+    public JsonDoc set(String key, Long value) {
+        return set(key, value, false);
+    }
+    public JsonDoc set(String key, Long value, boolean force) {
+        if(value != null || force) {
+            if(encoder != null)
+                dict.put(key, encoder.encode(value));
+            else dict.put(key, value);
+        }
+        return this;
+    }
     public JsonDoc set(String key, boolean value) {
         if(encoder != null)
             dict.put(key, encoder.encode(value));

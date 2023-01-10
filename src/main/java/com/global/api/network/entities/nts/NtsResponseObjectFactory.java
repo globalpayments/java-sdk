@@ -6,6 +6,8 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.NtsHostResponseCode;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.paymentMethods.Credit;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.MessageReader;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
@@ -26,20 +28,32 @@ public class NtsResponseObjectFactory {
                 ? builder.getPaymentMethod().getPaymentMethodType() : null;
         TransactionType transactionType = builder.getTransactionType();
 
+        boolean isVisaReadyLink=false;
+        if(builder.getPaymentMethod() instanceof Credit){
+            Credit card=(Credit) builder.getPaymentMethod();
+            isVisaReadyLink=card.getCardType().equals("VisaReadyLink");
+        } else if(builder.getPaymentMethod() instanceof TransactionReference){
+            TransactionReference reference = (TransactionReference)  builder.getPaymentMethod();
+            if( reference.getOriginalPaymentMethod() instanceof Credit){
+                Credit card=(Credit) reference.getOriginalPaymentMethod() ;
+                isVisaReadyLink=card.getCardType().equals("VisaReadyLink");
+            }
+        }
+
         NtsResponse ntsResponse = new NtsResponse();
 
         // Setting NTS response message header.
         NtsResponseMessageHeader ntsResponseMessageHeader = INtsResponseMessage.getHeader(mr.readBytes(RESPONSE_HEADER));
 
         NtsUtils.log("--------------------- RESPONSE PAYLOAD ---------------------");
-
-        if ((transactionType.equals(TransactionType.Auth)
-                || transactionType.equals(TransactionType.Sale)
+        if ((( paymentMethodType != null && paymentMethodType.equals(PaymentMethodType.Debit) ) || isVisaReadyLink)
+                && (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)
                 || transactionType.equals(TransactionType.Void)
                 || transactionType.equals(TransactionType.PreAuthCompletion)
                 || transactionType.equals(TransactionType.Refund)
-                || transactionType.equals(TransactionType.Reversal))
-                && (paymentMethodType != null && paymentMethodType.equals(PaymentMethodType.Debit))) {
+                || transactionType.equals(TransactionType.Reversal)
+                || transactionType.equals(TransactionType.AddValue)
+                || transactionType.equals(TransactionType.LoadReversal))) {
             ntsResponseMessage = new NtsDebitResponse();
 
             if (ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().equals(NtsHostResponseCode.Success)) {
@@ -71,6 +85,9 @@ public class NtsResponseObjectFactory {
         } else if (transactionType.equals(TransactionType.MagnumPDL)) {
             ntsResponseMessage = new NtsPDLResponse();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
+        } else if (transactionType.equals(TransactionType.PDL)) {
+            ntsResponseMessage = new NtsPDLResponseData();
+            ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         } else if (transactionType.equals(TransactionType.EmvPdl)) {
             if (builder instanceof AuthorizationBuilder) {
                 AuthorizationBuilder authorizationBuilder = (AuthorizationBuilder) builder;
@@ -82,6 +99,9 @@ public class NtsResponseObjectFactory {
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         } else if (transactionType.equals(TransactionType.UtilityMessage)) {
             ntsResponseMessage = new NtsUtilityMessageResponse();
+            ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
+        }else if (transactionType.equals(TransactionType.RequestPendingMessages)) {
+            ntsResponseMessage = new NtsRequestPendingMessagesResponse();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         }
         ntsResponse.setNtsResponseMessageHeader(ntsResponseMessageHeader);

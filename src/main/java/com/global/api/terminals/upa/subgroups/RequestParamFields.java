@@ -1,12 +1,19 @@
 package com.global.api.terminals.upa.subgroups;
 
 import com.global.api.entities.enums.StoredCredentialInitiator;
+import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.upa.Entities.Enums.UpaAcquisitionType;
 import com.global.api.utils.JsonDoc;
 
+import java.sql.Array;
+import java.util.ArrayList;
+
 public class RequestParamFields implements IRequestSubGroup {
+    ArrayList<UpaAcquisitionType> acquisitionTypes = new ArrayList<UpaAcquisitionType>();
+    private String acquisitionTypesString = "";
     StoredCredentialInitiator cardBrandStorage;
     String cardBrandTransactionId;
     String clerkId;
@@ -32,6 +39,18 @@ public class RequestParamFields implements IRequestSubGroup {
 
         if (builder.getCardBrandTransactionId() != null) {
             this.cardBrandTransactionId = builder.getCardBrandTransactionId();
+        }
+
+        if (builder.getTransactionType() == TransactionType.Activate) {
+            if (this.acquisitionTypes.size() != 0) {
+                // handle integration-supplied list
+            } else {
+                this.acquisitionTypes.add(UpaAcquisitionType.Contact);
+                this.acquisitionTypes.add(UpaAcquisitionType.Contactless);
+                this.acquisitionTypes.add(UpaAcquisitionType.Manual);
+                this.acquisitionTypes.add(UpaAcquisitionType.Scan);
+                this.acquisitionTypes.add(UpaAcquisitionType.Swipe);
+            }
         }
     }
 
@@ -73,6 +92,22 @@ public class RequestParamFields implements IRequestSubGroup {
 
         if (tokenValue != null) {
             params.set("tokenValue", tokenValue);
+            hasContents = true;
+        }
+
+        if (acquisitionTypes != null && !acquisitionTypes.isEmpty()) {
+            acquisitionTypesString = "";
+
+            acquisitionTypes.forEach(
+                (x) -> {
+                    acquisitionTypesString += x.name();
+                    acquisitionTypesString += "|";
+                }
+            );
+
+            acquisitionTypesString = acquisitionTypesString.substring(0, acquisitionTypesString.length() - 1);
+
+            params.set("acquisitionTypes", acquisitionTypesString);
             hasContents = true;
         }
         

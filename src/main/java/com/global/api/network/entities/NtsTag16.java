@@ -4,6 +4,7 @@ import com.global.api.network.enums.SecurityData;
 import com.global.api.network.enums.ServiceCode;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Date;
 
 
 public class NtsTag16 {
@@ -19,4 +20,7 @@ public class NtsTag16 {
     @Getter
     @Setter
     private SecurityData securityData;
+    @Getter
+    @Setter
+    private Date timeStamp;
 }

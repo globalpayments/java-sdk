@@ -123,8 +123,11 @@ public class TransactionSummary {
     private String transactionType;
     private String cardEntryMethod;
     private BigDecimal amountDue;
-    private String country;
-
+    public String country;
+    private String language;
+    private String paymentPurposeCode;
+    private String verificationCode;
+    private BigDecimal batchAmount;
 	public String getOrderId() {
 	    return this.clientTransactionId;
     }

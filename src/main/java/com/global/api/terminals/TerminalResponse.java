@@ -58,6 +58,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationCryptogram;
     protected String customerVerificationMethod;
     protected String terminalVerificationResults;
+    protected String unmaskedCardNumber;
 
     public String getStatus() {
         return status;
@@ -406,4 +407,6 @@ public abstract class TerminalResponse implements IDeviceResponse {
     public String getCardBrandTransactionId() { return cardBrandTransactionId; }
 
     public void setCardBrandTransactionId(String value) { this.cardBrandTransactionId = value; }
+
+    public String getUnmaskedCardNumber() { return unmaskedCardNumber; }
 }
