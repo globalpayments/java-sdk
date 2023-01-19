@@ -83,6 +83,7 @@ public class GpApiConfig extends GatewayConfig {
 
         gpApiConnector.setServiceUrl(serviceUrl);
         gpApiConnector.setEnableLogging(this.isEnableLogging());
+        gpApiConnector.setRequestLogger(this.getRequestLogger());
 
         services.setGatewayConnector(gpApiConnector);
 

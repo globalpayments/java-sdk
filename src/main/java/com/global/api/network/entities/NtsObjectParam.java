@@ -31,4 +31,6 @@ public class NtsObjectParam {
     private LogicProcessFlag logicProcessFlag;
     private TerminalType terminalType;
     private String unitNumber;
+    private String companyId;
+    private int timeout;
 }

@@ -17,6 +17,7 @@ import java.util.List;
 public class Customer extends RecurringEntity<Customer> {
     private String title;
     private String firstName;
+    private String middleName;
     private String lastName;
     private String company;
     private String customerPassword;
@@ -29,6 +30,7 @@ public class Customer extends RecurringEntity<Customer> {
     private String fax;
     private String mobilePhone;
     private String email;
+    private String note;
     private String comments;
     private String department;
     private String status;

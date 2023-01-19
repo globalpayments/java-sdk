@@ -56,7 +56,8 @@ public enum TransactionType implements IFlag {
     PosSiteConfiguration,
     PayLinkUpdate,
     TimeRequest,
-    Issue;
+    Issue,
+    RequestPendingMessages;
 
     public long getLongValue() {
         return 1L << this.ordinal();

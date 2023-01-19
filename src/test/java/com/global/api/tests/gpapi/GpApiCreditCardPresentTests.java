@@ -901,6 +901,39 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
     }
 
     @Test
+    public void IncrementalAuth_WithoutLodgingData() throws ApiException {
+        var transaction =
+                card
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute();
+
+        assertNotNull(transaction);
+        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
+
+        transaction =
+                transaction
+                        .additionalAuth(10)
+                        .withCurrency(currency)
+                        .execute();
+
+        assertNotNull(transaction);
+        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
+        assertEquals(new BigDecimal("22.02"), transaction.getAuthorizedAmount());
+
+        var capture =
+                transaction
+                        .capture()
+                        .execute();
+
+        assertNotNull(capture);
+        assertEquals("SUCCESS", capture.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
+    }
+
+    @Test
     public void IncrementalAuth_Reverse() throws ApiException {
         var transaction =
                 card
@@ -1030,34 +1063,6 @@ public class GpApiCreditCardPresentTests extends BaseGpApiTest {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
             assertEquals("Status Code: 404 - Transaction " + randomTransactionId + " not found at this location.", ex.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void IncrementalAuth_WithoutLodgingData() throws ApiException {
-        var transaction =
-                card
-                        .charge(amount)
-                        .withCurrency(currency)
-                        .execute();
-
-        assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
-
-        boolean exceptionCaught = false;
-        try {
-            transaction
-                    .additionalAuth(10)
-                    .withCurrency(currency)
-//                    .withLodgingData(lodgingInfo)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            //TODO - update error message once test works
-            assertEquals("Status Code: 404 - Transaction not found at this location.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

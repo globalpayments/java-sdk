@@ -17,6 +17,7 @@ import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RequestParamFields;
+import com.global.api.terminals.upa.subgroups.RequestProcessingIndicatorsFields;
 import com.global.api.terminals.upa.subgroups.RequestTransactionFields;
 import com.global.api.utils.JsonDoc;
 
@@ -71,7 +72,8 @@ public class UpaController extends DeviceController {
         UpaMessageId messageId,
         Integer requestId,
         RequestParamFields paramFields,
-        RequestTransactionFields transactionFields
+        RequestTransactionFields transactionFields,
+        RequestProcessingIndicatorsFields processingIndicators
     ) throws ApiException {
         JsonDoc body = new JsonDoc();
 
@@ -81,6 +83,10 @@ public class UpaController extends DeviceController {
 
         if (transactionFields.getElementsJson() != null) {
             body.set("transaction", transactionFields.getElementsJson());
+        }
+
+        if (messageId == UpaMessageId.StartCardTransaction) {
+            body.set("processingIndicators", processingIndicators.getElementsJson());
         }
 
         String requestIdAsString = requestId != null ? requestId.toString() : getRequestId().toString();
@@ -120,7 +126,9 @@ public class UpaController extends DeviceController {
         RequestTransactionFields requestTransactionFields = new RequestTransactionFields();
         requestTransactionFields.setParams(builder);
 
-        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields);
+        RequestProcessingIndicatorsFields processingIndicators = new RequestProcessingIndicatorsFields();
+
+        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, processingIndicators);
     }
 
     private UpaMessageId mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
@@ -143,6 +151,8 @@ public class UpaController extends DeviceController {
                 return UpaMessageId.BalanceInquiry;
             case Capture:
                 return UpaMessageId.AuthCompletion;
+            case Activate:
+                return UpaMessageId.StartCardTransaction;
             default:
                 throw new UnsupportedTransactionException("Selected gateway does not support this transaction type");            
         }
@@ -160,6 +170,6 @@ public class UpaController extends DeviceController {
         RequestTransactionFields requestTransactionFields = new RequestTransactionFields();
         requestTransactionFields.setParams(builder);
 
-        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields);
+        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, null);
     }
 }

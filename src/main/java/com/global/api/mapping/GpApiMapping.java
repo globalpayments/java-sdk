@@ -244,6 +244,13 @@ public class GpApiMapping {
         return transaction;
     }
 
+    private static boolean getIsShippable(JsonDoc doc) {
+        if (doc.has("shippable")) {
+            return doc.getString("shippable").equalsIgnoreCase("YES") ? true : false;
+        }
+        return false;
+    }
+
     public static TransactionSummary mapTransactionSummary(JsonDoc doc) throws GatewayException {
         TransactionSummary summary = createTransactionSummary(doc);
 
@@ -393,7 +400,7 @@ public class GpApiMapping {
                         .setReference(doc.getString("reference"))
                         .setName(doc.getString("name"))
                         .setDescription(doc.getString("description"))
-                        .setIsShippable(doc.getBool("shippable"))
+                        .setIsShippable(getIsShippable(doc))
                         .setViewedCount(doc.getString("viewed_count"))
                         .setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
     }

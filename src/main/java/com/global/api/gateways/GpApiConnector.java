@@ -84,6 +84,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         setServiceUrl(gpApiConfig.getEnvironment().equals(Environment.PRODUCTION) ? ServiceEndpoints.GP_API_PRODUCTION.getValue() : ServiceEndpoints.GP_API_TEST.getValue());
 
         setEnableLogging(gpApiConfig.isEnableLogging());
+        setRequestLogger(gpApiConfig.getRequestLogger());
 
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
         headers.put(org.apache.http.HttpHeaders.ACCEPT_ENCODING, "gzip");

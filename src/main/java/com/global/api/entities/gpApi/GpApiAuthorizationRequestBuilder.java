@@ -265,14 +265,22 @@ public class GpApiAuthorizationRequestBuilder {
             CreditCardData creditCardData = (CreditCardData) builderPaymentMethod;
             paymentMethod.set("name", creditCardData.getCardHolderName());
 
+            paymentMethod.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
+
             ThreeDSecure secureEcom = creditCardData.getThreeDSecure();
             if (secureEcom != null) {
-                JsonDoc authentication = new JsonDoc().set("id", secureEcom.getServerTransactionId());
+                ArrayList<HashMap<String, Object>> three_ds = new ArrayList<>();
+                HashMap<String, Object> hashMap = new HashMap<>();
+                hashMap.put("exempt_status", secureEcom.getExemptStatus() != null ? secureEcom.getExemptStatus().getValue() : null);
+                three_ds.add(hashMap);
+
+                JsonDoc authentication =
+                        new JsonDoc()
+                                .set("id", secureEcom.getServerTransactionId())
+                                .set("three_ds",  three_ds);
 
                 paymentMethod.set("authentication", authentication);
             }
-
-            paymentMethod.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
         }
 
         if(builderPaymentMethod instanceof EBT) {

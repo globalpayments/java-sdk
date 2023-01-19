@@ -5,9 +5,7 @@ import com.global.api.entities.enums.PinIndicator;
 import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import org.joda.time.DateTimeZone;
 
 public class NtsRequestMessageHeader {
     @Getter
@@ -20,9 +18,11 @@ public class NtsRequestMessageHeader {
     @Setter
     private NtsMessageCode ntsMessageCode;
     @Getter
-    private final String transactionDate = DateTime.now().toString("MMdd");
+    @Setter
+    private String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
     @Getter
-    private final String transactionTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+    @Setter
+    private String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
     @Getter
     @Setter
     private int priorMessageResponseTime;

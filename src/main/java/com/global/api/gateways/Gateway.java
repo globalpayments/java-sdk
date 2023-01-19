@@ -2,12 +2,10 @@ package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.logging.IRequestLogger;
+import com.global.api.logging.RequestConsoleLogger;
+import com.global.api.logging.RequestFileLogger;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.StringUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -21,8 +19,11 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+
+import static com.global.api.logging.PrettyLogger.toPrettyJson;
 
 @Accessors(chain = true)
 @Getter
@@ -38,18 +39,6 @@ public abstract class Gateway {
     protected int timeout;
     protected String serviceUrl;
     protected Proxy webProxy;
-
-    // ----------------------------------------------------------------------
-    // TODO: Remove if it is not more useful
-    // ----------------------------------------------------------------------
-    private static JsonParser parser = new JsonParser();
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-    public static String toPrettyJson(String jsonString) {
-        JsonObject json = parser.parse(jsonString).getAsJsonObject();
-        return gson.toJson(json);
-    }
-    // ----------------------------------------------------------------------
 
     public Gateway(String contentType) {
         headers = new HashMap<>();
@@ -101,11 +90,10 @@ public abstract class Gateway {
             }
 
             if (this.enableLogging || this.requestLogger != null) {
-                logEntry.append("================================================================================").append(lSChar);
-                logEntry.append("Endpoint:       ").append(endpoint).append(lSChar);
-                logEntry.append("Verb:           ").append(verb).append(lSChar);
-                logEntry.append("Headers:        ").append(conn.getRequestProperties()).append(lSChar);
-                logEntry.append("Proxy:          ").append((webProxy != null) ? webProxy.toString() : "none").append(lSChar);
+                logEntry.append("Endpoint:       ").append(verb).append(" ").append(serviceUrl).append(endpoint).append(lSChar);
+                logEntry.append("Proxy:          ").append((webProxy != null) ? webProxy.toString() : "none").append(lSChar).append(lSChar);
+                logEntry.append("Headers:        ").append(lSChar);
+                logRequestHeaders(conn, logEntry);
             }
 
             if (!verb.equals("GET")) {
@@ -115,19 +103,20 @@ public abstract class Gateway {
                 conn.addRequestProperty("Content-Length", String.valueOf(request.length));
 
                 if (this.enableLogging || this.requestLogger != null) {
+                    logEntry.append("Request Body: ").append(lSChar);
                     if (acceptJson()) {
                         if (!StringUtils.isNullOrEmpty(data)) {
-                            logEntry.append("Request Body: ").append(lSChar).append(toPrettyJson(data)).append(lSChar).append(lSChar);
+                            logEntry.append(toPrettyJson(data));
                         }
                     } else {
-                        logEntry.append("Request Body: ").append(StringUtils.mask(data)).append(lSChar).append(lSChar);
+                        logEntry.append(StringUtils.mask(data));
                     }
 
-                    outputLogging(true);
+                    generateRequestLog();
                 }
-                try(DataOutputStream requestStream =new DataOutputStream(conn.getOutputStream())) {
-                        requestStream.write(request);
-                        requestStream.flush();
+                try (DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream())) {
+                    requestStream.write(request);
+                    requestStream.flush();
                 }
             }
             else if (this.enableLogging || this.requestLogger != null) {
@@ -137,17 +126,16 @@ public abstract class Gateway {
             InputStream responseStream = conn.getInputStream();
             String rawResponse = getRawResponse(responseStream);
             responseStream.close();
+
             if (this.enableLogging || this.requestLogger != null) {
                 if (acceptJson()) {
-                    logEntry.append("--------------------------------------------------------------------------------").append(lSChar);
                     logEntry.append("Response Code: ").append(conn.getResponseCode()).append(" ").append(conn.getResponseMessage()).append(lSChar);
-                    logEntry.append("Response: ").append(toPrettyJson(rawResponse)).append(lSChar);
-                    logEntry.append("================================================================================").append(lSChar);
+                    logEntry.append("Response Body:").append(lSChar).append(toPrettyJson(rawResponse));
                 } else {
-                    logEntry.append(rawResponse).append(lSChar);
+                    logEntry.append(rawResponse);
                 }
 
-                outputLogging(false);
+                generateResponseLog();
             }
 
             GatewayResponse response = new GatewayResponse();
@@ -157,11 +145,9 @@ public abstract class Gateway {
         }
         catch(Exception exc) {
             if (this.enableLogging || this.requestLogger != null) {
-                logEntry.append("--------------------------------------------------------------------------------").append(lSChar);
-                logEntry.append(exc.getMessage()).append(lSChar);
-                logEntry.append("================================================================================").append(lSChar);
+                logEntry.append("Exception:").append(lSChar).append(exc.getMessage());
 
-                outputLogging(false);
+                generateResponseLog();
             }
 
             try {
@@ -171,6 +157,19 @@ public abstract class Gateway {
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }
         }
+    }
+
+    private void logRequestHeaders(HttpsURLConnection conn, StringBuilder logEntry) {
+        Map<String, List<String>> requestHeaders = conn.getRequestProperties();
+
+        if (requestHeaders != null) {
+            for (String headerKey : requestHeaders.keySet()) {
+                String headerValue = requestHeaders.get(headerKey).toString();
+                logEntry.append(headerKey).append(": ").append(headerValue, 1, headerValue.length() - 1).append(lSChar);
+            }
+        }
+
+        logEntry.append(lSChar);
     }
 
     public String getRawResponse(InputStream responseStream) throws IOException {
@@ -216,10 +215,9 @@ public abstract class Gateway {
                 OutputStream out = conn.getOutputStream();) {
 
                 if (this.enableLogging || this.requestLogger != null) {
-                    logEntry.append("================================================================================").append(lSChar);
                     logEntry.append("Request: ").append(content).append(lSChar);
 
-                    outputLogging(true);
+                    generateRequestLog();
                 }
                 content.writeTo(out);
                 out.flush();
@@ -228,7 +226,7 @@ public abstract class Gateway {
                 if (this.enableLogging || this.requestLogger != null) {
                     logEntry.append(content).append(lSChar);
 
-                    outputLogging(false);
+                    generateResponseLog();
                 }
 
                 GatewayResponse response = new GatewayResponse();
@@ -301,7 +299,8 @@ public abstract class Gateway {
     // For some reason, if Content-Type is added for some GP-API endpoints we get a 502: Bad gateway error
     private boolean contentTypeNotAllowedEndpoints(String verb, String endpoint) {
         return
-                serviceUrl.endsWith("globalpay.com/ucp") &&
+                (
+                        serviceUrl.endsWith("globalpay.com/ucp") &&
                         (
                                 "GET".equalsIgnoreCase(verb) &&
                                         (
@@ -314,23 +313,62 @@ public abstract class Gateway {
                                                         endpoint.startsWith("/disputes") &&
                                                                 endpoint.endsWith("/acceptance")
                                                 )
-                        );
+                        )
+                ) || serviceUrl.endsWith("paygateway.com/transactions");
     }
 
-    private void outputLogging(boolean isRequest) {
-        if (this.enableLogging) {
-            System.out.print(logEntry);
+    private void generateRequestLog() {
+        if (enableLogging) {    // At least we need to print in console
+            if (requestLogger == null) {
+                new RequestConsoleLogger().RequestSent(logEntry.toString());
+            } else {
+                try {
+                    if (requestLogger instanceof RequestFileLogger) {
+                        requestLogger.RequestSent(logEntry.toString());
+                        new RequestConsoleLogger().RequestSent(logEntry.toString());
+                    } else if (requestLogger instanceof RequestConsoleLogger) {
+                        requestLogger.RequestSent(logEntry.toString());
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            if (requestLogger != null) {
+                try {
+                    requestLogger.RequestSent(logEntry.toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
-        if (this.requestLogger != null) {
-            try {
-                if (isRequest) {
-                    this.requestLogger.RequestSent(logEntry.toString());
-                } else {
-                    this.requestLogger.ResponseReceived(logEntry.toString());
+        logEntry.delete(0, logEntry.length());
+    }
+
+    private void generateResponseLog() {
+        if (enableLogging) {    // At least we need to print in console
+            if (requestLogger == null) {
+                new RequestConsoleLogger().ResponseReceived(logEntry.toString());
+            } else {
+                try {
+                    if (requestLogger instanceof RequestFileLogger) {
+                        requestLogger.ResponseReceived(logEntry.toString());
+                        new RequestConsoleLogger().ResponseReceived(logEntry.toString());
+                    } else if (requestLogger instanceof RequestConsoleLogger) {
+                        requestLogger.ResponseReceived(logEntry.toString());
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                //eat the exception
+            }
+        } else {
+            if (requestLogger != null) {
+                try {
+                    requestLogger.ResponseReceived(logEntry.toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 

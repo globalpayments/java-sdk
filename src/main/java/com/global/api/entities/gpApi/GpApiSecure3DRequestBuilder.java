@@ -35,21 +35,7 @@ public class GpApiSecure3DRequestBuilder {
                             .set("sequence", getValueIfNotNull(builder.getStoredCredential().getSequence()));
                 }
 
-                JsonDoc paymentMethod = new JsonDoc();
-
-                if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
-                    paymentMethod.set("id", ((ITokenizable) builderPaymentMethod).getToken());
-                } else if (builderPaymentMethod instanceof ICardData) {
-                    ICardData cardData = (ICardData) builderPaymentMethod;
-
-                    JsonDoc card =
-                            new JsonDoc()
-                                    .set("number", cardData.getNumber())
-                                    .set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : null)
-                                    .set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
-
-                    paymentMethod.set("card", card);
-                }
+                JsonDoc paymentMethod = setPaymentMethodParam(builderPaymentMethod);
 
                 JsonDoc notifications =
                         new JsonDoc()
@@ -87,20 +73,7 @@ public class GpApiSecure3DRequestBuilder {
                             .set("sequence", getValueIfNotNull(builder.getStoredCredential().getSequence()));
                 }
 
-                JsonDoc paymentMethod = new JsonDoc();
-
-                if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
-                    paymentMethod.set("id", ((ITokenizable) builderPaymentMethod).getToken());
-                }
-                else if (builderPaymentMethod instanceof ICardData) {
-                    ICardData cardData = (ICardData) builderPaymentMethod;
-                    JsonDoc card = new JsonDoc()
-                            .set("number", cardData.getNumber())
-                            .set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : null)
-                            .set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
-
-                    paymentMethod.set("card", card);
-                }
+                JsonDoc paymentMethod = setPaymentMethodParam(builderPaymentMethod);
 
                 JsonDoc notifications =
                         new JsonDoc()
@@ -108,39 +81,7 @@ public class GpApiSecure3DRequestBuilder {
                                 .set("three_ds_method_return_url", gateway.getMethodNotificationUrl())
                                 .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
 
-                JsonDoc order =
-                        new JsonDoc()
-                                .set("time_created_reference", builder.getOrderCreateDate().toString(GpApiConnector.DATE_TIME_DTF))
-                                .set("amount", StringUtils.toNumeric(builder.getAmount()))
-                                .set("currency", builder.getCurrency())
-                                .set("reference", builder.getReferenceNumber())
-                                .set("address_match_indicator", builder.isAddressMatchIndicator())
-                                .set("gift_card_count", builder.getGiftCardCount())
-                                .set("gift_card_currency", builder.getGiftCardCurrency())
-                                .set("gift_card_amount", StringUtils.toNumeric(builder.getGiftCardAmount()))
-                                .set("delivery_email", builder.getDeliveryEmail())
-                                .set("delivery_timeframe", getValueIfNotNull(builder.getDeliveryTimeframe()))
-                                .set("shipping_method", getValueIfNotNull(builder.getShippingMethod()))
-                                .set("shipping_name_matches_cardholder_name", builder.getShippingNameMatchesCardHolderName())
-                                .set("preorder_indicator", getValueIfNotNull(builder.getPreOrderIndicator()))
-                                .set("preorder_availability_date", GpApiConnector.getDateTimeIfNotNull((builder.getPreOrderAvailabilityDate())))
-                                .set("reorder_indicator", getValueIfNotNull(builder.getReorderIndicator()))
-                                .set("category", builder.getMessageCategory().getValue());
-
-                Address builderShippingAddress = builder.getShippingAddress();
-                if (builderShippingAddress != null) {
-                    JsonDoc shippingAddress =
-                            new JsonDoc()
-                                    .set("line1", builderShippingAddress.getStreetAddress1())
-                                    .set("line2", builderShippingAddress.getStreetAddress2())
-                                    .set("line3", builderShippingAddress.getStreetAddress3())
-                                    .set("city", builderShippingAddress.getCity())
-                                    .set("postal_code", builderShippingAddress.getPostalCode())
-                                    .set("state", builderShippingAddress.getState())
-                                    .set("country", builderShippingAddress.getCountryCode());
-
-                    order.set("shipping_address", shippingAddress);
-                }
+                JsonDoc order = setOrderParam(builder);
 
                 JsonDoc homePhone =
                         new JsonDoc()
@@ -270,5 +211,62 @@ public class GpApiSecure3DRequestBuilder {
             default:
                 throw new UnsupportedTransactionException();
         }
+    }
+
+    private static JsonDoc setPaymentMethodParam(IPaymentMethod builderPaymentMethod) {
+        JsonDoc paymentMethod = new JsonDoc();
+
+        if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+            paymentMethod.set("id", ((ITokenizable) builderPaymentMethod).getToken());
+        }
+        else if (builderPaymentMethod instanceof ICardData) {
+            ICardData cardData = (ICardData) builderPaymentMethod;
+            JsonDoc card = new JsonDoc()
+                    .set("number", cardData.getNumber())
+                    .set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth().toString(), 2, '0') : null)
+                    .set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
+
+            paymentMethod.set("card", card);
+        }
+
+        return paymentMethod;
+    }
+
+    private static JsonDoc setOrderParam(Secure3dBuilder builder) {
+        JsonDoc order =
+                new JsonDoc()
+                        .set("time_created_reference", builder.getOrderCreateDate().toString(GpApiConnector.DATE_TIME_DTF))
+                        .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                        .set("currency", builder.getCurrency())
+                        .set("reference", builder.getReferenceNumber())
+                        .set("address_match_indicator", builder.isAddressMatchIndicator())
+                        .set("gift_card_count", builder.getGiftCardCount())
+                        .set("gift_card_currency", builder.getGiftCardCurrency())
+                        .set("gift_card_amount", StringUtils.toNumeric(builder.getGiftCardAmount()))
+                        .set("delivery_email", builder.getDeliveryEmail())
+                        .set("delivery_timeframe", getValueIfNotNull(builder.getDeliveryTimeframe()))
+                        .set("shipping_method", getValueIfNotNull(builder.getShippingMethod()))
+                        .set("shipping_name_matches_cardholder_name", builder.getShippingNameMatchesCardHolderName())
+                        .set("preorder_indicator", getValueIfNotNull(builder.getPreOrderIndicator()))
+                        .set("preorder_availability_date", GpApiConnector.getDateTimeIfNotNull((builder.getPreOrderAvailabilityDate())))
+                        .set("reorder_indicator", getValueIfNotNull(builder.getReorderIndicator()))
+                        .set("category", builder.getMessageCategory().getValue());
+
+        Address builderShippingAddress = builder.getShippingAddress();
+        if (builderShippingAddress != null) {
+            JsonDoc shippingAddress =
+                    new JsonDoc()
+                            .set("line1", builderShippingAddress.getStreetAddress1())
+                            .set("line2", builderShippingAddress.getStreetAddress2())
+                            .set("line3", builderShippingAddress.getStreetAddress3())
+                            .set("city", builderShippingAddress.getCity())
+                            .set("postal_code", builderShippingAddress.getPostalCode())
+                            .set("state", builderShippingAddress.getState())
+                            .set("country", builderShippingAddress.getCountryCode());
+
+            order.set("shipping_address", shippingAddress);
+        }
+
+        return order;
     }
 }

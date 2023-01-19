@@ -26,9 +26,10 @@ public class NtsPDLRequest implements INtsRequestMessage {
             NtsUtils.log("PARAMETER TYPE", pdlData.getParameterType().getValue());
 
             //  TABLE-ID
-            request.addRange(pdlData.getTableId().getValue(), 2);
-            NtsUtils.log("TABLE-ID", pdlData.getTableId().getValue());
-
+            if(pdlData.getTableId()!=null) {
+                request.addRange(pdlData.getTableId().getValue(), 2);
+                NtsUtils.log("TABLE-ID", pdlData.getTableId().getValue());
+            }
             if (transactionType.equals(TransactionType.EmvPdl)) {
                 //  EMV PDL CARD TYPE
                 request.addRange(pdlData.getEmvPDLCardType().getValue(), 2);

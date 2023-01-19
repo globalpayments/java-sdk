@@ -16,7 +16,7 @@ import lombok.NonNull;
 
 public interface INtsRequestMessage {
     Integer MESSAGE_TYPE = 9;
-    Integer COMPANY_ID = 45;
+    Integer COMPANY_ID = 45; // Default company ID for P66
 
     static MessageWriter prepareHeader(@NonNull NtsObjectParam params) {
         TransactionBuilder builder = params.getNtsBuilder();
@@ -31,8 +31,9 @@ public interface INtsRequestMessage {
         NtsUtils.log("message type", String.valueOf(MESSAGE_TYPE));
         headerRequest.addRange(MESSAGE_TYPE, 1);
         // Company Number
-        NtsUtils.log("company number", String.valueOf(COMPANY_ID));
-        headerRequest.addRange(COMPANY_ID, 3);
+        String companyId = params.getCompanyId() != null ? params.getCompanyId() : String.valueOf(COMPANY_ID);
+        NtsUtils.log("company number", String.valueOf(companyId));
+        headerRequest.addRange(companyId, 3);
         // Binary TerminalId
         NtsUtils.log("binary terminal id", params.getBinTerminalId());
         headerRequest.addRange(String.format("%1s", params.getBinTerminalId()), 1);
@@ -45,8 +46,13 @@ public interface INtsRequestMessage {
         headerRequest.addRange(String.format("%2s", strSpace), 2);
         // Timeout Value
         if (cardType != null) {
-            NtsUtils.log("Timeout Value", cardType.getTimeOut().toString());
-            headerRequest.addRange(cardType.getTimeOut(), 3);
+            if(params.getTimeout()>0) {
+                NtsUtils.log("Timeout Value", params.getTimeout());
+                headerRequest.addRange(params.getTimeout(), 3);
+            }else {
+                NtsUtils.log("Timeout Value", cardType.getTimeOut().toString());
+                headerRequest.addRange(cardType.getTimeOut(), 3);
+            }
         } else {
             NtsUtils.log("Timeout Value", String.valueOf(15));
             headerRequest.addRange(String.valueOf(15), 3);

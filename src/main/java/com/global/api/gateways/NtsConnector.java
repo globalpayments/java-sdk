@@ -20,12 +20,23 @@ import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.*;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class NtsConnector extends GatewayConnectorConfig {
 
     private NtsMessageCode messageCode;
+    private int timeout;
+    @Override
+    public int getTimeout() {
+        if(super.getTimeout()==30000)
+            this.timeout=0;
+        else
+            this.timeout=super.getTimeout();
+        return timeout;
+    }
 
     private static TransactionReference getReferencesObject(TransactionBuilder builder, NtsResponse ntsResponse, NTSCardTypes cardTypes) {
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -35,7 +46,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         TransactionReference reference = NtsUtils.prepareTransactionReference(ntsResponse);
         if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) &&
                 (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))) {
-            if (cardTypes.equals(NTSCardTypes.MastercardFleet) || cardTypes.equals(NTSCardTypes.VisaFleet) || cardTypes.equals(NTSCardTypes.Mastercard) || cardTypes.equals(NTSCardTypes.Visa) || cardTypes.equals(NTSCardTypes.AmericanExpress) || cardTypes.equals(NTSCardTypes.Discover)) {
+            if (cardTypes.equals(NTSCardTypes.MastercardFleet) || cardTypes.equals(NTSCardTypes.VisaFleet) || cardTypes.equals(NTSCardTypes.Mastercard) || cardTypes.equals(NTSCardTypes.Visa) || cardTypes.equals(NTSCardTypes.AmericanExpress) || cardTypes.equals(NTSCardTypes.Discover) || cardTypes.equals(NTSCardTypes.PayPal)) {
                 reference = NtsUtils.prepareTransactionReference(ntsResponse);
                 userData = reference.getBankcardData();
                 if (userData != null) {
@@ -107,6 +118,9 @@ public class NtsConnector extends GatewayConnectorConfig {
             reference.setOriginalAmount(authBuilder.getAmount());
             reference.setOriginalPaymentMethod(authBuilder.getPaymentMethod());
             reference.setPaymentMethodType(authBuilder.getPaymentMethod().getPaymentMethodType());
+        } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit)
+                && transactionType.equals(TransactionType.AddValue)) {
+            reference.setOriginalTransactionCode(TransactionCode.Load);
         } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Gift)
                 && ntsResponse.getNtsResponseMessage() instanceof NtsAuthCreditResponseMapper) {
             NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
@@ -138,7 +152,9 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     public Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException {
         messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();
-
+        if(builder.getTimestamp()!=null)
+        builder.getNtsTag16().setTimeStamp(NtsUtils.getDateObject(builder.getTimestamp()));
+        setTimeToHeader(builder);
         //message body
         MessageWriter request = new MessageWriter();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -162,6 +178,8 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalType(terminalType);
         ntsObjectParam.setUnitNumber(unitNumber);
         ntsObjectParam.setTerminalId(terminalId);
+        ntsObjectParam.setCompanyId(companyId);
+        ntsObjectParam.setTimeout(getTimeout());
 
         //Preparing the request
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
@@ -247,7 +265,9 @@ public class NtsConnector extends GatewayConnectorConfig {
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {
         //message header section
         messageCode = builder.getNtsRequestMessageHeader().getNtsMessageCode();
-
+        if(builder.getTimestamp()!=null)
+            builder.getNtsTag16().setTimeStamp(NtsUtils.getDateObject(builder.getTimestamp()));
+        setTimeToHeader(builder);
         //message body
         MessageWriter request = new MessageWriter();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -271,6 +291,9 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalType(terminalType);
         ntsObjectParam.setUnitNumber(unitNumber);
         ntsObjectParam.setTerminalId(terminalId);
+        ntsObjectParam.setCompanyId(companyId);
+        ntsObjectParam.setTimeout(getTimeout());
+
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
         return sendRequest(request, builder);
@@ -343,4 +366,19 @@ public class NtsConnector extends GatewayConnectorConfig {
             return true;
     }
 
+    private void setTimeToHeader(TransactionBuilder builder){
+        String timeStamp=null;
+        if(builder instanceof AuthorizationBuilder){
+            timeStamp=((AuthorizationBuilder) builder).getTimestamp();
+        }else if(builder instanceof  ManagementBuilder){
+            timeStamp=((ManagementBuilder) builder).getTimestamp();
+        }
+        if(timeStamp !=null){
+            Date date=NtsUtils.getDateObject(timeStamp);
+            String transactionDate = new SimpleDateFormat("MMdd").format(date);
+            String transactionTime = new SimpleDateFormat("HHmmss").format(date);
+            builder.getNtsRequestMessageHeader().setTransactionDate(transactionDate);
+            builder.getNtsRequestMessageHeader().setTransactionTime(transactionTime);
+        }
+    }
 }

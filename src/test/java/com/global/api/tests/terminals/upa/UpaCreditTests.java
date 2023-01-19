@@ -13,7 +13,7 @@ import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
-import com.global.api.utils.RequestFileLogger;
+import com.global.api.logging.RequestFileLogger;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;

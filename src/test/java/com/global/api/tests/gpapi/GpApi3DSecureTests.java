@@ -749,6 +749,26 @@ public class GpApi3DSecureTests extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
+    @Test
+    public void ExemptionSaleTransaction() throws ApiException {
+        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_2.cardNumber);
+
+        ThreeDSecure threeDS = new ThreeDSecure();
+        threeDS.setExemptStatus(ExemptStatus.LowValue);
+
+        card.setThreeDSecure(threeDS);
+
+        Transaction response =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
     /**
      * ACS Authentication Simulator result codes
      */

@@ -8,10 +8,12 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
+import com.global.api.logging.RequestFileLogger;
 import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
@@ -48,6 +50,8 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
 //        config.setDynamicHeaders(dynamicHeaders);
 
         config.setEnableLogging(true);
+//        config.setRequestLogger(new RequestConsoleLogger());
+        config.setRequestLogger(new RequestFileLogger("C:\\temp\\GpApiCreditCardNotPresentTests.txt"));
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 

@@ -2635,4 +2635,42 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
+    @Test
+    public void test_NTS_ph1_Address_Issue() throws ApiException {
+        track = NtsTestCards.AmexTrack1(EntryMethod.Swipe);
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withZipCode("12345")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS_ph1_DateTimestamp_Issue() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        track = NtsTestCards.MasterCardTrack1(EntryMethod.Swipe);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withTimestamp("221226221910")
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
 }

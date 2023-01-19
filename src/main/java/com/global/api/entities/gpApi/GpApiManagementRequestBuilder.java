@@ -222,12 +222,12 @@ public class GpApiManagementRequestBuilder {
 
                     data.set("lodging", lodgingData);
                 }
-
-                return new GpApiRequest()
-                        .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/incremental")
-                        .setRequestBody(data.toString());
             }
+
+            return new GpApiRequest()
+                    .setVerb(GpApiRequest.HttpMethod.Post)
+                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/incremental")
+                    .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.Edit) {
             var card =

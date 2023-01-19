@@ -20,5 +20,6 @@ public enum UpaMessageId {
     Ping,
     PreAuth,
     Restart,
-    AuthCompletion
+    AuthCompletion,
+    StartCardTransaction
 }
