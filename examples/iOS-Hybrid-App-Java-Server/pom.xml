@@ -12,9 +12,9 @@
 
 	<groupId>com.heartlandpaymentsystems</groupId>
 	<artifactId>iOS-Hybrid-App-JAVA-Server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>iOS-Hybrid-App-Java-Server</name>
-	<description>Demo for iOS-Hybrid-App-JAVA-Server using Spring Boot</description>
+	<version>0.0.2-SNAPSHOT</version>
+	<name>Java-Server-Demo-for-a-Client-App</name>
+	<description>JAVA Server Demo (using Spring Boot) for a Client (iOS/Android) app</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -36,7 +36,7 @@
 		<dependency>
   			<groupId>com.heartlandpaymentsystems</groupId>
   			<artifactId>globalpayments-sdk</artifactId>
-  			<version>9.0.0</version>
+			<version>10.1.0</version>
 		</dependency>
 		
 	</dependencies>

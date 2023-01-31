@@ -104,6 +104,7 @@ public class NtsUtils {
     public static TransactionReference prepareTransactionReference(NtsResponse ntsResponse) {
         NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = null;
         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = null;
+        NtsVoidReversalResponse ntsVoidReversalResponse=null;
         String approvalCode = null;
         String hostResponseArea = null;
         Integer sequenceNumber= null;
@@ -134,6 +135,11 @@ public class NtsUtils {
             debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDataCollectResponse) {
             approvalCode = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
+        }else if (ntsResponse.getNtsResponseMessage() instanceof NtsVoidReversalResponse) {
+            ntsVoidReversalResponse = (NtsVoidReversalResponse) ntsResponse.getNtsResponseMessage();
+            approvalCode = getOrDefault(ntsVoidReversalResponse.getCreditMapper().getApprovalCode(), "");
+            hostResponseArea = getOrDefault(ntsVoidReversalResponse.getCreditMapper().getHostResponseArea(), "");
+            authorizer = ntsVoidReversalResponse.getCreditMapper().getAuthorizer();
         }
 
         reference.setApprovalCode(approvalCode);

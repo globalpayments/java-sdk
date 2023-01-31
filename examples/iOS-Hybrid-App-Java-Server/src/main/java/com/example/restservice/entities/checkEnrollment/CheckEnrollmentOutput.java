@@ -12,6 +12,7 @@ public class CheckEnrollmentOutput {
 	String methodUrl;
 	String methodData;
 	String messageType;
+	String acsInfoIndicator;
 
 	public CheckEnrollmentOutput() {
 
@@ -107,5 +108,14 @@ public class CheckEnrollmentOutput {
 		this.messageType = messageType;
 		return this;
 	}
-	
+
+	public String getAcsInfoIndicator() {
+		return acsInfoIndicator;
+	}
+
+	public CheckEnrollmentOutput setAcsInfoIndicator(String acs_info_indicator) {
+		this.acsInfoIndicator = acs_info_indicator;
+		return this;
+	}
+
 }

@@ -27,6 +27,8 @@ public class InitiateAuthenticationInput {
     private ChallengeRequestIndicator challengeRequestIndicator;
     private BrowserData browserData;
     private MethodUrlCompletion methodUrlCompletion;
+	private boolean preferredDecoupledAuth;
+	private Integer decoupledFlowTimeout;
 
 	public InitiateAuthenticationInput() {
 
@@ -150,6 +152,22 @@ public class InitiateAuthenticationInput {
 
 	public void setThreeDsecure(ThreeDSecure threeDsecure) {
 		this.threeDsecure = threeDsecure;
+	}
+
+	public boolean getPreferredDecoupledAuth() {
+		return preferredDecoupledAuth;
+	}
+
+	public void setPreferredDecoupledAuth(boolean preferredDecoupledAuth) {
+		this.preferredDecoupledAuth = preferredDecoupledAuth;
+	}
+
+	public Integer getDecoupledFlowTimeout() {
+		return decoupledFlowTimeout;
+	}
+
+	public void setDecoupledFlowTimeout(Integer decoupledFlowTimeout) {
+		this.decoupledFlowTimeout = decoupledFlowTimeout;
 	}
 
 }

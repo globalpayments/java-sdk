@@ -20,6 +20,7 @@ import com.example.restservice.entities.getAuthenticationData.GetAuthenticationD
 import com.example.restservice.entities.initiateAuthentication.InitiateAuthenticationInput;
 import com.example.restservice.entities.initiateAuthentication.InitiateAuthenticationOutput;
 import com.global.api.ServicesContainer;
+import com.global.api.builders.Secure3dBuilder;
 import com.global.api.entities.MobileData;
 import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
@@ -80,12 +81,20 @@ public class EndpointsController {
 		CreditCardData tokenizedCard = new CreditCardData();
 		tokenizedCard.setToken(input.getCardToken());
 
-		ThreeDSecure threeDSecure =
+		Secure3dBuilder checkEnrollment =
 				Secure3dService
-					.checkEnrollment(tokenizedCard)
-					.withCurrency(input.getCurrency())
-					.withAmount(new BigDecimal(input.getAmount()))
-					.execute(GP_API_CONFIG_NAME);	
+						.checkEnrollment(tokenizedCard)
+						.withCurrency(input.getCurrency())
+						.withAmount(new BigDecimal(input.getAmount()));
+
+		if (input.getPreferredDecoupledAuth()) {
+			checkEnrollment
+					.withDecoupledNotificationUrl("https://www.example.com/decoupledNotification");
+		}
+
+		ThreeDSecure threeDSecure =
+				checkEnrollment
+						.execute(GP_API_CONFIG_NAME);
 
 		return
 				new CheckEnrollmentOutput()
@@ -98,7 +107,8 @@ public class EndpointsController {
 						.setSessionDataFieldName(threeDSecure.getSessionDataFieldName())
 						.setMethodUrl(threeDSecure.getIssuerAcsUrl())
 						.setMethodData(threeDSecure.getPayerAuthenticationRequest())
-						.setMessageType(threeDSecure.getMessageType());
+						.setMessageType(threeDSecure.getMessageType())
+						.setAcsInfoIndicator(threeDSecure.getAcsInfoIndicator().toString());
 	}
 
 	@PostMapping("/initiateAuthentication")
@@ -148,30 +158,39 @@ public class EndpointsController {
 		CreditCardData tokenizedCard = new CreditCardData();
 		tokenizedCard.setToken(input.getCardToken());
 
+		Secure3dBuilder initiateAuthentication =
+				Secure3dService
+						.initiateAuthentication(tokenizedCard, input.getThreeDsecure())
+						.withAuthenticationSource(AuthenticationSource.MobileSDK)
+						.withAmount(new BigDecimal(input.getAmount()))
+						.withCurrency(input.getCurrency())
+						.withOrderCreateDate(DateTime.now())
+						.withCustomerEmail(input.getCustomerEmail())
+						// Enable if needed
+						//	        	.withAddress(input.getBillingAddress(), AddressType.Billing)
+						//	        	.withAddress(input.getShippingAddress(), AddressType.Shipping)
+						//	        	.withAddressMatchIndicator(input.getAddressMatchIndicator())
+						//	        	.withAuthenticationSource(input.getAuthenticationSource())
+						//	        	.withAuthenticationRequestType(input.getAuthenticationRequestType())
+						//	        	.withMessageCategory(input.getMessageCategory())
+						//	        	.withChallengeRequestIndicator(input.getChallengeRequestIndicator())
+						//	        	.withMethodUrlCompletion(input.getMethodUrlCompletion())
+						.withBrowserData(input.getBrowserData())
+						.withMobileData(mobileData);
+
+		if (input.getPreferredDecoupledAuth()) {
+			initiateAuthentication.withDecoupledFlowRequest(true)
+					.withDecoupledFlowTimeout(input.getDecoupledFlowTimeout())
+					.withDecoupledNotificationUrl("https://www.example.com/decoupledNotification");
+		}
+
 		ThreeDSecure threeDSecure =
-	    	Secure3dService
-	        	.initiateAuthentication(tokenizedCard, input.getThreeDsecure())
-	        	.withAuthenticationSource(AuthenticationSource.MobileSDK)
-	        	.withAmount(new BigDecimal(input.getAmount()))
-	        	.withCurrency(input.getCurrency())
-	        	.withOrderCreateDate(DateTime.now())
-	        	.withCustomerEmail(input.getCustomerEmail())
-	        	// Enable if needed
-//	        	.withAddress(input.getBillingAddress(), AddressType.Billing)
-//	        	.withAddress(input.getShippingAddress(), AddressType.Shipping)
-//	        	.withAddressMatchIndicator(input.getAddressMatchIndicator())
-//	        	.withAuthenticationSource(input.getAuthenticationSource())
-//	        	.withAuthenticationRequestType(input.getAuthenticationRequestType())
-//	        	.withMessageCategory(input.getMessageCategory())
-//	        	.withChallengeRequestIndicator(input.getChallengeRequestIndicator())
-//	        	.withMethodUrlCompletion(input.getMethodUrlCompletion())
-	        	.withBrowserData(input.getBrowserData())
-	        	.withMobileData(mobileData)
-	        	.execute(GP_API_CONFIG_NAME);
+				initiateAuthentication
+						.execute(GP_API_CONFIG_NAME);
 
 		return
 				new InitiateAuthenticationOutput()
-						.setEnrolled(threeDSecure.getEnrolledStatus())		
+						.setEnrolled(threeDSecure.getEnrolledStatus())
 						.setVersion(threeDSecure.getVersion().getValue().toUpperCase())
 						.setStatus(threeDSecure.getStatus())
 						.setLiabilityShift(threeDSecure.getLiabilityShift())

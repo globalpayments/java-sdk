@@ -20,6 +20,10 @@ For more information about Spring Boot visit: https://spring.io/projects/spring-
 
 Import the code as a New Project from your local File System using the IDE: [Spring Tool Suite](https://spring.io/tools).
 
+## Postman Collection
+
+[Java Server Demo Endpoints](https://api.postman.com/collections/744570-faeb5330-066b-48b4-8861-2b3024dd5970?access_key=PMAT-01GQQ7V3YAGJ70E0XGEM8AK1GB)
+
 ## Contributing
 
 All our code is open sourced and we encourage fellow developers to contribute and help improve it!

@@ -1,5 +1,11 @@
 # Changelog
 
+## v10.1.1 (01/31/2023)
+
+### Enhancements:
+NTS Issue: Approval Code Changes for Void Transaction
+GP-API: Update Java Server Demo for a Client app to support decoupled authentication on 3DS flow
+
 ## v10.1.0 (01/19/2023)
 
 ### Enhancements:

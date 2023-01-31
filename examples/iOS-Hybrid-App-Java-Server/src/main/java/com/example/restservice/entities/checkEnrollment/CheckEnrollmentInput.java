@@ -5,6 +5,7 @@ public class CheckEnrollmentInput {
 	private String cardToken;
 	private String amount;
 	private String currency;
+	private boolean preferredDecoupledAuth;
 
 	public CheckEnrollmentInput() {
 
@@ -32,6 +33,14 @@ public class CheckEnrollmentInput {
 
 	public void setCurrency(String currency) {
 		this.currency = currency;
+	}
+
+	public boolean getPreferredDecoupledAuth() {
+		return preferredDecoupledAuth;
+	}
+
+	public void setPreferredDecoupledAuth(boolean preferredDecoupledAuth) {
+		this.preferredDecoupledAuth = preferredDecoupledAuth;
 	}
 
 }
