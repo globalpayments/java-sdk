@@ -156,7 +156,7 @@ public class NTSUserData {
         // 10 Reserved
 
         //11 MasterCardBanknetRefId & 12 Settlement Date
-        if ((cardType.equals(NTSCardTypes.Mastercard) || cardType.equals(NTSCardTypes.MastercardFleet))
+        if ((cardType.equals(NTSCardTypes.Mastercard) || cardType.equals(NTSCardTypes.MastercardFleet)|| cardType.equals(NTSCardTypes.MastercardPurchasing))
                 && (transactionType.equals(TransactionType.Void) ||
                 transactionType.equals(TransactionType.Balance))
                 && (paymentMethod instanceof TransactionReference)) {

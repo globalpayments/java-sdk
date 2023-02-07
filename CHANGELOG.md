@@ -1,5 +1,10 @@
 # Changelog
 
+## v10.1.2 (02/07/2023)
+
+### Enhancements:
+NTS Issue: Mastercard purchasing Conditions is added for MasterCardBanknetRefId & Settlement Date Changes
+
 ## v10.1.1 (01/31/2023)
 
 ### Enhancements:
