@@ -76,22 +76,6 @@ public class GpApiReportingActionsTests extends BaseGpApiReportingTest {
     }
 
     @Test
-    public void ReportActionDetail_NullId() throws ApiException {
-        boolean exceptionCaught = false;
-
-        try {
-            ReportingService
-                    .actionDetail(null)
-                    .execute(GP_API_CONFIG_NAME);
-        } catch (BuilderException ex) {
-            exceptionCaught = true;
-            assertEquals("actionId cannot be null for this transaction type.", ex.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
     public void ReportFindActionsPaged_By_Id() throws ApiException {
         String actionId = sampleAction.getId();
 

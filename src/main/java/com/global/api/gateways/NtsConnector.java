@@ -101,7 +101,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                         StringParser responseParser = new StringParser(hostResponseArea);
                         String amount = responseParser.readString(7);
                         userData.put(UserDataTag.ApprovedAmount, amount);
-                        reference.setOriginalApprovedAmount(new BigDecimal(amount));
+                        reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount,2));
                         userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                     } else if (transactionType.equals(TransactionType.Sale) && userData != null) {
                         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
@@ -109,7 +109,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                         StringParser responseParser = new StringParser(hostResponseArea);
                         String amount = responseParser.readString(7);
                         userData.put(UserDataTag.ApprovedAmount, amount);
-                        reference.setOriginalApprovedAmount(new BigDecimal(amount));
+                        reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount,2));
                         userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                     }
                 }

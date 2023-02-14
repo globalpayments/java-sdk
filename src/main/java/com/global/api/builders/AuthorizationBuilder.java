@@ -95,6 +95,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
+    @Getter @Setter private Boolean maskedDataResponse;
     private boolean hasEmvFallbackData;
 
     private String tagData;
@@ -999,4 +1000,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.country = country;
         return this;
     }
+
+    public AuthorizationBuilder withMaskedDataResponse(Boolean value) {
+        this.maskedDataResponse = value;
+        return this;
+    }
+
 }

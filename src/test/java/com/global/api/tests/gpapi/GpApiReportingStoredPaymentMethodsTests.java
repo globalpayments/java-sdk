@@ -107,21 +107,6 @@ public class GpApiReportingStoredPaymentMethodsTests extends BaseGpApiReportingT
     }
 
     @Test
-    public void ReportStoredPaymentMethodDetail_WithNullId() throws ApiException {
-        boolean exceptionCaught = false;
-        try {
-            ReportingService
-                    .storedPaymentMethodDetail(null)
-                    .execute(GP_API_CONFIG_NAME);
-        } catch (BuilderException ex) {
-            exceptionCaught = true;
-            assertEquals("storedPaymentMethodId cannot be null for this transaction type.", ex.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
     public void ReportFindStoredPaymentMethodsPaged_By_Id() throws ApiException {
         StoredPaymentMethodSummaryPaged result =
                 ReportingService

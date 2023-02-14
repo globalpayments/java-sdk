@@ -929,7 +929,7 @@ public class GpApiCreditWithMerchantIdTests extends BaseGpApiTest {
 
     @Test
     public void CreditSale_WithStoredCredentials_RecurringPayment() throws ApiException {
-        BigDecimal amount = new BigDecimal(15.00);
+        BigDecimal amount = new BigDecimal("15.00");
         String currency = "USD";
 
         CreditCardData creditCardData = new CreditCardData();

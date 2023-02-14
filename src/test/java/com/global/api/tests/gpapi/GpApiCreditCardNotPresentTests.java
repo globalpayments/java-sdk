@@ -50,8 +50,8 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
 //        config.setDynamicHeaders(dynamicHeaders);
 
         config.setEnableLogging(true);
-//        config.setRequestLogger(new RequestConsoleLogger());
-        config.setRequestLogger(new RequestFileLogger("C:\\temp\\GpApiCreditCardNotPresentTests.txt"));
+        config.setRequestLogger(new RequestConsoleLogger());
+//        config.setRequestLogger(new RequestFileLogger("C:\\temp\\GpApiCreditCardNotPresentTests.txt"));
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 
@@ -494,7 +494,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             card
-                    .charge(new BigDecimal(19.99))
+                    .charge(new BigDecimal("19.99"))
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS);
         } catch (GatewayException ex) {
@@ -549,14 +549,14 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
     public void CreditRefundTransaction_RefundLowerAmount() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal(5.95))
+                        .charge(new BigDecimal("5.95"))
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
                 transaction
-                        .refund(new BigDecimal(3.25))
+                        .refund(new BigDecimal("3.25"))
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(response, TransactionStatus.Captured);
@@ -758,7 +758,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
     public void CreditPartialReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal(3.99))
+                        .charge(new BigDecimal("3.99"))
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(transaction, TransactionStatus.Captured);
@@ -766,7 +766,7 @@ public class GpApiCreditCardNotPresentTests extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             transaction
-                    .reverse(new BigDecimal(1.29))
+                    .reverse(new BigDecimal("1.29"))
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;

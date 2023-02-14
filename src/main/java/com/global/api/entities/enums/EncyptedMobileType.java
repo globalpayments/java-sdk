@@ -2,7 +2,8 @@ package com.global.api.entities.enums;
 
 public enum EncyptedMobileType {
     APPLE_PAY("APPLEPAY"),
-    GOOGLE_PAY("PAY_BY_GOOGLE");
+    GOOGLE_PAY("PAY_BY_GOOGLE"),
+    CLICK_TO_PAY("CLICK_TO_PAY");
 
     private String value;
 

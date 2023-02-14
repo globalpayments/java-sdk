@@ -7,6 +7,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.StringUtils;
+import lombok.var;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,6 +37,25 @@ public class GpApiDigitalWalletsTests extends BaseGpApiTest {
 
         card = new CreditCardData();
         card.setCardHolderName("James Mason#");
+    }
+
+    @Test
+    public void ClickToPayEncrypted() throws ApiException {
+        card.setToken("9113329269393758302");
+        card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
+
+        var response =
+                card
+                        .charge(10)
+                        .withCurrency("EUR")
+                        .withModifier(TransactionModifier.EncryptedMobile)
+                        .withMaskedDataResponse(true)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertFalse(StringUtils.isNullOrEmpty(response.getTransactionId()));
     }
 
     @Test @Ignore

@@ -401,7 +401,7 @@ public class GpApiApmTests extends BaseGpApiTest {
                         .setQuantity(1)
                         .setUnitPrice(new BigDecimal(7))
                         .setUnitCurrency(currency)
-                        .setTaxAmount(new BigDecimal(0.5)));
+                        .setTaxAmount(new BigDecimal("0.5")));
 
         products.add(
                 new Product()
@@ -411,7 +411,7 @@ public class GpApiApmTests extends BaseGpApiTest {
                         .setQuantity(2)
                         .setUnitPrice(new BigDecimal(6))
                         .setUnitCurrency(currency)
-                        .setTaxAmount(new BigDecimal(0.5)));
+                        .setTaxAmount(new BigDecimal("0.5")));
 
         var response =
                 paymentMethod

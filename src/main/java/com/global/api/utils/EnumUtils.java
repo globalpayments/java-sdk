@@ -33,6 +33,8 @@ public class EnumUtils {
                     return EncyptedMobileType.APPLE_PAY.getValue();
                 case GOOGLEPAY:
                     return EncyptedMobileType.GOOGLE_PAY.getValue();
+                case CLICK_TO_PAY:
+                    return EncyptedMobileType.CLICK_TO_PAY.getValue();
             }
         }
         return null;

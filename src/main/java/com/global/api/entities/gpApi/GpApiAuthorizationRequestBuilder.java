@@ -44,12 +44,23 @@ public class GpApiAuthorizationRequestBuilder {
         {
             JsonDoc digitalWallet = new JsonDoc();
             CreditCardData creditCardData = (CreditCardData) builderPaymentMethod;
-            //Digital Wallet
-            if (builderTransactionModifier == TransactionModifier.EncryptedMobile)
-            {
-                digitalWallet
-                        .set("payment_token", JsonDoc.parse(creditCardData.getToken()));
 
+            //Digital Wallet
+            if (builderTransactionModifier == TransactionModifier.EncryptedMobile) {
+                var payment_token = new JsonDoc();
+
+                switch (creditCardData.getMobileType()) {
+                    case CLICK_TO_PAY:
+                        payment_token.set("data", creditCardData.getToken());
+                        break;
+
+                    default:
+                        payment_token = JsonDoc.parse(creditCardData.getToken());
+                        break;
+                }
+
+                digitalWallet
+                        .set("payment_token", payment_token);
             }
             else if (builderTransactionModifier == TransactionModifier.DecryptedMobile)
             {
@@ -444,6 +455,10 @@ public class GpApiAuthorizationRequestBuilder {
                 .set("risk_assessment", builder.getFraudFilterMode() != null ? mapFraudManagement(builder) : null)
                 .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
                         new JsonDoc().set("id", builder.getPaymentLinkId()) : null);
+
+        if (builderPaymentMethod instanceof CreditCardData && (((CreditCardData) builderPaymentMethod).getMobileType() == MobilePaymentMethodType.CLICK_TO_PAY)) {
+            data.set("masked", builder.getMaskedDataResponse() ? "YES" : "NO");
+        }
 
         if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
             data.set("payer", setPayerInformation(builder));

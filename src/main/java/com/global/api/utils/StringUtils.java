@@ -268,4 +268,9 @@ public class StringUtils {
         }
         return padRight(value, length, paddingChar);
     }
+    public static BigDecimal getStringToAmount(String amount,int decimalPlace) {
+        int len=amount.length();
+        String result=amount.substring(0,len-2)+"."+amount.substring(len-2,len);
+        return new BigDecimal(result);
+    }
 }

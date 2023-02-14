@@ -1,5 +1,14 @@
 # Changelog
 
+## v10.1.3 (02/14/2023)
+
+### Enhancements:
+- NTS Phase1 Issues: 
+    - Approved Amount changes for Fuelman and Fleet wide(Issue-10140)
+    - Fleet Data correction for Fuelman and FleetWide(Issue-10143)
+- GP-API : Miscellaneous Tests Update
+- GP-API: Click To Pay
+
 ## v10.1.2 (02/07/2023)
 
 ### Enhancements:

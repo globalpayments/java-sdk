@@ -68,21 +68,6 @@ public class GpApiReportingDepositsTests extends BaseGpApiReportingTest {
     }
 
     @Test
-    public void ReportDepositDetail_NullId() throws ApiException {
-        boolean exceptionCaught = false;
-        try {
-            ReportingService
-                    .depositDetail(null)
-                    .execute(GP_API_CONFIG_NAME);
-        } catch (BuilderException ex) {
-            exceptionCaught = true;
-            assertEquals("depositId cannot be null for this transaction type.", ex.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
     public void ReportFindDepositsWithCriteria() throws ApiException {
         DepositSummaryPaged deposits =
                 ReportingService

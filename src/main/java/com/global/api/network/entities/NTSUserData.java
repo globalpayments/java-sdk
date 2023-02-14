@@ -761,16 +761,16 @@ public class NTSUserData {
                         || builder.getTransactionType().equals(TransactionType.Capture)
                         || builder.getTransactionType().equals(TransactionType.Sale)) && (!messageCode.equals(NtsMessageCode.CreditAdjustment))) {
                     if (fleetData.getDriverId() != null)
-                        sb.append(StringUtils.padRight(fleetData.getDriverId(), 5, '0'));
+                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 5, '0'));
                     if (fleetData.getOdometerReading() != null)
-                        sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 6, '0'));
+                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
                     sb.append(getFleetCorList(builder, cardType));
                     sb.append(getRollUpData(builder, cardType, productData, 4));
 
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                 } else if (builder.getTransactionType().equals(TransactionType.Auth)) {
-                    sb.append(StringUtils.padRight(fleetData.getDriverId(), 5, '0'));
-                    sb.append(StringUtils.padRight(fleetData.getOdometerReading(), 6, '0'));
+                    sb.append(StringUtils.padLeft(fleetData.getDriverId(), 5, '0'));
+                    sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
                 } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
                     sb.append(getFleetCorCreditAdjustment(builder));
                 }

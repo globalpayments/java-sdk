@@ -66,7 +66,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         payLink.setUsageLimit(3);
         payLink.setName("Mobile Bill Payment");
         payLink.isShippable(true);
-        payLink.setShippingAmount(new BigDecimal(1.23));
+        payLink.setShippingAmount(new BigDecimal("1.23"));
         payLink.setExpirationDate(DateTime.now().plusDays(10));
         payLink.setImages(new ArrayList<>());
         payLink.setReturnUrl("https://www.example.com/returnUrl");
@@ -105,8 +105,8 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
             PayLinkService
                     .findPayLink(1, 1)
                     .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                    .where(SearchCriteria.StartDate, this.startDate)
-                    .and(SearchCriteria.EndDate, this.endDate)
+                    .where(SearchCriteria.StartDate, startDate)
+                    .and(SearchCriteria.EndDate, endDate)
                     .and(SearchCriteria.PayLinkStatus, PayLinkStatus.ACTIVE.toString())
                     .execute();
 
@@ -203,7 +203,7 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         payLink.setUsageLimit(1);
         payLink.setName("Mobile Bill Payment");
         payLink.isShippable(true);
-        payLink.setShippingAmount(new BigDecimal(1.23));
+        payLink.setShippingAmount(new BigDecimal("1.23"));
         payLink.setExpirationDate(DateTime.now().plusDays(10));
         payLink.setImages(new ArrayList<>());
         payLink.setReturnUrl("https://www.example.com/returnUrl");
