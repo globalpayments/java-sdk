@@ -136,6 +136,9 @@ public class GeniusConnector extends Gateway implements IPaymentGateway {
 
         if (useToken && builder.getStoredCredential() != null) {
             et.subElement(request, "StoredCardReason", EnumUtils.getMapping(Target.Genius, builder.getStoredCredential().getInitiator()));
+            if (builder.isRequestMultiUseToken()) {
+                et.subElement(request, "StoreCardInVault", "true");
+            }
         }
 
         String response = doTransaction(buildEnvelope(et, transaction));
