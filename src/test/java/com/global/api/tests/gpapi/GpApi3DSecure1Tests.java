@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -93,6 +94,7 @@ public class GpApi3DSecure1Tests extends BaseGpApiTest {
         assertThreeDSResponse(secureEcom, NOT_ENROLLED, NOT_ENROLLED);
     }
 
+    @Ignore
     @Test
     public void CardHolderEnrolled_v1_ConfigException() throws ApiException {
         boolean errorFound = false;

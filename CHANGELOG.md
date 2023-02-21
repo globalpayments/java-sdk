@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.2.0 (02/21/2023)
+
+### Enhancements:
+- NTS Phase1 Issue: 
+    - PAN With Expiry changes for PIN Debit Request Format without Track Data (Issue-10146)    
+- GP-API: add risk assessment feature
+
 ## v10.1.3 (02/14/2023)
 
 ### Enhancements:
@@ -8,6 +15,7 @@
     - Fleet Data correction for Fuelman and FleetWide(Issue-10143)
 - GP-API : Miscellaneous Tests Update
 - GP-API: Click To Pay
+- Add XGP Signature validation
 
 ## v10.1.2 (02/07/2023)
 

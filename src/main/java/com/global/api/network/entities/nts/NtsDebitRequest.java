@@ -104,7 +104,11 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("Address", acceptorConfig.getAddress().toString());
         }
         if (paymentMethod instanceof Debit && paymentMethod instanceof ITrackData) {
-            if (!NtsUtils.isNoTrackEntryMethods(entryMethod)) {
+            if (!NtsUtils.isNoTrackEntryMethods(entryMethod) &&  !(transactionCode.equals(TransactionCode.PreAuthCompletion)
+                    || transactionCode.equals(TransactionCode.PreAuthCancelation)
+                    || transactionCode.equals(TransactionCode.PurchaseReversal)
+                    || transactionCode.equals(TransactionCode.PurchaseCashBackReversal)
+                    || transactionCode.equals(TransactionCode.PurchaseReturnReversal))){
                 ITrackData trackData = (ITrackData) paymentMethod;
                 NtsUtils.log("TrackData 2", trackData.getValue());
                 request.addRange(trackData.getValue(), 40);
@@ -117,10 +121,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 String shortExpiry = expMonth + expYear;
                 String panWithExpiry = accNumber + "=" + shortExpiry;
                 request.addRange(StringUtils.padRight(panWithExpiry, 40, ' '), 40);
-                NtsUtils.log("panWithExpiry", StringUtils.padRight(panWithExpiry, 40, ' '));
-
-                request.addRange(StringUtils.padLeft(" ", 1, ' '), 1);
-                request.addRange(StringUtils.padLeft(" ", 16, ' '), 16);
+                NtsUtils.log("PAN With Expiry", StringUtils.padRight(panWithExpiry, 40, ' '));
             }
         }else  if (paymentMethod instanceof Credit && isReadyLink) {
             if(paymentMethod instanceof CreditCardData ) {

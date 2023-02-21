@@ -13,4 +13,5 @@ public class AccessTokenInfo {
     private String disputeManagementAccountName;
     private String tokenizationAccountName;
     private String transactionProcessingAccountName;
+    private String riskAssessmentAccountName;
 }

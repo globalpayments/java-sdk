@@ -20,87 +20,31 @@ import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 
-public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
-    private AgeIndicator accountAgeIndicator;
-    private DateTime accountChangeDate;
-    private DateTime accountCreateDate;
-    private AgeIndicator accountChangeIndicator;
-    private boolean addressMatchIndicator;
-    private BigDecimal amount;
+public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     private String applicationId;
-    private AuthenticationSource authenticationSource = AuthenticationSource.Browser;
     private AuthenticationRequestType authenticationRequestType = AuthenticationRequestType.PaymentTransaction;
-    private Address billingAddress;
-    private BrowserData browserData;
     @Getter @Setter private MobileData mobileData;
     private ChallengeRequestIndicator challengeRequestIndicator;
-    private String currency;
-    private String customerAccountId;
-    private String customerAuthenticationData;
-    private CustomerAuthenticationMethod customerAuthenticationMethod;
-    private DateTime customerAuthenticationTimestamp;
     private String customerEmail;
     private Boolean decoupledFlowRequest;
     private Integer decoupledFlowTimeout;
     private String decoupledNotificationUrl;
-    private String deliveryEmail;
-    private DeliveryTimeFrame deliveryTimeframe;
     @Getter @Setter private boolean enableExemptionOptimization;
     private String encodedData;
     private JsonDoc ephemeralPublicKey;
-    private Integer giftCardCount;
-    private String giftCardCurrency;
-    private BigDecimal giftCardAmount;
-    private String homeCountryCode;
-    private String homeNumber;
-    @Getter @Setter private String idempotencyKey;
-    private Integer maxNumberOfInstallments;
     private Integer maximumTimeout;
     private MerchantDataCollection merchantData;
     private MessageCategory messageCategory = MessageCategory.PaymentAuthentication;
     private MerchantInitiatedRequestType merchantInitiatedRequestType;
     private MessageVersion messageVersion;
     private MethodUrlCompletion methodUrlCompletion;
-    private String mobileCountryCode;
-    private String mobileNumber;
-    private Integer numberOfAddCardAttemptsInLast24Hours;
-    private Integer numberOfPurchasesInLastSixMonths;
-    private Integer numberOfTransactionsInLast24Hours;
-    private Integer numberOfTransactionsInLastYear;
-    private DateTime orderCreateDate;
-    private String orderId;
-    private OrderTransactionType orderTransactionType;
-    private DateTime passwordChangeDate;
-    private AgeIndicator passwordChangeIndicator;
-    private DateTime paymentAccountCreateDate;
-    private AgeIndicator paymentAgeIndicator;
     private String payerAuthenticationResponse;
-    private IPaymentMethod paymentMethod;
-    private DateTime preOrderAvailabilityDate;
-    private PreOrderIndicator preOrderIndicator;
-    private Boolean previousSuspiciousActivity;
-    private String priorAuthenticationData;
-    private PriorAuthenticationMethod priorAuthenticationMethod;
-    private String priorAuthenticationTransactionId;
-    private DateTime priorAuthenticationTimestamp;
-    private DateTime recurringAuthorizationExpiryDate;
-    private Integer recurringAuthorizationFrequency;
-    private String referenceNumber;
-    private ReorderIndicator reorderIndicator;
     private SdkInterface sdkInterface;
     private String sdkTransactionId;
     private SdkUiType[] sdkUiTypes;
-    private Address shippingAddress;
-    private DateTime shippingAddressCreateDate;
-    private AgeIndicator shippingAddressUsageIndicator;
-    private ShippingMethod shippingMethod;
-    private Boolean shippingNameMatchesCardHolderName;
     private StoredCredential storedCredential;
     private ThreeDSecure threeDSecure;
-    private TransactionType transactionType;
     private Boolean whitelistStatus;
-    private String workCountryCode;
-    private String workNumber;
 
     public AgeIndicator getAccountAgeIndicator() {
         return accountAgeIndicator;
@@ -114,7 +58,7 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     public AgeIndicator getAccountChangeIndicator() {
         return accountChangeIndicator;
     }
-    public boolean isAddressMatchIndicator() {
+    public Boolean isAddressMatchIndicator() {
         return addressMatchIndicator;
     }
     public BigDecimal getAmount() {
@@ -728,6 +672,10 @@ public class Secure3dBuilder extends BaseBuilder<ThreeDSecure> {
     }
 
     public Secure3dBuilder(TransactionType transactionType) {
+        this.authenticationSource = AuthenticationSource.Browser;
+        this.authenticationRequestType = AuthenticationRequestType.PaymentTransaction;
+        this.messageCategory = MessageCategory.PaymentAuthentication;
+
         this.transactionType = transactionType;
     }
 

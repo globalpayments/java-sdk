@@ -171,4 +171,11 @@ public class GenerationUtils {
         UUID uuid = UUID.randomUUID();
         return uuid.toString().toLowerCase();
     }
+
+    // Generate HASH to validate the X-GP-Signature
+    public static String generateXGPSignature(String toHash, String appKey) {
+        String newToHash = new StringBuilder(toHash).append(appKey).toString();
+        return generateHash(newToHash, ShaHashType.SHA512);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.global.api.gateways;
 
 import com.global.api.builders.*;
+import com.global.api.entities.RiskAssessment;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -33,7 +34,7 @@ import java.util.HashMap;
 
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
-public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, IPayFacProvider {
+public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, IPayFacProvider, IFraudCheckService {
     public static final String DATE_PATTERN = "yyyy-MM-dd";
 
     public static final String DATE_TIME_PATTERN   = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";// Standard expected GP API DateTime format
@@ -145,6 +146,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
         if (isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountName())) {
             accessTokenInfo.setDisputeManagementAccountName(response.getDisputeManagementAccountName());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountName())) {
+            accessTokenInfo.setRiskAssessmentAccountName(response.getRiskAssessmentAccountName());
         }
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
@@ -423,6 +428,23 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                 }
             }
         }
+    }
+
+    @Override
+    public <T> RiskAssessment processFraud(FraudBuilder<T> builder) throws ApiException {
+
+        if (isNullOrEmpty(accessToken)) {
+            signIn();
+        }
+
+        GpApiRequest request = GpApiSecureRequestBuilder.buildRequest(builder, this);
+
+        if (request != null) {
+            var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
+            return GpApiMapping.mapRiskAssessmentResponse(response);
+        }
+
+        return null;
     }
     // --------------------------------------------------------------------------------
 

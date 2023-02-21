@@ -55,6 +55,7 @@ public enum TransactionType implements IFlag {
     EmvPdl,
     PosSiteConfiguration,
     PayLinkUpdate,
+    RiskAssess,
     TimeRequest,
     Issue,
     RequestPendingMessages;

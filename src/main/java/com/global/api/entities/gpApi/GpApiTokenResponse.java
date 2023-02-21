@@ -39,6 +39,10 @@ public class GpApiTokenResponse {
         return getAccountName("TRA_");
     }
 
+    public String getRiskAssessmentAccountName() {
+        return getAccountName("RAA_");
+    }
+
     private String getAccountName(String accountPrefix) {
         for (GpApiAccount account : accounts) {
             if (account.getId() != null && account.getId().startsWith(accountPrefix))

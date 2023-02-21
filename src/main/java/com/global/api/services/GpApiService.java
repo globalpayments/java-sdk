@@ -20,6 +20,7 @@ public class GpApiService {
         accessTokenInfo.setDisputeManagementAccountName(data.getDisputeManagementAccountName());
         accessTokenInfo.setTokenizationAccountName(data.getTokenizationAccountName());
         accessTokenInfo.setTransactionProcessingAccountName(data.getTransactionProcessingAccountName());
+        accessTokenInfo.setRiskAssessmentAccountName(data.getRiskAssessmentAccountName());
 
         return accessTokenInfo;
     }

@@ -143,7 +143,7 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                     .set("amount", builder.getAmount())
                     .set("currency", builder.getCurrency())
                     .set("id", orderId)
-                    .set("address_match_indicator", builder.isAddressMatchIndicator() ? "true" : "false")
+                    .set("address_match_indicator", builder.isAddressMatchIndicator() != null && builder.isAddressMatchIndicator() ? "true" : "false")
                     .set("date_time_created", builder.getOrderCreateDate(), "yyyy-MM-dd'T'hh:mm'Z'")
                     .set("gift_card_count", builder.getGiftCardCount())
                     .set("gift_card_currency", builder.getGiftCardCurrency())

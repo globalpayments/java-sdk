@@ -64,6 +64,14 @@ public class ServicesContainer implements IDisposable {
         throw new ConfigurationException("The specified configuration has not been configured for gateway processing.");
     }
 
+    public IFraudCheckService getFraudCheckClient(String configName) throws ApiException {
+        if (configurations.containsKey(configName)) {
+            return configurations.get(configName).getFraudService();
+        }
+
+        throw new ApiException("The specified configuration has not been configured for fraud check.");
+    }
+
     public IOpenBankingProvider getOpenBankingClient(String configName) throws ConfigurationException {
         if (configurations.containsKey(configName))
             return configurations.get(configName).getOpenBankingProvider();

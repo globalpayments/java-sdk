@@ -20,6 +20,16 @@ public class EBTCardData extends EBT implements ICardData {
     private String serialNumber;
     public ManualEntryMethod entryMethod;
 
+    @Override
+    public String getCardType() {
+        return ebtCardType.toString();
+    }
+
+    @Override
+    public void setCardType(String cardType) {
+        ebtCardType = EbtCardType.valueOf(cardType);
+    }
+
     public String getShortExpiry() {
         return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
     }

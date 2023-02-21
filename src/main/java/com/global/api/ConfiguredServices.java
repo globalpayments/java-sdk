@@ -19,6 +19,7 @@ public class ConfiguredServices implements IDisposable {
     private DeviceController deviceController;
     private TableServiceConnector tableServiceConnector;
     private PayrollConnector payrollConnector;
+    @Getter @Setter private IFraudCheckService fraudService;
     private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;

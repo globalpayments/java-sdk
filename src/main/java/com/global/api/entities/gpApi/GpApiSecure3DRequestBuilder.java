@@ -14,6 +14,8 @@ import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
+import java.util.UUID;
+
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
@@ -138,14 +140,14 @@ public class GpApiSecure3DRequestBuilder {
                 if (builderBrowserData != null) {
                     browserData
                             .set("accept_header", builderBrowserData.getAcceptHeader())
-                            .set("color_depth", builderBrowserData.getColorDepth().getValue())
+                            .set("color_depth", getValueIfNotNull(builderBrowserData.getColorDepth()))
                             .set("ip", builderBrowserData.getIpAddress())
                             .set("java_enabled", builderBrowserData.isJavaEnabled())
                             .set("javascript_enabled", builderBrowserData.isJavaScriptEnabled())
                             .set("language", builderBrowserData.getLanguage())
                             .set("screen_height", builderBrowserData.getScreenHeight())
                             .set("screen_width", builderBrowserData.getScreenWidth())
-                            .set("challenge_window_size", builderBrowserData.getChallengeWindowSize().getValue())
+                            .set("challenge_window_size", getValueIfNotNull(builderBrowserData.getChallengeWindowSize()))
                             .set("timezone", builderBrowserData.getTimezone())
                             .set("user_agent", builderBrowserData.getUserAgent());
                 }
@@ -208,6 +210,21 @@ public class GpApiSecure3DRequestBuilder {
                                 .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/result")
                                 .setRequestBody(data.toString());
             }
+            case RiskAssess: {
+                JsonDoc threeDS =
+                        new JsonDoc()
+                                .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                .set("reference", builder.getReferenceNumber() != null ? builder.getReferenceNumber() : UUID.randomUUID().toString())
+                                .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
+                                .set("merchant_contact_url", gateway.getGpApiConfig().getMerchantContactUrl())
+                                .set("order", setOrderParam(builder));
+
+                return
+                        new GpApiRequest()
+                                .setVerb(GpApiRequest.HttpMethod.Post)
+                                .setEndpoint(merchantUrl + "/risk-assessments")
+                                .setRequestBody(threeDS.toString());
+            }
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -250,7 +267,8 @@ public class GpApiSecure3DRequestBuilder {
                         .set("preorder_indicator", getValueIfNotNull(builder.getPreOrderIndicator()))
                         .set("preorder_availability_date", GpApiConnector.getDateTimeIfNotNull((builder.getPreOrderAvailabilityDate())))
                         .set("reorder_indicator", getValueIfNotNull(builder.getReorderIndicator()))
-                        .set("category", builder.getMessageCategory().getValue());
+                        .set("category", getValueIfNotNull(builder.getMessageCategory()))
+                        .set("transaction_type", getValueIfNotNull(builder.getOrderTransactionType()));
 
         Address builderShippingAddress = builder.getShippingAddress();
         if (builderShippingAddress != null) {

@@ -698,6 +698,57 @@ public class GpApiMapping {
         return summary;
     }
 
+    public static RiskAssessment mapRiskAssessmentResponse(String rawResponse) throws GatewayException {
+
+        var riskAssessment = new RiskAssessment();
+
+        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+
+            JsonDoc response = JsonDoc.parse(rawResponse);
+
+            riskAssessment.setId(response.getString("id"));
+            riskAssessment.setTimeCreated(response.getDateTime("time_created"));
+            riskAssessment.setStatus(RiskAssessmentStatus.valueOf(response.getString("status")));
+            riskAssessment.setAmount(StringUtils.toAmount(response.getString("amount")));
+            riskAssessment.setCurrency(response.getString("currency"));
+            riskAssessment.setMerchantId(response.getString("merchant_id"));
+            riskAssessment.setMerchantName(response.getString("merchant_name"));
+            riskAssessment.setAccountId(response.getString("account_id"));
+            riskAssessment.setAccountName(response.getString("account_name"));
+            riskAssessment.setReference(response.getString("reference"));
+            riskAssessment.setResponseCode(response.get("action").getString("result_code"));
+            riskAssessment.setResponseMessage(response.getString("result"));
+
+            if (response.get("payment_method").has("card")) {
+                var paymentMethod = response.get("payment_method").get("card");
+                var card = new Card();
+
+                card.setMaskedNumberLast4(paymentMethod.getString("masked_number_last4"));
+                card.setBrand(paymentMethod.getString("brand"));
+                card.setBrandReference(paymentMethod.getString("brand_reference"));
+                card.setBin(paymentMethod.getString("bin"));
+                card.setBinCountry(paymentMethod.getString("bin_country"));
+                card.setAccountType(paymentMethod.getString("account_type"));
+                card.setIssuer(paymentMethod.getString("issuer"));
+
+                riskAssessment.setCardDetails(card);
+            }
+
+            if (response.has("raw_response")) {
+                var rawResponseField = response.get("raw_response");
+                var thirdPartyResponse = new ThirdPartyResponse();
+
+                thirdPartyResponse.setPlatform(rawResponseField.getString("platform"));
+                thirdPartyResponse.setData(rawResponseField.get("data").toString());
+                riskAssessment.setThirdPartyResponse(thirdPartyResponse);
+            }
+
+            riskAssessment.setActionId(response.get("action").getString("id"));
+        }
+
+        return riskAssessment;
+    }
+
     private static FraudManagementResponse mapFraudManagement(JsonDoc response) {
         var fraudFilterResponse = new FraudManagementResponse();
 
@@ -738,7 +789,6 @@ public class GpApiMapping {
 
         return fraudFilterResponse;
     }
-
 
     public static DccRateData mapDccInfo(JsonDoc response) throws GatewayException {
         JsonDoc currencyConversion = response;
