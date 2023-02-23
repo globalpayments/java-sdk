@@ -244,7 +244,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         et.subElement(emvData, "EMVChipCondition", chipCondition);
                     }
                     if (builder.getPaymentMethod() instanceof IPinProtected && (((IPinProtected)builder.getPaymentMethod()).getPinBlock())!=null) {
-                            et.subElement(emvData, "PINBlock", ((IPinProtected)builder.getPaymentMethod()).getPinBlock());
+                        et.subElement(emvData, "PINBlock", ((IPinProtected)builder.getPaymentMethod()).getPinBlock());
+                    }
+                    if(!block1.has("EMVChipCondition") && !block1.has("PINBlock")) {
+                        block1.remove("EMVData");
                     }
                 }
                 if (paymentType == PaymentMethodType.Debit) {

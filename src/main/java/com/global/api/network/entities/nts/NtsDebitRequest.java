@@ -122,6 +122,8 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 String panWithExpiry = accNumber + "=" + shortExpiry;
                 request.addRange(StringUtils.padRight(panWithExpiry, 40, ' '), 40);
                 NtsUtils.log("PAN With Expiry", StringUtils.padRight(panWithExpiry, 40, ' '));
+                request.addRange(StringUtils.padLeft(" ", 1, ' '), 1);
+                request.addRange(StringUtils.padLeft(" ", 16, ' '), 16);
             }
         }else  if (paymentMethod instanceof Credit && isReadyLink) {
             if(paymentMethod instanceof CreditCardData ) {
@@ -143,7 +145,10 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 request.addRange("0", 1);
 
                 request.addRange("                ", 16);
-            } else {
+            }else if((transactionCode.equals(TransactionCode.Purchase)
+                      || transactionCode.equals(TransactionCode.PurchaseCashBack)
+                      || transactionCode.equals(TransactionCode.PurchaseReturn)
+                      || transactionCode.equals(TransactionCode.PreAuthorizationFunds))){
                 NtsUtils.log("PIN Block Format", "5");
                 request.addRange("5", 1);
 
@@ -187,7 +192,11 @@ public class NtsDebitRequest implements INtsRequestMessage {
         if (paymentMethod instanceof IEncryptable && !isReadyLink) {
             EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
             if (encryptionData != null && !NtsUtils.isNoTrackEntryMethods(entryMethod)
-                    && !builder.getTransactionModifier().equals(TransactionModifier.Offline)) {
+                    && !builder.getTransactionModifier().equals(TransactionModifier.Offline) &&
+                    (transactionCode.equals(TransactionCode.Purchase)
+                            || transactionCode.equals(TransactionCode.PurchaseCashBack)
+                            || transactionCode.equals(TransactionCode.PurchaseReturn)
+                            || transactionCode.equals(TransactionCode.PreAuthorizationFunds))) {
                 NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padLeft(encryptionData.getKsn(), 20, ' '));
                 request.addRange(StringUtils.padLeft(encryptionData.getKsn(), 20, ' '), 20);
             } else {
@@ -206,8 +215,8 @@ public class NtsDebitRequest implements INtsRequestMessage {
 
             NtsUtils.log("Card seq no", tagData.getCardSequenceNumber());
 
-            NtsUtils.log("Unique device id", StringUtils.padLeft(builder.getUniqueDeviceId(), 4, ' '));
-            request.addRange(builder.getUniqueDeviceId(), 4);
+            NtsUtils.log("Unique device id", StringUtils.padLeft(builder.getUniqueDeviceId()!= null ? builder.getUniqueDeviceId() : "" ,4 , ' '));
+            request.addRange(StringUtils.padLeft(builder.getUniqueDeviceId(), 4, ' '), 4);
 
             if (modifier.equals(TransactionModifier.Offline)) { //offline decline indicator
                 NtsUtils.log("offline decline indicator", "Y");

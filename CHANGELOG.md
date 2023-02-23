@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.2.1 (02/23/2023)
+
+### Enhancements:
+- NTS phase1 Issues: 
+    - PAN With Expiry,Pin block and KSN Changes For Pin debit Without Track Format(Issue-10146)
+- Portico: 
+	- EMVDATA tag bug fixes  
+	
 ## v10.2.0 (02/21/2023)
 
 ### Enhancements:

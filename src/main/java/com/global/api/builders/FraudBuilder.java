@@ -27,6 +27,9 @@ public class FraudBuilder<TResult> extends SecureBuilder<TResult> {
         return (TResult) client.processFraud(this);
     }
 
+    /**
+     * @return void
+     */
     @Override
     public void setupValidations() {
         validations
