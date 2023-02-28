@@ -1,5 +1,17 @@
 # Changelog
 
+## v10.2.2 (02/28/2023)
+
+### Enhancements:
+- NTS Phase1 Issue:
+  - Transcation Date and Transaction Time Issues(Issue-10123,10145,10148)
+  - Reversal User data change for wex fleet (Issue-10152)
+  - Approval code changes for reversal request (Issue- 10153)
+  - Formatted tag 22 and 23(Pin Block and KSN) changes (Issue-10141)
+  - GiftCard Entry Method changes Issues(Issues-10150,10155,10156,10157)
+- GP-API: Misc Tests Updated
+- REALEX: OpenBanking_GetBankPaymentById() test updated
+
 ## v10.2.1 (02/23/2023)
 
 ### Enhancements:

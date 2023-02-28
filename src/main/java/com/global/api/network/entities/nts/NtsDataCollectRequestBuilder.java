@@ -13,6 +13,8 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
     @Override
@@ -44,8 +46,9 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
             NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeWithoutTrackDataAttended);
         } else if (paymentMethod instanceof GiftCard) {
-            request.addRange(NTSEntryMethod.MagneticStripeTrack1DataAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack1DataAttended);
+            GiftCard card = (GiftCard) paymentMethod;
+            request.addRange(card.getEntryMethod(), 1);
+            NtsUtils.log("Entry Method", card.getEntryMethod());
         }
 
         // Card Type
@@ -118,8 +121,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             request.addRange(transactionReference.getAuthCode(), 2);
             NtsUtils.log("AuthorizationResponseCode", transactionReference.getAuthCode());
 
-            if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.CreditAdjustment ||
-                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitCreditAdjustment ||
+            if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitCreditAdjustment ||
                     ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.ForceCreditAdjustment ||
                     ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitForceCreditAdjustment) {
                 request.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
@@ -127,6 +129,15 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
 
                 request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
                 NtsUtils.log("OriginalTransactionTime", ntsRequestMessageHeader.getTransactionTime());
+            } else if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.CreditAdjustment) {
+                String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
+                String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
+
+                request.addRange(transactionDate, 4);
+                NtsUtils.log("OriginalTransactionDate", transactionDate);
+
+                request.addRange(transactionTime, 6);
+                NtsUtils.log("OriginalTransactionTime", transactionTime);
             } else {
                 request.addRange(transactionReference.getOriginalTransactionDate(), 4);
                 NtsUtils.log("OriginalTransactionDate", transactionReference.getOriginalTransactionDate());

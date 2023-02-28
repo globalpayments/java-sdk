@@ -151,8 +151,10 @@ public class NtsEbtRequest implements INtsRequestMessage {
                 // PIN Block
                 if (paymentMethod instanceof IPinProtected) {
                     String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
-                    NtsUtils.log("PIN Block", pinBlock);
-                    request.addRange(pinBlock, 16);
+                    if(pinBlock != null) {
+                        NtsUtils.log("PIN Block", pinBlock.substring(0, 16));
+                        request.addRange(pinBlock, 16);
+                    }
                 }
             }
 
@@ -198,10 +200,11 @@ public class NtsEbtRequest implements INtsRequestMessage {
                 NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight("", 20, ' '));
                 request.addRange(StringUtils.padRight("", 20, ' '), 20);
             } else {
-                if (paymentMethod instanceof IEncryptable) {
-                    EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
-                    NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight(encryptionData.getKsn(), 20, ' '));
-                    request.addRange(StringUtils.padRight(encryptionData.getKsn(), 20, ' '), 20);
+                if (paymentMethod instanceof IPinProtected) {
+                    //EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+                    String pinBlock = ((IPinProtected)paymentMethod).getPinBlock();
+                    NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight(pinBlock.substring(16), 20, ' '));
+                    request.addRange(StringUtils.padRight(pinBlock.substring(16), 20, ' '), 20);
                 }
             }
         }

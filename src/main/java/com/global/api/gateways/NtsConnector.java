@@ -145,6 +145,8 @@ public class NtsConnector extends GatewayConnectorConfig {
             reference.setOriginalAmount(authBuilder.getAmount());
             reference.setOriginalPaymentMethod(authBuilder.getPaymentMethod());
             reference.setPaymentMethodType(authBuilder.getPaymentMethod().getPaymentMethodType());
+            reference.setOriginalTransactionDate(authBuilder.getNtsRequestMessageHeader().getTransactionDate());
+            reference.setOriginalTransactionTime(authBuilder.getNtsRequestMessageHeader().getTransactionTime());
         }
         reference.setBankcardData(userData);
         return reference;

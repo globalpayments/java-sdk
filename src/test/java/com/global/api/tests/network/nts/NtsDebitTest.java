@@ -104,8 +104,8 @@ public class NtsDebitTest {
         track.setValue(";720002123456789=2512120000000000001?9  ");
          track.setEntryMethod(EntryMethod.Swipe); //For EMV test cases
 //        track.setEntryMethod(EntryMethod.Magnetic_stripe_track2_data_unattended_AFD);
-        track.setPinBlock("78FBB9DAEEB14E5A");
-        track.setEncryptionData(encryptionData);
+        track.setPinBlock("78FBB9DAEEB14E5AA504010005E0003C    ");
+        //track.setEncryptionData(encryptionData);
         track.setCardType("PinDebit");
     }
 
@@ -779,12 +779,8 @@ public class NtsDebitTest {
         assertNotNull(reversalResponse);
         assertEquals("00", reversalResponse.getResponseCode());
 
-        String transactionDate = reversalResponse.getNtsResponse().getNtsResponseMessageHeader().getTransactionDate();
-        String transactionTime = reversalResponse.getNtsResponse().getNtsResponseMessageHeader().getTransactionTime();
 
         Transaction refund = reversalResponse.reverse(new BigDecimal(10))
-                .withTransactionDate(transactionDate)
-                .withTransactionTime(transactionTime)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withCurrency("USD")
                 .execute();
@@ -805,12 +801,8 @@ public class NtsDebitTest {
 
         assertEquals("00", reversalResponse.getResponseCode());
 
-        String transactionDate = reversalResponse.getNtsResponse().getNtsResponseMessageHeader().getTransactionDate();
-        String transactionTime = reversalResponse.getNtsResponse().getNtsResponseMessageHeader().getTransactionTime();
 
         Transaction reversal = reversalResponse.reverse(new BigDecimal(10))
-                .withTransactionDate(transactionDate)
-                .withTransactionTime(transactionTime)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSettlementAmount(new BigDecimal(3))
                 .withCurrency("USD")

@@ -91,12 +91,17 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
 
 
         // APPROVAL CODE
-        request.addRange(transactionReference.getApprovalCode(), 6);
-        NtsUtils.log("APPROVAL CODE", transactionReference.getApprovalCode());
+        if(transactionType.equals(TransactionType.Reversal)) {
+            request.addRange(StringUtils.padLeft(" ", 6, ' '),6);
+            NtsUtils.log("APPROVAL CODE", "");
+        } else{
+                request.addRange(transactionReference.getApprovalCode(), 6);
+                NtsUtils.log("APPROVAL CODE", transactionReference.getApprovalCode());
+            }
 
         // FILLER
         request.addRange(" ", 1);
-        NtsUtils.log("Added filter", "");
+        NtsUtils.log("Added filler", "");
 
         // AMOUNT
         NtsUtils.log("Transaction Amount 1", StringUtils.toNumeric(builder.getAmount(), 7));
@@ -166,7 +171,7 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             // USER DATA
             request.addRange(StringUtils.padLeft(userData, userData.length(), ' '), userData.length());
             NtsUtils.log("User data", userData);
-        } else if (transactionType.equals(TransactionType.Reversal)
+        } else if (builder.getTagData() != null && transactionType.equals(TransactionType.Reversal)
                 && (cardType == NTSCardTypes.WexFleet
                 || cardType == NTSCardTypes.WexProprietaryFleet)) {
             // Extended user data flag

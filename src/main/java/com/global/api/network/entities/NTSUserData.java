@@ -246,15 +246,15 @@ public class NTSUserData {
                     String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
                     if (!StringUtils.isNullOrEmpty(pinBlock)) {
                         sb.append(UserDataTag.EmvPinBlock.getValue()).append("\\"); // 22 Emv Pin Block
-                        sb.append(pinBlock).append("\\");
+                        sb.append(pinBlock.substring(0,16)).append("\\");
                         totalNoOfTags++; // Increment the counter if tag is used.
                     }
                 }
-                if (paymentMethod instanceof IEncryptable) {
-                    EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
-                    if (encryptionData != null) {
+                if (paymentMethod instanceof IPinProtected) {
+                    String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
+                    if (pinBlock != null) {
                         sb.append(UserDataTag.EmvKsn.getValue()).append("\\"); // 23 Emv Ksn // Only for EMV
-                        sb.append(StringUtils.padLeft(encryptionData.getKsn(), 20, ' ')).append("\\");
+                        sb.append(StringUtils.padLeft(pinBlock.substring(16), 20, ' ')).append("\\");
                         totalNoOfTags++; // Increment the counter if tag is used.
                     }
                 }

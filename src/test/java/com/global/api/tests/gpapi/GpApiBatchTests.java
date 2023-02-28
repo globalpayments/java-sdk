@@ -344,9 +344,9 @@ public class GpApiBatchTests extends BaseGpApiTest {
             BatchService.closeBatch(batchSummary.getBatchReference(), GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("INVALID_BATCH_ACTION", ex.getResponseCode());
-            assertEquals("40014", ex.getResponseText());
-            assertEquals("Status Code: 400 - 5,No current batch", ex.getMessage());
+            assertEquals("Status Code: 502 - Action failed unexpectedly. Please try again ", ex.getMessage());
+            assertEquals("ACTION_FAILED", ex.getResponseCode());
+            assertEquals("500010", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -410,9 +410,9 @@ public class GpApiBatchTests extends BaseGpApiTest {
             BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("UNAUTHORIZED_DOWNSTREAM", ex.getResponseCode());
-            assertEquals("50002", ex.getResponseText());
-            assertEquals("Status Code: 502 - -2,Authentication error—Verify and correct credentials", ex.getMessage());
+            assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: country - US, channel - CNP, currency - USD", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40041", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }

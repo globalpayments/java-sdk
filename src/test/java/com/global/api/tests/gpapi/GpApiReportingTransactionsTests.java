@@ -276,7 +276,7 @@ public class GpApiReportingTransactionsTests extends BaseGpApiReportingTest {
 
     @Test
     public void ReportFindTransactionsPaged_By_WrongCurrency() throws ApiException {
-        String currency = "aUd"; //This is case-sensitive
+        String currency = "AAA";
 
         TransactionSummaryPaged transactions =
                 ReportingService

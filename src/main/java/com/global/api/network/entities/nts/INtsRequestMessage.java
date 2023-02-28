@@ -3,6 +3,7 @@ package com.global.api.network.entities.nts;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.network.entities.NtsObjectParam;
@@ -13,6 +14,8 @@ import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import lombok.NonNull;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 public interface INtsRequestMessage {
     Integer MESSAGE_TYPE = 9;
@@ -108,7 +111,18 @@ public interface INtsRequestMessage {
             headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
         } else if (builder instanceof ManagementBuilder) {
             ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-            if (transactionReference != null &&
+            if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) && manageBuilder.getTransactionType() == TransactionType.Void) {
+                // Transaction Date
+                String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
+                String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
+
+                NtsUtils.log("Transaction Date",transactionDate );
+                headerRequest.addRange(transactionDate, 4);
+
+                // Transaction Time
+                NtsUtils.log("Transaction Time",transactionTime );
+                headerRequest.addRange(transactionTime, 6);
+            }else if (transactionReference != null &&
                     (manageBuilder.getTransactionType() == TransactionType.Reversal
                     || manageBuilder.getTransactionType() == TransactionType.Refund
                     || manageBuilder.getTransactionType() == TransactionType.Void

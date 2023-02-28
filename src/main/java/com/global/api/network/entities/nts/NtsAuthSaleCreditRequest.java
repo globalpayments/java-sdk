@@ -50,8 +50,9 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 NtsUtils.log("Entry Method", NTSEntryMethod.ManualAttended);
             }
         } else if (paymentMethod instanceof GiftCard){
-            request.addRange(NTSEntryMethod.MagneticStripeTrack2DataAttended.getValue(), 1);
-            NtsUtils.log("Entry Method", NTSEntryMethod.MagneticStripeTrack2DataAttended);
+            GiftCard card = (GiftCard) paymentMethod;
+            request.addRange(card.getEntryMethod(), 1);
+            NtsUtils.log("Entry Method", card.getEntryMethod());
         }
 
         // Card Type

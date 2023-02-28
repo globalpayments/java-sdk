@@ -22,7 +22,10 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_1;
 import static org.junit.Assert.*;
@@ -102,13 +105,13 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
         browserData.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36");
 
         PayLinkSummaryPaged response =
-            PayLinkService
-                    .findPayLink(1, 1)
-                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                    .where(SearchCriteria.StartDate, startDate)
-                    .and(SearchCriteria.EndDate, endDate)
-                    .and(SearchCriteria.PayLinkStatus, PayLinkStatus.ACTIVE.toString())
-                    .execute();
+                PayLinkService
+                        .findPayLink(1, 1)
+                        .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.PayLinkStatus, PayLinkStatus.ACTIVE.toString())
+                        .execute();
 
         if (response.getResults().size() >= 1) {
             payLinkId = response.getResults().get(0).getId();
@@ -184,8 +187,8 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
                 PayLinkService
                         .findPayLink(1, 10)
                         .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                        .where(SearchCriteria.StartDate, DateTime.now().minusYears(1).toDate())
-                        .and(SearchCriteria.EndDate, DateTime.now().minusYears(1).toDate())
+                        .where(SearchCriteria.StartDate, DateTime.now().minusMonths(24).toDate())
+                        .and(SearchCriteria.EndDate, DateTime.now().minusMonths(22).toDate())
                         .execute();
 
         assertNotNull(response);
@@ -874,12 +877,12 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
     public void FindPayLinkByStatus() throws ApiException {
         PayLinkSummaryPaged response =
                 PayLinkService
-                    .findPayLink(1, 10)
-                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                    .where(SearchCriteria.StartDate, startDate)
-                    .and(SearchCriteria.EndDate, endDate)
-                    .and(SearchCriteria.PayLinkStatus, PayLinkStatus.EXPIRED.toString())
-                    .execute();
+                        .findPayLink(1, 10)
+                        .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.PayLinkStatus, PayLinkStatus.EXPIRED.toString())
+                        .execute();
 
         assertNotNull(response);
         assertNotNull(response.getResults());
@@ -936,12 +939,12 @@ public class GpApiPayLinkTests extends BaseGpApiTest {
 
         PayLinkSummaryPaged response =
                 PayLinkService
-                    .findPayLink(1, 10)
-                    .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                    .where(SearchCriteria.StartDate, startDate)
-                    .and(SearchCriteria.EndDate, endDate)
-                    .and(SearchCriteria.ExpirationDate, date)
-                    .execute();
+                        .findPayLink(1, 10)
+                        .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(SearchCriteria.ExpirationDate, date)
+                        .execute();
 
         assertNotNull(response);
         assertNotNull(response.getResults());

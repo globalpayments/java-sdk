@@ -154,9 +154,10 @@ public class NtsDebitRequest implements INtsRequestMessage {
 
                 if (paymentMethod instanceof IPinProtected) {
                     String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
-                    NtsUtils.log("PIN Block", pinBlock);
-                    request.addRange(pinBlock, 16);
-
+                    if(pinBlock != null) {
+                        NtsUtils.log("PIN Block", pinBlock.substring(0, 16));
+                        request.addRange(pinBlock, 16);
+                    }
                 }
             }
         }
@@ -189,16 +190,16 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("Transaction Amount 2", "0000000");
             request.addRange("0000000", 7);
         }
-        if (paymentMethod instanceof IEncryptable && !isReadyLink) {
-            EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
-            if (encryptionData != null && !NtsUtils.isNoTrackEntryMethods(entryMethod)
+        if (paymentMethod instanceof IPinProtected && !isReadyLink) {
+            String pinBlock = ((IPinProtected)paymentMethod).getPinBlock();
+            if (pinBlock != null && !NtsUtils.isNoTrackEntryMethods(entryMethod)
                     && !builder.getTransactionModifier().equals(TransactionModifier.Offline) &&
-                    (transactionCode.equals(TransactionCode.Purchase)
-                            || transactionCode.equals(TransactionCode.PurchaseCashBack)
-                            || transactionCode.equals(TransactionCode.PurchaseReturn)
-                            || transactionCode.equals(TransactionCode.PreAuthorizationFunds))) {
-                NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padLeft(encryptionData.getKsn(), 20, ' '));
-                request.addRange(StringUtils.padLeft(encryptionData.getKsn(), 20, ' '), 20);
+                     (transactionCode.equals(TransactionCode.Purchase)
+                    || transactionCode.equals(TransactionCode.PurchaseCashBack)
+                    || transactionCode.equals(TransactionCode.PurchaseReturn)
+                    || transactionCode.equals(TransactionCode.PreAuthorizationFunds))) {
+                NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight(pinBlock.substring(16), 20, ' '));
+                request.addRange(StringUtils.padRight(pinBlock.substring(16), 20, ' '), 20);
             } else {
                 request.addRange("                    ", 20);
             }

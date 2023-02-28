@@ -69,7 +69,7 @@ public class OpenBankingTests {
 
     @Test
     public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
-        for(ShaHashType shaHashType : ShaHashType.values()) {
+        for (ShaHashType shaHashType : ShaHashType.values()) {
             var config = new GpEcomConfig();
             config.setMerchantId("openbankingsandbox");
             config.setSharedSecret("sharedsecret");
@@ -196,9 +196,9 @@ public class OpenBankingTests {
 
     @Test
     public void OpenBanking_GetBankPaymentById() throws ApiException {
-        String obTransId = "DuVGjawYd1m8UkbZyi";
+        String obTransId = "7f2eHrHPkLxyq0zYXC";
 
-        TransactionSummaryPaged detail  =
+        TransactionSummaryPaged detail =
                 ReportingService
                         .bankPaymentDetail(obTransId, 1, 10)
                         .execute();

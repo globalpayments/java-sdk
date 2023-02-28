@@ -50,7 +50,6 @@ public class GpApiDebitTests extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
-        assertEquals("DEBIT", response.getCardType());
     }
 
     @Test

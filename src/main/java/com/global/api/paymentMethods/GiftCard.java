@@ -7,6 +7,8 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.Transaction;
 import com.global.api.utils.CardUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.regex.Matcher;
@@ -24,6 +26,10 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     private TrackNumber trackNumber;
     private String value;
     private String valueType;
+    @Getter
+    @Setter
+    private String entryMethod;
+
 
     public String getAlias() {
         return alias;

@@ -131,11 +131,11 @@ public class NtsTestCards {
     public static EBTTrackData EBTTrack2(EntryMethod entryMethod, EbtCardType ebtCardType){
         EBTTrackData cashTrack = new EBTTrackData(ebtCardType);
         cashTrack.setValue(";6004862001012758000=491200000000?");
-        cashTrack.setPinBlock("1109D2058244FBC3");
+        cashTrack.setPinBlock("1109D2058244FBC3A50401000440053F");
         cashTrack.setEntryMethod(entryMethod);
         EncryptionData data = EncryptionData.version2("/wECAQEEAoFGAgEH4gcOTDT6jRZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0m+/d4SO9TEshhRGUUQzVBrBvP/Os1qFx+6zdQp1ejjUCoDmzoUMbil9UG73zBxxTOy25f3Px0p8joyCh8PEWhADz1BkROJT3q6JnocQE49yYBHuFK0obm5kqUcYPfTY09vPOpmN+wp45gJY9PhkJF5XvPsMlcxX4/JhtCshegz4AYrcU/sFnI+nDwhy295BdOkVN1rn00jwCbRcE900kj3UsFfyc", "2");
         data.setKsn("A50401000440053F    ");
-        cashTrack.setEncryptionData(data);
+       // cashTrack.setEncryptionData(data);
         return cashTrack;
     }
 
