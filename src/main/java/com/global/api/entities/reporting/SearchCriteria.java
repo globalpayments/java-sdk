@@ -51,6 +51,7 @@ public enum SearchCriteria {
     PaymentMethodName,
     PaymentMethodUsageMode,
     PaymentMethodMode,
+    PaymentProvider,
     PayLinkId,
     PayLinkStatus,
     ReturnPII,

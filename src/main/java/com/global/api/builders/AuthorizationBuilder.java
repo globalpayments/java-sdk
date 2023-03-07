@@ -6,6 +6,7 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
 
@@ -897,6 +898,15 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         super.execute(configName);
 
         IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
+
+        if (client.supportsOpenBanking() && paymentMethod instanceof BankPayment) {
+            IOpenBankingProvider obClient = ServicesContainer.getInstance().getOpenBankingClient(configName);
+
+            if (obClient != null && obClient != client) {
+                return obClient.processOpenBanking(this);
+            }
+        }
+
         return client.processAuthorization(this);
     }
 

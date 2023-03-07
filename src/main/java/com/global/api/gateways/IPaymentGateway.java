@@ -12,4 +12,5 @@ public interface IPaymentGateway {
     String serializeRequest(AuthorizationBuilder builder) throws ApiException;
     NetworkMessageHeader sendKeepAlive() throws ApiException;
     boolean supportsHostedPayments();
+    boolean supportsOpenBanking();
 }

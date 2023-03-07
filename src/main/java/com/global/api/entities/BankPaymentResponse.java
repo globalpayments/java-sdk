@@ -14,4 +14,6 @@ public class BankPaymentResponse {
     @Getter @Setter private String accountName;
     @Getter @Setter private String accountNumber;
     @Getter @Setter private String iban;
+    @Getter @Setter private String remittanceReferenceValue;
+    @Getter @Setter private String remittanceReferenceType;
 }

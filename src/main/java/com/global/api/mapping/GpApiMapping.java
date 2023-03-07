@@ -155,11 +155,41 @@ public class GpApiMapping {
                     if (card.has("provider")) {
                         transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
                     }
-                    transaction.setPaymentMethodType(getPaymentMethodType(json) != null ? getPaymentMethodType(json) : transaction.getPaymentMethodType());
-                    transaction.setDccRateData(mapDccInfo(json));
+                }
+                if (    paymentMethod.has("apm") &&
+                        paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
+                    transaction.setPaymentMethodType(PaymentMethodType.BankPayment);
+
+                    var obResponse = new BankPaymentResponse();
+
+                    obResponse.setRedirectUrl(paymentMethod.getString("redirect_url") != null ? paymentMethod.getString("redirect_url") : null);
+                    obResponse.setPaymentStatus(paymentMethod.getString("message") != null ? paymentMethod.getString("message") : null);
+
+                    if (paymentMethod.has("bank_transfer")) {
+                        JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
+
+                        obResponse.setAccountNumber(bankTransfer.getString("account_number") != null ? bankTransfer.getString("account_number") : null);
+                        obResponse.setIban(bankTransfer.getString("iban") != null ? bankTransfer.getString("iban") : null);
+
+                        if(bankTransfer.has("bank")) {
+                            JsonDoc bank = bankTransfer.get("bank");
+
+                            obResponse.setSortCode(bank.getString("code") != null ? bank.getString("code") : null);
+                            obResponse.setAccountName(bank.getString("name") != null ? bank.getString("name") : null);
+                        }
+                    }
+
+                    transaction.setBankPaymentResponse(obResponse);
+                }
+                else if (paymentMethod.has("bank_transfer")) {
+                    transaction.setPaymentMethodType(PaymentMethodType.ACH);
+                }
+                else if (paymentMethod.has("apm")) {
+                    transaction.setPaymentMethodType(PaymentMethodType.APM);
                 }
             }
 
+            transaction.setDccRateData(mapDccInfo(json));
             transaction.setFraudFilterResponse(json.has("risk_assessment") ? mapFraudManagement(json) : null);
         }
 
@@ -316,19 +346,49 @@ public class GpApiMapping {
                 JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
                 summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
                 summary.setPaymentType(PaymentMethodName.DigitalWallet.getValue(Target.GP_API));
-            } else if (paymentMethod.has("bank_transfer")) {
+            } else if (     paymentMethod.has("bank_transfer") &&
+                            paymentMethod.has("apm") &&
+                            !paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
                 JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
                 summary.setAccountNumberLast4(bankTransfer.getString("masked_account_number_last4"));
                 summary.setAccountType(bankTransfer.getString("account_type"));
                 summary.setPaymentType(PaymentMethodName.BankTransfer.getValue(Target.GP_API));
-            } else if (paymentMethod.has("apm")) {
-                JsonDoc apm = paymentMethod.get("apm");
-                AlternativePaymentResponse alternativePaymentResponse = new AlternativePaymentResponse();
-                alternativePaymentResponse.setRedirectUrl(apm.getString("redirect_url"));
-                alternativePaymentResponse.setProviderName(apm.getString("provider"));
-                alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
-                summary.setAlternativePaymentResponse(alternativePaymentResponse);
-                summary.setPaymentType(PaymentMethodName.APM.getValue(Target.GP_API));
+                summary.setAccountType(bankTransfer.getString("account_type"));
+            } else if(paymentMethod.has("apm")) {
+                if (paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
+
+                    summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BankPayment));
+                    var bankPaymentResponse = new BankPaymentResponse();
+
+                    if (paymentMethod.has("bank_transfer")) {
+                        JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
+
+                        bankPaymentResponse.setIban(bankTransfer.getString("iban"));
+                        bankPaymentResponse.setAccountNumber(bankTransfer.getString("account_number"));
+
+                        if (bankTransfer.has("bank")) {
+                            bankPaymentResponse.setAccountName(bankTransfer.get("bank").getString("name"));
+                            bankPaymentResponse.setSortCode(bankTransfer.get("bank").getString("code"));
+                        }
+
+                        if (bankTransfer.has("remittance_reference")) {
+                            bankPaymentResponse.setRemittanceReferenceValue(bankTransfer.get("remittance_reference").getString("value"));
+                            bankPaymentResponse.setRemittanceReferenceType(bankTransfer.get("remittance_reference").getString("type"));
+                        }
+                    }
+
+                    summary.setBankPaymentResponse(bankPaymentResponse);
+                }
+                else {
+                    JsonDoc apm = paymentMethod.get("apm");
+                    var alternativePaymentResponse = new AlternativePaymentResponse();
+
+                    alternativePaymentResponse.setRedirectUrl(apm.getString("redirect_url"));
+                    alternativePaymentResponse.setProviderName(apm.getString("provider"));
+                    alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
+                    summary.setAlternativePaymentResponse(alternativePaymentResponse);
+                    summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.APM));
+                }
             } else if (paymentMethod.has("bnpl")) {
                 JsonDoc bnpl = paymentMethod.get("bnpl");
 

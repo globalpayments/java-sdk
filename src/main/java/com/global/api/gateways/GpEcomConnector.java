@@ -40,9 +40,20 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     @Getter @Setter private ShaHashType shaHashType;
 
     public Secure3dVersion getVersion() { return Secure3dVersion.ONE; }
+
+    @Override
     public boolean supportsRetrieval() { return false; }
+
+    @Override
     public boolean supportsUpdatePaymentDetails() { return true; }
+
+    @Override
     public boolean supportsHostedPayments() { return true; }
+
+    @Override
+    public boolean supportsOpenBanking() {
+        return true;
+    }
 
     public Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException {
         ElementTree et = new ElementTree();
@@ -989,6 +1000,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 TransactionSummary summary = new TransactionSummary();
                 summary.setTransactionId(response.getString("pasref"));
                 summary.setClientTransactionId(response.getString("orderid"));
+                summary.setOrderId(response.getString("orderid"));
                 summary.setAuthCode(response.getString("authcode"));
                 summary.setMaskedCardNumber(response.getString("cardnumber"));
                 summary.setAvsResponseCode(response.getString("avspostcoderesponse"));
@@ -996,6 +1008,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 summary.setGatewayResponseCode(response.getString("result"));
                 summary.setGatewayResponseMessage(response.getString("message"));
                 summary.setBatchId(response.getString("batchid"));
+                summary.setSchemeReferenceData(response.getString("srd"));
 
                 if(response.has("fraudresponse")) {
                     Element fraud = response.get("fraudresponse");

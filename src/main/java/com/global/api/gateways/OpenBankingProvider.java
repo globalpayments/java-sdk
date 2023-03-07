@@ -43,7 +43,7 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
         headers.put(org.apache.http.HttpHeaders.ACCEPT, "application/json");
     }
 
-    public Transaction processOpenBanking(BankPaymentBuilder builder) throws GatewayException {
+    public Transaction processOpenBanking(AuthorizationBuilder builder) throws GatewayException {
         String timestamp = builder.getTimestamp() != null ? builder.getTimestamp() : GenerationUtils.generateTimestamp();
         String orderId = builder.getOrderId() != null ? builder.getOrderId() : GenerationUtils.generateOrderId();
         // TODO: Check this convertion
@@ -219,7 +219,7 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
         return response.getRawResponse();
     }
 
-    public String serializeRequest(BankPaymentBuilder builder) throws UnsupportedTransactionException {
+    public String serializeRequest(AuthorizationBuilder builder) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }
 

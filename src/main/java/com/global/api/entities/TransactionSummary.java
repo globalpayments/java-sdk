@@ -128,10 +128,4 @@ public class TransactionSummary {
     private String paymentPurposeCode;
     private String verificationCode;
     private BigDecimal batchAmount;
-	public String getOrderId() {
-	    return this.clientTransactionId;
-    }
-    public void setOrderId(String value) {
-		this.clientTransactionId = value;
-	}
 }

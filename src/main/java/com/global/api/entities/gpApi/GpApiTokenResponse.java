@@ -12,6 +12,12 @@ import java.util.List;
 @Getter
 @Setter
 public class GpApiTokenResponse {
+    final static String DATA_ACCOUNT_NAME_PREFIX = "DAA_";
+    final static String DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX = "DIA_";
+    final static String TOKENIZATION_ACCOUNT_NAME_PREFIX = "TKA_";
+    final static String TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX = "TRA_";
+    final static String RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX = "RAA_";
+
     private String token;
     private String type;
     private String appId;
@@ -24,23 +30,51 @@ public class GpApiTokenResponse {
     private GpApiAccount[] accounts;
 
     public String getDataAccountName() {
-        return getAccountName("DAA_");
+        return getAccountName(DATA_ACCOUNT_NAME_PREFIX);
     }
 
     public String getDisputeManagementAccountName() {
-        return getAccountName("DIA_");
+        return getAccountName(DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX);
     }
 
     public String getTokenizationAccountName() {
-        return getAccountName("TKA_");
+        return getAccountName(TOKENIZATION_ACCOUNT_NAME_PREFIX);
     }
 
     public String getTransactionProcessingAccountName() {
-        return getAccountName("TRA_");
+        return getAccountName(TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX);
     }
 
     public String getRiskAssessmentAccountName() {
-        return getAccountName("RAA_");
+        return getAccountName(RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getDataAccountID() {
+            return getAccountID(DATA_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getDisputeManagementAccountID() {
+            return getAccountID(DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getTokenizationAccountID(){
+            return getAccountID(TOKENIZATION_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getTransactionProcessingAccountID(){
+            return getAccountID(TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getRiskAssessmentAccountID(){
+            return getAccountID(RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
+    }
+
+    private String getAccountID(String accountPrefix) {
+        for (GpApiAccount account : accounts) {
+            if (account.getId() != null && account.getId().startsWith(accountPrefix))
+                return account.getId();
+        }
+        return null;
     }
 
     private String getAccountName(String accountPrefix) {

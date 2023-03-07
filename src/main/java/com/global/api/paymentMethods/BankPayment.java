@@ -1,15 +1,16 @@
 package com.global.api.paymentMethods;
 
-import com.global.api.builders.BankPaymentBuilder;
+import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.enums.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Accessors(chain = true)
-public class BankPayment implements IPaymentMethod {
+public class BankPayment implements IPaymentMethod, IChargable, INotificationData {
 
     // Merchant/Individual Name
     @Getter @Setter private String accountName;
@@ -30,12 +31,20 @@ public class BankPayment implements IPaymentMethod {
 
     @Getter @Setter private String statusUpdateUrl;
 
+    @Getter @Setter private String cancelUrl;
+
     @Getter @Setter private BankPaymentType BankPaymentType;
 
+    @Getter @Setter private List<String> countries;
+
+    public AuthorizationBuilder charge() {
+        return charge(null);
+    }
+
     // Mandatory request used to initiate an Open Banking transaction
-    public BankPaymentBuilder charge(BigDecimal amount) {
+    public AuthorizationBuilder charge(BigDecimal amount) {
         return
-                new BankPaymentBuilder(TransactionType.Sale, this)
+                new AuthorizationBuilder(TransactionType.Sale, this)
                         .withModifier(TransactionModifier.BankPayment)
                         .withAmount(amount);
     }

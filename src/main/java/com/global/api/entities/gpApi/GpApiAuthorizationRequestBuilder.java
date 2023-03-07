@@ -5,18 +5,16 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
+import com.global.api.gateways.OpenBankingProvider;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.EmvUtils;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
-import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 import static com.global.api.entities.enums.TransactionType.Refund;
 import static com.global.api.entities.gpApi.GpApiManagementRequestBuilder.getDccId;
@@ -123,6 +121,7 @@ public class GpApiAuthorizationRequestBuilder {
                 if (builderTransactionType == TransactionType.Tokenize) {
                     JsonDoc tokenizationData = new JsonDoc();
                     tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
+                    tokenizationData.set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountID());
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("card", card);
@@ -145,6 +144,7 @@ public class GpApiAuthorizationRequestBuilder {
                     var requestData =
                             new JsonDoc()
                                     .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                    .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                                     .set("channel", gateway.getGpApiConfig().getChannel())
                                     .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
                                     .set("amount", StringUtils.toNumeric(builder.getAmount()))
@@ -162,6 +162,7 @@ public class GpApiAuthorizationRequestBuilder {
                     if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
                         JsonDoc tokenizationData = new JsonDoc();
                         tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
+                        tokenizationData.set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountID());
                         tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                         tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                         tokenizationData.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
@@ -178,6 +179,7 @@ public class GpApiAuthorizationRequestBuilder {
                         JsonDoc verificationData =
                                 new JsonDoc()
                                         .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                        .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                                         .set("channel", gateway.getGpApiConfig().getChannel())
                                         .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId())
                                         .set("currency", builder.getCurrency())
@@ -219,6 +221,7 @@ public class GpApiAuthorizationRequestBuilder {
 
                     JsonDoc verificationData = new JsonDoc()
                             .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                            .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                             .set("channel", gateway.getGpApiConfig().getChannel())
                             .set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? UUID.randomUUID().toString() : builder.getClientTransactionId())
                             .set("currency", builder.getCurrency())
@@ -349,6 +352,42 @@ public class GpApiAuthorizationRequestBuilder {
             paymentMethod.set("apm", apm);
         }
 
+        if (builderPaymentMethod instanceof BankPayment) {
+            var bankpaymentMethod = (BankPayment) builderPaymentMethod;
+
+            JsonDoc apm =
+                    new JsonDoc()
+                            .set("provider", PaymentProvider.OPEN_BANKING.toString())
+                            .set("countries", bankpaymentMethod.getCountries() != null ? (String[]) bankpaymentMethod.getCountries().toArray() : null);
+
+            paymentMethod.set("apm", apm);
+
+            var bankPaymentType = bankpaymentMethod.getBankPaymentType() != null ? bankpaymentMethod.getBankPaymentType() : OpenBankingProvider.getBankPaymentType(builder.getCurrency());
+
+            var bankTransfer =
+                    new JsonDoc()
+                            .set("account_number", bankPaymentType == BankPaymentType.FASTERPAYMENTS ? bankpaymentMethod.getAccountNumber() : "")
+                            .set("iban", bankPaymentType == BankPaymentType.SEPA ? bankpaymentMethod.getIban() : "");
+
+            var bank =
+                    new JsonDoc()
+                            .set("code", bankpaymentMethod.getSortCode())
+                            .set("name", bankpaymentMethod.getAccountName());
+
+            bankTransfer.set("bank", bank);
+
+            if (builder.getRemittanceReferenceType() != null) {
+                var remittance =
+                        new JsonDoc()
+                                .set("type", builder.getRemittanceReferenceType().toString())
+                                .set("value", builder.getRemittanceReferenceValue());
+
+                bankTransfer.set("remittance_reference", remittance);
+            }
+
+            paymentMethod.set("bank_transfer", bankTransfer);
+        }
+
         if (builderPaymentMethod instanceof BNPL) {
             BNPL bnpl = (BNPL) builder.getPaymentMethod();
 
@@ -392,6 +431,7 @@ public class GpApiAuthorizationRequestBuilder {
             var requestData =
                     new JsonDoc()
                             .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                            .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                             .set("type", payLinkData.getType().toString())
                             .set("usage_mode", payLinkData.getUsageMode() != null ? payLinkData.getUsageMode().getValue() : null)
                             .set("usage_limit",  payLinkData.getUsageLimit() != null ? payLinkData.getUsageLimit() : null)
@@ -432,6 +472,7 @@ public class GpApiAuthorizationRequestBuilder {
 
         JsonDoc data = new JsonDoc()
                 .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                 .set("type", builderTransactionType == Refund ? "REFUND" : "SALE") // [SALE, REFUND]
                 .set("channel", gateway.getGpApiConfig().getChannel()) // [CP, CNP]
                 .set("capture_mode", getCaptureMode(builder)) // [AUTO, LATER, MULTIPLE]
@@ -475,24 +516,12 @@ public class GpApiAuthorizationRequestBuilder {
 
         if (builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
             setOrderInformation(builder, data);
+        }
 
-            INotificationData payment = null;
-
-            if (builderPaymentMethod instanceof AlternativePaymentMethod) {
-                payment = (AlternativePaymentMethod) builderPaymentMethod;
-            }
-
-            if (builderPaymentMethod instanceof BNPL) {
-                payment = (BNPL) builderPaymentMethod;
-            }
-
-            var notifications =
-                    new JsonDoc()
-                            .set("return_url", payment.getReturnUrl())
-                            .set("status_url", payment.getStatusUpdateUrl())
-                            .set("cancel_url", payment.getCancelUrl());
-
-            data.set("notifications", notifications);
+        if(     builderPaymentMethod instanceof AlternativePaymentMethod ||
+                builderPaymentMethod instanceof BNPL ||
+                builderPaymentMethod instanceof BankPayment) {
+            data.set("notifications", setNotificationUrls(builder));
         }
 
         // Stored Credential
@@ -511,6 +540,34 @@ public class GpApiAuthorizationRequestBuilder {
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + "/transactions")
                         .setRequestBody(data.toString());
+    }
+
+    private static JsonDoc setNotificationUrls(AuthorizationBuilder builder) {
+        INotificationData payment = null;
+        IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
+
+        if (builderPaymentMethod instanceof AlternativePaymentMethod) {
+            payment = (AlternativePaymentMethod) builderPaymentMethod;
+        }
+
+        if (builderPaymentMethod instanceof BNPL) {
+            payment = (BNPL) builderPaymentMethod;
+        }
+
+        if (builderPaymentMethod instanceof BankPayment) {
+            payment = (BankPayment) builderPaymentMethod;
+        }
+
+        var notifications = new JsonDoc();
+
+        if (payment != null) {
+            notifications
+                    .set("return_url", payment.getReturnUrl())
+                    .set("status_url", payment.getStatusUpdateUrl())
+                    .set("cancel_url", payment.getCancelUrl());
+        }
+
+        return notifications;
     }
 
     private static JsonDoc setPayerInformation(AuthorizationBuilder builder) {

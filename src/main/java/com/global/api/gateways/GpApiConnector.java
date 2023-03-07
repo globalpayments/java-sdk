@@ -5,6 +5,7 @@ import com.global.api.entities.RiskAssessment;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.*;
@@ -116,6 +117,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
         if (accessTokenInfo != null && !isNullOrEmpty(accessTokenInfo.getAccessToken())) {
             accessToken = accessTokenInfo.getAccessToken();
+            headers.put("Authorization", String.format("Bearer %s", accessToken));
             return;
         }
 
@@ -132,25 +134,29 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             accessTokenInfo.setAccessToken(response.getToken());
         }
 
-        if (isNullOrEmpty(accessTokenInfo.getDataAccountName())) {
-            accessTokenInfo.setDataAccountName(response.getDataAccountName());
+        if (isNullOrEmpty(accessTokenInfo.getDataAccountName()) && isNullOrEmpty(accessTokenInfo.getDataAccountID())) {
+            accessTokenInfo.setDataAccountID(response.getDataAccountID());
         }
 
-        if (isNullOrEmpty(accessTokenInfo.getTokenizationAccountName())) {
-            accessTokenInfo.setTokenizationAccountName(response.getTokenizationAccountName());
+        if (isNullOrEmpty(accessTokenInfo.getTokenizationAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getTokenizationAccountID())) {
+            accessTokenInfo.setTokenizationAccountID(response.getTokenizationAccountID());
         }
 
-        if (isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountName())) {
-            accessTokenInfo.setTransactionProcessingAccountName(response.getTransactionProcessingAccountName());
+        if (isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountID())) {
+            accessTokenInfo.setDisputeManagementAccountID(response.getDisputeManagementAccountID());
         }
 
-        if (isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountName())) {
-            accessTokenInfo.setDisputeManagementAccountName(response.getDisputeManagementAccountName());
+        if (isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountID())) {
+            accessTokenInfo.setTransactionProcessingAccountID(response.getTransactionProcessingAccountID());
+        }
+        if (isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountID())) {
+            accessTokenInfo.setRiskAssessmentAccountID(response.getRiskAssessmentAccountID());
         }
 
-        if (isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountName())) {
-            accessTokenInfo.setRiskAssessmentAccountName(response.getRiskAssessmentAccountName());
-        }
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
     }
@@ -254,7 +260,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         return null;
     }
 
-    public Transaction manageTransaction(ManagementBuilder builder) throws GatewayException {
+    public Transaction manageTransaction(ManagementBuilder builder) throws GatewayException, BuilderException {
         if (StringUtils.isNullOrEmpty(accessToken)) {
             signIn();
         }
@@ -336,6 +342,11 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     // --------------------------------------------------------------------------------
     public boolean supportsHostedPayments() {
         return false;
+    }
+
+    @Override
+    public boolean supportsOpenBanking() {
+        return true;
     }
 
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {

@@ -88,6 +88,8 @@ public class SearchCriteriaBuilder<TResult> {
     private String payLinkStatus;
     private PaymentEntryMode paymentEntryMode;
     private String paymentMethodKey;
+    private PaymentMethodType paymentMethodType;
+    private PaymentProvider paymentProvider;
     private PaymentType paymentType;
     private PaymentMethodName paymentMethodName;
     private String paymentMethodUsageMode;

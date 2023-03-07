@@ -1,5 +1,17 @@
 # Changelog
 
+## v10.2.3 (03/07/2023)
+
+### Enhancements:
+
+- GP-API: Open Banking
+- GP-API: Fix MapTransactionSummaryTest()
+- GP-API: Add Account ID
+- GP-API: Rename Test Classes
+- GP-API: Fix Access Token Set Manual On Header
+- GP-ECOM/REALEX: Rename Test Classes
+- Update GSON & HttpMime Dependencies
+
 ## v10.2.2 (02/28/2023)
 
 ### Enhancements:

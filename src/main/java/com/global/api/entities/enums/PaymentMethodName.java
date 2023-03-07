@@ -20,6 +20,7 @@ public enum PaymentMethodName implements IMappedConstant {
     }}),
 
     BankPayment(new HashMap<Target, String>() {{
+        put(Target.Realex, "BANK PAYMENT");
         put(Target.GP_API, "BANK PAYMENT");
     }}),
 

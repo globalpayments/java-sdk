@@ -36,6 +36,8 @@ public class GpEcomConfig extends GatewayConfig {
 
     // Open Banking Service
     private ShaHashType shaHashType = ShaHashType.SHA1;
+    // Property not used and it will be removed
+    @Deprecated
     private boolean enableBankPayment = false;
 
     public GpEcomConfig() {
@@ -100,21 +102,21 @@ public class GpEcomConfig extends GatewayConfig {
             services.setSecure3dProvider(Secure3dVersion.TWO, secure3d2);
         }
 
-        if (enableBankPayment) {
-            OpenBankingProvider openBankingProvider =
+        if (gateway.supportsOpenBanking()) {
+            OpenBankingProvider openBanking =
                     new OpenBankingProvider()
                             .setMerchantId(merchantId)
                             .setAccountId(accountId)
                             .setSharedSecret(sharedSecret)
                             .setShaHashType(shaHashType != null ? shaHashType : ShaHashType.SHA1);
 
-            openBankingProvider.setServiceUrl(environment.equals(Environment.PRODUCTION) ? ServiceEndpoints.OPEN_BANKING_PRODUCTION.getValue() : ServiceEndpoints.OPEN_BANKING_TEST.getValue());
-            openBankingProvider.setTimeout(timeout);
-            openBankingProvider.setEnableLogging(enableLogging);
-            openBankingProvider.setRequestLogger(requestLogger);
-            openBankingProvider.setWebProxy(webProxy);
+            openBanking.setServiceUrl(environment.equals(Environment.PRODUCTION) ? ServiceEndpoints.OPEN_BANKING_PRODUCTION.getValue() : ServiceEndpoints.OPEN_BANKING_TEST.getValue());
+            openBanking.setTimeout(timeout);
+            openBanking.setEnableLogging(enableLogging);
+            openBanking.setRequestLogger(requestLogger);
+            openBanking.setWebProxy(webProxy);
 
-            services.setOpenBankingProvider(openBankingProvider);
+            services.setOpenBankingProvider(openBanking);
         }
 
     }

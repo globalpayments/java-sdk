@@ -76,6 +76,10 @@ public class GpApiReportRequestBuilder {
                         request.addQueryStringParam("risk_assessment_reason_code", EnumUtils.getMapping(Target.GP_API, trb.getSearchBuilder().getRiskAssessmentReasonCode()));
                     }
 
+                    if (trb.getSearchBuilder().getPaymentProvider() != null) {
+                        request.addQueryStringParam("provider", trb.getSearchBuilder().getPaymentProvider().toString());
+                    }
+
                     return request;
 
                 case FindSettlementTransactionsPaged:
@@ -91,6 +95,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("number_last4", trb.getSearchBuilder().getCardNumberLastFour());
                     request.addQueryStringParam("deposit_status", getValueIfNotNull(trb.getSearchBuilder().getDepositStatus()));
                     request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
+                    request.addQueryStringParam("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountID());
                     request.addQueryStringParam("brand", trb.getSearchBuilder().getCardBrand());
                     request.addQueryStringParam("arn", trb.getSearchBuilder().getAquirerReferenceNumber());
                     request.addQueryStringParam("brand_reference", trb.getSearchBuilder().getBrandReference());
@@ -124,6 +129,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("order_by", getValueIfNotNull(trb.getDepositOrderBy()));
                     request.addQueryStringParam("order", getValueIfNotNull(trb.getOrder()));
                     request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
+                    request.addQueryStringParam("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountID());
                     request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getStartDate()));
                     request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getEndDate()));
                     request.addQueryStringParam("id", trb.getSearchBuilder().getDepositReference());
@@ -177,6 +183,7 @@ public class GpApiReportRequestBuilder {
                             .setEndpoint(merchantUrl + "/settlement/disputes");
 
                     request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
+                    request.addQueryStringParam("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountID());
                     request.addQueryStringParam("deposit_id", trb.getSearchBuilder().getDepositReference());
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -216,6 +223,7 @@ public class GpApiReportRequestBuilder {
                         JsonDoc data =
                                 new JsonDoc()
                                         .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName())
+                                        .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountID())
                                         .set("reference", trb.getSearchBuilder().getReferenceNumber())
                                         .set("card", card != null ? card : null);
 

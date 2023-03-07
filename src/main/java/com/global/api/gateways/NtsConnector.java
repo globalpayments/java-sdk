@@ -310,7 +310,13 @@ public class NtsConnector extends GatewayConnectorConfig {
         return null;
     }
 
+    @Override
     public boolean supportsHostedPayments() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsOpenBanking() {
         return false;
     }
 

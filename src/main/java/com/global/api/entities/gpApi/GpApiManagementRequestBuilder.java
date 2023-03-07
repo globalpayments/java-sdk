@@ -3,9 +3,11 @@ package com.global.api.entities.gpApi;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
+import com.global.api.entities.enums.PaymentMethodName;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
@@ -18,6 +20,8 @@ import com.global.api.utils.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.var;
 
 import java.util.ArrayList;
@@ -25,12 +29,24 @@ import java.util.HashMap;
 
 public class GpApiManagementRequestBuilder {
 
-    public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException {
-        String merchantUrl = gateway.getMerchantUrl();
+    @Getter @Setter private static HashMap<String, ArrayList<String>> allowedActions;
+
+    public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException {
         JsonDoc data = new JsonDoc();
 
         TransactionType builderTransactionType = builder.getTransactionType();
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
+
+        getAllowedActions();
+
+        String merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? "/merchants/" + gateway.getGpApiConfig().getMerchantId() : "";
+
+        if (builderPaymentMethod != null && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
+            if (    allowedActions.get(PaymentMethodType.BankPayment.toString()) == null ||
+                    !allowedActions.get(PaymentMethodType.BankPayment.toString()).contains(builder.getTransactionType().toString())) {
+                throw new BuilderException("The " + builder.getTransactionType().toString() + " is not supported for " + PaymentMethodName.BankPayment);
+            }
+        }
 
         if (builderTransactionType == TransactionType.Capture) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
@@ -301,5 +317,12 @@ public class GpApiManagementRequestBuilder {
         return
                 new JsonDoc()
                         .set("id", dccRateData.getDccId());
+    }
+
+    private static void getAllowedActions() {
+        if (allowedActions == null) {
+            allowedActions = new HashMap<>();
+            allowedActions.put(PaymentMethodType.BankPayment.toString(), null);
+        }
     }
 }

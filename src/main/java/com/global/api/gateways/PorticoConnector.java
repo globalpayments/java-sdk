@@ -45,7 +45,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String secretApiKey;
     private String sdkNameVersion;
 
+    @Override
     public boolean supportsHostedPayments() { return false; }
+
+    @Override
+    public boolean supportsOpenBanking() {
+        return false;
+    }
 
     public Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException {
         ElementTree et = new ElementTree();

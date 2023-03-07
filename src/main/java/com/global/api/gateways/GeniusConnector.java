@@ -324,4 +324,9 @@ public class GeniusConnector extends Gateway implements IPaymentGateway {
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
         throw new UnsupportedTransactionException();
     }
+
+    @Override
+    public boolean supportsOpenBanking() {
+        return false;
+    }
 }

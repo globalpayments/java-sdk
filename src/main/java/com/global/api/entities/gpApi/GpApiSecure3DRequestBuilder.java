@@ -48,6 +48,7 @@ public class GpApiSecure3DRequestBuilder {
                 JsonDoc data =
                         new JsonDoc()
                                 .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                                 .set("reference", isNullOrEmpty(builder.getReferenceNumber()) ? java.util.UUID.randomUUID().toString() : builder.getReferenceNumber())
                                 .set("channel", gateway.getGpApiConfig().getChannel())
                                 .set("amount", StringUtils.toNumeric(builder.getAmount()))
@@ -214,6 +215,7 @@ public class GpApiSecure3DRequestBuilder {
                 JsonDoc threeDS =
                         new JsonDoc()
                                 .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                                 .set("reference", builder.getReferenceNumber() != null ? builder.getReferenceNumber() : UUID.randomUUID().toString())
                                 .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
                                 .set("merchant_contact_url", gateway.getGpApiConfig().getMerchantContactUrl())

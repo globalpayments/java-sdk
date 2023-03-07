@@ -100,7 +100,13 @@ public class VapsConnector extends GatewayConnectorConfig {
         this.processingFlag = processingFlag;
     }
 
+    @Override
     public boolean supportsHostedPayments() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsOpenBanking() {
         return false;
     }
 

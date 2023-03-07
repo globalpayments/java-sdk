@@ -111,4 +111,9 @@ public class BillPayProvider implements IBillingProvider, IPaymentGateway, IRecu
     public boolean supportsUpdatePaymentDetails() {
         return false;
     }
+
+    @Override
+    public boolean supportsOpenBanking() {
+        return false;
+    }
 }

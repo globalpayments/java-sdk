@@ -171,6 +171,11 @@ public class TransactionApiConnector extends RestGateway implements IPaymentGate
         return false;
     }
 
+    @Override
+    public boolean supportsOpenBanking() {
+        return false;
+    }
+
     private void log(String message){
         if(apiConfig.isEnableLogging()){
             logger.info(message);

@@ -606,6 +606,11 @@ public class GnapConnector extends GatewayConnectorConfig {
         return false;
     }
 
+    @Override
+    public boolean supportsOpenBanking() {
+        return false;
+    }
+
     private GnapResponseData buildResponseData(String sData, TransactionReference transactionReference) throws Exception {
 
         GnapResponseData gnapData = new GnapResponseData();
