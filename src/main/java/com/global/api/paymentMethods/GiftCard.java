@@ -26,9 +26,14 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     private TrackNumber trackNumber;
     private String value;
     private String valueType;
-    @Getter
-    @Setter
-    private String entryMethod;
+    private EntryMethod entryMethod = EntryMethod.Swipe;
+    public EntryMethod getEntryMethod() {
+        return entryMethod;
+    }
+    public void setEntryMethod(EntryMethod entryMethod) {
+
+        this.entryMethod = entryMethod;
+    }
 
 
     public String getAlias() {

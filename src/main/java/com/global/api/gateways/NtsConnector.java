@@ -2,11 +2,13 @@ package com.global.api.gateways;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.builders.ResubmitBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
@@ -16,8 +18,10 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.terminals.DeviceMessage;
+import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.*;
+import org.apache.commons.codec.binary.Base64;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -29,6 +33,7 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     private NtsMessageCode messageCode;
     private int timeout;
+    private IRequestEncoder requestEncoder;
     @Override
     public int getTimeout() {
         if(super.getTimeout()==30000)
@@ -46,7 +51,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         TransactionReference reference = NtsUtils.prepareTransactionReference(ntsResponse);
         if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) &&
                 (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))) {
-            if (cardTypes.equals(NTSCardTypes.MastercardFleet) || cardTypes.equals(NTSCardTypes.VisaFleet) || cardTypes.equals(NTSCardTypes.Mastercard) || cardTypes.equals(NTSCardTypes.Visa) || cardTypes.equals(NTSCardTypes.AmericanExpress) || cardTypes.equals(NTSCardTypes.Discover) || cardTypes.equals(NTSCardTypes.PayPal)) {
+            if (cardTypes.equals(NTSCardTypes.MastercardFleet) || cardTypes.equals(NTSCardTypes.VisaFleet) || cardTypes.equals(NTSCardTypes.Mastercard) || cardTypes.equals(NTSCardTypes.Visa) || cardTypes.equals(NTSCardTypes.AmericanExpress) || cardTypes.equals(NTSCardTypes.Discover) || cardTypes.equals(NTSCardTypes.PayPal) || cardTypes.equals(NTSCardTypes.MastercardPurchasing)) {
                 reference = NtsUtils.prepareTransactionReference(ntsResponse);
                 userData = reference.getBankcardData();
                 if (userData != null) {
@@ -203,6 +208,80 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         return userData;
     }
+    public Transaction resubmitTransaction(ResubmitBuilder builder) throws ApiException {
+        String transactionToken = builder.getTransactionToken();
+        Transaction result = null;
+        if(transactionToken != null) {
+            byte[] decodeRequest = this.decodeRequest(builder.getTransactionToken());
+            IDeviceMessage buildMessage = new DeviceMessage(decodeRequest);
+            NtsUtils.log("-----------------------------------------------------------------------------------");
+            NtsUtils.log("Tokenization Request", buildMessage.toString());
+            byte[] responseBuffer = send(buildMessage);
+            result = mapResponse(responseBuffer, builder);
+        }
+        return result;
+    }
+    private String encodeRequest(MessageWriter request) {
+        int encodeCount = 0;
+        while(encodeCount++ < 3) {
+            String encodedRequest = doEncoding(request);
+            if(TerminalUtilities.checkLRC(encodedRequest)) {
+                return encodedRequest;
+            }
+        }
+        return null;
+    }
+    private String doEncoding(MessageWriter request) {
+        // base64 encode the message buffer
+        byte[] encoded = Base64.encodeBase64(request.toArray());
+        String encodedString = new String(encoded);
+
+        // encrypt it
+        if(requestEncoder == null) {
+            if(isEnableLogging()) {
+                System.out.println(String.format("[TOKEN TRACE]: %s %s", companyId, terminalId));
+            }
+            requestEncoder = new PayrollEncoder(companyId, terminalId);
+        }
+        String token = requestEncoder.encode(encodedString);
+
+        // build final token
+        MessageWriter mw = new MessageWriter();
+        mw.add(ControlCodes.STX);
+        mw.addRange(token.getBytes());
+        mw.add(ControlCodes.ETX);
+
+        // generate the CRC
+        mw.add(TerminalUtilities.calculateLRC(mw.toArray()));
+        return new String(mw.toArray());
+    }
+    private byte[] decodeRequest(String encodedStr) {
+        if(requestEncoder == null) {
+            requestEncoder = new PayrollEncoder(companyId, terminalId);
+        }
+
+        byte[] encodedBuffer = encodedStr.getBytes();
+        MessageReader mr = new MessageReader(encodedBuffer);
+
+        String valueToDecrypt = encodedStr;
+        if(mr.peek() == ControlCodes.STX.getByte()) {
+            mr.readCode(); // pop the STX off
+            valueToDecrypt = mr.readToCode(ControlCodes.ETX);
+
+            byte lrc = mr.readByte();
+            if(lrc != TerminalUtilities.calculateLRC(encodedBuffer)) {
+                // invalid token
+            }
+        }
+
+        String requestStr = requestEncoder.decode(valueToDecrypt);
+        byte[] decoded = Base64.decodeBase64(requestStr);
+
+        mr = new MessageReader(decoded);
+        String mti = mr.readString(4);
+        byte[] buffer = mr.readBytes(decoded.length);
+        return decoded;
+    }
 
     private <T extends TransactionBuilder<Transaction>> Transaction sendRequest(MessageWriter messageData, T builder) throws ApiException {
         NtsUtils.log("--------------------- FINAL REQUEST ---------------------");
@@ -217,7 +296,13 @@ public class NtsConnector extends GatewayConnectorConfig {
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
             NtsUtils.log("Request", buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
-            return mapResponse(responseBuffer, builder);
+            Transaction response =mapResponse(responseBuffer, builder);
+            String transactionToken = encodeRequest(req);
+            if(transactionToken != null) {
+                response.setTransactionToken(transactionToken);
+            }
+
+            return response;
 
         } catch (GatewayException exc) {
             exc.setHost(currentHost.getValue());

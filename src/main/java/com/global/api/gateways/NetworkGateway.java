@@ -316,6 +316,7 @@ public class NetworkGateway {
             new Thread(new Runnable() {
                 public void run() {
                     gatewayEventHandler.eventRaised(event);
+                    NtsUtils.log(event.getEventMessage());
                 }
             }).start();
         }

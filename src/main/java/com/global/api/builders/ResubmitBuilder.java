@@ -9,6 +9,7 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IPaymentGateway;
+import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.VapsConnector;
 import com.global.api.network.entities.NtsData;
 import org.joda.time.DateTime;
@@ -93,6 +94,9 @@ public class ResubmitBuilder extends TransactionBuilder<Transaction> {
         IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
         if(client instanceof VapsConnector) {
             return ((VapsConnector)client).resubmitTransaction(this);
+        }
+        if(client instanceof NtsConnector) {
+            return ((NtsConnector)client).resubmitTransaction(this);
         }
         else {
             throw new UnsupportedTransactionException("Resubmissions are not allowed for the currently configured gateway.");

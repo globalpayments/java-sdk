@@ -356,7 +356,7 @@ public class NtsGiftTests {
 
     @Test
     public void test_SVS_Pre_Authorization_008() throws ApiException {
-        card.setEntryMethod("8");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -377,7 +377,7 @@ public class NtsGiftTests {
 
     @Test //Needtocheck acccount number
     public void test_SVS_Pre_Authorization_Completion_009() throws ApiException {
-        card.setEntryMethod("8");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)

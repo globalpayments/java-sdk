@@ -1,5 +1,16 @@
 # Changelog
 
+## v10.2.4 (03/15/2023)
+
+### Enhancements:
+- NTS Phase1 Issue:
+  - Void Timestamp Issue for credit card(10123)
+  - Gift Card Entry Method Issues(10150, 10155, 10156, 10157, 10162, 10163)
+  - Authorizer Code for data collect Issue(10149) 
+  - Mastercard Purchasing Partial Approval mapping Issue(10151,10165)
+  - Primary and Secondary Endpoints Issue (10159)
+  - Tokenization POC for resubmit Transaction Issue(10121)
+
 ## v10.2.3 (03/07/2023)
 
 ### Enhancements:

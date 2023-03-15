@@ -126,11 +126,11 @@ public class NtsUtils {
             batchNumber = ntsSaleCreditResponseMapper.getBatchNumber();
             authorizer =  ntsSaleCreditResponseMapper.getCreditMapper().getAuthorizer();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDebitResponse) {
-            authorizer = AuthorizerCode.Terminal_Authorized;
+            authorizer = AuthorizerCode.Interchange_Authorized;
             approvalCode = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getCode();
             debitAuthorizer = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsEbtResponse) {
-            authorizer = AuthorizerCode.Terminal_Authorized;
+            authorizer = AuthorizerCode.Interchange_Authorized;
             approvalCode = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
             debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDataCollectResponse) {

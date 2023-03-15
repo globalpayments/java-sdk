@@ -8,6 +8,8 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.gateways.events.IGatewayEvent;
+import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
@@ -17,6 +19,7 @@ import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.NtsTestCards;
@@ -115,6 +118,11 @@ public class NtsCreditTest {
         config.setSoftwareVersion("21");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
+        config.setGatewayEventHandler(new IGatewayEventHandler() {
+            @Override
+            public void eventRaised(IGatewayEvent event) {
+            }
+        });
         //ServicesContainer.configureService(config);
 
         // with merchant type
@@ -2672,5 +2680,87 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         // check response
         assertEquals("00", response.getResponseCode());
+    }
+    @Test
+    public void test_DateTimeIssueNTS_10123() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsProductData(productData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .withTimestamp("230308024510")
+                .execute();
+
+        assertNotNull(response);
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .withTimestamp("230308024520")
+                .withNtsTag16(tag)
+                .execute();
+
+        // check response
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+    @Test
+    public void test_003_sales_with_track2_and_datacollect_resubmit() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        Transaction transaction = Transaction.fromNetwork(
+                response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getOriginalTransactionDate(),
+                response.getOriginalTransactionTime(),
+                track
+        );
+
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
     }
 }

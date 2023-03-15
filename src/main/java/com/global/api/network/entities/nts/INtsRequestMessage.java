@@ -111,17 +111,15 @@ public interface INtsRequestMessage {
             headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
         } else if (builder instanceof ManagementBuilder) {
             ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-            if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit) && manageBuilder.getTransactionType() == TransactionType.Void) {
+            if (paymentMethod != null && paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit)
+                    && manageBuilder.getTransactionType() == TransactionType.Void) {
                 // Transaction Date
-                String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
-                String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
-
-                NtsUtils.log("Transaction Date",transactionDate );
-                headerRequest.addRange(transactionDate, 4);
+                NtsUtils.log("Transaction Date", String.valueOf(ntsRequestMessageHeader.getTransactionDate()));
+                headerRequest.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
 
                 // Transaction Time
-                NtsUtils.log("Transaction Time",transactionTime );
-                headerRequest.addRange(transactionTime, 6);
+                NtsUtils.log("Transaction Time", String.valueOf(ntsRequestMessageHeader.getTransactionTime()));
+                headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
             }else if (transactionReference != null &&
                     (manageBuilder.getTransactionType() == TransactionType.Reversal
                     || manageBuilder.getTransactionType() == TransactionType.Refund
