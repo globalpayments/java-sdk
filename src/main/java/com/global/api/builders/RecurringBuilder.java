@@ -1,11 +1,9 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Customer;
 import com.global.api.entities.IRecurringEntity;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.gateways.IPaymentGateway;
 import com.global.api.gateways.IRecurringGateway;
 
 import java.util.EnumSet;
@@ -27,6 +25,9 @@ public class RecurringBuilder<TResult> extends TransactionBuilder<TResult> {
     }
     public IRecurringEntity getEntity() {
         return entity;
+    }
+    public void setEntity(IRecurringEntity value) {
+        this.entity = value;
     }
     public HashMap<String, String> getSearchCriteria() {
         return searchCriteria;

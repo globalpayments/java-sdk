@@ -1,5 +1,10 @@
 # Changelog
 
+## v10.2.5 (03/16/2023)
+
+### Enhancements:
+- GP-ECOM/REALEX: Add Payment Scheduler
+
 ## v10.2.4 (03/15/2023)
 
 ### Enhancements:

@@ -7,6 +7,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
@@ -17,6 +18,8 @@ import lombok.experimental.Accessors;
 import lombok.var;
 import org.joda.time.format.DateTimeFormat;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.global.api.utils.CardUtils.getBaseCardType;
@@ -28,6 +31,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
         put("DinersClub", "Diners");
     }};
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMdd");
 
     private String merchantId;
     private String accountId;
@@ -781,19 +785,23 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // Build Request
         Element request = et.element("request")
-                .set("type", mapRecurringRequestType(builder))
-                .set("timestamp", timestamp);
+                .set("timestamp", timestamp)
+                .set("type", mapRecurringRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
+        et.subElement(request, "channel", channel);
         et.subElement(request, "account", accountId);
-        et.subElement(request, "orderid", orderId);
 
         if (builder.getTransactionType() == TransactionType.Create || builder.getTransactionType() == TransactionType.Edit) {
             if (builder.getEntity() instanceof Customer) {
+                et.subElement(request, "orderid", orderId);
+
                 Customer customer = (Customer) builder.getEntity();
                 request.append(buildCustomer(et, customer));
                 et.subElement(request, "sha1hash").text(GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, null, null, customer.getKey()));
             }
             else if (builder.getEntity() instanceof RecurringPaymentMethod) {
+                et.subElement(request, "orderid", orderId);
+
                 RecurringPaymentMethod payment = (RecurringPaymentMethod)builder.getEntity();
                 Element cardElement = et.subElement(request, "card");
                 et.subElement(cardElement, "ref").text(payment.getKey());
@@ -820,6 +828,39 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 else sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey(), expiry, card.getNumber());
                 et.subElement(request, "sha1hash").text(sha1hash);
             }
+            //Schedule
+            else if(builder.getEntity() instanceof Schedule) {
+                var schedule = (Schedule) builder.getEntity();
+                var amount = StringUtils.toNumeric(schedule.getAmount());
+                var frequency = MapScheduleFrequency(schedule.getFrequency());
+                var hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, schedule.getId(), amount, schedule.getCurrency(), schedule.getCustomerKey(), frequency);
+
+                et.subElement(request, "scheduleref", schedule.getId());
+                et.subElement(request, "alias", schedule.getName());
+                et.subElement(request, "orderidstub", schedule.getOrderPrefix());
+                et.subElement(request, "transtype", "auth");
+                et.subElement(request, "schedule", frequency);
+
+                if (schedule.getStartDate() != null) {
+                    et.subElement(request, "startdate", schedule.getStartDate() != null ? SDF.format(schedule.getStartDate()) : null);
+                }
+                et.subElement(request, "numtimes", schedule.getNumberOfPayments());
+                if (schedule.getEndDate() != null) {
+                    et.subElement(request, "enddate", schedule.getEndDate() != null ? SDF.format(schedule.getEndDate()): null);
+                }
+                et.subElement(request, "payerref", schedule.getCustomerKey());
+                et.subElement(request, "paymentmethod", schedule.getPaymentKey());
+                if (!StringUtils.isNullOrEmpty(amount)) {
+                    et.subElement(request, "amount", amount)
+                            .set("currency", schedule.getCurrency());
+                }
+
+                et.subElement(request, "prodid", schedule.getProductId() != null ? schedule.getProductId() : "");
+                et.subElement(request, "varref", schedule.getPoNumber() != null ? schedule.getPoNumber() : "");
+                et.subElement(request, "custno", schedule.getCustomerNumber());
+                et.subElement(request, "comment", schedule.getDescription());
+                et.subElement(request, "sha1hash").text(hash);
+            }
         }
         else if (builder.getTransactionType() == TransactionType.Delete) {
             if (builder.getEntity() instanceof RecurringPaymentMethod) {
@@ -831,10 +872,63 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey() == null ? payment.getId() : payment.getKey());
                 et.subElement(request, "sha1hash").text(sha1hash);
             }
+            //Schedule
+            else if (builder.getEntity() instanceof Schedule) {
+                var schedule = (Schedule) builder.getEntity();
+                et.subElement(request, "scheduleref", schedule.getKey());
+                var hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, schedule.getKey());
+                et.subElement(request, "sha1hash").text(hash);
+            }
+        }
+        else if (builder.getTransactionType() == TransactionType.Fetch) {
+            if (builder.getEntity() instanceof Schedule) {
+                var scheduleRef = builder.getEntity().getKey();
+
+                et.subElement(request, "scheduleref", scheduleRef);
+
+                String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, scheduleRef);
+                et.subElement(request, "sha1hash").text(sha1hash);
+            }
+        }
+        else if (builder.getTransactionType() == TransactionType.Search) {
+            if (builder.getEntity() instanceof Schedule) {
+                String customerKey = "", paymentKey = "";
+
+                if (builder.getSearchCriteria().containsKey(SearchCriteria.CustomerId.toString())) {
+                    customerKey = builder.getSearchCriteria().get(SearchCriteria.CustomerId.toString());
+                    et.subElement(request, "payerref", customerKey);
+                }
+
+                if (builder.getSearchCriteria().containsKey(SearchCriteria.PaymentMethodKey.toString())) {
+                    paymentKey = builder.getSearchCriteria().get(SearchCriteria.PaymentMethodKey.toString());
+                    et.subElement(request, "paymentmethod", paymentKey);
+                }
+
+                var hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, customerKey, paymentKey);
+
+                et.subElement(request, "sha1hash").text(hash);
+            }
         }
 
         String response = doTransaction(et.toString(request));
         return mapRecurringResponse(response, builder);
+    }
+
+    private String MapScheduleFrequency(ScheduleFrequency frequency) {
+        if(frequency == null) {
+            return null;
+        }
+
+        switch (frequency) {
+            case BiMonthly:
+                return "bimonthly";
+            case SemiAnnually:
+                return "halfyearly";
+            case Annually:
+                return "yearly";
+            default:
+                return frequency.getValue();
+        }
     }
 
     private Transaction mapResponse(String rawResponse, TransactionBuilder<Transaction> builder) throws ApiException {
@@ -1036,7 +1130,69 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         // check response
         checkResponse(root);
+
+        switch (builder.getTransactionType()) {
+            case Create:
+            case Edit:
+            case Delete:
+            case Fetch:
+                if (builder.getEntity() instanceof Schedule) {
+                    try {
+                        builder.setEntity(mapScheduleResponse(root, (Schedule) builder.getEntity()));
+                    } catch (ParseException pe) {
+                        throw new ApiException(pe.getMessage(), pe);
+                    }
+                }
+            break;
+            case Search:
+                if (builder instanceof RecurringBuilder && builder.getEntity() instanceof Schedule) {
+                    try {
+                        return ((TResult) mapSchedulesSearchResponse(root));
+                    } catch (ParseException pe) {
+                        throw new ApiException(pe.getMessage(), pe);
+                    }
+                }
+            break;
+
+            default:
+                break;
+        }
+
         return (TResult) builder.getEntity();
+    }
+
+    private RecurringCollection<Schedule> mapSchedulesSearchResponse(Element root) throws ParseException {
+        RecurringCollection<Schedule> schedulesResponse = new RecurringCollection<>();
+
+        if (root.has("schedules")) {
+            for (Element schedule : root.get("schedules").getAll("schedule")) {
+                if (schedule.has("scheduleref")) {
+                    schedulesResponse.add(mapScheduleResponse(schedule, new Schedule()));
+                }
+            }
+        }
+
+        return schedulesResponse;
+    }
+
+    private Schedule mapScheduleResponse(Element root, Schedule entity) throws ParseException {
+        var schedule = entity;
+
+        schedule.setAmount(root.getString("amount") != null ? StringUtils.toAmount(root.getString("amount")) : null);
+        schedule.setCurrency(root.getString("currency") != null ? root.getString("currency") : null);
+        schedule.setId(root.getString("scheduleref") != null ? root.getString("scheduleref") : null);
+        schedule.setKey(root.getString("scheduleref") != null ? root.getString("scheduleref") : null);
+        schedule.setName(root.getString("alias") != null ? root.getString("alias") : null);
+        schedule.setCustomerKey(root.getString("payerref") != null ? root.getString("payerref") : null);
+        schedule.setNumberOfPayments(root.getString("numtimes") != null ? Integer.valueOf(root.getString("numtimes")) : null);
+        schedule.setCustomerNumber(root.getString("custno") != null ? root.getString("custno") : null);
+        schedule.setStartDate(!StringUtils.isNullOrEmpty(root.getString("startdate")) ? SDF.parse(root.getString("startdate")) : null);
+        schedule.setEndDate(!StringUtils.isNullOrEmpty(root.getString("enddate")) ? SDF.parse(root.getString("enddate")) : null);
+        schedule.setDescription(root.getString("comment") != null ? root.getString("comment") : null);
+        schedule.setResponseCode(root.getString("result") != null ? root.getString("result") : null);
+        schedule.setResponseMessage(root.getString("message") != null ? root.getString("message") : null);
+
+        return schedule;
     }
 
     private void checkResponse(Element root) throws GatewayException {
@@ -1160,6 +1316,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 else if(entity instanceof IPaymentMethod) {
                     return "card-new";
                 }
+                else if (entity instanceof Schedule) {
+                    return "schedule-new";
+                }
                 throw new UnsupportedTransactionException();
             case Edit:
                 if(entity instanceof Customer) {
@@ -1172,6 +1331,19 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             case Delete:
                 if(entity instanceof RecurringPaymentMethod) {
                     return "card-cancel-card";
+                }
+                else if (entity instanceof Schedule) {
+                    return "schedule-delete";
+                }
+                throw new UnsupportedTransactionException();
+            case Fetch:
+                if (entity instanceof Schedule) {
+                    return "schedule-get";
+                }
+                throw new UnsupportedTransactionException();
+            case Search:
+                if (builder instanceof RecurringBuilder) {
+                    return "schedule-search";
                 }
                 throw new UnsupportedTransactionException();
             default:

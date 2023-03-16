@@ -4,24 +4,21 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IRecurringGateway;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public abstract class RecurringEntity<TResult extends IRecurringEntity> implements IRecurringEntity<TResult> {
     protected String id;
     protected String key;
+    protected String responseCode;
+    protected String responseMessage;
 
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
     public String getKey() {
         if(key != null)
             return key;
         else return id;
-    }
-    public void setKey(String key) {
-        this.key = key;
     }
 
     protected RecurringEntity() {}

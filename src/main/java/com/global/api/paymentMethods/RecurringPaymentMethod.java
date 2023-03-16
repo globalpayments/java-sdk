@@ -225,7 +225,9 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
 
     public Schedule addSchedule(String scheduleId) {
-        Schedule schedule = new Schedule(customerKey, key);
+        String paymentKey = key != null ? key : id;
+
+        Schedule schedule = new Schedule(customerKey, paymentKey);
         schedule.setId(scheduleId);
         return schedule;
     }

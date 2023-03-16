@@ -43,13 +43,25 @@ public class RecurringService {
     }
 
     public static <T extends IRecurringEntity> T get(String key, Class<T> clazz, String configName) throws ApiException {
+        IRecurringEntity entity;
+        try {
+            entity = clazz.newInstance();
+            entity.setKey(key);
+        } catch (Exception e) {
+            throw new ApiException(e.getMessage(), e);
+        }
+
         return
-                new RecurringBuilder<T>(TransactionType.Fetch, clazz)
+                new RecurringBuilder<T>(TransactionType.Fetch, entity, clazz)
                         .withKey(key)
                         .execute(configName);
     }
 
     public static <T extends IRecurringCollection> RecurringBuilder<T> search(Class<T> clazz) throws ApiException {
         return new RecurringBuilder<T>(TransactionType.Search, clazz);
+    }
+
+    public static <T extends IRecurringCollection> RecurringBuilder<T> search(IRecurringEntity entity, Class<T> clazz) throws ApiException {
+        return new RecurringBuilder<T>(TransactionType.Search, entity, clazz);
     }
 }

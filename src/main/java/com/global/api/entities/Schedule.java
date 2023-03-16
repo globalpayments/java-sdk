@@ -5,6 +5,8 @@ import com.global.api.entities.enums.PaymentSchedule;
 import com.global.api.entities.enums.ScheduleFrequency;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.RecurringService;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -27,12 +29,15 @@ public class Schedule extends RecurringEntity<Schedule> {
     private Date nextProcessingDate;
     private Integer numberOfPayments;
     private String poNumber;
+    @Getter @Setter private String orderPrefix;
     private String paymentKey;
     private PaymentSchedule paymentSchedule = PaymentSchedule.Dynamic;
     private Integer reprocessingCount;
     private Date startDate;
     private String status;
     private BigDecimal taxAmount;
+    @Getter @Setter private String productId;
+    @Getter @Setter private String customerNumber;
 
     public BigDecimal getAmount() {
         return amount;
@@ -180,6 +185,22 @@ public class Schedule extends RecurringEntity<Schedule> {
         amount = value;
         return this;
     }
+
+    public Schedule withProductId(String value) {
+        productId = value;
+        return this;
+    }
+
+    public Schedule withOrderPrefix(String value) {
+        orderPrefix = value;
+        return this;
+    }
+
+    public Schedule withCustomerNumber(String value) {
+        customerNumber = value;
+        return this;
+    }
+
     public Schedule withCurrency(String value) {
         currency = value;
         return this;
@@ -260,7 +281,7 @@ public class Schedule extends RecurringEntity<Schedule> {
     }
 
     public Schedule create(String configName) throws ApiException {
-        return RecurringService.create(this, Schedule.class);
+        return RecurringService.create(this, Schedule.class, configName);
     }
 
     public void delete() throws ApiException {

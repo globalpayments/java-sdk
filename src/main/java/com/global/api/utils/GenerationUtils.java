@@ -161,6 +161,25 @@ public class GenerationUtils {
         return Base64.encodeBase64URLSafeString(bb.array());
     }
 
+    public static String generateScheduleId() {
+        String uuid =  UUID.randomUUID().toString();
+        return
+                trimEnd(Base64.encodeBase64String(uuid.getBytes()), '=')
+                        .replace("+", "-")
+                        .replace("/", "_")
+                        .toLowerCase()
+                        .substring(0, 20);
+    }
+
+    public static String trimEnd(String value, Character toBeTrimmed) {
+        int len = value.length();
+        int st = 0;
+        while ((st < len) && value.charAt(len - 1) == toBeTrimmed) {
+            len--;
+        }
+        return value.substring(0, len);
+    }
+
     static public String generateRecurringKey() {
         return generateRecurringKey(null);
     }
