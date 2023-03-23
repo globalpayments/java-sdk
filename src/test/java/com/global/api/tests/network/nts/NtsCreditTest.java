@@ -13,6 +13,7 @@ import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
@@ -43,6 +44,7 @@ public class NtsCreditTest {
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
     private NtsProductData productData;
+    private PriorMessageInfo priorMessageInfo;
     String emvTagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
 
     public NtsCreditTest() throws ConfigurationException {
@@ -88,9 +90,13 @@ public class NtsCreditTest {
         header.setTerminalDestinationTag("510");
         header.setPinIndicator(PinIndicator.NotPromptedPin);
         header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
-        header.setPriorMessageResponseTime(1);
-        header.setPriorMessageConnectTime(999);
-        header.setPriorMessageCode("01");
+
+        priorMessageInfo=new PriorMessageInfo();
+        priorMessageInfo.setPriorMessageResponseTime(1);
+        priorMessageInfo.setPriorMessageConnectTime(999);
+        priorMessageInfo.setPriorMessageCode("01");
+
+        header.setPriorMessageInfo(priorMessageInfo);
 
         tag = new NtsTag16();
         tag.setPumpNumber(1);

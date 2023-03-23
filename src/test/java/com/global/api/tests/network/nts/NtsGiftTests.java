@@ -10,6 +10,7 @@ import com.global.api.network.entities.nts.NtsAuthCreditResponseMapper;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -33,6 +34,7 @@ public class NtsGiftTests {
     private GiftCard card;
     private NtsRequestMessageHeader ntsRequestMessageHeader;
     Integer Stan = Integer.parseInt(DateTime.now().toString("hhmmss"));
+    private PriorMessageInfo priorMessageInfo;
 
     public NtsGiftTests() throws ConfigurationException {
         Address address = new Address();
@@ -50,9 +52,13 @@ public class NtsGiftTests {
         ntsRequestMessageHeader.setTerminalDestinationTag("478");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
-        ntsRequestMessageHeader.setPriorMessageResponseTime(999);
-        ntsRequestMessageHeader.setPriorMessageConnectTime(999);
-        ntsRequestMessageHeader.setPriorMessageCode("08");
+
+        priorMessageInfo=new PriorMessageInfo();
+        priorMessageInfo.setPriorMessageResponseTime(999);
+        priorMessageInfo.setPriorMessageConnectTime(999);
+        priorMessageInfo.setPriorMessageCode("08");
+
+        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
 
 
         // data code values
@@ -101,7 +107,8 @@ public class NtsGiftTests {
         config.setMerchantType("5541");
         ServicesContainer.configureService(config);
 
-        card = NtsTestCards.svsCard();
+//        card = NtsTestCards.svsCard();
+        card = NtsTestCards.svsCardTrack1(EntryMethod.Swipe);
     }
 
     private NtsTag16 getTag16(){
@@ -356,7 +363,7 @@ public class NtsGiftTests {
 
     @Test
     public void test_SVS_Pre_Authorization_008() throws ApiException {
-        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -375,9 +382,9 @@ public class NtsGiftTests {
 
     }
 
-    @Test //Needtocheck acccount number
+    @Test
     public void test_SVS_Pre_Authorization_Completion_009() throws ApiException {
-        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -465,12 +472,13 @@ public class NtsGiftTests {
     @Test
     public void test_SVS_Pre_Authorization_ICR_011() throws ApiException {
         ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
 
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Stan)
-                .execute();
+                .execute("ICR");
 
         // check response
         assertEquals("00", response.getResponseCode());
@@ -487,12 +495,13 @@ public class NtsGiftTests {
     @Test
     public void test_SVS_Pre_Authorization_Completion_ICR_012() throws ApiException {
         ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
 
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Stan)
-                .execute();
+                .execute("ICR");
 
         // check response
         assertEquals("00", response.getResponseCode());
@@ -507,7 +516,7 @@ public class NtsGiftTests {
         Transaction completionResponse = response.preAuthCompletion(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
-                .execute();
+                .execute("ICR");
 
         // check response
         assertEquals("00", completionResponse.getResponseCode());
@@ -530,7 +539,7 @@ public class NtsGiftTests {
                 .withNtsTag16(getTag16())
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
-                .execute();
+                .execute("ICR");
         assertNotNull(dataCollectResponse);
 
         // check response

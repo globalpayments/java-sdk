@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -32,6 +33,8 @@ public class NtsPaypalTest {
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
     private NtsProductData productData;
+    private PriorMessageInfo priorMessageInfo;
+
 
     public NtsPaypalTest() throws ConfigurationException{
 
@@ -76,9 +79,12 @@ public class NtsPaypalTest {
         header.setTerminalDestinationTag("510");
         header.setPinIndicator(PinIndicator.NotPromptedPin);
         header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
-        header.setPriorMessageResponseTime(1);
-        header.setPriorMessageConnectTime(999);
-        header.setPriorMessageCode("01");
+        priorMessageInfo=new PriorMessageInfo();
+        priorMessageInfo.setPriorMessageResponseTime(1);
+        priorMessageInfo.setPriorMessageConnectTime(999);
+        priorMessageInfo.setPriorMessageCode("01");
+
+        header.setPriorMessageInfo(priorMessageInfo);
 
         // gateway config
         config = new NetworkGatewayConfig(Target.NTS);

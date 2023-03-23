@@ -9,6 +9,7 @@ import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.network.enums.nts.AvailableProductsCapability;
 import com.global.api.paymentMethods.CreditCardData;
@@ -35,7 +36,7 @@ public class NtsIcrTest {
     NtsTag16 tag;
     private FleetData fleetData;
     String emvTagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
-
+    private PriorMessageInfo priorMessageInfo;
     public NtsIcrTest() throws ApiException {
 
         acceptorConfig = new AcceptorConfig();
@@ -56,17 +57,17 @@ public class NtsIcrTest {
         ntsRequestMessageHeader.setTerminalDestinationTag("510");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
-        ntsRequestMessageHeader.setPriorMessageResponseTime(1);
-        ntsRequestMessageHeader.setPriorMessageConnectTime(999);
-        ntsRequestMessageHeader.setPriorMessageCode("01");
+        priorMessageInfo=new PriorMessageInfo();
+        priorMessageInfo.setPriorMessageResponseTime(1);
+        priorMessageInfo.setPriorMessageConnectTime(999);
+        priorMessageInfo.setPriorMessageCode("01");
+
+        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
         acceptorConfig.setAddress(address);
-
-
 
         fleetData=new FleetData();
         fleetData.setPurchaseDeviceSequenceNumber("12345");
         fleetData.setDriverId("123456");
-
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_ContactlessMsd_MagStripe_KeyEntry);

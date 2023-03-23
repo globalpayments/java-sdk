@@ -672,13 +672,13 @@ public class NTSUserData {
                 if (productData.getSalesTax() != null)
                     sb.append(StringUtils.toNumeric(productData.getSalesTax(), 7));
                 else
-                    sb.append(String.format("%7d", 0));
+                    sb.append(String.format("%07d", 0));
 
                 // PDL FUEL DISCOUNT
                 if (productData.getDiscount() != null)
                     sb.append(StringUtils.toNumeric(productData.getDiscount(), 5));
                 else
-                    sb.append(String.format("%5d", 0));
+                    sb.append(String.format("%05d", 0));
 
                 // Filler
                 sb.append(StringUtils.padLeft("", 12, '0'));

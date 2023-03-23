@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.CardDataInputCapability;
 import com.global.api.network.enums.CardHolderAuthenticationCapability;
 import com.global.api.network.enums.TerminalOutputCapability;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NtsRequestPendingMessagesTest {
     private NtsRequestMessageHeader ntsRequestMessageHeader;
+    private PriorMessageInfo priorMessageInfo;
     NetworkGatewayConfig config;
 
     public NtsRequestPendingMessagesTest() throws ApiException {
@@ -39,10 +41,12 @@ public class NtsRequestPendingMessagesTest {
 
             ntsRequestMessageHeader.setTerminalDestinationTag("478");
             ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
-            ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PendingMessage);
-            ntsRequestMessageHeader.setPriorMessageResponseTime(999);
-            ntsRequestMessageHeader.setPriorMessageConnectTime(999);
-            ntsRequestMessageHeader.setPriorMessageCode("08");
+            priorMessageInfo=new PriorMessageInfo();
+            priorMessageInfo.setPriorMessageResponseTime(999);
+            priorMessageInfo.setPriorMessageConnectTime(999);
+            priorMessageInfo.setPriorMessageCode("08");
+
+            ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
 
             acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
             acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);

@@ -7,6 +7,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
@@ -25,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 public class NtsDebitTest {
     private DebitTrackData track;
     private NtsRequestMessageHeader ntsRequestMessageHeader;
+    private PriorMessageInfo priorMessageInfo;
     // gateway config
     NetworkGatewayConfig config;
     String emvTagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401019F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
@@ -45,10 +47,14 @@ public class NtsDebitTest {
         ntsRequestMessageHeader.setTerminalDestinationTag("478");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PinDebit);
-        
-        ntsRequestMessageHeader.setPriorMessageResponseTime(999);
-        ntsRequestMessageHeader.setPriorMessageConnectTime(999);
-        ntsRequestMessageHeader.setPriorMessageCode("08");
+
+
+        priorMessageInfo=new PriorMessageInfo();
+        priorMessageInfo.setPriorMessageResponseTime(999);
+        priorMessageInfo.setPriorMessageConnectTime(999);
+        priorMessageInfo.setPriorMessageCode("08");
+
+        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
         
         // data code values
         // acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);

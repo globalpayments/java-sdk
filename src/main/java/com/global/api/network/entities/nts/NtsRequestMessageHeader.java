@@ -25,11 +25,5 @@ public class NtsRequestMessageHeader {
     private String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
     @Getter
     @Setter
-    private int priorMessageResponseTime;
-    @Getter
-    @Setter
-    private int priorMessageConnectTime;
-    @Getter
-    @Setter
-    private String priorMessageCode;
+    private PriorMessageInfo priorMessageInfo;
 }

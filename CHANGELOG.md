@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.2.6 (03/23/2023)
+
+### Enhancements:
+- NTS Phase1 Issue:
+  - User Data spaces for Data collect (10167)
+  - Gift Card Track1 entry method Issues(10174)
+  - Prior Message Information changes Issue(10142)
+
 ## v10.2.5 (03/16/2023)
 
 ### Enhancements:

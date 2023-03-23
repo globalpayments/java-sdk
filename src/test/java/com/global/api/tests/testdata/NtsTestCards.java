@@ -11,6 +11,14 @@ public class NtsTestCards {
      * SVS cards
      */
 
+    public static GiftCard svsCardTrack1(EntryMethod entryMethod){
+        GiftCard track = new GiftCard();
+        track.setValue("%B6006491260550251158^SVSMC^7112110F88?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
+
+
     public static GiftCard svsCard(){
         GiftCard card = new GiftCard();
         card.setValue(";6006491286999911672=691211072913941?");
