@@ -144,7 +144,8 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 NtsUtils.log("PIN Block Format", "0");
                 request.addRange("0", 1);
 
-                request.addRange("                ", 16);
+                NtsUtils.log("PIN Block", StringUtils.padRight("", 16, ' '));
+                request.addRange(StringUtils.padRight("", 16, ' '), 16);
             }else if((transactionCode.equals(TransactionCode.Purchase)
                       || transactionCode.equals(TransactionCode.PurchaseCashBack)
                       || transactionCode.equals(TransactionCode.PurchaseReturn)
@@ -201,7 +202,8 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight(pinBlock.substring(16), 20, ' '));
                 request.addRange(StringUtils.padRight(pinBlock.substring(16), 20, ' '), 20);
             } else {
-                request.addRange("                    ", 20);
+                NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight("", 20, ' '));
+                request.addRange(StringUtils.padRight("", 20, ' '), 20);
             }
         }
         // EMV Request Section
@@ -219,14 +221,10 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("Unique device id", StringUtils.padLeft(builder.getUniqueDeviceId()!= null ? builder.getUniqueDeviceId() : "" ,4 , ' '));
             request.addRange(StringUtils.padLeft(builder.getUniqueDeviceId(), 4, ' '), 4);
 
-            if (modifier.equals(TransactionModifier.Offline)) { //offline decline indicator
-                NtsUtils.log("offline decline indicator", "Y");
-                request.addRange("Y", 1);
-            } else {
+             //offline decline indicator
                 NtsUtils.log("offline decline indicator", "N");
                 request.addRange("N", 1);
 
-            }
             if (builder.getTagData() != null || transactionType.equals(TransactionType.Auth)) {
                 NtsUtils.log("EMV DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
                 request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);

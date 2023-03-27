@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.2.7 (03/27/2023)
+
+### Enhancements:
+-NTS Phase1 Issue:
+ - NTS Debit Partial Approval Issue(10166)
+ - Pin Block Format change(10169)
+ - Debit Offline Pin Verified Scenarios(10170)
+
 ## v10.2.6 (03/23/2023)
 
 ### Enhancements:

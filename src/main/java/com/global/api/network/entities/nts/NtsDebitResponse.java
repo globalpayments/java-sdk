@@ -5,6 +5,7 @@ import com.global.api.entities.enums.TransactionCode;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
+import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -63,7 +64,8 @@ public class NtsDebitResponse implements INtsResponseMessage {
         String sAvailableAmount = sp.readString(7).trim();
         Integer iAvailableAmount = sAvailableAmount.length() > 0 ? Integer.parseInt(sAvailableAmount):Integer.parseInt("0");
         ntsDebitResponse.setAmount(iAvailableAmount);
-        NtsUtils.log("Available Amount", ntsDebitResponse.getAmount());
+        String amount= StringUtils.padLeft(iAvailableAmount.toString(),7, '0');
+        NtsUtils.log("Available Amount", amount);
 
         if(buffer.length > 89 && emvFlag) {
             ntsDebitResponse.setEmvDataLength(sp.readInt(4)); // Emv

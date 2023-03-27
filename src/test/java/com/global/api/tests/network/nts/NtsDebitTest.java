@@ -27,6 +27,7 @@ public class NtsDebitTest {
     private DebitTrackData track;
     private NtsRequestMessageHeader ntsRequestMessageHeader;
     private PriorMessageInfo priorMessageInfo;
+    AcceptorConfig acceptorConfig;
     // gateway config
     NetworkGatewayConfig config;
     String emvTagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401019F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
@@ -40,7 +41,7 @@ public class NtsDebitTest {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
         ntsRequestMessageHeader = new NtsRequestMessageHeader();
 
@@ -55,7 +56,7 @@ public class NtsDebitTest {
         priorMessageInfo.setPriorMessageCode("08");
 
         ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
-        
+
         // data code values
         // acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
@@ -141,6 +142,7 @@ public class NtsDebitTest {
 
     @Test //working
     public void test_PinDebit_with_Purchase_03() throws ApiException {
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
 
         Transaction response = track.charge(new BigDecimal(142))
                 .withCurrency("USD")
@@ -155,7 +157,7 @@ public class NtsDebitTest {
 
     @Test //working
     public void test_PinDebit_with_Purchase_03_EMV() throws ApiException {
-        
+
         Transaction response = track.charge(new BigDecimal(142))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -195,24 +197,86 @@ public class NtsDebitTest {
 
     @Test // Working
     public void test_PinDebit_Offline_Verified_EMV_With_Track2Format_PreAuthorization_06() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+//        config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+//        track.setEntryMethod(EntryMethod.ContactlessEMV);
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withUniqueDeviceId("0001")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
+                .withOfflineAuthCode("")
                 .withTagData(emvTagData)
-                .execute();
+                .execute("ICR");
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
 
     }
 
+    @Test // Working
+    public void test_PinDebit_Offline_Verified_EMV_With_Track2Format_PreAuthorization_Completion_() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+//        config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+//        track.setEntryMethod(EntryMethod.ContactlessEMV);
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
+                .withOfflineAuthCode("")
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+
+
+    }
+
+    @Test // Working
+    public void test_PinDebit_Offline_Verified_EMV_Track2Format_purchase_06() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
+        ServicesContainer.configureService(config);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
+                .withOfflineAuthCode("")
+                .withTagData(emvTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+    }
+
     @Test // working
     public void test_PinDebit_pre_authorization_cancellation_without_TrackData_08() throws ApiException {
-
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
         Transaction preAuthorizationFundsResponse = track.authorize(new BigDecimal(100))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
+                .withOfflineAuthCode("")
                 .execute();
         assertNotNull(preAuthorizationFundsResponse);
         assertEquals("00", preAuthorizationFundsResponse.getResponseCode());
