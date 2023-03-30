@@ -6,12 +6,11 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
-import lombok.var;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
     @Test
     public void PayPalCharge_fullCycle() throws ApiException, InterruptedException {
-        var response = paymentMethod
+        Transaction response = paymentMethod
                 .charge(1.34)
                 .withCurrency(currency)
                 .withDescription("New APM")
@@ -92,9 +91,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        var startDate = new Date();
+        Date startDate = new Date();
 
-        var responseFind =
+        TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
@@ -105,13 +104,13 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
 
-        var transactionSummary = responseFind.getResults().get(0);
-        assertTrue(transactionSummary.getAlternativePaymentResponse() instanceof AlternativePaymentResponse);
+        TransactionSummary transactionSummary = responseFind.getResults().get(0);
+        assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
         assertEquals("PENDING", transactionSummary.getTransactionStatus());
         assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        var transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
         transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
         response =
@@ -126,7 +125,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
     @Test
     public void PayPalCapture_fullCycle() throws ApiException, InterruptedException {
-        var response =
+        Transaction response =
                 paymentMethod
                         .authorize(1.34)
                         .withCurrency(currency)
@@ -144,9 +143,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        var startDate = new Date();
+        Date startDate = new Date();
 
-        var responseFind =
+        TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
@@ -157,14 +156,14 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
 
-        var transactionSummary = responseFind.getResults().get(0);
+        TransactionSummary transactionSummary = responseFind.getResults().get(0);
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
-        assertTrue(transactionSummary.getAlternativePaymentResponse() instanceof AlternativePaymentResponse);
+        assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
         assertEquals("PENDING", transactionSummary.getTransactionStatus());
         assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        var transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
         transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
         response =
@@ -176,7 +175,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("SUCCESS", response.getResponseCode());
         assertEquals("PREAUTHORIZED", response.getResponseMessage());
 
-        var capture =
+        Transaction capture =
                 transaction
                         .capture()
                         .execute(GP_API_CONFIG_NAME);
@@ -188,7 +187,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
     @Test
     public void PayPalFullCycle_Refund() throws ApiException, InterruptedException {
-        var trn =
+        Transaction trn =
                 paymentMethod
                         .charge(1.22)
                         .withCurrency(currency)
@@ -206,9 +205,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        var startDate = new Date();
+        Date startDate = new Date();
 
-        var responseFind =
+        TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
@@ -219,17 +218,17 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
 
-        var transactionSummary = responseFind.getResults().get(0);
+        TransactionSummary transactionSummary = responseFind.getResults().get(0);
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
-        assertTrue(transactionSummary.getAlternativePaymentResponse() instanceof AlternativePaymentResponse);
+        assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
         assertEquals("PENDING", transactionSummary.getTransactionStatus());
         assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        var transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
         transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        var response =
+        Transaction response =
                 transaction
                         .confirm()
                         .execute(GP_API_CONFIG_NAME);
@@ -238,7 +237,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("SUCCESS", response.getResponseCode());
         assertEquals("CAPTURED", response.getResponseMessage());
 
-        var trnRefund =
+        Transaction trnRefund =
                 transaction
                         .refund()
                         .withCurrency(currency)
@@ -253,7 +252,7 @@ public class GpApiApmTest extends BaseGpApiTest {
     @Test
     //Sandbox returning: Can't CAPTURE a Transaction that is already CAPTURED
     public void PayPalFullCycle_Reverse() throws ApiException, InterruptedException {
-        var trn =
+        Transaction trn =
                 paymentMethod
                         .charge(1.22)
                         .withCurrency(currency)
@@ -269,9 +268,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        var startDate = DateTime.now();
+        Date startDate = new Date();
 
-        var response =
+        TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
@@ -281,27 +280,27 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertTrue(response.getTotalRecordCount() > 0);
-        var transactionSummary = response.getResults().get(0);
+        TransactionSummary transactionSummary = response.getResults().get(0);
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
-        assertTrue(transactionSummary.getAlternativePaymentResponse() instanceof AlternativePaymentResponse);
+        assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
         assertEquals("PENDING", transactionSummary.getTransactionStatus());
         assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        var transaction = Transaction.fromId(transactionSummary.getTransactionId(), null,PaymentMethodType.APM);
+        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null,PaymentMethodType.APM);
         transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        var responsetrn =
+        Transaction responseTrn =
                 transaction
                         .confirm()
                         .execute(GP_API_CONFIG_NAME);
 
-        assertNotNull(responsetrn);
-        assertEquals("SUCCESS", responsetrn.getResponseCode());
-        assertEquals("CAPTURED", responsetrn.getResponseMessage());
+        assertNotNull(responseTrn);
+        assertEquals("SUCCESS", responseTrn.getResponseCode());
+        assertEquals("CAPTURED", responseTrn.getResponseMessage());
 
-        var trnReverse =
-                responsetrn
+        Transaction trnReverse =
+                responseTrn
                         .reverse()
                         .withCurrency(currency)
                         .execute(GP_API_CONFIG_NAME);
@@ -313,7 +312,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
     @Test
     public void PayPalMultiCapture_fullCycle() throws InterruptedException, ApiException {
-        var response =
+        Transaction response =
                 paymentMethod
                         .authorize(3)
                         .withCurrency(currency)
@@ -332,9 +331,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        var startDate = new Date();
+        Date startDate = new Date();
 
-        var responseFind =
+        TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
@@ -345,17 +344,17 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
 
-        var transactionSummary = responseFind.getResults().get(0);
+        TransactionSummary transactionSummary = responseFind.getResults().get(0);
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
-        assertTrue(transactionSummary.getAlternativePaymentResponse() instanceof AlternativePaymentResponse);
+        assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
         assertEquals("PENDING", transactionSummary.getTransactionStatus());
         assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        var transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
         transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        var responseConf =
+        Transaction responseConf =
                 transaction
                         .confirm()
                         .execute(GP_API_CONFIG_NAME);
@@ -364,7 +363,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("SUCCESS", responseConf.getResponseCode());
         assertEquals("PREAUTHORIZED", responseConf.getResponseMessage());
 
-        var capture =
+        Transaction capture =
                 transaction
                         .capture(1)
                         .execute(GP_API_CONFIG_NAME);
@@ -373,7 +372,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("SUCCESS", capture.getResponseCode());
         assertEquals("CAPTURED", capture.getResponseMessage());
 
-        var capture2 =
+        Transaction capture2 =
                 transaction
                         .capture(2)
                         .execute(GP_API_CONFIG_NAME);
@@ -386,13 +385,13 @@ public class GpApiApmTest extends BaseGpApiTest {
     @Test
     // unit_amount is actually the total amount for the item; waiting info about the shipping_discount
     public void PayPalChargeWithoutConfirm() throws ApiException {
-        var order = new OrderDetails();
+        OrderDetails order = new OrderDetails();
         order.setInsuranceAmount(new BigDecimal(10));
         order.setHandlingAmount(new BigDecimal(2));
         order.setDescription("Order description");
         order.hasInsurance(true);
 
-        var products = new ArrayList<Product>();
+        ArrayList<Product> products = new ArrayList<>();
         products.add(
                 new Product()
                         .setProductId("SKU251584")
@@ -413,7 +412,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .setUnitCurrency(currency)
                         .setTaxAmount(new BigDecimal("0.5")));
 
-        var response =
+        Transaction response =
                 paymentMethod
                         .charge(29)
                         .withCurrency(currency)

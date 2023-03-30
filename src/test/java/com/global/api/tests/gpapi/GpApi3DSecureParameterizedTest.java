@@ -278,7 +278,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
             assertNotNull(secureEcom.getPayerAuthenticationRequest());
 
             GpApi3DSecureTest.GpApi3DSecureAcsClient acsClient = new GpApi3DSecureTest.GpApi3DSecureAcsClient(secureEcom.getIssuerAcsUrl());
-            StringBuffer payerAuthenticationResponse = new StringBuffer("");
+            StringBuffer payerAuthenticationResponse = new StringBuffer();
             String authResponse = acsClient.authenticate_v1(secureEcom, payerAuthenticationResponse, AcsStatus);
             assertEquals("{\"success\":true}", authResponse);
 

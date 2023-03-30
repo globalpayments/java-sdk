@@ -623,46 +623,61 @@ public class GpEcomSecure3dServiceTest {
                 .execute(Secure3dVersion.TWO);
         assertNotNull(secureEcom);
 
-        if (secureEcom.isEnrolled()) {
-            assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertTrue(secureEcom.isEnrolled());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
 
-            // initiate authentication
-            ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
-                    .withOrderCreateDate(DateTime.now())
-                    .withAddress(billingAddress, AddressType.Billing)
-                    .withAddress(shippingAddress, AddressType.Shipping)
-                    .withBrowserData(browserData)
-                    .withMethodUrlCompletion(MethodUrlCompletion.No)
+        String ephemeralPublicKey = "{" +
+                "\"kty\":\"EC\"," +
+                "\"crv\":\"P-256\"," +
+                "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\"," +
+                "\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
+                "}";
 
-                    // optionals
-                    .withApplicationId("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
-                    .withSdkInterface(SdkInterface.Both)
-                    .withSdkUiTypes(SdkUiType.Text, SdkUiType.SingleSelect, SdkUiType.MultiSelect, SdkUiType.OOB, SdkUiType.HTML_Other)
-//                    .withEphemeralPublicKey("{\"kty\":\"EC\",\"crv\":\"p-256\",\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\",\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"}")
-                    .withMaximumTimeout(5)
-                    .withReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
-                    .withSdkTransactionId("b2385523-a66c-4907-ac3c-91848e8c0067")
-                    .withEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")
-
-                    .execute();
-            assertNotNull(initAuth);
-
-            // get authentication data
-            secureEcom = Secure3dService.getAuthenticationData()
-                    .withServerTransactionId(initAuth.getServerTransactionId())
-                    .execute();
-            card.setThreeDSecure(secureEcom);
-
-            if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
+        // initiate authentication
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withAmount(new BigDecimal("250.00"))
                         .withCurrency("USD")
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .withOrderCreateDate(DateTime.now())
+                        .withOrderId(secureEcom.getOrderId())
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withAddressMatchIndicator(false)
+                        .withMethodUrlCompletion(MethodUrlCompletion.No)
+                        .withMessageCategory(MessageCategory.PaymentAuthentication)
+                        .withCustomerEmail("custumer@domain.com")
+                        // optionals
+                        .withApplicationId("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
+                        .withSdkInterface(SdkInterface.Both)
+                        .withSdkUiTypes(SdkUiType.Text, SdkUiType.SingleSelect, SdkUiType.MultiSelect, SdkUiType.OOB, SdkUiType.HTML_Other)
+                        .withReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
+                        .withSdkTransactionId("b2385523-a66c-4907-ac3c-91848e8c0067")
+                        .withEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")
+                        .withMaximumTimeout(5)
+                        .withEphemeralPublicKey(ephemeralPublicKey)
                         .execute();
-                assertNotNull(response);
-                assertEquals("00", response.getResponseCode());
-            } else fail("Signature verification failed.");
-        } else fail("Card not enrolled.");
+
+        assertNotNull(initAuth);
+        assertEquals("AUTHENTICATION_SUCCESSFUL", initAuth.getStatus());
+        assertNotNull(initAuth.getPayerAuthenticationRequest());
+        assertNotNull(initAuth.getAcsTransactionId());
+
+        // get authentication data
+        secureEcom = Secure3dService.getAuthenticationData()
+                .withServerTransactionId(initAuth.getServerTransactionId())
+                .execute();
+        card.setThreeDSecure(secureEcom);
+
+        assertEquals("AUTHENTICATION_SUCCESSFUL", secureEcom.getStatus());
+
+        Transaction response = card.charge(new BigDecimal("10.01"))
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test

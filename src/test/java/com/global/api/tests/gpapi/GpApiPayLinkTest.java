@@ -17,7 +17,6 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayLinkService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -120,9 +119,9 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void ReportPayLinkDetail() throws ApiException {
-        var paylinkId = "LNK_XXmoF2d4UVBs4k8oXwuqPw1LFQCvc2";
+        String paylinkId = "LNK_XXmoF2d4UVBs4k8oXwuqPw1LFQCvc2";
 
-        var response =
+        PayLinkSummary response =
                 PayLinkService
                         .payLinkDetail(paylinkId)
                         .execute();
@@ -133,7 +132,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void ReportPayLinkDetail_RandomId() throws ApiException {
-        var paylinkId = UUID.randomUUID().toString();
+        String paylinkId = UUID.randomUUID().toString();
 
         boolean exceptionCaught = false;
         try {
@@ -167,7 +166,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void FindPayLinkByDate() throws ApiException {
-        var response =
+        PayLinkSummaryPaged response =
                 PayLinkService
                         .findPayLink(1, 10)
                         .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
@@ -177,13 +176,13 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertNotNull(response.getResults());
-        var randomPayLink = response.getResults().get(0);
+        PayLinkSummary randomPayLink = response.getResults().get(0);
         assertNotNull(randomPayLink);
     }
 
     @Test
     public void FindPayLinkByDate_NoResults() throws ApiException {
-        var response =
+        PayLinkSummaryPaged response =
                 PayLinkService
                         .findPayLink(1, 10)
                         .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
@@ -198,7 +197,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void CreatePayLink() throws ApiException {
-        var payLink = new PayLinkData();
+        PayLinkData payLink = new PayLinkData();
 
         payLink.setType(PayLinkType.PAYMENT);
         payLink.setUsageMode(PaymentMethodUsageMode.SINGLE);
@@ -214,7 +213,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
         payLink.setCancelUrl("https://www.example.com/returnUrl");
 
         BigDecimal amount = new BigDecimal("10.01");
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency("GBP")
@@ -235,7 +234,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
         payLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payLink.setUsageLimit(2);
 
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -254,7 +253,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
         payLink.setImages(imagesList);
 
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -330,7 +329,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
         payLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payLink.setUsageLimit(2);
 
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -368,7 +367,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void CreatePayLink_ThenAuthorizeAndCapture() throws ApiException, InterruptedException {
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -415,7 +414,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void CreatePayLink_ThenCharge_WithTokenizedCard() throws ApiException, InterruptedException {
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -460,7 +459,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void CreatePayLink_ThenCharge_With3DS() throws ApiException, InterruptedException {
-        var response =
+        Transaction response =
                 PayLinkService
                         .create(payLink, amount)
                         .withCurrency(currency)
@@ -537,7 +536,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
     @Test
     public void EditPayLink() throws ApiException {
-        var response =
+        PayLinkSummaryPaged response =
                 PayLinkService
                         .findPayLink(1, 10)
                         .orderBy(PayLinkSortProperty.TimeCreated, SortDirection.Ascending)
@@ -548,20 +547,20 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertNotNull(response.getResults());
-        var randomPayLink = response.getResults().get(0);
+        PayLinkSummary randomPayLink = response.getResults().get(0);
         assertNotNull(randomPayLink);
         assertNotNull(randomPayLink.getId());
 
-        var payLink = new PayLinkData();
+        PayLinkData payLink = new PayLinkData();
 
         payLink.setName("Test of Test");
         payLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payLink.setType(PayLinkType.PAYMENT);
         payLink.setUsageLimit(5);
         payLink.isShippable(false);
-        var newAmount = new BigDecimal("10.08");
+        BigDecimal newAmount = new BigDecimal("10.08");
 
-        var editResponse =
+        Transaction editResponse =
                 PayLinkService
                         .edit(randomPayLink.getId())
                         .withAmount(newAmount)

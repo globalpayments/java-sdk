@@ -8,6 +8,12 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 public class Card {
+    private String cardHolderName;
+    private String cardNumber;
+    private String maskedCardNumber;
+    private String cardExpMonth;
+    private String cardExpYear;
+    private String token;
 
     // Masked card number with last 4 digits showing
     private String maskedNumberLast4;

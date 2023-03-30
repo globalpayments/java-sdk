@@ -106,17 +106,13 @@ public class GpApiPayFacRequestBuilder {
         var merchantData = _builder.getUserPersonalData();
         var data = setMerchantInfo();
         data
+                .set("pricing_profile", merchantData.getTier())
                 .set("description", _builder.getDescription())
                 .set("type", merchantData.getType().toString())
                 .set("addresses", setAddressList())
                 .set("payment_processing_statistics", setPaymentStatistics());
 
-        var tier =
-                new JsonDoc()
-                        .set("reference", merchantData.getTier());
-
         data
-                .set("tier", tier)
                 .set("payment_methods", setPaymentMethod())
                 .set("persons", setPersonList(null))
                 .set("products", _builder.getProductData().size() > 0 ? setProductList(_builder.getProductData()) : null);
@@ -251,8 +247,13 @@ public class GpApiPayFacRequestBuilder {
         var products = new ArrayList<HashMap<String, Object>>();
 
         for (var product : productData) {
+            var deviceInfo = new HashMap<String, Object>();
+            if (product.getProductId().contains("_CP-")) {
+                deviceInfo.put("quantity", 1);
+            }
+
             var item = new HashMap<String, Object>();
-            item.put("quantity", product.getQuantity());
+            item.put("device", deviceInfo.size() > 0 ? deviceInfo : null);
             item.put("id", product.getProductId());
 
             products.add(item);

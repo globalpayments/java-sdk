@@ -143,6 +143,11 @@ public class GpApiMapping {
                 if (paymentMethod.has("card")) {
                     JsonDoc card = paymentMethod.get("card");
 
+                    var cardDetails = new Card();
+                    cardDetails.setMaskedNumberLast4(card.getString("masked_number_last4"));
+                    cardDetails.setBrand(card.getString("brand"));
+                    transaction.setCardDetails(cardDetails);
+
                     transaction.setCardType(card.getString("brand"));
                     transaction.setCardLast4(card.getString("masked_number_last4"));
                     transaction.setCvnResponseMessage(card.getString("cvv_result"));
@@ -189,8 +194,49 @@ public class GpApiMapping {
                 }
             }
 
+            if (json.has("payment_method")) {
+                JsonDoc paymentMethod = json.get("payment_method");
+
+                if (paymentMethod.has("shipping_address") || paymentMethod.has("payer")) {
+                    var payerDetails = new PayerDetails();
+                    payerDetails.setEmail(paymentMethod.get("payer").getString("email"));
+
+                    if (paymentMethod.has("payer")) {
+                        JsonDoc payer = paymentMethod.get("payer");
+
+                        if (payer.has("billing_address")) {
+                            var billingAddress = payer.get("billing_address");
+                            payerDetails.setFirstName(billingAddress.getString("first_name"));
+                            payerDetails.setLastName(billingAddress.getString("last_name"));
+
+                            var billing = mapMerchantAddress(billingAddress);
+                            billing.setType(AddressType.Billing);
+                            payerDetails.setBillingAddress(billing);
+                        }
+                    }
+
+                    var shipping = mapMerchantAddress(paymentMethod.get("shipping_address"));
+                    shipping.setType(AddressType.Shipping);
+
+                    payerDetails.setShippingAddress(shipping);
+                    transaction.setPayerDetails(payerDetails);
+                }
+            }
+
             transaction.setDccRateData(mapDccInfo(json));
             transaction.setFraudFilterResponse(json.has("risk_assessment") ? mapFraudManagement(json) : null);
+
+            if (json.has("card")) {
+                JsonDoc card = json.get("card");
+
+                var cardDetail = new Card();
+                cardDetail.setCardNumber(card.getString("number"));
+                cardDetail.setBrand(card.getString("brand"));
+                cardDetail.setCardExpMonth(card.getString("expiry_month"));
+                cardDetail.setCardExpYear(card.getString("expiry_year"));
+
+                transaction.setCardDetails(cardDetail);
+            }
         }
 
         return transaction;

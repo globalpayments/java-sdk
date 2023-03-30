@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.2.8 (03/30/2023)
+
+### Enhancements:
+- GP-API: Update /merchants create request
+- GP-API: Add payer information on Transaction object
+- GP-API: Avoid setting empty fields on GpApiAuthorizationRequestBuilder
+- GP-ECOM/REALEX: Improvements for 3DS and Recurring unit test
+
 ## v10.2.7 (03/27/2023)
 
 ### Enhancements:

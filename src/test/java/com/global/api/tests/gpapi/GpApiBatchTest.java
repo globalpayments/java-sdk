@@ -34,7 +34,6 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
         // GP-API settings
         config
-                // These credentials have permissions for executing BATCH
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
                 .setChannel(Channel.CardPresent.getValue());

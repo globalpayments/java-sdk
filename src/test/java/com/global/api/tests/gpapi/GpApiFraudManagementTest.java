@@ -1,23 +1,22 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.FraudRuleCollection;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -34,15 +33,9 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId(APP_ID_FRAUD)
-                .setAppKey(APP_KEY_FRAUD)
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
-
-        AccessTokenInfo accessTokenInfo =
-                new AccessTokenInfo()
-                        .setTransactionProcessingAccountName("transaction_processing");
-
-        config.setAccessTokenInfo(accessTokenInfo);
 
         config.setEnableLogging(true);
 
@@ -67,14 +60,14 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     @Test
     public void FraudManagementDataSubmissions() throws ApiException {
 
-        var fraudFilters = new HashMap<FraudFilterMode, String>() {{
+        HashMap<FraudFilterMode, String> fraudFilters = new HashMap<FraudFilterMode, String>() {{
             put(FraudFilterMode.Active, FraudFilterResult.PASS.getValue());
             put(FraudFilterMode.Passive, FraudFilterResult.PASS.getValue());
             put(FraudFilterMode.Off, "");
         }};
 
-        for (var items : fraudFilters.entrySet()) {
-            var response =
+        for (Map.Entry<FraudFilterMode, String> items : fraudFilters.entrySet()) {
+            Transaction response =
                     card
                             .charge(98.10)
                             .withCurrency(currency)
@@ -93,14 +86,14 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionWithRules() throws ApiException {
-        final String rule1 = "2c49c2e6-5843-4275-9b92-8c9b6dc8e566";
-        final String rule2 = "2cfa3a28-f8f3-42f8-abbf-79b54e35de16";
+        final String rule1 = "0c93a6c9-7649-4822-b5ea-1efa356337fd";
+        final String rule2 = "a539d51a-abc1-4fff-a38e-b34e00ad0cc3";
 
-        var rules = new FraudRuleCollection();
+        FraudRuleCollection rules = new FraudRuleCollection();
         rules.addRule(rule1, FraudFilterMode.Active);
         rules.addRule(rule2, FraudFilterMode.Off);
 
-        var response =
+        Transaction response =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -115,7 +108,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), response.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseResult());
 
-        for (var fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
+        for (FraudRule fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
             if (fraudResponseRule.getKey().equals(rule1)) {
                 assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), fraudResponseRule.getResult());
             }
@@ -127,20 +120,18 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionWith_AllRulesActive() throws ApiException {
-        var ruleList = new ArrayList<String>() {{
-            add("2c49c2e6-5843-4275-9b92-8c9b6dc8e566");
-            add("2cfa3a28-f8f3-42f8-abbf-79b54e35de16");
-            add("21db158b-4541-4217-aa81-927596465547");
-            add("6acbcb2e-79c7-40c3-8c17-b65c5fba2a54");
-            add("a7da55fb-69c4-4c41-abb6-c4dded40354e");
+        ArrayList<String> ruleList = new ArrayList<String>() {{
+            add("0c93a6c9-7649-4822-b5ea-1efa356337fd");
+            add("a539d51a-abc1-4fff-a38e-b34e00ad0cc3");
+            add("d023a19e-6985-4fda-bb9b-5d4e0dedbb1e");
         }};
 
-        var rules = new FraudRuleCollection();
-        for (var rule : ruleList) {
+        FraudRuleCollection rules = new FraudRuleCollection();
+        for (String rule : ruleList) {
             rules.addRule(rule, FraudFilterMode.Active);
         }
 
-        var response =
+        Transaction response =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -155,27 +146,25 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseResult());
 
-        for (var fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
+        for (FraudRule fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
             assertTrue(ruleList.contains(fraudResponseRule.getKey()));
         }
     }
 
     @Test
     public void FraudManagementDataSubmissionWith_AllRulesOff() throws ApiException {
-        var ruleList = new ArrayList<String>() {{
-            add("2c49c2e6-5843-4275-9b92-8c9b6dc8e566");
-            add("2cfa3a28-f8f3-42f8-abbf-79b54e35de16");
-            add("21db158b-4541-4217-aa81-927596465547");
-            add("6acbcb2e-79c7-40c3-8c17-b65c5fba2a54");
-            add("a7da55fb-69c4-4c41-abb6-c4dded40354e");
+        ArrayList<String> ruleList = new ArrayList<String>() {{
+            add("0c93a6c9-7649-4822-b5ea-1efa356337fd");
+            add("a539d51a-abc1-4fff-a38e-b34e00ad0cc3");
+            add("d023a19e-6985-4fda-bb9b-5d4e0dedbb1e");
         }};
 
-        var rules = new FraudRuleCollection();
-        for (var rule : ruleList) {
+        FraudRuleCollection rules = new FraudRuleCollection();
+        for (String rule : ruleList) {
             rules.addRule(rule, FraudFilterMode.Off);
         }
 
-        var response =
+        Transaction response =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -190,7 +179,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.NOT_EXECUTED.toString().toUpperCase(), response.getFraudFilterResponse().getFraudResponseResult());
 
-        for (var fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
+        for (FraudRule fraudResponseRule : response.getFraudFilterResponse().getFraudResponseRules()) {
             assertTrue(ruleList.contains(fraudResponseRule.getKey()));
             assertEquals(FraudFilterResult.NOT_EXECUTED.toString().toUpperCase(), fraudResponseRule.getResult());
             assertEquals(FraudFilterMode.Off, fraudResponseRule.getMode());
@@ -199,13 +188,13 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void ReleaseTransactionAfterFraudResultHold() throws ApiException {
-        var trn =
+        card.setCardHolderName("Lenny Bruce");
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
-                        .withCustomerIpAddress("123.123.123.123")
                         .execute();
 
         assertNotNull(trn);
@@ -215,7 +204,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.HOLD.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var trn2 =
+        Transaction trn2 =
                 trn
                         .release()
                         .withReasonCode(ReasonCode.FalsePositive)
@@ -230,7 +219,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .authorize(98.10)
                         .withCurrency(currency)
@@ -282,7 +271,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_HoldAndReleaseWithoutReasonCode() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .authorize(98.10)
                         .withCurrency(currency)
@@ -331,13 +320,13 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void CaptureTransactionAfterFraudResultHold() throws ApiException {
-        var trn =
+        card.setCardHolderName("Lenny Bruce");
+        Transaction trn =
                 card
                         .authorize(10.10)
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
-                        .withCustomerIpAddress("123.123.123.123")
                         .execute();
 
         assertNotNull(trn);
@@ -347,7 +336,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.HOLD.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .capture()
@@ -363,13 +352,13 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void RefundTransactionAfterFraudResultHold() throws ApiException {
-        var trn =
+        card.setCardHolderName("Lenny Bruce");
+        Transaction trn =
                 card
                         .charge(10.10)
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
-                        .withCustomerIpAddress("123.123.123.123")
                         .execute();
 
         assertNotNull(trn);
@@ -379,7 +368,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.HOLD.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .refund()
@@ -387,8 +376,8 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException e) {
             errorFound = true;
-            assertEquals("Status Code: 502 - The refund password you entered was incorrect ", e.getMessage());
-            assertEquals("50017", e.getResponseText());
+            assertEquals("Status Code: 400 - You can't refund a delayed transaction that has not been sent for settlement You are refunding money to a customer that has not been and never will be charged! ", e.getMessage());
+            assertEquals("40087", e.getResponseText());
         } finally {
             assertTrue(errorFound);
         }
@@ -396,7 +385,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_Charge() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -438,9 +427,9 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_Charge_WithIdempotencyKey() throws ApiException {
-        var idempotencyKey = UUID.randomUUID().toString();
+        String idempotencyKey = UUID.randomUUID().toString();
 
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -456,7 +445,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
             card.charge(1)
                     .withCurrency(currency)
@@ -474,7 +463,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_ChargeThenRefund() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -513,24 +502,19 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
-        try {
-            trn
-                    .refund()
-                    .withCurrency(currency)
-                    .execute();
-        } catch (GatewayException e) {
-            errorFound = true;
-            assertEquals("Status Code: 502 - The refund password you entered was incorrect ", e.getMessage());
-            assertEquals("50017", e.getResponseText());
-        } finally {
-            assertTrue(errorFound);
-        }
+        Transaction refundResponse = trn
+                .refund()
+                .withCurrency(currency)
+                .execute();
+
+        assertNotNull(refundResponse);
+        assertEquals("SUCCESS", refundResponse.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), refundResponse.getResponseMessage());
     }
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_ChargePassive() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -572,7 +556,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_Charge_ThenReleaseWithoutHold() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -587,7 +571,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .release()
@@ -606,7 +590,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void FraudManagementDataSubmissionFullCycle_Authorize_ThenReleaseWithoutHold() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .authorize(98.10)
                         .withCurrency(currency)
@@ -621,7 +605,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Passive.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .release()
@@ -643,7 +627,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                 continue;
             }
 
-            var trn =
+            Transaction trn =
                     card
                             .charge(98.10)
                             .withCurrency(currency)
@@ -687,9 +671,9 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Release_WithIdempotencyKey() throws ApiException {
-        var idempotencyKey = UUID.randomUUID().toString();
+        String idempotencyKey = UUID.randomUUID().toString();
 
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -717,7 +701,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
             trn.release()
                     .withReasonCode(ReasonCode.FalsePositive)
@@ -735,10 +719,10 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Release_RandomTransaction() {
-        var trn = new Transaction();
+        Transaction trn = new Transaction();
         trn.setTransactionId(UUID.randomUUID().toString());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .release()
@@ -757,7 +741,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Release_InvalidReason() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -772,7 +756,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .release()
@@ -789,12 +773,12 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void HoldTransactionAfterFraudResultHold() throws ApiException {
-        var trn =
+        card.setCardHolderName("Lenny Bruce");
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
                         .withAddress(address)
-                        .withCustomerIpAddress("123.123.123.123")
                         .withFraudFilter(FraudFilterMode.Active)
                         .execute();
 
@@ -805,7 +789,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.HOLD.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .hold()
@@ -829,7 +813,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                 continue;
             }
 
-            var trn =
+            Transaction trn =
                     card
                             .charge(98.10)
                             .withCurrency(currency)
@@ -862,9 +846,9 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Hold_WithIdempotencyKey() throws ApiException {
-        var idempotencyKey = UUID.randomUUID().toString();
+        String idempotencyKey = UUID.randomUUID().toString();
 
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -880,7 +864,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
             trn
                     .hold()
@@ -899,10 +883,10 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Hold_RandomTransaction() {
-        var trn = new Transaction();
+        Transaction trn = new Transaction();
         trn.setTransactionId(UUID.randomUUID().toString());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .hold()
@@ -921,7 +905,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void Hold_InvalidReason() throws ApiException {
-        var trn =
+        Transaction trn =
                 card
                         .charge(98.10)
                         .withCurrency(currency)
@@ -936,7 +920,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
         assertEquals(FraudFilterResult.PASS.getValue().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseResult());
 
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             trn
                     .hold()
@@ -953,23 +937,23 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     @Test
     public void GetTransactionWithFraudCheck() throws ApiException {
-        var startDate = DateTime.now().plusDays(-30);
-        var endDate = DateTime.now().plusDays(-3);
+        DateTime startDate = DateTime.now().plusDays(-30);
+        DateTime endDate = DateTime.now().plusDays(-3);
 
-        var response =
+        TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
                         .where(SearchCriteria.StartDate, startDate.toDate())
                         .and(SearchCriteria.EndDate, endDate.toDate())
-                        .and(SearchCriteria.RiskAssessmentResult, FraudFilterResult.HOLD)
+                        .and(SearchCriteria.RiskAssessmentResult, FraudFilterResult.PASS)
                         .execute();
 
         assertTrue(response.getResults().size() > 0);
 
-        var trnSummary = response.getResults().get(0);
+        TransactionSummary trnSummary = response.getResults().get(0);
         assertNotNull(trnSummary.getFraudManagementResponse());
-        assertEquals(FraudFilterResult.HOLD.getValue(), trnSummary.getFraudManagementResponse().getFraudResponseResult());
+        assertEquals(FraudFilterResult.PASS.getValue(), trnSummary.getFraudManagementResponse().getFraudResponseResult());
     }
 
 }

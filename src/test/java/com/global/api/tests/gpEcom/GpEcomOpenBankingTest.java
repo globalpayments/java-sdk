@@ -2,6 +2,7 @@ package com.global.api.tests.gpEcom;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.BankPaymentStatus;
 import com.global.api.entities.enums.RemittanceReferenceType;
 import com.global.api.entities.enums.ShaHashType;
@@ -12,7 +13,6 @@ import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.BankPayment;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
-import lombok.var;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -70,7 +70,7 @@ public class GpEcomOpenBankingTest {
     @Test
     public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
         for (ShaHashType shaHashType : ShaHashType.values()) {
-            var config = new GpEcomConfig();
+            GpEcomConfig config = new GpEcomConfig();
             config.setMerchantId("openbankingsandbox");
             config.setSharedSecret("sharedsecret");
             config.setAccountId("internet");
@@ -79,9 +79,9 @@ public class GpEcomOpenBankingTest {
 
             ServicesContainer.configureService(config, shaHashType.toString());
 
-            var bankPayment = fasterPaymentConfig();
+            BankPayment bankPayment = fasterPaymentConfig();
 
-            var transaction =
+            Transaction transaction =
                     bankPayment
                             .charge(amount)
                             .withCurrency(currency)
@@ -92,7 +92,7 @@ public class GpEcomOpenBankingTest {
 
             Thread.sleep(2000);
 
-            var detail =
+            TransactionSummaryPaged detail =
                     ReportingService
                             .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
                             .execute(shaHashType.toString());
@@ -150,7 +150,7 @@ public class GpEcomOpenBankingTest {
     public void OpenBanking_BankPaymentList_EmptyList() throws ApiException {
         final BankPaymentStatus status = BankPaymentStatus.REQUEST_CONSUMER_CONSENT;
 
-        var result =
+        TransactionSummaryPaged result =
                 ReportingService
                         .findBankPaymentTransactions(1, 10)
                         .where(SearchCriteria.StartDate, LocalDate.now().plusDays(-5).toDate())
@@ -165,7 +165,7 @@ public class GpEcomOpenBankingTest {
 
     @Test
     public void OpenBanking_BankPaymentList_WithReturnPii() throws ApiException {
-        var result =
+        TransactionSummaryPaged result =
                 ReportingService
                         .findBankPaymentTransactions(1, 10)
                         .where(SearchCriteria.StartDate, LocalDate.now().plusDays(-5).toDate())
@@ -176,7 +176,7 @@ public class GpEcomOpenBankingTest {
         assertNotNull(result);
         assertNotEquals(0, result.getResults().size());
 
-        for (var item : result.getResults()) {
+        for (TransactionSummary item : result.getResults()) {
             if (item.getTransactionType() != null) {
                 continue;
             }

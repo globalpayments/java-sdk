@@ -310,27 +310,8 @@ public class GpEcomRecurringTest {
 
     @Test
     public void CardStorageAddSchedule() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
 
         try {
@@ -367,28 +348,47 @@ public class GpEcomRecurringTest {
     }
 
     @Test
+    public void CardStorageAddSchedule_AllScheduleFrequency() throws ApiException {
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
+
+        for (ScheduleFrequency frequency : ScheduleFrequency.values()) {
+            if (frequency == ScheduleFrequency.BiWeekly || frequency == ScheduleFrequency.SemiMonthly)
+                continue;
+
+            String scheduleId = GenerationUtils.generateScheduleId();
+            RecurringEntity<Schedule> response =
+                    paymentMethod
+                            .addSchedule(scheduleId)
+                            .withStartDate(DateTime.now().toDate())
+                            .withAmount(new BigDecimal("30.01"))
+                            .withCurrency("USD")
+                            .withFrequency(frequency)
+                            .withReprocessingCount(1)
+                            .withNumberOfPayments(12)
+                            .withCustomerNumber("E8953893489")
+                            .withOrderPrefix("gym")
+                            .withName("Gym Membership")
+                            .withDescription("Social Sign-Up")
+                            .create();
+
+            assertEquals("00", response.getResponseCode());
+            assertEquals("Schedule created successfully", response.getResponseMessage());
+
+            // the schedule id/key is not received in the response from the create request
+            Schedule schedule = new Schedule();
+            schedule.setKey(scheduleId);
+            schedule = RecurringService.get(scheduleId, Schedule.class);
+
+            assertEquals(scheduleId, schedule.getId());
+            assertEquals(12, schedule.getNumberOfPayments().intValue());
+        }
+    }
+
+    @Test
     public void CardStorageAddSchedule_WithIndefinitelyRun() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
 
         try {
@@ -426,61 +426,35 @@ public class GpEcomRecurringTest {
 
     @Test
     public void CardStorageAddSchedule_With999Runs() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
 
-        try {
-            RecurringEntity<Schedule> response =
-                    paymentMethod
-                            .addSchedule(scheduleId)
-                            .withStartDate(DateTime.now().toDate())
-                            .withAmount(new BigDecimal("30.01"))
-                            .withCurrency("USD")
-                            .withFrequency(ScheduleFrequency.Quarterly)
-                            .withReprocessingCount(1)
-                            .withNumberOfPayments(999)
-                            .withCustomerNumber("E8953893489")
-                            .withOrderPrefix("gym")
-                            .withName("Gym Membership")
-                            .withDescription("Social Sign-Up")
-                            .create();
+        RecurringEntity<Schedule> response =
+                paymentMethod
+                        .addSchedule(scheduleId)
+                        .withStartDate(DateTime.now().toDate())
+                        .withAmount(new BigDecimal("30.01"))
+                        .withCurrency("USD")
+                        .withFrequency(ScheduleFrequency.Quarterly)
+                        .withReprocessingCount(1)
+                        .withNumberOfPayments(999)
+                        .withCustomerNumber("E8953893489")
+                        .withOrderPrefix("gym")
+                        .withName("Gym Membership")
+                        .withDescription("Social Sign-Up")
+                        .create();
 
-            assertEquals("00", response.getResponseCode());
-            assertEquals("Schedule created successfully", response.getResponseMessage());
+        assertEquals("00", response.getResponseCode());
+        assertEquals("Schedule created successfully", response.getResponseMessage());
 
+        Schedule schedule = new Schedule();
+        schedule.setKey(scheduleId);
 
-            Schedule schedule = new Schedule();
-            schedule.setKey(scheduleId);
+        schedule = RecurringService.get(schedule.getKey(), Schedule.class);
 
-            schedule = RecurringService.get(schedule.getKey(), Schedule.class);
-
-            assertEquals(scheduleId, schedule.getId());
-            assertEquals(999, schedule.getNumberOfPayments().intValue());
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
+        assertEquals(scheduleId, schedule.getId());
+        assertEquals(999, schedule.getNumberOfPayments().intValue());
     }
 
     @Test
@@ -672,53 +646,21 @@ public class GpEcomRecurringTest {
 
     @Test
     public void CardStorageAddSchedule_WithNumberOfPaymentsInvalid() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
         boolean exceptionCaught = false;
 
         try {
-            RecurringEntity<Schedule> response =
-                    paymentMethod
-                            .addSchedule(scheduleId)
-                            .withStartDate(DateTime.now().toDate())
-                            .withAmount(new BigDecimal("30.01"))
-                            .withCurrency("USD")
-                            .withFrequency(ScheduleFrequency.Quarterly)
-                            .withReprocessingCount(1)
-                            .withNumberOfPayments(1000)
-                            .create();
-
-            assertEquals("00", response.getResponseCode());
-            assertEquals("Schedule created successfully", response.getResponseMessage());
-
-
-            Schedule schedule = new Schedule();
-            schedule.setKey(scheduleId);
-
-            schedule = RecurringService.get(schedule.getKey(), Schedule.class);
-
-            assertEquals(scheduleId, schedule.getId());
-            assertEquals(999, schedule.getNumberOfPayments().intValue());
+            paymentMethod
+                    .addSchedule(scheduleId)
+                    .withStartDate(DateTime.now().toDate())
+                    .withAmount(new BigDecimal("30.01"))
+                    .withCurrency("USD")
+                    .withFrequency(ScheduleFrequency.Quarterly)
+                    .withReprocessingCount(1)
+                    .withNumberOfPayments(1000)
+                    .create();
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("535", e.getResponseCode());
@@ -730,53 +672,21 @@ public class GpEcomRecurringTest {
 
     @Test
     public void CardStorageAddSchedule_WithNumberOfPaymentsZero() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
         boolean exceptionCaught = false;
 
         try {
-            RecurringEntity<Schedule> response =
-                    paymentMethod
-                            .addSchedule(scheduleId)
-                            .withStartDate(DateTime.now().toDate())
-                            .withAmount(new BigDecimal("30.01"))
-                            .withCurrency("USD")
-                            .withFrequency(ScheduleFrequency.Quarterly)
-                            .withReprocessingCount(1)
-                            .withNumberOfPayments(0)
-                            .create();
-
-            assertEquals("00", response.getResponseCode());
-            assertEquals("Schedule created successfully", response.getResponseMessage());
-
-
-            Schedule schedule = new Schedule();
-            schedule.setKey(scheduleId);
-
-            schedule = RecurringService.get(schedule.getKey(), Schedule.class);
-
-            assertEquals(scheduleId, schedule.getId());
-            assertEquals(999, schedule.getNumberOfPayments().intValue());
+            paymentMethod
+                    .addSchedule(scheduleId)
+                    .withStartDate(DateTime.now().toDate())
+                    .withAmount(new BigDecimal("30.01"))
+                    .withCurrency("USD")
+                    .withFrequency(ScheduleFrequency.Quarterly)
+                    .withReprocessingCount(1)
+                    .withNumberOfPayments(0)
+                    .create();
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("535", e.getResponseCode());
@@ -788,30 +698,12 @@ public class GpEcomRecurringTest {
 
     @Test
     public void GetListOfPaymentSchedules() throws ApiException {
-        try {
-            Customer response = new_customer.create();
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
 
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
+        for (int i = 0; i < 3; i++) {
+            String scheduleId = GenerationUtils.generateScheduleId();
 
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        String scheduleId = GenerationUtils.generateScheduleId();
-
-        try {
             RecurringEntity<Schedule> response =
                     paymentMethod
                             .addSchedule(scheduleId)
@@ -829,10 +721,6 @@ public class GpEcomRecurringTest {
 
             assertEquals("00", response.getResponseCode());
             assertEquals("Schedule created successfully", response.getResponseMessage());
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
         }
 
         RecurringCollection<Schedule> schedules =
@@ -850,7 +738,7 @@ public class GpEcomRecurringTest {
     }
 
     @Test
-    public void GetListOfPaymentSchedules_RandomDetails() throws ApiException {
+    public void GetListOfPaymentSchedules_RandomCustomerIdDetails() throws ApiException {
         String customerId = UUID.randomUUID().toString();
 
         try {
@@ -865,6 +753,60 @@ public class GpEcomRecurringTest {
         } catch (GatewayException e) {
             assertEquals("520", e.getResponseCode());
             assertEquals("Unexpected Gateway Response: 520 - This Payer Ref [" + customerId + "] does not exist", e.getMessage());
+        }
+    }
+
+    @Test
+    public void GetListOfPaymentSchedules_RandomPayment() throws ApiException {
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
+        String randomPaymentId = UUID.randomUUID().toString();
+
+        try {
+            RecurringCollection<Schedule> schedules =
+                    RecurringService
+                            .search(new Schedule(), RecurringCollection.class)
+                            .addSearchCriteria(SearchCriteria.PaymentMethodKey.toString(), randomPaymentId)
+                            .addSearchCriteria(SearchCriteria.CustomerId.toString(), paymentMethod.getCustomerKey())
+                            .execute();
+
+            assertNull(schedules);
+        } catch (GatewayException e) {
+            assertEquals("Unexpected Gateway Response: 501 - Card Ref and Payer combination does not exist", e.getMessage());
+            assertEquals("501", e.getResponseCode());
+        }
+    }
+
+    @Test
+    public void GetListOfPaymentSchedules_EmptyList() throws ApiException {
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
+
+        try {
+            RecurringCollection<Schedule> schedulesCheck =
+                    RecurringService
+                            .search(new Schedule(), RecurringCollection.class)
+                            .addSearchCriteria(SearchCriteria.PaymentMethodKey.toString(), paymentMethod.getId())
+                            .addSearchCriteria(SearchCriteria.CustomerId.toString(), paymentMethod.getCustomerKey())
+                            .execute();
+
+            if (!schedulesCheck.isEmpty()) {
+                for (Schedule schedule : schedulesCheck) {
+                    schedule.delete();
+                }
+            }
+
+            RecurringCollection<Schedule> schedules =
+                    RecurringService
+                            .search(new Schedule(), RecurringCollection.class)
+                            .addSearchCriteria(SearchCriteria.PaymentMethodKey.toString(), paymentMethod.getId())
+                            .addSearchCriteria(SearchCriteria.CustomerId.toString(), paymentMethod.getCustomerKey())
+                            .execute();
+
+            assertNull(schedules);
+        } catch (GatewayException e) {
+            assertEquals("Unexpected Gateway Response: 508 - The Scheduled Payment does not exist.", e.getMessage());
+            assertEquals("508", e.getResponseCode());
         }
     }
 
@@ -902,27 +844,8 @@ public class GpEcomRecurringTest {
 
     @Test
     public void DeleteSchedule() throws ApiException {
-        try {
-            Customer response = new_customer.create();
-
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
-        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
-
-        try {
-            RecurringPaymentMethod response = paymentMethod.create();
-            assertNotNull(response);
-        } catch (GatewayException exc) {
-            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
-                throw exc;
-            }
-        }
-
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
         String scheduleId = GenerationUtils.generateScheduleId();
 
         try {
@@ -952,8 +875,8 @@ public class GpEcomRecurringTest {
         RecurringCollection<Schedule> schedules =
                 RecurringService
                         .search(new Schedule(), RecurringCollection.class)
-                        .addSearchCriteria(SearchCriteria.PaymentMethodKey.toString(), paymentId("Credit"))
-                        .addSearchCriteria(SearchCriteria.CustomerId.toString(), new_customer.getKey())
+                        .addSearchCriteria(SearchCriteria.PaymentMethodKey.toString(), paymentMethod.getId())
+                        .addSearchCriteria(SearchCriteria.CustomerId.toString(), paymentMethod.getCustomerKey())
                         .execute();
 
         assertNotNull(schedules);
@@ -1019,5 +942,31 @@ public class GpEcomRecurringTest {
         } catch (ApiException e) {
             assertEquals("key cannot be null for this transaction type.", e.getMessage());
         }
+    }
+
+    private void checkCustomer() throws ApiException {
+        try {
+            Customer response = new_customer.create();
+
+            assertNotNull(response);
+        } catch (GatewayException exc) {
+            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
+                throw exc;
+            }
+        }
+    }
+
+    private RecurringPaymentMethod checkPaymentMethod() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
+
+        try {
+            RecurringPaymentMethod response = paymentMethod.create();
+            assertNotNull(response);
+        } catch (GatewayException exc) {
+            if (!exc.getResponseCode().equals("501") && !exc.getResponseCode().equals("520")) {
+                throw exc;
+            }
+        }
+        return paymentMethod;
     }
 }

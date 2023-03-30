@@ -3,6 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BrowserData;
+import com.global.api.entities.RiskAssessment;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
@@ -10,7 +11,6 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FraudService;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     private BrowserData browserData;
 
     private final static String Currency = "GBP";
-    private final static BigDecimal Amount = new BigDecimal(10.01);
+    private final static BigDecimal Amount = new BigDecimal("10.01");
 
     public GpApiRiskAssessmentTest() throws ConfigurationException {
         GpApiConfig config = new GpApiConfig();
@@ -50,7 +50,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     }
 
     @Before
-    public void testInitialize() throws ApiException {
+    public void testInitialize() {
         // Create card data
         card = new CreditCardData();
         card.setExpMonth(expMonth);
@@ -84,7 +84,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysisBasicOption() throws ApiException {
-        var response =
+        RiskAssessment response =
                 FraudService
                         .RiskAssess(card)
                         .WithAmount(Amount)
@@ -99,9 +99,9 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void RiskAssessment() throws ApiException {
-        var idempotencyKey = UUID.randomUUID().toString();
+        String idempotencyKey = UUID.randomUUID().toString();
 
-        var response =
+        RiskAssessment response =
                 FraudService
                         .RiskAssess(card)
                         .WithAmount(Amount)
@@ -160,14 +160,14 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_AllSources() throws ApiException {
-        var source = new ArrayList<AuthenticationSource>();
+        ArrayList<AuthenticationSource> source = new ArrayList<>();
         source.add(AuthenticationSource.Browser);
         source.add(AuthenticationSource.MerchantInitiated);
         source.add(AuthenticationSource.MobileSDK);
 
-        for (var item : source){
+        for (AuthenticationSource item : source){
 
-            var response = FraudService.RiskAssess(card)
+            RiskAssessment response = FraudService.RiskAssess(card)
                     .WithAmount(Amount)
                     .WithCurrency(Currency)
                     .WithAuthenticationSource(item)
@@ -184,7 +184,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     public void TransactionRiskAnalysis_AllDeliveryTimeFrames() throws ApiException {
         for (DeliveryTimeFrame value : DeliveryTimeFrame.values()) {
 
-            var response =
+            RiskAssessment response =
                     FraudService
                             .RiskAssess(card)
                             .WithAmount(Amount)
@@ -203,7 +203,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     @Test
     public void TransactionRiskAnalysis_AllShippingMethods() throws ApiException {
         for (ShippingMethod value : ShippingMethod.values()) {
-            var response =
+            RiskAssessment response =
                     FraudService
                             .RiskAssess(card)
                             .WithAmount(Amount)
@@ -222,7 +222,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     @Test
     public void TransactionRiskAnalysis_AllOrderTransactionTypes() throws ApiException {
         for (OrderTransactionType value : OrderTransactionType.values()) {
-            var response =
+            RiskAssessment response =
                     FraudService
                             .RiskAssess(card)
                             .WithAmount(Amount)
@@ -241,7 +241,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     @Test
     public void TransactionRiskAnalysis_AllPriorAuthenticationMethods() throws ApiException {
         for (PriorAuthenticationMethod value : PriorAuthenticationMethod.values()) {
-            var response =
+            RiskAssessment response =
                     FraudService
                             .RiskAssess(card)
                             .WithAmount(Amount)
@@ -260,7 +260,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     @Test
     public void TransactionRiskAnalysis_AllCustomerAuthenticationMethods() throws ApiException {
         for (CustomerAuthenticationMethod value : CustomerAuthenticationMethod.values()) {
-            var response =
+            RiskAssessment response =
                     FraudService
                             .RiskAssess(card)
                             .WithAmount(Amount)
@@ -280,7 +280,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_MissingAmount() throws ApiException {
-        var errorFound = false;
+        boolean errorFound = false;
 
         try {
             FraudService
@@ -300,7 +300,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_MissingCurrency() {
-        var errorFound = false;
+        boolean errorFound = false;
 
         try {
             FraudService
@@ -322,7 +322,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_MissingSource() throws ApiException {
-        var errorFound = false;
+        boolean errorFound = false;
 
         try {
             FraudService
@@ -342,7 +342,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_MissingBrowserData() throws ApiException {
-        var errorFound = false;
+        boolean errorFound = false;
 
         try {
             FraudService.RiskAssess(card)
@@ -361,7 +361,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
     @Test
     public void TransactionRiskAnalysis_MissingCard() throws ApiException {
-        var errorFound = false;
+        boolean errorFound = false;
         try {
             FraudService.RiskAssess(new CreditCardData())
                     .WithAmount(Amount)

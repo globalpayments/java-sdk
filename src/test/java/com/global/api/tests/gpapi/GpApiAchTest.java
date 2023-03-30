@@ -4,14 +4,15 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import lombok.var;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -88,7 +89,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
     @Test
     public void CheckSale() throws ApiException {
-        var response =
+        Transaction response =
                 eCheck
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -101,7 +102,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
     @Test
     public void CheckRefund() throws ApiException {
-        var response =
+        Transaction response =
                 eCheck
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -115,9 +116,9 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     @Ignore("GP-API sandbox limitation")
     public void CheckRefundExistingSale() throws ApiException {
-        var amount = new BigDecimal("1.29");
+        BigDecimal amount = new BigDecimal("1.29");
 
-        var response =
+        TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
@@ -130,14 +131,14 @@ public class GpApiAchTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertNotNull(response.getResults());
-        var transactionSummary = response.getResults().get(0);
+        TransactionSummary transactionSummary = response.getResults().get(0);
         assertNotNull(transactionSummary);
         assertEquals(amount, transactionSummary.getAmount());
-        var transaction = new Transaction();
+        Transaction transaction = new Transaction();
         transaction.setTransactionId(transactionSummary.getTransactionId());
         transaction.setPaymentMethodType(PaymentMethodType.ACH);
 
-        var resp =
+        Transaction resp =
                 transaction
                         .refund()
                         .withCurrency(CURRENCY)
@@ -148,14 +149,14 @@ public class GpApiAchTest extends BaseGpApiTest {
 
     @Test
     public void CheckReauthorize() throws ApiException {
-        var eCheckReauth = new eCheck();
+        eCheck eCheckReauth = new eCheck();
         eCheckReauth.setSecCode(SecCode.Ppd);
         eCheckReauth.setAccountNumber("051904524");
         eCheckReauth.setRoutingNumber("123456780");
 
-        var amount = new BigDecimal("1.29");
+        BigDecimal amount = new BigDecimal("1.29");
 
-        var response =
+        TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
@@ -169,15 +170,15 @@ public class GpApiAchTest extends BaseGpApiTest {
         assertNotNull(response);
         assertNotNull(response.getResults());
 
-        var transactionSummary = response.getResults().get(0);
+        TransactionSummary transactionSummary = response.getResults().get(0);
         assertNotNull(transactionSummary);
         assertEquals(amount, transactionSummary.getAmount());
 
-        var transaction = new Transaction();
+        Transaction transaction = new Transaction();
         transaction.setTransactionId(transactionSummary.getTransactionId());
         transaction.setPaymentMethodType(PaymentMethodType.ACH);
 
-        var resp =
+        Transaction resp =
                 transaction
                         .reauthorize()
                         .withDescription("Resubmitting " + transaction.getReferenceNumber())

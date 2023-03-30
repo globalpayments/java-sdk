@@ -7,11 +7,11 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.BNPL;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
-import lombok.var;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +25,8 @@ import static org.junit.Assert.*;
 
 public class GpApiBNPLTest extends BaseGpApiTest {
     private BNPL paymentMethod;
-    private String currency;
+    private final String currency = "USD";
+    private final BigDecimal amount = new BigDecimal("550");
     private Address shippingAddress;
     private Address billingAddress;
 
@@ -34,8 +35,8 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         // GP-API settings
         config
-                .setAppId("uAGII1ChGyRk1CqzJBsOOGBTrDMMYjAp")
-                .setAppKey("hgLnF6Fh7BIt3TDw")
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
                 .setChannel(Channel.CardNotPresent.getValue());
 
         config.setEnableLogging(true);
@@ -52,9 +53,6 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .setStatusUpdateUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net")
                         .setCancelUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net");
 
-        currency = "USD";
-
-        // billing address
         billingAddress = new Address();
         billingAddress.setStreetAddress1("10 Glenlake Pkwy NE");
         billingAddress.setStreetAddress2("no");
@@ -63,7 +61,6 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         billingAddress.setCountryCode("US");
         billingAddress.setState("IL");
 
-        // shipping address
         shippingAddress = new Address();
         shippingAddress.setStreetAddress1("Apartment 852");
         shippingAddress.setStreetAddress2("Complex 741");
@@ -76,12 +73,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_FullCycle() throws ApiException, InterruptedException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var response =
+        Transaction response =
                 paymentMethod
-                        .authorize(10)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -99,7 +96,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        var captured =
+        Transaction captured =
                 response
                         .capture()
                         .execute();
@@ -108,9 +105,9 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         assertEquals("SUCCESS", captured.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), captured.getResponseMessage());
 
-        var refund =
+        Transaction refund =
                 captured
-                        .refund(5)
+                        .refund(amount)
                         .withCurrency(currency)
                         .execute();
 
@@ -121,7 +118,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void FullRefund() throws ApiException {
-        var response =
+        TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 10)
                         .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Ascending)
@@ -133,10 +130,10 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         assertNotNull(response);
         assertTrue(response.getResults().size() > 0);
 
-        var trnSummary = response.getResults().get(new Random().nextInt(response.getResults().size()));
-        var trn = Transaction.fromId(trnSummary.getTransactionId(), trnSummary.getPaymentType());
+        TransactionSummary trnSummary = response.getResults().get(new Random().nextInt(response.getResults().size()));
+        Transaction trn = Transaction.fromId(trnSummary.getTransactionId(), trnSummary.getPaymentType());
 
-        var trnRefund =
+        Transaction trnRefund =
                 trn
                         .refund(StringUtils.toAmount(trnSummary.getAmount().toString()))
                         .withCurrency(trnSummary.getCurrency())
@@ -149,12 +146,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_PartialRefund() throws ApiException, InterruptedException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -174,7 +171,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        var captureTrn =
+        Transaction captureTrn =
                 transaction
                         .capture()
                         .execute();
@@ -185,7 +182,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(15000);
 
-        var trnRefund =
+        Transaction trnRefund =
                 captureTrn
                         .refund(100)
                         .withCurrency(currency)
@@ -198,12 +195,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MultipleRefund() throws ApiException, InterruptedException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -223,7 +220,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        var captureTrn =
+        Transaction captureTrn =
                 transaction
                         .capture()
                         .execute();
@@ -234,7 +231,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        var trnRefund =
+        Transaction trnRefund =
                 captureTrn
                         .refund(100)
                         .withCurrency(currency)
@@ -244,25 +241,25 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         assertEquals("SUCCESS", trnRefund.getResponseCode());
         assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
 
-        trnRefund =
+        Transaction secondTrnRefund =
                 captureTrn
                         .refund(100)
                         .withCurrency(currency)
                         .execute();
 
-        assertNotNull(trnRefund);
-        assertEquals("SUCCESS", trnRefund.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
+        assertNotNull(secondTrnRefund);
+        assertEquals("SUCCESS", secondTrnRefund.getResponseCode());
+        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), secondTrnRefund.getResponseMessage());
     }
 
     @Test
     public void BNPL_Reverse() throws ApiException, InterruptedException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -282,7 +279,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        var captureTrn =
+        Transaction captureTrn =
                 transaction
                         .reverse()
                         .execute();
@@ -294,12 +291,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_OnlyMandatory() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -316,12 +313,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     @Test
     public void BNPL_KlarnaProvider() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.KLARNA;
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -338,7 +335,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        var captureTrn=
+        Transaction captureTrn =
                 transaction
                         .capture()
                         .execute();
@@ -351,12 +348,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     @Test
     public void BNPL_ClearPayProvider() throws ApiException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -373,12 +370,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     @Test
     public void BNPL_ClearPayProvider_PartialCapture() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -395,7 +392,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(50000);
 
-        var captureTrn =
+        Transaction captureTrn =
                 transaction
                         .capture(100)
                         .execute();
@@ -408,12 +405,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     @Test
     public void BNPL_ClearPayProvider_MultipleCapture() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -431,7 +428,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        var captureTrn =
+        Transaction captureTrn =
                 transaction
                         .capture(100)
                         .execute();
@@ -454,12 +451,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_InvalidStatusForCapture_NoRedirect() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
-        var transaction =
+        Transaction transaction =
                 paymentMethod
-                        .authorize(550)
+                        .authorize(amount)
                         .withCurrency(currency)
                         .withMiscProductData(products)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -491,9 +488,9 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void GetBNPLTransactionById() throws ApiException {
-        var id = "TRN_EryDeQRtqagH27G87DkSfZGL1kiE21";
+        String id = "TRN_o7PsaRAgOviqLCPHBaxDcqYO70oUhu";
 
-        var trnInfo =
+        TransactionSummary trnInfo =
                 ReportingService
                         .transactionDetail(id)
                         .execute();
@@ -503,7 +500,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void GetBNPLTransactionById_RandomTransactionId() throws ApiException {
-        var transactionId = UUID.randomUUID().toString();
+        String transactionId = UUID.randomUUID().toString();
 
         boolean exceptionCaught = false;
         try {
@@ -537,7 +534,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProducts() throws ApiException {
-        var customer = generateCustomerData();
+        Customer customer = generateCustomerData();
 
         boolean exceptionCaught = false;
         try {
@@ -562,13 +559,13 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingBillingAddress() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -588,12 +585,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingCustomerData() throws ApiException {
-        var products = generateProducts();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -613,8 +610,8 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingAmount() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
@@ -640,13 +637,13 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingCurrency() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withAddress(billingAddress, AddressType.Billing)
@@ -666,14 +663,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingCustomerEmail() throws ApiException {
-        var customer = generateCustomerData();
+        Customer customer = generateCustomerData();
         customer.setEmail(null);
-        var products = generateProducts();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -694,14 +691,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingCustomerPhoneNumber() throws ApiException {
-        var customer = generateCustomerData();
+        Customer customer = generateCustomerData();
         customer.setPhone(null);
-        var products = generateProducts();
+        ArrayList<Product> products = generateProducts();
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -722,14 +719,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProductId() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
         products.get(0).setProductId(null);
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -750,14 +747,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProductDescription() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
         products.get(0).setDescription(null);
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -778,14 +775,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProductQuantity() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
         products.get(0).setQuantity(null);
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -806,14 +803,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProductUrl() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
         products.get(0).setUrl(null);
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -834,14 +831,14 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     @Test
     public void BNPL_MissingProductImageUrl() throws ApiException {
-        var customer = generateCustomerData();
-        var products = generateProducts();
+        Customer customer = generateCustomerData();
+        ArrayList<Product> products = generateProducts();
         products.get(0).setImageUrl(null);
 
         boolean exceptionCaught = false;
         try {
             paymentMethod
-                    .authorize(10)
+                    .authorize(amount)
                     .withCurrency(currency)
                     .withMiscProductData(products)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -861,7 +858,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     private Customer generateCustomerData() {
-        var customer = new Customer();
+        Customer customer = new Customer();
         customer.setId("12345678");     // GenerationUtils.generateOrderId();
         customer.setFirstName("James");
         customer.setLastName("Mason");
@@ -890,7 +887,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     private ArrayList<Product> generateProducts() {
         ArrayList<Product> products = new ArrayList<>();
 
-        var product =
+        Product product =
                 new Product()
                         .setProductId("92ebf294-f3ef-4aba-af30-6ebaf747de8f")
                         .setProductName("iPhone 13")

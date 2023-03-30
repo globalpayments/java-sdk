@@ -9,7 +9,6 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import lombok.var;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,7 +58,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtSale_CardData() throws ApiException {
-        var response =
+        Transaction response =
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -70,7 +69,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtSale_TrackData() throws ApiException {
-        var response =
+        Transaction response =
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -81,7 +80,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtSaleRefund_CardData() throws ApiException {
-        var response =
+        Transaction response =
                 ebtCardData
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -92,7 +91,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtSaleRefund_TrackData() throws ApiException {
-        var response =
+        Transaction response =
                 ebtTrackData
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -103,7 +102,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtTransaction_Refund_TrackData() throws ApiException {
-        var transaction =
+        Transaction transaction =
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -111,7 +110,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
-        var response =
+        Transaction response =
                 transaction
                         .refund()
                         .withCurrency(CURRENCY)
@@ -122,7 +121,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtTransaction_Refund_CreditData() throws ApiException {
-        var transaction =
+        Transaction transaction =
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -130,7 +129,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
-        var response =
+        Transaction response =
                 transaction
                         .refund()
                         .withCurrency(CURRENCY)
@@ -141,7 +140,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtTransaction_Reverse_TrackData() throws ApiException {
-        var transaction =
+        Transaction transaction =
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -149,7 +148,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
-        var response =
+        Transaction response =
                 transaction
                         .reverse()
                         .withCurrency(CURRENCY)
@@ -160,7 +159,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     @Test
     public void EbtTransaction_Reverse_CreditData() throws ApiException {
-        var transaction =
+        Transaction transaction =
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
@@ -168,7 +167,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
-        var response =
+        Transaction response =
                 transaction
                         .reverse()
                         .withCurrency(CURRENCY)

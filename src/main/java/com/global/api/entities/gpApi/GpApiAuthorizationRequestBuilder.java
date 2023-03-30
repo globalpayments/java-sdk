@@ -502,7 +502,10 @@ public class GpApiAuthorizationRequestBuilder {
         }
 
         if (builderPaymentMethod instanceof eCheck || builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
-            data.set("payer", setPayerInformation(builder));
+            JsonDoc payer = setPayerInformation(builder);
+            if (!payer.getKeys().isEmpty()) {
+                data.set("payer", payer);
+            }
         }
 
         // Set Order Reference
@@ -601,12 +604,14 @@ public class GpApiAuthorizationRequestBuilder {
         } else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
 
             if (builder.getHomePhone() != null) {
-                var homePhone =
+                JsonDoc homePhone =
                         new JsonDoc()
                                 .set("country_code", builder.getHomePhone().getCountryCode())
                                 .set("subscriber_number", builder.getHomePhone().getNumber());
 
-                payer.set("home_phone", homePhone);
+                if (!homePhone.getKeys().isEmpty()) {
+                    payer.set("home_phone", homePhone);
+                }
             }
 
             if (builder.getWorkPhone() != null) {
@@ -615,7 +620,9 @@ public class GpApiAuthorizationRequestBuilder {
                                 .set("country_code", builder.getWorkPhone().getCountryCode())
                                 .set("subscriber_number", builder.getWorkPhone().getNumber());
 
-                payer.set("work_phone", workPhone);
+                if (!workPhone.getKeys().isEmpty()) {
+                    payer.set("work_phone", workPhone);
+                }
             }
         } else if(builder.getPaymentMethod() instanceof BNPL && builder.getCustomerData() != null) {
             payer
@@ -873,7 +880,9 @@ public class GpApiAuthorizationRequestBuilder {
                     .set("state", builder.getShippingAddress().getProvince())
                     .set("country", builder.getShippingAddress().getCountryCode());
 
-            order.set("shipping_address", shippingAddress);
+            if (!shippingAddress.getKeys().isEmpty()) {
+                order.set("shipping_address", shippingAddress);
+            }
         }
 
         if (builder.getShippingPhone() != null) {
@@ -910,7 +919,7 @@ public class GpApiAuthorizationRequestBuilder {
 
         order.set("shipping_address", shippingAddress);
 
-        if (!requestBody.has("order")) {
+        if (!requestBody.has("order") && !order.getKeys().isEmpty()) {
             requestBody.set("order", order);
         }
 

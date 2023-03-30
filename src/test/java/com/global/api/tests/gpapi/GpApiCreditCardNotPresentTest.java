@@ -447,6 +447,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .execute(GP_API_CONFIG_NAME);
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
+        assertNull(response.getPayerDetails());
     }
 
     @Test

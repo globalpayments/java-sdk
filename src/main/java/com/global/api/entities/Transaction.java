@@ -40,11 +40,17 @@ public class Transaction {
     private AlternativePaymentResponse alternativePaymentResponse;
     @Getter @Setter private BankPaymentResponse bankPaymentResponse;
     private String cardType;
+    @Deprecated // Will soon be replaced with {@link CardDetails#maskedCardNumber}
     private String cardLast4;
     @Getter @Setter private String fingerPrint;
     @Getter @Setter private String fingerPrintIndicator;
+    @Getter @Setter private PayerDetails payerDetails;
+    @Getter @Setter private Card cardDetails;
+    @Deprecated // Will soon be replaced with {@link CardDetails#cardNumber}
     private String cardNumber;
+    @Deprecated // Will soon be replaced with {@link CardDetails#cardExpMonth}
     private int cardExpMonth;
+    @Deprecated // Will soon be replaced with {@link CardDetails#cardExpYear}
     private int cardExpYear;
     private String cavvResponseCode;
     private String commercialIndicator;

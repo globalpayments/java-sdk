@@ -13,11 +13,11 @@ import com.global.api.entities.payFac.BankAccountData;
 import com.global.api.entities.payFac.PaymentStatistics;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserPersonalData;
+import com.global.api.entities.reporting.MerchantSummaryPaged;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,12 +31,12 @@ import static org.junit.Assert.*;
 
 public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
-    private PayFacService _service;
+    private PayFacService payFacService;
     private CreditCardData card;
 
     @Before
     public void TestInitialize() throws ConfigurationException {
-        _service = new PayFacService();
+        payFacService = new PayFacService();
 
         GpApiConfig gpApiConfig = new GpApiConfig();
         gpApiConfig.setAppId(APP_ID_FOR_MERCHANT);
@@ -57,15 +57,15 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant() throws ApiException {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList("");
-        var creditCardInformation = card;
-        var bankAccountInformation = GetBankAccountData();
-        var paymentStatistics = GetPaymentStatistics();
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList("");
+        CreditCardData creditCardInformation = card;
+        BankAccountData bankAccountInformation = GetBankAccountData();
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var merchant =
-                _service
+        User merchant =
+                payFacService
                         .createMerchant()
                         .withUserPersonalData(merchantData)
                         .withDescription("Merchant Business Description")
@@ -83,13 +83,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_OnlyMandatory() throws ApiException {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var merchant =
-                _service
+        User merchant =
+                payFacService
                         .createMerchant()
                         .withUserPersonalData(merchantData)
                         .withDescription("Merchant Business Description")
@@ -107,14 +107,14 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithIdempotency() throws ApiException {
-        var idempotencyKey = UUID.randomUUID().toString();
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
+        String idempotencyKey = UUID.randomUUID().toString();
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var merchant =
-                _service
+        User merchant =
+                payFacService
                         .createMerchant()
                         .withUserPersonalData(merchantData)
                         .withDescription("Merchant Business Description")
@@ -130,9 +130,9 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         merchantData.setFirstName("James " + DateTime.now().toString("yyyyMMddmmss"));
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -143,9 +143,9 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + merchant.getUserReference().getUserId() + ", status=" + merchant.getUserReference().getUserStatus(), ex.getMessage());
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + merchant.getUserReference().getUserId() + ", status=" + merchant.getUserReference().getUserStatus(), ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -153,13 +153,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_DuplicateMerchantName() throws ApiException {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var merchant =
-                _service
+        User merchant =
+                payFacService
                         .createMerchant()
                         .withUserPersonalData(merchantData)
                         .withDescription("Merchant Business Description")
@@ -172,9 +172,9 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -184,8 +184,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - Duplicate Merchant Name", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -193,13 +193,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutMerchantData() {
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withDescription("Merchant Business Description")
                     .withProductData(productData)
@@ -216,16 +216,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutUserName() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setUserName(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -235,8 +235,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields name", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -247,9 +247,9 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void GetMerchantInfo() throws ApiException {
-        var merchantId = "MER_98f60f1a397c4dd7b7167bda61520292";
-        var merchant =
-                _service
+        String merchantId = "MER_98f60f1a397c4dd7b7167bda61520292";
+        User merchant =
+                payFacService
                         .getMerchantInfo(merchantId)
                         .execute();
 
@@ -259,17 +259,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void GetMerchantInfo_RandomId() throws ApiException {
-        var merchantId = "MER_" + UUID.randomUUID().toString().replace("-", "");
+        String merchantId = "MER_" + UUID.randomUUID().toString().replace("-", "");
 
         boolean exceptionCaught = false;
         try {
-            _service
+            payFacService
                     .getMerchantInfo(merchantId)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: MMA_1595ca59906346beae43d92c24863430 , " + merchantId, ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40041", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
@@ -278,17 +278,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void GetMerchantInfo_InvalidId() throws ApiException {
-        var merchantId = UUID.randomUUID().toString();
+        String merchantId = UUID.randomUUID().toString();
 
         boolean exceptionCaught = false;
         try {
-            _service
+            payFacService
                     .getMerchantInfo(merchantId)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("INVALID_TRANSACTION_ACTION", ex.getResponseCode());
             assertEquals("Status Code: 404 - Retrieve information about this transaction is not supported", ex.getMessage());
+            assertEquals("INVALID_TRANSACTION_ACTION", ex.getResponseCode());
             assertEquals("40042", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
@@ -297,7 +297,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void SearchMerchants() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 10)
                         .execute();
@@ -308,7 +308,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void EditMerchantApplicantInfo() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 1)
                         .execute();
@@ -316,17 +316,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertEquals(1, merchants.getResults().size());
 
-        var merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
-        var persons = GetPersonList("Update");
+        User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
+        List<Person> persons = GetPersonList("Update");
 
-        var response =
+        User response =
                 merchant
                         .edit()
                         .withPersonsData(persons)
                         .withDescription("Update merchant payment processing")
                         .execute();
 
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("PENDING", response.getResponseCode());
         assertEquals("Merchant Editing in progress", response.getStatusDescription());
         assertEquals(UserType.MERCHANT, response.getUserReference().getUserType());
         assertEquals(UserStatus.UNDER_REVIEW, response.getUserReference().getUserStatus());
@@ -334,7 +334,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void EditMerchantPaymentProcessing() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 1)
                         .execute();
@@ -342,20 +342,20 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertEquals(1, merchants.getResults().size());
 
-        var paymentStatistics = new PaymentStatistics();
+        PaymentStatistics paymentStatistics = new PaymentStatistics();
         paymentStatistics.setTotalMonthlySalesAmount(new BigDecimal(1111));
         paymentStatistics.setHighestTicketSalesAmount(new BigDecimal(2222));
 
-        var merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
+        User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
-        var response =
+        User response =
                 merchant
                         .edit()
                         .withPaymentStatistics(paymentStatistics)
                         .withDescription("Update merchant payment processing")
                         .execute();
 
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("PENDING", response.getResponseCode());
         assertEquals("Merchant Editing in progress", response.getStatusDescription());
         assertEquals(UserType.MERCHANT, response.getUserReference().getUserType());
         assertEquals(UserStatus.UNDER_REVIEW, response.getUserReference().getUserStatus());
@@ -363,7 +363,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void EditMerchantBusinessInformation() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 1)
                         .execute();
@@ -371,17 +371,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertEquals(1, merchants.getResults().size());
 
-        var merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
+        User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
         merchant.getUserReference().setUserStatus(UserStatus.ACTIVE);
 
-        var merchantData =
+        UserPersonalData merchantData =
                 new UserPersonalData()
                         .setFirstName("Username")
                         .setDBA("Doing Business As")
                         .setWebsite("https://abcd.com")
                         .setTaxIdReference("987654321");
 
-        var businessAddress =
+        Address businessAddress =
                 new Address()
                         .setStreetAddress1("Apartment 852")
                         .setStreetAddress2("Complex 741")
@@ -393,21 +393,21 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         merchantData.setUserAddress(businessAddress);
 
-        var response =
+        User response =
                 merchant
                         .edit()
                         .withUserPersonalData(merchantData)
                         //.withDescription("Sample Data for description")
                         .execute();
 
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("PENDING", response.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, response.getUserReference().getUserStatus());
         assertEquals(merchants.getResults().get(0).getName(), response.getName());
     }
 
     @Test
     public void EditMerchant_RemoveMerchantFromPartner_FewArguments() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 1)
                         .execute();
@@ -415,7 +415,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertEquals(1, merchants.getResults().size());
 
-        var merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
+        User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
         boolean exceptionCaught = false;
         try {
@@ -425,8 +425,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Required field is missing.", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40241", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
@@ -435,7 +435,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void EditMerchant_RemoveMerchantFromPartner_TooManyArguments() throws ApiException {
-        var merchants =
+        MerchantSummaryPaged merchants =
                 ReportingService
                         .findMerchants(1, 1)
                         .execute();
@@ -443,7 +443,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertEquals(1, merchants.getResults().size());
 
-        var merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
+        User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
         boolean exceptionCaught = false;
         try {
@@ -454,8 +454,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - Bad Request. The request has extra tags which are not required.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40268", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
@@ -464,16 +464,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutLegalName() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setLegalName(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -483,8 +483,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields legal_name", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -495,16 +495,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutDba() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setDBA(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -514,8 +514,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields dba", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -526,16 +526,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutWebsite() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setWebsite(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -545,8 +545,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields website", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -557,16 +557,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutTaxIdReference() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setTaxIdReference(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -576,8 +576,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields tax_id_reference", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -588,16 +588,16 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutNotificationStatusUrl() {
-        var merchantData = GetMerchantData();
+        UserPersonalData merchantData = GetMerchantData();
         merchantData.setNotificationStatusUrl(null);
 
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -607,8 +607,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields notifications.status_url", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -619,13 +619,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutPersons() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var paymentStatistics = GetPaymentStatistics();
-        var exceptionCaught = false;
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -634,8 +634,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields : email", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -646,13 +646,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutPaymentStatistics() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var exceptionCaught = false;
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -661,8 +661,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -673,17 +673,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutTotalMonthlySalesAmount() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = new PaymentStatistics()
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = new PaymentStatistics()
                 .setAverageTicketSalesAmount(new BigDecimal(50000))
                 .setHighestTicketSalesAmount(new BigDecimal(60000));
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -693,8 +693,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -705,17 +705,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutAverageTicketSalesAmount() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = new PaymentStatistics()
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = new PaymentStatistics()
                 .setTotalMonthlySalesAmount(new BigDecimal(3000000))
                 .setHighestTicketSalesAmount(new BigDecimal(60000));
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -725,8 +725,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.average_ticket_sales_amount", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -737,17 +737,17 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutHighestTicketSalesAmount() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = new PaymentStatistics()
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = new PaymentStatistics()
                 .setTotalMonthlySalesAmount(new BigDecimal(3000000))
                 .setAverageTicketSalesAmount(new BigDecimal(50000));
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withDescription("Merchant Business Description")
@@ -757,8 +757,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.highest_ticket_sales_amount", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -769,15 +769,15 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     @Test
     public void BoardMerchant_WithoutDescription() {
-        var merchantData = GetMerchantData();
-        var productData = GetProductList();
-        var persons = GetPersonList(null);
-        var paymentStatistics = GetPaymentStatistics();
+        UserPersonalData merchantData = GetMerchantData();
+        List<Product> productData = GetProductList();
+        List<Person> persons = GetPersonList(null);
+        PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        var exceptionCaught = false;
+        boolean exceptionCaught = false;
 
         try {
-            _service
+            payFacService
                     .createMerchant()
                     .withUserPersonalData(merchantData)
                     .withProductData(productData)
@@ -786,8 +786,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("Status Code: 400 - Request expects the following fields description", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {
             throw new RuntimeException(e);
@@ -797,9 +797,9 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     private List<Person> GetPersonList(String type) {
-        var persons = new ArrayList<Person>();
+        ArrayList<Person> persons = new ArrayList<>();
 
-        var person = new Person();
+        Person person = new Person();
 
         person.setFunctions(PersonFunctions.APPLICANT);
         person.setFirstName("James " + type);
@@ -837,18 +837,19 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         productList.add(
                 new Product()
-                        .setQuantity(1)
                         .setProductId("PRO_TRA_CP-US-CARD-A920_SP"));
 
         productList.add(
                 new Product()
-                        .setQuantity(1)
                         .setProductId("PRO_TRA_CNP_US_BANK-TRANSFER_PP"));
 
         productList.add(
                 new Product()
-                        .setQuantity(1)
                         .setProductId("PRO_FMA_PUSH-FUNDS_PP"));
+
+        productList.add(
+                new Product()
+                        .setProductId("PRO_TRA_CNP-US-CARD_PP"));
 
         return productList;
     }
@@ -872,7 +873,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     private UserPersonalData GetMerchantData() {
-        var merchantData =
+        UserPersonalData merchantData =
                 new UserPersonalData()
                         .setUserName("CERT_Propay_" + DateTime.now().toString("yyyyMMddmmss"))
                         .setLegalName("Business Legal Name")
@@ -885,7 +886,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .setTier("test")
                         .setType(UserType.MERCHANT);
 
-        var businessAddress =
+        Address businessAddress =
                 new Address()
                         .setStreetAddress1("Apartment 852")
                         .setStreetAddress2("Complex 741")
@@ -897,7 +898,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         merchantData.setUserAddress(businessAddress);
 
-        var shippingAddress =
+        Address shippingAddress =
                 new Address()
                         .setStreetAddress1("Flat 456")
                         .setStreetAddress2("House 789")

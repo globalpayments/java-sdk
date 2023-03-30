@@ -691,11 +691,11 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     public void DecoupledAuth() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
-        var tokenizedCard = new CreditCardData();
+        CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
         tokenizedCard.setCardHolderName("James Mason");
 
-        var secureEcom =
+        ThreeDSecure secureEcom =
                 Secure3dService
                         .checkEnrollment(tokenizedCard)
                         .withCurrency(currency)
@@ -708,7 +708,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
 
-        var initAuth =
+        ThreeDSecure initAuth =
                 Secure3dService
                         .initiateAuthentication(tokenizedCard, secureEcom)
                         .withAmount(amount)
@@ -738,7 +738,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
 
         tokenizedCard.setThreeDSecure(secureEcom);
 
-        var response =
+        Transaction response =
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
