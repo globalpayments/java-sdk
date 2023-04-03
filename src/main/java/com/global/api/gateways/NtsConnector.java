@@ -191,7 +191,9 @@ public class NtsConnector extends GatewayConnectorConfig {
 
         //Preparing the request
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
-        return sendRequest(request, builder);
+        Transaction transaction=sendRequest(request, builder);
+        transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
+        return transaction;
     }
 
     private String setUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) throws ApiException {

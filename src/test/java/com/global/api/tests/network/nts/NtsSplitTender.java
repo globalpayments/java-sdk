@@ -7,6 +7,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsProductData;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.nts.PriorMessageInfo;
@@ -40,7 +41,7 @@ public class NtsSplitTender {
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
     private NtsProductData productData;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
     public NtsSplitTender() throws ConfigurationException {
 
@@ -82,12 +83,12 @@ public class NtsSplitTender {
         ntsRequestMessageHeader.setTerminalDestinationTag("510");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
+        priorMessageInformation =new PriorMessageInformation();
 
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         tag = new NtsTag16();
         tag.setPumpNumber(1);

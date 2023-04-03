@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
@@ -39,7 +40,7 @@ public class NtsFleetCorTest {
     private NetworkGatewayConfig config;
     private NtsProductData productData;
     private FleetData fleetData;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
     public NtsFleetCorTest() throws ConfigurationException {
 
@@ -83,12 +84,12 @@ public class NtsFleetCorTest {
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
 
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
 
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("1234567");

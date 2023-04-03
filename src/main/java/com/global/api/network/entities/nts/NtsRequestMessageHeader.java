@@ -2,6 +2,7 @@ package com.global.api.network.entities.nts;
 
 import com.global.api.entities.enums.NtsMessageCode;
 import com.global.api.entities.enums.PinIndicator;
+import com.global.api.network.entities.PriorMessageInformation;
 import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
@@ -25,5 +26,5 @@ public class NtsRequestMessageHeader {
     private String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
     @Getter
     @Setter
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 }

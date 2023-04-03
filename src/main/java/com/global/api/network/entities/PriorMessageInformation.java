@@ -1,6 +1,8 @@
 package com.global.api.network.entities;
 
 import com.global.api.entities.enums.Host;
+import lombok.Getter;
+import lombok.Setter;
 
 public class PriorMessageInformation {
     private String responseTime = "999";
@@ -11,6 +13,8 @@ public class PriorMessageInformation {
     private String messageTransactionIndicator = "0000";
     private String systemTraceAuditNumber = "000000";
     private Host processingHost = Host.Primary;
+    @Getter @Setter
+    private String connectTime;
 
     public String getResponseTime() {
         return responseTime;

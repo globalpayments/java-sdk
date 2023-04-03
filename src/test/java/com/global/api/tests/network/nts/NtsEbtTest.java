@@ -7,6 +7,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.EBTVoucherEntryData;
 import com.global.api.network.entities.NtsProductData;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
@@ -35,7 +36,7 @@ public class NtsEbtTest {
     private NtsRequestMessageHeader ntsRequestMessageHeader; //Main Request header class
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
     public NtsEbtTest() throws ApiException {
         acceptorConfig = new AcceptorConfig();
@@ -76,12 +77,11 @@ public class NtsEbtTest {
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.Ebt);
 
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
-
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         // gateway config
         config = new NetworkGatewayConfig(Target.NTS);

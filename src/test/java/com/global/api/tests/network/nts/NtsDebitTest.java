@@ -6,6 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
@@ -26,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 public class NtsDebitTest {
     private DebitTrackData track;
     private NtsRequestMessageHeader ntsRequestMessageHeader;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
     AcceptorConfig acceptorConfig;
     // gateway config
     NetworkGatewayConfig config;
@@ -49,13 +50,11 @@ public class NtsDebitTest {
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PinDebit);
 
-
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(999);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("08");
-
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("08");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         // data code values
         // acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);

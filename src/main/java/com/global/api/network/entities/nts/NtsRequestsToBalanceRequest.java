@@ -17,17 +17,17 @@ public class NtsRequestsToBalanceRequest implements INtsRequestMessage {
 
         if (builder instanceof ManagementBuilder) {
             ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-            NtsUtils.log("BATCH NUMBER", "11");
+            NtsUtils.log("BATCH NUMBER", manageBuilder.getBatchNumber());
             request.addRange(manageBuilder.getBatchNumber(), 2);
 
-            NtsUtils.log("TRANSACTION COUNT", "0");
+            NtsUtils.log("TRANSACTION COUNT", manageBuilder.getTransactionCount());
             request.addRange(manageBuilder.getTransactionCount(), 3);
 
-            NtsUtils.log("TOTAL SALES", "0");
-            request.addRange(manageBuilder.getTotalSales().intValue(), 9);
+            NtsUtils.log("TOTAL SALES", StringUtils.toNumeric(manageBuilder.getTotalSales()));
+            request.addRange(StringUtils.toNumeric(manageBuilder.getTotalSales()), 9);
 
-            NtsUtils.log("TOTAL RETURNS", "0");
-            request.addRange(manageBuilder.getTotalReturns().intValue(), 9);
+            NtsUtils.log("TOTAL RETURNS", StringUtils.toNumeric(manageBuilder.getTotalReturns()));
+            request.addRange(StringUtils.toNumeric(manageBuilder.getTotalReturns()), 9);
 
             if (!StringUtils.isNullOrEmpty(userData) && userData.length() > 0) {
                 NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 3, ' '));

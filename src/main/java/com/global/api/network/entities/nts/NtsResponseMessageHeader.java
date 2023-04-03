@@ -1,5 +1,6 @@
 package com.global.api.network.entities.nts;
 
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.nts.PendingRequestIndicator;
 import com.global.api.network.enums.nts.ServicingHostName;
 import lombok.Getter;
@@ -14,13 +15,7 @@ public class NtsResponseMessageHeader {
     private String transactionTime;
     @Getter
     @Setter
-    private int priorMessageResponseTime;
-    @Getter
-    @Setter
-    private int priorMessageConnectTime;
-    @Getter
-    @Setter
-    private String priorMessageCode;
+    private PriorMessageInformation priorMessageInformation;
     @Getter
     @Setter
     private PendingRequestIndicator pendingRequestIndicator;

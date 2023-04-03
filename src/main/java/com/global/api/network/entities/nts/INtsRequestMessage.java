@@ -148,14 +148,14 @@ public interface INtsRequestMessage {
 
 
         // Prior Message Response Time
-        NtsUtils.log("Prior Message Response Time", String.valueOf(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageResponseTime()));
-        headerRequest.addRange(StringUtils.padLeft(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageResponseTime(), 3, '0'), 3);
+        NtsUtils.log("Prior Message Response Time", String.valueOf(ntsRequestMessageHeader.getPriorMessageInformation().getResponseTime()));
+        headerRequest.addRange(StringUtils.padLeft(ntsRequestMessageHeader.getPriorMessageInformation().getResponseTime(), 3, '0'), 3);
         // Prior Message Connect Time
-        NtsUtils.log("Prior Message Connect Time", String.valueOf(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageConnectTime()));
-        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageConnectTime(), 3);
+        NtsUtils.log("Prior Message Connect Time", String.valueOf(ntsRequestMessageHeader.getPriorMessageInformation().getConnectTime()));
+        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInformation().getConnectTime(), 3);
         // Prior Message Code
-        NtsUtils.log("Prior Message Code", String.valueOf(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageCode()));
-        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInfo().getPriorMessageCode(), 2);
+        NtsUtils.log("Prior Message Code", String.valueOf(ntsRequestMessageHeader.getPriorMessageInformation().getMessageReasonCode()));
+        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInformation().getMessageReasonCode(), 2);
 
         NtsUtils.log("Request header :", headerRequest.getMessageRequest().toString());
 

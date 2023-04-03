@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsEMVPDLResponse;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsPDLData;
@@ -36,7 +37,7 @@ public class NtsEMVPDLTest {
     NetworkGatewayConfig config;
     NtsRequestMessageHeader ntsRequestMessageHeader; //Main Request header class
     private EMVPDLTable10V2 table10V2;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
     public NtsEMVPDLTest() throws ConfigurationException {
         Address address = new Address();
@@ -54,13 +55,13 @@ public class NtsEMVPDLTest {
         ntsRequestMessageHeader.setTerminalDestinationTag("510");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.EmvParameterDataLoad);
+        priorMessageInformation =new PriorMessageInformation();
 
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
 
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);

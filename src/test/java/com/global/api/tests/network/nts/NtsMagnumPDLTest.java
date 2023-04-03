@@ -7,6 +7,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsPDLData;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.mpdl.*;
 import com.global.api.network.entities.nts.NtsPDLResponse;
 import com.global.api.network.entities.nts.NtsPDLResponseData;
@@ -36,7 +37,7 @@ public class NtsMagnumPDLTest {
     // gateway config
     NetworkGatewayConfig config;
     NtsRequestMessageHeader ntsRequestMessageHeader; //Main Request header class
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
 
     public NtsMagnumPDLTest() throws ConfigurationException {
@@ -55,12 +56,12 @@ public class NtsMagnumPDLTest {
         ntsRequestMessageHeader.setTerminalDestinationTag("510");
         ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ParameterDataLoad);
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
 
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);

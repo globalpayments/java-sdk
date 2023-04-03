@@ -9,6 +9,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.nts.PriorMessageInfo;
@@ -41,7 +42,7 @@ public class NtsFleetTest {
     private NetworkGatewayConfig config;
     private NtsProductData productData;
     private FleetData fleetData;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
 
     public NtsFleetTest() throws ApiException {
 
@@ -85,12 +86,12 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
 
 
-        priorMessageInfo=new PriorMessageInfo();
-        priorMessageInfo.setPriorMessageResponseTime(1);
-        priorMessageInfo.setPriorMessageConnectTime(999);
-        priorMessageInfo.setPriorMessageCode("01");
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("1");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
 
-        ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("1234567");

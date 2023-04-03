@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.2.9 (04/03/2023)
+
+### Enhancements:
+-NTS Phase1 Issue:
+ -  Prior Message Information Issue updates(10142)
+ -  Batch Close Issue(10161)
+ 
 ## v10.2.8 (03/30/2023)
 
 ### Enhancements:

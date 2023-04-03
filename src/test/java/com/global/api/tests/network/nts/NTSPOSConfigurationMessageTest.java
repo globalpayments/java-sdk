@@ -5,6 +5,7 @@ import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.POSSiteConfigurationData;
 import com.global.api.network.entities.nts.PriorMessageInfo;
@@ -24,7 +25,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NTSPOSConfigurationMessageTest {
     private NtsRequestMessageHeader ntsRequestMessageHeader;
-    private PriorMessageInfo priorMessageInfo;
+    private PriorMessageInformation priorMessageInformation;
     // gateway config
     NetworkGatewayConfig config;
     public NTSPOSConfigurationMessageTest() throws ApiException {
@@ -44,13 +45,13 @@ public class NTSPOSConfigurationMessageTest {
             ntsRequestMessageHeader.setTerminalDestinationTag("478");
             ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
             ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PosSiteConfiguration);
-            priorMessageInfo=new PriorMessageInfo();
-            priorMessageInfo.setPriorMessageResponseTime(999);
-            priorMessageInfo.setPriorMessageConnectTime(999);
-            priorMessageInfo.setPriorMessageCode("08");
 
-            ntsRequestMessageHeader.setPriorMessageInfo(priorMessageInfo);
+            priorMessageInformation =new PriorMessageInformation();
+            priorMessageInformation.setResponseTime("999");
+            priorMessageInformation.setConnectTime("999");
+            priorMessageInformation.setMessageReasonCode("08");
 
+            ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
             // data code values
             // acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactlessMsd_KeyEntry);
             acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.None);
