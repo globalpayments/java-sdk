@@ -150,7 +150,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -175,7 +175,7 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 2, 15.20);
@@ -213,10 +213,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.BeerOrAlc, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -248,9 +248,9 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -283,7 +283,7 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -317,10 +317,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -370,10 +370,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -420,7 +420,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -444,7 +444,7 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -479,7 +479,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -512,10 +512,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -581,10 +581,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, card);
-        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -655,7 +655,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -680,10 +680,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -717,10 +717,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.add(new BigDecimal(88), new BigDecimal(0));
@@ -752,10 +752,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -787,7 +787,7 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -822,10 +822,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -876,15 +876,15 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 05.10, 15.20);
-        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 5.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 2);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 1, 2);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 1, 2);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 1, 2);
+        productData.add(new BigDecimal(28), new BigDecimal(0));
         productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
 
         Transaction response = track.charge(new BigDecimal(10))
@@ -923,7 +923,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -947,7 +947,7 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -980,7 +980,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1013,10 +1013,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
@@ -1053,7 +1053,7 @@ public class NtsFleetCorTest {
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1077,10 +1077,10 @@ public class NtsFleetCorTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
-        fleetData.setDriverId("5500");
+        fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, card);
-        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);

@@ -16,6 +16,8 @@ import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.math.BigDecimal;
+
 public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
@@ -164,10 +166,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             NtsUtils.log("Sequence Number", String.valueOf(sequenceNumber));
 
             if (!StringUtils.isNullOrEmpty(userData)) {
-                if (userData.length() <= 85) {
-                    request.addRange(userData.length(), 2);
-                    NtsUtils.log("User Data Length", Integer.toString(userData.length()));
-                } else {
+                if (userData.length() != 99) {
                     // Extended user data flag
                     request.addRange("E", 1);
                     NtsUtils.log("Extended user data flag", "E");

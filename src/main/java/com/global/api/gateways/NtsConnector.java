@@ -4,6 +4,7 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.ResubmitBuilder;
 import com.global.api.builders.TransactionBuilder;
+import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -12,6 +13,7 @@ import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
+import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -195,7 +197,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
         return transaction;
     }
-
     private String setUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) throws ApiException {
         String userData = "";
         if (cardType != null && isUserDataPresent(builder, paymentMethod, cardType)) {
@@ -236,7 +237,12 @@ public class NtsConnector extends GatewayConnectorConfig {
     }
     private String doEncoding(MessageWriter request) {
         // base64 encode the message buffer
-        byte[] encoded = Base64.encodeBase64(request.toArray());
+        int messageLength = request.getMessageRequest().length() + 2;
+        MessageWriter req = new MessageWriter();
+        req.add(messageLength, 2);
+        req.add(request.getMessageRequest().toString());
+
+        byte[] encoded = Base64.encodeBase64(req.toArray());
         String encodedString = new String(encoded);
 
         // encrypt it
@@ -300,7 +306,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             NtsUtils.log("Request", buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
             Transaction response =mapResponse(responseBuffer, builder);
-            String transactionToken = encodeRequest(req);
+            String transactionToken = encodeRequest(messageData);
             if(transactionToken != null) {
                 response.setTransactionToken(transactionToken);
             }
@@ -341,7 +347,20 @@ public class NtsConnector extends GatewayConnectorConfig {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
         }
-        return result;
+        //Batch Summary
+        if (builder.getTransactionType().equals(TransactionType.BatchClose)){
+            ManagementBuilder manageBuilder = (ManagementBuilder) builder;
+            NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
+            BatchSummary summary = new BatchSummary();
+            summary.setBatchId(manageBuilder.getBatchNumber());
+            summary.setResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue());
+            summary.setSequenceNumber(String.valueOf(data.getDaySequenceNumber()));
+            summary.setTransactionCount(manageBuilder.getTransactionCount());
+            summary.setSaleAmount(manageBuilder.getTotalSales());
+            summary.setReturnAmount(manageBuilder.getTotalReturns());
+            result.setBatchSummary(summary);
+        }
+            return result;
     }
 
     private Boolean isAllowedResponseCode(NtsHostResponseCode code) {
@@ -386,7 +405,9 @@ public class NtsConnector extends GatewayConnectorConfig {
 
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
-        return sendRequest(request, builder);
+        Transaction transaction=sendRequest(request, builder);
+        transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
+        return transaction;
     }
 
     public String serializeRequest(AuthorizationBuilder builder) throws ApiException {
@@ -442,6 +463,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                         || cardType == NTSCardTypes.Discover
                         || cardType == NTSCardTypes.StoredValueOrHeartlandGiftCard
                         || cardType == NTSCardTypes.PinDebit
+                        || cardType == NTSCardTypes.MastercardPurchasing
         );
     }
 

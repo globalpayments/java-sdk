@@ -718,6 +718,25 @@ public class NTSUserData {
             referenceMessageCode = ((TransactionReference) builder.getPaymentMethod()).getOriginalMessageCode();
         }
         switch (cardType) {
+            case MastercardPurchasing:
+                if (builder.getTransactionType().equals(TransactionType.DataCollect) ||
+                        builder.getTransactionType().equals(TransactionType.Capture)) {
+                    if (messageCode.equals(NtsMessageCode.DataCollectOrSale) || messageCode.equals(NtsMessageCode.CreditAdjustment)) {
+                        if (builder.getCustomerCode() != null)
+                                sb.append(StringUtils.padRight(builder.getCustomerCode(), 17, ' '));
+                             else
+                                sb.append(String.format("%17s", " "));
+                        sb.append(getMastercardPurchasingFuelList(builder));
+                        sb.append(getMastercardPurchasingNonFuelList(builder));
+                        if (productData.getSalesTax() != null)
+                            sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
+                        else
+                            sb.append(String.format("%05d", 0));
+                        sb.append(StringUtils.padLeft("", 12, ' '));
+                        sb.append("?");
+                    }
+                }
+                break;
             case Mastercard:
             case Visa:
             case AmericanExpress:
@@ -1163,8 +1182,54 @@ public class NTSUserData {
             sb.append(StringUtils.padLeft(reference.getBatchNumber(), 2, '0'));
             sb.append(StringUtils.padLeft(reference.getSequenceNumber(), 3, '0'));
         }
-        sb.append(DateTime.now().toString("yyMMdd"));
-        sb.append(DateTime.now().toString("HHmmss"));
+        sb.append(DateTime.now().toString("yy"));
+        sb.append(reference.getOriginalTransactionDate());
+        sb.append(reference.getOriginalTransactionTime());
+        return sb;
+    }
+    private static StringBuffer getMastercardPurchasingFuelList(TransactionBuilder<Transaction> builder) {
+        StringBuffer sb = new StringBuffer();
+        NtsProductData productData = builder.getNtsProductData();
+        List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
+        for (int i = 0; i < 1; i++) {
+            if (fuelList != null && i < fuelList.size()) {
+
+                sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, ' '));
+                sb.append(StringUtils.toNumeric(fuelList.get(i).getQuantity(), 5));
+                sb.append(StringUtils.toNumeric(fuelList.get(i).getAmount(), 6));
+                sb.append(StringUtils.padLeft(mapUnitMeasureFleet(fuelList.get(i).getUnitOfMeasure()), 1, ' '));
+
+
+            } else {
+                sb.append(String.format("%3s", " "));
+                sb.append(String.format("%5s", " "));
+                sb.append(String.format("%6s", " "));
+                sb.append(String.format("%1s", " "));
+            }
+
+        }
+        return sb;
+    }
+    private static StringBuffer getMastercardPurchasingNonFuelList(TransactionBuilder<Transaction> builder) {
+        StringBuffer sb = new StringBuffer();
+        NtsProductData productData = builder.getNtsProductData();
+        List<DE63_ProductDataEntry> nonFuelList = productData.getNonFuelDataEntries();
+        for (int i = 0; i < 2; i++) {
+            if (nonFuelList != null && i < nonFuelList.size()) {
+
+                sb.append(StringUtils.padLeft(nonFuelList.get(i).getCode(), 3, ' '));
+                sb.append(StringUtils.padLeft(nonFuelList.get(i).getQuantity().intValue(), 5, '0'));
+                sb.append(StringUtils.toNumeric(nonFuelList.get(i).getAmount(), 6));
+                sb.append(StringUtils.padLeft(mapUnitMeasureFleet(nonFuelList.get(i).getUnitOfMeasure()), 1, ' '));
+
+            } else {
+                sb.append(String.format("%3s", " "));
+                sb.append(String.format("%5s", " "));
+                sb.append(String.format("%6s", " "));
+                sb.append(String.format("%1s", " "));
+            }
+
+        }
         return sb;
     }
 
@@ -1215,6 +1280,7 @@ public class NTSUserData {
         }
         return sb;
     }
+
 
     private static StringBuffer getFleetCorList(TransactionBuilder<Transaction> builder, NTSCardTypes ntsCardTypes) {
         StringBuffer sb = new StringBuffer();

@@ -64,6 +64,13 @@ public class NtsTestCards {
         track.setEntryMethod(entryMethod);
         return track;
     }
+    public static CreditTrackData MasterCardPurchasingTrack2(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";5473500000000014=25121019999888877776?");
+        track.setCardType("MastercardPurchasing");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
 
     public static CreditTrackData PropCardTrack2(EntryMethod entryMethod){
         CreditTrackData track = new CreditTrackData();

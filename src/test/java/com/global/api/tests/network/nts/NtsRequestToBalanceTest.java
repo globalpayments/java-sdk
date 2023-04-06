@@ -216,6 +216,10 @@ public class NtsRequestToBalanceTest {
                         , new BigDecimal(30.33), BigDecimal.ZERO, data)
                 .execute();
         assertNotNull(batchClose);
+
+        //check batch summary
+        assertNotNull(batchClose.getBatchSummary());
+
         // check response
         assertEquals("00", batchClose.getResponseCode());
 

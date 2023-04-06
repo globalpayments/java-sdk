@@ -2721,11 +2721,11 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", voidResponse.getResponseCode());
     }
     @Test
-    public void test_003_sales_with_track2_and_datacollect_resubmit() throws ApiException {
+    public void test_003_sales_and_datacollect_with_track2_MastercardPurhasing() throws ApiException {
 
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+        track = NtsTestCards.MasterCardPurchasingTrack2(EntryMethod.Swipe);
 
         productData = getProductDataForNonFleetBankCards(track);
 
@@ -2742,32 +2742,92 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         // check response
         assertEquals("00", response.getResponseCode());
 
-        Transaction transaction = Transaction.fromNetwork(
-                response.getTransactionReference().getAuthorizer(),
-                response.getTransactionReference().getApprovalCode(),
-                response.getResponseCode(),
-                response.getOriginalTransactionDate(),
-                response.getOriginalTransactionTime(),
-                track
-        );
-
         header.setPinIndicator(PinIndicator.WithoutPin);
-        header.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
-        Transaction dataCollectResponse = transaction.capture(new BigDecimal(90.90))
+        Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
-                .withNtsTag16(tag)
                 .execute();
         assertNotNull(dataCollectResponse);
 
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_003_sales_Onefuel_and_datacollect_MastercardPurhasing() throws ApiException {
 
-        Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.setPurchaseType(PurchaseType.Fuel);
+
+        track = NtsTestCards.MasterCardPurchasingTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
                 .execute();
-        assertNotNull(capture);
-        assertEquals("00", capture.getResponseCode());
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_003_Auth_and_datacollect_Onefuel_MastercardPurhasing_test() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        track = NtsTestCards.MasterCardPurchasingTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.setPurchaseType(PurchaseType.Fuel);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                //.withCustomerCode("123456789")
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
     }
 }

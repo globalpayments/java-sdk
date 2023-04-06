@@ -98,6 +98,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     @Getter
     private String zipCode;
 
+    @Getter @Setter
+    private String customerCode;
+
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
         this.ntsRequestMessageHeader = ntsRequestMessageHeader;
     }
@@ -195,5 +198,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public TransactionBuilder<TResult> withZipCode(String zipCode) {
         this.zipCode = zipCode;
         return  this;
+    }
+    public TransactionBuilder<TResult> withCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+        return this;
     }
 }

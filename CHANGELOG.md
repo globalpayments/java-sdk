@@ -1,5 +1,19 @@
 # Changelog
 
+ ## v10.2.10 (04/06/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+ - Prior message Information changes (10142)
+ - FleetCor Credit Adjustment User Data changes(10158)
+ - MasterCard Purchasing DataCollect changes(10171)
+ - customer code change for mastercard purchasing (10173)
+ - MasterCard Purchasing MasterCard code Changes (10172)
+ - Batch Summary changes (10176)
+ - User Data Expansion for Data Collect(10180)
+
+
 ## v10.2.9 (04/03/2023)
 
 ### Enhancements:

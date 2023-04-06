@@ -1015,5 +1015,4 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.maskedDataResponse = value;
         return this;
     }
-
 }
