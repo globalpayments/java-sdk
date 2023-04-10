@@ -45,7 +45,12 @@ public class BatchSummary {
         }
         return false;
     }
-
+    public boolean isNtsBalanced(){
+        if (responseCode != null){
+            return responseCode.equals("00");
+        }
+        return false;
+    }
     public Integer getBatchId() {
         return batchId;
     }

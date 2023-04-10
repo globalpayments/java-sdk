@@ -174,13 +174,13 @@ public class NtsCreditTest {
 
     private NtsProductData getProductDataForNonFleetBankCards(IPaymentMethod method) throws ApiException {
         productData = new NtsProductData(ServiceLevel.FullServe, method);
-        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1.259);
-        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,20.24, 1.259);
-        productData.addNonFuel(NtsProductCode.Batteries,UnitOfMeasure.NoFuelPurchased,1,10.74);
-        productData.addNonFuel(NtsProductCode.CarWash,UnitOfMeasure.NoFuelPurchased,1,10.74);
-        productData.addNonFuel(NtsProductCode.Dairy,UnitOfMeasure.NoFuelPurchased,1,10.74);
-        productData.addNonFuel(NtsProductCode.Candy,UnitOfMeasure.NoFuelPurchased,1,10.74);
-        productData.addNonFuel(NtsProductCode.Milk,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,1.24, 1.259);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,2.24, 1.259);
+        productData.addNonFuel(NtsProductCode.Batteries,UnitOfMeasure.NoFuelPurchased,1,1.74);
+        productData.addNonFuel(NtsProductCode.CarWash,UnitOfMeasure.NoFuelPurchased,1,1.74);
+        productData.addNonFuel(NtsProductCode.Dairy,UnitOfMeasure.NoFuelPurchased,1,1.74);
+        productData.addNonFuel(NtsProductCode.Candy,UnitOfMeasure.NoFuelPurchased,1,1.74);
+        productData.addNonFuel(NtsProductCode.Milk,UnitOfMeasure.NoFuelPurchased,1,1.74);
         productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,10.74);
         productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
         productData.add(new BigDecimal("32.33"),new BigDecimal(0));
@@ -2741,6 +2741,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         // check response
         assertEquals("00", response.getResponseCode());
+        //header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         header.setPinIndicator(PinIndicator.WithoutPin);
         header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
@@ -2830,4 +2831,45 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
+
+    @Test
+    public void test_003_sales_with_track2_and_datacollect_resubmit() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+               // .withSecMessageCode(NtsMessageCode.ForceCollectOrForceSale)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+        //header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(response.getTransactionToken())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+
 }

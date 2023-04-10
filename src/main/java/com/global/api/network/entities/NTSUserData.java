@@ -1281,7 +1281,6 @@ public class NTSUserData {
         return sb;
     }
 
-
     private static StringBuffer getFleetCorList(TransactionBuilder<Transaction> builder, NTSCardTypes ntsCardTypes) {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();

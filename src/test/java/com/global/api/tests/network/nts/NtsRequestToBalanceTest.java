@@ -189,6 +189,7 @@ public class NtsRequestToBalanceTest {
         assertNotNull(batchClose);
         // check response
         assertEquals("00", batchClose.getResponseCode());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
 
     }
 
@@ -219,6 +220,7 @@ public class NtsRequestToBalanceTest {
 
         //check batch summary
         assertNotNull(batchClose.getBatchSummary());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
 
         // check response
         assertEquals("00", batchClose.getResponseCode());

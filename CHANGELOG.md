@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.2.11 (04/10/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+ - Tokenization changes (10121)
+ - Batch Summary Changes (10180)- Addition to isNtsBalanced() method
+
  ## v10.2.10 (04/06/2023)
  
 ### Enhancements:
