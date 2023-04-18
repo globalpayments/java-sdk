@@ -30,6 +30,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,7 +41,9 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     private NtsMessageCode messageCode;
     private int timeout;
+    private static final int messageRequestLength =2;
     private IRequestEncoder requestEncoder;
+
     @Override
     public int getTimeout() {
         if(super.getTimeout()==30000)
@@ -195,59 +198,12 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
         ntsObjectParam.setTimeout(getTimeout());
-        NtsMessageCode secNtsMessageCode = builder.getSecNtsMessageCode();
         //Preparing the request
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
         Transaction transaction=sendRequest(request, builder);
         transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
-        String token = generateDataCollectRequest(secNtsMessageCode, ntsObjectParam,transaction);
-        transaction.setTransactionToken(token);
         return transaction;
-    }
-
-    private String generateDataCollectRequest(NtsMessageCode secNtsMessageCode, NtsObjectParam ntsObjectParam, Transaction transaction) throws ApiException {
-
-        TransactionBuilder ntsBuilder = ntsObjectParam.getNtsBuilder();
-        NtsRequestMessageHeader ntsRequestMessageHeader = ntsBuilder.getNtsRequestMessageHeader();
-
-        NtsMessageCode originalNtsMessageCode = ntsRequestMessageHeader.getNtsMessageCode();
-        String originalNtsUserData = ntsObjectParam.getNtsUserData();
-        IPaymentMethod originalPaymentMethod = ntsBuilder.getPaymentMethod();
-        TransactionType originalTransactionType = ntsBuilder.getTransactionType();
-
-        //payment method
-        TransactionReference transactionReference = transaction.getTransactionReference();
-        ntsBuilder.setPaymentMethod(transactionReference);
-
-        //transaction type
-        ntsBuilder.setTransactionType(TransactionType.DataCollect);
-
-        //user data
-        NTSCardTypes cardType = NtsUtils.mapCardType(transactionReference);
-        String userData = setUserData(ntsBuilder, transactionReference, cardType);
-        ntsObjectParam.setNtsUserData(userData);
-
-        //set message code
-        if(secNtsMessageCode != null){
-            ntsRequestMessageHeader.setNtsMessageCode(secNtsMessageCode);
-        }
-        else{
-            ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
-        }
-
-
-        MessageWriter request = generateResubmitDataCollectReq(ntsObjectParam );
-        String token = encodeRequest(request);
-
-        // reset datacollect and set original data
-        ntsObjectParam.setNtsUserData(originalNtsUserData);
-        ntsRequestMessageHeader.setNtsMessageCode(originalNtsMessageCode);
-        ntsBuilder.setPaymentMethod(originalPaymentMethod);
-        ntsBuilder.setTransactionType(originalTransactionType);
-
-
-        return token;
     }
     private String setUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod, NTSCardTypes cardType) throws ApiException {
         String userData = "";
@@ -267,13 +223,13 @@ public class NtsConnector extends GatewayConnectorConfig {
     public Transaction resubmitTransaction(ResubmitBuilder builder) throws ApiException {
         String transactionToken = builder.getTransactionToken();
         Transaction result = null;
-        if(transactionToken != null) {
+        if (transactionToken != null) {
             byte[] decodeRequest = this.decodeRequest(builder.getTransactionToken());
-            IDeviceMessage buildMessage = new DeviceMessage(decodeRequest);
-            NtsUtils.log("-----------------------------------------------------------------------------------");
-            NtsUtils.log("Tokenization Request", buildMessage.toString());
-            byte[] responseBuffer = send(buildMessage);
-            result = mapResponse(responseBuffer, builder);
+            MessageWriter request = new MessageWriter();
+            String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
+            String originalReq = reqStr.substring(messageRequestLength);
+            request.setMessageRequest(new StringBuilder(originalReq));
+            result = sendRequest(request, builder);
         }
         return result;
     }
@@ -349,24 +305,24 @@ public class NtsConnector extends GatewayConnectorConfig {
         NtsUtils.log("Request length:", String.valueOf(messageData.getMessageRequest().length()));
 
         try {
-            int messageLength = messageData.getMessageRequest().length() + 2;
+            int messageLength = messageData.getMessageRequest().length() + messageRequestLength;
             MessageWriter req = new MessageWriter();
-            req.add(messageLength, 2);
+            req.add(messageLength, messageRequestLength);
             req.add(messageData.getMessageRequest().toString());
 
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
             NtsUtils.log("Request", buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
-            Transaction response =mapResponse(responseBuffer, builder);
-            String transactionToken = encodeRequest(messageData);
-            if(transactionToken != null) {
-                response.setTransactionToken(transactionToken);
-            }
+            Transaction response =mapResponse(responseBuffer, builder, messageData);
 
             return response;
 
         } catch (GatewayException exc) {
             exc.setHost(currentHost.getValue());
+            String transactionToken = encodeRequest(messageData);
+            if(transactionToken != null) {
+                exc.setTransactionToken(transactionToken);
+            }
             throw exc;
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage());
@@ -374,12 +330,13 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     }
 
-    private <T extends TransactionBuilder<Transaction>> Transaction mapResponse(byte[] buffer, T builder) throws ApiException {
+    private <T extends TransactionBuilder<Transaction>> Transaction mapResponse(byte[] buffer, T builder, MessageWriter messageData) throws ApiException {
         Transaction result = new Transaction();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
         MessageReader mr = new MessageReader(buffer);
         NTSCardTypes cardType = NtsUtils.mapCardType(paymentMethod);
         StringParser sp = new StringParser(buffer);
+        String transactionToken =  encodeRequest(messageData);
         NtsUtils.log("--------------------- RESPONSE ---------------------");
         NtsUtils.log("Response", sp.getBuffer());
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
@@ -398,6 +355,9 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (paymentMethod != null) {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
+            if(transactionToken != null) {
+                result.setTransactionToken(transactionToken);
+            }
         }
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)){
@@ -410,6 +370,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             summary.setTransactionCount(manageBuilder.getTransactionCount());
             summary.setSaleAmount(manageBuilder.getTotalSales());
             summary.setReturnAmount(manageBuilder.getTotalReturns());
+            summary.setTransactionToken(result.getTransactionToken());
             result.setBatchSummary(summary);
         }
             return result;
@@ -550,281 +511,5 @@ public class NtsConnector extends GatewayConnectorConfig {
             builder.getNtsRequestMessageHeader().setTransactionDate(transactionDate);
             builder.getNtsRequestMessageHeader().setTransactionTime(transactionTime);
         }
-    }
-
-    private MessageWriter generateResubmitDataCollectReq( @NonNull NtsObjectParam ntsObjectParam) throws ApiException {
-        MessageWriter request = null;
-
-        PaymentMethodType paymentMethodType = ntsObjectParam.getNtsBuilder().getPaymentMethod() != null ?
-                ntsObjectParam.getNtsBuilder().getPaymentMethod().getPaymentMethodType() : null;
-        INtsRequestMessage ntsRequestMessage = null;
-        TransactionType transactionType = ntsObjectParam.getNtsBuilder().getTransactionType();
-
-        // Setting the request header.
-        request = prepareHeaderForDataCollect(ntsObjectParam);
-        ntsObjectParam.setNtsRequest(request);
-         if (paymentMethodType != null && isDataCollectTransaction(transactionType, paymentMethodType)) {
-             request = prepareNtsDataCollectRequest(ntsObjectParam);
-            return request;
-        }
-        return request;
-    }
-
-    static MessageWriter prepareHeaderForDataCollect(@NonNull NtsObjectParam params) {
-        Integer MESSAGE_TYPE = 9;
-        Integer COMPANY_ID = 45; // Default company ID for P66
-
-        TransactionBuilder builder = params.getNtsBuilder();
-        MessageWriter headerRequest = new MessageWriter();
-        NTSCardTypes cardType = params.getNtsCardType();
-
-        NtsRequestMessageHeader ntsRequestMessageHeader = builder.getNtsRequestMessageHeader();
-        String strSpace = "";
-
-        // Message Type
-        headerRequest.addRange(MESSAGE_TYPE, 1);
-        // Company Number
-        String companyId = params.getCompanyId() != null ? params.getCompanyId() : String.valueOf(COMPANY_ID);
-        headerRequest.addRange(companyId, 3);
-        // Binary TerminalId
-        headerRequest.addRange(String.format("%1s", params.getBinTerminalId()), 1);
-
-        // Binary Terminal Type
-        headerRequest.addRange(String.format("%1s", params.getBinTerminalType()), 1);
-        // Host Response Code
-        headerRequest.addRange(String.format("%2s", strSpace), 2);
-        // Timeout Value
-        if (cardType != null) {
-            if(params.getTimeout()>0) {
-                headerRequest.addRange(params.getTimeout(), 3);
-            }else {
-                headerRequest.addRange(cardType.getTimeOut(), 3);
-            }
-        } else {
-            headerRequest.addRange(String.valueOf(15), 3);
-        }
-
-        // Filler
-        headerRequest.addRange(String.format("%1s", strSpace), 1);
-        //Input Capability Code
-        headerRequest.addRange(String.valueOf(params.getInputCapabilityCode().getValue()), 1);
-        // Filler
-        headerRequest.addRange(String.format("%1s", strSpace), 1);
-        // Terminal Destination TagPurchase_CashBack
-        headerRequest.addRange(ntsRequestMessageHeader.getTerminalDestinationTag(), 3);
-        // Software Version
-        headerRequest.addRange(params.getSoftwareVersion(), 2);
-        // Pin Indicator
-        headerRequest.addRange(ntsRequestMessageHeader.getPinIndicator().getValue(), 1);
-        // Logic Process Flag or Store_And_Forward_Indicator
-        headerRequest.addRange(params.getLogicProcessFlag().getValue(), 1);
-        // Message Code
-        headerRequest.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
-        // Terminal Type
-        headerRequest.addRange(params.getTerminalType().getValue(), 2);
-        // Unit Number
-        headerRequest.addRange(params.getUnitNumber(), 11);
-        // Terminal Id
-        headerRequest.addRange(params.getTerminalId(), 2);
-
-        IPaymentMethod paymentMethod = builder.getPaymentMethod();
-        TransactionReference transactionReference = null;
-        if (paymentMethod instanceof TransactionReference) {
-            transactionReference = (TransactionReference) paymentMethod;
-        }
-        if (builder instanceof AuthorizationBuilder) {
-            // Transaction Date
-            headerRequest.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
-
-            // Transaction Time
-            headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
-        } else if (builder instanceof ManagementBuilder) {
-            ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-            if (paymentMethod != null && paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Credit)
-                    && manageBuilder.getTransactionType() == TransactionType.Void) {
-                // Transaction Date
-                headerRequest.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
-
-                // Transaction Time
-                headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
-            }else if (transactionReference != null &&
-                    (manageBuilder.getTransactionType() == TransactionType.Reversal
-                            || manageBuilder.getTransactionType() == TransactionType.Refund
-                            || manageBuilder.getTransactionType() == TransactionType.Void
-                            || manageBuilder.getTransactionType() == TransactionType.PreAuthCompletion)
-            ) {
-                // Transaction Date
-                headerRequest.addRange(transactionReference.getOriginalTransactionDate(), 4);
-
-                // Transaction Time
-                headerRequest.addRange(transactionReference.getOriginalTransactionTime(), 6);
-            } else if (manageBuilder.getTransactionType() == TransactionType.BatchClose
-                    ||manageBuilder.getTransactionType() == TransactionType.Capture
-                    || manageBuilder.getTransactionType() == TransactionType.DataCollect) {
-                // Transaction Date
-                headerRequest.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
-
-                // Transaction Time
-                headerRequest.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
-            }
-        }
-        // Prior Message Response Time
-        headerRequest.addRange(StringUtils.padLeft(ntsRequestMessageHeader.getPriorMessageInformation().getResponseTime(), 3, '0'), 3);
-        // Prior Message Connect Time
-        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInformation().getConnectTime(), 3);
-        // Prior Message Code
-        headerRequest.addRange(ntsRequestMessageHeader.getPriorMessageInformation().getMessageReasonCode(), 2);
-        return headerRequest;
-    }
-
-    private static MessageWriter prepareNtsDataCollectRequest(NtsObjectParam ntsObjectParam) throws BatchFullException {
-        TransactionBuilder builder = ntsObjectParam.getNtsBuilder();
-        MessageWriter request = ntsObjectParam.getNtsRequest();
-        NTSCardTypes cardType = ntsObjectParam.getNtsCardType();
-        String userData = ntsObjectParam.getNtsUserData();
-        NtsRequestMessageHeader ntsRequestMessageHeader = builder.getNtsRequestMessageHeader();
-
-        IPaymentMethod paymentMethod = builder.getPaymentMethod();
-        TransactionReference transactionReference = null;
-        if(paymentMethod instanceof TransactionReference){
-            transactionReference = (TransactionReference) paymentMethod;
-            paymentMethod = transactionReference.getOriginalPaymentMethod();
-        }
-
-        if (paymentMethod instanceof ITrackData) {
-            ITrackData trackData = (ITrackData) paymentMethod;
-            if (trackData.getEntryMethod() != null) {
-                NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
-                request.addRange(entryMethod.getValue(), 1);
-            } else {
-                request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
-            }
-        } else if (paymentMethod instanceof ICardData) {
-            request.addRange(NTSEntryMethod.MagneticStripeWithoutTrackDataAttended.getValue(), 1);
-        } else if (paymentMethod instanceof GiftCard) {
-            GiftCard card = (GiftCard) paymentMethod;
-            NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(card.getEntryMethod(), card.getTrackNumber(), ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
-            request.addRange(entryMethod.getValue(), 1);
-        }
-
-        // Card Type
-        if (cardType != null) {
-            request.addRange(cardType.getValue(), 2);
-        }
-
-        if (transactionReference != null) {
-
-            IBatchProvider batchProvider = ntsObjectParam.getNtsBatchProvider();
-            int batchNumber = builder.getBatchNumber();
-            int sequenceNumber = 0;
-
-            if (!StringUtils.isNullOrEmpty(transactionReference.getDebitAuthorizer())) {
-                request.addRange(transactionReference.getDebitAuthorizer(), 2); // Response value from ebt or pin debit authorizer
-            } else {
-                request.addRange(DebitAuthorizerCode.NonPinDebitCard.getValue(), 2);
-            }
-
-            if (paymentMethod instanceof ICardData) {
-                ICardData cardData = (ICardData) paymentMethod;
-                String accNumber = cardData.getNumber();
-                request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-                request.addRange(cardData.getShortExpiry(), 4);
-
-            } else if (paymentMethod instanceof ITrackData) {
-                ITrackData trackData = (ITrackData) paymentMethod;
-                if (trackData.getPan() != null) {
-                    // Account number
-                    request.addRange(StringUtils.padRight(trackData.getPan(), 19, ' '), 19);
-
-                    String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
-                    // Expiry date
-                    request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
-                } else {
-                    request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
-                }
-            } else if (paymentMethod instanceof GiftCard) {
-                GiftCard gift = (GiftCard) paymentMethod;
-                // Account number
-                request.addRange(StringUtils.padRight(gift.getPan(), 19, ' '), 19);
-
-                String expiryDate = NtsUtils.prepareExpDateWithoutTrack(gift.getExpiry());
-                // Expiry date
-                request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
-            }
-
-            request.addRange(transactionReference.getApprovalCode(), 6);
-
-            request.addRange(transactionReference.getAuthorizer().getValue(), 1);
-
-            BigDecimal approvedAmount = transactionReference.getOriginalApprovedAmount();
-            if(approvedAmount == null){
-                approvedAmount = builder.getAmount();
-            }
-            request.addRange(StringUtils.toNumeric(approvedAmount, 7), 7);
-
-            request.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
-
-            request.addRange(transactionReference.getAuthCode(), 2);
-
-            if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitCreditAdjustment ||
-                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.ForceCreditAdjustment ||
-                    ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.RetransmitForceCreditAdjustment) {
-                request.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
-
-                request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
-            } else if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.CreditAdjustment) {
-                String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
-                String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
-
-                request.addRange(transactionDate, 4);
-
-                request.addRange(transactionTime, 6);
-            } else {
-                request.addRange(transactionReference.getOriginalTransactionDate(), 4);
-
-                request.addRange(transactionReference.getOriginalTransactionTime(), 6);
-            }
-            if (batchNumber == 0 && batchProvider != null) {
-                batchNumber = batchProvider.getBatchNumber();
-            }
-            //BatchNumber
-            request.addRange(batchNumber, 2);
-
-            if (!builder.getTransactionType().equals(TransactionType.BatchClose)) {
-                sequenceNumber = builder.getSequenceNumber();
-                if (sequenceNumber == 0 && batchProvider != null) {
-                    sequenceNumber = batchProvider.getSequenceNumber();
-                }
-            }
-            //Sequence Number
-            request.addRange(StringUtils.padLeft(sequenceNumber, 3, '0'), 3);
-
-            if (!StringUtils.isNullOrEmpty(userData)) {
-                if (userData.length() != 99) {
-                    // Extended user data flag
-                    request.addRange("E", 1);
-
-                    // User data length
-                    request.addRange(userData.length(), 3);
-                }
-
-                request.addRange(userData, userData.length());
-            }
-
-        }
-        return request;
-    }
-    private static boolean isDataCollectTransaction(TransactionType transactionType, PaymentMethodType paymentMethodType){
-        return  (
-                transactionType.equals(TransactionType.DataCollect)
-                        ||transactionType.equals(TransactionType.Capture)
-        )
-                &&
-                (
-                        Objects.equals(paymentMethodType, PaymentMethodType.Debit)
-                                || Objects.equals(paymentMethodType, PaymentMethodType.Credit)
-                                || Objects.equals(paymentMethodType, PaymentMethodType.Gift)
-                                || Objects.equals(paymentMethodType, PaymentMethodType.EBT)
-                );
     }
 }

@@ -45,8 +45,8 @@ public interface INtsRequestMessage {
         NtsUtils.log("binary terminal type", params.getBinTerminalType());
         headerRequest.addRange(String.format("%1s", params.getBinTerminalType()), 1);
         // Host Response Code
-        NtsUtils.log("Host Response Code", String.format("%2s", strSpace));
-        headerRequest.addRange(String.format("%2s", strSpace), 2);
+        NtsUtils.log("Host Response Code", String.format("%2s", params.getHostResponseCode()));
+        headerRequest.addRange(String.format("%2s", params.getHostResponseCode()), 2);
         // Timeout Value
         if (cardType != null) {
             if(params.getTimeout()>0) {

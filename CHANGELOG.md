@@ -1,5 +1,14 @@
 # Changelog
 
+## v10.2.12 (04/18/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  -Tokenization (10121)
+  - Addition of HostResponseCode field (10186)
+
+
 ## v10.2.11 (04/10/2023)
  
 ### Enhancements:

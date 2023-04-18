@@ -2846,7 +2846,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
                 .withNtsProductData(productData)
-               // .withSecMessageCode(NtsMessageCode.ForceCollectOrForceSale)
                 .withNtsTag16(tag)
                 .withCvn("123")
                 .execute();
@@ -2870,6 +2869,46 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
+    }
+    @Test
+    public void test_003_sales_with_track2_and_datacollect_resubmit_timeout_scanario() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+       // System.out.println("Normal token case "+ response.getTransactionToken());
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                .withSimulatedHostErrors(Host.Primary,HostError.Timeout)
+                .withSimulatedHostErrors(Host.Secondary,HostError.Timeout)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .execute();
+        assertNotNull(capture);
     }
 
 }

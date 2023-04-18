@@ -115,12 +115,8 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             request.addRange(transactionReference.getAuthorizer().getValue(), 1);
             NtsUtils.log("Authorizer", transactionReference.getAuthorizer());
 
-            BigDecimal approvedAmount = transactionReference.getOriginalApprovedAmount();
-            if(approvedAmount == null){
-                approvedAmount = builder.getAmount();
-            }
-            request.addRange(StringUtils.toNumeric(approvedAmount, 7), 7);
-            NtsUtils.log("Amount", StringUtils.toNumeric(approvedAmount, 7));
+            request.addRange(StringUtils.toNumeric(builder.getAmount(), 7), 7);
+            NtsUtils.log("Amount", StringUtils.toNumeric(builder.getAmount(), 7));
 
             request.addRange(ntsRequestMessageHeader.getNtsMessageCode().getValue(), 2);
             NtsUtils.log("MessageCode", ntsRequestMessageHeader.getNtsMessageCode());

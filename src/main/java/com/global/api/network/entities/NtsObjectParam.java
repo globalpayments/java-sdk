@@ -34,25 +34,5 @@ public class NtsObjectParam {
     private String unitNumber;
     private String companyId;
     private int timeout;
-
-    public NtsObjectParam(NtsObjectParam ntsObjectParam){
-       this.ntsBuilder = ntsObjectParam.getNtsBuilder();
-       this.ntsRequest = ntsObjectParam.getNtsRequest();
-       this.ntsUserData = ntsObjectParam.getNtsUserData();
-       this.ntsEnableLogging = ntsObjectParam.isNtsEnableLogging();
-       this.ntsBatchProvider = ntsObjectParam.getNtsBatchProvider();
-       this.ntsCardType = ntsObjectParam.getNtsCardType();
-       this.terminalId = ntsObjectParam.getTerminalId();
-       this.binTerminalId = ntsObjectParam.getBinTerminalId();
-       this.inputCapabilityCode = ntsObjectParam.getInputCapabilityCode();
-       this.binTerminalType = ntsObjectParam.getBinTerminalType();
-       this.softwareVersion = ntsObjectParam.getSoftwareVersion();
-       this.logicProcessFlag = ntsObjectParam.getLogicProcessFlag();
-       this.terminalType = ntsObjectParam.terminalType;
-       this.unitNumber = ntsObjectParam.getUnitNumber();
-       this.companyId = ntsObjectParam.companyId;
-       this.timeout = ntsObjectParam.getTimeout();
-       this.ntsAcceptorConfig = ntsObjectParam.getNtsAcceptorConfig();
-
-    }
+    private String hostResponseCode = "";
 }

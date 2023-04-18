@@ -115,8 +115,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     //Nts
     @Getter
     private NtsUtilityMessageRequest ntsUtilityMessageRequest;
-    @Getter @Setter
-    NtsMessageCode secNtsMessageCode;
     public AuthorizationBuilder withNtsUtilityMessageRequest(NtsUtilityMessageRequest value) {
         ntsUtilityMessageRequest = value;
         return this;
@@ -1014,10 +1012,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withMaskedDataResponse(Boolean value) {
         this.maskedDataResponse = value;
-        return this;
-    }
-    public AuthorizationBuilder withSecMessageCode(NtsMessageCode secondNtsMessageCode) {
-        this.secNtsMessageCode = secondNtsMessageCode;
         return this;
     }
 }
