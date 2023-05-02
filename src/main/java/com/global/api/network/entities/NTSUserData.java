@@ -3,7 +3,6 @@ package com.global.api.network.entities;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
-import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -19,10 +18,9 @@ import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.ArrayList;
 
 public class NTSUserData {
 
@@ -51,9 +49,9 @@ public class NTSUserData {
         String amount = StringUtils.toNumeric(builder.getAmount());
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
                 && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
-            if (builder.getFleetData() != null) {
+            //if (builder.getFleetData() != null) {
                 sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
-            }
+            //}
             if (builder.getNtsProductData() != null) {
                 sb.append(getProductDataTag09(builder, cardType));
             }
@@ -498,33 +496,50 @@ public class NTSUserData {
         StringBuilder sb = new StringBuilder();
         switch (ntsCardTypes) {
             case VisaFleet:
-                    sb.append(StringUtils.padLeft(fleetData.getOdometerReading() != null ? fleetData.getOdometerReading() : "", 7, '0'));
-                if (fleetData.getDriverId() != null) {
-                    sb.append(StringUtils.padRight(fleetData.getDriverId(), 17, ' '));
-                } else if (fleetData.getVehicleNumber() != null) {
-                    sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 17, ' '));
-                } else if (fleetData.getGenericIdentificationNo() != null) {
-                    sb.append(StringUtils.padRight(fleetData.getGenericIdentificationNo(), 17, ' '));
-                } else {
+                if(fleetData!=null) {
+                    if (fleetData.getOdometerReading() != null) {
+                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading() != null ? fleetData.getOdometerReading() : "", 7, '0'));
+                    } else{
+                        sb.append(String.format("%07d",0));
+                    }
+                        if(fleetData.getDriverId() != null || fleetData.getVehicleNumber() != null || fleetData.getVehicleNumber() != null){
+                            if (fleetData.getDriverId() != null) {
+                                sb.append(StringUtils.padRight(fleetData.getDriverId(), 17, ' '));
+                            } else if (fleetData.getVehicleNumber() != null) {
+                                sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 17, ' '));
+                            } else if (fleetData.getGenericIdentificationNo() != null) {
+                                sb.append(StringUtils.padRight(fleetData.getGenericIdentificationNo(), 17, ' '));
+                            }
+                        }else{
+                            sb.append(StringUtils.padRight("", 17, ' '));
+                        }
+                }else {
+                    sb.append(String.format("%07d",0));
                     sb.append(StringUtils.padRight("", 17, ' '));
                 }
                 return sb;
 
             case MastercardFleet:
-                if (fleetData.getOdometerReading() != null) {
-                    sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0')); // check in mastercard fleet & visa fleet chapter user data
-                } else {
-                    sb.append(String.format("%7s", " "));
-                }
-                if (fleetData.getDriverId() != null) {
-                    sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
-                } else {
-                    sb.append(String.format("%6s", " "));
-                }
-                if (fleetData.getVehicleNumber() != null) {
-                    sb.append(StringUtils.padLeft(fleetData.getVehicleNumber(), 6, '0'));
-                } else {
-                    sb.append(String.format("%6s", " "));
+                if(fleetData!=null) {
+                    if (fleetData.getOdometerReading() != null) {
+                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0')); // check in mastercard fleet & visa fleet chapter user data
+                    } else {
+                        sb.append(String.format("%7s", " "));
+                    }
+                    if (fleetData.getDriverId() != null) {
+                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
+                    } else {
+                        sb.append(String.format("%6s", " "));
+                    }
+                    if (fleetData.getVehicleNumber() != null) {
+                        sb.append(StringUtils.padLeft(fleetData.getVehicleNumber(), 6, '0'));
+                    } else {
+                        sb.append(String.format("%6s", " "));
+                    }
+                }else {
+                    sb.append(StringUtils.padRight("", 7, ' '));
+                    sb.append(StringUtils.padRight("", 6, ' '));
+                    sb.append(StringUtils.padRight("", 6, ' '));
                 }
 
                 return sb;
@@ -802,7 +817,11 @@ public class NTSUserData {
                         sb.append("074");
                         sb.append(StringUtils.toNumeric(entry.getAmount(), 7));
                     }
-                    sb.append(StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
+                    if (fleetData !=null) {
+                        sb.append(StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
+                    }else {
+                        sb.append(StringUtils.padRight("", 5, '0'));
+                    }
                     if (builder.getTagData() != null) {
                         sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
                         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
@@ -1235,20 +1254,16 @@ public class NTSUserData {
 
     private static StringBuffer getWexFleetPromptList(TransactionBuilder<Transaction> builder) throws ApiException {
         StringBuffer sb = new StringBuffer();
-        FleetData data = builder.getFleetData();
-        int promptSize = 0;
-        // Adding the provided prompts.
-        int servicePrompt;
-        try {
-            servicePrompt = Integer.parseInt(data.getServicePrompt());
-        } catch (Exception ignored){
-            throw new ApiException("Service prompts required for wex fleet transcations.");
-        }
-        promptSize = builder.getTagData() != null ?
-                Math.min(servicePrompt, 6) :
-                Math.min(servicePrompt, 3);
+        FleetData fleetData = builder.getFleetData();
+        int noOfPrompt= fleetData != null ? getWexPromptCount(fleetData) : 0;
+
+        int promptSize = builder.getTagData() != null ?
+                Math.min(noOfPrompt, 6) :
+                Math.min(noOfPrompt, 3);
         sb.append(promptSize);
-        sb.append(getWEXPromptData(data, promptSize));
+        if (fleetData != null) {
+            sb.append(getWEXPromptData(fleetData, promptSize));
+        }
 
         // Added remaining 0 for padding purpose.
         int remainingPrompt = builder.getTagData() != null ?
@@ -1381,5 +1396,27 @@ public class NTSUserData {
                 .append(StringUtils.padLeft(data, 12, '0')); // Actual Data
 
     }
+    private static int getWexPromptCount(FleetData fleetData){
+        int noOfPrompt =0;
 
+        List<String> promptCode = new ArrayList<>();
+        promptCode.add(fleetData.getVehicleNumber());
+        promptCode.add(fleetData.getDriverId());
+        promptCode.add(fleetData.getDepartment());
+        promptCode.add(fleetData.getUserId());
+        promptCode.add(fleetData.getDriversLicenseNumber());
+        promptCode.add(fleetData.getJobNumber());
+        promptCode.add(fleetData.getOtherPromptCode());
+        promptCode.add(fleetData.getOdometerReading());
+        promptCode.add(fleetData.getMaintenanceNumber());
+        promptCode.add(fleetData.getHubometerNumber());
+        promptCode.add(fleetData.getTrailerNumber());
+        promptCode.add(fleetData.getTrailerReferHours());
+        promptCode.add(fleetData.getTripNumber());
+
+        noOfPrompt = Math.toIntExact(promptCode.stream().filter(code -> code != null).count());
+        promptCode.clear();
+
+        return noOfPrompt;
+    }
 }

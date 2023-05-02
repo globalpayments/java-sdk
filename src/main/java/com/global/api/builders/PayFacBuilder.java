@@ -1,11 +1,9 @@
 package com.global.api.builders;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.Product;
-import com.global.api.entities.enums.PaymentMethodFunction;
-import com.global.api.entities.enums.StatusChangeReason;
-import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.payFac.*;
 import com.global.api.paymentMethods.CreditCardData;
@@ -39,6 +37,8 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
     private UserReference userReference;
     private HashMap<String, PaymentMethodFunction> paymentMethodsFunctions;
     private String idempotencyKey;
+    private HashMap<AddressType, Address> addresses;
+    private String accountNumber;
 
     public PayFacBuilder(TransactionType type) {
         this.transactionType = type;
@@ -65,12 +65,8 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
 
         var client = ServicesContainer.getInstance().getPayFac(configName);
 
-        switch (transactionModifier) {
-            case Merchant:
-                return client.processBoardingUser(this);
-
-            default:
-                break;
+        if (client.hasBuiltInMerchantManagementService()) {
+            return client.processBoardingUser(this);
         }
 
         return client.processPayFac(this);
@@ -79,9 +75,18 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
     @Override
     public void setupValidations() {
         validations
+                .of(TransactionType.Create)
+                .with(TransactionModifier.Merchant)
+                .check("userPersonalData").isNotNull();
+
+        validations
                 .of(EnumSet.of(TransactionType.Fetch, TransactionType.Edit))
                 .with(TransactionModifier.Merchant)
                 .check("userReference").propertyOf(String.class, "userId").isNotNull();
+
+        validations
+                .of(TransactionType.EditAccount)
+                .check("accountNumber").isNotNull();
     }
 
     public PayFacBuilder<TResult> withBankAccountData(BankAccountData bankAccountData, PaymentMethodFunction paymentMethodFunction) {
@@ -144,6 +149,20 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
         return this;
     }
 
+    public PayFacBuilder<TResult> withAddress(Address value, AddressType type) {
+        if (type == null) {
+            type = AddressType.Billing;
+        }
+
+        if (addresses == null) {
+            addresses = new HashMap<>();
+        }
+
+        addresses.put(type, value);
+
+        return this;
+    }
+
     public PayFacBuilder<TResult> withUserPersonalData(UserPersonalData userPersonalData) {
         this.userPersonalData = userPersonalData;
         return this;
@@ -158,6 +177,11 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
             }
             paymentMethodsFunctions.put(creditCardInformation.getCardType(), paymentMethodFunction);
         }
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
         return this;
     }
 

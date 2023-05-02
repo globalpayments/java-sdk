@@ -1,6 +1,7 @@
 package com.global.api.services;
 
 import com.global.api.builders.PayFacBuilder;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.User;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
@@ -26,6 +27,14 @@ public class PayFacService implements IDisposable {
                 new PayFacBuilder<User>(TransactionType.Fetch)
                         .withModifier(TransactionModifier.Merchant)
                         .withUserReference(userReference);
+    }
+
+    public PayFacBuilder<Transaction> createAccount() {
+        return new PayFacBuilder<>(TransactionType.CreateAccount);
+    }
+
+    public PayFacBuilder<Transaction> editAccount() {
+        return new PayFacBuilder<>(TransactionType.EditAccount);
     }
 
     @Override

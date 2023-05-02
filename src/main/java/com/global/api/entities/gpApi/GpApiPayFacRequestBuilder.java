@@ -32,10 +32,6 @@ public class GpApiPayFacRequestBuilder {
 
             case Create:
                 if (builder.getTransactionModifier() == TransactionModifier.Merchant) {
-                    if (builder.getUserPersonalData() == null) {
-                        throw new IllegalArgumentException("Merchant data is mandatory!");
-                    }
-
                     var data = buildCreateMerchantRequest();
 
                     return
@@ -65,11 +61,94 @@ public class GpApiPayFacRequestBuilder {
                 }
                 break;
 
+            case EditAccount:
+                var dataRequest = new JsonDoc();
+                HashMap<String, Object> paymentMethod = new HashMap<>();
+
+                if (builder.getCreditCardInformation() != null) {
+                    var card = new HashMap<String, Object>();
+                    card.put("name", builder.getCreditCardInformation() != null ? builder.getCreditCardInformation().getCardHolderName() : null);
+                    card.put("card", builder.getCreditCardInformation() instanceof CreditCardData ? mapCreditCardInfo(builder.getCreditCardInformation()) : null);
+
+                    paymentMethod.put("payment_method", card);
+                }
+
+                if ((builder.getAddresses() != null) && (builder.getAddresses().containsKey(AddressType.Billing))){
+                    paymentMethod.put("billing_address",
+                            mapAddress((Address) builder.getAddresses().get(AddressType.Billing), "alpha2", null));
+                }
+
+                dataRequest.set("payer", paymentMethod);
+
+                String endpoint = merchantUrl;
+                if (builder.getUserReference() != null && !StringUtils.isNullOrEmpty(builder.getUserReference().getUserId())) {
+                    endpoint = "/merchants/" + builder.getUserReference().getUserId();
+                }
+
+            return
+                        new GpApiRequest()
+                                .setVerb(GpApiRequest.HttpMethod.Patch)
+                                .setEndpoint(endpoint + "/accounts/" + _builder.getAccountNumber())
+                                .setRequestBody(dataRequest.toString());
+
             default:
                 break;
         }
 
         return null;
+    }
+
+    private static HashMap<String, Object> mapAddress(Address address, String countryCodeType, String functionKey) {
+        if(StringUtils.isNullOrEmpty(countryCodeType)) {
+            countryCodeType = "alpha2";
+        }
+
+        var countryCode = "";
+
+        switch (countryCodeType) {
+            case "alpha2":
+                countryCode = CountryUtils.getCountryCodeByCountry(address.getCountryCode());
+                break;
+
+            default:
+                countryCode = address.getCountryCode();
+                break;
+        }
+
+        HashMap item = new HashMap<>();
+
+        if(address != null) {
+            if (!StringUtils.isNullOrEmpty(functionKey))
+                item.put("functions", new String[]{functionKey});
+            if (!StringUtils.isNullOrEmpty(address.getStreetAddress1()))
+                item.put("line_1", address.getStreetAddress1());
+            if (!StringUtils.isNullOrEmpty(address.getStreetAddress2()))
+                item.put("line_2", address.getStreetAddress2());
+            if (!StringUtils.isNullOrEmpty(address.getStreetAddress3()))
+                item.put("line_3", address.getStreetAddress3());
+            if (!StringUtils.isNullOrEmpty(address.getCity()))
+                item.put("city", address.getCity());
+            if (!StringUtils.isNullOrEmpty(address.getPostalCode()))
+                item.put("postal_code", address.getPostalCode());
+            if (!StringUtils.isNullOrEmpty(address.getState()))
+                item.put("state", address.getState());
+
+            item.put("country", countryCode);
+        }
+
+        return item;
+    }
+
+    private static HashMap<String, Object> mapCreditCardInfo(CreditCardData value) {
+        HashMap item = new HashMap<String, Object>();
+
+        item.put("name", value.getCardHolderName());
+        item.put("number", value.getNumber());
+        item.put("expiry_month", value.getExpMonth() != null ? StringUtils.padLeft(value.getExpMonth(), 2, '0') : null);
+        item.put("expiry_year", value.getExpYear() != null ? StringUtils.padLeft(value.getExpYear(), 4, '0').substring(2, 4) : null);
+        item.put("cvv", value.getCvn());
+
+        return item;
     }
 
     private static JsonDoc setMerchantInfo() {
@@ -152,16 +231,7 @@ public class GpApiPayFacRequestBuilder {
             item.put("job_title", person.getJobTitle());
 
             if (person.getAddress() != null && type == null) {
-                var address = new HashMap<String, Object>();
-                address.put("line_1", person.getAddress().getStreetAddress1());
-                address.put("line_2", person.getAddress().getStreetAddress2());
-                address.put("line_3", person.getAddress().getStreetAddress3());
-                address.put("city", person.getAddress().getCity());
-                address.put("state", person.getAddress().getState());
-                address.put("postal_code", person.getAddress().getPostalCode());
-                address.put("country", person.getAddress().getCountryCode());
-
-                item.put("address", address);
+                item.put("address", mapAddress(person.getAddress(), "alpha2", null));
             }
 
             if (person.getHomePhone() != null) {
@@ -200,24 +270,12 @@ public class GpApiPayFacRequestBuilder {
             }
 
             if (!StringUtils.isNullOrEmpty(bankAccountData.getRoutingNumber())) {
-                bank.put("code", bankAccountData.getRoutingNumber());   // @TODO confirmantion from GP-API team
+                bank.put("code", bankAccountData.getRoutingNumber());   // @TODO confirmation from GP-API team
             }
 
-            bank.put("international_code", "");                         // @TODO confirmantion from GP-API team
+            bank.put("international_code", "");                         // @TODO confirmation from GP-API team
 
-            if (bankAccountData.getBankAddress() != null) {
-                var address = new HashMap<>();
-
-                address.put("line_1", bankAccountData.getBankAddress().getStreetAddress1());
-                address.put("line_2", bankAccountData.getBankAddress().getStreetAddress2());
-                address.put("line_3", bankAccountData.getBankAddress().getStreetAddress3());
-                address.put("city", bankAccountData.getBankAddress().getCity());
-                address.put("postal_code", bankAccountData.getBankAddress().getPostalCode());
-                address.put("state", bankAccountData.getBankAddress().getState());
-                address.put("country", CountryUtils.getCountryCodeByCountry(bankAccountData.getBankAddress().getCountryCode()));
-
-                bank.put("address", address);
-            }
+            bank.put("address", (bankAccountData.getBankAddress() != null) ? mapAddress(bankAccountData.getBankAddress(), "alpha2", null) : null);
 
             data.put("bank", bank);
 
@@ -308,13 +366,7 @@ public class GpApiPayFacRequestBuilder {
             var item = new HashMap<String, Object>();
             var dataAddress = ((Address) address.getValue());
 
-            item.put("functions", new String[] { address.getKey() });
-            item.put("line_1", dataAddress.getStreetAddress1());
-            item.put("line_2", dataAddress.getStreetAddress2());
-            item.put("city", dataAddress.getCity());
-            item.put("postal_code", dataAddress.getPostalCode());
-            item.put("state", dataAddress.getState());
-            item.put("country", CountryUtils.getCountryCodeByCountry(dataAddress.getCountryCode()));
+            addresses.add(mapAddress(dataAddress, "alpha2", address.getKey()));
 
             addresses.add(item);
         }

@@ -280,4 +280,81 @@ public class NtsWexFleetIcrTest {
         assertEquals("00", response.getResponseCode());
 
     }
+
+    @Test // 3rd promptCode value should padded with 0's.
+    public void test_WexFleet_promptCountIssue_10187_with_two_promptCode() throws  ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";6900460420006149231=21121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1225");
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setJobNumber("12345");
+        fleetData.setVehicleNumber("1234567");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute("ICR");
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test // all promptCode values should padded with 0's.
+    public void test_WexFleet_promptCountIssue_10187_without_fleetData() throws  ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";6900460420006149231=21121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1225");
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+//                .withFleetData(fleetData)
+                .execute("ICR");
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test //should take only 3 promptCode values.
+    public void test_WexFleet_promptCountIssue_10187_with_moreThan_three_promptCodes() throws  ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";6900460420006149231=21121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1225");
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setJobNumber("12345");
+        fleetData.setVehicleNumber("1234567");
+        fleetData.setDriverId("1234");
+        fleetData.setOdometerReading("123");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute("ICR");
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
 }

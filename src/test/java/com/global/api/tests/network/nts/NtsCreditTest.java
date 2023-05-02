@@ -2898,8 +2898,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withCurrency("USD")
                 .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
-                .withSimulatedHostErrors(Host.Primary,HostError.Timeout)
-                .withSimulatedHostErrors(Host.Secondary,HostError.Timeout)
                 .withNtsTag16(tag)
                 .execute();
         assertNotNull(dataCollectResponse);
@@ -2907,6 +2905,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", dataCollectResponse.getResponseCode());
 
         Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .withForceToHost(true)
                 .execute();
         assertNotNull(capture);
     }

@@ -1,5 +1,18 @@
 # Changelog
 
+## v10.2.13 (05/02/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Primary and secondary end point (10185)
+  - HOST RESPONSE CODE field Added(10186)
+  - Wex Prompting(10187)
+  - Visa Fleet Data Collect User data Length(10177)
+  - Batch Summary missing values(10188)
+- GP-API:
+  -  Manage merchant accounts for partner solution
+
 ## v10.2.12 (04/18/2023)
  
 ### Enhancements:

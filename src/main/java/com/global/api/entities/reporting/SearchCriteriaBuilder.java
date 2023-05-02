@@ -1,6 +1,7 @@
 package com.global.api.entities.reporting;
 
 import com.global.api.builders.ReportBuilder;
+import com.global.api.entities.Address;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -21,6 +22,7 @@ public class SearchCriteriaBuilder<TResult> {
     @Setter(AccessLevel.NONE)
     private ReportBuilder<TResult> _reportBuilder;
 
+    private String accountId;
     private String accountName;
     private String accountNumberLastFour;
     private String actionId;
@@ -82,10 +84,12 @@ public class SearchCriteriaBuilder<TResult> {
     private String maskedCardNumber;
     private String merchantId;
     private String merchantName;
+    private MerchantAccountStatus merchantStatus;
     private String name;
     private boolean oneTime;
     private String orderId;
     private String payLinkStatus;
+    private MerchantAccountStatus accountStatus;
     private PaymentEntryMode paymentEntryMode;
     private String paymentMethodKey;
     private PaymentMethodType paymentMethodType;
@@ -98,6 +102,7 @@ public class SearchCriteriaBuilder<TResult> {
     private String referenceNumber;
     private String bankPaymentId;
     private String payLinkId;
+    private Address address;
     private Boolean returnPII;
     private FraudFilterMode riskAssessmentMode;
     private FraudFilterResult riskAssessmentResult;

@@ -21,11 +21,13 @@ public class GpApiService {
         accessTokenInfo.setTokenizationAccountName(data.getTokenizationAccountName());
         accessTokenInfo.setTransactionProcessingAccountName(data.getTransactionProcessingAccountName());
         accessTokenInfo.setRiskAssessmentAccountName(data.getRiskAssessmentAccountName());
+        accessTokenInfo.setMerchantManagementAccountName(data.getMerchantManagementAccountName());
         accessTokenInfo.setDataAccountID(data.getDataAccountID());
         accessTokenInfo.setDisputeManagementAccountID(data.getDisputeManagementAccountID());
         accessTokenInfo.setTokenizationAccountID(data.getTokenizationAccountID());
         accessTokenInfo.setTransactionProcessingAccountID(data.getTransactionProcessingAccountID());
         accessTokenInfo.setRiskAssessmentAccountID(data.getRiskAssessmentAccountID());
+        accessTokenInfo.setMerchantManagementAccountID(data.getMerchantManagementAccountID());
 
         return accessTokenInfo;
     }

@@ -12,12 +12,12 @@ public class BaseGpApiTest {
     // ================================================================================
     // Latest Credentials
     // ================================================================================
-    static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
-    static final String APP_KEY = "FQyJA5VuEQfcji2M";
+    public static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
+    public static final String APP_KEY = "FQyJA5VuEQfcji2M";
     static final String APP_ID_FRAUD = "Q18DcsJvh8TtRo9zxICvg9S78S3RN8u2";
     static final String APP_KEY_FRAUD = "CFaMNPgpPN4KXibu";
     static final String APP_ID_FOR_MERCHANT = "A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t";
-    static final String APP_KEY_MERCHANT = "5jPt1OpB6LLitgi7";
+    static final String APP_KEY_FOR_MERCHANT = "5jPt1OpB6LLitgi7";
     // ================================================================================
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
     static final String SUCCESS = "SUCCESS";

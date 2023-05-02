@@ -722,6 +722,83 @@ public class NtsFleetTest {
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    @Test //working
+    public void test_VisaFleet_001_WithOutFleetData_DataCollect_02() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+
+        track = new CreditTrackData();
+        track.setValue(";4484630000000126=25121011000062111401?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test //working
+    public void test_VisaFleet_002_WithOutFleetData_DataCollect_03() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";4484630000000126=25121011000062111401?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
 
     /**---------------------------MasterCard Fleet-----------------------**/
     /**
@@ -1195,6 +1272,8 @@ public class NtsFleetTest {
 
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
+        fleetData.setDriverId("123456");
+
 
         track = new CreditTrackData();
         track.setValue(";5567300000000016=25121019999888877711?"); // sample test track 2 data.
@@ -1228,7 +1307,8 @@ public class NtsFleetTest {
         Transaction dataCollectResponse = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
-
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -1236,6 +1316,52 @@ public class NtsFleetTest {
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    @Test //working
+    public void test_mastercardfleet_WithOutFleetData_DataCollect() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        fleetData.setDriverId("123456");
+
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?"); // sample test track 2 data.
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 1, 1.259);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
 
     /**********************Test cases for Authorisation for voyager fleet card***************************/
     /**

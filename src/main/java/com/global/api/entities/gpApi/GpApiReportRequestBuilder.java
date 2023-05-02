@@ -14,8 +14,7 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
 
-import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
-import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
+import static com.global.api.gateways.GpApiConnector.*;
 
 public class GpApiReportRequestBuilder {
 
@@ -225,7 +224,7 @@ public class GpApiReportRequestBuilder {
                                         .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName())
                                         .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountID())
                                         .set("reference", trb.getSearchBuilder().getReferenceNumber())
-                                        .set("card", card != null ? card : null);
+                                        .set("card", card);
 
                         request
                                 .setVerb(GpApiRequest.HttpMethod.Post)
@@ -326,8 +325,52 @@ public class GpApiReportRequestBuilder {
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + "/merchants");
 
-                    request.addQueryStringParam("page", String.valueOf(userTrb.getPage()));
-                    request.addQueryStringParam("page_size", String.valueOf(userTrb.getPageSize()));
+                    basicsParams(request, userTrb);
+                    request.addQueryStringParam("order", userTrb.getOrder() != null ? userTrb.getOrder().getValue() : null);
+                    request.addQueryStringParam("order_by", EnumUtils.getMapping(Target.GP_API, userTrb.getAccountOrderBy()));
+                    request.addQueryStringParam("status", userTrb.getSearchBuilder().getMerchantStatus() != null ? userTrb.getSearchBuilder().getMerchantStatus().toString() : null);
+
+                    return request;
+
+                case FindAccountsPaged:
+                    String endpoint = merchantUrl;
+                    if (userTrb.getSearchBuilder() != null && !StringUtils.isNullOrEmpty(userTrb.getSearchBuilder().getMerchantId())) {
+                        endpoint = "/merchants/" + userTrb.getSearchBuilder().getMerchantId();
+                    }
+
+                    request =
+                            new GpApiRequest()
+                                    .setVerb(GpApiRequest.HttpMethod.Get)
+                                    .setEndpoint(endpoint + "/accounts");
+
+                    basicsParams(request, userTrb);
+
+                    request.addQueryStringParam("order", userTrb.getOrder() != null ? userTrb.getOrder().getValue() : null);
+                    request.addQueryStringParam("order_by", userTrb.getAccountOrderBy() != null ? userTrb.getAccountOrderBy().toString() : null);
+                    request.addQueryStringParam("from_time_created", getDateIfNotNull(userTrb.getSearchBuilder().getStartDate()));
+                    request.addQueryStringParam("to_time_created", getDateIfNotNull(userTrb.getSearchBuilder().getEndDate()));
+                    request.addQueryStringParam("status", userTrb.getSearchBuilder().getAccountStatus() != null ? userTrb.getSearchBuilder().getAccountStatus().toString() : null);
+                    request.addQueryStringParam("name", userTrb.getSearchBuilder().getAccountName());
+                    request.addQueryStringParam("id", userTrb.getSearchBuilder().getResourceId());
+
+                    return request;
+
+                case FindAccountDetail:
+                    request =
+                            new GpApiRequest()
+                                    .setVerb(GpApiRequest.HttpMethod.Get)
+                                    .setEndpoint(merchantUrl + "/accounts/" + builder.getSearchBuilder().getAccountId());
+
+                    if (builder.getSearchBuilder().getAddress() != null) {
+                        request =
+                                new GpApiRequest()
+                                        .setVerb(GpApiRequest.HttpMethod.Get)
+                                        .setEndpoint(merchantUrl + "/accounts/" + builder.getSearchBuilder().getAccountId() + "/addresses");
+
+                        request.addQueryStringParam("postal_code", userTrb.getSearchBuilder().getAddress().getPostalCode());
+                        request.addQueryStringParam("line_1", userTrb.getSearchBuilder().getAddress().getStreetAddress1());
+                        request.addQueryStringParam("line_2", userTrb.getSearchBuilder().getAddress().getStreetAddress2());
+                    }
 
                     return request;
 
@@ -337,5 +380,10 @@ public class GpApiReportRequestBuilder {
         }
 
         throw new UnsupportedTransactionException();
+    }
+
+    private static void basicsParams(GpApiRequest request, UserReportBuilder userTrb) {
+        request.addQueryStringParam("page", Integer.toString(userTrb.getPage()));
+        request.addQueryStringParam("page_size", Integer.toString(userTrb.getPageSize()));
     }
 }

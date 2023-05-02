@@ -32,10 +32,7 @@ import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class NtsConnector extends GatewayConnectorConfig {
 
@@ -43,6 +40,7 @@ public class NtsConnector extends GatewayConnectorConfig {
     private int timeout;
     private static final int messageRequestLength =2;
     private IRequestEncoder requestEncoder;
+    private List<BatchSummary> batchSummaryList = new ArrayList<>();
 
     @Override
     public int getTimeout() {
@@ -198,6 +196,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
         ntsObjectParam.setTimeout(getTimeout());
+        ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
         //Preparing the request
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
@@ -227,7 +226,21 @@ public class NtsConnector extends GatewayConnectorConfig {
             byte[] decodeRequest = this.decodeRequest(builder.getTransactionToken());
             MessageWriter request = new MessageWriter();
             String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
+            int count =21;
             String originalReq = reqStr.substring(messageRequestLength);
+
+            if(builder.isForceToHost()){
+                String messageCode = originalReq.substring(21,23);
+                if(messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())){
+                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCollectOrForceSale.getValue()+originalReq.substring(count+2);
+                }
+                else if(messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())){
+                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCreditAdjustment.getValue()+originalReq.substring(count+2);
+                }
+                else if(messageCode.equals(NtsMessageCode.ReversalOrVoid.getValue())){
+                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceReversalOrForceVoid.getValue()+originalReq.substring(count+2);
+                }
+            }
             request.setMessageRequest(new StringBuilder(originalReq));
             result = sendRequest(request, builder);
         }
@@ -336,7 +349,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         MessageReader mr = new MessageReader(buffer);
         NTSCardTypes cardType = NtsUtils.mapCardType(paymentMethod);
         StringParser sp = new StringParser(buffer);
-        String transactionToken =  encodeRequest(messageData);
         NtsUtils.log("--------------------- RESPONSE ---------------------");
         NtsUtils.log("Response", sp.getBuffer());
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
@@ -348,6 +360,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
         } else {
+            String transactionToken = encodeRequest(messageData);
             NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
             result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
             result.setNtsResponse(ntsResponse);
@@ -355,24 +368,37 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (paymentMethod != null) {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
-            if(transactionToken != null) {
+            if (transactionToken != null) {
                 result.setTransactionToken(transactionToken);
             }
         }
         //Batch Summary
-        if (builder.getTransactionType().equals(TransactionType.BatchClose)){
-            ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-            NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
+        if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             BatchSummary summary = new BatchSummary();
-            summary.setBatchId(manageBuilder.getBatchNumber());
-            summary.setResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue());
-            summary.setSequenceNumber(String.valueOf(data.getDaySequenceNumber()));
-            summary.setTransactionCount(manageBuilder.getTransactionCount());
-            summary.setSaleAmount(manageBuilder.getTotalSales());
-            summary.setReturnAmount(manageBuilder.getTotalReturns());
-            summary.setTransactionToken(result.getTransactionToken());
-            result.setBatchSummary(summary);
-        }
+            if(builder instanceof ManagementBuilder) {
+                ManagementBuilder manageBuilder = (ManagementBuilder) builder;
+                NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
+                summary.setBatchId(manageBuilder.getBatchNumber());
+                summary.setResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue());
+                summary.setSequenceNumber(String.valueOf(data.getDaySequenceNumber()));
+                summary.setTransactionCount(manageBuilder.getTransactionCount());
+                summary.setSaleAmount(manageBuilder.getTotalSales());
+                summary.setReturnAmount(manageBuilder.getTotalReturns());
+                summary.setTransactionToken(result.getTransactionToken());
+                summary.setTotalAmount(manageBuilder.getTotalAmount());
+                summary.setDebitAmount(manageBuilder.getTotalDebits());
+                summary.setCreditAmount(manageBuilder.getTotalCredits());
+                batchSummaryList.add(summary);
+                result.setBatchSummary(summary);
+            }
+            } else if(builder instanceof ResubmitBuilder){
+                if(batchSummaryList != null) {
+                    for (BatchSummary batchSummary : batchSummaryList) {
+                        result.setBatchSummary(batchSummary);
+                    }
+                    batchSummaryList.clear();
+                }
+            }
             return result;
     }
 

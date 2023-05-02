@@ -18,6 +18,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.NtsTestCards;
@@ -224,6 +225,64 @@ public class NtsRequestToBalanceTest {
 
         // check response
         assertEquals("00", batchClose.getResponseCode());
+
+    }
+
+    @Test
+    public void test_BatchCloseIssue_withTotalDebitCreditAmount_10161() throws ApiException {
+
+        creditSale(10.11);
+        creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ZERO, data,new BigDecimal(30.33)
+                        ,BigDecimal.ZERO,new BigDecimal(30.33))
+                .execute();
+        assertNotNull(batchClose);
+
+        //check batch summary
+        assertNotNull(batchClose.getBatchSummary());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
+
+        // check response
+        assertEquals("00", batchClose.getResponseCode());
+
+    }
+
+    @Test
+    public void test_RequestToBalance_D6_resubmit_batch_close() throws ApiException {
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+
+
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, 11, 0
+                        , BigDecimal.ZERO, BigDecimal.ZERO, data)
+                .execute();
+        assertNotNull(batchClose);
+        // check response
+        assertEquals("00", batchClose.getResponseCode());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
+
+        assertNotNull(batchClose.getTransactionToken());
+
+        Transaction capture = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .execute();
+        assertNotNull(capture);
 
     }
 

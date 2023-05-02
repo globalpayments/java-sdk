@@ -4,12 +4,22 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.reporting.SearchCriteriaBuilder;
 import com.global.api.gateways.IReportingService;
 
 public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
     private ReportType reportType;
     private TimeZoneConversion timeZoneConversion;
     private Class<TResult> clazz;
+
+    private SearchCriteriaBuilder<TResult> _searchBuilder;
+
+    public SearchCriteriaBuilder<TResult> getSearchBuilder() {
+        if (_searchBuilder == null) {
+            _searchBuilder = new SearchCriteriaBuilder<TResult>(this);
+        }
+        return _searchBuilder;
+    }
 
     public ReportType getReportType() {
         return reportType;

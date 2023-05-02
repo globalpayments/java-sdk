@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.*;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.NtsUtils;
+import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
 import com.global.api.utils.GnapUtils;
 import lombok.Getter;
@@ -203,6 +204,8 @@ public class NetworkGateway {
         6) if no response from the secondary host, GatewayTimeoutException is thrown
          */
         boolean timeout = false;
+        String header =null;
+        String hostRespCode = null;
         connect(getPrimaryEndpoint(), getPrimaryPort());
 
         byte[] buffer = message.getSendBuffer();
@@ -217,9 +220,28 @@ public class NetworkGateway {
                     else throw new IOException("Simulated IO Exception on request send.");
 
                     byte[] rvalue = getGatewayResponse();
+
+                    if(rvalue != null){
+                        StringParser sp = new StringParser(rvalue);
+                        header = sp.readString(56);
+                        if(header != null) {
+                            hostRespCode = header.substring(6, 8);
+                        }
+                    }
+
                     if (rvalue != null && !isForcedError(HostError.Timeout)) {
-                        raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
-                        return rvalue;
+                        if(hostRespCode != null && hostRespCode.equals("80")){
+                            raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
+
+                            disconnect();
+                            connect(getSecondaryEndpoint(), getSecondaryPort());
+
+                        }
+                        else{
+                            raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
+                            return rvalue;
+                        }
+
                     }
                     timeout = true;
                 }
@@ -228,7 +250,7 @@ public class NetworkGateway {
                 }
 
                 // did not get a response, switch endpoints and try again
-                if(!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
+                if(!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1 ) {
                     raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
 
                     disconnect();

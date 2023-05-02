@@ -209,13 +209,13 @@ public class GpApiMapping {
                             payerDetails.setFirstName(billingAddress.getString("first_name"));
                             payerDetails.setLastName(billingAddress.getString("last_name"));
 
-                            var billing = mapMerchantAddress(billingAddress);
+                            var billing = mapAddressObject(billingAddress);
                             billing.setType(AddressType.Billing);
                             payerDetails.setBillingAddress(billing);
                         }
                     }
 
-                    var shipping = mapMerchantAddress(paymentMethod.get("shipping_address"));
+                    var shipping = mapAddressObject(paymentMethod.get("shipping_address"));
                     shipping.setType(AddressType.Shipping);
 
                     payerDetails.setShippingAddress(shipping);
@@ -607,8 +607,13 @@ public class GpApiMapping {
                 return (T) mapPayLinks(json);
 
             case FindMerchantsPaged:
-
                 return (T) mapMerchants(json);
+
+            case FindAccountsPaged:
+                return (T) mapAccounts(json);
+
+            case FindAccountDetail:
+                return (T) mapMerchantAccountSummary(json);
 
             default:
                 throw new UnsupportedTransactionException();
@@ -1165,6 +1170,17 @@ public class GpApiMapping {
         return pagedResult;
     }
 
+    public static MerchantAccountSummaryPaged mapAccounts(JsonDoc doc) {
+        MerchantAccountSummaryPaged pagedResult = new MerchantAccountSummaryPaged();
+        setPagingInfo(pagedResult, doc);
+
+        for (JsonDoc element : doc.getEnumerator("accounts")) {
+            pagedResult.add(mapMerchantAccountSummary(element));
+        }
+
+        return pagedResult;
+    }
+
     private static MerchantSummary mapMerchantSummary(JsonDoc merchant) {
         var merchantInfo = new MerchantSummary();
         merchantInfo.setId(merchant.getString("id"));
@@ -1188,6 +1204,45 @@ public class GpApiMapping {
         }
 
         return merchantInfo;
+    }
+
+    private static MerchantAccountSummary mapMerchantAccountSummary(JsonDoc account) {
+        var merchantAccountSummary = new MerchantAccountSummary();
+
+        merchantAccountSummary.setId(account.getString("id"));
+        if (account.has("type")) {
+            merchantAccountSummary.setType(MerchantAccountType.valueOf(account.getString("type")));
+        }
+        merchantAccountSummary.setName(account.getString("name"));
+        if (account.has("status")) {
+            merchantAccountSummary.setStatus(MerchantAccountStatus.valueOf(account.getString("status")));
+        }
+        merchantAccountSummary.setPermissions(account.getStringArrayList("permissions"));
+        merchantAccountSummary.setCountries(account.getStringArrayList("countries"));
+
+        if(account != null && account.has("channels")) {
+            List<Channel> channelsList = new ArrayList<>();
+            for (String channel : account.getStringArrayList("channels")) {
+                channelsList.add(Channel.fromString(channel));
+            }
+            merchantAccountSummary.setChannels(channelsList);
+        }
+
+        merchantAccountSummary.setCurrencies(account.getStringArrayList("currencies"));
+
+        merchantAccountSummary.setPaymentMethods(getPaymentMethodsName(account));
+
+        merchantAccountSummary.setConfigurations(account.getStringArrayList("configurations"));
+
+        if (account.has("addresses")) {
+            var addresses = new ArrayList<Address>();
+            for (JsonDoc address : account.getEnumerator("addresses")) {
+                addresses.add(mapAddressObject(address));
+            }
+            merchantAccountSummary.setAddresses(addresses);
+        }
+
+        return merchantAccountSummary;
     }
 
     @SuppressWarnings("unchecked")
@@ -1217,7 +1272,7 @@ public class GpApiMapping {
                     if (json.has("addresses")) {
                         user.setAddresses(new ArrayList<>());
                         for (var address : json.getEnumerator("addresses")) {
-                            var userAddress = mapMerchantAddress(address);
+                            var userAddress = mapAddressObject(address);
                             if (address.has("functions")) {
                                 userAddress.setType(AddressType.valueOf(toCamelCase(address.getStringArrayList("functions").get(0))));
                             }
@@ -1302,16 +1357,25 @@ public class GpApiMapping {
         return merchantPaymentList;
     }
 
-    private static Address mapMerchantAddress(JsonDoc address) {
-        return
-                new Address()
-                        .setStreetAddress1(address.getString("line_1"))
-                        .setStreetAddress2(address.getString("line_2"))
-                        .setStreetAddress3(address.getString("line_3"))
-                        .setCity(address.getString("city"))
-                        .setState(address.getString("state"))
-                        .setPostalCode(address.getString("postal_code"))
-                        .setCountryCode(address.getString("country"));
+    private static Address mapAddressObject(JsonDoc address) {
+        Address addressReturn = new Address();
+
+        addressReturn.setStreetAddress1(address.getString("line_1"));
+
+        if (address.has("line_2")) {
+            addressReturn.setStreetAddress2(address.getString("line_2"));
+        }
+
+        if (address.has("line_3")) {
+            addressReturn.setStreetAddress3(address.getString("line_3"));
+        }
+
+        addressReturn.setCity(address.getString("city"));
+        addressReturn.setState(address.getString("state"));
+        addressReturn.setPostalCode(address.getString("postal_code"));
+        addressReturn.setCountryCode(address.getString("country"));
+
+        return addressReturn;
     }
 
     private static List<Person> mapMerchantPersonList(JsonDoc json) {
@@ -1330,7 +1394,7 @@ public class GpApiMapping {
             if (person.has("address")) {
                 var address = person.get("address");
 
-                newPerson.setAddress(mapMerchantAddress(address));
+                newPerson.setAddress(mapAddressObject(address));
             }
 
             if (person.has("work_phone")) {
@@ -1349,6 +1413,35 @@ public class GpApiMapping {
         }
 
         return personList;
+    }
+
+
+    private static List<PaymentMethodName> getPaymentMethodsName(JsonDoc doc) {
+        var result = new ArrayList<PaymentMethodName>();
+
+        if(doc.has("payment_methods")) {
+            for (var payment : doc.getStringArrayList("payment_methods")) {
+                switch (payment) {
+                    case "BANK_TRANSFER":
+                        result.add(PaymentMethodName.BankTransfer);
+                        break;
+
+                    case "BANK_PAYMENT":
+                        result.add(PaymentMethodName.BankPayment);
+                        break;
+
+                    case "DIGITAL_WALLET":
+                        result.add(PaymentMethodName.DigitalWallet);
+                        break;
+
+                    default:
+                        result.add(PaymentMethodName.fromString(payment, Target.GP_API));
+                        break;
+                }
+            }
+        }
+
+        return result;
     }
 
     private static String toCamelCase(String s) {

@@ -13,7 +13,9 @@ import com.global.api.entities.payFac.BankAccountData;
 import com.global.api.entities.payFac.PaymentStatistics;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserPersonalData;
+import com.global.api.entities.reporting.MerchantAccountSummaryPaged;
 import com.global.api.entities.reporting.MerchantSummaryPaged;
+import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayFacService;
@@ -40,7 +42,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         GpApiConfig gpApiConfig = new GpApiConfig();
         gpApiConfig.setAppId(APP_ID_FOR_MERCHANT);
-        gpApiConfig.setAppKey(APP_KEY_MERCHANT);
+        gpApiConfig.setAppKey(APP_KEY_FOR_MERCHANT);
         gpApiConfig.setEnvironment(Environment.TEST);
         gpApiConfig.setChannel(Channel.CardNotPresent.getValue());
         gpApiConfig.setEnableLogging(true);
@@ -208,7 +210,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (Exception ex) {
             exceptionCaught = true;
-            assertEquals("Merchant data is mandatory!", ex.getMessage());
+            assertEquals("userPersonalData cannot be null for this transaction type.", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -304,6 +306,40 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         assertTrue(merchants.getTotalRecordCount() > 0);
         assertTrue(merchants.getResults().size() <= 10);
+    }
+
+    @Test
+    public void SearchMerchantAccounts() throws ApiException {
+        MerchantSummaryPaged merchants =
+                ReportingService
+                        .findMerchants(1, 10)
+                        .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
+                        .execute();
+
+        assertTrue(merchants.getResults().size() > 0);
+        assertTrue(merchants.getResults().size() <= 10);
+
+        String merchantId = merchants.getResults().get(0).getId();
+
+        GpApiConfig gpApiConfigForMerchantId = new GpApiConfig();
+
+        gpApiConfigForMerchantId.setAppId(APP_ID_FOR_MERCHANT);
+        gpApiConfigForMerchantId.setAppKey(APP_KEY_FOR_MERCHANT);
+        gpApiConfigForMerchantId.setEnvironment(Environment.TEST);
+        gpApiConfigForMerchantId.setChannel(Channel.CardNotPresent.getValue());
+        gpApiConfigForMerchantId.setMerchantId(merchantId);
+        gpApiConfigForMerchantId.setEnableLogging(true);
+
+        ServicesContainer.configureService(gpApiConfigForMerchantId, "accounts");
+
+        MerchantAccountSummaryPaged accounts =
+                ReportingService
+                        .findAccounts(1, 10)
+                        .where(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
+                        .execute("accounts");
+
+        assertNotNull(accounts);
+        assertTrue(accounts.getResults().size() > 0);
     }
 
     @Test
@@ -546,37 +582,6 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - Request expects the following fields website", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void BoardMerchant_WithoutTaxIdReference() {
-        UserPersonalData merchantData = GetMerchantData();
-        merchantData.setTaxIdReference(null);
-
-        List<Product> productData = GetProductList();
-        List<Person> persons = GetPersonList(null);
-        PaymentStatistics paymentStatistics = GetPaymentStatistics();
-        boolean exceptionCaught = false;
-
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields tax_id_reference", ex.getMessage());
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {

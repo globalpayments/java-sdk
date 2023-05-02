@@ -44,4 +44,14 @@ public enum PaymentMethodName implements IMappedConstant {
         }
         return null;
     }
+
+    public static PaymentMethodName fromString(String value, Target target) {
+        for (PaymentMethodName currentEnum : PaymentMethodName.values()) {
+            if (currentEnum.getValue(target).equalsIgnoreCase(value)) {
+                return currentEnum;
+            }
+        }
+        return null;
+    }
+
 }

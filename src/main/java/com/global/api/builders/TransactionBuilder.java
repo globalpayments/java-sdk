@@ -100,6 +100,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     @Getter @Setter
     private String customerCode;
+    @Getter @Setter
+    private String hostResponseCode = "";
+
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
         this.ntsRequestMessageHeader = ntsRequestMessageHeader;
@@ -201,6 +204,10 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     }
     public TransactionBuilder<TResult> withCustomerCode(String customerCode) {
         this.customerCode = customerCode;
+        return this;
+    }
+    public TransactionBuilder<TResult> withHostResponseCode(String hostResponseCode){
+        this.hostResponseCode = hostResponseCode;
         return this;
     }
 }

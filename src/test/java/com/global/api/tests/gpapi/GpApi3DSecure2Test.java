@@ -840,7 +840,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
 
     @Test
     public void CardHolderEnrolled_Frictionless_v2_Initiate_AllPreferenceValues_ChallengeRequired() throws ApiException {
-        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
 
         ChallengeRequestIndicator[] preferences = {
                 ChallengeRequestIndicator.ChallengePreferred,

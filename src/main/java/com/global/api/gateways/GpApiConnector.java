@@ -63,6 +63,9 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
 
     private static final String GP_API_VERSION = "2021-03-22";
     private static final String IDEMPOTENCY_HEADER = "x-gp-idempotency";
+    public final boolean hasBuiltInMerchantManagementService() {
+        return true;
+    }
 
     private String accessToken;
     @Getter GpApiConfig gpApiConfig; // Contains: appId, appKey, secondsToExpire, intervalToExpire, channel and language
@@ -156,7 +159,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                 isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountID())) {
             accessTokenInfo.setRiskAssessmentAccountID(response.getRiskAssessmentAccountID());
         }
-
+        if (isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountID())) {
+            accessTokenInfo.setMerchantManagementAccountID(response.getMerchantManagementAccountID());
+        }
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
     }

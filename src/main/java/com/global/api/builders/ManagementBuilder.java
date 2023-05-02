@@ -66,6 +66,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private String transportData;
     private BigDecimal totalCredits;
     private BigDecimal totalDebits;
+    @Getter private BigDecimal totalAmount;
     @Getter private String batchReference;
     private List<Bill> bills;
     @Getter
@@ -323,6 +324,14 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withBatchTotals(int transactionCount, BigDecimal totalDebits, BigDecimal totalCredits) {
         this.transactionCount = transactionCount;
+        this.totalDebits = totalDebits;
+        this.totalCredits = totalCredits;
+
+        return this;
+    }
+
+    public ManagementBuilder withBatchTotals(BigDecimal totalAmount,BigDecimal totalDebits, BigDecimal totalCredits) {
+        this.totalAmount = totalAmount;
         this.totalDebits = totalDebits;
         this.totalCredits = totalCredits;
 

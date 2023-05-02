@@ -113,10 +113,20 @@ public class ReportingService {
                 .withPaging(page, pageSize);
     }
 
-    public static ReportBuilder<MerchantSummaryPaged> findMerchants(int page, int pageSize) {
+    public static UserReportBuilder<MerchantSummaryPaged> findMerchants(int page, int pageSize) {
         return new UserReportBuilder<>(ReportType.FindMerchantsPaged, MerchantSummaryPaged.class)
                 .withModifier(TransactionModifier.Merchant)
                 .withPaging(page, pageSize);
+    }
+
+    public static UserReportBuilder<MerchantAccountSummaryPaged> findAccounts(int page, int pageSize) {
+        return new UserReportBuilder<>(ReportType.FindAccountsPaged, MerchantAccountSummaryPaged.class)
+                .withPaging(page, pageSize);
+    }
+
+    public static UserReportBuilder<MerchantAccountSummary> accountDetail(String accountId) {
+        return new UserReportBuilder<>(ReportType.FindAccountDetail, MerchantAccountSummary.class)
+                .withAccountId(accountId);
     }
 
 }

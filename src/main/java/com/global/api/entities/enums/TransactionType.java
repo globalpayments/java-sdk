@@ -45,6 +45,8 @@ public enum TransactionType implements IFlag {
     CashAdvance,
     DisputeAcceptance,
     DisputeChallenge,
+    CreateAccount,
+    EditAccount,
     LoadReversal,
     // In .NET, we have many more enum types
     Reauth,

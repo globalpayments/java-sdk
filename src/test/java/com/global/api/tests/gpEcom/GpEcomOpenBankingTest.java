@@ -68,6 +68,29 @@ public class GpEcomOpenBankingTest {
     }
 
     @Test
+    public void OpenBanking_FasterPaymentsCharge_UsingRemittanceReferenceAsPAN() throws ApiException, InterruptedException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        Transaction transaction =
+                bankPayment
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withRemittanceReference(RemittanceReferenceType.PAN, "4263970000005262")
+                        .execute();
+
+        assertTransactionResponse(transaction);
+
+        Thread.sleep(2000);
+
+        TransactionSummaryPaged detail =
+                ReportingService
+                        .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
+                        .execute();
+
+        assertNotNull(detail);
+    }
+
+    @Test
     public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
         for (ShaHashType shaHashType : ShaHashType.values()) {
             GpEcomConfig config = new GpEcomConfig();
@@ -303,6 +326,44 @@ public class GpEcomOpenBankingTest {
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertTrue(ex.getResponseText().contains("remittance_reference.value cannot be blank or null"));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void OpenBanking_FasterPayments_RemittanceValueMoreThan18Chars() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        boolean exceptionCaught = false;
+        try {
+            bankPayment
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withRemittanceReference(RemittanceReferenceType.PAN, "Nike Bounce Shoes Like Lebron")
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void OpenBanking_FasterPayments_RemittanceValueLessThan2Chars() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        boolean exceptionCaught = false;
+        try {
+            bankPayment
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withRemittanceReference(RemittanceReferenceType.PAN, "N")
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
         } finally {
             assertTrue(exceptionCaught);
         }

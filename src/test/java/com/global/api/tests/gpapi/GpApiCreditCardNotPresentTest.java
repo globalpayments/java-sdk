@@ -8,6 +8,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.StoredPaymentMethodSummaryPaged;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
@@ -156,8 +157,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         Date startDate = DateUtils.addDays(new Date(), -30);
         Date endDate = DateUtils.addDays(new Date(), -3);
 
-
-        var response =
+        StoredPaymentMethodSummaryPaged response =
                 ReportingService
                         .findStoredPaymentMethodsPaged(1, 1)
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
@@ -169,7 +169,8 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         String pmtToken = response.getResults().get(0).getId();     // Check if id or other field
         assertNotNull(pmtToken);
         assertNotNull(pmtToken);
-        var tokenizedCard = new CreditCardData();
+
+        CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(pmtToken);
         tokenizedCard.setCardHolderName("James BondUp");
         tokenizedCard.setExpYear(DateTime.now().getYear() + 1);

@@ -1,7 +1,5 @@
 package com.global.api.entities.enums;
 
-import com.global.api.entities.enums.IStringConstant;
-
 public enum Channel implements IStringConstant {
     CardPresent("CP"),
     CardNotPresent("CNP");
@@ -20,4 +18,12 @@ public enum Channel implements IStringConstant {
         return this.value.getBytes();
     }
 
+    public static Channel fromString(String value) {
+        for (Channel currentEnum : Channel.values()) {
+            if (currentEnum.getValue().equalsIgnoreCase(value)) {
+                return currentEnum;
+            }
+        }
+        return null;
+    }
 }

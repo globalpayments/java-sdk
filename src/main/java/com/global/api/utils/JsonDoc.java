@@ -82,6 +82,12 @@ public class JsonDoc {
         dict.put(key, values);
         return this;
     }
+
+    public JsonDoc set(String key, HashMap<String, Object> values) {
+        dict.put(key, values);
+        return this;
+    }
+
     public JsonDoc set(String key, Integer value) {
         return set(key, value, false);
     }

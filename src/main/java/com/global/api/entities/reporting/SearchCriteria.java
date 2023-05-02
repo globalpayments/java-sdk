@@ -1,10 +1,12 @@
 package com.global.api.entities.reporting;
 
 public enum SearchCriteria {
+    AccountId,
     AccountName,
     AccountNumberLastFour,
     ActionId,
     ActionType,
+    AccountStatus,
     AltPaymentStatus,
     AppName,
     AquirerReferenceNumber,
@@ -42,6 +44,8 @@ public enum SearchCriteria {
     IssuerResult,
     IssuerTransactionId,
     MerchantName,
+    MerchantStatus,
+    Address,
     Name,
     OneTime,
     PaymentEntryMode,
@@ -77,5 +81,6 @@ public enum SearchCriteria {
     DisputeDocumentId,
     UniqueDeviceId,
     Username,
+    UserStatus,
     Version
 }
