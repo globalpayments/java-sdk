@@ -20,6 +20,7 @@ import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 
 public class NTSUserData {
@@ -794,10 +795,14 @@ public class NTSUserData {
                 if ((builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Capture)
                         || builder.getTransactionType().equals(TransactionType.Sale)) && (!messageCode.equals(NtsMessageCode.CreditAdjustment))) {
-                    if (fleetData.getDriverId() != null)
-                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 5, '0'));
-                    if (fleetData.getOdometerReading() != null)
-                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
+                    Optional<FleetData> fleetObj =  Optional.ofNullable(fleetData);
+                    if(fleetObj.isPresent()){
+                        sb.append(String.valueOf(StringUtils.padLeft(fleetObj.get().getDriverId() != null ? fleetObj.get().getDriverId() : 0,5,'0')));
+                        sb.append(String.valueOf(StringUtils.padLeft(fleetObj.get().getOdometerReading() != null ? fleetObj.get().getOdometerReading() : 0,6,'0')));
+                    } else{
+                        sb.append(String.format("%05d",0));
+                        sb.append(String.format("%06d",0));
+                    }
                     sb.append(getFleetCorList(builder, cardType));
                     sb.append(getRollUpData(builder, cardType, productData, 4));
 
@@ -930,10 +935,14 @@ public class NTSUserData {
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
                         builder.getTransactionType().equals(TransactionType.Capture)) {
                     if (messageCode.equals(NtsMessageCode.DataCollectOrSale)) {
-                        if (fleetData.getOdometerReading() != null)
-                            sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'));
-                        if (fleetData.getDriverId() != null)
-                            sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
+                        Optional<FleetData> fleetObj =  Optional.ofNullable(fleetData);
+                        if(fleetObj.isPresent()){
+                            sb.append(String.valueOf(StringUtils.padLeft(fleetObj.get().getOdometerReading() != null ? fleetObj.get().getOdometerReading() : 0,7,'0')));
+                            sb.append(String.valueOf(StringUtils.padLeft(fleetObj.get().getDriverId() != null ? fleetObj.get().getDriverId() : 0,6,'0')));
+                        } else {
+                            sb.append(String.format("%07d",0));
+                            sb.append(String.format("%06d",0));
+                        }
                         sb.append(serviceLevel);
                         sb.append(getVoyagerFleetFuelList(builder));
                         sb.append(getRollUpData(builder, cardType, productData, 4));

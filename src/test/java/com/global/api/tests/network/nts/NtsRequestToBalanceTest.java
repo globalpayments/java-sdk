@@ -317,4 +317,19 @@ public class NtsRequestToBalanceTest {
         assertEquals("00", response.getResponseCode());
         return response;
     }
+    @Test //working
+    public void test_RequestToBalance_HostResponse79() throws ApiException {
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.Forced,
+                        ntsRequestMessageHeader, 11, 0
+                        , BigDecimal.ZERO, BigDecimal.ZERO, data)
+                .withHostResponseCode("79")
+                .execute();
+        assertNotNull(batchClose);
+        // check response
+        assertEquals("00", batchClose.getResponseCode());
+
+    }
+
 }

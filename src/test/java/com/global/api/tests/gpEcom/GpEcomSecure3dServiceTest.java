@@ -28,6 +28,9 @@ public class GpEcomSecure3dServiceTest {
     private Address billingAddress;
     private BrowserData browserData;
 
+    private final BigDecimal amount = new BigDecimal("10.02");
+    private final String currency = "USD";
+
     public GpEcomSecure3dServiceTest() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
@@ -93,9 +96,9 @@ public class GpEcomSecure3dServiceTest {
         try {
             Secure3dService
                     .checkEnrollment(card)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
-                    .execute(Secure3dVersion.ONE, "default");
+                    .withAmount(amount)
+                    .withCurrency(currency)
+                    .execute(Secure3dVersion.ONE);
         } catch (ConfigurationException e) {
             errorFound = true;
             assertEquals("Secure 3d is not configured for ONE", e.getMessage());
@@ -110,8 +113,8 @@ public class GpEcomSecure3dServiceTest {
 
         ThreeDSecure secureEcom = Secure3dService
                 .checkEnrollment(card)
-                .withAmount(new BigDecimal("10.01"))
-                .withCurrency("USD")
+                .withAmount(amount)
+                .withCurrency(currency)
                 .execute();
 
         assertFalse(secureEcom.isEnrolled());
@@ -129,8 +132,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -147,8 +150,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -159,8 +162,8 @@ public class GpEcomSecure3dServiceTest {
     @Test
     public void fullCycle_Any() throws ApiException {
         ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
-                .withAmount(new BigDecimal(1))
-                .withCurrency("USD")
+                .withAmount(amount)
+                .withCurrency(currency)
                 .execute(Secure3dVersion.ANY);
         assertNotNull(secureEcom);
 
@@ -170,8 +173,8 @@ public class GpEcomSecure3dServiceTest {
 
                 // initiate authentication
                 ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                        .withAmount(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                        .withAmount(amount)
+                        .withCurrency(currency)
                         .withOrderCreateDate(DateTime.now())
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
@@ -187,8 +190,8 @@ public class GpEcomSecure3dServiceTest {
                 card.setThreeDSecure(secureEcom);
 
                 if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                    Transaction response = card.charge(new BigDecimal("10.01"))
-                            .withCurrency("USD")
+                    Transaction response = card.charge(amount)
+                            .withCurrency(currency)
                             .execute();
                     assertNotNull(response);
                     assertEquals("00", response.getResponseCode());
@@ -209,7 +212,8 @@ public class GpEcomSecure3dServiceTest {
                 card.setThreeDSecure(secureEcom);
 
                 if (secureEcom.getStatus().equals("Y")) {
-                    Transaction response = card.charge().execute();
+                    Transaction response = card.charge()
+                            .execute();
                     assertNotNull(response);
                     assertEquals("00", response.getResponseCode());
                 } else fail("Signature verification failed.");
@@ -229,8 +233,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(stored, secureEcom)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -246,8 +250,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = stored.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = stored.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -267,8 +271,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -285,7 +289,7 @@ public class GpEcomSecure3dServiceTest {
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = card.verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -305,8 +309,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(stored, secureEcom)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -323,7 +327,7 @@ public class GpEcomSecure3dServiceTest {
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
                 Transaction response = stored.verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -343,8 +347,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -364,8 +368,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -385,8 +389,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -416,8 +420,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -437,8 +441,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -475,8 +479,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -496,8 +500,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -519,8 +523,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -540,8 +544,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -563,8 +567,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -584,8 +588,8 @@ public class GpEcomSecure3dServiceTest {
 
             // initiate authentication
             ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
-                    .withAmount(new BigDecimal("250.00"))
-                    .withCurrency("USD")
+                    .withAmount(amount)
+                    .withCurrency(currency)
                     .withOrderCreateDate(DateTime.now())
                     .withAddress(billingAddress, AddressType.Billing)
                     .withAddress(shippingAddress, AddressType.Shipping)
@@ -607,8 +611,8 @@ public class GpEcomSecure3dServiceTest {
             card.setThreeDSecure(secureEcom);
 
             if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
-                Transaction response = card.charge(new BigDecimal("10.01"))
-                        .withCurrency("USD")
+                Transaction response = card.charge(amount)
+                        .withCurrency(currency)
                         .execute();
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
@@ -618,6 +622,9 @@ public class GpEcomSecure3dServiceTest {
 
     @Test
     public void optionalMobileFields() throws ApiException {
+        //card number for optional mobile fields
+        card.setNumber("4012001038488884");
+
         // check enrollment
         ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
                 .execute(Secure3dVersion.TWO);
@@ -637,8 +644,8 @@ public class GpEcomSecure3dServiceTest {
         ThreeDSecure initAuth =
                 Secure3dService
                         .initiateAuthentication(card, secureEcom)
-                        .withAmount(new BigDecimal("250.00"))
-                        .withCurrency("USD")
+                        .withAmount(amount)
+                        .withCurrency(currency)
                         .withAuthenticationSource(AuthenticationSource.MobileSDK)
                         .withOrderCreateDate(DateTime.now())
                         .withOrderId(secureEcom.getOrderId())
@@ -647,7 +654,7 @@ public class GpEcomSecure3dServiceTest {
                         .withAddressMatchIndicator(false)
                         .withMethodUrlCompletion(MethodUrlCompletion.No)
                         .withMessageCategory(MessageCategory.PaymentAuthentication)
-                        .withCustomerEmail("custumer@domain.com")
+                        .withCustomerEmail("customer@domain.com")
                         // optionals
                         .withApplicationId("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
                         .withSdkInterface(SdkInterface.Both)
@@ -660,9 +667,12 @@ public class GpEcomSecure3dServiceTest {
                         .execute();
 
         assertNotNull(initAuth);
-        assertEquals("AUTHENTICATION_SUCCESSFUL", initAuth.getStatus());
+        assertEquals("CHALLENGE_REQUIRED", initAuth.getStatus());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
         assertNotNull(initAuth.getAcsTransactionId());
+        assertNotNull(initAuth.getAcsUiTemplate());
+        assertNotNull(initAuth.getAcsInterface());
+        assertNotNull(initAuth.getAcsReferenceNumber());
 
         // get authentication data
         secureEcom = Secure3dService.getAuthenticationData()
@@ -670,10 +680,10 @@ public class GpEcomSecure3dServiceTest {
                 .execute();
         card.setThreeDSecure(secureEcom);
 
-        assertEquals("AUTHENTICATION_SUCCESSFUL", secureEcom.getStatus());
+        assertEquals("CHALLENGE_REQUIRED", secureEcom.getStatus());
 
-        Transaction response = card.charge(new BigDecimal("10.01"))
-                .withCurrency("USD")
+        Transaction response = card.charge(amount)
+                .withCurrency(currency)
                 .execute();
 
         assertNotNull(response);
@@ -688,9 +698,9 @@ public class GpEcomSecure3dServiceTest {
         try {
             Secure3dService
                     .checkEnrollment(card)
-                    .withAmount(new BigDecimal("10.01"))
-                    .withCurrency("USD")
-                    .execute(Secure3dVersion.ONE, "default");
+                    .withAmount(amount)
+                    .withCurrency(currency)
+                    .execute(Secure3dVersion.ONE);
         } catch (ConfigurationException e) {
             errorFound = true;
             assertEquals("Secure 3d is not configured for ONE", e.getMessage());
@@ -722,8 +732,8 @@ public class GpEcomSecure3dServiceTest {
         );
         paymentMethod.setThreeDSecure(threeDSecureData);
 
-        Transaction response = paymentMethod.charge(new BigDecimal("10.01"))
-                .withCurrency("USD")
+        Transaction response = paymentMethod.charge(amount)
+                .withCurrency(currency)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());

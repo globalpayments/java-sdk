@@ -923,4 +923,223 @@ public class NtsDebitTest {
         assertEquals("00", refund.getResponseCode());
 
     }
+
+    //with card sequence number
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10189() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .withCardSequenceNumber("123")
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10189_Negative() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .withCardSequenceNumber("1234")
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    // WithOut Card Sequence Number
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10189_withoutCSN() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working With Offline Decline Indicator
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10190_withODI() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .withOfflineDeclineIndicator("Y")
+                .execute("ICR");
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10191() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .withUniqueDeviceId("1234")
+                .execute("ICR");
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10191_Negative() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .withUniqueDeviceId("12345")
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10189_90_91() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withCardSequenceNumber("123")
+                .withUniqueDeviceId("1234")
+                .withTagData(emvTagData)
+                .withOfflineDeclineIndicator("Y")
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
+    @Test // Working
+    public void test_PinDebit_EMV_With_Track2Format_PreAuthCancel_10189_90_91_Negative_WithOutData() throws ApiException {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.PinValidate);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv);
+        ServicesContainer.configureService(config, "ICR");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("0001")
+                .withCardSequenceNumber("1234")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "00", response.getResponseCode());
+
+        Transaction preAuthCompletion = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTagData(emvTagData)
+                .execute();
+
+        assertEquals("00", preAuthCompletion.getResponseCode());
+    }
+
 }

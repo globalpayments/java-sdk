@@ -26,7 +26,7 @@ public class PorticoEcommerceTests {
 
     public PorticoEcommerceTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
-        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setSecretApiKey("skapi_cert_MTnHBQBkVnIApt5_DIG_OTix0zXDR-7UQMAx6focuA");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -151,9 +151,25 @@ public class PorticoEcommerceTests {
     public void ecomWithWalletData_with_mobileType_04() throws ApiException {
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
         card.setPaymentDataSourceType(PaymentDataSourceType.GOOGLEPAYWEB);
-        card.setToken("{\"signature\":\"MEYCIQDn1WUTJSbe0HTenhQBanye9MNlEEbJ9nvk2YDE11JO1wIhAOkA99r3sMpuHsQqdR1C8u9R7C7dm9w7wNniXtYr01gv\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"BxaNW7Rxei+P0lBvb2jvE8+HQ04/uAFrHIXynZqsM7p6rxFDmgt7JxE8XnTnGacTyOXAITFlHnqD5eZJ6dQGMn/DHdhjmi/El25J2rpOzZiJPQk394YQLY2xjUm1xIDR3GB1ATfBIRKoqtf2iXiYQ/u50XINut0ivK/u+qc3lbDAC3IrDUq5DED7uPcPhijF2snKL5sROatKiecfTQRzWMJioTZXDaYfQseoWhhFVvO/UpEcK5CZh5b3CQT89yzDPPdwa1XSH+8DYK6UxvBoelaLYIxpLUNBFcUurLukBM24VlzG5Rs8os8hOXXLixcIcDuiFH4MS7wMIAW4DtKvZF7E78xvh2IvlxckoJ6uZsVuyGBgXgjIgbn95lqeMZsR398YcY/lDl5N/HCpxDJbvSQfd7YNf/hEK/NAa15AAScQ6sorFYcFF1W1iU3+gBR+fuIODT/1VQ\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BLTKhwsuoS/Izu5fYd08D+HAd2TAc+FTmEpa7L4wo45p3hQbZ3agZ9J60v8agMsXiDIXpbN1VlBpibKezSFxfoU\\\\u003d\\\",\\\"tag\\\":\\\"hbkBnamtgcDYeDrJvY3IKAzOU4E4aFS2cJUK4f5VVxM\\\\u003d\\\"}\"}");
+        card.setToken("{\"signature\":\"MEYCIQCIIwGEk/CH0wEq5CwljA0F2+IGPuE201FgF3uwRvmqFwIhAIRScN6Amim13SvoPO5DudEKQ/FpCy+1PhVyTKLDlKCC\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"6QT/y8Qep7unsjxtv2QmoE0G+CiONgHA+SGAlizsjWbokS6mlTM63Y3XJii9544Nlj3dqWK86rsXu6bscnNZFmMdjlPRtCJSetvzP3uuuvDtlp/2bOscONy30dfwld+/XoxwwGzTepx9VeiG5j5jvuxuCGSI8cpMoT/ILLYx0rrxn1C/UBb8VU2kgbfPPsrVO2ODMtRLzpoQuOKYiKOi9DPebqkw/By4laaSD58clgRgbZ9yfsQUhiIWzEmJD4+l7J1YdZ+/6zqhsNLrV4vUmzpyx4C5FS4ZvSsXpTsCBryKotcMIBfWlsuo9u/S4kNori7fUchVj+aw6Yeik7LqG5ARAfYNFHaSkq4J9/2IbVVgeJiRAIpZ1s3qB/cm3foZHOzOtk0E6xKswj8Su2wHtx75PzSb9J01o4JGNmng7EIxejOxve6vot6HfMx2kAS0TXMFiA2F/Q\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BJApLY3ZMqKxi+eVDkh59mugSa74fTLYNHxQG2wSks29bzwRRktCzyUQyyrIJM2KLonxH1eIFmDfz6ID9dK2PGs\\\\u003d\\\",\\\"tag\\\":\\\"YQnZEkEBPGcyR1p1NkLzvoA+6druD8X6ghrqGwQlyUA\\\\u003d\\\"}\"}");
 
         Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withInvoiceNumber("1234567890")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Ignore("Having the token invalidate known error for mobile transactions.")
+    public void ecomAuthWithWalletData_with_mobileType_05() throws ApiException {
+        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+        card.setPaymentDataSourceType(PaymentDataSourceType.GOOGLEPAYWEB);
+        card.setToken("{\"signature\":\"MEUCIQD07r8rLOPzJllzc59KpX4rJLO1Jc/eJpSV2BYDW4DA/QIgCYxYcQDeTDyq5jsXjuTSFEyaec91/gzEhjh/DAVvJTk\\u003d\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"zTAV12J1ZmESQMPGR3oKxpkByfzACJ8S2BPv+qHdAFkwDQxRm/pHzphWYER456CcGCWSwqzx+3f7UP/X88X/7uA3pmU/5SSJ+Lmp4ooBZ96ru28m5CljgKfqGP9V8tWORWa8w4Qlv52OQjDVBQvvNnZehp/W4Fq6hRe6hPNCZXHRrUlGeTeMwgPxN4Ght1npMt8eDr5/l5D+tgmtaRjNE1Z589gMKue0GsZ+99fp0L5J06Ya4ffQdfvin9Lv202Mhf/ars2HhIv69G5nwmi/K0bxiEru6dmNIXWoGggQfNR6c44w6RhyypndTFAf8//JSHOn+qWA7qtqNbmpwT3++j9WPHv5aARZcBDjf+aqYKftbR19dXEUkcGD2olPI6tHwmov4FBP3V7vGy+oqp9xI0KkMgx87rlkBDbn03iIvnwPupR38evcw/OTU7cLtp4aUUf4iNpd0A\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BES91gT+rXPmELU4EsPxz+PyZF6f2+A7sUcKt9/SnSPJ44j/YBrxJaIVgJbqsUyKyDoxWCJ2IkI2fOO5VgMCiI4\\\\u003d\\\",\\\"tag\\\":\\\"9PPp3uJgWfBjP6oJOqr8KzGFX/z7eUNj9MDNN+E55mc\\\\u003d\\\"}\"}");
+
+        Transaction response = card.authorize(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withInvoiceNumber("1234567890")
                 .withAllowDuplicates(true)

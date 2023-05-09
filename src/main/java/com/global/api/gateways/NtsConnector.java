@@ -196,7 +196,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
         ntsObjectParam.setTimeout(getTimeout());
-        ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
         //Preparing the request
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
@@ -441,6 +440,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
         ntsObjectParam.setTimeout(getTimeout());
+        ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
 
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);

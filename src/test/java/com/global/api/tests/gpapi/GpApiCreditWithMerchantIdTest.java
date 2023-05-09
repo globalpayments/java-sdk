@@ -4,19 +4,21 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
+import com.global.api.services.ReportingService;
 import com.global.api.services.Secure3dService;
 import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -24,23 +26,18 @@ import static org.junit.Assert.*;
 public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     private CreditCardData card;
-    private final String merchantId = "MER_7e3e2c7df34f42819b3edee31022ee3f";
+    private String merchantId;
+
+    private final BigDecimal amount = new BigDecimal("24.02");
+    private final String currency = "USD";
 
     @Before
-    public void initialize() throws ConfigurationException {
+    public void initialize() throws ApiException {
 
         GpApiConfig config = new GpApiConfig();
-        config.setAppId("zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz");
-        config.setAppKey("GAMlgEojm6hxZTLI");
+        config.setAppId(APP_ID_FOR_MERCHANT);
+        config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setChannel(Channel.CardNotPresent.getValue());
-
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-        accessTokenInfo.setTokenizationAccountName("Tokenization");
-
-        config.setAccessTokenInfo(accessTokenInfo);
-
-        config.setMerchantId(merchantId);
         config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
@@ -54,23 +51,64 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 //
 //        config.setDynamicHeaders(dynamicHeaders);
 
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
         card.setExpMonth(expMonth);
         card.setExpYear(expYear);
-        card.setCvn("852");
+
+        MerchantSummaryPaged merchants =
+                ReportingService
+                        .findMerchants(1, 10)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
+                        .execute();
+
+        assertTrue(merchants.getTotalRecordCount() > 0);
+        assertTrue(merchants.getResults().size() <= 10);
+
+        merchantId = merchants.getResults().get(0).getId();
+
+        config.setMerchantId(merchantId);
+
+        MerchantAccountSummaryPaged response =
+                ReportingService
+                        .findAccounts(1, 10)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(DataServiceCriteria.MerchantId, merchantId)
+                        .and(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
+                        .and(SearchCriteria.PaymentMethodName, PaymentMethodName.Card)
+                        .execute();
+
+        List<MerchantAccountSummary> accounts = response.getResults().size() > 0 ? response.getResults() : null;
+
+        List<MerchantAccountSummary> transactionAccounts = new ArrayList<>();
+
+        for (MerchantAccountSummary account : accounts) {
+            if (account.getType() == MerchantAccountType.TRANSACTION_PROCESSING &&
+                    account.getPaymentMethods().contains(PaymentMethodName.Card)) {
+                transactionAccounts.add(account);
+            }
+        }
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountID(transactionAccounts.get(0).getId());
+
+        config.setAccessTokenInfo(accessTokenInfo);
+
+        ServicesContainer.configureService(config, "config_" + merchantId);
     }
 
     @Test
     public void CreditAuthorization() throws ApiException {
         Transaction transaction =
                 card
-                        .authorize(new BigDecimal("14"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -78,9 +116,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction capture =
                 transaction
-                        .capture(new BigDecimal("16"))
+                        .capture(amount.add(new BigDecimal("2")))
                         .withGratuity(new BigDecimal("2"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture);
         assertEquals(SUCCESS, capture.getResponseCode());
@@ -91,10 +129,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditAuthorization_CaptureLowerAmount() throws ApiException {
         Transaction transaction =
                 card
-                        .authorize(new BigDecimal("5"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -102,9 +139,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction capture =
                 transaction
-                        .capture(new BigDecimal("2.99"))
+                        .capture(amount.subtract(new BigDecimal("2")))
                         .withGratuity(new BigDecimal("2"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture);
         assertEquals(SUCCESS, capture.getResponseCode());
@@ -113,13 +150,11 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditAuthorization_CaptureHigherAmount() throws ApiException {
-        BigDecimal amount = new BigDecimal("10");
         Transaction transaction =
                 card
                         .authorize(amount)
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -127,9 +162,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction capture =
                 transaction
-                        .capture(new BigDecimal(amount.doubleValue() * 1.15))
+                        .capture(amount.multiply(new BigDecimal("1.15")))
                         .withGratuity(new BigDecimal("2"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture);
         assertEquals(SUCCESS, capture.getResponseCode());
@@ -138,28 +173,29 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditAuthorization_CaptureHigherAmount_WithError() throws ApiException {
-        BigDecimal amount = new BigDecimal("10");
         Transaction transaction =
                 card
                         .authorize(amount)
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
 
+        boolean exceptionCaught = false;
         try {
-            Transaction capture =
-                    transaction
-                            .capture(new BigDecimal(amount.doubleValue() * 1.16))
-                            .withGratuity(new BigDecimal("2"))
-                            .execute(GP_API_CONFIG_NAME);
+            transaction
+                    .capture(amount.multiply(new BigDecimal("1.16")))
+                    .withGratuity(new BigDecimal("2"))
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("50020", ex.getResponseText());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - Can't settle for more than 115% of that which you authorised ", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -174,10 +210,10 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 card
-                        .charge(new BigDecimal("19.99"))
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .withAddress(address)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -188,10 +224,10 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditSale_WithRequestMultiUseToken() throws ApiException {
         Transaction response =
                 card
-                        .charge(new BigDecimal("19.99"))
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .withRequestMultiUseToken(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -203,10 +239,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditRefund() throws ApiException {
         Transaction response =
                 card
-                        .refund(new BigDecimal("16"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .refund(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -215,13 +250,11 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditRefundTransaction() throws ApiException {
-        BigDecimal amount = new BigDecimal("10.95");
         Transaction transaction =
                 card
                         .charge(amount)
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -230,8 +263,8 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 transaction
                         .refund(amount)
-                        .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -240,15 +273,13 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditRefundTransaction_WithIdempotencyKey() throws ApiException {
-        BigDecimal amount = new BigDecimal("10.95");
         String idempotencyKey = UUID.randomUUID().toString();
 
         Transaction transaction =
                 card
                         .charge(amount)
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -257,9 +288,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 transaction
                         .refund(amount)
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -269,9 +300,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         try {
             transaction
                     .refund(amount)
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -286,10 +317,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditRefundTransaction_RefundLowerAmount() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("5.95"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -297,9 +327,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 transaction
-                        .refund(new BigDecimal("3.25"))
-                        .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .refund(amount.subtract(new BigDecimal("2")))
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -308,52 +338,51 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditRefundTransaction_RefundHigherAmount() throws ApiException {
-        BigDecimal amount = new BigDecimal("5.95");
         Transaction transaction =
                 card
                         .charge(amount)
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
+        boolean exceptionCaught = false;
         try {
             transaction
-                    .refund(new BigDecimal(amount.doubleValue() * 1.1))
-                    .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME);
+                    .refund(amount.multiply(new BigDecimal("1.1")))
+                    .withCurrency(currency)
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("40087", ex.getResponseText());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("Status Code: 400 - You may only refund up to 100% of the original amount ", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
     @Test
     public void CreditRefundTransactionWrongId() throws ApiException {
-        Transaction transaction =
-                card
-                        .charge(new BigDecimal("10.95"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("TRN_" + UUID.randomUUID());
+        transaction.setToken("TRN_" + UUID.randomUUID());
 
-        transaction.setTransactionId("TRN_wrongid3213213");
-        transaction.setToken("TRN_wrongid3213213");
-
+        boolean exceptionCaught = false;
         try {
             transaction
-                    .refund(new BigDecimal("10.95"))
-                    .withCurrency("USD")
-                    //.withAllowDuplicates(true)
-                    .execute(GP_API_CONFIG_NAME);
+                    .refund(amount)
+                    .withCurrency(currency)
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("40008", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("Status Code: 404 - Transaction " + transaction.getTransactionId() + " not found at this location.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -361,10 +390,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("12.99"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -372,8 +400,8 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 transaction
-                        .reverse(new BigDecimal("12.99"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .reverse(amount)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -386,10 +414,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction transaction =
                 card
-                        .authorize(new BigDecimal("12.99"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -397,9 +424,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 transaction
-                        .reverse(new BigDecimal("12.99"))
+                        .reverse(amount)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -408,9 +435,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             transaction
-                    .reverse(new BigDecimal("12.99"))
+                    .reverse(amount)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -423,26 +450,23 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditReverseTransactionWrongId() throws ApiException {
-        Transaction transaction =
-                card
-                        .charge(new BigDecimal("12.99"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("TRN_" + UUID.randomUUID());
+        transaction.setToken("TRN_" + UUID.randomUUID());
 
-        transaction.setTransactionId("TRN_wrongid3213213");
-        transaction.setToken("TRN_wrongid3213213");
-
+        boolean exceptionCaught = false;
         try {
             transaction
-                    .refund(new BigDecimal("10.95"))
-                    .withCurrency("USD")
-                    //.withAllowDuplicates(true)
-                    .execute(GP_API_CONFIG_NAME);
+                    .refund(amount)
+                    .withCurrency(currency)
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
             assertEquals("Status Code: 404 - Transaction " + transaction.getTransactionId() + " not found at this location.", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -450,23 +474,26 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     public void CreditPartialReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
-                        .charge(new BigDecimal("3.99"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
+        boolean exceptionCaught = false;
         try {
             transaction
-                    .reverse(new BigDecimal("1.29"))
-                    .execute(GP_API_CONFIG_NAME);
+                    .reverse(amount.subtract(new BigDecimal("1")))
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40214", ex.getResponseText());
             assertEquals("Status Code: 400 - partial reversal not supported", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -475,10 +502,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction authorization =
                 card
                         .authorize(new BigDecimal("14"))
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withMultiCapture(true)
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(authorization);
         assertEquals(SUCCESS, authorization.getResponseCode());
@@ -487,7 +513,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction capture1 =
                 authorization
                         .capture(new BigDecimal("3"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture1);
         assertEquals(SUCCESS, capture1.getResponseCode());
@@ -496,7 +522,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction capture2 =
                 authorization
                         .capture(new BigDecimal("5"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture2);
         assertEquals(SUCCESS, capture2.getResponseCode());
@@ -505,7 +531,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction capture3 =
                 authorization
                         .capture(new BigDecimal("7"))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture3);
         assertEquals(SUCCESS, capture3.getResponseCode());
@@ -519,10 +545,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction authorization =
                 card
                         .authorize(new BigDecimal("14"))
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withMultiCapture(true)
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(authorization);
         assertEquals(SUCCESS, authorization.getResponseCode());
@@ -532,7 +557,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                 authorization
                         .capture(new BigDecimal("14"))
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(capture);
         assertEquals(SUCCESS, capture.getResponseCode());
@@ -543,7 +568,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
             authorization
                     .capture(new BigDecimal("14"))
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -556,25 +581,14 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditCaptureWrongId() throws ApiException {
-        Transaction authorization =
-                card
-                        .authorize(new BigDecimal("14"))
-                        .withCurrency("USD")
-                        .withMultiCapture(true)
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
-
-        assertNotNull(authorization);
-        assertEquals(SUCCESS, authorization.getResponseCode());
-        assertEquals(TransactionStatus.Preauthorized.getValue(), authorization.getResponseMessage());
-
-        authorization.setTransactionId("TRN_wrongid3213213");
-        authorization.setToken("TRN_wrongid3213213");
+        Transaction authorization = new Transaction();
+        authorization.setTransactionId("TRN_" + UUID.randomUUID());
+        authorization.setToken("TRN_" + UUID.randomUUID());
 
         try {
             authorization
-                    .capture(new BigDecimal("3"))
-                    .execute(GP_API_CONFIG_NAME);
+                    .capture(amount)
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
             assertEquals("40008", ex.getResponseText());
@@ -585,14 +599,13 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     @Test
     public void SaleWithTokenizedPaymentMethod() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize("config_" + merchantId));
 
         Transaction response =
                 tokenizedCard
-                        .charge(new BigDecimal("17.01"))
-                        .withCurrency("USD")
-                        .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -601,7 +614,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
-        String token = card.tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.SINGLE);
+        String token = card.tokenize(true, "config_" + merchantId, PaymentMethodUsageMode.SINGLE);
 
         assertNotNull(token);
 
@@ -611,10 +624,10 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 tokenizedCard
-                        .charge(new BigDecimal("17.01"))
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .withRequestMultiUseToken(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -625,8 +638,8 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         tokenizedCard
                 .charge(10)
-                .withCurrency("USD")
-                .execute(GP_API_CONFIG_NAME);
+                .withCurrency(currency)
+                .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -638,8 +651,8 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 card
                         .verify()
-                        .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .withCurrency(currency)
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -655,9 +668,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 card
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withAddress(address)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -671,9 +684,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 card
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -683,9 +696,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         try {
             card
                     .verify()
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -698,166 +711,21 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditVerify_WithoutCurrency() {
+        boolean exceptionCaught = false;
         try {
-            Transaction response =
-                    card
-                            .verify()
-                            .execute(GP_API_CONFIG_NAME);
+            card
+                    .verify()
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
             assertEquals("Status Code: 400 - Request expects the following fields currency", ex.getMessage());
         } catch (ApiException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void CreditVerify_InvalidCVV() {
-        card.setCvn("1234");
-
-        boolean exceptionCaught = false;
-        try {
-            card
-                    .verify()
-                    .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME);
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
-            assertEquals("40085", ex.getResponseText());
-            assertEquals("Status Code: 400 - Security Code/CVV2/CVC must be 3 digits", ex.getMessage());
-        } catch (ApiException e) {
-            e.printStackTrace();
         } finally {
             assertTrue(exceptionCaught);
         }
-    }
-
-    @Test
-    public void CreditVerify_NotNumericCVV() {
-        card.setCvn("SMA");
-
-        boolean exceptionCaught = false;
-        try {
-            card
-                    .verify()
-                    .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME);
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
-            assertEquals("50018", ex.getResponseText());
-            assertEquals("Status Code: 502 - The line number 12 which contains '         [number] XXX [/number] ' does not conform to the schema", ex.getMessage());
-        } catch (ApiException e) {
-            e.printStackTrace();
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void CreditVerify_CP() throws ApiException {
-
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setEnvironment(Environment.TEST);
-        gpApiConfig.setAppId("zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz");
-        gpApiConfig.setAppKey("GAMlgEojm6hxZTLI");
-        gpApiConfig.setSecondsToExpire(60);
-        gpApiConfig.setChannel(Channel.CardPresent.getValue());
-        gpApiConfig.setMerchantId(merchantId);
-
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-        accessTokenInfo.setTokenizationAccountName("transaction_processing");
-        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
-        gpApiConfig.setEnableLogging(true);
-
-        ServicesContainer.configureService(gpApiConfig, GP_API_CONFIG_NAME + "CreditVerify_CP");
-        card.setCardPresent(true);
-        card.setCvn("123");
-
-        Transaction response =
-                card
-                        .verify()
-                        .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
-
-        assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
-        assertEquals(VERIFIED, response.getResponseMessage());
-    }
-
-    @Ignore
-    @Test
-    public void CreditSaleWithEntryMethod() throws ApiException {
-        for (EntryMethod entryMethod : EntryMethod.values()) {
-
-            GpApiConfig gpApiConfig = new GpApiConfig();
-            gpApiConfig.setEnvironment(Environment.TEST);
-            gpApiConfig.setAppId("zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz");
-            gpApiConfig.setAppKey("GAMlgEojm6hxZTLI");
-            gpApiConfig.setSecondsToExpire(60);
-            gpApiConfig.setChannel(Channel.CardPresent.getValue());
-            gpApiConfig.setMerchantId(merchantId);
-
-            AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-            accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-            accessTokenInfo.setTokenizationAccountName("transaction_processing");
-            gpApiConfig.setAccessTokenInfo(accessTokenInfo);
-
-            gpApiConfig.setEnableLogging(true);
-
-            ServicesContainer.configureService(gpApiConfig, GP_API_CONFIG_NAME + entryMethod);
-
-            CreditTrackData creditTrackData = new CreditTrackData();
-            creditTrackData.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
-            creditTrackData.setEntryMethod(entryMethod);
-
-            Transaction response =
-                    creditTrackData
-                            .charge(11)
-                            .withCurrency("USD")
-                            .execute(GP_API_CONFIG_NAME);
-
-            assertNotNull(response);
-            assertEquals(SUCCESS, response.getResponseCode());
-            assertEquals("CAPTURED", response.getResponseMessage());
-        }
-    }
-
-    @Ignore
-    @Test
-    //To be removed
-    public void CreditVerify_CP_CVNNotMatched() throws ApiException {
-
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setEnvironment(Environment.TEST);
-        gpApiConfig.setAppId("zKxybfLqH7vAOtBQrApxD5AUpS3ITaPz");
-        gpApiConfig.setAppKey("GAMlgEojm6hxZTLI");
-        gpApiConfig.setSecondsToExpire(60);
-        gpApiConfig.setChannel(Channel.CardPresent.getValue());
-        gpApiConfig.setMerchantId(merchantId);
-
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-        accessTokenInfo.setTokenizationAccountName("transaction_processing");
-        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
-
-        gpApiConfig.setEnableLogging(true);
-
-        ServicesContainer.configureService(gpApiConfig, GP_API_CONFIG_NAME);
-
-        Transaction response =
-                card
-                        .verify()
-                        .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
-
-        assertNotNull(response);
-        assertEquals("NOT_VERIFIED", response.getResponseCode());
-        assertEquals("NOT_VERIFIED", response.getResponseMessage());
-        assertEquals("NOT_MATCHED", response.getCvnResponseMessage());
     }
 
     @Test
@@ -867,24 +735,28 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction transaction =
                 card
                         .charge(4.95)
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
+        boolean exceptionCaught = false;
         try {
             card
                     .charge(4.95)
-                    .withCurrency("USD")
+                    .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute("config_" + merchantId);
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
             assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transaction.getTransactionId(), ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -899,9 +771,9 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         Transaction response =
                 card
                         .verify()
-                        .withCurrency("USD")
+                        .withCurrency(currency)
                         .withStoredCredential(storedCredential)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -917,10 +789,10 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
         Transaction response =
                 card
-                        .charge(15.25)
-                        .withCurrency("USD")
+                        .charge(amount)
+                        .withCurrency(currency)
                         .withStoredCredential(storedCredential)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -929,16 +801,8 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditSale_WithStoredCredentials_RecurringPayment() throws ApiException {
-        BigDecimal amount = new BigDecimal("15.00");
-        String currency = "USD";
-
-        CreditCardData creditCardData = new CreditCardData();
-        creditCardData.setNumber("4263970000005262");
-        creditCardData.setExpMonth(expMonth);
-        creditCardData.setExpYear(expYear);
-
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(creditCardData.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize("config_" + merchantId));
 
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -946,7 +810,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withAmount(amount)
                         .withAuthenticationSource(AuthenticationSource.Browser)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(secureEcom);
         assertEquals("ENROLLED", secureEcom.getEnrolledStatus());
@@ -980,7 +844,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                         .withBrowserData(browserData)
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(initAuth);
         assertEquals("ENROLLED", initAuth.getEnrolledStatus());
@@ -998,7 +862,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -1017,7 +881,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withStoredCredential(storedCredential)
                         .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response2);
         assertEquals(SUCCESS, response2.getResponseCode());
@@ -1026,19 +890,14 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CreditSale_WithCardBrandStorage_RecurringPayment() throws ApiException {
-        CreditCardData creditCardData = new CreditCardData();
-        creditCardData.setNumber("4263970000005262");
-        creditCardData.setExpMonth(expMonth);
-        creditCardData.setExpYear(expYear);
-
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(creditCardData.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize("config_" + merchantId));
 
         Transaction response =
                 tokenizedCard
                         .charge(10.01)
                         .withCurrency("GBP")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -1055,7 +914,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
                                         .setSequence(StoredCredentialSequence.Subsequent)
                                         .setReason(StoredCredentialReason.Incremental))
                         .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("config_" + merchantId);
 
         assertNotNull(response2);
         assertEquals(SUCCESS, response2.getResponseCode());

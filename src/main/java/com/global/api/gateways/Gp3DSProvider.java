@@ -383,6 +383,14 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                 secureEcom.setPayerAuthenticationRequest(doc.getString("encoded_creq"));
         }
 
+        secureEcom.setAcsReferenceNumber(doc.getString("acs_reference_number"));
+        if (AuthenticationSource.MobileSDK.getValue().equals(secureEcom.getAuthenticationSource())) {
+            secureEcom.setPayerAuthenticationRequest(doc.getString("acs_signed_content"));
+            JsonDoc acs_rendering_type = doc.get("acs_rendering_type");
+            secureEcom.setAcsInterface(acs_rendering_type.getString("acs_interface"));
+            secureEcom.setAcsUiTemplate(acs_rendering_type.getString("acs_ui_template"));
+        }
+
         Transaction response = new Transaction();
         response.setThreeDsecure(secureEcom);
         return response;

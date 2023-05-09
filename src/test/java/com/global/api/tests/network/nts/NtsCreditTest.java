@@ -2909,5 +2909,42 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .execute();
         assertNotNull(capture);
     }
+    @Test //working
+    public void test_003_Amex_Purchase_With_DataCollect_HostResponse79() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.AmexTrack1(EntryMethod.Swipe);
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction chargeResponse = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        // check response
+        assertEquals("00", chargeResponse.getResponseCode());
+
+        // Data-Collect request preparation.
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .withHostResponseCode("79")
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
 
 }

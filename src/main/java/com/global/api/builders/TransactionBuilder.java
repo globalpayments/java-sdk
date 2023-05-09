@@ -102,6 +102,8 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     private String customerCode;
     @Getter @Setter
     private String hostResponseCode = "";
+    @Getter@Setter
+    private String offlineDeclineIndicator;
 
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
@@ -208,6 +210,11 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     }
     public TransactionBuilder<TResult> withHostResponseCode(String hostResponseCode){
         this.hostResponseCode = hostResponseCode;
+        return this;
+    }
+
+    public TransactionBuilder<TResult> withOfflineDeclineIndicator(String offlineDeclineIndicator){
+        this.offlineDeclineIndicator = offlineDeclineIndicator;
         return this;
     }
 }

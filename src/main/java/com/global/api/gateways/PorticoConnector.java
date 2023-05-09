@@ -940,8 +940,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                             return "CreditOfflineAuth";
                         else if (modifier.equals(TransactionModifier.Recurring))
                             return "RecurringBillingAuth";
-                        else if (modifier.equals(TransactionModifier.EncryptedMobile))
-                            throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
+//                        else if (modifier.equals(TransactionModifier.EncryptedMobile))
+//                            throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                         return "CreditAuth";
                     } else if (paymentMethodType.equals(PaymentMethodType.Recurring))
                         return "RecurringBillingAuth";

@@ -1,5 +1,19 @@
 # Changelog
 
+## v10.2.14 (05/08/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - HOST RESPONSE CODE field changes Issue(10186,10196)
+  - Debit Pre-Auth Cancellation: Card Sequence Number ,Offline Decline Indicator and Unique Device Id fields changes Issues (10189,10190,10191)
+
+GP-ECOM: 
+  -Add to the mapping response fields: acs_reference_number, acs_signed_content,acs_interface and acs_ui_template for the authentication source MOBILE_SDK
+
+Portico Gateway: 
+  -Enable CreditAuth transaction type for Apple Pay & Google Pay
+  
 ## v10.2.13 (05/02/2023)
  
 ### Enhancements:
