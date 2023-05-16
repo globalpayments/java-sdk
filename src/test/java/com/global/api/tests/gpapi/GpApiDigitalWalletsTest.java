@@ -23,6 +23,12 @@ import static org.junit.Assert.*;
 public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     private final CreditCardData card;
+    private final String clickToPayToken = "8144735251653223601";
+    private final String googlePayToken = "{\n" +
+            "    \"signature\": \"MEQCIDoMJc0jcHAzk846Y7BT6XVN/YrwypNtShE+nF/XWMiAAiAd0nhStaWT0Fw3mWjJXPRy4J+GXhdm5WOjlgEu9DS7pQ\\u003d\\u003d\",\n" +
+            "    \"protocolVersion\": \"ECv1\",\n" +
+            "    \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"c9G2ljhM/OK3IrJapYrVYCi/HUQOX9IZfPE7mSLhxe26R/fpCkXF8i0j9DhM7kttoQBa1KmzNwAP4kaIR9XQB/IZsnZ0YllS+Jo0KYmOoLfcW/OUFYzRXZGbvJZRts7PP4U/NPXDiSDQM7ACna7Nca9o5UBIrY4ZL8MLiIbdBI8BSlCdJYqw4kyXibY2C5QMG+2lzF3fn4kSsz2odC8c9BuW/2D2Rz2Lau9awUMtQUpIHI4W6VU8t1FtDWppWzPUbD0CBw88ZlBOdHTgu2OJE5bR/+NXz99Rn7h3hmqnnMu/0JNxryvZr+Ed1cmLqoVbRf+3ik5WVUsyOcQWrouH8vjOTVq208o8MbSA1wX0LK4gAWVnyRpPsUkz5KJOKvKWIzT3VlV7m9BxlVc7E4RQe7/QJO5LKVcV5cotKXdGK9YINLSyIwkLRcKR9qQ92Q4z0h4g\\\",\\\"ephemeralPublicKey\\\":\\\"BPUg4L7vjs5ucmOzR+GNmLxWp1LnEsFV/Bc6WQY6qgtyxT4HFnziN/3nkbspF0l4auZX1UjCV1scYjE910Lp2TU\\\\u003d\\\",\\\"tag\\\":\\\"x0md5a9GwLxoCWrxQYS4jJfPjuQv9ajrJMd5zNjbd+A\\\\u003d\\\"}\"\n" +
+            "}";
 
     public GpApiDigitalWalletsTest() throws ApiException {
 
@@ -44,7 +50,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void ClickToPayEncrypted() throws ApiException {
-        card.setToken("9113329269393758302");
+        card.setToken(clickToPayToken);
         card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
 
         Transaction response =
@@ -64,7 +70,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void ClickToPayEncryptedChargeThenRefund() throws ApiException {
-        card.setToken("9113329269393758302");
+        card.setToken(clickToPayToken);
         card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
 
         Transaction response =
@@ -93,7 +99,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void ClickToPayEncryptedChargeThenReverse() throws ApiException {
-        card.setToken("9113329269393758302");
+        card.setToken(clickToPayToken);
         card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
 
         Transaction response =
@@ -122,7 +128,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void ClickToPayEncryptedAuthorize() throws ApiException {
-        card.setToken("9113329269393758302");
+        card.setToken(clickToPayToken);
         card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
 
         boolean errorFound = false;
@@ -145,7 +151,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void ClickToPayEncryptedRefundStandalone() throws ApiException {
-        card.setToken("9113329269393758302");
+        card.setToken(clickToPayToken);
         card.setMobileType(MobilePaymentMethodType.CLICK_TO_PAY);
 
         boolean errorFound = false;
@@ -186,7 +192,8 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
         assertFalse(StringUtils.isNullOrEmpty(transaction.getTransactionId()));
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     // You need a valid Apple Pay token that it is valid only for 60 sec
     public void PayWithApplePayEncryptedChargedThenRefund() throws ApiException {
         card.setToken("{\"version\":\"EC_v1\",\"data\":\"u4gZ7Qvq9jF8DN13aWOB8FkQ4coB5nurVfuG7DOv2JAbswT8KrcMqcIK2KdtFOzncmrKEaB3w8oysY0ZKfYxLS2KrK0mnQhY3qAbmNb3HfJ433CfsO1hTSEZgCDNsWFLkcOql4Do2wk4IKVlEq105CjRGfNeYn0gkWjGh9T/yT85WYElMB216nKH3WoutefbEt/uoN2aKUSImaciFPy6qDwFbtX1pOQ8kT//n7MvUfl7aUR83MTgktpH9VEU19k6K+H6D8xvecAlXiYt4zNCiw2XkYKWR0cg+4GxBqTl1RI1DV0bU0ZR4Qyz2FAmadvXohC7qZnOrh0FX/4w7D5DSP+O4BF3uCst4XIRJsQaz9zyr1GncE3qsePV4Q0WRfxoARvzBF0MQhnNfbR9cBmqgAFCMPlk0Qv0UJg+rbwgYGQ=\",\"signature\":\"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\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEuhKOdDaqF0EjVE0qN4Cb1+d+hdXkoy4LIKbGzymTbIiMBj6tU2OZIDGes21fgEbIsXn92nkuwpalEsAoGueVjg==\",\"publicKeyHash\":\"rEYX/7PdO7F7xL7rH0LZVak/iXTrkeU89Ck7E9dGFO4=\",\"transactionId\":\"e9cfc9cc29bf17945a53fea1d8f65265ee2962708a46d7696ffc90090ea364aa\"}}");
@@ -215,7 +222,8 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     // You need a valid Apple Pay token that it is valid only for 60 sec
     public void PayWithApplePayEncryptedChargedThenReverse() throws ApiException {
         card.setToken("{\"version\":\"EC_v1\",\"data\":\"EXcXc7RAa3/fyG30V1xmTRZZDBOwQMmURCNsE4gutV6apykQlbR7uAJEqbpI4hURpKXUc+g5uGCx2Ugp4XPH+CvnYBdeNiy6dVW9aGqY3fJubm0m1ye9xVTBCZtNF3+DsccYu08ER8H2eweiOa/ugOdcfvCKc86QIWdvFuQHHGYQG6GZl8krQOYT81x1cMfmNqisjCoS29F9p+MxvH7kvxGPewJ2cPvTOSyZx4wKRcKv+pblR/sktRBdkJGloGxUnxtCGM3DUE+CAKoFftfZramvlOCVY+1dbXnqDdf5P3ROTAGoP3F21Sgw43eQvKktaJ+99CAXB5ITtChEnEPMj24CDsvD+DyjRYjLytYzrv5gHAcTnySHdyeRldiYTyRHMJtN1PwnhFl/tlLOpNKgTr4I9TIHDwJpp4ujczilKIc=\",\"signature\":\"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\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEDt8/QYDs4S7NjtJmOgzU71QuryCjBSYgPfdcP+Wr0KPQn2poE1X6gAk+702JNJ0pA0yqX+8OC93CNrB2DQ55cA==\",\"publicKeyHash\":\"rEYX/7PdO7F7xL7rH0LZVak/iXTrkeU89Ck7E9dGFO4=\",\"transactionId\":\"bd4bfd340914027b54c5aec21993d3537133228311b57defc36f1a107acd5662\"}}");
@@ -272,12 +280,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void PayWithGooglePayEncrypted() throws ApiException {
-        card.setToken("{\n" +
-                "  \"signature\": \"MEQCIG5NDTGsgPrltVuuJQ0NYJnLUm1mo8JOW8vfLvt+ZtW6AiAZXJgnszos88b06ujEKubOMQNIuFdOgU+6ArRDGlZPoQ==\",\n" +
-                "  \"protocolVersion\": \"ECv1\",\n" +
-                "  \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"t+8CD+SWUl7VflMnwOqJedp7ZK71qnKX2tabp7px4C3d97ki1eb8vySoZoD8wbp7B2FDZPVGPDtUSUxz67JfwJ04sncw4KyDQiyShlxxdOakK/bnn+ooGHZ3jWA97hXVjtf1YecOCppzQIVk7F4RZZNgfIImQr4nDX5nm4BLN+TGsI4/m542xix45h+5e7y/xtyY/GFm8YwEfHQFCNY5edOr7h4nanDi/k//oQQG+ChOCKHtcmv4LpwtR2W737t5bTj+5mxXWu2sdAx6EnQGFOnmMKbNd1phcw4fdAHGtmxkW2LDUamXq5hnY99ECcl+Iqe75S6d3vQ3Lidk3k2lVVRtXTkxtCGvBOUy8okp4hndQL0665YOOIgEPengKfv3CIgUcKahKPyRVekaybDUalYpvyBvX2xIq+ilOo703z7pdL+FkILe7PC7RrEbnKLLJEv6\\\",\\\"ephemeralPublicKey\\\":\\\"BMLc+beu32XtPnrQ6D2z7IuICWl0gg9XmnKEync31BZ7NAvCa0BXTpLkyii+dDMPahj6xUoI0m7YES2UncrVkS8\\\\u003d\\\",\\\"tag\\\":\\\"QlvO9HQqmHXnlew8IzEWqr1AFSNL2wSc+HEb2IAd4YE\\\\u003d\\\"}\"\n" +
-                "}");
-
+        card.setToken(googlePayToken);
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
         Transaction transaction =
@@ -295,12 +298,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void GooglePayEncrypted_LinkedRefund() throws ApiException {
-        card.setToken("{\n" +
-                "  \"signature\": \"MEQCIG5NDTGsgPrltVuuJQ0NYJnLUm1mo8JOW8vfLvt+ZtW6AiAZXJgnszos88b06ujEKubOMQNIuFdOgU+6ArRDGlZPoQ==\",\n" +
-                "  \"protocolVersion\": \"ECv1\",\n" +
-                "  \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"t+8CD+SWUl7VflMnwOqJedp7ZK71qnKX2tabp7px4C3d97ki1eb8vySoZoD8wbp7B2FDZPVGPDtUSUxz67JfwJ04sncw4KyDQiyShlxxdOakK/bnn+ooGHZ3jWA97hXVjtf1YecOCppzQIVk7F4RZZNgfIImQr4nDX5nm4BLN+TGsI4/m542xix45h+5e7y/xtyY/GFm8YwEfHQFCNY5edOr7h4nanDi/k//oQQG+ChOCKHtcmv4LpwtR2W737t5bTj+5mxXWu2sdAx6EnQGFOnmMKbNd1phcw4fdAHGtmxkW2LDUamXq5hnY99ECcl+Iqe75S6d3vQ3Lidk3k2lVVRtXTkxtCGvBOUy8okp4hndQL0665YOOIgEPengKfv3CIgUcKahKPyRVekaybDUalYpvyBvX2xIq+ilOo703z7pdL+FkILe7PC7RrEbnKLLJEv6\\\",\\\"ephemeralPublicKey\\\":\\\"BMLc+beu32XtPnrQ6D2z7IuICWl0gg9XmnKEync31BZ7NAvCa0BXTpLkyii+dDMPahj6xUoI0m7YES2UncrVkS8\\\\u003d\\\",\\\"tag\\\":\\\"QlvO9HQqmHXnlew8IzEWqr1AFSNL2wSc+HEb2IAd4YE\\\\u003d\\\"}\"\n" +
-                "}");
-
+        card.setToken(googlePayToken);
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
         Transaction transaction =
@@ -328,12 +326,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     @Test
     public void GooglePayEncrypted_Reverse() throws ApiException {
-        card.setToken("{\n" +
-                "  \"signature\": \"MEQCIG5NDTGsgPrltVuuJQ0NYJnLUm1mo8JOW8vfLvt+ZtW6AiAZXJgnszos88b06ujEKubOMQNIuFdOgU+6ArRDGlZPoQ==\",\n" +
-                "  \"protocolVersion\": \"ECv1\",\n" +
-                "  \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"t+8CD+SWUl7VflMnwOqJedp7ZK71qnKX2tabp7px4C3d97ki1eb8vySoZoD8wbp7B2FDZPVGPDtUSUxz67JfwJ04sncw4KyDQiyShlxxdOakK/bnn+ooGHZ3jWA97hXVjtf1YecOCppzQIVk7F4RZZNgfIImQr4nDX5nm4BLN+TGsI4/m542xix45h+5e7y/xtyY/GFm8YwEfHQFCNY5edOr7h4nanDi/k//oQQG+ChOCKHtcmv4LpwtR2W737t5bTj+5mxXWu2sdAx6EnQGFOnmMKbNd1phcw4fdAHGtmxkW2LDUamXq5hnY99ECcl+Iqe75S6d3vQ3Lidk3k2lVVRtXTkxtCGvBOUy8okp4hndQL0665YOOIgEPengKfv3CIgUcKahKPyRVekaybDUalYpvyBvX2xIq+ilOo703z7pdL+FkILe7PC7RrEbnKLLJEv6\\\",\\\"ephemeralPublicKey\\\":\\\"BMLc+beu32XtPnrQ6D2z7IuICWl0gg9XmnKEync31BZ7NAvCa0BXTpLkyii+dDMPahj6xUoI0m7YES2UncrVkS8\\\\u003d\\\",\\\"tag\\\":\\\"QlvO9HQqmHXnlew8IzEWqr1AFSNL2wSc+HEb2IAd4YE\\\\u003d\\\"}\"\n" +
-                "}");
-
+        card.setToken(googlePayToken);
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
         Transaction transaction =

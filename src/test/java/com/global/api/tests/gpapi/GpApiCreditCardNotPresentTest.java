@@ -13,7 +13,6 @@ import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import com.global.api.utils.DateUtils;
 import com.global.api.logging.RequestFileLogger;
 import lombok.SneakyThrows;
 import lombok.var;
@@ -21,7 +20,6 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -154,9 +152,6 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
 
     @Test
     public void UpdatePaymentToken() throws ApiException {
-        Date startDate = DateUtils.addDays(new Date(), -30);
-        Date endDate = DateUtils.addDays(new Date(), -3);
-
         StoredPaymentMethodSummaryPaged response =
                 ReportingService
                         .findStoredPaymentMethodsPaged(1, 1)
@@ -175,6 +170,38 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         tokenizedCard.setCardHolderName("James BondUp");
         tokenizedCard.setExpYear(DateTime.now().getYear() + 1);
         tokenizedCard.setExpMonth(DateTime.now().getMonthOfYear());
+        tokenizedCard.setNumber("4263970000005262");
+
+        Transaction response2 =
+                tokenizedCard
+                        .updateToken()
+                        .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertEquals("SUCCESS", response2.getResponseCode());
+        assertEquals("ACTIVE", response2.getResponseMessage());
+        assertEquals(pmtToken, response2.getToken());
+        assertEquals(PaymentMethodUsageMode.MULTIPLE, response2.getTokenUsageMode());
+    }
+
+    @Test
+    public void UpdatePaymentToken_UsageModeOnly() throws ApiException {
+        StoredPaymentMethodSummaryPaged response =
+                ReportingService
+                        .findStoredPaymentMethodsPaged(1, 1)
+                        .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertEquals(1, response.getResults().size());
+        String pmtToken = response.getResults().get(0).getId();     // Check if id or other field
+        assertNotNull(pmtToken);
+        assertNotNull(pmtToken);
+
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(pmtToken);
+        tokenizedCard.setCardHolderName("James BondUp");
         tokenizedCard.setNumber("4263970000005262");
 
         Transaction response2 =

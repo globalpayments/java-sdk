@@ -16,7 +16,8 @@ public enum PaymentMethodType implements IFlag {
     APM,
     Ewic,
     BankPayment,
-    BNPL;
+    BNPL,
+    AccountFunds;
 
     public long getLongValue() {
         return 1 << this.ordinal();

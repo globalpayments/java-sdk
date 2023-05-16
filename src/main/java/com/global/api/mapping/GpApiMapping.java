@@ -6,6 +6,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.PagedResult;
+import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
@@ -33,6 +34,8 @@ public class GpApiMapping {
     private static final String PAYMENT_METHOD_DELETE = "PAYMENT_METHOD_DELETE";
     private static final String LINK_CREATE = "LINK_CREATE";
     private static final String LINK_EDIT = "LINK_EDIT";
+
+    private static final String TRANSFER = "TRANSFER";
 
     private static final String MERCHANT_CREATE = "MERCHANT_CREATE";
     private static final String MERCHANT_LIST = "MERCHANT_LIST";
@@ -98,9 +101,7 @@ public class GpApiMapping {
                             transaction.setCardExpYear(card.getInt("expiry_year"));
                         }
                     }
-
                     break;
-
                 case LINK_CREATE:
                 case LINK_EDIT:
 
@@ -113,12 +114,12 @@ public class GpApiMapping {
                     }
 
                     transaction.setPayLinkResponse(payLinkResponse);
-
                     break;
-
+                case TRANSFER:
+                    transaction.setPaymentMethodType(PaymentMethodType.AccountFunds);
+                    break;
                 default:
                     break;
-
             }
 
             BatchSummary batchSummary = new BatchSummary();
@@ -226,6 +227,10 @@ public class GpApiMapping {
             transaction.setDccRateData(mapDccInfo(json));
             transaction.setFraudFilterResponse(json.has("risk_assessment") ? mapFraudManagement(json) : null);
 
+            if (json.has("transfers")) {
+                transaction.setTransferFundsAccountDetailsList(mapTransferFundsAccountDetails(json));
+            }
+
             if (json.has("card")) {
                 JsonDoc card = json.get("card");
 
@@ -240,6 +245,31 @@ public class GpApiMapping {
         }
 
         return transaction;
+    }
+
+    private static List<TransferFundsAccountDetails> mapTransferFundsAccountDetails(JsonDoc json) {
+
+        var transferResponse = new ArrayList<TransferFundsAccountDetails>();
+
+        for(JsonDoc item : json.getEnumerator("transfers")) {
+
+            var transfer = new TransferFundsAccountDetails();
+
+            transfer.setId(item.getString("id"));
+            transfer.setStatus(item.getString("status"));
+            String timeCreated = item.getString("time_created");
+            if (null == timeCreated) {
+                timeCreated = "";
+            }
+            transfer.setTimeCreated(timeCreated);
+            transfer.setAmount(StringUtils.toAmount(item.getString("amount")).toString());
+            transfer.setReference(item.getString("reference"));
+            transfer.setDescription(item.getString("description"));
+
+            transferResponse.add(transfer);
+        }
+
+        return transferResponse;
     }
 
     private static Boolean getIsMultiCapture(JsonDoc json) {
@@ -1414,7 +1444,6 @@ public class GpApiMapping {
 
         return personList;
     }
-
 
     private static List<PaymentMethodName> getPaymentMethodsName(JsonDoc doc) {
         var result = new ArrayList<PaymentMethodName>();

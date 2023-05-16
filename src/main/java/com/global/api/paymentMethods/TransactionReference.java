@@ -1,10 +1,10 @@
 package com.global.api.paymentMethods;
 
-import com.global.api.entities.BNPLResponse;
-import com.global.api.entities.enums.TransactionType;
-import com.global.api.entities.enums.*;
 import com.global.api.entities.AlternativePaymentResponse;
+import com.global.api.entities.BNPLResponse;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.gnap.ISOResponseCode;
@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true)
@@ -41,6 +42,7 @@ public class TransactionReference implements IPaymentMethod {
     private int sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
+    private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
     private String originalTransactionDate;
     private String responseCode;
     private boolean useAuthorizedAmount;

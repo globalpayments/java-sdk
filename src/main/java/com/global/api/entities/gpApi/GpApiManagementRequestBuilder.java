@@ -9,12 +9,11 @@ import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.IPaymentMethod;
-import com.global.api.paymentMethods.ITokenizable;
-import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.EnumUtils;
+import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import com.google.gson.JsonArray;
@@ -31,7 +30,7 @@ public class GpApiManagementRequestBuilder {
 
     @Getter @Setter private static HashMap<String, ArrayList<String>> allowedActions;
 
-    public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException {
+    public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException, UnsupportedTransactionException {
         JsonDoc data = new JsonDoc();
 
         TransactionType builderTransactionType = builder.getTransactionType();
@@ -75,10 +74,23 @@ public class GpApiManagementRequestBuilder {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
+            String endpoint = merchantUrl;
+            if (builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.AccountFunds) {
+                if (null != builder.getFundsData()) {
+                    String merchantId = builder.getFundsData().getMerchantId();
+                    if (!StringUtils.isNullOrEmpty(merchantId)) {
+                        endpoint = "/merchants/" + merchantId;
+                    }
+                }
+                endpoint = endpoint + "/transfers/" + builder.getTransactionId() + "/reversal";
+            } else {
+                endpoint  = endpoint + "/transactions/" + builder.getTransactionId() + "/reversal";
+            }
+
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/reversal")
+                            .setEndpoint(endpoint)
                             .setRequestBody(data.toString());
 
         }
@@ -292,7 +304,8 @@ public class GpApiManagementRequestBuilder {
                     .setEndpoint(merchantUrl + "/links/" + builder.getPaymentLinkId())
                     .setRequestBody(data.toString());
 
-        } else if (builderTransactionType == TransactionType.Release || builderTransactionType == TransactionType.Hold) {
+        }
+        else if (builderTransactionType == TransactionType.Release || builderTransactionType == TransactionType.Hold) {
             var payload =
                     new JsonDoc()
                             .set("reason_code", builder.getReasonCode() != null ? EnumUtils.getMapping(Target.GP_API, builder.getReasonCode()) : null);
@@ -307,6 +320,34 @@ public class GpApiManagementRequestBuilder {
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/" + endpoint)
                             .setRequestBody(payload.toString());
+
+        }
+
+        //Transaction split
+        else if (builderTransactionType == TransactionType.SplitFunds) {
+
+            HashMap<String, Object> request = new HashMap<>();
+            request.put("recipient_account_id", builder.getFundsData().getRecipientAccountId());
+            request.put("reference", builder.getReference());
+            request.put("description", builder.getDescription());
+            request.put("amount", StringUtils.toNumeric(builder.getAmount()));
+
+            ArrayList<HashMap<String, Object>> split = new ArrayList<>();
+            split.add(request);
+
+            JsonDoc transfer = new JsonDoc();
+            transfer.set("transfers", split);
+
+            String endpoint = merchantUrl;
+            if (!StringUtils.isNullOrEmpty(builder.getFundsData().getMerchantId())) {
+                endpoint = "/merchants/" + builder.getFundsData().getMerchantId();
+            }
+
+            return
+                    new GpApiRequest()
+                            .setVerb(GpApiRequest.HttpMethod.Post)
+                            .setEndpoint(endpoint + "/transactions/" + builder.getTransactionId() + "/split")
+                            .setRequestBody(transfer.toString());
         }
 
         return null;

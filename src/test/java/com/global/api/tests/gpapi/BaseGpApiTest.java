@@ -14,8 +14,6 @@ public class BaseGpApiTest {
     // ================================================================================
     public static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
     public static final String APP_KEY = "FQyJA5VuEQfcji2M";
-    static final String APP_ID_FRAUD = "Q18DcsJvh8TtRo9zxICvg9S78S3RN8u2";
-    static final String APP_KEY_FRAUD = "CFaMNPgpPN4KXibu";
     static final String APP_ID_FOR_MERCHANT = "A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t";
     static final String APP_KEY_FOR_MERCHANT = "5jPt1OpB6LLitgi7";
     // ================================================================================
@@ -28,8 +26,8 @@ public class BaseGpApiTest {
     static final int expMonth = DateTime.now().getMonthOfYear();
     static final int expYear = DateTime.now().getYear() + 1;
 
-    static final Date startDate = DateUtils.addDays(new Date(), -30);
-    static final Date endDate = new Date();
+    static final Date startDate = DateUtils.atStartOfDay(DateUtils.addDays(new Date(), -30));
+    static final Date endDate = DateUtils.atEndOfDay(new Date());
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {

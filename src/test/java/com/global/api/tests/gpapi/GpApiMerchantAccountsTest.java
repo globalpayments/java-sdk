@@ -2,6 +2,7 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.User;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -9,6 +10,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.*;
+import com.global.api.paymentMethods.AccountFunds;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.GpApiService;
@@ -19,12 +21,12 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     private List<MerchantAccountSummary> accounts;
@@ -65,7 +67,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .and(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        accounts  = response.getResults().size() > 0 ? response.getResults() : null;
+        accounts = response.getResults().size() > 0 ? response.getResults() : null;
     }
 
     @Test
@@ -657,6 +659,471 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         }
     }
 
+    //region Transfer and Split
+    @Test
+    public void TransferFunds() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setAccountName(accountSender.getName());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        Transaction transfer = funds
+                .transfer(new BigDecimal("10"))
+                .withClientTransactionId("")
+                .withDescription(description)
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("10"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage().toUpperCase()); // TODO why it is CAPTURED in dotnet?
+        assertEquals(SUCCESS, transfer.getResponseCode().toUpperCase());
+    }
+
+    @Test
+    public void TransferFunds_OnlyMandatoryFields() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+
+        Transaction transfer = funds
+                .transfer(new BigDecimal("10"))
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("10"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage().toUpperCase());
+        assertEquals(SUCCESS, transfer.getResponseCode().toUpperCase());
+    }
+
+    @Test
+    public void TransferFunds_WithIdempotency() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+
+        String idempotencyKey = UUID.randomUUID().toString();
+        Transaction transfer = funds
+                .transfer(new BigDecimal("10"))
+                .withIdempotencyKey(idempotencyKey)
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("10"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage().toUpperCase());
+        assertEquals(SUCCESS, transfer.getResponseCode().toUpperCase());
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("10"))
+                    .withIdempotencyKey(idempotencyKey)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
+            assertEquals("40039", ex.getResponseText());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + transfer.getTransactionId() + ", status=SUCCESS", ex.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithoutSenderAccountName() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        Transaction transfer = funds
+                .transfer(new BigDecimal("0.01"))
+                .withClientTransactionId("")
+                .withDescription(description)
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("0.01"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage().toUpperCase());
+        assertEquals(SUCCESS, transfer.getResponseCode().toUpperCase());
+    }
+
+    @Test
+    public void TransferFunds_WithoutUsableBalanceMode() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setAccountName(accountSender.getName());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        Transaction transfer = funds
+                .transfer(new BigDecimal("0.01"))
+                .withClientTransactionId("")
+                .withDescription(description)
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("0.01"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage());
+        assertEquals(SUCCESS, transfer.getResponseCode());
+    }
+    //endregion
+
+    //region Transfer error scenarios
+
+    @Test
+    public void TransferFunds_WithoutSenderAccountId() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountName(accountSender.getName());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        Transaction transfer = funds
+                .transfer(new BigDecimal("0.01"))
+                .withClientTransactionId("")
+                .withDescription(description)
+                .execute();
+
+        assertNotNull(transfer.getTransactionId());
+        assertEquals(new BigDecimal("0.01"), transfer.getBalanceAmount());
+        assertEquals(SUCCESS, transfer.getResponseMessage().toUpperCase());
+        assertEquals(SUCCESS, transfer.getResponseCode().toUpperCase());
+    }
+
+    @Test
+    public void TransferFunds_WithoutRecipientAccountId() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setAccountName(accountSender.getName());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .withClientTransactionId("")
+                    .withDescription(description)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following fields recipient_account_id", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("40005", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithoutSenderAccountIdAndAccountName() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .withClientTransactionId("")
+                    .withDescription(description)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields account_id, account_name.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40007", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithoutMerchantId() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setAccountName(accountSender.getName());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        String description = UUID.randomUUID().toString().replace(".", "").substring(0, 11);
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .withClientTransactionId("")
+                    .withDescription(description)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 403 - Access token and merchant info do not match", ex.getMessage());
+            assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
+            assertEquals("40003", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithoutAmount() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(null)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following fields amount", ex.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("40005", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithRandomSenderAccountId() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantSummary merchantRecipient = null;
+        for (MerchantSummary el : merchants) {
+            if (!el.getId().equals(merchantSender.getId())) {
+                merchantRecipient = el;
+                break;
+            }
+        }
+
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+        MerchantAccountSummary accountRecipient = GetAccountByType(merchantRecipient.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(UUID.randomUUID().toString());
+        funds.setAccountName(accountSender.getName());
+        funds.setRecipientAccountId(accountRecipient.getId());
+        funds.setMerchantId(merchantSender.getId());
+        funds.setUsableBalanceMode(UsableBalanceMode.AVAILABLE_AND_PENDING_BALANCE);
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getMessage().contains("400 - Merchant configuration does not exist for the following combination: merchant_management_account_id -"));
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40041", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithRandomRecipientAccountId() throws ApiException {
+        List<MerchantSummary> merchants = GetMerchants();
+
+        MerchantSummary merchantSender = merchants.get(0);
+        MerchantAccountSummary accountSender = GetAccountByType(merchantSender.getId(), MerchantAccountType.FUND_MANAGEMENT);
+
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(accountSender.getId());
+        funds.setRecipientAccountId(UUID.randomUUID().toString());
+        funds.setMerchantId(merchantSender.getId());
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Transfers may only be initiated between accounts under the same partner program", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40041", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void TransferFunds_WithRandomMerchantId() throws ApiException {
+        AccountFunds funds = new AccountFunds();
+        funds.setAccountId(UUID.randomUUID().toString());
+        funds.setRecipientAccountId(UUID.randomUUID().toString());
+        funds.setMerchantId(UUID.randomUUID().toString());
+
+        boolean exceptionCaught = false;
+        try {
+            funds
+                    .transfer(new BigDecimal("0.01"))
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 404 - Retrieve information about this transaction is not supported", ex.getMessage());
+            assertEquals("INVALID_TRANSACTION_ACTION", ex.getResponseCode());
+            assertEquals("40042", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    //endregion
+
     private CreditCardData cardInformation() {
         CreditCardData creditCardData = new CreditCardData();
 
@@ -668,6 +1135,37 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         creditCardData.setCardHolderName("Jason Mason");
 
         return creditCardData;
+    }
+
+    private List<MerchantSummary> GetMerchants() throws ApiException {
+        MerchantSummaryPaged merchants =
+                new ReportingService()
+                        .findMerchants(1, 10)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
+                        .execute();
+
+        return merchants.getResults();
+    }
+
+    private MerchantAccountSummary GetAccountByType(String merchantSenderId, MerchantAccountType merchantAccountType) throws ApiException {
+        MerchantAccountSummaryPaged response =
+                ReportingService
+                        .findAccounts(1, 10)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .and(DataServiceCriteria.MerchantId, merchantSenderId)
+                        .and(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
+                        .execute();
+
+        for (MerchantAccountSummary el : response.getResults()) {
+            if (el.getType() == merchantAccountType) {
+                return el;
+            }
+        }
+
+        return null;
     }
 
 }

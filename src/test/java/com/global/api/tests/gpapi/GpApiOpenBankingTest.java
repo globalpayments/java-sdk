@@ -113,8 +113,8 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
 
         for (TransactionSummary rs : response.getResults()) {
             assertEquals(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BankPayment), rs.getPaymentType().toUpperCase());
-            assertTrue(DateUtils.isAfterOrEquals(endDate, rs.getTransactionDate().toDate()));
-            assertTrue(DateUtils.isBeforeOrEquals(startDate, rs.getTransactionDate().toDate()));
+            assertTrue(DateUtils.isAfterOrEquals(rs.getTransactionDate().toDate(), startDate));
+            assertTrue(DateUtils.isBeforeOrEquals(rs.getTransactionDate().toDate(), endDate));
         }
     }
 

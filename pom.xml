@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.heartlandpaymentsystems</groupId>
   <artifactId>globalpayments-sdk</artifactId>
-  <version>10.2.14</version>
+  <version>10.2.15</version>
   <packaging>jar</packaging>
   <name>Heartland &amp; Global Payments SDK</name>
   <description>API for processing payments through Global Payments</description>
@@ -132,6 +132,12 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpmime</artifactId>
       <version>4.5.14</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>

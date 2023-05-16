@@ -1,5 +1,21 @@
 # Changelog
 
+## v10.2.15 (05/16/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Synchorny value S added in Authorizer code (Issue-10183)
+  - Primary and Secondary fallback scenario's((For host response code 40,80,90) changes (Issue-10185)
+  - Batch Summary Total credits and Total debits related changes (Issue-10188)
+  - Batch close Retransmits : Updating message code when response code is 01(out of balance)  (Issue-10194,10120)
+  - Estimated Purchase amount changes for WEX (Issue-10197)
+  
+- GP-API: Manage fund transfers, splits and reverse splits in your partner network. 
+     - https://developer.globalpay.com/api/transfers
+     - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction  
+     - Exclude  vulnerable dependency on "commons-logging" suggested by Macroscope
+
 ## v10.2.14 (05/08/2023)
  
 ### Enhancements:

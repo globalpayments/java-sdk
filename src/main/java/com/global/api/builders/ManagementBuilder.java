@@ -102,6 +102,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter
     private ArrayList<Product> miscProductData;
 
+    @Getter @Setter private String reference;
+    @Getter @Setter private FundsData fundsData;
+
     public ManagementBuilder withMiscProductData(ArrayList<Product> values) {
         this.miscProductData = values;
         return this;
@@ -236,6 +239,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
             return ((TransactionReference)paymentMethod).getTransactionId();
         return null;
     }
+
     public String getTransportData() {
         return transportData;
     }
@@ -659,6 +663,15 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.accountType = value;
         return this;
     }
+    public ManagementBuilder withReference(String value) {
+        reference = value;
+        return this;
+    }
+    public ManagementBuilder withFundsData(FundsData value) {
+        fundsData = value;
+        return this;
+    }
+
     public ManagementBuilder(TransactionType type) {
         super(type, null);
     }
@@ -711,6 +724,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
                 .check("payLinkData").propertyOf(Integer.class, "usageLimit").isNotNull()
                 .check("payLinkData").propertyOf(PayLinkType.class, "type").isNotNull();
 
+        this.validations.of(TransactionType.Reversal)
+                .check("paymentMethod").isNotNull();
+
+        this.validations.of(TransactionType.SplitFunds)
+                .check("fundsData").isNotNull()
+                .check("amount").isNotNull();
     }
 
     public ManagementBuilder withAllowDuplicates(boolean value) {

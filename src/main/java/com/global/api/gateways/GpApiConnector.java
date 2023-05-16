@@ -133,6 +133,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             accessTokenInfo = new AccessTokenInfo();
         }
 
+        accessTokenInfo.setMerchantId(response.getMerchantId());
+
         if (isNullOrEmpty(accessTokenInfo.getAccessToken())) {
             accessTokenInfo.setAccessToken(response.getToken());
         }
@@ -266,7 +268,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         return null;
     }
 
-    public Transaction manageTransaction(ManagementBuilder builder) throws GatewayException, BuilderException {
+    public Transaction manageTransaction(ManagementBuilder builder) throws GatewayException, BuilderException, UnsupportedTransactionException {
         if (StringUtils.isNullOrEmpty(accessToken)) {
             signIn();
         }

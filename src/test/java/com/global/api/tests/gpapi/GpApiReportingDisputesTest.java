@@ -103,12 +103,13 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ARN, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .and(DataServiceCriteria.EndStageDate, LocalDate.now().minusMonths(1).toDate())
+                        .and(DataServiceCriteria.EndStageDate, REPORTING_LAST_MONTH_DATE)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
             assertTrue(DateUtils.isAfterOrEquals(disputeSummary.getDepositDate(), REPORTING_START_DATE));
+            assertTrue(DateUtils.isBeforeOrEquals(disputeSummary.getDepositDate(), REPORTING_LAST_MONTH_DATE));
         }
     }
 

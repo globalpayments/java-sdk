@@ -121,6 +121,26 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    public void ReportFindTransactionsPaged_By_SameDates_StartDate_And_EndDate() throws ApiException {
+        Date startDate = DateUtils.atStartOfDay(new Date());
+        Date endDate = DateUtils.atEndOfDay(new Date());
+
+        TransactionSummaryPaged transactions =
+                ReportingService
+                        .findTransactionsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .orderBy(TransactionSortProperty.TimeCreated, SortDirection.Descending)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
+        assertNotNull(transactions);
+        for (TransactionSummary transactionSummary : transactions.getResults()) {
+            Date transactionDate = transactionSummary.getTransactionDate().toDate();
+            assertTrue(DateUtils.isAfterOrEquals(transactionDate, startDate));
+            assertTrue(DateUtils.isBeforeOrEquals(transactionDate, endDate));
+        }
+    }
+
+    @Test
     public void ReportFindTransactionsPaged_OrderBy_TimeCreated() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService

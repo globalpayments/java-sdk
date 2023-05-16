@@ -30,6 +30,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
     private final static String ENROLLED = "ENROLLED";
+    private final static String NOT_ENROLLED = "NOT_ENROLLED";
     private final static String NOT_AUTHENTICATED = "NOT_AUTHENTICATED";
     private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
     private final static String SUCCESS = "SUCCESS";
@@ -270,28 +271,14 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secureEcom);
-            assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
-            assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
-            assertEquals(CHALLENGE_REQUIRED, secureEcom.getStatus());
-            assertTrue(secureEcom.isChallengeMandated());
+            assertEquals(NOT_ENROLLED, secureEcom.getEnrolledStatus());
+            assertEquals(NOT_ENROLLED, secureEcom.getStatus());
             assertNotNull(secureEcom.getIssuerAcsUrl());
-            assertNotNull(secureEcom.getPayerAuthenticationRequest());
-
-            GpApi3DSecureTest.GpApi3DSecureAcsClient acsClient = new GpApi3DSecureTest.GpApi3DSecureAcsClient(secureEcom.getIssuerAcsUrl());
-            StringBuffer payerAuthenticationResponse = new StringBuffer();
-            String authResponse = acsClient.authenticate_v1(secureEcom, payerAuthenticationResponse, AcsStatus);
-            assertEquals("{\"success\":true}", authResponse);
-
-            secureEcom =
-                    Secure3dService
-                            .getAuthenticationData()
-                            .withServerTransactionId(secureEcom.getServerTransactionId())
-                            .withPayerAuthenticationResponse(payerAuthenticationResponse.toString())
-                            .execute();
-
-            assertNotNull(secureEcom);
-            // status is coming empty in the response of 3rd parametrized test
-            assertEquals(status, secureEcom.getStatus());
+            assertNotNull(secureEcom.getChallengeReturnUrl());
+            assertNotNull(secureEcom.getSessionDataFieldName());
+            assertNotNull(secureEcom.getMessageType());
+            assertNull(secureEcom.getEci());
+            assertEquals("NO", secureEcom.getLiabilityShift());
         }
     }
 

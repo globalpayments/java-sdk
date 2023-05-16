@@ -9,6 +9,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BatchFullException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessageHeader;
@@ -219,30 +220,67 @@ public class NtsConnector extends GatewayConnectorConfig {
         return userData;
     }
     public Transaction resubmitTransaction(ResubmitBuilder builder) throws ApiException {
+        if(StringUtils.isNullOrEmpty(builder.getTransactionToken())){
+            throw new BuilderException("The transaction token cannot be null for resubmitted transactions.");
+        }
         String transactionToken = builder.getTransactionToken();
         Transaction result = null;
-        if (transactionToken != null) {
-            byte[] decodeRequest = this.decodeRequest(builder.getTransactionToken());
-            MessageWriter request = new MessageWriter();
-            String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
-            int count =21;
-            String originalReq = reqStr.substring(messageRequestLength);
-
-            if(builder.isForceToHost()){
-                String messageCode = originalReq.substring(21,23);
-                if(messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())){
-                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCollectOrForceSale.getValue()+originalReq.substring(count+2);
+        byte[] decodeRequest = this.decodeRequest(transactionToken);
+        MessageWriter request = new MessageWriter();
+        String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
+        int count =21;
+        String originalReq = reqStr.substring(messageRequestLength);
+        String messageCode = originalReq.substring(21,23);
+        switch (builder.getTransactionType()){
+            case BatchClose:{
+                if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitRequestToBalance.getValue() + originalReq.substring(count + 2);
                 }
-                else if(messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())){
-                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCreditAdjustment.getValue()+originalReq.substring(count+2);
+                else if (messageCode.equals(NtsMessageCode.ForceRequestToBalance.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                 }
-                else if(messageCode.equals(NtsMessageCode.ReversalOrVoid.getValue())){
-                    originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceReversalOrForceVoid.getValue()+originalReq.substring(count+2);
+                if(builder.isForceToHost()){
+                    if(messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())){
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCollectOrForceSale.getValue()+originalReq.substring(count+2);
+                    }
+                }
+            }break;
+            case DataCollect:
+            case Refund:
+            case Sale:{
+                if (messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitDataCollect.getValue() + originalReq.substring(count + 2);
+                }
+                else if (messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                }
+                else if (messageCode.equals(NtsMessageCode.ForceCollectOrForceSale.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count + 2);
+                }
+                else if (messageCode.equals(NtsMessageCode.ForceCreditAdjustment.getValue())) {
+                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                }
+                if(builder.isForceToHost()){
+                    if(messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())){
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCollectOrForceSale.getValue()+originalReq.substring(count+2);
+                    }
+                    else if(messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())){
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCreditAdjustment.getValue()+originalReq.substring(count+2);
+                    }
+                    else if(messageCode.equals(NtsMessageCode.ReversalOrVoid.getValue())){
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceReversalOrForceVoid.getValue()+originalReq.substring(count+2);
+                    }
+                    if (messageCode.equals(NtsMessageCode.RetransmitDataCollect.getValue())) {
+                        originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count + 2);
+                    }
+                    else if (messageCode.equals(NtsMessageCode.RetransmitCreditAdjustment.getValue())) {
+                        originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                    }
                 }
             }
-            request.setMessageRequest(new StringBuilder(originalReq));
-            result = sendRequest(request, builder);
         }
+        request.setMessageRequest(new StringBuilder(originalReq));
+        result = sendRequest(request, builder);
         return result;
     }
     private String encodeRequest(MessageWriter request) {
@@ -331,7 +369,8 @@ public class NtsConnector extends GatewayConnectorConfig {
 
         } catch (GatewayException exc) {
             exc.setHost(currentHost.getValue());
-            String transactionToken = encodeRequest(messageData);
+            String transactionToken = checkResponse(exc.getResponseCode(),messageData, builder);
+
             if(transactionToken != null) {
                 exc.setTransactionToken(transactionToken);
             }
@@ -359,7 +398,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
         } else {
-            String transactionToken = encodeRequest(messageData);
+            String responseCode= ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
+            String transactionToken = checkResponse(responseCode,messageData, builder);
+
             NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
             result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
             result.setNtsResponse(ntsResponse);
@@ -385,8 +426,8 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setReturnAmount(manageBuilder.getTotalReturns());
                 summary.setTransactionToken(result.getTransactionToken());
                 summary.setTotalAmount(manageBuilder.getTotalAmount());
-                summary.setDebitAmount(manageBuilder.getTotalDebits());
-                summary.setCreditAmount(manageBuilder.getTotalCredits());
+                summary.setDebitAmount(manageBuilder.getTotalSales());
+                summary.setCreditAmount(manageBuilder.getTotalReturns());
                 batchSummaryList.add(summary);
                 result.setBatchSummary(summary);
             }
@@ -401,12 +442,46 @@ public class NtsConnector extends GatewayConnectorConfig {
             return result;
     }
 
+    private <T extends TransactionBuilder<Transaction>> String checkResponse(String responseCode, MessageWriter messageData, T builder) {
+        String encodedRequest = null;
+
+        if(responseCode != null){
+            if (responseCode.equals("01")) {
+                int count = 21;
+                int hostRespCount = 6;
+                            // resend the batch close
+                            String originalReq = messageData.getMessageRequest().toString();
+                            String hostResponseCode = originalReq.substring(6,8);
+                            String messageCode = originalReq.substring(21, 23);
+
+                            if (responseCode.equals(NtsHostResponseCode.DenialRequestToBalance.getValue())) {
+                                originalReq = originalReq.substring(0, hostRespCount) + NtsHostResponseCode.DenialRequestToBalance.getValue() + originalReq.substring(hostRespCount + 2);
+                            }
+                            if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
+                                originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitRequestToBalance.getValue() + originalReq.substring(count + 2);
+                            } else if (messageCode.equals(NtsMessageCode.ForceRequestToBalance.getValue())) {
+                                originalReq = originalReq.substring(0, count) +
+                                        NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
+                            }
+                            messageData.setMessageRequest(new StringBuilder(originalReq));
+        }
+    }
+
+        // Tokenize that which has not already.
+        if(StringUtils.isNullOrEmpty(encodedRequest)) {
+            // check for pan data and replace it with the truncated track
+            encodedRequest = encodeRequest(messageData);
+        }
+        return encodedRequest;
+    }
+
     private Boolean isAllowedResponseCode(NtsHostResponseCode code) {
         return code == NtsHostResponseCode.Success
                 || code == NtsHostResponseCode.PartiallyApproved
                 || code == NtsHostResponseCode.Denial
                 || code == NtsHostResponseCode.VelocityReferral
-                || code == NtsHostResponseCode.AvsReferralForFullyOrPartially;
+                || code == NtsHostResponseCode.AvsReferralForFullyOrPartially
+                || code == NtsHostResponseCode.DenialRequestToBalance;
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

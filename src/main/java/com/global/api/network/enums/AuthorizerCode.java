@@ -11,7 +11,8 @@ public enum AuthorizerCode implements IStringConstant {
     NegativeFile("N"),
     LocalNegativeFile("L"),
     AuthTable("A"),
-    ReservedAuthorized("D");
+    ReservedAuthorized("D"),
+    Synchrony("S");
 
     private final String value;
     AuthorizerCode(String value) { this.value = value; }

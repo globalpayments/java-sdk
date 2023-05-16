@@ -230,12 +230,12 @@ public class NetworkGateway {
                     }
 
                     if (rvalue != null && !isForcedError(HostError.Timeout)) {
-                        if(hostRespCode != null && hostRespCode.equals("80")){
+                        if(hostRespCode != null && (hostRespCode.equals("80") || hostRespCode.equals("90") || hostRespCode.equals("40"))){
                             raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
 
                             disconnect();
                             connect(getSecondaryEndpoint(), getSecondaryPort());
-
+                            return rvalue;
                         }
                         else{
                             raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));

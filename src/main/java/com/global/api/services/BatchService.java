@@ -85,21 +85,6 @@ public class BatchService {
 
     }
 
-    public static ManagementBuilder closeBatch(BatchCloseType closeType, NtsRequestMessageHeader ntsRequestMessageHeader, int batchNumber,
-                                               int transactionCount, BigDecimal totalSales, BigDecimal totalReturns, NtsRequestToBalanceData requestToBalanceData,
-                                               BigDecimal totalAmount,
-                                               BigDecimal totalDebits,BigDecimal totalCredits)
-     {
-        return new ManagementBuilder(TransactionType.BatchClose)
-                .withBatchNumber(batchNumber)
-                .withBatchTotalTransaction(transactionCount, totalSales, totalReturns)
-                .withBatchTotals(totalAmount,totalDebits,totalCredits)
-                .withBatchCloseType(closeType)
-                .withNtsRequestsToBalanceData(requestToBalanceData)
-                .withNtsRequestMessageHeader(ntsRequestMessageHeader);
-
-    }
-
     public static BatchSummary closeBatch(String batchReference, String configName) throws ApiException {
         Transaction response =
                 new ManagementBuilder(TransactionType.BatchClose)

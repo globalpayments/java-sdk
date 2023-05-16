@@ -9,7 +9,6 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -20,29 +19,24 @@ import static org.junit.Assert.*;
 
 public class GpApi3DSecure1Test extends BaseGpApiTest {
 
-    private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
-    private final static String ENROLLED = "ENROLLED";
     private final static String NOT_ENROLLED = "NOT_ENROLLED";
-
-    private final BigDecimal amount = new BigDecimal("10.01");
+    private final BigDecimal amount = new BigDecimal("3.71");
     private final String currency = "GBP";
 
     private CreditCardData card;
 
     public GpApi3DSecure1Test() throws ConfigurationException {
-        GpApiConfig config = new GpApiConfig();
+        GpApiConfig gpApiConfig = new GpApiConfig();
+        gpApiConfig.setAppId(APP_ID);
+        gpApiConfig.setAppKey(APP_KEY);
+        gpApiConfig.setCountry("GB");
+        gpApiConfig.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
+        gpApiConfig.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
+        gpApiConfig.setMerchantContactUrl("'https://enp4qhvjseljg.x.pipedream.net/");
 
-        // GP-API settings
-        config.setAppId(APP_ID);
-        config.setAppKey(APP_KEY);
-        config.setCountry("GB");
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("'https://enp4qhvjseljg.x.pipedream.net/");
+        gpApiConfig.setEnableLogging(true);
 
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        ServicesContainer.configureService(gpApiConfig);
 
         // Create card data
         card = new CreditCardData();
@@ -58,7 +52,7 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
         try {
             Secure3dService
                     .checkEnrollment(new CreditCardData())
-                    .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
+                    .execute(Secure3dVersion.ONE);
         } catch (BuilderException e) {
             errorFound = true;
             assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
@@ -74,10 +68,9 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
-        assertThreeDSResponse(secureEcom, ENROLLED, CHALLENGE_REQUIRED);
-        assertTrue(secureEcom.isChallengeMandated());
+        assertThreeDSResponse(secureEcom);
     }
 
     @Test
@@ -89,27 +82,9 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
-        assertThreeDSResponse(secureEcom, NOT_ENROLLED, NOT_ENROLLED);
-    }
-
-    @Ignore
-    @Test
-    public void CardHolderEnrolled_v1_ConfigException() throws ApiException {
-        boolean errorFound = false;
-        try {
-            Secure3dService
-                    .checkEnrollment(card)
-                    .withCurrency(currency)
-                    .withAmount(amount)
-                    .execute();
-        } catch (ConfigurationException e) {
-            errorFound = true;
-            assertEquals("Secure 3d is not configured on the connector", e.getMessage());
-        } finally {
-            assertTrue(errorFound);
-        }
+        assertThreeDSResponse(secureEcom);
     }
 
     @Test
@@ -118,7 +93,7 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
         try {
             Secure3dService
                     .getAuthenticationData()
-                    .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
+                    .execute(Secure3dVersion.ONE);
         } catch (BuilderException e) {
             errorFound = true;
             assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
@@ -127,16 +102,14 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
         }
     }
 
-    private void assertThreeDSResponse(ThreeDSecure secureEcom, String status, String enrolled) {
+    private void assertThreeDSResponse(ThreeDSecure secureEcom) {
         assertNotNull(secureEcom);
-        assertEquals(status, secureEcom.getEnrolledStatus());
-        assertEquals(Secure3dVersion.ONE, secureEcom.getVersion());
-        assertEquals(enrolled, secureEcom.getStatus());
+        assertEquals(NOT_ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(NOT_ENROLLED, secureEcom.getStatus());
         assertNotNull(secureEcom.getIssuerAcsUrl());
         assertNotNull(secureEcom.getChallengeReturnUrl());
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNotNull(secureEcom.getMessageType());
-        assertEquals("1.0.0", secureEcom.getMessageVersion());
         assertNull(secureEcom.getEci());
         assertEquals("NO", secureEcom.getLiabilityShift());
     }

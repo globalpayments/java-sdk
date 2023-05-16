@@ -109,7 +109,7 @@ public class NtsRequestObjectFactory {
                 && paymentMethodType.equals(PaymentMethodType.Credit);
     }
 
-    private static boolean isDataCollectTransaction(TransactionType transactionType, PaymentMethodType paymentMethodType){
+    public static boolean isDataCollectTransaction(TransactionType transactionType, PaymentMethodType paymentMethodType){
         return  (
                     transactionType.equals(TransactionType.DataCollect)
                     ||transactionType.equals(TransactionType.Capture)

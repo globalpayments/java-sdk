@@ -2,10 +2,12 @@ package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -25,9 +27,9 @@ import com.global.api.tests.testdata.NtsTestCards;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class NtsRequestToBalanceTest {
     // gateway config
@@ -249,8 +251,7 @@ public class NtsRequestToBalanceTest {
         NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
         Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
                         ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
-                        , new BigDecimal(30.33), BigDecimal.ZERO, data,new BigDecimal(30.33)
-                        ,BigDecimal.ZERO,new BigDecimal(30.33))
+                        , new BigDecimal(30.33), BigDecimal.ZERO, data)
                 .execute();
         assertNotNull(batchClose);
 
@@ -285,8 +286,31 @@ public class NtsRequestToBalanceTest {
         assertNotNull(capture);
 
     }
+    @Test
+    public void test_batch_resubmit_for_denial_response_code() throws ApiException {
+            NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+            Transaction transaction = creditSaleDataCollect(new BigDecimal(10));
+            assertNotNull(transaction);
+            assertNotNull(transaction.getTransactionToken());
+            String creditSaleDataCollectToken = transaction.getTransactionToken();
 
-  // Credit Sale
+            Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                            ntsRequestMessageHeader, 11, 0
+                            , BigDecimal.ONE, BigDecimal.ONE, data)
+                    .execute();
+            assertNotNull(batchClose);
+
+            BatchSummary batchSummary = batchClose.getBatchSummary();
+            LinkedList<String> list = new LinkedList<>();
+            list.add(creditSaleDataCollectToken);
+
+            BatchSummary newSummary = batchSummary.resubmitTransactions(list);
+            assertNotNull(newSummary);
+
+
+    }
+
+    // Credit Sale
     private Transaction creditSale(double amount) throws ApiException {
         NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
         ntsRequestMessageHeader.setTerminalDestinationTag("478");
@@ -331,5 +355,54 @@ public class NtsRequestToBalanceTest {
         assertEquals("00", batchClose.getResponseCode());
 
     }
+
+    public Transaction creditSaleDataCollect(BigDecimal amount) throws ApiException {
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+
+        //track=TestCards.AmexSwipe(EntryMethod.Swipe);
+        track=NtsTestCards.AmexTrack2(EntryMethod.Swipe);
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.authorize(amount)
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+
+        Transaction dataCollectResponse = response.capture(response.getAuthorizedAmount())
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+        return dataCollectResponse;
+    }
+
 
 }

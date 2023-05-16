@@ -14,6 +14,7 @@ import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.Ignore;
@@ -78,7 +79,7 @@ public class NtsDebitTest {
         config = new NetworkGatewayConfig(Target.NTS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.txns.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -921,7 +922,73 @@ public class NtsDebitTest {
         assertNotNull(refund);
 
         assertEquals("00", refund.getResponseCode());
+    }
 
+    @Test
+    public void test_force_resubmit_using_token() throws ApiException {
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute("ICR");
+        assertNotNull(preAuthorizationResponse);
+
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+
+        Transaction captureResponse = preAuthorizationResponse.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSettlementAmount(new BigDecimal(10))
+                .execute();
+
+        Transaction dataCollectResponse = captureResponse.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", captureResponse.getResponseCode());
+        Transaction resubmitResponse = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitResponse);
+    }
+
+    @Test// working
+    public void test_PinDebit_purchase_refund_force_retransmit() throws ApiException {
+
+        Transaction response = track.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction refund = response.capture(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(getTag16())
+
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(refund);
+
+
+        assertEquals("00", refund.getResponseCode());
+
+        Transaction transaction = NetworkService.resubmitDataCollect(refund.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(transaction);
     }
 
     //with card sequence number

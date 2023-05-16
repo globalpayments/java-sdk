@@ -109,7 +109,7 @@ public class NtsCreditTest {
         config = new NetworkGatewayConfig(Target.NTS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.txns.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -2946,5 +2946,118 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    @Test
+    public void test_mastercard_track2_authorize_force_reversal_tokenization() throws ApiException {
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+
+        Transaction voidResponse = response.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+
+        // check response
+        assertEquals("00", voidResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(voidResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(capture);
+
+    }
+    @Test
+    public void test_sales_with_track1_force_credit_adjustment_using_token() throws ApiException {
+
+        //track=TestCards.AmexSwipe(EntryMethod.Swipe);
+        track=NtsTestCards.AmexTrack1(EntryMethod.Swipe);
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction chargeResponse = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        // check response
+        assertEquals("00", chargeResponse.getResponseCode());
+
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction dataCollectResponse = chargeResponse.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(capture);
+
+    }
+    @Test
+    public void test_auth_with_track1_force_credit_adjustment_using_token() throws ApiException {
+
+        //track=TestCards.AmexSwipe(EntryMethod.Swipe);
+        track=NtsTestCards.AmexTrack2(EntryMethod.Swipe);
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.RetransmitDataCollect);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction capture = NetworkService.resubmitDataCollect(dataCollectResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(capture);
+
+    }
 
 }

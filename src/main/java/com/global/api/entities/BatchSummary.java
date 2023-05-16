@@ -206,7 +206,7 @@ public class BatchSummary {
         return resubmitTransactions(transactionTokens, "default");
     }
     public BatchSummary resubmitTransactions(List<String> transactionTokens, String configName) throws ApiException {
-        if(!this.responseCode.equals("580")) {
+        if(!this.responseCode.equals("580") && !this.responseCode.equals("01")) {
             throw new BuilderException("Batch recovery has not been requested for this batch.");
         }
 

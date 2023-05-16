@@ -207,6 +207,25 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
     }
 
     @Test
+    public void ReportFindStoredPaymentMethodsPaged_By_SameDay_StartDate_And_EndDate() throws ApiException {
+        Date startDate = DateUtils.atStartOfDay(new Date());
+        Date endDate = DateUtils.atEndOfDay(new Date());
+
+        StoredPaymentMethodSummaryPaged result =
+                ReportingService
+                        .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(SearchCriteria.StartDate, startDate)
+                        .and(SearchCriteria.EndDate, endDate)
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(result.getResults());
+        for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
+            assertTrue(DateUtils.isAfterOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), startDate));
+            assertTrue(DateUtils.isBeforeOrEquals(storedPaymentMethodSummary.getTimeCreated().toDate(), endDate));
+        }
+    }
+
+    @Test
     public void ReportFindStoredPaymentMethodsPaged_By_StartDate_And_EndDate() throws ApiException {
         StoredPaymentMethodSummaryPaged result =
                 ReportingService

@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 @Setter
 public class AccessTokenInfo {
     private String accessToken;
+    private String merchantId;
     private String dataAccountName;
     private String disputeManagementAccountName;
     private String tokenizationAccountName;

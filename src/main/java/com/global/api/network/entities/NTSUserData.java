@@ -818,10 +818,8 @@ public class NTSUserData {
                 if (builder.getTransactionType().equals(TransactionType.Auth)) {
                     sb.append(getWexFleetPromptList(builder));
                     sb.append(StringUtils.padLeft(serviceLevel, 2, '0'));
-                    for (DE63_ProductDataEntry entry : productData.getFuelDataEntries()) {
-                        sb.append("074");
-                        sb.append(StringUtils.toNumeric(entry.getAmount(), 7));
-                    }
+                    sb.append("074");
+                    sb.append(StringUtils.toNumeric(builder.getAmount(), 7));
                     if (fleetData !=null) {
                         sb.append(StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
                     }else {

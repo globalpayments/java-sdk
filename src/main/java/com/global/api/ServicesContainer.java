@@ -162,6 +162,14 @@ public class ServicesContainer implements IDisposable {
         }
     }
 
+    public static void removeConfig(String config) throws ConfigurationException {
+        instance.removeConfiguration(config);
+    }
+
+    public static void removeConfig() throws ConfigurationException {
+        instance.removeConfiguration("default");
+    }
+
     public void dispose() {
         for(ConfiguredServices cs : configurations.values())
             cs.dispose();

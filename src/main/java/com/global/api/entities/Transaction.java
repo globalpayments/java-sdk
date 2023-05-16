@@ -7,6 +7,7 @@ import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.gnap.GnapResponse;
 import com.global.api.network.entities.NtsData;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Transaction {
     private String additionalResponseCode;
@@ -70,6 +72,19 @@ public class Transaction {
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayLinkResponse payLinkResponse;
+    @Getter private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
+    public void setTransferFundsAccountDetailsList(List<TransferFundsAccountDetails> value){
+        if (transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+
+        if(value.size() > 0) {
+            transactionReference.setTransferFundsAccountDetailsList(value);
+        }
+
+        transferFundsAccountDetailsList = value;
+    }
+
     @Getter @Setter private CardIssuerResponse cardIssuerResponse;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;
@@ -664,6 +679,13 @@ public class Transaction {
                 new ManagementBuilder(TransactionType.Confirm)
                         .withPaymentMethod(this.transactionReference)
                         .withAmount(amount);
+    }
+
+    // Transfer part of transaction amount by a merchant to the partner account
+    public ManagementBuilder split(BigDecimal amount) {
+        return new ManagementBuilder(TransactionType.SplitFunds)
+                .withPaymentMethod(transactionReference)
+                .withAmount(amount);
     }
 
     public ManagementBuilder increment() {

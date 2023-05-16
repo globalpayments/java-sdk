@@ -4,13 +4,11 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.gateways.OpenBankingProvider;
 import com.global.api.paymentMethods.*;
-import com.global.api.utils.EmvUtils;
-import com.global.api.utils.EnumUtils;
-import com.global.api.utils.JsonDoc;
-import com.global.api.utils.StringUtils;
+import com.global.api.utils.*;
 import lombok.var;
 
 import java.math.BigDecimal;
@@ -22,10 +20,11 @@ import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
+import static com.global.api.utils.StringUtils.toNumeric;
 
 public class GpApiAuthorizationRequestBuilder {
 
-    public static GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException {
+    public static GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
         String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
@@ -305,14 +304,14 @@ public class GpApiAuthorizationRequestBuilder {
         if (builderPaymentMethod instanceof eCheck) {
             eCheck check = (eCheck) builderPaymentMethod;
             paymentMethod.set("name", check.getCheckHolderName());
+            paymentMethod.set("narrative", check.getMerchantNotes());
 
             JsonDoc bankTransfer =
                     new JsonDoc()
                             .set("account_number", check.getAccountNumber())
                             .set("account_type", (check.getAccountType() != null) ? EnumUtils.getMapping(Target.GP_API, check.getAccountType()) : null)
                             .set("check_reference", check.getCheckReference())
-                            .set("sec_code", check.getSecCode())
-                            .set("narrative", check.getMerchantNotes());
+                            .set("sec_code", check.getSecCode());
 
             JsonDoc bank =
                     new JsonDoc()
@@ -470,6 +469,37 @@ public class GpApiAuthorizationRequestBuilder {
 
         }
 
+        if (builder.getTransactionType() == TransactionType.TransferFunds) {
+            if (!(builder.getPaymentMethod() instanceof AccountFunds)) {
+                throw new UnsupportedTransactionException("Payment method doesn't support funds transfers");
+            }
+
+            var fundsData = (AccountFunds) builder.getPaymentMethod();
+
+            var payload =
+                    new JsonDoc()
+                            .set("account_id", fundsData.getAccountId())
+                            .set("account_name", fundsData.getAccountName())
+                            .set("recipient_account_id", fundsData.getRecipientAccountId())
+                            .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : GenerationUtils.generateOrderId())
+                            .set("amount", toNumeric(builder.getAmount()))
+                            .set("description", builder.getDescription())
+                            .set("usable_balance_mode", fundsData.getUsableBalanceMode() == null
+                                    ? null
+                                    : fundsData.getUsableBalanceMode().toString());
+
+            String endpoint = merchantUrl;
+            if (!StringUtils.isNullOrEmpty(fundsData.getMerchantId())) {
+                endpoint = "/merchants/" + fundsData.getMerchantId();
+            }
+
+            return
+                    new GpApiRequest()
+                            .setVerb(GpApiRequest.HttpMethod.Post)
+                            .setEndpoint(endpoint + "/transfers")
+                            .setRequestBody(payload.toString());
+        }
+
         JsonDoc data = new JsonDoc()
                 .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                 .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
@@ -578,19 +608,9 @@ public class GpApiAuthorizationRequestBuilder {
         payer.set("reference", builder.getCustomerId() != null ? builder.getCustomerId() : (builder.getCustomerData() != null ? builder.getCustomerData().getId() : null));
 
         if(builder.getPaymentMethod() instanceof eCheck) {
-            JsonDoc billingAddress = new JsonDoc();
+            JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress());
 
-            Address builderBillingAddress = builder.getBillingAddress();
-
-            if(builderBillingAddress != null) {
-                billingAddress
-                        .set("line_1", builderBillingAddress.getStreetAddress1())
-                        .set("line_2", builderBillingAddress.getStreetAddress2())
-                        .set("city", builderBillingAddress.getCity())
-                        .set("postal_code", builderBillingAddress.getPostalCode())
-                        .set("state", builderBillingAddress.getProvince())
-                        .set("country", builderBillingAddress.getCountryCode());
-
+            if(!billingAddress.getKeys().isEmpty()) {
                 payer.set("billing_address", billingAddress);
             }
 
@@ -629,17 +649,7 @@ public class GpApiAuthorizationRequestBuilder {
                     .set("email", builder.getCustomerData().getEmail())
                     .set("date_of_birth", builder.getCustomerData().getDateOfBirth());
 
-            JsonDoc billing_address = new JsonDoc();
-
-            if (builder.getBillingAddress() != null) {
-                billing_address
-                        .set("line_1", builder.getBillingAddress().getStreetAddress1())
-                        .set("line_2", builder.getBillingAddress().getStreetAddress2())
-                        .set("city", builder.getBillingAddress().getCity())
-                        .set("postal_code", builder.getBillingAddress().getPostalCode())
-                        .set("state", builder.getBillingAddress().getState())
-                        .set("country", builder.getBillingAddress().getCountryCode());
-            }
+            JsonDoc billing_address = GetBasicAddressInformation(builder.getBillingAddress());
 
             if (builder.getCustomerData() != null) {
                 billing_address
@@ -761,6 +771,23 @@ public class GpApiAuthorizationRequestBuilder {
 
             return "ECOM";
         }
+    }
+
+    private static JsonDoc GetBasicAddressInformation(Address address) {
+
+        JsonDoc basicAddressInformation = new JsonDoc();
+
+        if (address != null) {
+            basicAddressInformation
+                .set("line_1", address.getStreetAddress1())
+                .set("line_2", address.getStreetAddress2())
+                .set("city", address.getCity())
+                .set("postal_code", address.getPostalCode())
+                .set("state", address.getState())
+                .set("country", address.getCountryCode());
+        }
+
+        return basicAddressInformation;
     }
 
     private static String getCaptureMode(AuthorizationBuilder builder) {
