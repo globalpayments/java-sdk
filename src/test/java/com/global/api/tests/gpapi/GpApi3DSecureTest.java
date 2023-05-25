@@ -14,7 +14,6 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.JsonDoc;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -23,7 +22,10 @@ import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static org.junit.Assert.*;
@@ -31,12 +33,8 @@ import static org.junit.Assert.*;
 public class GpApi3DSecureTest extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
-    private final static String FAILED = "FAILED";
-    private final static String NOT_AUTHENTICATED = "NOT_AUTHENTICATED";
-    private final static String SUCCESS_ATTEMPT_MADE = "SUCCESS_ATTEMPT_MADE";
     private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
     private final static String ENROLLED = "ENROLLED";
-    private final static String NOT_ENROLLED = "NOT_ENROLLED";
     private final static String SUCCESS_AUTHENTICATED = "SUCCESS_AUTHENTICATED";
 
     private final CreditCardData card;
@@ -123,7 +121,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .setSdkInterface(SdkInterface.Both)
                         .setSdkUiTypes(SdkUiType.OOB)
                         .setEphemeralPublicKey(
-                                JsonDoc.parse(  "{" +
+                                JsonDoc.parse("{" +
                                         "\"kty\":\"EC\"," +
                                         "\"crv\":\"P-256\"," +
                                         "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\",\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +

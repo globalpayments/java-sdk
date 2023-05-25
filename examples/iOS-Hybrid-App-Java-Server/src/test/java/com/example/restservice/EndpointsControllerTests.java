@@ -24,7 +24,7 @@ public class EndpointsControllerTests {
 	public void getAccessToken() throws Exception {
 
 		this.mockMvc
-				.perform(post("/accessToken")
+				.perform(post(GpApiRequest.ACCESS_TOKEN_ENDPOINT)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(
 									"{"																			+

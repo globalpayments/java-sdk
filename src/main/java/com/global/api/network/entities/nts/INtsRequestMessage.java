@@ -124,7 +124,8 @@ public interface INtsRequestMessage {
                     (manageBuilder.getTransactionType() == TransactionType.Reversal
                     || manageBuilder.getTransactionType() == TransactionType.Refund
                     || manageBuilder.getTransactionType() == TransactionType.Void
-                    || manageBuilder.getTransactionType() == TransactionType.PreAuthCompletion)
+                    || manageBuilder.getTransactionType() == TransactionType.PreAuthCompletion
+                    || ((manageBuilder.getTransactionType() == TransactionType.Capture) && paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)))
                     ) {
                 // Transaction Date
                 NtsUtils.log("Transaction Date", transactionReference.getOriginalTransactionDate());

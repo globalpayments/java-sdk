@@ -1,11 +1,10 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 
-import com.global.api.network.elements.*;
-import com.global.api.network.enums.*;
 import com.global.api.network.Iso8583Bitmap;
 import com.global.api.network.NetworkMessage;
-import com.global.api.network.enums.Iso8583MessageType;
+import com.global.api.network.elements.*;
+import com.global.api.network.enums.*;
 import com.global.api.utils.StringUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -14,7 +13,6 @@ import org.junit.runners.MethodSorters;
 import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NetworkMessageTests {

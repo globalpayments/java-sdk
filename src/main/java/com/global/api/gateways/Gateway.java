@@ -1,6 +1,7 @@
 package com.global.api.gateways;
 
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.logging.RequestFileLogger;
@@ -304,13 +305,13 @@ public abstract class Gateway {
                         (
                                 "GET".equalsIgnoreCase(verb) &&
                                         (
-                                                endpoint.startsWith("/settlement/deposits") ||
-                                                        endpoint.startsWith("/settlement/disputes") ||
-                                                        endpoint.startsWith("/disputes")
+                                                endpoint.startsWith(GpApiRequest.DEPOSITS_ENDPOINT) ||
+                                                        endpoint.startsWith(GpApiRequest.SETTLEMENT_DISPUTES_ENDPOINT) ||
+                                                        endpoint.startsWith(GpApiRequest.DISPUTES_ENDPOINT)
                                         )                             ||
                                         "POST".equalsIgnoreCase(verb) &&
                                                 (
-                                                        endpoint.startsWith("/disputes") &&
+                                                        endpoint.startsWith(GpApiRequest.DISPUTES_ENDPOINT) &&
                                                                 endpoint.endsWith("/acceptance")
                                                 )
                         )

@@ -71,7 +71,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     @Getter GpApiConfig gpApiConfig; // Contains: appId, appKey, secondsToExpire, intervalToExpire, channel and language
 
     public String getMerchantUrl() {
-        return !StringUtils.isNullOrEmpty(gpApiConfig.getMerchantId()) ? "/merchants/" + gpApiConfig.getMerchantId() : "";
+        return !StringUtils.isNullOrEmpty(gpApiConfig.getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gpApiConfig.getMerchantId() : "";
     }
 
     @Getter @Setter

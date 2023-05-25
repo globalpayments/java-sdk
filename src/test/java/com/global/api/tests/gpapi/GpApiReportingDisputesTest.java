@@ -17,7 +17,6 @@ import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
-import org.joda.time.LocalDate;
 import org.junit.Ignore;
 import org.junit.Test;
 

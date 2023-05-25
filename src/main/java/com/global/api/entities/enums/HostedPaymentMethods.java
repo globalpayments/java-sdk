@@ -1,8 +1,8 @@
 package com.global.api.entities.enums;
 
 public enum HostedPaymentMethods implements IStringConstant{
-    OB("OB"),
-    CARDS("CARDS");
+    OB("ob"),
+    CARDS("cards");
 
     String value;
     HostedPaymentMethods(String value) { this.value = value; }

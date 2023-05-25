@@ -22,7 +22,7 @@ public class GpApiSecureRequestBuilder {
 
     public static GpApiRequest buildRequest(FraudBuilder builder, GpApiConnector gateway) {
 
-        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? "/merchants/" + gateway.getGpApiConfig().getMerchantId() : "";
+        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
         switch (builder.getTransactionType()) {
             case RiskAssess:
@@ -44,7 +44,7 @@ public class GpApiSecureRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/risk-assessments")
+                                .setEndpoint(merchantUrl + GpApiRequest.RISK_ASSESSMENTS)
                                 .setRequestBody(requestData.toString());
             default:
                 break;
@@ -55,21 +55,21 @@ public class GpApiSecureRequestBuilder {
 
     private static GpApiRequest buildRequest(Secure3dBuilder builder, GpApiConnector gateway) {
         _3dBuilder = builder;
-        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? "/merchants/" + gateway.getGpApiConfig().getMerchantId() : "";
+        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
         switch (builder.getTransactionType()) {
             case VerifyEnrolled:
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/authentications")
+                                .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT)
                                 .setRequestBody(VerifyEnrolled(gateway.getGpApiConfig()).toString());
 
             case InitiateAuthentication:
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/initiate")
+                                .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/initiate")
                                 .setRequestBody(InitiateAuthenticationData(gateway.getGpApiConfig()).toString());
 
             case VerifySignature:
@@ -87,7 +87,7 @@ public class GpApiSecureRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/result")
+                                .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/result")
                                 .setRequestBody(data.toString());
 
             default:

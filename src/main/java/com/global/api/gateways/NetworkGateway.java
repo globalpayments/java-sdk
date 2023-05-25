@@ -194,63 +194,42 @@ public class NetworkGateway {
         }
     }
 
+
     public byte[] send(IDeviceMessage message) throws GatewayTimeoutException, GatewayComsException {
-        /*
-        1) if the initial attempt to connect fails (on both hosts) a GatewayComsException is thrown
-        2) if the send/receive fails, no exception is thrown (timeout flag is tripped) and fail over occurs
-        3) if timeout flag is set, Failure to connect to secondary host will throw GatewayTimeoutException
-        4) if timeout flag is not set, failure to connect to the secondary host will throw GatewayComsException
-        5) if connection to secondary host is successful, return to step 2
-        6) if no response from the secondary host, GatewayTimeoutException is thrown
-         */
+    /*
+    1) if the initial attempt to connect fails (on both hosts) a GatewayComsException is thrown
+    2) if the send/receive fails, no exception is thrown (timeout flag is tripped) and fail over occurs
+    3) if timeout flag is set, Failure to connect to secondary host will throw GatewayTimeoutException
+    4) if timeout flag is not set, failure to connect to the secondary host will throw GatewayComsException
+    5) if connection to secondary host is successful, return to step 2
+    6) if no response from the secondary host, GatewayTimeoutException is thrown
+     */
         boolean timeout = false;
-        String header =null;
-        String hostRespCode = null;
         connect(getPrimaryEndpoint(), getPrimaryPort());
 
         byte[] buffer = message.getSendBuffer();
         try {
-            for(int i = 0; i < 2; i++) {
+            for (int i = 0; i < 2; i++) {
                 raiseGatewayEvent(new RequestSentEvent(connectorName));
                 DateTime requestSent = DateTime.now(DateTimeZone.UTC);
                 try {
-                    if(!isForcedError(HostError.SendFailure)) {
+                    if (!isForcedError(HostError.SendFailure)) {
                         out.write(buffer);
-                    }
-                    else throw new IOException("Simulated IO Exception on request send.");
+                    } else throw new IOException("Simulated IO Exception on request send.");
 
                     byte[] rvalue = getGatewayResponse();
 
-                    if(rvalue != null){
-                        StringParser sp = new StringParser(rvalue);
-                        header = sp.readString(56);
-                        if(header != null) {
-                            hostRespCode = header.substring(6, 8);
-                        }
-                    }
-
                     if (rvalue != null && !isForcedError(HostError.Timeout)) {
-                        if(hostRespCode != null && (hostRespCode.equals("80") || hostRespCode.equals("90") || hostRespCode.equals("40"))){
-                            raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
-
-                            disconnect();
-                            connect(getSecondaryEndpoint(), getSecondaryPort());
-                            return rvalue;
-                        }
-                        else{
-                            raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
-                            return rvalue;
-                        }
-
+                        raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
+                        return rvalue;
                     }
                     timeout = true;
-                }
-                catch(IOException exc) {
+                } catch (IOException exc) {
                     /* Exception occurred on message send, do not trip timeout */
                 }
 
                 // did not get a response, switch endpoints and try again
-                if(!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1 ) {
+                if (!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
                     raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
 
                     disconnect();
@@ -259,23 +238,20 @@ public class NetworkGateway {
             }
 
             raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.Timeout));
-            if(timeout) {
+            if (timeout) {
                 throw new GatewayTimeoutException();
-            }
-            else throw new GatewayComsException();
-        }
-        catch(GatewayComsException exc) {
-            if(timeout) {
+            } else throw new GatewayComsException();
+        } catch (GatewayComsException exc) {
+            if (timeout) {
                 throw new GatewayTimeoutException(exc);
             }
             throw exc;
-        }
-        finally {
+        } finally {
             disconnect();
             raiseGatewayEvent(new DisconnectEvent(connectorName));
 
             // remove simulated errors
-            if(simulatedHostErrors != null) {
+            if (simulatedHostErrors != null) {
                 simulatedHostErrors = null;
             }
         }

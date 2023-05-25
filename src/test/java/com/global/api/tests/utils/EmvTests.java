@@ -1,4 +1,4 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 import com.global.api.utils.EmvData;
 import com.global.api.utils.EmvUtils;
@@ -48,7 +48,7 @@ public class EmvTests {
             add("9F3403450302");
         }};
 
-        for(String cvr: cvrs) {
+        for (String cvr : cvrs) {
             EmvData emvData = EmvUtils.parseTagData(cvr, true);
             assertTrue(emvData.isOfflinePin());
         }

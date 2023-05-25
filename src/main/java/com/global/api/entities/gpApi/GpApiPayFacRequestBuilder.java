@@ -26,7 +26,7 @@ public class GpApiPayFacRequestBuilder {
     public static GpApiRequest buildRequest(PayFacBuilder builder, GpApiConnector gateway) {
         _builder = builder;
 
-        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? "/merchants/" + gateway.getGpApiConfig().getMerchantId() : "";
+        var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
         switch (builder.getTransactionType()) {
 
@@ -37,7 +37,7 @@ public class GpApiPayFacRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
-                                    .setEndpoint(merchantUrl + "/merchants")
+                                    .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT)
                                     .setRequestBody(data.toString());
                 }
                 break;
@@ -47,7 +47,7 @@ public class GpApiPayFacRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Patch)
-                                    .setEndpoint(merchantUrl + "/merchants/" + _builder.getUserReference().getUserId())
+                                    .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + _builder.getUserReference().getUserId())
                                     .setRequestBody(buildEditMerchantRequest().toString());
                 }
                 break;
@@ -57,7 +57,7 @@ public class GpApiPayFacRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/merchants/" + _builder.getUserReference().getUserId());
+                                    .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + _builder.getUserReference().getUserId());
                 }
                 break;
 
@@ -82,13 +82,13 @@ public class GpApiPayFacRequestBuilder {
 
                 String endpoint = merchantUrl;
                 if (builder.getUserReference() != null && !StringUtils.isNullOrEmpty(builder.getUserReference().getUserId())) {
-                    endpoint = "/merchants/" + builder.getUserReference().getUserId();
+                    endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + builder.getUserReference().getUserId();
                 }
 
             return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Patch)
-                                .setEndpoint(endpoint + "/accounts/" + _builder.getAccountNumber())
+                                .setEndpoint(endpoint + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + _builder.getAccountNumber())
                                 .setRequestBody(dataRequest.toString());
 
             default:

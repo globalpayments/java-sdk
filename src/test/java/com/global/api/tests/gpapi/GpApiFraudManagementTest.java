@@ -5,7 +5,6 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.CreditCardData;

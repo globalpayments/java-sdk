@@ -3059,5 +3059,32 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertNotNull(capture);
 
     }
+    @Test
+    public void test_001_credit_sales_resubmit() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsProductData(productData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        Transaction forced = NetworkService.forcedSale(response.getTransactionToken())
+                .execute();
+        assertEquals("00",forced.getResponseCode());
+
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.GiftCard;

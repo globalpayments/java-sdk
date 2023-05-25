@@ -1,4 +1,4 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
@@ -12,18 +12,17 @@ import com.global.api.services.ReportingService;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 public class BuilderValidationTests {
     CreditCardData card;
-    
+
     public BuilderValidationTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com/Hps.Exchange.PosGateway/PosGatewayService.asmx");
-        
+
         ServicesContainer.configureService(config);
-        
+
         card = new CreditCardData();
         card.setNumber("4111111111111111");
         card.setExpMonth(12);
@@ -31,7 +30,7 @@ public class BuilderValidationTests {
         card.setCvn("123");
         card.setCardHolderName("John Smith");
     }
-    
+
     @Test(expected = BuilderException.class)
     public void creditAuthNoAmount() throws ApiException {
         card.authorize().execute();

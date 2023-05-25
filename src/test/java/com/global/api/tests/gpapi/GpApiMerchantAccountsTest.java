@@ -235,7 +235,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         CreditCardData creditCardInformation = cardInformation();
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -354,7 +354,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         billingAddress.setCountryCode("US");
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -407,7 +407,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         CreditCardData creditCardInformation = cardInformation();
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -461,7 +461,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         creditCardInformation.setCardHolderName(null);
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -523,7 +523,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         CreditCardData creditCardInformation = cardInformation();
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -564,7 +564,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         CreditCardData creditCardInformation = cardInformation();
 
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
@@ -1139,7 +1139,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
 
     private List<MerchantSummary> GetMerchants() throws ApiException {
         MerchantSummaryPaged merchants =
-                new ReportingService()
+                ReportingService
                         .findMerchants(1, 10)
                         .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)

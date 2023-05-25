@@ -450,30 +450,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("MERCHANT_RESPONSE_URL", paymentData.getMerchantResponseUrl());
             request.set("HPP_TX_STATUS_URL", paymentData.getTransactionStatusUrl());
 
-            AlternativePaymentType paymentTypesKey[] = paymentData.getPresetPaymentMethods();
-            AlternativePaymentType paymentTypesValues;
-            StringBuffer paymentValues = new StringBuffer();
-            if (paymentTypesKey != null) {
-                for (int arr = 0; arr < paymentTypesKey.length; arr++) {
-                    paymentTypesValues = paymentTypesKey[arr];
-                    paymentValues.append(paymentTypesValues.getValue());
-                    if (arr != paymentTypesKey.length - 1) {
-                        paymentValues.append("|");
-                    }
-                }
-            }
-
-            HostedPaymentMethods[] hostedPaymentMethods = paymentData.getHostedPaymentMethods();
-            if (hostedPaymentMethods != null) {
-                for (int arr = 0; arr < hostedPaymentMethods.length; arr++) {
-                    if (arr != hostedPaymentMethods.length - 1) {
-                        paymentValues.append("|");
-                    }
-                    paymentValues.append(hostedPaymentMethods[arr].getValue());
-                }
-            }
-
-            request.set("PM_METHODS", paymentValues.toString());
+            request.set("PM_METHODS", getPaymentValueList(paymentData));
             // end APMs Fields
 
             // 3DSv2
@@ -627,6 +604,56 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, toHash.toArray(new String[toHash.size()])));
 
         return request.toString();
+    }
+
+    private String getPaymentValueList(HostedPaymentData hostedPaymentData) {
+
+        String hosted = getHostedPaymentMethodsList(hostedPaymentData.getHostedPaymentMethods());
+        String alternative = getAlternativePaymentTypeList(hostedPaymentData.getPresetPaymentMethods());
+
+        if (StringUtils.isNullOrEmpty(alternative) && StringUtils.isNullOrEmpty(hosted)) {
+            return "";
+        } else if (StringUtils.isNullOrEmpty(alternative)) {
+            return hosted;
+        } else if (StringUtils.isNullOrEmpty(hosted)) {
+            return alternative;
+        } else {
+            return hosted + "|" + alternative;
+        }
+    }
+
+    private String getHostedPaymentMethodsList(HostedPaymentMethods[] hostedPaymentMethods) {
+        if (hostedPaymentMethods == null || hostedPaymentMethods.length == 0) {
+            return "";
+        }
+
+        StringBuffer hostedPaymentMethodsList = new StringBuffer();
+        HostedPaymentMethods hostedPaymentMethod;
+        for (int index = 0; index < hostedPaymentMethods.length; index++) {
+            hostedPaymentMethod = hostedPaymentMethods[index];
+            hostedPaymentMethodsList.append(hostedPaymentMethod.getValue());
+            hostedPaymentMethodsList.append("|");
+        }
+        hostedPaymentMethodsList.deleteCharAt(hostedPaymentMethodsList.length() - 1);
+
+        return hostedPaymentMethodsList.toString();
+    }
+
+    private String getAlternativePaymentTypeList(AlternativePaymentType paymentTypesKey[]) {
+        if (paymentTypesKey == null || paymentTypesKey.length == 0) {
+            return "";
+        }
+
+        StringBuffer alternativePaymentTypeList = new StringBuffer();
+        AlternativePaymentType alternativePaymentType;
+        for (int index = 0; index < paymentTypesKey.length; index++) {
+            alternativePaymentType = paymentTypesKey[index];
+            alternativePaymentTypeList.append(alternativePaymentType.getValue());
+            alternativePaymentTypeList.append("|");
+        }
+        alternativePaymentTypeList.deleteCharAt(alternativePaymentTypeList.length() - 1);
+
+        return alternativePaymentTypeList.toString();
     }
 
     private String generateCode(Address address) {
@@ -1466,6 +1493,6 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     }
 
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
-    	throw new ApiException("Realex does not support KeepAlive.");
+        throw new ApiException("Realex does not support KeepAlive.");
     }
 }

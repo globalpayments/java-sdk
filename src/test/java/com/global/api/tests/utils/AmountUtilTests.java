@@ -1,11 +1,11 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 import com.global.api.utils.AmountUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class AmountUtilTests {
     @Test

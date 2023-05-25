@@ -1,5 +1,20 @@
 # Changelog
 
+## v10.2.16 (05/25/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Correct the formatting for Wex Fleet Approved Amount field (Issue-10204)
+  - Rollback code of calling primary to secondary,now it will call only primary end point and return 40,80,90(Issue-10185)
+  - Changes of Transaction time for both PreAuthCompletion and DataCollect must match with that of Pre Auth transaction and user data changes for pre auth ,completion and datacollect(Issue 10198)
+  
+- GP-API: Refacto on the GpApiRequest class
+- Unit tests updates on our utils classes
+
+#### Bug Fixes:
+- GP-ECOM: Fix serialization issue on PM_METHODS field to support both card and APMs
+
 ## v10.2.15 (05/16/2023)
  
 ### Enhancements:
@@ -8,7 +23,7 @@
   - Synchorny value S added in Authorizer code (Issue-10183)
   - Primary and Secondary fallback scenario's((For host response code 40,80,90) changes (Issue-10185)
   - Batch Summary Total credits and Total debits related changes (Issue-10188)
-  - Batch close Retransmits : Updating message code when response code is 01(out of balance)  (Issue-10194,10120)
+  - Batch close Retransmits : Updating message code when response code is 01(out of balance)  (Issue-10194,10201)
   - Estimated Purchase amount changes for WEX (Issue-10197)
   
 - GP-API: Manage fund transfers, splits and reverse splits in your partner network. 

@@ -57,7 +57,7 @@ public class GpApiSessionInfo {
         return
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint("/accesstoken")
+                        .setEndpoint(GpApiRequest.ACCESS_TOKEN_ENDPOINT)
                         .setRequestBody(request.toString());
     }
 

@@ -14,8 +14,6 @@ import static org.junit.Assert.*;
 
 public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
-    private static CreditCardData card;
-    private static String token;
     private static final String currency = "USD";
 
     public GpApiTokenManagementErrorTest() throws ApiException {
@@ -29,13 +27,13 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 
-        card = new CreditCardData();
+        CreditCardData card = new CreditCardData();
         card.setNumber("4111111111111111");
         card.setExpMonth(expMonth);
         card.setExpYear(expYear);
         card.setCvn("123");
 
-        token = card.tokenize(GP_API_CONFIG_NAME);
+        String token = card.tokenize(GP_API_CONFIG_NAME);
 
         assertNotNull("Token could not be generated.", token);
     }

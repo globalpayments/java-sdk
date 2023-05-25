@@ -86,7 +86,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
                             userData.put(UserDataTag.ApprovedAmount, amount);
-                            reference.setOriginalApprovedAmount(new BigDecimal(amount));
+                            reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount,2));
                             if (builder.getTagData() != null) {
                                 userData.put(UserDataTag.AvailableProducts, responseParser.readString(49));
                                 userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
@@ -100,7 +100,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
                             userData.put(UserDataTag.ApprovedAmount, amount);
-                            reference.setOriginalApprovedAmount(new BigDecimal(amount));
+                            reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount,2));
                             userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                             if (builder.getTagData() != null) {
                                 userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
@@ -241,7 +241,10 @@ public class NtsConnector extends GatewayConnectorConfig {
                 }
                 if(builder.isForceToHost()){
                     if(messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())){
-                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceCollectOrForceSale.getValue()+originalReq.substring(count+2);
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.ForceRequestToBalance.getValue()+originalReq.substring(count+2);
+                    }
+                    else if(messageCode.equals(NtsMessageCode.RetransmitRequestToBalance.getValue())){
+                        originalReq = originalReq.substring(0,count)+ NtsMessageCode.RetransmitForceRequestToBalance.getValue()+originalReq.substring(count+2);
                     }
                 }
             }break;
@@ -460,8 +463,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                             if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
                                 originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitRequestToBalance.getValue() + originalReq.substring(count + 2);
                             } else if (messageCode.equals(NtsMessageCode.ForceRequestToBalance.getValue())) {
-                                originalReq = originalReq.substring(0, count) +
-                                        NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
+                                originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                             }
                             messageData.setMessageRequest(new StringBuilder(originalReq));
         }

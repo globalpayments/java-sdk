@@ -12,12 +12,15 @@ import com.global.api.tests.JsonComparator;
 import com.global.api.tests.gpEcom.hpp.GpEcomHppClient;
 import com.global.api.utils.JsonDoc;
 import lombok.var;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpEcomHppRequestTest {
     private HostedService _service;
     private GpEcomHppClient _client;
@@ -60,7 +63,7 @@ public class GpEcomHppRequestTest {
         Address address = new Address();
         address.setPostalCode("123|56");
         address.setCountry("IRELAND");
-        
+
         String json = _service.authorize(new BigDecimal("1"))
                 .withCurrency("EUR")
                 .withCustomerId("123456")
@@ -189,7 +192,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         String hppJson = service.authorize(new BigDecimal("19.99"))
@@ -197,10 +200,10 @@ public class GpEcomHppRequestTest {
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
-        
+
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"0\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\"}";
-        
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -223,10 +226,10 @@ public class GpEcomHppRequestTest {
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
-        
+
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\"}";
-        
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -244,14 +247,14 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setCustomerNumber("a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa");
         testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
@@ -260,9 +263,9 @@ public class GpEcomHppRequestTest {
                 .withClientTransactionId("My Legal Entity")
                 .serialize();
 
-        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"COMMENT1\":\"Mobile Channel\",\"CUST_NUM\":\"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"VAR_REF\":\"My Legal Entity\",\"HPP_LANG\":\"EN\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_PAYMENT_BUTTON\":\"Place Order\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"061609f85a8e0191dc7f487f8278e71898a2ee2d\"}";
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"COMMENT1\":\"Mobile Channel\",\"CUST_NUM\":\"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"VAR_REF\":\"My Legal Entity\",\"HPP_LANG\":\"EN\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_PAYMENT_BUTTON\":\"Place Order\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"061609f85a8e0191dc7f487f8278e71898a2ee2d\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
 
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -285,15 +288,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setCustomerExists(false);
         testHostedPaymentData.setOfferToSaveCard(true);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -317,15 +320,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setOfferToSaveCard(true);
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -341,7 +344,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -349,15 +352,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setOfferToSaveCard(true);
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -373,7 +376,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -382,23 +385,23 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
     public void storeCardAutoNewCustomerNoRefs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
-        hostedConfig .setResponseUrl("https://www.example.com/response");
-        hostedConfig .setVersion(HppVersion.Version2);
-        hostedConfig .setCardStorageEnabled(true);
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+        hostedConfig.setCardStorageEnabled(true);
 
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
@@ -406,22 +409,22 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setCustomerExists(false);
         testHostedPaymentData.setOfferToSaveCard(false);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"7116c49826367c6513efdc0cc81e243b8095d78f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -437,7 +440,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -445,15 +448,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setOfferToSaveCard(true);
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"1\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -469,7 +472,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -477,15 +480,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setOfferToSaveCard(true);
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"5fe76a45585d9793fd162ab8a3cd4a42991417df\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"1\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -501,7 +504,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -510,15 +513,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"CARD_STORAGE_ENABLE\": \"1\", \"OFFER_SAVE_CARD\": \"0\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\", \"PAYER_REF\": \"376a2598-412d-4805-9f47-c177d5605853\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"1\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -534,7 +537,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -542,15 +545,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setOfferToSaveCard(true);
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"4dcf4e5e2d43855fe31cdc097e985a895868563e\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -566,7 +569,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
@@ -575,15 +578,15 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"f0cf097fe769a6a5a6254eee631e51709ba34c90\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_SELECT_STORED_CARD\": \"376a2598-412d-4805-9f47-c177d5605853\", \"OFFER_SAVE_CARD\": \"1\", \"PAYER_EXIST\": \"1\", \"PMT_REF\": \"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"1\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -598,14 +601,14 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         Address billingAddress = new Address();
         billingAddress.setCountry("US");
         billingAddress.setPostalCode("50001");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
@@ -613,7 +616,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"BILLING_CODE\": \"50001\", \"BILLING_CO\": \"US\", \"HPP_BILLING_POSTALCODE\": \"50001\", \"HPP_BILLING_COUNTRY\":\"840\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -635,7 +638,7 @@ public class GpEcomHppRequestTest {
         shippingAddress.setCountry("US");
         shippingAddress.setPostalCode("50001");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
@@ -643,7 +646,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"SHIPPING_CODE\": \"50001\", \"SHIPPING_CO\": \"US\", \"HPP_SHIPPING_COUNTRY\":\"840\", \"HPP_SHIPPING_POSTALCODE\":\"50001\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -669,7 +672,7 @@ public class GpEcomHppRequestTest {
         shippingAddress.setCountry("GB");
         shippingAddress.setPostalCode("654|123");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
@@ -678,7 +681,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{\"CURRENCY\":\"EUR\",\"HPP_SHIPPING_COUNTRY\":\"826\",\"SHIPPING_CODE\":\"654123\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"HPP_SHIPPING_POSTALCODE\":\"654|123\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"AUTO_SETTLE_FLAG\":\"1\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"061609f85a8e0191dc7f487f8278e71898a2ee2d\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"1999\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"SHIPPING_CO\":\"GB\",\"MERCHANT_ID\":\"MerchantId\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -694,17 +697,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"fff944d4da9a5dfd64d142448d5dcf6168b3b77f\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_FRAUDFILTER_MODE\": \"PASSIVE\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -720,17 +723,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"2e98407a26f17dc8c7ed89df5cc69d17718bfeb2\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"HPP_FRAUDFILTER_MODE\": \"OFF\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -749,14 +752,14 @@ public class GpEcomHppRequestTest {
 
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -783,11 +786,11 @@ public class GpEcomHppRequestTest {
 
         String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CURRENCY\":\"EUR\",\"AUTO_SETTLE_FLAG\":\"1\",\"SHA1HASH\":\"89ed337102ebe5992f022cf3194c4f28d6bcfa0e\",\"AMOUNT\":\"1999\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\"}";
 
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
-    public void FraudManagementRequestWithRules() throws ApiException {
+    public void fraudManagementRequestWithRules() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
         config.setAccountId("internet");
@@ -811,7 +814,7 @@ public class GpEcomHppRequestTest {
         config.getHostedPaymentConfig().setFraudFilterRules(rules);
 
         HostedService service = new HostedService(config);
-        GpEcomHppClient client = new GpEcomHppClient("https://pay.sandbox.realexpayments.com/pay","secret");
+        GpEcomHppClient client = new GpEcomHppClient("https://pay.sandbox.realexpayments.com/pay", "secret");
 
         // data to be passed to the HPP along with transaction level settings
         HostedPaymentData hostedPaymentData = new HostedPaymentData();
@@ -889,17 +892,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"DCC_ENABLE\": \"1\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -915,17 +918,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"DCC_ENABLE\": \"0\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -941,17 +944,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"RETURN_TSS\": \"1\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -967,17 +970,17 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"RETURN_TSS\": \"0\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -992,10 +995,10 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withRecurringInfo(RecurringType.Fixed, RecurringSequence.First)
@@ -1003,7 +1006,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"RECURRING_TYPE\": \"fixed\", \"RECURRING_SEQUENCE\": \"first\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
 
         hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
@@ -1013,7 +1016,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"RECURRING_TYPE\": \"variable\", \"RECURRING_SEQUENCE\": \"last\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
 
         hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
@@ -1023,7 +1026,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"1\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\", \"RECURRING_TYPE\": \"fixed\", \"RECURRING_SEQUENCE\": \"subsequent\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1040,22 +1043,22 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"1384392a30abbd7a1993e33c308bf9a2bd354d48\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"1384392a30abbd7a1993e33c308bf9a2bd354d48\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1072,21 +1075,21 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"c10b55c16276366ced59174cbab20a6eeeec16c9\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"c10b55c16276366ced59174cbab20a6eeeec16c9\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1103,21 +1106,21 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson =  "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"73236b35e253215380a9bf2f7a1f11ac23204224\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"73236b35e253215380a9bf2f7a1f11ac23204224\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1134,21 +1137,21 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         HostedPaymentData testHostedPaymentData = new HostedPaymentData();
         testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"5fe76a45585d9793fd162ab8a3cd4a42991417df\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{\"MERCHANT_ID\":\"MerchantId\",\"ACCOUNT\":\"internet\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"CURRENCY\":\"EUR\",\"TIMESTAMP\":\"20170725154824\",\"AUTO_SETTLE_FLAG\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"CARD_STORAGE_ENABLE\":\"1\",\"HPP_VERSION\":\"2\",\"SHA1HASH\":\"5fe76a45585d9793fd162ab8a3cd4a42991417df\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1170,7 +1173,7 @@ public class GpEcomHppRequestTest {
         config.setSharedSecret("secret");
         config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
         config.setHostedPaymentConfig(hostedConfig);
-        
+
         HostedService service = new HostedService(config);
 
         Address billingAddress = new Address();
@@ -1190,7 +1193,7 @@ public class GpEcomHppRequestTest {
         testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
         testHostedPaymentData.setOfferToSaveCard(true);
 
-       String hppJson = service.charge(new BigDecimal("19.99"))
+        String hppJson = service.charge(new BigDecimal("19.99"))
                 .withCurrency("EUR")
                 .withTimestamp("20170725154824")
                 .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
@@ -1199,43 +1202,43 @@ public class GpEcomHppRequestTest {
                 .withHostedPaymentData(testHostedPaymentData)
                 .serialize();
 
-        String expectedJson = "{\"SHIPPING_CODE\":\"654|123\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_SHIPPING_STREET1\":\"123\",\"DCC_ENABLE\":\"1\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"1\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"RETURN_TSS\":\"1\",\"AMOUNT\":\"1999\",\"TIMESTAMP\":\"20170725154824\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"CURRENCY\":\"EUR\",\"HPP_SHIPPING_COUNTRY\":\"826\",\"HPP_SELECT_STORED_CARD\":\"376a2598-412d-4805-9f47-c177d5605853\",\"PAYER_EXIST\":\"1\",\"HPP_SHIPPING_POSTALCODE\":\"654\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_LANG\":\"EN\",\"CARD_STORAGE_ENABLE\":\"1\",\"SHA1HASH\":\"1384392a30abbd7a1993e33c308bf9a2bd354d48\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\",\"BILLING_CO\":\"US\",\"CARD_PAYMENT_BUTTON\":\"Place Order\",\"HPP_VERSION\":\"2\",\"SHIPPING_CO\":\"GB\",\"MERCHANT_ID\":\"MerchantId\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        String expectedJson = "{\"SHIPPING_CODE\":\"654|123\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_FRAUDFILTER_MODE\":\"PASSIVE\",\"HPP_SHIPPING_STREET1\":\"123\",\"DCC_ENABLE\":\"1\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"1\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"RETURN_TSS\":\"1\",\"AMOUNT\":\"1999\",\"TIMESTAMP\":\"20170725154824\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"CURRENCY\":\"EUR\",\"HPP_SHIPPING_COUNTRY\":\"826\",\"HPP_SELECT_STORED_CARD\":\"376a2598-412d-4805-9f47-c177d5605853\",\"PAYER_EXIST\":\"1\",\"HPP_SHIPPING_POSTALCODE\":\"654\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_LANG\":\"EN\",\"CARD_STORAGE_ENABLE\":\"1\",\"SHA1HASH\":\"1384392a30abbd7a1993e33c308bf9a2bd354d48\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa\",\"BILLING_CO\":\"US\",\"CARD_PAYMENT_BUTTON\":\"Place Order\",\"HPP_VERSION\":\"2\",\"SHIPPING_CO\":\"GB\",\"MERCHANT_ID\":\"MerchantId\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"1\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
-	public void basicChargeAlternativePayment() throws ApiException {
+    public void basicChargeAlternativePayment() throws ApiException {
 
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
-		hostedConfig.setVersion(HppVersion.Version2);
+        hostedConfig.setVersion(HppVersion.Version2);
 
-		GpEcomConfig config = new GpEcomConfig();
-		config.setMerchantId("heartlandgpsandbox");
-		config.setAccountId("hpp");
-		config.setSharedSecret("secret");
-		config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
-		config.setHostedPaymentConfig(hostedConfig);
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
 
-		HostedService service = new HostedService(config);
+        HostedService service = new HostedService(config);
 
-		HostedPaymentData testHostedPaymentData = new HostedPaymentData();
-		testHostedPaymentData.setCustomerCountry("DE");
-		testHostedPaymentData.setCustomerFirstName("James");
-		testHostedPaymentData.setCustomerLastName("Mason");
-		testHostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
-		testHostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
-		testHostedPaymentData.setPresetPaymentMethods(AlternativePaymentType.ASTROPAY_DIRECT, AlternativePaymentType.AURA, AlternativePaymentType.BALOTO_CASH, AlternativePaymentType.BANAMEX);
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerCountry("DE");
+        testHostedPaymentData.setCustomerFirstName("James");
+        testHostedPaymentData.setCustomerLastName("Mason");
+        testHostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        testHostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+        testHostedPaymentData.setPresetPaymentMethods(AlternativePaymentType.ASTROPAY_DIRECT, AlternativePaymentType.AURA, AlternativePaymentType.BALOTO_CASH, AlternativePaymentType.BANAMEX);
 
-		String hppJson = service.charge(new BigDecimal("19.99"))
-				.withCurrency("EUR")
-				.withTimestamp("20170725154824")
-				.withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
-				.withHostedPaymentData(testHostedPaymentData)
-				.serialize();
+        String hppJson = service.charge(new BigDecimal("19.99"))
+                .withCurrency("EUR")
+                .withTimestamp("20170725154824")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withHostedPaymentData(testHostedPaymentData)
+                .serialize();
 
-		String expectedJson = "{\"CURRENCY\":\"EUR\",\"HPP_CUSTOMER_LASTNAME\":\"Mason\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\":\"https://www.example.com/statusUrl\",\"PM_METHODS\":\"astropaydirect|aura|baloto|banamex\",\"AUTO_SETTLE_FLAG\":\"1\",\"ACCOUNT\":\"hpp\",\"SHA1HASH\":\"647d071bdcb8d9da5f29688a787863a39dc51ef3\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"HPP_CUSTOMER_FIRSTNAME\":\"James\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"HPP_CUSTOMER_COUNTRY\":\"DE\",\"MERCHANT_ID\":\"heartlandgpsandbox\"}";
-		assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
-	}
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"HPP_CUSTOMER_LASTNAME\":\"Mason\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/returnUrl\",\"HPP_TX_STATUS_URL\":\"https://www.example.com/statusUrl\",\"PM_METHODS\":\"astropaydirect|aura|baloto|banamex\",\"AUTO_SETTLE_FLAG\":\"1\",\"ACCOUNT\":\"hpp\",\"SHA1HASH\":\"647d071bdcb8d9da5f29688a787863a39dc51ef3\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"AMOUNT\":\"1999\",\"HPP_CUSTOMER_FIRSTNAME\":\"James\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"HPP_CUSTOMER_COUNTRY\":\"DE\",\"MERCHANT_ID\":\"heartlandgpsandbox\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\",\"PAYER_EXIST\":\"0\", \"HPP_NAME\":\"James Mason\"}";
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
+    }
 
     @Test
     public void creditAuth_MultiAutoSettle() throws ApiException {
@@ -1260,8 +1263,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"100\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"34160bd973fd1d8abb295a12c7c734ffd839d66a\", \"AUTO_SETTLE_FLAG\": \"MULTI\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\",\"HPP_VERSION\": \"2\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
-
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1287,8 +1289,7 @@ public class GpEcomHppRequestTest {
                 .serialize();
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"100\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"34160bd973fd1d8abb295a12c7c734ffd839d66a\", \"AUTO_SETTLE_FLAG\": \"0\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\",\"HPP_VERSION\": \"2\"}";
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
-
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1340,7 +1341,7 @@ public class GpEcomHppRequestTest {
                 .withSupplementaryData("HPP_FRAUDFILTER_MODE", "ACTIVE")
                 .serialize();
 
-        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\"}";
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PAYER_EXIST\":\"1\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"HPP_FRAUDFILTER_MODE\":\"ACTIVE\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\"}";
 
         assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
@@ -1394,7 +1395,7 @@ public class GpEcomHppRequestTest {
                 .withSupplementaryData("RANDOM_KEY", "RANDOM_VALUE1", "RANDOM_VALUE2")
                 .serialize();
 
-        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\"}";
+        String expectedJson = "{\"CURRENCY\":\"EUR\",\"PAYER_REF\":\"376a2598-412d-4805-9f47-c177d5605853\",\"RANDOM_KEY\":\"[RANDOM_VALUE1 ,RANDOM_VALUE2]\",\"MERCHANT_RESPONSE_URL\":\"https://www.example.com/response\",\"PMT_REF\":\"ca46344d-4292-47dc-9ced-e8a42ce66977\",\"HPP_BILLING_POSTALCODE\":\"50001\",\"HPP_BILLING_COUNTRY\":\"840\",\"OFFER_SAVE_CARD\":\"1\",\"AUTO_SETTLE_FLAG\":\"0\",\"BILLING_CODE\":\"50001\",\"ACCOUNT\":\"internet\",\"SHA1HASH\":\"8cfb2201f43e4d8d07f77cab031a7d809876a639\",\"ORDER_ID\":\"GTI5Yxb0SumL_TkDMCAxQA\",\"CUST_NUM\":\"123456\",\"BILLING_CO\":\"US\",\"AMOUNT\":\"100\",\"TIMESTAMP\":\"20170725154824\",\"HPP_VERSION\":\"2\",\"PROD_ID\":\"a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f\",\"MERCHANT_ID\":\"MerchantId\", \"PAYER_EXIST\": \"1\",\"HPP_DO_NOT_RETURN_ADDRESS\":\"FALSE\"}";
         assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
@@ -1424,8 +1425,7 @@ public class GpEcomHppRequestTest {
                         .serialize(CONFIG_NAME);
 
         String expectedJson = "{ \"MERCHANT_ID\": \"MerchantId\", \"ACCOUNT\": \"internet\", \"ORDER_ID\": \"GTI5Yxb0SumL_TkDMCAxQA\", \"AMOUNT\": \"1999\", \"CURRENCY\": \"EUR\", \"TIMESTAMP\": \"20170725154824\", \"SHA1HASH\": \"061609f85a8e0191dc7f487f8278e71898a2ee2d\", \"AUTO_SETTLE_FLAG\": \"0\",  \"MERCHANT_RESPONSE_URL\": \"https://www.example.com/response\", \"HPP_VERSION\": \"2\"}";
-
-        assertEquals(true, JsonComparator.areEqual(expectedJson, hppJson));
+        assertTrue(JsonComparator.areEqual(expectedJson, hppJson));
     }
 
     @Test
@@ -1523,7 +1523,7 @@ public class GpEcomHppRequestTest {
         assertEquals(hostedPaymentData.getTransactionStatusUrl(), jsonResponse.getString("HPP_TX_STATUS_URL"));
         assertEquals(hostedPaymentData.getCustomerCountry(), jsonResponse.getString("HPP_CUSTOMER_COUNTRY"));
 
-        GpEcomHppClient client = new GpEcomHppClient("https://pay.sandbox.realexpayments.com/pay","secret");
+        GpEcomHppClient client = new GpEcomHppClient("https://pay.sandbox.realexpayments.com/pay", "secret");
         String response = client.sendRequest(json);
         Transaction parsedResponse = service.parseResponse(response, true);
 
@@ -1604,7 +1604,7 @@ public class GpEcomHppRequestTest {
         HostedService service = new HostedService(config);
 
         HostedPaymentData hostedPaymentData = new HostedPaymentData();
-        hostedPaymentData.setAddressCapture(true);
+        hostedPaymentData.setCaptureAddress(true);
         hostedPaymentData.setReturnAddress(false);
 
         String json =
@@ -1618,8 +1618,8 @@ public class GpEcomHppRequestTest {
 
         JsonDoc jsonResponse = JsonDoc.parse(json);
 
-        assertTrue(jsonResponse.getBool("HPP_CAPTURE_ADDRESS"));
-        assertFalse(jsonResponse.getBool("HPP_DO_NOT_RETURN_ADDRESS"));
+        assertEquals("TRUE", jsonResponse.getString("HPP_CAPTURE_ADDRESS"));
+        assertEquals("FALSE", jsonResponse.getString("HPP_DO_NOT_RETURN_ADDRESS"));
     }
 
     @Test
@@ -1678,6 +1678,213 @@ public class GpEcomHppRequestTest {
         assertNotNull(json);
 
         assertTrue(json.contains("\"HPP_ENABLE_EXEMPTION_OPTIMIZATION\":true"));
+    }
+
+    @Test
+    public void testBasicChargeCardsAndAlternativePaymentMethods() throws ApiException {
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setEnableLogging(true);
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+
+        hostedPaymentData.setCustomerCountry("DE");
+        hostedPaymentData.setCustomerFirstName("James");
+        hostedPaymentData.setCustomerFirstName("Mason");
+        hostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        hostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+
+        AlternativePaymentType[] apmTypes = {
+                AlternativePaymentType.SOFORTUBERWEISUNG,
+                AlternativePaymentType.TESTPAY,
+                AlternativePaymentType.PAYPAL,
+                AlternativePaymentType.SEPA_DIRECTDEBIT_PPPRO_MANDATE_MODEL_A
+        };
+
+        hostedPaymentData.setPresetPaymentMethods(apmTypes);
+        hostedPaymentData.setHostedPaymentMethods(new HostedPaymentMethods[]{HostedPaymentMethods.CARDS});
+
+        HostedService service = new HostedService(config);
+
+        String json =
+                service
+                        .charge(new BigDecimal(10.01))
+                        .withCurrency("EUR")
+                        .withHostedPaymentData(hostedPaymentData)
+                        .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(json);
+
+        assertEquals("cards|sofort|testpay|paypal|sepapm", jsonResponse.getString("PM_METHODS"));
+        assertEquals(hostedPaymentData.getCustomerFirstName(), jsonResponse.getString("HPP_CUSTOMER_FIRSTNAME"));
+        assertEquals(hostedPaymentData.getCustomerLastName(), jsonResponse.getString("HPP_CUSTOMER_LASTNAME"));
+        assertEquals(hostedPaymentData.getMerchantResponseUrl(), jsonResponse.getString("MERCHANT_RESPONSE_URL"));
+        assertEquals(hostedPaymentData.getTransactionStatusUrl(), jsonResponse.getString("HPP_TX_STATUS_URL"));
+        assertEquals(hostedPaymentData.getCustomerCountry(), jsonResponse.getString("HPP_CUSTOMER_COUNTRY"));
+
+        GpEcomHppClient client = new GpEcomHppClient("https://pay.sandbox.realexpayments.com/pay", "secret");
+        String response = client.sendRequest(json);
+        Transaction parsedResponse = service.parseResponse(response, true);
+
+        assertNotNull(parsedResponse);
+        // TODO: Getting 00 && [ test system ] Authorised
+        assertEquals("01", parsedResponse.getResponseCode());
+        assertEquals(TransactionStatus.Pending.getValue(), parsedResponse.getResponseMessage());
+        assertEquals(AlternativePaymentType.SOFORTUBERWEISUNG.getValue(), parsedResponse.getResponseValues().get("PAYMENTMETHOD"));
+        assertEquals(hostedPaymentData.getMerchantResponseUrl(), parsedResponse.getResponseValues().get("MERCHANT_RESPONSE_URL"));
+    }
+
+    @Test
+    public void testPaymentsSerialization_nullArrays() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = null;
+
+        AlternativePaymentType[] paymentTypesKey = null;
+
+        String expected_PM_METHODS_serialization = null;
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_emptyArrays() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[0];
+
+        AlternativePaymentType[] paymentTypesKey = new AlternativePaymentType[0];
+
+        String expected_PM_METHODS_serialization = null;
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_IDEAL() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = null;
+
+        AlternativePaymentType[] paymentTypesKey = new AlternativePaymentType[1];
+        paymentTypesKey[0] = AlternativePaymentType.IDEAL;
+
+        String expected_PM_METHODS_serialization = "ideal";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_IDEALandPAYPAL() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = null;
+
+        AlternativePaymentType[] paymentTypesKey = new AlternativePaymentType[2];
+        paymentTypesKey[0] = AlternativePaymentType.IDEAL;
+        paymentTypesKey[1] = AlternativePaymentType.PAYPAL;
+
+        String expected_PM_METHODS_serialization = "ideal|paypal";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_IDEALandPAYPALandSOFORTUBERWEISUNG() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = null;
+
+        AlternativePaymentType[] paymentTypesKey = new AlternativePaymentType[3];
+        paymentTypesKey[0] = AlternativePaymentType.IDEAL;
+        paymentTypesKey[1] = AlternativePaymentType.PAYPAL;
+        paymentTypesKey[2] = AlternativePaymentType.SOFORTUBERWEISUNG;
+
+        String expected_PM_METHODS_serialization = "ideal|paypal|sofort";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_OB() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[1];
+        hostedPaymentMethods[0] = HostedPaymentMethods.OB;
+
+        AlternativePaymentType[] paymentTypesKey = null;
+
+        String expected_PM_METHODS_serialization = "ob";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_OBandCARDS() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[2];
+        hostedPaymentMethods[0] = HostedPaymentMethods.OB;
+        hostedPaymentMethods[1] = HostedPaymentMethods.CARDS;
+
+        AlternativePaymentType[] paymentTypesKey = null;
+
+        String expected_PM_METHODS_serialization = "ob|cards";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    @Test
+    public void testPaymentsSerialization_CARDSandIDEALandPAYPALandSOFORTUBERWEISUNG() throws ApiException {
+        HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[1];
+        hostedPaymentMethods[0] = HostedPaymentMethods.CARDS;
+
+        AlternativePaymentType[] paymentTypesKey = new AlternativePaymentType[3];
+        paymentTypesKey[0] = AlternativePaymentType.IDEAL;
+        paymentTypesKey[1] = AlternativePaymentType.PAYPAL;
+        paymentTypesKey[2] = AlternativePaymentType.SOFORTUBERWEISUNG;
+
+        String expected_PM_METHODS_serialization = "cards|ideal|paypal|sofort";
+
+        paymentMethodsSerializationTestingHelper(expected_PM_METHODS_serialization, hostedPaymentMethods, paymentTypesKey);
+    }
+
+    //endregion getPaymentValueList
+
+    private void paymentMethodsSerializationTestingHelper(
+            String expectedPayments,
+            HostedPaymentMethods[] hostedPaymentMethods,
+            AlternativePaymentType[] apmTypes) throws ApiException {
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setEnableLogging(true);
+
+        HostedPaymentConfig hostedPaymentConfig = new HostedPaymentConfig();
+        hostedPaymentConfig.setVersion(HppVersion.Version2);
+
+        config.setHostedPaymentConfig(hostedPaymentConfig);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+
+        hostedPaymentData.setCustomerCountry("DE");
+        hostedPaymentData.setCustomerFirstName("James");
+        hostedPaymentData.setCustomerFirstName("Mason");
+        hostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        hostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+
+        hostedPaymentData.setPresetPaymentMethods(apmTypes);
+        hostedPaymentData.setHostedPaymentMethods(hostedPaymentMethods);
+
+        HostedService service = new HostedService(config);
+
+        String json =
+                service
+                        .charge(new BigDecimal(10.01))
+                        .withCurrency("EUR")
+                        .withHostedPaymentData(hostedPaymentData)
+                        .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(json);
+
+        assertEquals(expectedPayments, jsonResponse.getString("PM_METHODS"));
     }
 
 }

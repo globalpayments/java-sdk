@@ -38,7 +38,7 @@ public class GpApiManagementRequestBuilder {
 
         getAllowedActions();
 
-        String merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? "/merchants/" + gateway.getGpApiConfig().getMerchantId() : "";
+        String merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
         if (builderPaymentMethod != null && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
             if (    allowedActions.get(PaymentMethodType.BankPayment.toString()) == null ||
@@ -55,7 +55,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/capture")
+                            .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/capture")
                             .setRequestBody(data.toString());
 
         }
@@ -66,7 +66,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/refund")
+                            .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/refund")
                             .setRequestBody(data.toString());
 
         }
@@ -79,12 +79,12 @@ public class GpApiManagementRequestBuilder {
                 if (null != builder.getFundsData()) {
                     String merchantId = builder.getFundsData().getMerchantId();
                     if (!StringUtils.isNullOrEmpty(merchantId)) {
-                        endpoint = "/merchants/" + merchantId;
+                        endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + merchantId;
                     }
                 }
-                endpoint = endpoint + "/transfers/" + builder.getTransactionId() + "/reversal";
+                endpoint = endpoint + GpApiRequest.TRANSFER_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
             } else {
-                endpoint  = endpoint + "/transactions/" + builder.getTransactionId() + "/reversal";
+                endpoint  = endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
             }
 
             return
@@ -116,20 +116,20 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Patch)
-                            .setEndpoint(merchantUrl + "/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken())
+                            .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken())
                             .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.TokenDelete && builderPaymentMethod instanceof ITokenizable) {
             return
                     new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Delete)
-                        .setEndpoint(merchantUrl + "/payment-methods/" + ((ITokenizable) builderPaymentMethod).getToken());
+                        .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken());
         }
         else if (builderTransactionType == TransactionType.DisputeAcceptance) {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/disputes/" + builder.getDisputeId() + "/acceptance");
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/acceptance");
         }
         else if (builderTransactionType == TransactionType.DisputeChallenge) {
             JsonArray documentsJsonArray = new JsonArray();
@@ -153,13 +153,13 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/disputes/" + builder.getDisputeId() + "/challenge")
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/challenge")
                             .setRequestBody(disputeChallengeData.toString());
         }
         else if (builderTransactionType == TransactionType.BatchClose) {
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + "/batches/" + builder.getBatchReference());
+                    .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference());
         }
         else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
@@ -196,7 +196,7 @@ public class GpApiManagementRequestBuilder {
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/reauthorization")
+                    .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reauthorization")
                     .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.Confirm) {
@@ -217,7 +217,7 @@ public class GpApiManagementRequestBuilder {
 
                 return new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/confirmation")
+                        .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/confirmation")
                         .setRequestBody(data.toString());
             }
         }
@@ -254,7 +254,7 @@ public class GpApiManagementRequestBuilder {
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/incremental")
+                    .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/incremental")
                     .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.Edit) {
@@ -273,7 +273,7 @@ public class GpApiManagementRequestBuilder {
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/adjustment")
+                    .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/adjustment")
                     .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.PayLinkUpdate) {
@@ -301,7 +301,7 @@ public class GpApiManagementRequestBuilder {
 
             return new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Patch)
-                    .setEndpoint(merchantUrl + "/links/" + builder.getPaymentLinkId())
+                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + builder.getPaymentLinkId())
                     .setRequestBody(data.toString());
 
         }
@@ -318,7 +318,7 @@ public class GpApiManagementRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/transactions/" + builder.getTransactionId() + "/" + endpoint)
+                            .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/" + endpoint)
                             .setRequestBody(payload.toString());
 
         }
@@ -340,13 +340,13 @@ public class GpApiManagementRequestBuilder {
 
             String endpoint = merchantUrl;
             if (!StringUtils.isNullOrEmpty(builder.getFundsData().getMerchantId())) {
-                endpoint = "/merchants/" + builder.getFundsData().getMerchantId();
+                endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + builder.getFundsData().getMerchantId();
             }
 
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(endpoint + "/transactions/" + builder.getTransactionId() + "/split")
+                            .setEndpoint(endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/split")
                             .setRequestBody(transfer.toString());
         }
 

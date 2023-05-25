@@ -626,15 +626,21 @@ public class GpEcomCreditTest {
 
         FraudResponse.Rule rule0 = fraudResponse.getRules().get(0);
 
-        assertEquals("Block Card Number", rule0.getName());
-        assertEquals("853c1d37-6e9f-467e-9ffc-182210b40c6b", rule0.getId());
+        assertEquals("Declines in one hour", rule0.getName());
+        assertEquals("0e34d6fd-a50b-4282-93f0-509ecaf2ad19", rule0.getId());
         assertEquals("PASS", rule0.getAction());
 
         FraudResponse.Rule rule1 = fraudResponse.getRules().get(1);
 
-        assertEquals("Block Country", rule1.getName());
-        assertEquals("f9b93363-4f4e-4d31-b7a2-1f816f461ada", rule1.getId());
+        assertEquals("Block Card Number", rule1.getName());
+        assertEquals("853c1d37-6e9f-467e-9ffc-182210b40c6b", rule1.getId());
         assertEquals("PASS", rule1.getAction());
+
+        FraudResponse.Rule rule2 = fraudResponse.getRules().get(2);
+
+        assertEquals("Block Country", rule2.getName());
+        assertEquals("f9b93363-4f4e-4d31-b7a2-1f816f461ada", rule2.getId());
+        assertEquals("PASS", rule2.getAction());
     }
 
 //    TODO: At some point should make use of the proxy to send back mock responses we want to parse.

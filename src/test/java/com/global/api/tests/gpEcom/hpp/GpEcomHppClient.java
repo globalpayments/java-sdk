@@ -69,10 +69,10 @@ public class GpEcomHppClient {
         if (json.has("PM_METHODS")) {
 
             String[] apmTypes = json.getString("PM_METHODS").split("\\|");
-            String apmType = apmTypes[0];
+            String apmType = getFirstValidAlternativePaymentMethod(apmTypes);
 
             //OB
-            if (apmTypesContains(apmTypes, HostedPaymentMethods.OB.toString())) {
+            if (apmTypesContains(apmTypes, HostedPaymentMethods.OB.toString().toLowerCase())) {
                 var card = new BankPayment();
 
                 card.setSortCode(json.getString("HPP_OB_DST_ACCOUNT_SORT_CODE"));
@@ -222,6 +222,19 @@ public class GpEcomHppClient {
             }
         
     }
+
+    private String getFirstValidAlternativePaymentMethod(String[] apmTypes) {
+
+        AlternativePaymentType resultAlternativePaymentType;
+        for (String apmTypeString: apmTypes) {
+            resultAlternativePaymentType = AlternativePaymentType.fromValue(apmTypeString);
+            if (resultAlternativePaymentType != null) {
+                return resultAlternativePaymentType.getValue();
+            }
+        }
+        return null;
+    }
+
 
     private AuthorizationBuilder addRemittanceRef(AuthorizationBuilder gatewayRequest, JsonDoc json) {
         var REF_TYPE = json.getString("HPP_OB_REMITTANCE_REF_TYPE");

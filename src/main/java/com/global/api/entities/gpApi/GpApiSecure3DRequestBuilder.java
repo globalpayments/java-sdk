@@ -63,7 +63,7 @@ public class GpApiSecure3DRequestBuilder {
 
                 return new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint(merchantUrl + "/authentications")
+                        .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT)
                         .setRequestBody(data.toString());
             }
             case InitiateAuthentication: {
@@ -195,7 +195,7 @@ public class GpApiSecure3DRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/initiate")
+                                .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/initiate")
                                 .setRequestBody(data.toString());
             }
             case VerifySignature: {
@@ -208,7 +208,7 @@ public class GpApiSecure3DRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/authentications/" + builder.getServerTransactionId() + "/result")
+                                .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/result")
                                 .setRequestBody(data.toString());
             }
             case RiskAssess: {
@@ -224,7 +224,7 @@ public class GpApiSecure3DRequestBuilder {
                 return
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/risk-assessments")
+                                .setEndpoint(merchantUrl + GpApiRequest.RISK_ASSESSMENTS)
                                 .setRequestBody(threeDS.toString());
             }
             default:

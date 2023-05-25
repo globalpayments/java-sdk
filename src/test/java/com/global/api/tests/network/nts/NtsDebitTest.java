@@ -1208,5 +1208,190 @@ public class NtsDebitTest {
 
         assertEquals("00", preAuthCompletion.getResponseCode());
     }
+    @Test //working as expected -- need to look into userdata length
+    public void test_preauthCompletion_Datacollect_Issue_10195_withOutTimeStamp() throws ApiException {
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(preAuthorizationResponse);
 
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+        Transaction captureResponse = preAuthorizationResponse.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSettlementAmount(new BigDecimal(10))
+                .execute();
+
+        assertEquals("00", captureResponse.getResponseCode());
+
+   //      Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(preAuthorizationResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(preAuthorizationResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(preAuthorizationResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(preAuthorizationResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(preAuthorizationResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(preAuthorizationResponse.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test //working
+    public void test_preauthCompletion_Datacollect_Issue_10195_withTimeStamp() throws ApiException {
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTimestamp("230524035010")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(preAuthorizationResponse);
+
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+        Transaction captureResponse = preAuthorizationResponse.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTimestamp("230524035020")
+                .withNtsTag16(getTag16())
+                .withSettlementAmount(new BigDecimal(10))
+                .execute();
+
+        // check response
+        assertEquals("00", captureResponse.getResponseCode());
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(preAuthorizationResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(preAuthorizationResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(preAuthorizationResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(preAuthorizationResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(preAuthorizationResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(preAuthorizationResponse.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withTimestamp("230524035030")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test //working
+    public void test_preauthCompletion_Datacollect_Issue_10195_DataCollect_retry() throws ApiException {
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTimestamp("230523090510")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(preAuthorizationResponse);
+
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+        Transaction captureResponse = preAuthorizationResponse.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTimestamp("230523090520")
+                .withNtsTag16(getTag16())
+                .withSettlementAmount(new BigDecimal(10))
+                .execute();
+
+        // check response
+        assertEquals("00", captureResponse.getResponseCode());
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(preAuthorizationResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(preAuthorizationResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(preAuthorizationResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(preAuthorizationResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(preAuthorizationResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(preAuthorizationResponse.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse1 = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withTimestamp("230523090530")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse1);
+        // check response
+        assertEquals("00", dataCollectResponse1.getResponseCode());
+
+        //Data collect retries
+        Transaction dataCollectResponse2 = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withTimestamp("230523090540")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse2);
+        // check response
+        assertEquals("00", dataCollectResponse2.getResponseCode());
+
+        //Data collect retries
+        Transaction dataCollectResponse3 = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withTimestamp("230523090550")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse3);
+        // check response
+        assertEquals("00", dataCollectResponse3.getResponseCode());
+    }
+
+    @Test
+    public void test_Preauth_DataCollect_DateAndTime() throws ApiException{
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTimestamp("230523090510")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(preAuthorizationResponse);
+
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = preAuthorizationResponse.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withTimestamp("230523090540")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse);
+    }
 }

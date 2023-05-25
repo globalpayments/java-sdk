@@ -31,12 +31,12 @@ public class GpApiReportRequestBuilder {
                 case TransactionDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/transactions/" + trb.getTransactionId());
+                            .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + trb.getTransactionId());
 
                 case FindTransactionsPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/transactions");
+                            .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -84,7 +84,7 @@ public class GpApiReportRequestBuilder {
                 case FindSettlementTransactionsPaged:
                     request = new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/settlement/transactions");
+                            .setEndpoint(merchantUrl + GpApiRequest.SETTLEMENT_TRANSACTIONS_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -116,12 +116,12 @@ public class GpApiReportRequestBuilder {
                 case DepositDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/settlement/deposits/" + trb.getSearchBuilder().getDepositReference());
+                            .setEndpoint(merchantUrl + GpApiRequest.DEPOSITS_ENDPOINT + "/" + trb.getSearchBuilder().getDepositReference());
 
                 case FindDepositsPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/settlement/deposits");
+                            .setEndpoint(merchantUrl + GpApiRequest.DEPOSITS_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -143,18 +143,18 @@ public class GpApiReportRequestBuilder {
                 case DisputeDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/disputes/" + trb.getSearchBuilder().getDisputeId());
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getDisputeId());
 
                 case DocumentDisputeDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/disputes/" + trb.getSearchBuilder().getDisputeId() +
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getDisputeId() +
                                     "/documents/" + trb.getSearchBuilder().getDisputeDocumentId());
 
                 case FindDisputesPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/disputes");
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -174,12 +174,12 @@ public class GpApiReportRequestBuilder {
                 case SettlementDisputeDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/settlement/disputes/" + trb.getSearchBuilder().getSettlementDisputeId());
+                            .setEndpoint(merchantUrl + GpApiRequest.SETTLEMENT_DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getSettlementDisputeId());
 
                 case FindSettlementDisputesPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/settlement/disputes");
+                            .setEndpoint(merchantUrl + GpApiRequest.SETTLEMENT_DISPUTES_ENDPOINT);
 
                     request.addQueryStringParam("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountName());
                     request.addQueryStringParam("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getDataAccountID());
@@ -205,7 +205,7 @@ public class GpApiReportRequestBuilder {
                     return
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/payment-methods/" + trb.getSearchBuilder().getStoredPaymentMethodId());
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + trb.getSearchBuilder().getStoredPaymentMethodId());
 
                 case FindStoredPaymentMethodsPaged:
 
@@ -228,7 +228,7 @@ public class GpApiReportRequestBuilder {
 
                         request
                                 .setVerb(GpApiRequest.HttpMethod.Post)
-                                .setEndpoint(merchantUrl + "/payment-methods/" + "search")
+                                .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + "search")
                                 .setRequestBody(data.toString());
 
                         return request;
@@ -237,7 +237,7 @@ public class GpApiReportRequestBuilder {
 
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/payment-methods");
+                            .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -257,12 +257,12 @@ public class GpApiReportRequestBuilder {
                 case ActionDetail:
                     return request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/actions/" + trb.getSearchBuilder().getActionId());
+                            .setEndpoint(merchantUrl + GpApiRequest.ACTIONS_ENDPOINT + "/" + trb.getSearchBuilder().getActionId());
 
                 case FindActionsPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + "/actions");
+                            .setEndpoint(merchantUrl + GpApiRequest.ACTIONS_ENDPOINT);
 
                     request.addQueryStringParam("page", String.valueOf(trb.getPage()));
                     request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
@@ -288,7 +288,7 @@ public class GpApiReportRequestBuilder {
                     return
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/links/" + trb.getSearchBuilder().getPayLinkId());
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + trb.getSearchBuilder().getPayLinkId());
 
                 case FindPayLinkPaged:
                     request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartDate()));
@@ -308,7 +308,7 @@ public class GpApiReportRequestBuilder {
                     return
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/links");
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT);
 
                 default:
                     throw new UnsupportedTransactionException();
@@ -323,7 +323,7 @@ public class GpApiReportRequestBuilder {
                     request =
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/merchants");
+                                    .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT);
 
                     basicsParams(request, userTrb);
                     request.addQueryStringParam("order", userTrb.getOrder() != null ? userTrb.getOrder().getValue() : null);
@@ -335,13 +335,13 @@ public class GpApiReportRequestBuilder {
                 case FindAccountsPaged:
                     String endpoint = merchantUrl;
                     if (userTrb.getSearchBuilder() != null && !StringUtils.isNullOrEmpty(userTrb.getSearchBuilder().getMerchantId())) {
-                        endpoint = "/merchants/" + userTrb.getSearchBuilder().getMerchantId();
+                        endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + userTrb.getSearchBuilder().getMerchantId();
                     }
 
                     request =
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(endpoint + "/accounts");
+                                    .setEndpoint(endpoint + GpApiRequest.ACCOUNTS_ENDPOINT);
 
                     basicsParams(request, userTrb);
 
@@ -359,13 +359,13 @@ public class GpApiReportRequestBuilder {
                     request =
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + "/accounts/" + builder.getSearchBuilder().getAccountId());
+                                    .setEndpoint(merchantUrl + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + builder.getSearchBuilder().getAccountId());
 
                     if (builder.getSearchBuilder().getAddress() != null) {
                         request =
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Get)
-                                        .setEndpoint(merchantUrl + "/accounts/" + builder.getSearchBuilder().getAccountId() + "/addresses");
+                                        .setEndpoint(merchantUrl + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + builder.getSearchBuilder().getAccountId() + "/addresses");
 
                         request.addQueryStringParam("postal_code", userTrb.getSearchBuilder().getAddress().getPostalCode());
                         request.addQueryStringParam("line_1", userTrb.getSearchBuilder().getAddress().getStreetAddress1());

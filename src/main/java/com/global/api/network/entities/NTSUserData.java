@@ -768,7 +768,14 @@ public class NTSUserData {
                         && builder.getNtsProductData() != null
                         && builder.getNtsTag16() != null) {
                     // Data Collect user data for non-fleet bankcards.
-                    sb.append(getTagData16(builder.getNtsTag16()));
+                    sb.append(StringUtils.padLeft(String.valueOf(builder.getNtsTag16().getPumpNumber()), 2, '0')); // Pump Number
+                    sb.append(StringUtils.padLeft(String.valueOf(builder.getNtsTag16().getWorkstationId()), 2, '0')); // Workstation Id
+                    TransactionReference transactionReference = (TransactionReference) builder.getPaymentMethod();
+                    sb.append(transactionReference.getOriginalTransactionDate());
+                    sb.append(DateTime.now(DateTimeZone.UTC).toString("yy"));
+                    sb.append(transactionReference.getOriginalTransactionTime());
+                    sb.append(builder.getNtsTag16().getServiceCode().getValue()); // Service Code
+                    sb.append(builder.getNtsTag16().getSecurityData().getValue()); // Security Data
                     if (builder.getZipCode() != null) {
                         sb.append(StringUtils.padRight(builder.getZipCode(), 9, '0'));
                     } else {

@@ -1,4 +1,4 @@
-package com.global.api.tests;
+package com.global.api.tests.utils;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;

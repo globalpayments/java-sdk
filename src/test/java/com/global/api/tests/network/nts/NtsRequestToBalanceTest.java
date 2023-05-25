@@ -403,6 +403,23 @@ public class NtsRequestToBalanceTest {
         assertEquals("00", dataCollectResponse.getResponseCode());
         return dataCollectResponse;
     }
+    @Test //working
+    public void test_force_retransmit_RequestToBalance() throws ApiException {
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.Forced,
+                        ntsRequestMessageHeader, 11, 0
+                        , BigDecimal.ONE, BigDecimal.ONE, data)
+                .withHostResponseCode("79")
+                .execute();
+        assertNotNull(batchClose);
+
+        Transaction t = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertEquals("00",t.getResponseCode());
+
+    }
 
 
 }

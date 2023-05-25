@@ -128,7 +128,7 @@ public class GpApiAuthorizationRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
-                                    .setEndpoint(merchantUrl + "/payment-methods")
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
                                     .setRequestBody(tokenizationData.toString());
                 }
                 else if (builderTransactionType == TransactionType.DccRateLookup) {
@@ -154,7 +154,7 @@ public class GpApiAuthorizationRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
-                                    .setEndpoint(merchantUrl + "/currency-conversions")
+                                    .setEndpoint(merchantUrl + GpApiRequest.DCC_ENDPOINT)
                                     .setRequestBody(requestData.toString());
                 }
                 else if (builderTransactionType == TransactionType.Verify) {
@@ -170,7 +170,7 @@ public class GpApiAuthorizationRequestBuilder {
                         return
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
-                                        .setEndpoint(merchantUrl + "/payment-methods")
+                                        .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
                                         .setRequestBody(tokenizationData.toString());
 
                     }
@@ -197,7 +197,7 @@ public class GpApiAuthorizationRequestBuilder {
                         return
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
-                                        .setEndpoint(merchantUrl + "/verifications")
+                                        .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
                                         .setRequestBody(verificationData.toString());
                     }
                 }
@@ -231,7 +231,7 @@ public class GpApiAuthorizationRequestBuilder {
                     return
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
-                                    .setEndpoint(merchantUrl + "/verifications")
+                                    .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
                                     .setRequestBody(verificationData.toString());
                 }
 
@@ -464,7 +464,7 @@ public class GpApiAuthorizationRequestBuilder {
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + "/links")
+                            .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT)
                             .setRequestBody(requestData.toString());
 
         }
@@ -490,13 +490,13 @@ public class GpApiAuthorizationRequestBuilder {
 
             String endpoint = merchantUrl;
             if (!StringUtils.isNullOrEmpty(fundsData.getMerchantId())) {
-                endpoint = "/merchants/" + fundsData.getMerchantId();
+                endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + fundsData.getMerchantId();
             }
 
             return
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(endpoint + "/transfers")
+                            .setEndpoint(endpoint + GpApiRequest.TRANSFER_ENDPOINT)
                             .setRequestBody(payload.toString());
         }
 
@@ -571,7 +571,7 @@ public class GpApiAuthorizationRequestBuilder {
         return
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
-                        .setEndpoint(merchantUrl + "/transactions")
+                        .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT)
                         .setRequestBody(data.toString());
     }
 

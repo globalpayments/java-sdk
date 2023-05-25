@@ -13,8 +13,6 @@ import java.util.List;
 
 public class HostedPaymentData {
     private Boolean addressesMatch;
-    // Determines whether the address forms will be displayed on the HPP
-    @Getter @Setter private Boolean addressCapture;
     private List<Bill> bills;
     private ChallengeRequest challengeRequestIndicator;
     private Boolean customerExists = false;
