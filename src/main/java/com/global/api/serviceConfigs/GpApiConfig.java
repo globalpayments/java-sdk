@@ -30,7 +30,7 @@ public class GpApiConfig extends GatewayConfig {
     private IntervalToExpire intervalToExpire;
 
     // GP-API channel
-    private String channel = Channel.CardNotPresent.getValue();
+    private Channel channel = Channel.CardNotPresent;
 
     // GP-API language
     @Accessors(chain = true)

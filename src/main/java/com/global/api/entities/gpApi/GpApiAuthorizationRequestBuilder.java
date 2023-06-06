@@ -28,7 +28,7 @@ public class GpApiAuthorizationRequestBuilder {
         String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
-                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel())); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
+                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue())); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
 
         paymentMethod.set("narrative", !StringUtils.isNullOrEmpty(builder.getDynamicDescriptor()) ? builder.getDynamicDescriptor() : null);
 
@@ -189,7 +189,7 @@ public class GpApiAuthorizationRequestBuilder {
                             verificationData.remove("payment_method");
                             verificationData.set("payment_method",
                                     new JsonDoc()
-                                            .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel()))
+                                            .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue()))
                                             .set("id", ((ITokenizable) builderPaymentMethod).getToken())
                                             .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null));
                         }

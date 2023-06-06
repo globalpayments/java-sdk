@@ -36,7 +36,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent.getValue());
+                .setChannel(Channel.CardPresent);
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
@@ -382,7 +382,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
         GpApiConfig gpApiConfig = new GpApiConfig();
         gpApiConfig.setAppId(APP_ID);
         gpApiConfig.setAppKey(APP_KEY);
-        gpApiConfig.setChannel(Channel.CardNotPresent.getValue());
+        gpApiConfig.setChannel(Channel.CardNotPresent);
 
         gpApiConfig.setEnableLogging(true);
 
@@ -445,7 +445,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
                 // These credentials have NO permissions for executing BATCH
                 .setAppId("OWTP5ptQZKGj7EnvPt3uqO844XDBt8Oj")
                 .setAppKey("qM31FmlFiyXRHGYh")
-                .setChannel(Channel.CardPresent.getValue());
+                .setChannel(Channel.CardPresent);
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);

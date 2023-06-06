@@ -19,9 +19,11 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class NTSUserData {
 
@@ -1135,7 +1137,7 @@ public class NTSUserData {
             }
 
         } else if (cardType.equals(NTSCardTypes.FuelmanFleet) || cardType.equals(NTSCardTypes.FleetWide)) {
-            if (nonFuelSize >= 4) {
+            if (nonFuelSize > 4) {
                 for (int index = 0; index < nonFuelSize; index++) {
                     if (index < rollUpAt - 1) {
                         sb.append(StringUtils.padLeft(nonFuel.get(index).getCode(), 3, ' '));
@@ -1149,6 +1151,7 @@ public class NTSUserData {
                 sb.append(StringUtils.padLeft(0001, 4, '0'));
                 sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 5));
             } else {
+                nonFuel = nonFuel.stream().sorted(Comparator.comparing(DE63_ProductDataEntry::getAmount).reversed()).collect(Collectors.toList());
                 for (int index = 0; index < rollUpAt; index++) {
                     if (index < nonFuelSize) {
                         sb.append(StringUtils.padLeft(nonFuel.get(index).getCode(), 3, ' '));
@@ -1177,6 +1180,7 @@ public class NTSUserData {
                 sb.append("01");
                 sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 5));
             } else {
+                nonFuel = nonFuel.stream().sorted(Comparator.comparing(DE63_ProductDataEntry::getAmount).reversed()).collect(Collectors.toList());
                 for (int i = 0; i < rollUpAt; i++) {
                     if (i < nonFuelSize) {
                         sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, ' '));

@@ -39,7 +39,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         GpApiConfig config = new GpApiConfig();
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");

@@ -44,7 +44,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         GpApiConfig config = new GpApiConfig();
         config.setAppId(APP_ID);
         config.setAppKey(APP_KEY);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);

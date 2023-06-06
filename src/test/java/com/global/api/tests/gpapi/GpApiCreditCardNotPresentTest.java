@@ -38,7 +38,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         //DO NOT DELETE - usage example for some settings
 //        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
@@ -514,7 +514,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
                 .setPermissions(permissions)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         final String GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
 

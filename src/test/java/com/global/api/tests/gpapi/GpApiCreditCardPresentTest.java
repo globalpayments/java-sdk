@@ -44,7 +44,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent.getValue());
+                .setChannel(Channel.CardPresent);
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
@@ -509,7 +509,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
                 .setPermissions(permissions)
-                .setChannel(Channel.CardPresent.getValue());
+                .setChannel(Channel.CardPresent);
 
         final String _WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
 

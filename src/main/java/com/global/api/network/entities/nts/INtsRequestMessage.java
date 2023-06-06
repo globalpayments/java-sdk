@@ -125,8 +125,8 @@ public interface INtsRequestMessage {
                     || manageBuilder.getTransactionType() == TransactionType.Refund
                     || manageBuilder.getTransactionType() == TransactionType.Void
                     || manageBuilder.getTransactionType() == TransactionType.PreAuthCompletion
-                    || ((manageBuilder.getTransactionType() == TransactionType.Capture) && paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)))
-                    ) {
+                    || ((manageBuilder.getTransactionType() == TransactionType.Capture) && (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) || paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Gift)))
+            ) {
                 // Transaction Date
                 NtsUtils.log("Transaction Date", transactionReference.getOriginalTransactionDate());
                 headerRequest.addRange(transactionReference.getOriginalTransactionDate(), 4);

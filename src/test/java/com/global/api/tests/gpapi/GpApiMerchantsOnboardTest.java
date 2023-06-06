@@ -44,7 +44,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         gpApiConfig.setAppId(APP_ID_FOR_MERCHANT);
         gpApiConfig.setAppKey(APP_KEY_FOR_MERCHANT);
         gpApiConfig.setEnvironment(Environment.TEST);
-        gpApiConfig.setChannel(Channel.CardNotPresent.getValue());
+        gpApiConfig.setChannel(Channel.CardNotPresent);
         gpApiConfig.setEnableLogging(true);
 
         ServicesContainer.configureService(gpApiConfig);
@@ -326,7 +326,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         gpApiConfigForMerchantId.setAppId(APP_ID_FOR_MERCHANT);
         gpApiConfigForMerchantId.setAppKey(APP_KEY_FOR_MERCHANT);
         gpApiConfigForMerchantId.setEnvironment(Environment.TEST);
-        gpApiConfigForMerchantId.setChannel(Channel.CardNotPresent.getValue());
+        gpApiConfigForMerchantId.setChannel(Channel.CardNotPresent);
         gpApiConfigForMerchantId.setMerchantId(merchantId);
         gpApiConfigForMerchantId.setEnableLogging(true);
 

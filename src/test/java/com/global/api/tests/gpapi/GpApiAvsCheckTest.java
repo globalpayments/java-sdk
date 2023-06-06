@@ -40,7 +40,7 @@ public class GpApiAvsCheckTest extends BaseGpApiTest {
             // GP-API settings
             config.setAppId(APP_ID);
             config.setAppKey(APP_KEY);
-            config.setChannel(Channel.CardNotPresent.getValue());
+            config.setChannel(Channel.CardNotPresent);
 
             config.setEnableLogging(true);
 

@@ -67,7 +67,7 @@ public class NtsDebitResponse implements INtsResponseMessage {
         String amount= StringUtils.padLeft(iAvailableAmount.toString(),7, '0');
         NtsUtils.log("Available Amount", amount);
 
-        if(buffer.length > 89 && emvFlag) {
+        if(buffer.length > 28 && emvFlag) {
             ntsDebitResponse.setEmvDataLength(sp.readInt(4)); // Emv
             NtsUtils.log("EMV Data Length", ntsDebitResponse.getEmvDataLength());
 

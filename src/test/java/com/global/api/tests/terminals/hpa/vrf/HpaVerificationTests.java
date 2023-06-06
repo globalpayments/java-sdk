@@ -76,7 +76,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
         PrintReceipt(response);
     }
@@ -112,7 +112,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
         PrintReceipt(response);
     }
@@ -141,7 +141,7 @@ public class HpaVerificationTests {
         assertEquals("Not Processed.", response.getCvvResponseText());
         assertEquals("U", response.getAvsResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
         PrintReceipt(response);
     }
@@ -164,7 +164,7 @@ public class HpaVerificationTests {
         assertEquals("10", response.getResponseCode());
         assertEquals(new BigDecimal("55"), response.getAmountDue());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
         PrintReceipt(response);
     }
@@ -190,7 +190,7 @@ public class HpaVerificationTests {
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
 
-        System.out.println("Response: " + voidResponse.toString());
+        System.out.println("Response: " + voidResponse);
         System.out.println("Gateway Txn ID: " + voidResponse.getTransactionId());
     }
 
@@ -223,7 +223,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -252,7 +252,7 @@ public class HpaVerificationTests {
         assertEquals("00", response.getResponseCode());
         assertEquals(new BigDecimal("10"), response.getBalanceAmount());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -262,7 +262,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -274,7 +274,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -301,7 +301,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -311,7 +311,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -321,7 +321,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -347,7 +347,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -357,7 +357,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 
@@ -367,7 +367,7 @@ public class HpaVerificationTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        System.out.println("Response: " + response.toString());
+        System.out.println("Response: " + response);
         System.out.println("Gateway Txn ID: " + response.getTransactionId());
     }
 

@@ -42,7 +42,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         config.setEnableLogging(true);
 
@@ -109,7 +109,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -174,7 +174,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -254,7 +254,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -334,7 +334,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -363,7 +363,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);
@@ -429,7 +429,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         config.setAppId(APP_ID_FOR_MERCHANT);
         config.setAppKey(APP_KEY_FOR_MERCHANT);
         config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setRequestLogger(new RequestConsoleLogger());
         config.setEnableLogging(true);
         ServicesContainer.configureService(config);

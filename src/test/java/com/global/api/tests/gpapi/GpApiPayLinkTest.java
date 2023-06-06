@@ -47,7 +47,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
         config
                 .setAppId("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK")
                 .setAppKey("oKZpWitk6tORoCVT")
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         config.setEnvironment(Environment.TEST);
         config.setCountry("GB");
@@ -965,7 +965,7 @@ public class GpApiPayLinkTest extends BaseGpApiTest {
 
         config.setAppId(APP_ID);
         config.setAppKey(APP_KEY);
-        config.setChannel(Channel.CardNotPresent.getValue());
+        config.setChannel(Channel.CardNotPresent);
         config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");

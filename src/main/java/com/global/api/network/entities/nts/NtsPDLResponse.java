@@ -51,13 +51,14 @@ public class NtsPDLResponse implements INtsResponseMessage {
 
         pdlResponse.setEndOfTableFlag(sp.readStringConstant(1, PDLEndOfTableFlag.class));
         NtsUtils.log("End Of table flag", pdlResponse.getEndOfTableFlag());
-
-        if (pdlResponse.getTableId().equals(PDLTableID.Table10)) {
-            IMPDLTable table10 = new MPDLTable10();
-            pdlResponse.setTable(table10.parseTableData(sp));
-        } else {
-            pdlResponse.setTableDataBlockLength(sp.readString(3));
-            pdlResponse.setTableDataBlockData(sp.readRemaining());
+        if(pdlResponse.getTableId()!= null){
+            if (pdlResponse.getTableId().equals(PDLTableID.Table10)) {
+                IMPDLTable table10 = new MPDLTable10();
+                pdlResponse.setTable(table10.parseTableData(sp));
+            } else {
+                pdlResponse.setTableDataBlockLength(sp.readString(3));
+                pdlResponse.setTableDataBlockData(sp.readRemaining());
+            }
         }
         return pdlResponse;
     }

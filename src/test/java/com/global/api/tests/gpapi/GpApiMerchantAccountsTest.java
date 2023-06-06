@@ -43,7 +43,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID_FOR_MERCHANT)
                 .setAppKey(APP_KEY_FOR_MERCHANT)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
         config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");

@@ -909,4 +909,352 @@ public class NtsGiftTests {
         System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
     }
 
+    @Test
+    public void test_SVS_Pre_Authorization_Completion_DataCollect_Issue_10198() throws ApiException {
+        ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = card.authorize(new BigDecimal(5))
+                .withCurrency("USD")
+                .withTimestamp("230605035010")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(5))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTimestamp("230605035020")
+                .withNtsTag16(getTag16())
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", completionResponse.getResponseCode());
+
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(card)
+                .withDebitAuthorizer(response.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withOriginalTransactionDate(response.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035030")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Pre_Authorization_Completion_DataCollect_Retries_10198() throws ApiException {
+        //ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = card.authorize(new BigDecimal(5))
+                .withCurrency("USD")
+                .withTimestamp("230605035010")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(5))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTimestamp("230605035020")
+                .withNtsTag16(getTag16())
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+
+        // check response
+        assertEquals("00", completionResponse.getResponseCode());
+
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(card)
+                .withDebitAuthorizer(response.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withOriginalTransactionDate(response.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035030")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction dataCollectResponse1 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035040")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse1);
+
+        // check response
+        assertEquals("00", dataCollectResponse1.getResponseCode());
+
+        Transaction dataCollectResponse2 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035050")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse2.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Pre_Authorization_Completion_DataCollect_Retries_withTimeStamp_10198() throws ApiException {
+        ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = card.authorize(new BigDecimal(5))
+                .withCurrency("USD")
+                .withTimestamp("230605035010")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(5))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withTimestamp("230605035020")
+                .withNtsTag16(getTag16())
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", completionResponse.getResponseCode());
+
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(card)
+                .withDebitAuthorizer(response.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withOriginalTransactionDate(response.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035030")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction dataCollectResponse1 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035040")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse1);
+
+        // check response
+        assertEquals("00", dataCollectResponse1.getResponseCode());
+
+        Transaction dataCollectResponse2 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withTimestamp("230605035050")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse2.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Pre_Authorization_Completion_DataCollect_Retries_noTimeStamp_10198() throws ApiException {
+        ServicesContainer.configureService(config, "ICR");
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        Transaction response = card.authorize(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        Transaction completionResponse = response.preAuthCompletion(new BigDecimal(5))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+
+        // check response
+        assertEquals("00", completionResponse.getResponseCode());
+
+        assertNotNull(completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        System.out.println("TransactionTypeIndicator: " + completionResponse.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        System.out.println("STAN: " + completionResponse.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+        System.out.println("RemainingBalance: " + completionResponse.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(card)
+                .withDebitAuthorizer(response.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withOriginalTransactionDate(response.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+
+        Transaction dataCollectResponse1 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse1);
+
+        // check response
+        assertEquals("00", dataCollectResponse1.getResponseCode());
+
+        Transaction dataCollectResponse2 = transaction.capture(new BigDecimal(5))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(response.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute("ICR");
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse2.getResponseCode());
+    }
+
+
 }

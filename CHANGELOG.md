@@ -1,5 +1,18 @@
 # Changelog
 
+## v10.2.17 (06/06/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Changes of Transaction time for both PreAuthCompletion and DataCollect must match with that of Pre Auth transaction and user data changes for pre auth ,completion and datacollect for gifts card(Issue 10198)
+  - EMV Issuer Response for Debit Emv transactions (Issue-10203)
+  - Fleetcor product rollup: Non fuels product codes must be reported from most expensive to least expensive (Issue-10207)
+  - Fleetcor product rollup for more than four non fuels products changes (Issue-10208)
+  - Resolving API Exception for Magnum PDL (Issue- 10209)
+  
+-GP-API: String usage refactor.
+
 ## v10.2.16 (05/25/2023)
  
 ### Enhancements:

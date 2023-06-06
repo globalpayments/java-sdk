@@ -30,7 +30,7 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         gpApiConfig
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent.getValue());
+                .setChannel(Channel.CardNotPresent);
 
         gpApiConfig.setEnableLogging(true);
 

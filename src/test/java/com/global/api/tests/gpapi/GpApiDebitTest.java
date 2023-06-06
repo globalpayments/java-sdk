@@ -30,7 +30,7 @@ public class GpApiDebitTest extends BaseGpApiTest {
         config
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent.getValue());
+                .setChannel(Channel.CardPresent);
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);

@@ -202,7 +202,7 @@ public class ThreadSafeTests extends BaseGpApiTest {
             GpApiConfig gpApiConfig = new GpApiConfig();
             gpApiConfig.setAppId("rkiYguPfTurmGcVhkDbIGKn2IJe2t09M");
             gpApiConfig.setAppKey("6gFzVGf40S7ZpjJs");
-            gpApiConfig.setChannel(Channel.CardNotPresent.getValue());
+            gpApiConfig.setChannel(Channel.CardNotPresent);
             gpApiConfig.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
             gpApiConfig.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
             gpApiConfig.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
