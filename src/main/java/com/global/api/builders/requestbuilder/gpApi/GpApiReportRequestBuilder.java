@@ -1,12 +1,14 @@
-package com.global.api.entities.gpApi;
+package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionReportBuilder;
 import com.global.api.builders.UserReportBuilder;
+import com.global.api.entities.IRequestBuilder;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.utils.EnumUtils;
@@ -14,11 +16,13 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
 
-import static com.global.api.gateways.GpApiConnector.*;
+import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
+import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 
-public class GpApiReportRequestBuilder {
+public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder> {
 
-    public static GpApiRequest buildRequest(ReportBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
+    @Override
+    public GpApiRequest buildRequest(ReportBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
         String merchantUrl = gateway.getMerchantUrl();
         var request = new GpApiRequest();
 
@@ -29,7 +33,7 @@ public class GpApiReportRequestBuilder {
             switch (builder.getReportType()) {
 
                 case TransactionDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + trb.getTransactionId());
 
@@ -82,7 +86,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case FindSettlementTransactionsPaged:
-                    request = new GpApiRequest()
+                    request = (GpApiRequest) new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.SETTLEMENT_TRANSACTIONS_ENDPOINT);
 
@@ -114,7 +118,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case DepositDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.DEPOSITS_ENDPOINT + "/" + trb.getSearchBuilder().getDepositReference());
 
@@ -141,12 +145,12 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case DisputeDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getDisputeId());
 
                 case DocumentDisputeDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getDisputeId() +
                                     "/documents/" + trb.getSearchBuilder().getDisputeDocumentId());
@@ -172,7 +176,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case SettlementDisputeDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.SETTLEMENT_DISPUTES_ENDPOINT + "/" + trb.getSearchBuilder().getSettlementDisputeId());
 
@@ -202,7 +206,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case StoredPaymentMethodDetail:
-                    return
+                    return (GpApiRequest)
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + trb.getSearchBuilder().getStoredPaymentMethodId());
@@ -255,7 +259,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case ActionDetail:
-                    return request
+                    return (GpApiRequest) request
                             .setVerb(GpApiRequest.HttpMethod.Get)
                             .setEndpoint(merchantUrl + GpApiRequest.ACTIONS_ENDPOINT + "/" + trb.getSearchBuilder().getActionId());
 
@@ -285,7 +289,7 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case PayLinkDetail:
-                    return
+                    return (GpApiRequest)
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + trb.getSearchBuilder().getPayLinkId());
@@ -305,7 +309,7 @@ public class GpApiReportRequestBuilder {
                     request.addQueryStringParam("currency", trb.getSearchBuilder().getCurrency());
                     request.addQueryStringParam("expiration_date", getDateIfNotNull(trb.getSearchBuilder().getExpirationDate()));
 
-                    return
+                    return (GpApiRequest)
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT);
@@ -320,7 +324,7 @@ public class GpApiReportRequestBuilder {
 
             switch (builder.getReportType()) {
                 case FindMerchantsPaged:
-                    request =
+                    request = (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT);
@@ -338,7 +342,7 @@ public class GpApiReportRequestBuilder {
                         endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + userTrb.getSearchBuilder().getMerchantId();
                     }
 
-                    request =
+                    request = (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(endpoint + GpApiRequest.ACCOUNTS_ENDPOINT);
@@ -356,13 +360,13 @@ public class GpApiReportRequestBuilder {
                     return request;
 
                 case FindAccountDetail:
-                    request =
+                    request = (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + builder.getSearchBuilder().getAccountId());
 
                     if (builder.getSearchBuilder().getAddress() != null) {
-                        request =
+                        request = (GpApiRequest)
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Get)
                                         .setEndpoint(merchantUrl + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + builder.getSearchBuilder().getAccountId() + "/addresses");
@@ -380,6 +384,11 @@ public class GpApiReportRequestBuilder {
         }
 
         throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public boolean canProcess(Object builder) {
+        return builder instanceof ReportBuilder;
     }
 
     private static void basicsParams(GpApiRequest request, UserReportBuilder userTrb) {

@@ -62,7 +62,26 @@ public enum TransactionType implements IFlag {
     RiskAssess,
     TimeRequest,
     Issue,
-    RequestPendingMessages;
+    RequestPendingMessages,
+    ResetPassword,
+    RenewAccount,
+    UpdateBeneficialOwnership,
+    DisownAccount,
+    UploadDocumentChargeback,
+    UploadDocument,
+    ObtainSSOKey,
+    UpdateBankAccountOwnership,
+    AddFunds,
+    SweepFunds,
+    AddCardFlashFunds,
+    PushMoneyFlashFunds,
+    DisburseFunds,
+    SpendBack,
+    ReverseSplitPay,
+    GetAccountDetails,
+    GetAccountBalance,
+    OrderDevice;
+
 
     public long getLongValue() {
         return 1L << this.ordinal();

@@ -1,6 +1,7 @@
 package com.global.api.gateways;
 
 import com.global.api.builders.*;
+import com.global.api.builders.requestbuilder.gpApi.*;
 import com.global.api.entities.RiskAssessment;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
@@ -254,7 +255,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiAuthorizationRequestBuilder.buildRequest(builder, this);
+        GpApiAuthorizationRequestBuilder gpApiAuthorizationRequestBuilder = new GpApiAuthorizationRequestBuilder();
+        GpApiRequest request = gpApiAuthorizationRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
@@ -273,7 +275,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiManagementRequestBuilder.buildRequest(builder, this);
+        GpApiManagementRequestBuilder gpApiManagementRequestBuilder = new GpApiManagementRequestBuilder();
+        GpApiRequest request = gpApiManagementRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
@@ -293,7 +296,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiReportRequestBuilder.buildRequest(builder, this);
+        GpApiReportRequestBuilder gpApiReportRequestBuilder = new GpApiReportRequestBuilder();
+        GpApiRequest request = gpApiReportRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), null);
@@ -312,7 +316,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiSecure3DRequestBuilder.buildRequest(builder, this);
+        GpApiSecureRequestBuilder gpApiSecureRequestBuilder = new GpApiSecureRequestBuilder();
+        GpApiRequest request = gpApiSecureRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
@@ -329,7 +334,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiPayFacRequestBuilder.buildRequest(builder, this);
+        GpApiPayFacRequestBuilder gpApiPayFacRequestBuilder = new GpApiPayFacRequestBuilder();
+        GpApiRequest request = gpApiPayFacRequestBuilder.buildRequest(builder, this);
 
         if (request != null){
             var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
@@ -456,7 +462,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             signIn();
         }
 
-        GpApiRequest request = GpApiSecureRequestBuilder.buildRequest(builder, this);
+        GpApiSecureRequestBuilder gpApiSecureRequestBuilder = new GpApiSecureRequestBuilder();
+        GpApiRequest request = gpApiSecureRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
             var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());

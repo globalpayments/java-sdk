@@ -23,7 +23,11 @@ public enum ServiceEndpoints implements IStringConstant {
     GENIUS_API_PRODUCTION("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v46/Credit.asmx"),
     GENIUS_API_TEST("https://ps1.merchantware.net/Merchantware/ws/RetailTransaction/v46/Credit.asmx"),
     GENIUS_TERMINAL_PRODUCTION("https://transport.merchantware.net/v4/transportService.asmx"),
-    GENIUS_TERMINAL_TEST("https://transport.merchantware.net/v4/transportService.asmx");
+    GENIUS_TERMINAL_TEST("https://transport.merchantware.net/v4/transportService.asmx"),
+    PROPAY_TEST("https://xmltest.propay.com/API/PropayAPI.aspx"),
+    PROPAY_TEST_CANADIAN("https://xmltestcanada.propay.com/API/PropayAPI.aspx"),
+    PROPAY_PRODUCTION("https://epay.propay.com/API/PropayAPI.aspx"),
+    PROPAY_PRODUCTION_CANADIAN("https://www.propaycanada.ca/API/PropayAPI.aspx");
 
     String value;
     ServiceEndpoints(String value) { this.value = value; }

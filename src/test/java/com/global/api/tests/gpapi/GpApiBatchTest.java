@@ -109,7 +109,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
     @Test
     public void CloseBatch_ContactlessTransaction() {
         DebitTrackData debitCard = new DebitTrackData();
-        debitCard.setValue(";4024720012345671=18125025432198712345?");
+        debitCard.setValue(";4024720012345671=30125025432198712345?");
         debitCard.setEntryMethod(EntryMethod.Proximity);
         debitCard.setPinBlock("AFEC374574FC90623D010000116001EE");
 

@@ -6,5 +6,6 @@ public enum GatewayProvider {
     GENIUS,
     TRANSIT,
     GP_API,
-    TransactionApi;
+    TransactionApi,
+    PROPAY;
 }

@@ -23,7 +23,10 @@ public class ConfiguredServices implements IDisposable {
     private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;
+    @Getter @Setter
+    private IProPayProvider proPayProvider;
     @Getter @Setter private IPayFacProvider payFacProvider;
+
 
     IPaymentGateway getGatewayConnector() {
         return gatewayConnector;
@@ -95,4 +98,5 @@ public class ConfiguredServices implements IDisposable {
     public void dispose() {
         deviceController.dispose();
     }
+
 }

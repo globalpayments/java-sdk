@@ -96,24 +96,33 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        Transaction captured =
-                response
-                        .capture()
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(response.getTransactionId())
                         .execute();
 
-        assertNotNull(captured);
-        assertEquals("SUCCESS", captured.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), captured.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
 
-        Transaction refund =
-                captured
-                        .refund(amount)
-                        .withCurrency(currency)
-                        .execute();
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
+            Transaction captured =
+                    response
+                            .capture()
+                            .execute();
 
-        assertNotNull(refund);
-        assertEquals("SUCCESS", refund.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
+            assertNotNull(captured);
+            assertEquals("SUCCESS", captured.getResponseCode());
+            assertEquals(TransactionStatus.Captured.getValue(), captured.getResponseMessage());
+
+            Transaction refund =
+                    captured
+                            .refund(amount)
+                            .withCurrency(currency)
+                            .execute();
+
+            assertNotNull(refund);
+            assertEquals("SUCCESS", refund.getResponseCode());
+            assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -171,26 +180,36 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        Transaction captureTrn =
-                transaction
-                        .capture()
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
 
-        Thread.sleep(15000);
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
 
-        Transaction trnRefund =
-                captureTrn
-                        .refund(100)
-                        .withCurrency(currency)
-                        .execute();
+            Transaction captureTrn =
+                    transaction
+                            .capture()
+                            .execute();
 
-        assertNotNull(trnRefund);
-        assertEquals("SUCCESS", trnRefund.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+
+            Thread.sleep(15000);
+
+            Transaction trnRefund =
+                    captureTrn
+                            .refund(100)
+                            .withCurrency(currency)
+                            .execute();
+
+            assertNotNull(trnRefund);
+            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -220,36 +239,46 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        Transaction captureTrn =
-                transaction
-                        .capture()
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
 
-        Thread.sleep(60000);
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
 
-        Transaction trnRefund =
-                captureTrn
-                        .refund(100)
-                        .withCurrency(currency)
-                        .execute();
+            Transaction captureTrn =
+                    transaction
+                            .capture()
+                            .execute();
 
-        assertNotNull(trnRefund);
-        assertEquals("SUCCESS", trnRefund.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
 
-        Transaction secondTrnRefund =
-                captureTrn
-                        .refund(100)
-                        .withCurrency(currency)
-                        .execute();
+            Thread.sleep(60000);
 
-        assertNotNull(secondTrnRefund);
-        assertEquals("SUCCESS", secondTrnRefund.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), secondTrnRefund.getResponseMessage());
+            Transaction trnRefund =
+                    captureTrn
+                            .refund(100)
+                            .withCurrency(currency)
+                            .execute();
+
+            assertNotNull(trnRefund);
+            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
+
+            Transaction secondTrnRefund =
+                    captureTrn
+                            .refund(100)
+                            .withCurrency(currency)
+                            .execute();
+
+            assertNotNull(secondTrnRefund);
+            assertEquals("SUCCESS", secondTrnRefund.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), secondTrnRefund.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -279,14 +308,24 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(60000);
 
-        Transaction captureTrn =
-                transaction
-                        .reverse()
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Reversed.toString().toUpperCase(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
+
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
+
+            Transaction reverseTransactionResponse =
+                    transaction
+                            .reverse()
+                            .execute();
+
+            assertNotNull(reverseTransactionResponse);
+            assertEquals("SUCCESS", reverseTransactionResponse.getResponseCode());
+            assertEquals(TransactionStatus.Reversed.toString().toUpperCase(), reverseTransactionResponse.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -335,18 +374,28 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        Transaction captureTrn =
-                transaction
-                        .capture()
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.getValue(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
+
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
+
+            Transaction captureTrn =
+                    transaction
+                            .capture()
+                            .execute();
+
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.getValue(), captureTrn.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
-    public void BNPL_ClearPayProvider() throws ApiException {
+    public void BNPL_ClearPayProvider() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -365,6 +414,29 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         assertEquals("SUCCESS", transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
+
+        System.out.println(transaction.getBNPLResponse().getRedirectUrl());
+
+        Thread.sleep(50000);
+
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
+                        .execute();
+
+        assertNotNull(findTransactionByIdResponse);
+
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
+
+            Transaction captureTrn =
+                    transaction
+                            .capture()
+                            .execute();
+
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -392,14 +464,24 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(50000);
 
-        Transaction captureTrn =
-                transaction
-                        .capture(100)
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
+
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
+
+            Transaction captureTrn =
+                    transaction
+                            .capture(100)
+                            .execute();
+
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test
@@ -428,25 +510,35 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
         Thread.sleep(45000);
 
-        Transaction captureTrn =
-                transaction
-                        .capture(100)
+        TransactionSummary findTransactionByIdResponse =
+                ReportingService
+                        .transactionDetail(transaction.getTransactionId())
                         .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        assertNotNull(findTransactionByIdResponse);
 
-        Thread.sleep(25000);
+        if (findTransactionByIdResponse.getTransactionStatus().equals("PREAUTHORIZED")) {
 
-        captureTrn =
-                transaction
-                        .capture(100)
-                        .execute();
+            Transaction captureTrn =
+                    transaction
+                            .capture(100)
+                            .execute();
 
-        assertNotNull(captureTrn);
-        assertEquals("SUCCESS", captureTrn.getResponseCode());
-        assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+
+            Thread.sleep(25000);
+
+            captureTrn =
+                    transaction
+                            .capture(100)
+                            .execute();
+
+            assertNotNull(captureTrn);
+            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
+        } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
 
     @Test

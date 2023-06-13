@@ -9,7 +9,6 @@ import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.gpApi.PagedResult;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.DisputeSummary;
 import com.global.api.entities.reporting.DisputeSummaryPaged;
@@ -863,7 +862,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
 
     @Test
     public void ReportFindSettlementDisputesPaged_By_DepositDate() throws ApiException {
-        PagedResult<DisputeSummary> result =
+        DisputeSummaryPaged result =
                 ReportingService
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)

@@ -249,6 +249,7 @@ public class GpEcomCreditTest {
 
     @Test
     public void dccRateLookup_Charge() throws ApiException {
+        card.setNumber("4006097467207025");
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")
@@ -267,6 +268,7 @@ public class GpEcomCreditTest {
 
     @Test
     public void dccRateLookup_Auth() throws ApiException {
+        card.setNumber("4006097467207025");
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
                 .withAmount(new BigDecimal("10.01"))
                 .withCurrency("EUR")

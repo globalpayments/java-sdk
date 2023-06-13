@@ -1,5 +1,23 @@
 # Changelog
 
+## v10.3.0 (06/13/2023)
+ 
+### Enhancements:
+
+-Propay Transaction Implementation
+
+-NTS Phase1 Issue:
+  - Added setKsnAndEncryptedData method which is similar to setKtbAndKsn method
+  
+-GP-API:
+  - Show Authorization header when logging
+  - Improvements in the Request Builders and on GpApiRequest
+  - Unit tests updates
+  
+#### Bug Fixes:
+-GP-ECOM: 
+  - Fix nullpointer for frictionless cards on getAuthenticationData for authentication source MOBILE_SDK
+
 ## v10.2.17 (06/06/2023)
  
 ### Enhancements:

@@ -691,6 +691,59 @@ public class GpEcomSecure3dServiceTest {
     }
 
     @Test
+    public void optionalMobileFields_frictionlessCard_noNullpointerException() throws ApiException {
+        //card number for optional mobile fields
+        card.setNumber("4263970000005262");
+
+        // check enrollment
+        ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
+                .execute(Secure3dVersion.TWO);
+        assertNotNull(secureEcom);
+
+        assertTrue(secureEcom.isEnrolled());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+
+        String ephemeralPublicKey = "{" +
+                "\"kty\":\"EC\"," +
+                "\"crv\":\"P-256\"," +
+                "\"x\":\"WWcpTjbOqiu_1aODllw5rYTq5oLXE_T0huCPjMIRbkI\"," +
+                "\"y\":\"Wz_7anIeadV8SJZUfr4drwjzuWoUbOsHp5GdRZBAAiw\"" +
+                "}";
+
+        // initiate authentication
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.MobileSDK)
+                        .withOrderCreateDate(DateTime.now())
+                        .withOrderId(secureEcom.getOrderId())
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withAddressMatchIndicator(false)
+                        .withMethodUrlCompletion(MethodUrlCompletion.No)
+                        .withMessageCategory(MessageCategory.PaymentAuthentication)
+                        .withCustomerEmail("customer@domain.com")
+                        // optionals
+                        .withApplicationId("f283b3ec-27da-42a1-acea-f3f70e75bbdc")
+                        .withSdkInterface(SdkInterface.Both)
+                        .withSdkUiTypes(SdkUiType.Text, SdkUiType.SingleSelect, SdkUiType.MultiSelect, SdkUiType.OOB, SdkUiType.HTML_Other)
+                        .withReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
+                        .withSdkTransactionId("b2385523-a66c-4907-ac3c-91848e8c0067")
+                        .withEncodedData("ew0KCSJEViI6ICIxLjAiLA0KCSJERCI6IHsNCgkJIkMwMDEiOiAiQW5kcm9pZCIsDQoJCSJDMDAyIjogIkhUQyBPbmVfTTgiLA0KCQkiQzAwNCI6ICI1LjAuMSIsDQoJCSJDMDA1IjogImVuX1VTIiwNCgkJIkMwMDYiOiAiRWFzdGVybiBTdGFuZGFyZCBUaW1lIiwNCgkJIkMwMDciOiAiMDY3OTc5MDMtZmI2MS00MWVkLTk0YzItNGQyYjc0ZTI3ZDE4IiwNCgkJIkMwMDkiOiAiSm9obidzIEFuZHJvaWQgRGV2aWNlIg0KCX0sDQoJIkRQTkEiOiB7DQoJCSJDMDEwIjogIlJFMDEiLA0KCQkiQzAxMSI6ICJSRTAzIg0KCX0sDQoJIlNXIjogWyJTVzAxIiwgIlNXMDQiXQ0KfQ0K")
+                        .withMaximumTimeout(5)
+                        .withEphemeralPublicKey(ephemeralPublicKey)
+                        .execute();
+
+        // get authentication data
+        secureEcom = Secure3dService.getAuthenticationData()
+                .withServerTransactionId(initAuth.getServerTransactionId())
+                .execute();
+        card.setThreeDSecure(secureEcom);
+    }
+
+    @Test
     public void checkVersion_Not_Enrolled() throws ApiException {
         card.setNumber("4917000000000087");
 

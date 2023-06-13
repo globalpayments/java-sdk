@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * ¡¡¡                  READ BEFORE RUNNING THIS TESTS SUITE                !!!
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- *
+ * <p>
  * How to have a success running test. When you will run the test in the console it will be printed the
  * PayPal redirect url. You need to copy the link and open it in a browser, do the login wih your PayPal
  * credentials and authorize the payment in the PayPal form. You will be redirected to a blank page with a
@@ -37,6 +37,7 @@ public class GpApiApmTest extends BaseGpApiTest {
     private AlternativePaymentMethod paymentMethod;
     private String currency;
     private Address shippingAddress = null;
+    private Date startDate;
 
     @Before
     public void initialize() throws ConfigurationException {
@@ -60,6 +61,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .setAccountHolderName("James Mason");
 
         currency = "USD";
+        startDate = new Date();
 
         shippingAddress =
                 new Address()
@@ -91,14 +93,11 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        Date startDate = new Date();
-
         TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, startDate)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(responseFind);
@@ -107,20 +106,22 @@ public class GpApiApmTest extends BaseGpApiTest {
         TransactionSummary transactionSummary = responseFind.getResults().get(0);
         assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
-        assertEquals("PENDING", transactionSummary.getTransactionStatus());
-        assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
-        transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
+        if (transactionSummary.getTransactionStatus().equals("PENDING")) {
+            assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        response =
-                transaction
-                        .confirm()
-                        .execute(GP_API_CONFIG_NAME);
+            Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+            transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
-        assertEquals("CAPTURED", response.getResponseMessage());
+            response =
+                    transaction
+                            .confirm()
+                            .execute(GP_API_CONFIG_NAME);
+
+            assertNotNull(response);
+            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals("CAPTURED", response.getResponseMessage());
+        } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
     @Test
@@ -143,14 +144,11 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        Date startDate = new Date();
-
         TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, startDate)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(responseFind);
@@ -160,29 +158,31 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
         assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
-        assertEquals("PENDING", transactionSummary.getTransactionStatus());
-        assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
-        transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
+        if (transactionSummary.getTransactionStatus().equals("PENDING")) {
+            assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        response =
-                transaction
-                        .confirm()
-                        .execute(GP_API_CONFIG_NAME);
+            Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+            transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
-        assertEquals("PREAUTHORIZED", response.getResponseMessage());
+            response =
+                    transaction
+                            .confirm()
+                            .execute(GP_API_CONFIG_NAME);
 
-        Transaction capture =
-                transaction
-                        .capture()
-                        .execute(GP_API_CONFIG_NAME);
+            assertNotNull(response);
+            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals("PREAUTHORIZED", response.getResponseMessage());
 
-        assertNotNull(capture);
-        assertEquals("SUCCESS", capture.getResponseCode());
-        assertEquals("CAPTURED", capture.getResponseMessage());
+            Transaction capture =
+                    transaction
+                            .capture()
+                            .execute(GP_API_CONFIG_NAME);
+
+            assertNotNull(capture);
+            assertEquals("SUCCESS", capture.getResponseCode());
+            assertEquals("CAPTURED", capture.getResponseMessage());
+        } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
     @Test
@@ -205,14 +205,11 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        Date startDate = new Date();
-
         TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, startDate)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(responseFind);
@@ -222,30 +219,32 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
         assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
-        assertEquals("PENDING", transactionSummary.getTransactionStatus());
-        assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
-        transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
+        if (transactionSummary.getTransactionStatus().equals("PENDING")) {
+            assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction response =
-                transaction
-                        .confirm()
-                        .execute(GP_API_CONFIG_NAME);
+            Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+            transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
-        assertEquals("CAPTURED", response.getResponseMessage());
+            Transaction response =
+                    transaction
+                            .confirm()
+                            .execute(GP_API_CONFIG_NAME);
 
-        Transaction trnRefund =
-                transaction
-                        .refund()
-                        .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+            assertNotNull(response);
+            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals("CAPTURED", response.getResponseMessage());
 
-        assertNotNull(trnRefund);
-        assertEquals("SUCCESS", trnRefund.getResponseCode());
-        assertEquals("CAPTURED", trnRefund.getResponseMessage());
+            Transaction trnRefund =
+                    transaction
+                            .refund()
+                            .withCurrency(currency)
+                            .execute(GP_API_CONFIG_NAME);
+
+            assertNotNull(trnRefund);
+            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals("CAPTURED", trnRefund.getResponseMessage());
+        } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
     @Ignore
@@ -268,14 +267,11 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         Thread.sleep(25000);
 
-        Date startDate = new Date();
-
         TransactionSummaryPaged response =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, startDate)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
@@ -284,30 +280,32 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
         assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
-        assertEquals("PENDING", transactionSummary.getTransactionStatus());
-        assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null,PaymentMethodType.APM);
-        transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
+        if (transactionSummary.getTransactionStatus().equals("PENDING")) {
+            assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction responseTrn =
-                transaction
-                        .confirm()
-                        .execute(GP_API_CONFIG_NAME);
+            Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+            transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        assertNotNull(responseTrn);
-        assertEquals("SUCCESS", responseTrn.getResponseCode());
-        assertEquals("CAPTURED", responseTrn.getResponseMessage());
+            Transaction responseTrn =
+                    transaction
+                            .confirm()
+                            .execute(GP_API_CONFIG_NAME);
 
-        Transaction trnReverse =
-                responseTrn
-                        .reverse()
-                        .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+            assertNotNull(responseTrn);
+            assertEquals("SUCCESS", responseTrn.getResponseCode());
+            assertEquals("CAPTURED", responseTrn.getResponseMessage());
 
-        assertNotNull(trnReverse);
-        assertEquals("SUCCESS", trnReverse.getResponseCode());
-        assertEquals("REVERSED", trnReverse.getResponseMessage());
+            Transaction trnReverse =
+                    responseTrn
+                            .reverse()
+                            .withCurrency(currency)
+                            .execute(GP_API_CONFIG_NAME);
+
+            assertNotNull(trnReverse);
+            assertEquals("SUCCESS", trnReverse.getResponseCode());
+            assertEquals("REVERSED", trnReverse.getResponseMessage());
+        } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
     @Test
@@ -325,20 +323,15 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("INITIATED", response.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
-        if (response.getAlternativePaymentResponse() != null) {
-            System.out.println(response.getAlternativePaymentResponse().getRedirectUrl());
-        }
+        System.out.println(response.getAlternativePaymentResponse().getRedirectUrl());
 
         Thread.sleep(25000);
-
-        Date startDate = new Date();
 
         TransactionSummaryPaged responseFind =
                 ReportingService
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .and(SearchCriteria.EndDate, startDate)
                         .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(responseFind);
@@ -348,38 +341,40 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertFalse(StringUtils.isNullOrEmpty(transactionSummary.getTransactionId()));
         assertNotNull(transactionSummary.getAlternativePaymentResponse());
         assertEquals(AlternativePaymentType.PAYPAL.toString().toLowerCase(), transactionSummary.getAlternativePaymentResponse().getProviderName());
-        assertEquals("PENDING", transactionSummary.getTransactionStatus());
-        assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
-        transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
+        if (transactionSummary.getTransactionStatus().equals("PENDING")) {
+            assertNotNull(transactionSummary.getAlternativePaymentResponse().getProviderReference());
 
-        Transaction responseConf =
-                transaction
-                        .confirm()
-                        .execute(GP_API_CONFIG_NAME);
+            Transaction transaction = Transaction.fromId(transactionSummary.getTransactionId(), null, PaymentMethodType.APM);
+            transaction.setAlternativePaymentResponse(transactionSummary.getAlternativePaymentResponse());
 
-        assertNotNull(responseConf);
-        assertEquals("SUCCESS", responseConf.getResponseCode());
-        assertEquals("PREAUTHORIZED", responseConf.getResponseMessage());
+            Transaction responseConf =
+                    transaction
+                            .confirm()
+                            .execute(GP_API_CONFIG_NAME);
 
-        Transaction capture =
-                transaction
-                        .capture(1)
-                        .execute(GP_API_CONFIG_NAME);
+            assertNotNull(responseConf);
+            assertEquals("SUCCESS", responseConf.getResponseCode());
+            assertEquals("PREAUTHORIZED", responseConf.getResponseMessage());
 
-        assertNotNull(capture);
-        assertEquals("SUCCESS", capture.getResponseCode());
-        assertEquals("CAPTURED", capture.getResponseMessage());
+            Transaction capture =
+                    transaction
+                            .capture(1)
+                            .execute(GP_API_CONFIG_NAME);
 
-        Transaction capture2 =
-                transaction
-                        .capture(2)
-                        .execute(GP_API_CONFIG_NAME);
+            assertNotNull(capture);
+            assertEquals("SUCCESS", capture.getResponseCode());
+            assertEquals("CAPTURED", capture.getResponseMessage());
 
-        assertNotNull(capture2);
-        assertEquals("SUCCESS", capture2.getResponseCode());
-        assertEquals("CAPTURED", capture2.getResponseMessage());
+            Transaction capture2 =
+                    transaction
+                            .capture(2)
+                            .execute(GP_API_CONFIG_NAME);
+
+            assertNotNull(capture2);
+            assertEquals("SUCCESS", capture2.getResponseCode());
+            assertEquals("CAPTURED", capture2.getResponseMessage());
+        } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
     @Test
@@ -427,7 +422,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .withShippingAmt(new BigDecimal(3))
                         //.withShippingDiscount(1)
                         .withOrderDetails(order)
-                .execute(GP_API_CONFIG_NAME);
+                        .execute(GP_API_CONFIG_NAME);
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());

@@ -30,6 +30,9 @@ import static com.global.api.logging.PrettyLogger.toPrettyJson;
 @Getter
 @Setter
 public abstract class Gateway {
+
+    private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
+
     private String contentType;
     private boolean enableLogging;
     private IRequestLogger requestLogger;
@@ -170,7 +173,17 @@ public abstract class Gateway {
             }
         }
 
+        appendAuthorizationHeader(logEntry);
+
         logEntry.append(lSChar);
+    }
+
+    private void appendAuthorizationHeader(StringBuilder logEntry) {
+        if (!headers.containsKey(AUTHORIZATION_HEADER_KEY)) {
+            return;
+        }
+        String value = headers.get(AUTHORIZATION_HEADER_KEY);
+        logEntry.append(AUTHORIZATION_HEADER_KEY).append(": ").append(value).append(lSChar);
     }
 
     public String getRawResponse(InputStream responseStream) throws IOException {

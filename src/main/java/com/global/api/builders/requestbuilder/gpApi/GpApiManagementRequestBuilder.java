@@ -1,8 +1,11 @@
-package com.global.api.entities.gpApi;
+package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.ManagementBuilder;
+import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
+import com.global.api.entities.IRequestBuilder;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.PaymentMethodName;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.Target;
@@ -10,10 +13,13 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.gateways.GpApiConnector;
-import com.global.api.paymentMethods.*;
+import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.ITokenizable;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.EnumUtils;
-import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import com.google.gson.JsonArray;
@@ -26,11 +32,12 @@ import lombok.var;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GpApiManagementRequestBuilder {
+public class GpApiManagementRequestBuilder implements IRequestBuilder<ManagementBuilder> {
 
     @Getter @Setter private static HashMap<String, ArrayList<String>> allowedActions;
 
-    public static GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException, UnsupportedTransactionException {
+    @Override
+    public GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException, UnsupportedTransactionException {
         JsonDoc data = new JsonDoc();
 
         TransactionType builderTransactionType = builder.getTransactionType();
@@ -52,7 +59,7 @@ public class GpApiManagementRequestBuilder {
             data.set("gratuity_amount", StringUtils.toNumeric(builder.getGratuity()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/capture")
@@ -63,7 +70,7 @@ public class GpApiManagementRequestBuilder {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/refund")
@@ -87,7 +94,7 @@ public class GpApiManagementRequestBuilder {
                 endpoint  = endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
             }
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint)
@@ -113,20 +120,20 @@ public class GpApiManagementRequestBuilder {
                             .set("usage_mode", builder.getPaymentMethodUsageMode() != null ? builder.getPaymentMethodUsageMode() : null)
                             .set("name", cardData.getCardHolderName() != null ? cardData.getCardHolderName() : null);
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Patch)
                             .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken())
                             .setRequestBody(data.toString());
         }
         else if (builderTransactionType == TransactionType.TokenDelete && builderPaymentMethod instanceof ITokenizable) {
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Delete)
                         .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken());
         }
         else if (builderTransactionType == TransactionType.DisputeAcceptance) {
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/acceptance");
@@ -150,14 +157,14 @@ public class GpApiManagementRequestBuilder {
             JsonObject disputeChallengeData = new JsonObject();
             disputeChallengeData.add("documents", documentsJsonArray);
 
-            return
+            return  (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/challenge")
                             .setRequestBody(disputeChallengeData.toString());
         }
         else if (builderTransactionType == TransactionType.BatchClose) {
-            return new GpApiRequest()
+            return  (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference());
         }
@@ -194,7 +201,7 @@ public class GpApiManagementRequestBuilder {
                 }
             }
 
-            return new GpApiRequest()
+            return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reauthorization")
                     .setRequestBody(data.toString());
@@ -215,7 +222,7 @@ public class GpApiManagementRequestBuilder {
                 data
                         .set("payment_method", payment_method);
 
-                return new GpApiRequest()
+                return  (GpApiRequest) new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/confirmation")
                         .setRequestBody(data.toString());
@@ -252,7 +259,7 @@ public class GpApiManagementRequestBuilder {
                 }
             }
 
-            return new GpApiRequest()
+            return  (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/incremental")
                     .setRequestBody(data.toString());
@@ -271,7 +278,7 @@ public class GpApiManagementRequestBuilder {
                     .set("gratuity_amount",  StringUtils.toNumeric(builder.getGratuity()))
                     .set("payment_method",  payment_method);
 
-            return new GpApiRequest()
+            return  (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/adjustment")
                     .setRequestBody(data.toString());
@@ -299,7 +306,7 @@ public class GpApiManagementRequestBuilder {
                     .set("expiration_date", payLinkData.getExpirationDate() != null ? payLinkData.getExpirationDate().toString("yyyy-MM-dd") : null)
                     .set("images", payLinkData.getImages() != null ? payLinkData.getImages().toString() : null);
 
-            return new GpApiRequest()
+            return  (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Patch)
                     .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + builder.getPaymentLinkId())
                     .setRequestBody(data.toString());
@@ -315,7 +322,7 @@ public class GpApiManagementRequestBuilder {
                             "release" :
                             builderTransactionType == TransactionType.Hold ? "hold" : null;
 
-            return
+            return  (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/" + endpoint)
@@ -343,7 +350,7 @@ public class GpApiManagementRequestBuilder {
                 endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + builder.getFundsData().getMerchantId();
             }
 
-            return
+            return  (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/split")
@@ -351,6 +358,11 @@ public class GpApiManagementRequestBuilder {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean canProcess(Object builder) {
+        return builder instanceof ManagementBuilder;
     }
 
     static JsonDoc getDccId(DccRateData dccRateData)

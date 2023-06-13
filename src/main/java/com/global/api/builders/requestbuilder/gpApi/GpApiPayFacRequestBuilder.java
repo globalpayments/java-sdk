@@ -1,10 +1,14 @@
-package com.global.api.entities.gpApi;
+package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.PayFacBuilder;
+import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Address;
+import com.global.api.entities.IRequestBuilder;
 import com.global.api.entities.Product;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.AddressType;
 import com.global.api.entities.enums.TransactionModifier;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.entities.payFac.BankAccountData;
 import com.global.api.entities.payFac.Person;
 import com.global.api.gateways.GpApiConnector;
@@ -19,11 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GpApiPayFacRequestBuilder {
+public class GpApiPayFacRequestBuilder implements IRequestBuilder<PayFacBuilder> {
 
     private static PayFacBuilder _builder;
 
-    public static GpApiRequest buildRequest(PayFacBuilder builder, GpApiConnector gateway) {
+    public GpApiRequest buildRequest(PayFacBuilder builder, GpApiConnector gateway) {
         _builder = builder;
 
         var merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
@@ -34,7 +38,7 @@ public class GpApiPayFacRequestBuilder {
                 if (builder.getTransactionModifier() == TransactionModifier.Merchant) {
                     var data = buildCreateMerchantRequest();
 
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT)
@@ -44,7 +48,7 @@ public class GpApiPayFacRequestBuilder {
 
             case Edit:
                 if (builder.getTransactionModifier() == TransactionModifier.Merchant) {
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Patch)
                                     .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + _builder.getUserReference().getUserId())
@@ -54,7 +58,7 @@ public class GpApiPayFacRequestBuilder {
 
             case Fetch:
                 if (builder.getTransactionModifier() == TransactionModifier.Merchant) {
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Get)
                                     .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + _builder.getUserReference().getUserId());
@@ -85,7 +89,7 @@ public class GpApiPayFacRequestBuilder {
                     endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + builder.getUserReference().getUserId();
                 }
 
-            return
+            return (GpApiRequest)
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Patch)
                                 .setEndpoint(endpoint + GpApiRequest.ACCOUNTS_ENDPOINT + "/" + _builder.getAccountNumber())
@@ -96,6 +100,11 @@ public class GpApiPayFacRequestBuilder {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean canProcess(Object builder) {
+        return builder instanceof PayFacBuilder;
     }
 
     private static HashMap<String, Object> mapAddress(Address address, String countryCodeType, String functionKey) {

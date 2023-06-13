@@ -54,7 +54,7 @@ public class GpApiSessionInfo {
             request.set("interval_to_expire", intervalToExpire);
         }
 
-        return
+        return (GpApiRequest)
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(GpApiRequest.ACCESS_TOKEN_ENDPOINT)

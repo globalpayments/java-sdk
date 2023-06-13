@@ -82,7 +82,7 @@ public class VapsEncryption3DESTests {
 
         track = new CreditTrackData();
         track.setEntryMethod(EntryMethod.Swipe);
-        track.setEncryptionData(EncryptionData.setKtbAndKsn("6CF446D5E9D154DA766C2F27541AA3462D4AD37C0C01AAAB18A2B5EBAA881F65B0AB8DFC41ACB71B9EA8327EB430315CD781607208DEBC9AF834D26BDF66607F35B411488AACB8E2",
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("6CF446D5E9D154DA766C2F27541AA3462D4AD37C0C01AAAB18A2B5EBAA881F65B0AB8DFC41ACB71B9EA8327EB430315CD781607208DEBC9AF834D26BDF66607F35B411488AACB8E2",
                 "3D3F820E00003"));
         track.setCardType("MC");
         track.setEntryMethod(EntryMethod.Swipe);
@@ -92,13 +92,13 @@ public class VapsEncryption3DESTests {
         card = new CreditCardData();
         card.setCardPresent(true);
         card.setReaderPresent(true);
-        card.setEncryptionData(EncryptionData.setKtbAndKsn("E2C4A716EBE88B483F6A6117031AC93A",
+        card.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E2C4A716EBE88B483F6A6117031AC93A",
                 "3D3F820E00003"));
         card.setCardType("MC");
 
         cardWithCvn = new CreditCardData();
         cardWithCvn.setCvn("103");
-        cardWithCvn.setEncryptionData(EncryptionData.setKtbAndKsn("E2C4A716EBE88B483F6A6117031AC93A",
+        cardWithCvn.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E2C4A716EBE88B483F6A6117031AC93A",
                 "3D3F820E00003"));
         cardWithCvn.setCardType("MC");
         cardWithCvn.setCardPresent(false);
@@ -108,7 +108,7 @@ public class VapsEncryption3DESTests {
         // DEBIT
         debit = new DebitTrackData();
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
-        debit.setEncryptionData(EncryptionData.setKtbAndKsn("E6699A44C3EE9E3AA75F9DF958C27469730C10D2929869F3704CC790CCB0AFDCDDE47F392E0D50E7",
+        debit.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E6699A44C3EE9E3AA75F9DF958C27469730C10D2929869F3704CC790CCB0AFDCDDE47F392E0D50E7",
                 "3D3F820E00003"));
         debit.setCardType("PINDebitCard");
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
@@ -236,7 +236,7 @@ public class VapsEncryption3DESTests {
     public void test_007_credit_swipe_auth() throws ApiException {
         CreditTrackData track=new CreditTrackData();
         track.setCardType("MC");
-        track.setEncryptionData(EncryptionData.setKtbAndKsn("E6699A44C3EE9E3AA75F9DF958C27469730C10D2929869F3704CC790CCB0AFDCDDE47F392E0D50E7",
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E6699A44C3EE9E3AA75F9DF958C27469730C10D2929869F3704CC790CCB0AFDCDDE47F392E0D50E7",
                 "3D3F820E00003"));
         track.setTrackNumber(TrackNumber.TrackTwo);
         track.setEntryMethod(EntryMethod.Swipe);

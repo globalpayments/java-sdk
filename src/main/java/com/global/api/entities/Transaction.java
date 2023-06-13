@@ -7,6 +7,7 @@ import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.propay.ProPayResponseData;
 import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.gnap.GnapResponse;
@@ -125,6 +126,8 @@ public class Transaction {
     @Getter @Setter private String financialInstitutionNumber;
     @Getter @Setter private BigDecimal customerFeeAmount;
     private String receiptText;
+    @Getter @Setter
+    private ProPayResponseData proPayResponseData;
 
     public BigDecimal getOrigionalAmount() {
         return origionalAmount;

@@ -1,10 +1,12 @@
-package com.global.api.entities.gpApi;
+package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.gateways.OpenBankingProvider;
 import com.global.api.paymentMethods.*;
@@ -12,19 +14,22 @@ import com.global.api.utils.*;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 
+import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
-import static com.global.api.entities.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 import static com.global.api.utils.StringUtils.toNumeric;
 
-public class GpApiAuthorizationRequestBuilder {
+public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<AuthorizationBuilder> {
 
-    public static GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
+    @Override
+    public GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
         String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
@@ -125,7 +130,7 @@ public class GpApiAuthorizationRequestBuilder {
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("card", card);
 
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
@@ -151,7 +156,7 @@ public class GpApiAuthorizationRequestBuilder {
                                     .set("country", gateway.getGpApiConfig().getCountry())
                                     .set("payment_method", paymentMethod);
 
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.DCC_ENDPOINT)
@@ -167,7 +172,7 @@ public class GpApiAuthorizationRequestBuilder {
                         tokenizationData.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
                         tokenizationData.set("card", card);
 
-                        return
+                        return (GpApiRequest)
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
                                         .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
@@ -194,7 +199,7 @@ public class GpApiAuthorizationRequestBuilder {
                                             .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null));
                         }
 
-                        return
+                        return (GpApiRequest)
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
                                         .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
@@ -228,7 +233,7 @@ public class GpApiAuthorizationRequestBuilder {
                             .set("payment_method", paymentMethod)
                             .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
 
-                    return
+                    return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
@@ -461,7 +466,7 @@ public class GpApiAuthorizationRequestBuilder {
             requestData.set("transactions", transactions);
             requestData.set("notifications", notifications);
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT)
@@ -493,7 +498,7 @@ public class GpApiAuthorizationRequestBuilder {
                 endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + fundsData.getMerchantId();
             }
 
-            return
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint + GpApiRequest.TRANSFER_ENDPOINT)
@@ -568,11 +573,16 @@ public class GpApiAuthorizationRequestBuilder {
             data.set("stored_credential", storedCredential);
         }
 
-        return
+        return (GpApiRequest)
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT)
                         .setRequestBody(data.toString());
+    }
+
+    @Override
+    public boolean canProcess(Object builder) {
+        return builder instanceof AuthorizationBuilder;
     }
 
     private static JsonDoc setNotificationUrls(AuthorizationBuilder builder) {
