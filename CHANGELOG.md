@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.3.1 (06/15/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Wex fleet refunds changes (Issue-10210)
+  - Set Emv Fallback changes (Issue-10211)
+
 ## v10.3.0 (06/13/2023)
  
 ### Enhancements:

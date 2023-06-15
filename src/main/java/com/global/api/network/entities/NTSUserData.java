@@ -364,8 +364,12 @@ public class NTSUserData {
         // 99 Integrated Circuit Card
         if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
             sb.append(UserDataTag.IntegratedCircuitCard.getValue()).append("\\");
-            EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), true);
-            sb.append(tagData.getAcceptedTagData()); // Check EMV fallback
+            if (builder.getTagData()!=null && builder.getTagData().contains("\\99\\FALLBACK")){
+                sb.append(builder.getTagData().substring(4,builder.getTagData().length()).toUpperCase());
+            }else {
+                EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), true);
+                sb.append(tagData.getAcceptedTagData()); // Check EMV fallback
+            }
             totalNoOfTags++; // Increment the counter if tag is used.
         }
 
@@ -883,7 +887,9 @@ public class NTSUserData {
                         sb.append(builder.getTagData());
                     }
                 } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
-                    sb.append(StringUtils.padLeft(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
+                    sb.append(fleetData != null ?
+                            StringUtils.padLeft(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
+                            StringUtils.padLeft("", 5, '0'));
                     if (fleetData.getDriverId() != null)
                         sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, ' '));
                     else
@@ -900,7 +906,9 @@ public class NTSUserData {
                         sb.append("074");
                         sb.append(StringUtils.toNumeric(entry.getAmount(), 7));
                     }
-                    sb.append(StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
+                    sb.append(fleetData!= null ?
+                            StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
+                            StringUtils.padRight("", 5, '0'));
                 } else if (referenceMessageCode != null && referenceMessageCode.equals("02")
                         && transactionType.equals(TransactionType.Reversal)) {
                     List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
