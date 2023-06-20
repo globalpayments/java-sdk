@@ -52,9 +52,7 @@ public class NTSUserData {
         String amount = StringUtils.toNumeric(builder.getAmount());
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
                 && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
-            //if (builder.getFleetData() != null) {
                 sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
-            //}
             if (builder.getNtsProductData() != null) {
                 sb.append(getProductDataTag09(builder, cardType));
             }
@@ -821,8 +819,10 @@ public class NTSUserData {
 
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                 } else if (builder.getTransactionType().equals(TransactionType.Auth)) {
-                    sb.append(StringUtils.padLeft(fleetData.getDriverId(), 5, '0'));
-                    sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
+                    if(fleetData!=null) {
+                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 5, '0'));
+                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
+                    }
                 } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
                     sb.append(getFleetCorCreditAdjustment(builder));
                 }
@@ -833,11 +833,9 @@ public class NTSUserData {
                     sb.append(StringUtils.padLeft(serviceLevel, 2, '0'));
                     sb.append("074");
                     sb.append(StringUtils.toNumeric(builder.getAmount(), 7));
-                    if (fleetData !=null) {
-                        sb.append(StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'));
-                    }else {
-                        sb.append(StringUtils.padRight("", 5, '0'));
-                    }
+                    sb.append(fleetData!=null ?
+                            StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
+                            StringUtils.padRight("", 5, '0'));
                     if (builder.getTagData() != null) {
                         sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
                         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
@@ -877,7 +875,9 @@ public class NTSUserData {
                     }
                     int rollUp = fuelList != null ? fuelList.size() >= 2 ? 6 : 7 : 7;
                     sb.append(getRollUpData(builder, cardType, productData, rollUp));
-                    sb.append(fleetData.getPurchaseDeviceSequenceNumber());
+                    sb.append(fleetData != null ?
+                            StringUtils.padLeft(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
+                            StringUtils.padLeft("", 5, '0'));
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                     sb.append(StringUtils.toNumeric(discount, 5));
                     if (builder.getTagData() != null) {
@@ -890,7 +890,7 @@ public class NTSUserData {
                     sb.append(fleetData != null ?
                             StringUtils.padLeft(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
                             StringUtils.padLeft("", 5, '0'));
-                    if (fleetData.getDriverId() != null)
+                    if (fleetData != null)
                         sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, ' '));
                     else
                         sb.append(StringUtils.padRight("", 6, '0'));
@@ -935,17 +935,21 @@ public class NTSUserData {
                         sb.append(String.format("%07d", 0));
                     }
                     sb.append(getRollUpData(builder, cardType, productData, 7));
-                    sb.append(fleetData.getPurchaseDeviceSequenceNumber());
+                    if(fleetData!=null) {
+                        sb.append(fleetData.getPurchaseDeviceSequenceNumber());
+                    }
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                     sb.append(StringUtils.toNumeric(discount, 5));
                 }
                 break;
             case VoyagerFleet:
                 if (builder.getTransactionType().equals(TransactionType.Auth)) {
-                    if (fleetData.getOdometerReading() != null)
-                        sb.append(StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'));
-                    if (fleetData.getDriverId()!= null)
-                        sb.append(StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
+                    sb.append(fleetData != null ?
+                            StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'):
+                            StringUtils.padLeft(0, 7, '0'));
+                    sb.append(fleetData != null ?
+                            StringUtils.padLeft(fleetData.getDriverId(), 6, '0'):
+                            StringUtils.padLeft(0, 6, '0'));
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
                         builder.getTransactionType().equals(TransactionType.Capture)) {

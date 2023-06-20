@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.3.2 (06/20/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - fleetdata null handling for Wex fleet refunds(Issue-10210)
+
 ## v10.3.1 (06/15/2023)
  
 ### Enhancements:
