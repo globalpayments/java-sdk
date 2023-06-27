@@ -4,6 +4,8 @@ import com.global.api.builders.ResubmitBuilder;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
@@ -38,6 +40,8 @@ public class BatchSummary {
     private Integer saleCount;
     private String siteId;
     private String status;
+    @Getter @Setter
+    private LinkedList<Transaction> resentbatchTransactions;
 
     public boolean isBalanced() {
         if(responseCode != null) {
@@ -211,7 +215,7 @@ public class BatchSummary {
         }
 
         // resubmit the tokens
-        LinkedList<Transaction> responses = new LinkedList<Transaction>();
+        LinkedList<Transaction> responses = new LinkedList<>();
         for(String token: transactionTokens) {
             Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
                     .withTransactionToken(token)
@@ -226,6 +230,20 @@ public class BatchSummary {
                 .execute(configName);
         this.setResentBatchClose(batchResponse);
         this.setResponseCode(batchResponse.getResponseCode());
+        return this;
+    }
+    public BatchSummary resubmitTransactions(List<String> transactionTokens,boolean forceToHost) throws ApiException {
+        String configName="default";
+        // batch close
+        LinkedList<Transaction> responses = new LinkedList<>();
+        for(String token: transactionTokens) {
+            Transaction response = new ResubmitBuilder(TransactionType.BatchClose)
+                    .withTransactionToken(token)
+                    .withForceToHost(forceToHost)
+                    .execute(configName);
+            responses.add(response);
+        }
+        this.setResentbatchTransactions(responses);
         return this;
     }
 }

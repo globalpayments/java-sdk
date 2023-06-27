@@ -1,5 +1,14 @@
 # Changelog
 
+## v10.3.3 (06/27/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Wex Fleet emv fallback changes(Issue-10211)
+  - Provided new method in batch summery with forceToHost parameter for Issue(10214)
+  - Added code for MTI change for force data collect 3des(Issue-10215)
+  
 ## v10.3.2 (06/20/2023)
  
 ### Enhancements:

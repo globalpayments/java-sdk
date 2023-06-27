@@ -1093,6 +1093,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Refund:
             case Sale: {
                 request.setMessageTypeIndicator("1221");
+                if(request.toString().contains("DE_127") && builder.isForceToHost() && builder.getTransactionType().equals(TransactionType.DataCollect)){
+                    request.setMessageTypeIndicator("1220");
+                }
                 // STAN
                 if(builder.getSystemTraceAuditNumber() != 0) {
                     request.set(DataElementId.DE_011, StringUtils.padLeft(builder.getSystemTraceAuditNumber(), 6, '0'));

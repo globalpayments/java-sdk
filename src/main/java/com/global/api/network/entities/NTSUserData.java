@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class NTSUserData {
-
+    private static final String WEX_FALLBACK="FALLBACK";
     private NTSUserData() {
         throw new IllegalStateException("NTSUserData.class");
     }
@@ -842,6 +842,12 @@ public class NTSUserData {
                         sb.append(acceptorConfig.getAvailableProductCapability().getValue());
                         sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
                         sb.append(builder.getTagData());
+                    } else if(builder.getTransactionModifier()!= null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
+                        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+                        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+                        sb.append(acceptorConfig.getAvailableProductCapability().getValue());
+                        sb.append(StringUtils.padLeft(WEX_FALLBACK.length(), 4, '0'));
+                        sb.append(WEX_FALLBACK);
                     }
                 } else if ((builder.getTransactionType().equals(TransactionType.DataCollect) ||
                         builder.getTransactionType().equals(TransactionType.Capture)

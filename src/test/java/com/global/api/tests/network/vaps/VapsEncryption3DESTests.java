@@ -497,6 +497,29 @@ public class VapsEncryption3DESTests {
         assertNotNull(reversal);
         assertEquals("400", reversal.getResponseCode());
     }
+    @Test
+    public void test_001_resubmitDataCollectforce() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
+//        // test_019
+        Transaction captureResponse = response.capture()
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(captureResponse);
 
+        assertNotNull(captureResponse);
+        assertEquals("000", captureResponse.getResponseCode());
+
+        Transaction resubmit = NetworkService.resubmitDataCollect(captureResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(resubmit);
+        assertEquals("000", resubmit.getResponseCode());
+    }
+
+//auth and capture
 }

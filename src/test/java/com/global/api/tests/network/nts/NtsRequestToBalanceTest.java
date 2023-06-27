@@ -420,6 +420,104 @@ public class NtsRequestToBalanceTest {
         assertEquals("00",t.getResponseCode());
 
     }
+    @Test
+    public void test_batch_resubmit_for_list_of_tokens() throws ApiException {
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+        Transaction transaction = creditSaleDataCollect(new BigDecimal(10));
+        assertNotNull(transaction);
+        assertNotNull(transaction.getTransactionToken());
+        String creditSaleDataCollectToken = transaction.getTransactionToken();
 
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.Forced,
+                        ntsRequestMessageHeader, 11, 0
+                        , BigDecimal.ONE, BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+        //06
+
+        Transaction transactions = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .execute();
+        assertNotNull(transactions);
+        //16
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        assertNotNull(transactions.getTransactionToken());
+        list.add(transactions.getTransactionToken());
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(list,true);
+        assertNotNull(newSummary);
+        //D6
+
+    }
+    @Test
+    public void test_BatchCloseIssue_10214() throws ApiException {
+
+        Transaction t= creditSale(10.11);
+        Transaction t1 =creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        //check batch summary
+        assertNotNull(batchClose.getBatchSummary());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
+
+        // check response
+        assertEquals("00", batchClose.getResponseCode());
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+        list.add(t1.getTransactionToken());
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(list);
+        assertNotNull(newSummary);
+    }
+
+    @Test
+    public void test_batch_resubmit() throws ApiException {
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(1, new BigDecimal(1), "Version");
+        Transaction transaction = creditSaleDataCollect(new BigDecimal(10));
+        assertNotNull(transaction);
+        assertNotNull(transaction.getTransactionToken());
+        String creditSaleDataCollectToken = transaction.getTransactionToken();
+
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.Forced,
+                        ntsRequestMessageHeader, 11, 0
+                        , BigDecimal.ONE, BigDecimal.ONE, data)
+                .execute();
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        assertNotNull(batchClose.getTransactionToken());
+        list.add(batchClose.getTransactionToken());
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(list);
+
+        LinkedList<String> list1 = new LinkedList<>();
+        assertNotNull(newSummary.getTransactionToken());
+        list1.add(newSummary.getTransactionToken());
+
+        BatchSummary newSummary1 = batchSummary.resubmitTransactions(list1,true);
+        assertNotNull(newSummary1);
+
+    }
 
 }
