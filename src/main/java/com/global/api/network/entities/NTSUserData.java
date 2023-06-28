@@ -73,7 +73,7 @@ public class NTSUserData {
                     functionCode = FunctionCode.BalanceInquiry.getValue();
                 }
             } else if (messageCode == NtsMessageCode.DataCollectOrSale
-                    || (modifier == TransactionModifier.ChipDecline && messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry)) {
+                    && (modifier == TransactionModifier.ChipDecline && messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry)) {
                 functionCode = FunctionCode.OfflineDeclineAdvice.getValue();
             } else if (messageCode == NtsMessageCode.ReversalOrVoid ||
                     messageCode == NtsMessageCode.ForceReversalOrForceVoid) {
@@ -1449,6 +1449,7 @@ public class NTSUserData {
         promptCode.add(fleetData.getTrailerNumber());
         promptCode.add(fleetData.getTrailerReferHours());
         promptCode.add(fleetData.getTripNumber());
+        promptCode.add(fleetData.getEnteredData());
 
         noOfPrompt = Math.toIntExact(promptCode.stream().filter(code -> code != null).count());
         promptCode.clear();

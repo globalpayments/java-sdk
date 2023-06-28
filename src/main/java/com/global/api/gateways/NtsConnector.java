@@ -483,7 +483,8 @@ public class NtsConnector extends GatewayConnectorConfig {
                 || code == NtsHostResponseCode.Denial
                 || code == NtsHostResponseCode.VelocityReferral
                 || code == NtsHostResponseCode.AvsReferralForFullyOrPartially
-                || code == NtsHostResponseCode.DenialRequestToBalance;
+                || code == NtsHostResponseCode.DenialRequestToBalance
+                || code == NtsHostResponseCode.InvalidPin;
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

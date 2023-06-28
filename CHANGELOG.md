@@ -1,5 +1,17 @@
 # Changelog
 
+## v10.3.4 (06/28/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  -  Handled 02 (Invalid Pin)exception same as 01 (Denial Request to Balance)(Issue-10218)
+  -  Added EnteredData field to the list for counting number of prompt (Issue-10219)
+  
+### Bug Fixes:
+
+[GP-ECOM]: Send the correct message_version in the initiate step on 3DS2
+  
 ## v10.3.3 (06/27/2023)
  
 ### Enhancements:

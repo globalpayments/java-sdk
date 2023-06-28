@@ -18,6 +18,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -157,6 +158,117 @@ public class GpEcomSecure3dServiceTest {
                 assertEquals("00", response.getResponseCode());
             } else fail("Signature verification failed.");
         } else fail("Card not enrolled.");
+    }
+
+    @Test
+    public void fullCycle_v2_FrictionlessCards() throws ApiException {
+        HashMap<String, String> enrolledCards = new HashMap<>();
+        enrolledCards.put("4263970000005262", "2.1.0");
+        enrolledCards.put("4222000006724235", "2.1.0");
+        enrolledCards.put("4222000006285344", "2.2.0");
+        enrolledCards.put("4222000009719489", "2.2.0");
+
+        for (String cardNumber : enrolledCards.keySet()) {
+            card.setNumber(cardNumber);
+            // check enrollment
+            ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
+                    .execute(Secure3dVersion.TWO);
+            assertNotNull(secureEcom);
+
+            if (secureEcom.isEnrolled()) {
+                assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+
+                // initiate authentication
+                ThreeDSecure initAuth = Secure3dService.initiateAuthentication(card, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .withMethodUrlCompletion(MethodUrlCompletion.No)
+                        .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
+                        .execute();
+                assertNotNull(initAuth);
+                assertEquals("AUTHENTICATION_SUCCESSFUL", initAuth.getStatus());
+                assertNotNull(initAuth.getAcsTransactionId());
+                assertNotNull(initAuth.getAcsReferenceNumber());
+                assertNotNull(initAuth.getAuthenticationValue());
+                assertNotNull(initAuth.getServerTransactionId());
+                assertEquals("05",initAuth.getEci());
+                assertEquals(enrolledCards.get(cardNumber), initAuth.getAcsEndVersion());
+
+                // get authentication data
+                secureEcom = Secure3dService.getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .execute();
+                card.setThreeDSecure(secureEcom);
+
+                if (secureEcom.getStatus().equals("AUTHENTICATION_SUCCESSFUL")) {
+                    Transaction response = card.charge(amount)
+                            .withCurrency(currency)
+                            .execute();
+                    assertNotNull(response);
+                    assertEquals("00", response.getResponseCode());
+                } else fail("Signature verification failed.");
+            } else fail("Card not enrolled.");
+        }
+    }
+
+    @Test
+    public void fullCycle_v2_ChallengeRequired() throws ApiException {
+        HashMap<String, String> enrolledCards = new HashMap<>();
+        enrolledCards.put("4012001038488884", "2.1.0");
+        enrolledCards.put("4222000001227408", "2.2.0");
+
+        for (String cardNumber : enrolledCards.keySet()) {
+            card.setNumber(cardNumber);
+
+            // check enrollment
+            ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
+                    .execute(Secure3dVersion.TWO);
+            assertNotNull(secureEcom);
+
+            assertTrue(secureEcom.isEnrolled());
+            assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+
+            // initiate authentication
+            ThreeDSecure initAuth = Secure3dService
+                    .initiateAuthentication(card, secureEcom)
+                    .withAmount(amount)
+                    .withCurrency(currency)
+                    .withOrderCreateDate(DateTime.now())
+                    .withAddress(billingAddress, AddressType.Billing)
+                    .withAddress(shippingAddress, AddressType.Shipping)
+                    .withBrowserData(browserData)
+                    .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .execute();
+
+            assertNotNull(initAuth);
+            assertEquals("CHALLENGE_REQUIRED", initAuth.getStatus());
+            assertNotNull(initAuth.getPayerAuthenticationRequest());
+            assertNotNull(initAuth.getAcsTransactionId());
+            assertNotNull(initAuth.getAcsReferenceNumber());
+            assertNotNull(initAuth.getAuthenticationType());
+            assertNotNull(initAuth.getPayerAuthenticationRequest());
+            assertNull(initAuth.getEci());
+            assertEquals(enrolledCards.get(cardNumber), initAuth.getMessageVersion());
+
+            // get authentication data
+            secureEcom = Secure3dService.getAuthenticationData()
+                    .withServerTransactionId(initAuth.getServerTransactionId())
+                    .execute();
+            card.setThreeDSecure(secureEcom);
+
+            assertEquals("CHALLENGE_REQUIRED", secureEcom.getStatus());
+
+            Transaction response = card.charge(amount)
+                    .withCurrency(currency)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+        }
     }
 
     @Test
