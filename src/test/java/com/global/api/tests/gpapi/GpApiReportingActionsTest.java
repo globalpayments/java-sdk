@@ -13,7 +13,9 @@ import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.util.Date;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
 
     private final ActionSummary sampleAction;

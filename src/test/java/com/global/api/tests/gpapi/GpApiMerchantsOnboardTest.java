@@ -22,7 +22,9 @@ import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     private PayFacService payFacService;

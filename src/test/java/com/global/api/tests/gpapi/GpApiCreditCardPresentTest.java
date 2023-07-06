@@ -19,8 +19,10 @@ import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.After;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     private final CreditTrackData creditTrackData = new CreditTrackData();

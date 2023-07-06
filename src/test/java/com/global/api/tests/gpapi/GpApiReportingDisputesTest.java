@@ -16,8 +16,10 @@ import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.util.Date;
 import java.util.Random;
@@ -25,6 +27,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
 
     public GpApiReportingDisputesTest() throws ApiException {

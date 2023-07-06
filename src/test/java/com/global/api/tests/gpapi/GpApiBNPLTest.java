@@ -13,7 +13,9 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiBNPLTest extends BaseGpApiTest {
     private BNPL paymentMethod;
     private final String currency = "USD";

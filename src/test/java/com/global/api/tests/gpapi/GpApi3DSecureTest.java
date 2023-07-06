@@ -15,7 +15,9 @@ import com.global.api.services.Secure3dService;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
@@ -30,6 +32,7 @@ import java.util.List;
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApi3DSecureTest extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";

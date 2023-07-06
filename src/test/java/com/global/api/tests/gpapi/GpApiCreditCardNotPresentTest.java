@@ -17,13 +17,16 @@ import com.global.api.logging.RequestFileLogger;
 import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
 
     private final CreditCardData card;
@@ -148,6 +151,36 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
         assertEquals("", response.getFingerPrint());
         assertEquals("", response.getFingerPrintIndicator());
+    }
+
+    @Test
+    public void CreditSaleWithFingerPrint_InvalidValueForFingerPrint() throws ApiException {
+        Address address = new Address();
+        address.setStreetAddress1("123 Main St.");
+        address.setCity("Downtown");
+        address.setState("NJ");
+        address.setCountry("US");
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setDeviceFingerPrint("NO");
+
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .charge(69)
+                    .withCurrency("GBP")
+                    .withAddress(address)
+                    .withCustomerData(customer)
+                    .execute(GP_API_CONFIG_NAME);
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - fingerprint_mode contains unexpected data", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40213", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     @Test
@@ -901,6 +934,29 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    public void VerifyTokenizedPaymentMethod() throws ApiException {
+        CreditCardData tokenizedCard = new CreditCardData();
+
+        String token =
+                card
+                        .tokenize(true, PaymentMethodUsageMode.MULTIPLE)
+                        .execute(GP_API_CONFIG_NAME)
+                        .getToken();
+
+        tokenizedCard.setToken(token);
+
+        Transaction response =
+                tokenizedCard
+                        .verify()
+                        .withCurrency("GBP")
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("VERIFIED", response.getResponseMessage());
+    }
+
+    @Test
     public void CreditVerify_Without_Currency() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -1042,10 +1098,12 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         final String GP_API_CONFIG_FOR_ANDROID_SDK = "GP_API_CONFIG_FOR_ANDROID_SDK";
         ServicesContainer.configureService(config, GP_API_CONFIG_FOR_ANDROID_SDK);
 
-        card
+        Transaction response = card
                 .charge(amount)
                 .withCurrency(currency)
                 .execute(GP_API_CONFIG_FOR_ANDROID_SDK);
+
+        assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
     private void assertTransactionResponse(Transaction transaction, TransactionStatus transactionStatus) {

@@ -1,5 +1,17 @@
 # Changelog
 
+## v10.3.5 (07/06/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  -  Removed Sale conditions while sending value as 'D' as part of tag 01 - Function code(Issue-10217)
+  -  Wex Fleet sale Emv Fallback changes(Issue -10211)
+  -  Batch Summery null issue changes (Issue-10218)
+  -  Updated nexus-staging-maven-plugin version to 1.6.13
+  
+- [GP-API] Unit tests improvements
+
 ## v10.3.4 (06/28/2023)
  
 ### Enhancements:

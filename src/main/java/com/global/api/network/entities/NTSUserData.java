@@ -72,8 +72,7 @@ public class NTSUserData {
                 if (tranAmount.equals(new BigDecimal(0))) {
                     functionCode = FunctionCode.BalanceInquiry.getValue();
                 }
-            } else if (messageCode == NtsMessageCode.DataCollectOrSale
-                    && (modifier == TransactionModifier.ChipDecline && messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry)) {
+            } else if (modifier == TransactionModifier.ChipDecline && messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry) {
                 functionCode = FunctionCode.OfflineDeclineAdvice.getValue();
             } else if (messageCode == NtsMessageCode.ReversalOrVoid ||
                     messageCode == NtsMessageCode.ForceReversalOrForceVoid) {
@@ -891,6 +890,13 @@ public class NTSUserData {
                         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
                         sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
                         sb.append(builder.getTagData());
+                    }
+                    else if(builder.getTransactionModifier()!= null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
+                        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+                        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+                        sb.append(acceptorConfig.getAvailableProductCapability().getValue());
+                        sb.append(StringUtils.padLeft(WEX_FALLBACK.length(), 4, '0'));
+                        sb.append(WEX_FALLBACK);
                     }
                 } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
                     sb.append(fleetData != null ?

@@ -14,7 +14,9 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.EnumUtils;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -23,6 +25,7 @@ import static com.global.api.entities.reporting.SearchCriteria.EndDate;
 import static com.global.api.entities.reporting.SearchCriteria.StartDate;
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiOpenBankingTest extends BaseGpApiTest {
     private static final String currency = "GBP";
     private static final BigDecimal amount = new BigDecimal("10.99");

@@ -18,7 +18,9 @@ import com.global.api.services.PayLinkService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
 import org.joda.time.DateTime;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import java.util.UUID;
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_1;
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiPayLinkTest extends BaseGpApiTest {
 
     private final CreditCardData card;

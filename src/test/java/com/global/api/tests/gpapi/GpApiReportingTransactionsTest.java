@@ -13,8 +13,10 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -24,6 +26,7 @@ import java.util.UUID;
 import static com.global.api.entities.enums.Target.GP_API;
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
 
     public GpApiReportingTransactionsTest() throws ApiException {

@@ -15,13 +15,16 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.BatchService;
 import lombok.SneakyThrows;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiBatchTest extends BaseGpApiTest {
 
     private final CreditTrackData creditCard;

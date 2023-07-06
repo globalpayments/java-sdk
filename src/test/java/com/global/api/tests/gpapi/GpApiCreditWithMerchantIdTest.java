@@ -15,7 +15,9 @@ import com.global.api.services.Secure3dService;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     private CreditCardData card;

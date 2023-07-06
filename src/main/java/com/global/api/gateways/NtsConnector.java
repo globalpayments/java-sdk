@@ -8,29 +8,23 @@ import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessageHeader;
-import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
-import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.NTSCardTypes;
-import com.global.api.paymentMethods.*;
+import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.*;
-import lombok.NonNull;
 import org.apache.commons.codec.binary.Base64;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -418,7 +412,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             BatchSummary summary = new BatchSummary();
-            if(builder instanceof ManagementBuilder) {
+            if (builder instanceof ManagementBuilder) {
                 ManagementBuilder manageBuilder = (ManagementBuilder) builder;
                 NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
                 summary.setBatchId(manageBuilder.getBatchNumber());
@@ -433,16 +427,14 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setCreditAmount(manageBuilder.getTotalReturns());
                 batchSummaryList.add(summary);
                 result.setBatchSummary(summary);
-            }
-            } else if(builder instanceof ResubmitBuilder){
-                if(batchSummaryList != null) {
-                    for (BatchSummary batchSummary : batchSummaryList) {
-                        result.setBatchSummary(batchSummary);
-                    }
-                    batchSummaryList.clear();
+            } else if (builder instanceof ResubmitBuilder && (batchSummaryList != null)) {
+                for (BatchSummary batchSummary : batchSummaryList) {
+                    result.setBatchSummary(batchSummary);
                 }
+                batchSummaryList.clear();
             }
-            return result;
+        }
+        return result;
     }
 
     private <T extends TransactionBuilder<Transaction>> String checkResponse(String responseCode, MessageWriter messageData, T builder) {

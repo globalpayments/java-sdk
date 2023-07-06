@@ -18,8 +18,10 @@ import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -28,6 +30,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     private List<MerchantAccountSummary> accounts;
     private PayFacService payFacService;
