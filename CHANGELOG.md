@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.3.6 (07/11/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Added code for reformatting sale request into datacollect request (Issue-10213) 
+  
 ## v10.3.5 (07/06/2023)
  
 ### Enhancements:

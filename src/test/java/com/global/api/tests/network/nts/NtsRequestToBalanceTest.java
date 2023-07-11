@@ -520,4 +520,44 @@ public class NtsRequestToBalanceTest {
 
     }
 
+    @Test
+    public void test_BatchCloseIssue_withTotalDebitCreditAmount_10213() throws ApiException {
+
+        Transaction t= creditSale(10.11);
+        Transaction t1 =creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        //check batch summary
+        assertNotNull(batchClose.getBatchSummary());
+        assertNotNull(batchClose.getBatchSummary().isNtsBalanced());
+
+        // check response
+        assertEquals("00", batchClose.getResponseCode());
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+        list.add(t1.getTransactionToken());
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(list);
+        assertNotNull(newSummary);
+    }
 }
