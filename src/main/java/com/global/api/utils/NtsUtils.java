@@ -12,6 +12,7 @@ import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -620,4 +621,19 @@ public class NtsUtils {
         }
         return date;
     }
+
+
+    // 99v999 & 999v999 format conversion
+    public static String toNumeric(BigDecimal amount, int length) {
+        String rvalue = StringUtils.toNumeric(amount);
+        char paddingCharacter = '0';
+        if(rvalue.length() >= 3 && length >= 5){
+            rvalue = rvalue + paddingCharacter;
+            return StringUtils.padLeft(rvalue, length, paddingCharacter);
+        }
+        else {
+            return StringUtils.padRight(rvalue, length, paddingCharacter);
+        }
+    }
+
 }

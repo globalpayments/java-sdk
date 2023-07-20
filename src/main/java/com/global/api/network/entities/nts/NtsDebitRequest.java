@@ -206,21 +206,20 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 request.addRange(StringUtils.padRight("", 20, ' '), 20);
             }
         }
-
-        //Card Sequence no
-        setCardSequenceNumber(builder,request,ntsObjectParam);
-
-        NtsUtils.log("Unique device id", StringUtils.padLeft(builder.getUniqueDeviceId() != null ? builder.getUniqueDeviceId() : "", 4, ' '));
-        request.addRange(StringUtils.padLeft(builder.getUniqueDeviceId(), 4, ' '), 4);
-
-        //offline decline indicator
-        NtsUtils.log("offline decline indicator", builder.getOfflineDeclineIndicator() != null ? builder.getOfflineDeclineIndicator() : "N");
-        request.addRange(builder.getOfflineDeclineIndicator() != null ? builder.getOfflineDeclineIndicator() : "N", 1);
-
         if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
+            //Card Sequence no
+            setCardSequenceNumber(builder,request,ntsObjectParam);
+
+            NtsUtils.log("Unique device id", StringUtils.padLeft(builder.getUniqueDeviceId() != null ? builder.getUniqueDeviceId() : "", 4, ' '));
+            request.addRange(StringUtils.padLeft(builder.getUniqueDeviceId(), 4, ' '), 4);
+
+            //offline decline indicator
+            NtsUtils.log("offline decline indicator", builder.getOfflineDeclineIndicator() != null ? builder.getOfflineDeclineIndicator() : "N");
+            request.addRange(builder.getOfflineDeclineIndicator() != null ? builder.getOfflineDeclineIndicator() : "N", 1);
+
             EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging);
             userData = tagData.getAcceptedTagData();
-            if (builder.getTagData() != null || transactionType.equals(TransactionType.Auth)) {
+            if (transactionType.equals(TransactionType.Auth)) {
                 NtsUtils.log("EMV DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
                 request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
             } else {

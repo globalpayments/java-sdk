@@ -1,0 +1,86 @@
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="WebApp_ID" version="3.0">
+
+    <display-name>3DS2-end-to-end</display-name>
+    
+    <listener>
+        <listener-class>com.example.startup.RunOnStartUp</listener-class>
+    </listener>
+
+<!-->SERVLET-->
+
+    <servlet>
+        <servlet-name>authorization</servlet-name>
+        <servlet-class>com.example.authorization.AuthorizationServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>challengenotificationurl</servlet-name>
+        <servlet-class>com.example.challengenotificationurl.ChallengeNotificationUrlServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>check3dsversion</servlet-name>
+        <servlet-class>com.example.check3dsversion.Check3dsVersionServlet</servlet-class>
+    </servlet>    
+    
+    <servlet>
+        <servlet-name>index</servlet-name>
+        <servlet-class>com.example.index.IndexServlet</servlet-class>
+    </servlet>    
+    
+    <servlet>
+        <servlet-name>initiateauthentication</servlet-name>
+        <servlet-class>com.example.initiateauthentication.InitiateAuthenticationServlet</servlet-class>
+    </servlet>    
+    
+    <servlet>
+        <servlet-name>methodnotificationurl</servlet-name>
+        <servlet-class>com.example.methodnotificationurl.MethodNotificationUrlServlet</servlet-class>
+    </servlet>        
+    
+<!--END SERVLET-->
+
+<!-->SERVLET-MAPPING-->
+    
+    <servlet-mapping>
+        <servlet-name>authorization</servlet-name>
+        <url-pattern>/authorization</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>challengenotificationurl</servlet-name>
+        <url-pattern>/challengeNotificationUrl</url-pattern>
+    </servlet-mapping>        
+
+    <servlet-mapping>
+        <servlet-name>check3dsversion</servlet-name>
+        <url-pattern>/check3dsVersion</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>index</servlet-name>
+        <url-pattern>/index</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>initiateauthentication</servlet-name>
+        <url-pattern>/initiateAuthentication</url-pattern>
+    </servlet-mapping>        
+    
+    <servlet-mapping>
+        <servlet-name>methodnotificationurl</servlet-name>
+        <url-pattern>/methodNotificationUrl</url-pattern>
+    </servlet-mapping>
+            
+<!-->END SERVLET-MAPPING-->
+
+    <welcome-file-list>
+        <welcome-file>index</welcome-file> 
+    </welcome-file-list>
+
+</web-app>

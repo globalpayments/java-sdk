@@ -1,5 +1,15 @@
 # Changelog
 
+## v10.3.7 (07/18/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  -  Added code for Card sequence Number, unique Device Id and OfflineDeclineIndicator are not required to be sent pin debit track 2 format  (Issue-10220) 
+  -  corrected the formatting for product quantity and price for fleet cor (Issue-10221)
+
+- [GP-API]: Added integration examples using Hosted Fields (GP JS library), 3DS library
+
 ## v10.3.6 (07/11/2023)
  
 ### Enhancements:

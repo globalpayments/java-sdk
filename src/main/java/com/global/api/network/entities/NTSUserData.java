@@ -1348,8 +1348,8 @@ public class NTSUserData {
                 sb.append(mapUnitMeasureFleet(fuelList.get(i).getUnitOfMeasure()));
                 sb.append(serviceLevel);
                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, ' '));
-                sb.append(StringUtils.toNumeric(fuelList.get(i).getPrice(), 5));
-                sb.append(StringUtils.toNumeric(fuelList.get(i).getQuantity(), 6));
+                sb.append(NtsUtils.toNumeric(fuelList.get(i).getPrice(), 5));
+                sb.append(NtsUtils.toNumeric(fuelList.get(i).getQuantity(), 6));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getAmount(), 5));
             } else {
                 sb.append(String.format("%1s", "0"));

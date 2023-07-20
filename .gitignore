@@ -21,3 +21,14 @@ target/
 .metadata/
 
 .DS_Store
+
+# Eclipse files used for examples
+examples/3DS2-end-to-end/.settings
+examples/3DS2-end-to-end/build
+examples/3DS2-end-to-end/.classpath
+examples/3DS2-end-to-end/.gitignore
+examples/3DS2-end-to-end/.project
+examples/3DS2-end-to-end/src/main/webapp/META-INF
+# END Eclipse files used for examples
+
+
