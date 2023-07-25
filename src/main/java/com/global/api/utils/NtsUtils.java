@@ -627,13 +627,8 @@ public class NtsUtils {
     public static String toNumeric(BigDecimal amount, int length) {
         String rvalue = StringUtils.toNumeric(amount);
         char paddingCharacter = '0';
-        if(rvalue.length() >= 3 && length >= 5){
-            rvalue = rvalue + paddingCharacter;
-            return StringUtils.padLeft(rvalue, length, paddingCharacter);
-        }
-        else {
-            return StringUtils.padRight(rvalue, length, paddingCharacter);
-        }
+        rvalue = rvalue + paddingCharacter;
+        return StringUtils.padLeft(rvalue, length, paddingCharacter);
     }
 
 }

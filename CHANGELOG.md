@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.3.8 (07/25/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Removed unwanted checks from toNumeric method (Issue-10221)
+
 ## v10.3.7 (07/18/2023)
  
 ### Enhancements:
