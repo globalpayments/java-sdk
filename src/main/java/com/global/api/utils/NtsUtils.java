@@ -136,6 +136,8 @@ public class NtsUtils {
             debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDataCollectResponse) {
             approvalCode = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
+            batchNumber = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getBatchNumber();
+            sequenceNumber = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getSequenceNumber();
         }else if (ntsResponse.getNtsResponseMessage() instanceof NtsVoidReversalResponse) {
             ntsVoidReversalResponse = (NtsVoidReversalResponse) ntsResponse.getNtsResponseMessage();
             approvalCode = getOrDefault(ntsVoidReversalResponse.getCreditMapper().getApprovalCode(), "");

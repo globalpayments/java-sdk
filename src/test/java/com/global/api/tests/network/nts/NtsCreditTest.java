@@ -3086,5 +3086,74 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
     }
 
+    @Test
+    public void test_Refund_Reversal_Issue_10226() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
 
+        // refund request
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(refundResponse);
+        // check response
+        assertEquals("00", refundResponse.getResponseCode());
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(refundResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(refundResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(refundResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(refundResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(refundResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(refundResponse.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalMessageCode("03")
+                .withBatchNumber(refundResponse.getTransactionReference().getBatchNumber())
+                .withSequenceNumber(refundResponse.getTransactionReference().getSequenceNumber())
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction voidResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        // check response
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_reverse_Individual() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("03")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction reverseResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+    }
 }

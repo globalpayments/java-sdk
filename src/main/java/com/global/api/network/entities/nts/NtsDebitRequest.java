@@ -223,8 +223,8 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 NtsUtils.log("EMV DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
                 request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
             } else {
-                NtsUtils.log("EMV DATA LENGTH", StringUtils.padLeft(userData.length(), 3, ' '));
-                request.addRange(userData.length(), 3);
+                NtsUtils.log("EMV DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
+                request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
             }
 
             NtsUtils.log("EMV DATA", userData);

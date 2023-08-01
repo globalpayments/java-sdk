@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.3.9 (08/01/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Minor code changes in emv data length pin debit request  (Issue-10220) 
+  - Batch No and sequence No changes for reversal transaction (Issue-10226)
+  
 ## v10.3.8 (07/25/2023)
  
 ### Enhancements:

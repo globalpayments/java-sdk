@@ -52,6 +52,10 @@ public class TransactionRebuilder {
     private String originalMessageCode;
     @Getter
     private TransactionTypeIndicator transactionTypeIndicator;
+    @Getter
+    private Integer batchNumber;
+    @Getter
+    private Integer sequenceNumber;
 
 
     public TransactionRebuilder withAuthorizationCode(String value) {
@@ -169,6 +173,16 @@ public class TransactionRebuilder {
         return this;
     }
 
+    public TransactionRebuilder withBatchNumber(Integer batchNumber) {
+        this.batchNumber = batchNumber;
+        return this;
+    }
+
+    public TransactionRebuilder withSequenceNumber(Integer sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+        return this;
+    }
+
     public Transaction build() {
         TransactionReference reference = new TransactionReference();
         reference.setAcquiringInstitutionId(acquirerId);
@@ -201,6 +215,8 @@ public class TransactionRebuilder {
         reference.setDiscoverNetworkRefId(discoverNetworkRefId);
         reference.setOriginalMessageCode(originalMessageCode);
         reference.setOriginalTransactionTypeIndicator(transactionTypeIndicator);
+        reference.setBatchNumber(batchNumber);
+        reference.setSequenceNumber(sequenceNumber);
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);

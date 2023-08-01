@@ -2164,4 +2164,160 @@ public class NtsFleetTest {
         assertEquals("12", response.getResponseCode());
     }
 
+    @Test
+    public void test_VisaFleet_refund_reversal_Issue_10226() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = new CreditTrackData();
+        track.setValue(";4484630000000126=25121011000062111401?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(refundResponse);
+        // check response
+        assertEquals("00", refundResponse.getResponseCode());
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(refundResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(refundResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(refundResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(refundResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(refundResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(refundResponse.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalMessageCode("03")
+                .withBatchNumber(refundResponse.getTransactionReference().getBatchNumber())
+                .withSequenceNumber(refundResponse.getTransactionReference().getSequenceNumber())
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction reverseResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_VoyagerFleet_Refund_Reversal_Issue_10226() throws ApiException {
+        track = new CreditTrackData();
+        track.setValue(";7088869008250005031=25120000000000000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(refundResponse);
+        // check response
+        assertEquals("00", refundResponse.getResponseCode());
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(refundResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(refundResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(refundResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(refundResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(refundResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(refundResponse.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalMessageCode("03")
+                .withBatchNumber(refundResponse.getTransactionReference().getBatchNumber())
+                .withSequenceNumber(refundResponse.getTransactionReference().getSequenceNumber())
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction reverseResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+
+    }
+
+    @Test
+    public void test_MasterFleet_refund_reversal_Issue_10226() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // refund request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(refundResponse);
+        // check response
+        assertEquals("00", refundResponse.getResponseCode());
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(refundResponse.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withDebitAuthorizer(refundResponse.getTransactionReference().getDebitAuthorizer())
+                .withApprovalCode(refundResponse.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(refundResponse.getAuthorizationCode())
+                .withOriginalTransactionDate(refundResponse.getTransactionReference().getOriginalTransactionDate())
+                .withTransactionTime(refundResponse.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalMessageCode("03")
+                .withBatchNumber(refundResponse.getTransactionReference().getBatchNumber())
+                .withSequenceNumber(refundResponse.getTransactionReference().getSequenceNumber())
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction reverseResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+    }
+
 }
