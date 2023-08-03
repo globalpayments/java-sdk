@@ -215,8 +215,12 @@ public class TransactionRebuilder {
         reference.setDiscoverNetworkRefId(discoverNetworkRefId);
         reference.setOriginalMessageCode(originalMessageCode);
         reference.setOriginalTransactionTypeIndicator(transactionTypeIndicator);
-        reference.setBatchNumber(batchNumber);
-        reference.setSequenceNumber(sequenceNumber);
+        if (batchNumber != null) {
+            reference.setBatchNumber(batchNumber);
+        }
+        if (sequenceNumber != null) {
+            reference.setSequenceNumber(sequenceNumber);
+        }
 
         Transaction trans = new Transaction();
         trans.setTransactionReference(reference);

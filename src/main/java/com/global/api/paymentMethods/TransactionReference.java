@@ -39,7 +39,7 @@ public class TransactionReference implements IPaymentMethod {
     private boolean partialApproval;
     private PaymentMethodType paymentMethodType;
     private String posDataCode;
-    private int sequenceNumber;
+    private Integer sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
     private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;

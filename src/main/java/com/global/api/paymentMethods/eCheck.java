@@ -9,8 +9,6 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.math.BigDecimal;
 
 @Accessors(chain = true)
@@ -94,12 +92,12 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthab
 
     @Override
     public String tokenize(String configName) throws ApiException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String tokenize(boolean validateCard, String configName) throws ApiException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

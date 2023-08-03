@@ -9,7 +9,6 @@ import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Locale;
 
@@ -46,7 +45,7 @@ public class OpenBankingMapping {
             case FindBankPayment:
                 return (T) mapTransactions(json);
             default:
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
         }
     }
 

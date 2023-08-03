@@ -128,7 +128,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         NtsUtils.log("INSIDE PED / MULTI-LANE DEVICE VENDOR", requestData.getInsidePedMultiLaneDeviceVendor());
         request.addRange(StringUtils.padRight(requestData.getInsidePedMultiLaneDeviceVendor(), 15, ' '), 15);
 
-        NtsUtils.log("INSIDE PED / MULTI-LANE DEVICE VENDOR", requestData.getInsidePedMultiLaneDeviceProductNameOrModel());
+        NtsUtils.log("INSIDE PED / MULTI-LANE DEVICE PRODUCT NAME OR MODEL", requestData.getInsidePedMultiLaneDeviceProductNameOrModel());
         request.addRange(StringUtils.padRight(requestData.getInsidePedMultiLaneDeviceProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("KEY MANAGEMENT SCHEME (INSIDE)  ", requestData.getKeyManagementSchemeInside());

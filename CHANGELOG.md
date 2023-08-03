@@ -1,5 +1,15 @@
 # Changelog
 
+## v10.3.10 (08/03/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Handled NullPointer Exception For Sequence No and Batch No - Issue(10226) 
+  - Updated duplicate logger  from INSIDE PED / MULTI-LANE DEVICE VENDOR to INSIDE PED / MULTI-LANE DEVICE PRODUCT NAME OR MODEL - Issue(10227)
+ 
+-Replaced NotImplementedException with UnsupportedOperationException 
+
 ## v10.3.9 (08/01/2023)
  
 ### Enhancements:

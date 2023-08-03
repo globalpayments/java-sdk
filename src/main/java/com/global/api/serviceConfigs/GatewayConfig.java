@@ -6,7 +6,6 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 @Accessors(chain = true)
 @Getter
@@ -30,7 +29,7 @@ public class GatewayConfig extends Configuration {
 
     @Override
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
         // TODO: Implement DataServicesConnector
     }
 
