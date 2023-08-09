@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,6 +43,15 @@ public class BatchSummary {
     private String status;
     @Getter @Setter
     private LinkedList<Transaction> resentbatchTransactions;
+    @Getter @Setter
+    private List<String> nonApprovedDataCollectToken;
+    @Getter @Setter
+    private List<String> formatErrorDataCollectToken;
+    @Getter @Setter
+    private String hostResponseCode;
+    private static final String CONFIG_NAME = "default";
+    private static final String FORMATERRORTWICEINROW = "79";
+    int counter = 0;
 
     public boolean isBalanced() {
         if(responseCode != null) {
@@ -207,7 +217,7 @@ public class BatchSummary {
     }
 
     public BatchSummary resubmitTransactions(List<String> transactionTokens) throws ApiException {
-        return resubmitTransactions(transactionTokens, "default");
+        return resubmitTransactions(transactionTokens, CONFIG_NAME);
     }
     public BatchSummary resubmitTransactions(List<String> transactionTokens, String configName) throws ApiException {
         if(!this.responseCode.equals("580") && !this.responseCode.equals("01")) {
@@ -221,6 +231,8 @@ public class BatchSummary {
                     .withTransactionToken(token)
                     .execute(configName);
             responses.add(response);
+            this.setNonApprovedDataCollectToken(response.getNonApprovedDataCollectToken());
+            this.setFormatErrorDataCollectToken(response.getFormatErrorDataCollectToken());
         }
         this.setResentTransactions(responses);
 
@@ -233,17 +245,66 @@ public class BatchSummary {
         return this;
     }
     public BatchSummary resubmitTransactions(List<String> transactionTokens,boolean forceToHost) throws ApiException {
-        String configName="default";
         // batch close
         LinkedList<Transaction> responses = new LinkedList<>();
         for(String token: transactionTokens) {
             Transaction response = new ResubmitBuilder(TransactionType.BatchClose)
                     .withTransactionToken(token)
                     .withForceToHost(forceToHost)
-                    .execute(configName);
+                    .execute(CONFIG_NAME);
             responses.add(response);
         }
         this.setResentbatchTransactions(responses);
         return this;
+    }
+
+    public BatchSummary resubmitTransactions(boolean isFormatErrorToken, List<String> transactionTokens) throws ApiException {
+        //Data collect
+        ArrayList<String> tokenList = new ArrayList<>(transactionTokens);
+        transactionTokens.clear();
+        // resubmit the tokens
+        LinkedList<Transaction> responses = new LinkedList<>();
+
+        if (isFormatErrorToken) {
+            counter++;
+            performFormatErrorOperation(tokenList, responses);
+        }else{
+            performNonApprovedErrorOperation(tokenList, responses);
+        }
+
+        return this;
+    }
+
+    private void performNonApprovedErrorOperation(ArrayList<String> tokenList, LinkedList<Transaction> responses) throws ApiException {
+        for (String token : tokenList) {
+            Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
+                    .withTransactionToken(token)
+                    .withForceToHost(true)
+                    .execute(CONFIG_NAME);
+            responses.add(response);
+        }
+        this.setResentTransactions(responses);
+    }
+
+    private void performFormatErrorOperation(ArrayList<String> tokenList, LinkedList<Transaction> responses) throws ApiException {
+        if(counter == 2){
+            for (String token : tokenList) {
+                Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
+                        .withTransactionToken(token)
+                        .withHostResponseCode(this.getHostResponseCode()!=null?this.getHostResponseCode():FORMATERRORTWICEINROW)
+                        .execute(CONFIG_NAME);
+                responses.add(response);
+            }
+            this.setResentTransactions(responses);
+        }else if(counter == 1){
+            for (String token : tokenList) {
+                Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
+                        .withTransactionToken(token)
+                        .execute(CONFIG_NAME);
+                responses.add(response);
+                this.setFormatErrorDataCollectToken(response.getFormatErrorDataCollectToken());
+            }
+            this.setResentTransactions(responses);
+        }
     }
 }

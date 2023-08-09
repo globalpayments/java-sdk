@@ -7,13 +7,11 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
-import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -559,5 +557,88 @@ public class NtsRequestToBalanceTest {
 
         BatchSummary newSummary = batchSummary.resubmitTransactions(list);
         assertNotNull(newSummary);
+    }
+
+    @Test
+    public void test_BatchCloseIssue_10213_40_80_90() throws ApiException {
+
+        Transaction t= creditSale(10.11);
+        Transaction t1 =creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+        list.add(t1.getTransactionToken());
+
+        BatchSummary summary = batchSummary.resubmitTransactions(list);
+        assertNotNull(summary);
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(false,summary.getNonApprovedDataCollectToken());
+        assertNotNull(newSummary);
+
+        NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+    }
+
+    @Test
+    public void test_BatchCloseIssue_10213_70_79() throws ApiException {
+
+        Transaction t= creditSale(10.11);
+        Transaction t1 =creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+        list.add(t1.getTransactionToken());
+
+        BatchSummary summary = batchSummary.resubmitTransactions(list);
+        assertNotNull(summary);
+
+        BatchSummary newSummary = batchSummary.resubmitTransactions(true,summary.getFormatErrorDataCollectToken());
+        assertNotNull(newSummary);
+
+        batchSummary.setHostResponseCode("79");
+        BatchSummary newSummary1 = batchSummary.resubmitTransactions(true,newSummary.getFormatErrorDataCollectToken());
+        assertNotNull(newSummary1);
     }
 }

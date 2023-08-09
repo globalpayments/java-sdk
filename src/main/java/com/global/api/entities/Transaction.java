@@ -70,6 +70,8 @@ public class Transaction {
     @Getter @Setter private boolean multiCapture;
     @Getter @Setter private Integer multiCapturePaymentCount;
     @Getter @Setter private Integer multiCaptureSequence;
+    @Getter @Setter private List<String> nonApprovedDataCollectToken;
+    @Getter @Setter private List<String> formatErrorDataCollectToken;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayLinkResponse payLinkResponse;

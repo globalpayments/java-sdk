@@ -16,7 +16,6 @@ import com.global.api.network.NetworkMessageHeader;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
-import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.paymentMethods.*;
@@ -42,6 +41,11 @@ public class NtsConnector extends GatewayConnectorConfig {
     private static final int messageRequestLength = 2;
     private IRequestEncoder requestEncoder;
     private List<BatchSummary> batchSummaryList = new ArrayList<>();
+
+    List<String> resubmitNonApprovedToken = new ArrayList<>();
+    List<String> resubmitFormatErrorToken = new ArrayList<>();
+
+    Transaction result1 = new Transaction();
 
     @Override
     public int getTimeout() {
@@ -270,12 +274,14 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         String transactionToken = builder.getTransactionToken();
         Transaction result = null;
+        result1.setTransactionToken(transactionToken);
         byte[] decodeRequest = this.decodeRequest(transactionToken);
         MessageWriter request = new MessageWriter();
         String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
         int count = 21;
         String originalReq = reqStr.substring(messageRequestLength);
         String messageCode = originalReq.substring(21, 23);
+        int hostRespCount = 6;
         switch (builder.getTransactionType()) {
             case BatchClose: {
                 if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
@@ -317,6 +323,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                     } else if (messageCode.equals(NtsMessageCode.RetransmitCreditAdjustment.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
                     }
+                }
+                if (builder.getHostResponseCode().equals(NtsHostResponseCode.Code70TwiceInRow.getValue())){
+                    originalReq = originalReq.substring(0, hostRespCount) + NtsHostResponseCode.Code70TwiceInRow.getValue() + originalReq.substring(hostRespCount + 2);
                 }
             }
         }
@@ -434,8 +443,20 @@ public class NtsConnector extends GatewayConnectorConfig {
         NtsUtils.log("--------------------- RESPONSE ---------------------");
         NtsUtils.log("Response", sp.getBuffer());
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
+        NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
-        if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))) {
+        if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.HostSystemFailure)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeout)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
+            resubmitNonApprovedToken.add(result1.getTransactionToken());
+            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
+        }else if(builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.FormatError)){
+            resubmitFormatErrorToken.add(result1.getTransactionToken());
+            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
+        }
+
+        if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))
+            && Boolean.FALSE.equals(isAllowedRCForRetransmit(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))) {
             throw new GatewayException(
                     String.format("Unexpected response from gateway: %s %s", ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                             ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().toString()),
@@ -493,16 +514,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                 int hostRespCount = 6;
                 // resend the batch close
                 String originalReq = messageData.getMessageRequest().toString();
-                String hostResponseCode = originalReq.substring(6, 8);
-                String messageCode = originalReq.substring(21, 23);
 
                 if (responseCode.equals(NtsHostResponseCode.DenialRequestToBalance.getValue())) {
                     originalReq = originalReq.substring(0, hostRespCount) + NtsHostResponseCode.DenialRequestToBalance.getValue() + originalReq.substring(hostRespCount + 2);
-                }
-                if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
-                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitRequestToBalance.getValue() + originalReq.substring(count + 2);
-                } else if (messageCode.equals(NtsMessageCode.ForceRequestToBalance.getValue())) {
-                    originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                 }
                 messageData.setMessageRequest(new StringBuilder(originalReq));
             }
@@ -524,6 +538,13 @@ public class NtsConnector extends GatewayConnectorConfig {
                 || code == NtsHostResponseCode.AvsReferralForFullyOrPartially
                 || code == NtsHostResponseCode.DenialRequestToBalance
                 || code == NtsHostResponseCode.InvalidPin;
+    }
+
+    private <T extends TransactionBuilder<Transaction>> Boolean isAllowedRCForRetransmit(NtsHostResponseCode responseCode, T builder) {
+           return builder instanceof ResubmitBuilder  && responseCode == NtsHostResponseCode.HostSystemFailure
+                    || responseCode == NtsHostResponseCode.TerminalTimeout
+                    || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
+                    || responseCode == NtsHostResponseCode.FormatError;
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

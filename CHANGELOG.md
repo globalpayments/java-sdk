@@ -1,5 +1,12 @@
 # Changelog
 
+## v10.3.11 (08/09/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Added code for 40/80/90 and 70/70/79 scenario while retransmitting (Issue-10213)
+
 ## v10.3.10 (08/03/2023)
  
 ### Enhancements:
