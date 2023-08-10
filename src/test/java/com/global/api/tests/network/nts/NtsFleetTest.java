@@ -2320,4 +2320,29 @@ public class NtsFleetTest {
         assertEquals("00", reverseResponse.getResponseCode());
     }
 
+    @Test // Working
+    public void test_ApiExceptionIssue_Preauth_Reversal() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";4484630000000126=25121011000062111401?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
 }

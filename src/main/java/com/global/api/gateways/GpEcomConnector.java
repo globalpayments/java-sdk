@@ -462,6 +462,8 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             if(paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
             }
+        } else if (builder.getCustomerId() != null) {
+            request.set("CUST_NUM", builder.getCustomerId());
         }
 
         if (builder.getShippingAddress() != null) {
@@ -495,7 +497,6 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_BILLING_COUNTRY", CountryUtils.getNumericCodeByCountry(builder.getBillingAddress().getCountry()));
         }
 
-        request.set("CUST_NUM", builder.getCustomerId());
         request.set("VAR_REF", builder.getClientTransactionId());
         request.set("HPP_LANG", hostedPaymentConfig.getLanguage());
         request.set("MERCHANT_RESPONSE_URL", hostedPaymentConfig.getResponseUrl());

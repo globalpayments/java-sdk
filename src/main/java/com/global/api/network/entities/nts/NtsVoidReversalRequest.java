@@ -125,7 +125,7 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         NtsUtils.log("ORIGINAL TRANSACTION TIME", transactionReference.getOriginalTransactionTime());
 
         // Batch Number & Sequence Number
-        if (transactionReference.getOriginalMessageCode().equals("02") || transactionType.equals(TransactionType.Reversal)) {
+        if (transactionReference.getOriginalMessageCode().equals("02") || (!transactionReference.getOriginalMessageCode().equals("01") && transactionType.equals(TransactionType.Reversal))) {
             // Batch Number & Sequence Number
             if (transactionReference.getBatchNumber() != null) {
                 int batchNumber = transactionReference.getBatchNumber();

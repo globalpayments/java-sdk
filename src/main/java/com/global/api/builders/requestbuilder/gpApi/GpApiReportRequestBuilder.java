@@ -308,6 +308,8 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
                     request.addQueryStringParam("country", trb.getSearchBuilder().getCountry());
                     request.addQueryStringParam("currency", trb.getSearchBuilder().getCurrency());
                     request.addQueryStringParam("expiration_date", getDateIfNotNull(trb.getSearchBuilder().getExpirationDate()));
+                    request.addQueryStringParam("page", Integer.toString(trb.getPage()));
+                    request.addQueryStringParam("page_size", Integer.toString(trb.getPageSize()));
 
                     return (GpApiRequest)
                             request

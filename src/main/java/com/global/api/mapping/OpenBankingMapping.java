@@ -15,25 +15,27 @@ import java.util.Locale;
 public class OpenBankingMapping {
 
     public static Transaction mapResponse(String rawResponse) {
+
         Transaction transaction = new Transaction();
-
-        if (!StringUtils.isNullOrEmpty(rawResponse)) {
-            JsonDoc json = new JsonDoc().parse(rawResponse);
-
-            transaction.setTransactionId(json.getString("ob_trans_id"));
-            transaction.setPaymentMethodType(PaymentMethodType.BankPayment);
-            if(json.get("order") != null) {
-                transaction.setOrderId(json.get("order").getString("id"));
-            }
-
-            transaction.setResponseMessage(json.getString("status"));
-
-            BankPaymentResponse obResponse = new BankPaymentResponse();
-            obResponse.setRedirectUrl(json.getString("redirect_url"));
-            obResponse.setPaymentStatus(json.getString("status"));
-            obResponse.setId(json.getString("ob_trans_id"));
-            transaction.setBankPaymentResponse(obResponse);
+        if (StringUtils.isNullOrEmpty(rawResponse)) {
+            return transaction;
         }
+        JsonDoc json = JsonDoc.parse(rawResponse);
+        // TODO is it safe to assume either order wont be null or if it is null, the have an exception here?
+        // I think I saw that behavior on PHP sdk.
+
+        transaction.setTransactionId(json.get("order").getString("id"));
+        transaction.setClientTransactionId(json.getString("ob_trans_id"));
+        transaction.setPaymentMethodType(PaymentMethodType.BankPayment);
+        transaction.setOrderId(json.get("order").getString("id"));
+        transaction.setResponseMessage(json.getString("status"));
+        BankPaymentResponse obResponse = new BankPaymentResponse();
+        obResponse.setRedirectUrl(json.getString("redirect_url"));
+        obResponse.setPaymentStatus(json.getString("status"));
+        obResponse.setId(json.getString("ob_trans_id"));
+        obResponse.setAmount(StringUtils.toAmount(json.get("order").getString("amount")));
+        obResponse.setCurrency((json.get("order").getString("currency")));
+        transaction.setBankPaymentResponse(obResponse);
 
         return transaction;
     }

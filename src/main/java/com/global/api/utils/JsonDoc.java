@@ -10,7 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
+import static com.global.api.gateways.DateParsingUtils.parseDateTime;
 
 public class JsonDoc {
     private HashMap<String, Object> dict;
@@ -242,7 +242,7 @@ public class JsonDoc {
         return null;
     }
     public DateTime getDateTime(String name) throws GatewayException {
-        return parseGpApiDateTime(getString(name));
+        return parseDateTime(getString(name));
     }
     public BigDecimal getAmount(String name) {
         String value = getString(name);

@@ -440,6 +440,7 @@ public class GpApiMapping {
                         JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
 
                         bankPaymentResponse.setIban(bankTransfer.getString("iban"));
+                        bankPaymentResponse.setMaskedIbanLast4(bankTransfer.getString("masked_iban_last4"));
                         bankPaymentResponse.setAccountNumber(bankTransfer.getString("account_number"));
 
                         if (bankTransfer.has("bank")) {
@@ -451,6 +452,7 @@ public class GpApiMapping {
                             bankPaymentResponse.setRemittanceReferenceValue(bankTransfer.get("remittance_reference").getString("value"));
                             bankPaymentResponse.setRemittanceReferenceType(bankTransfer.get("remittance_reference").getString("type"));
                         }
+                        summary.setAccountDataSource(bankTransfer.getString("masked_account_number_last4"));
                     }
 
                     summary.setBankPaymentResponse(bankPaymentResponse);

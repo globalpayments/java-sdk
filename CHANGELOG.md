@@ -1,5 +1,20 @@
 # Changelog
 
+## v10.3.12 (08/10/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Added Condition for Preauth Reversal Transaction for Batch and Sequence Number
+
+-[GP-API]: 
+  - Factorize date parsing logic.
+  - Increase unit tests converage for date time parsing.
+
+-[GP-ECOM]:
+  - Improve customer number setting.
+  - Add logic for Open Banking Refund.
+
 ## v10.3.11 (08/09/2023)
  
 ### Enhancements:

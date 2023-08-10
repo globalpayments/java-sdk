@@ -6,6 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.entities.reporting.SearchCriteriaBuilder;
 import com.global.api.mapping.OpenBankingMapping;
 import com.global.api.paymentMethods.BankPayment;
@@ -217,6 +218,60 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
         }
 
         return response.getRawResponse();
+    }
+
+
+    public Transaction manageOpenBanking(ManagementBuilder builder) throws GatewayException {
+
+        String amount = builder.getAmount() != null ? StringUtils.toNumeric(builder.getAmount()) : null;
+        String timestamp = GenerationUtils.generateTimestamp();
+
+        String httpVerb = GpApiRequest.HttpMethod.Post.getValue();
+        String endpoint =  "/refunds";
+        JsonDoc payload = new JsonDoc();
+
+        switch (builder.getTransactionType()) {
+
+            case Refund:
+
+                String hash = GenerationUtils.generateHash(
+                        sharedSecret,
+                        shaHashType,
+                        merchantId,
+                        accountId,
+                        timestamp,
+                        builder.getTransactionId(),
+                        builder.getClientTransactionId(),
+                        amount);
+                setAuthorizationHeader(hash);
+
+                payload
+                        .set("request_timestamp", timestamp)
+                        .set("merchant_id", merchantId)
+                        .set("account_id", accountId);
+
+                JsonDoc order =
+                        new JsonDoc()
+                                .set("id", builder.getTransactionId())
+                                .set("ob_trans_id", builder.getClientTransactionId())
+                                .set("amount", amount.toString())
+                                .set("description", builder.getDescription());
+
+                payload.set("order", order);
+
+                break;
+            default:
+                break;
+        }
+
+        String rawResponse;
+        try {
+            rawResponse = doTransaction(httpVerb, endpoint, payload.toString());
+        }
+        catch (GatewayException gatewayException) {
+            throw gatewayException;
+        }
+        return OpenBankingMapping.mapResponse(rawResponse);
     }
 
     public String serializeRequest(AuthorizationBuilder builder) throws UnsupportedTransactionException {

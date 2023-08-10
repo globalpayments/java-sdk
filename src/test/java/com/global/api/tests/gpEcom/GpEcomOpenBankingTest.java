@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.BankPaymentStatus;
+import com.global.api.entities.enums.BankPaymentType;
 import com.global.api.entities.enums.RemittanceReferenceType;
 import com.global.api.entities.enums.ShaHashType;
 import com.global.api.entities.exceptions.ApiException;
@@ -21,139 +22,221 @@ import java.util.UUID;
 
 import static com.global.api.entities.enums.BankPaymentStatus.PAYMENT_INITIATED;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class GpEcomOpenBankingTest {
 
-    private final BigDecimal amount = new BigDecimal("7.8");
     private final String currency = "GBP";
 
+    private final BigDecimal amount = new BigDecimal("10.99");
+
+    private final String remittanceReferenceValue = "Nike Bounce Shoes";
+
+    private boolean runAuto = true;
+
+
     public GpEcomOpenBankingTest() throws ApiException {
+        GpEcomConfig config = getConfig();
+        ServicesContainer.configureService(config);
+    }
+
+    private GpEcomConfig getConfig() {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("openbankingsandbox");
         config.setSharedSecret("sharedsecret");
-        config.setAccountId("internet");
-        config.setEnableBankPayment(true);
+        config.setAccountId("internet3");
         config.setShaHashType(ShaHashType.SHA512);
         config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config);
+        return config;
     }
 
     @Test
     public void OpenBanking_FasterPaymentsCharge() throws ApiException, InterruptedException {
+
         BankPayment bankPayment = fasterPaymentConfig();
 
         Transaction transaction =
                 bankPayment
                         .charge(amount)
                         .withCurrency(currency)
-                        .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                        .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                         .execute();
 
         assertTransactionResponse(transaction);
 
+        System.out.println();
+        System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
+        System.out.println();
         Thread.sleep(2000);
 
-        TransactionSummaryPaged detail =
-                ReportingService
-                        .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
-                        .execute();
+        TransactionSummaryPaged response = ReportingService.bankPaymentDetail(
+                transaction.getBankPaymentResponse().getId(), 1, 10)
+                .execute();
 
-        assertNotNull(detail);
-        // TODO: These fields are not being retrieved from the related endpoint. Enable when fixed.
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+        assertNotNull(response);
+        assertEquals(1, response.getTotalRecordCount());
+        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
+//        assertNotNull(response.getResults().get(0).getOrderId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
+        assertEquals(BankPaymentType.FASTERPAYMENTS, response.getResults().get(0).getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
     }
 
+    /**
+     * In order to be able to run the full flow for refund you need to set the "runAuto" property to false.
+     * Open the redirect url printed in a browser and continue the flow.
+     */
     @Test
-    public void OpenBanking_FasterPaymentsCharge_UsingRemittanceReferenceAsPAN() throws ApiException, InterruptedException {
+    public void OpenBanking_FasterPaymentsRefund() throws ApiException, InterruptedException {
+
         BankPayment bankPayment = fasterPaymentConfig();
 
         Transaction transaction =
                 bankPayment
                         .charge(amount)
                         .withCurrency(currency)
-                        .withRemittanceReference(RemittanceReferenceType.PAN, "4263970000005262")
+                        .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                         .execute();
+
 
         assertTransactionResponse(transaction);
 
-        Thread.sleep(2000);
-
-        TransactionSummaryPaged detail =
-                ReportingService
-                        .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
-                        .execute();
-
-        assertNotNull(detail);
-    }
-
-    @Test
-    public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
-        for (ShaHashType shaHashType : ShaHashType.values()) {
-            GpEcomConfig config = new GpEcomConfig();
-            config.setMerchantId("openbankingsandbox");
-            config.setSharedSecret("sharedsecret");
-            config.setAccountId("internet");
-            config.setEnableBankPayment(true);
-            config.setShaHashType(shaHashType);
-
-            ServicesContainer.configureService(config, shaHashType.toString());
-
-            BankPayment bankPayment = fasterPaymentConfig();
-
-            Transaction transaction =
-                    bankPayment
-                            .charge(amount)
-                            .withCurrency(currency)
-                            .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
-                            .execute(shaHashType.toString());
-
-            assertTransactionResponse(transaction);
-
-            Thread.sleep(2000);
-
-            TransactionSummaryPaged detail =
-                    ReportingService
-                            .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
-                            .execute(shaHashType.toString());
-
-            assertNotNull(detail);
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+        if (this.runAuto) {
+            return;
         }
+
+        System.out.println();
+        System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
+        System.out.println();
+        Thread.sleep(2000);
+
+        Transaction refund = transaction.refund(amount)
+                .withCurrency(currency)
+                .execute();
+
+        assertEquals(BankPaymentStatus.INITIATION_PROCESSING, refund.getResponseMessage());
+        assertNotNull(refund.getTransactionId());
+        assertNotNull(refund.getClientTransactionId());
+        assertNull(refund.getBankPaymentResponse().getRedirectUrl());
+
+        TransactionSummaryPaged response = ReportingService.bankPaymentDetail(
+                        transaction.getBankPaymentResponse().getId(), 1, 10)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals(1, response.getTotalRecordCount());
+        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
+//        assertNotNull(response.getResults().get(0).getOrderId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
+        assertEquals(BankPaymentType.FASTERPAYMENTS, response.getResults().get(0).getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
     }
 
     @Test
     public void OpenBanking_SepaCharge() throws ApiException, InterruptedException {
+
         BankPayment bankPayment = SepaConfig();
 
         Transaction transaction =
                 bankPayment
                         .charge(amount)
                         .withCurrency("EUR")
-                        .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                        .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                         .execute();
 
         assertTransactionResponse(transaction);
 
+        System.out.println();
+        System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
+        System.out.println();
         Thread.sleep(2000);
 
-        TransactionSummaryPaged detail =
+        TransactionSummaryPaged response =
                 ReportingService
                         .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
                         .execute();
 
-        assertNotNull(detail);
-        // TODO: These fields are not being retrieved from the related endpoint. Enable when fixed.
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
-        // assertNotNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+        assertNotNull(response);
+        assertEquals(1, response.getTotalRecordCount());
+        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
+//        assertNotNull(response.getResults().get(0).getOrderId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
+        assertEquals(BankPaymentType.SEPA, response.getResults().get(0).getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
+    }
+
+    /**
+     * In order to be able to run the full flow for refund you need to set the "runAuto" property to false.
+     * Open the redirect url printed in a browser and continue the flow.
+     */
+    @Test
+    public void SEPARefund() throws ApiException, InterruptedException {
+        BankPayment bankPayment = SepaConfig();
+
+        Transaction trn =
+                bankPayment
+                        .charge(amount)
+                        .withCurrency("EUR")
+                        .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
+                        .execute();
+
+        assertTransactionResponse(trn);
+
+        if (this.runAuto) {
+            return;
+        }
+
+
+        System.out.println();
+        System.out.println(trn.getBankPaymentResponse().getRedirectUrl());
+        System.out.println();
+        Thread.sleep(2000);
+        
+        Transaction refund =
+                trn
+                        .refund(amount)
+                        .withCurrency("EUR")
+                        .execute();
+
+        assertEquals(BankPaymentStatus.INITIATION_PROCESSING.toString(), refund.getResponseMessage());
+        assertNotNull(refund.getTransactionId());
+        assertNotNull(refund.getClientTransactionId());
+        assertNotNull(refund.getBankPaymentResponse().getRedirectUrl());
+
+        TransactionSummaryPaged response = ReportingService
+                .bankPaymentDetail(trn.getBankPaymentResponse().getId(), 1, 1)
+                .execute();
+
+        assertNotNull(response);
+
+        assertEquals(1, response.getTotalRecordCount());
+
+        assertEquals(trn.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
+
+        assertNull(response.getResults().get(0).getBankPaymentResponse().getIban());
+        assertNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
+        assertNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+        assertNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
+//        assertNotNull(response.getResults().get(0).getOrderId());
+//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
+        assertEquals(BankPaymentType.SEPA, response.getResults().get(0).getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
     }
 
     @Test
@@ -182,8 +265,74 @@ public class GpEcomOpenBankingTest {
                         .execute();
 
         assertNotNull(result);
-        // TODO: 1 element is retrieved. Enable when fixed
-        // assertEquals(0, result.getResults().size());
+        assertEquals(0, result.getResults().size());
+    }
+
+    @Test
+    public void OpenBanking_FasterPaymentsCharge_UsingRemittanceReferenceAsPAN() throws ApiException, InterruptedException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        Transaction transaction =
+                bankPayment
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withRemittanceReference(RemittanceReferenceType.PAN, "4263970000005262")
+                        .execute();
+
+        assertTransactionResponse(transaction);
+
+        System.out.println();
+        System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
+        System.out.println();
+        Thread.sleep(2000);
+
+        TransactionSummaryPaged detail =
+                ReportingService
+                        .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
+                        .execute();
+
+        assertNotNull(detail);
+    }
+
+    @Test
+    public void OpenBanking_FasterPaymentsCharge_AllSHATypes() throws ApiException, InterruptedException {
+        for (ShaHashType shaHashType : ShaHashType.values()) {
+            GpEcomConfig config = new GpEcomConfig();
+            config.setMerchantId("openbankingsandbox");
+            config.setSharedSecret("sharedsecret");
+            config.setAccountId("internet");
+            config.setEnableBankPayment(true);
+            config.setShaHashType(shaHashType);
+
+            ServicesContainer.configureService(config, shaHashType.toString());
+
+            BankPayment bankPayment = fasterPaymentConfig();
+
+            Transaction transaction =
+                    bankPayment
+                            .charge(amount)
+                            .withCurrency(currency)
+                            .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
+                            .execute(shaHashType.toString());
+
+            assertTransactionResponse(transaction);
+
+            System.out.println();
+            System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
+            System.out.println();
+            Thread.sleep(2000);
+
+            TransactionSummaryPaged detail =
+                    ReportingService
+                            .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
+                            .execute(shaHashType.toString());
+
+            assertNotNull(detail);
+            assertNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
+            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
+            assertNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+        }
     }
 
     @Test
@@ -191,8 +340,8 @@ public class GpEcomOpenBankingTest {
         TransactionSummaryPaged result =
                 ReportingService
                         .findBankPaymentTransactions(1, 10)
-                        .where(SearchCriteria.StartDate, LocalDate.now().plusDays(-5).toDate())
-                        .and(SearchCriteria.EndDate, LocalDate.now().toDate())
+                        .where(SearchCriteria.StartDate, LocalDate.now().plusDays(-29).toDate())
+                        .and(SearchCriteria.EndDate, LocalDate.now().plusDays(-1).toDate())
                         .and(SearchCriteria.ReturnPII, true)
                         .execute();
 
@@ -269,29 +418,10 @@ public class GpEcomOpenBankingTest {
                 bankPayment
                         .charge(amount)
                         .withCurrency(currency)
-                        .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                        .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                         .execute();
 
         assertTransactionResponse(transaction);
-    }
-
-    @Test
-    public void OpenBanking_FasterPaymentsCharge_CADCurrency() throws ApiException {
-        BankPayment bankPayment = fasterPaymentConfig();
-
-        boolean exceptionCaught = false;
-        try {
-            bankPayment
-                    .charge(amount)
-                    .withCurrency("CAD")
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertTrue(ex.getResponseText().contains("Merchant currency is not enabled for Open Banking"));
-        } finally {
-            assertTrue(exceptionCaught);
-        }
     }
 
     @Test
@@ -310,6 +440,18 @@ public class GpEcomOpenBankingTest {
         } finally {
             assertTrue(exceptionCaught);
         }
+    }
+
+    @Test
+    public void OpenBanking_FasterPayments_MissingRemittanceReferenceType() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        Transaction transaction = bankPayment
+                .charge(amount)
+                .withCurrency(currency)
+                .withRemittanceReference(null, remittanceReferenceValue)
+                .execute();
+        assertTransactionResponse(transaction);
     }
 
     @Test
@@ -332,63 +474,6 @@ public class GpEcomOpenBankingTest {
     }
 
     @Test
-    public void OpenBanking_FasterPayments_RemittanceValueMoreThan18Chars() throws ApiException {
-        BankPayment bankPayment = fasterPaymentConfig();
-
-        boolean exceptionCaught = false;
-        try {
-            bankPayment
-                    .charge(amount)
-                    .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.PAN, "Nike Bounce Shoes Like Lebron")
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void OpenBanking_FasterPayments_RemittanceValueLessThan2Chars() throws ApiException {
-        BankPayment bankPayment = fasterPaymentConfig();
-
-        boolean exceptionCaught = false;
-        try {
-            bankPayment
-                    .charge(amount)
-                    .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.PAN, "N")
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void OpenBanking_FasterPayments_MissingRemittanceReferenceType() throws ApiException {
-        BankPayment bankPayment = fasterPaymentConfig();
-
-        boolean exceptionCaught = false;
-        try {
-            bankPayment
-                    .charge(amount)
-                    .withCurrency(currency)
-                    .withRemittanceReference(null, "Nike Shoes")
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertTrue(ex.getResponseText().contains("remittance_reference.type cannot be blank or null"));
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
     public void OpenBanking_FasterPayments_MissingReturnUrl() throws ApiException {
         BankPayment bankPayment = fasterPaymentConfig();
         bankPayment.setReturnUrl(null);
@@ -398,7 +483,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -418,7 +503,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -427,6 +512,7 @@ public class GpEcomOpenBankingTest {
             assertTrue(exceptionCaught);
         }
     }
+
 
     @Test
     public void OpenBanking_FasterPayments_MissingAccountNumber() throws ApiException {
@@ -478,7 +564,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -497,7 +583,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency("EUR")
-                    .withRemittanceReference(RemittanceReferenceType.PAN, "Nike Bounce Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.PAN, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -506,6 +592,7 @@ public class GpEcomOpenBankingTest {
             assertTrue(exceptionCaught);
         }
     }
+
 
     @Test
     public void OpenBanking_Sepa_MissingIban() throws ApiException {
@@ -517,7 +604,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency("EUR")
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -537,7 +624,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency("EUR")
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -556,7 +643,7 @@ public class GpEcomOpenBankingTest {
             bankPayment
                     .charge(amount)
                     .withCurrency(currency)
-                    .withRemittanceReference(RemittanceReferenceType.TEXT, "Nike Bounce Shoes")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -566,11 +653,68 @@ public class GpEcomOpenBankingTest {
         }
     }
 
+    @Test
+    public void OpenBanking_FasterPaymentsCharge_CADCurrency() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        boolean exceptionCaught = false;
+        try {
+            bankPayment
+                    .charge(amount)
+                    .withCurrency("CAD")
+                    .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getResponseText().contains("Invalid Payment Scheme required fields"));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void OpenBanking_FasterPayments_RemittanceValueMoreThan18Chars() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        boolean exceptionCaught = false;
+        try {
+            bankPayment
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withRemittanceReference(RemittanceReferenceType.PAN, "Nike Bounce Shoes Like Lebron")
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void OpenBanking_FasterPayments_RemittanceValueLessThan2Chars() throws ApiException {
+        BankPayment bankPayment = fasterPaymentConfig();
+
+        boolean exceptionCaught = false;
+        try {
+            bankPayment
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withRemittanceReference(RemittanceReferenceType.PAN, "N")
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertTrue(ex.getResponseText().contains("remittance_reference.value is of invalid length"));
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
     private BankPayment fasterPaymentConfig() {
         return new BankPayment()
                 .setAccountNumber("12345678")
                 .setSortCode("406650")
-                .setAccountName("GpEcom Testing")
+                .setAccountName("AccountName")
                 .setReturnUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net")
                 .setStatusUpdateUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net");
     }
@@ -578,7 +722,7 @@ public class GpEcomOpenBankingTest {
     private BankPayment SepaConfig() {
         return new BankPayment()
                 .setIban("123456")
-                .setAccountName("GpEcom Testing")
+                .setAccountName("AccountName")
                 .setReturnUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net")
                 .setStatusUpdateUrl("https://7b8e82a17ac00346e91e984f42a2a5fb.m.pipedream.net");
     }

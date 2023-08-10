@@ -5,6 +5,7 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
 import com.global.api.network.entities.*;
@@ -20,7 +21,7 @@ import java.util.*;
 
 public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter private AccountType accountType;
-	private AlternativePaymentType alternativePaymentType;
+    private AlternativePaymentType alternativePaymentType;
     private BigDecimal amount;
     private BigDecimal authAmount;
     private BatchCloseType batchCloseType;
@@ -117,9 +118,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AlternativePaymentType getAlternativePaymentType() {
-		return alternativePaymentType;
-	}
-	public BigDecimal getAmount() {
+        return alternativePaymentType;
+    }
+    public BigDecimal getAmount() {
         return amount;
     }
     public BigDecimal getAuthAmount() {
@@ -303,9 +304,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
 
     public ManagementBuilder withAlternativePaymentType(AlternativePaymentType value) {
-		this.alternativePaymentType = value;
-		return this;
-	}
+        this.alternativePaymentType = value;
+        return this;
+    }
     public ManagementBuilder withAmount(BigDecimal value) {
         this.amount = value;
         return this;
@@ -684,8 +685,19 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     public Transaction execute(String configName) throws ApiException {
         super.execute(configName);
 
-        IPaymentGateway gateway = ServicesContainer.getInstance().getGateway(configName);
-        return gateway.manageTransaction(this);
+        IPaymentGateway client = ServicesContainer.getInstance().getGateway(configName);
+
+        if (client.supportsOpenBanking() &&
+                paymentMethod instanceof TransactionReference &&
+                paymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
+            IOpenBankingProvider obClient = ServicesContainer.getInstance().getOpenBankingClient(configName);
+
+            if (obClient != client) {
+                return obClient.manageOpenBanking(this);
+            }
+        }
+
+        return client.manageTransaction(this);
     }
 
     @Override

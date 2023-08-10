@@ -11,6 +11,7 @@ import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
 import com.global.api.tests.gpEcom.hpp.GpEcomHppClient;
 import com.global.api.utils.JsonDoc;
+import com.global.api.utils.JsonEncoders;
 import lombok.var;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -148,6 +149,136 @@ public class GpEcomHppRequestTest {
         Transaction parsedResponse = _service.parseResponse(response, true, "3ds");
         assertNotNull(response);
         assertEquals("00", parsedResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_CUST_NUM_HostedPaymentDataAndCustomerNumberAndCustomerId() throws ApiException {
+
+        // prepare
+        prepareConfig();
+
+        String customerNumber = "a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa";
+        String customerId = "123456";
+
+        HostedPaymentData testHostedPaymentData = buildHostedPaymentDataWithCustomerNumber(customerNumber);
+
+        // act
+        String json = serializeWithHostedPaymentDataAndCustomerId(testHostedPaymentData, customerId);
+
+        // assert
+        assert_CUST_NUM(json, customerNumber);
+    }
+
+    @Test
+    public void test_CUST_NUM_HostedPaymentDataAndNoCustomerNumberAndCustomerId() throws ApiException {
+
+        // prepare
+        prepareConfig();
+
+        String customerNumber = null;
+        String customerId = "123456";
+
+        HostedPaymentData testHostedPaymentData = buildHostedPaymentDataWithCustomerNumber(customerNumber);
+
+        // act
+        String json = serializeWithHostedPaymentDataAndCustomerId(testHostedPaymentData, customerId);
+
+        // assert
+        assert_CUST_NUM(json, null);
+    }
+
+    @Test
+    public void test_CUST_NUM_HostedPaymentDataAndNoCustomerNumberAndNoCustomerId() throws ApiException {
+        // prepare
+        prepareConfig();
+
+        String customerNumber = null;
+        String customerId = null;
+
+        HostedPaymentData testHostedPaymentData = buildHostedPaymentDataWithCustomerNumber(customerNumber);
+
+        // act
+        String json = serializeWithHostedPaymentDataAndCustomerId(testHostedPaymentData, customerId);
+
+        // assert
+        assert_CUST_NUM(json, null);
+    }
+
+    @Test
+    public void test_CUST_NUM_NoHostedPaymentDataAndCustomerId() throws ApiException {
+        // prepare
+        prepareConfig();
+
+        String customerId = "123456";
+
+        HostedPaymentData testHostedPaymentData = null;
+
+        // act
+        String json = serializeWithHostedPaymentDataAndCustomerId(testHostedPaymentData, customerId);
+
+        // assert
+        assert_CUST_NUM(json, customerId);
+    }
+
+    @Test
+    public void test_CUST_NUM_NoHostedPaymentDataAndNoCustomerId() throws ApiException {
+        // prepare
+        prepareConfig();
+
+        String customerId = null;
+
+        HostedPaymentData testHostedPaymentData = null;
+
+        // act
+        String json = serializeWithHostedPaymentDataAndCustomerId(testHostedPaymentData, customerId);
+
+        // assert
+        assert_CUST_NUM(json, null);
+    }
+
+    private void prepareConfig() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("3dsecure");
+        config.setSharedSecret("secret");
+        config.setHostedPaymentConfig(hostedConfig);
+
+        _service = new HostedService(config, "3ds");
+    }
+
+    private HostedPaymentData buildHostedPaymentDataWithCustomerNumber(String customerNumber) {
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerEmail("james.mason@example.com");
+        testHostedPaymentData.setCustomerPhoneMobile("44|07123456789");
+        testHostedPaymentData.setAddressesMatch(false);
+        testHostedPaymentData.setCustomerCountry("GB");
+        testHostedPaymentData.setCustomerFirstName("Jason");
+        testHostedPaymentData.setCustomerLastName("Mason");
+        testHostedPaymentData.setMerchantResponseUrl("http://requestb.in/10q2bjb1");
+        testHostedPaymentData.setTransactionStatusUrl("http://requestb.in/10q2bjb1");
+        testHostedPaymentData.setCustomerNumber(customerNumber);
+        return testHostedPaymentData;
+    }
+
+    private String serializeWithHostedPaymentDataAndCustomerId(HostedPaymentData testHostedPaymentData, String customerId) throws ApiException {
+        String json = _service.verify(new BigDecimal("0"))
+                .withCurrency("EUR")
+                .withCustomerId(customerId)
+                .withAddress(billingAddress, AddressType.Billing)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withHostedPaymentData(testHostedPaymentData)
+                .serialize("3ds");
+        assertNotNull(json);
+        return json;
+    }
+
+    private void assert_CUST_NUM(String json, String expected_CUST_NUM) {
+        JsonDoc responseJsonDoc = JsonDoc.parse(json, null);
+        String custNum = responseJsonDoc.getString("CUST_NUM");
+        assertEquals(expected_CUST_NUM, custNum);
     }
 
     @Test(expected = BuilderException.class)
