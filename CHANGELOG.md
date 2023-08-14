@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.3.13 (08/14/2023)
+ 
+### Enhancements:
+
+-NTS Phase1 Issue:
+  - Transaction date and transaction time changes for credit adjustment scenario  - Issue(10229) 
+  - Added the code for retransmit request to balance(16) to forced request to balance changes - Issue(10214)
+ 
 ## v10.3.12 (08/10/2023)
  
 ### Enhancements:

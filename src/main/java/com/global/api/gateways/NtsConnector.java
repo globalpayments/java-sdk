@@ -293,7 +293,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                     if (messageCode.equals(NtsMessageCode.RequestToBalacnce.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                     } else if (messageCode.equals(NtsMessageCode.RetransmitRequestToBalance.getValue())) {
-                        originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceRequestToBalance.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                     }
                 }
             }

@@ -641,4 +641,41 @@ public class NtsRequestToBalanceTest {
         BatchSummary newSummary1 = batchSummary.resubmitTransactions(true,newSummary.getFormatErrorDataCollectToken());
         assertNotNull(newSummary1);
     }
+    @Test
+    public void test_BatchCloseIssue_10214_16_to_C6() throws ApiException {
+
+        creditSale(10.11);
+        creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        // 16
+        Transaction retransmitBatchCloseResponse = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .execute();
+        assertNotNull(retransmitBatchCloseResponse);
+
+        // C6
+        Transaction forceBatchCloseResponse = NetworkService.resubmitBatchClose(retransmitBatchCloseResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(forceBatchCloseResponse);
+
+    }
 }

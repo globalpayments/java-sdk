@@ -133,14 +133,12 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                 request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
                 NtsUtils.log("OriginalTransactionTime", ntsRequestMessageHeader.getTransactionTime());
             } else if (ntsRequestMessageHeader.getNtsMessageCode() == NtsMessageCode.CreditAdjustment) {
-                String transactionDate = DateTime.now(DateTimeZone.UTC).toString("MMdd");
-                String transactionTime = DateTime.now(DateTimeZone.UTC).toString("HHmmss");
 
-                request.addRange(transactionDate, 4);
-                NtsUtils.log("OriginalTransactionDate", transactionDate);
+                request.addRange(ntsRequestMessageHeader.getTransactionDate(), 4);
+                NtsUtils.log("OriginalTransactionDate", ntsRequestMessageHeader.getTransactionDate());
 
-                request.addRange(transactionTime, 6);
-                NtsUtils.log("OriginalTransactionTime", transactionTime);
+                request.addRange(ntsRequestMessageHeader.getTransactionTime(), 6);
+                NtsUtils.log("OriginalTransactionTime", ntsRequestMessageHeader.getTransactionTime());
             } else {
                 request.addRange(transactionReference.getOriginalTransactionDate(), 4);
                 NtsUtils.log("OriginalTransactionDate", transactionReference.getOriginalTransactionDate());
