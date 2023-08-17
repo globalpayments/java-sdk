@@ -87,7 +87,7 @@ public class NtsGiftTests {
         config = new NetworkGatewayConfig(Target.NTS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.txns.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());

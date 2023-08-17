@@ -18,7 +18,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         POSSiteConfigurationData requestData = builder.getPosSiteConfigurationData();
 
         NtsUtils.log("MESSAGE VERSION ", requestData.getMessageVersion());
-        request.addRange(requestData.getMessageVersion(), 3);
+        request.addRange(StringUtils.padRight(requestData.getMessageVersion(),3,'0'), 3);
 
         NtsUtils.log("TRANSACTION DATE ", requestData.getTransactionDate());
         request.addRange(requestData.getTransactionDate(), 8);
@@ -78,16 +78,16 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getHeartlandPosSoftwareVersion(), 8, ' '), 8);
 
         NtsUtils.log("HEARTLAND TERMINAL SPEC", requestData.getHeartlandTerminalSpec());
-        request.addRange(requestData.getHeartlandTerminalSpec(), 1);
+        request.addRange(StringUtils.padRight(requestData.getHeartlandTerminalSpec(),1,' '), 1);
 
         NtsUtils.log("HEARTLAND NTS TERMINAL SPEC VERSION", requestData.getHeartlandTerminalSpecVersion());
         request.addRange(StringUtils.padLeft(requestData.getHeartlandTerminalSpecVersion(), 4, '0'), 4);
 
         NtsUtils.log("HEARTLAND PAYMENT ENGINE", requestData.getHeartlandPaymentEngine());
-        request.addRange(requestData.getHeartlandPaymentEngine(), 1);
+        request.addRange(StringUtils.padRight(requestData.getHeartlandPaymentEngine(),1,' '), 1);
 
         NtsUtils.log("HEARTLAND PAYMENT VERTICAL", requestData.getHeartlandPaymentVertical());
-        request.addRange(requestData.getHeartlandPaymentVertical(), 1);
+        request.addRange(StringUtils.padRight(requestData.getHeartlandPaymentVertical(),1,' '), 1);
 
         NtsUtils.log("POS HARDWARE VERSION", requestData.getPosHardwareVersion());
         request.addRange(StringUtils.padRight(requestData.getPosHardwareVersion(), 4, ' '), 4);
@@ -105,25 +105,25 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getMiddlewareProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("MIDDLEWARE TYPE", requestData.getMiddlewareType());
-        request.addRange(requestData.getMiddlewareType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getMiddlewareType(), 1, ' '), 1);
 
         NtsUtils.log("MIDDLEWARE SOFTWARE VERSION", requestData.getMiddlewareSoftwareVersion());
         request.addRange(StringUtils.padRight(requestData.getMiddlewareSoftwareVersion(), 8, ' '), 8);
 
         NtsUtils.log("RECEIPT PRINTER TYPE", requestData.getReceiptPrinterType());
-        request.addRange(requestData.getReceiptPrinterType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getReceiptPrinterType(), 1, ' '), 1);
 
         NtsUtils.log("RECEIPT PRINTER MODEL", requestData.getReceiptPrinterModel());
         request.addRange(StringUtils.padRight(requestData.getReceiptPrinterModel(), 15, ' '), 15);
 
         NtsUtils.log("JOURNAL PRINTER TYPE", requestData.getJournalPrinterType());
-        request.addRange(requestData.getJournalPrinterType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getJournalPrinterType(), 1, ' '), 1);
 
         NtsUtils.log("JOURNAL PRINTER MODEL", requestData.getJournalPrinterModel());
         request.addRange(StringUtils.padRight(requestData.getJournalPrinterModel(), 15, ' '), 15);
 
         NtsUtils.log("INSIDE PED / MULTI-LANE DEVICE TYPE ", requestData.getInsidePedMultiLaneDeviceType());
-        request.addRange(requestData.getInsidePedMultiLaneDeviceType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getInsidePedMultiLaneDeviceType(), 1, ' '), 1);
 
         NtsUtils.log("INSIDE PED / MULTI-LANE DEVICE VENDOR", requestData.getInsidePedMultiLaneDeviceVendor());
         request.addRange(StringUtils.padRight(requestData.getInsidePedMultiLaneDeviceVendor(), 15, ' '), 15);
@@ -132,13 +132,13 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getInsidePedMultiLaneDeviceProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("KEY MANAGEMENT SCHEME (INSIDE)  ", requestData.getKeyManagementSchemeInside());
-        request.addRange(requestData.getKeyManagementSchemeInside(), 1);
+        request.addRange(StringUtils.padRight(requestData.getKeyManagementSchemeInside(), 1, ' '), 1);
 
         NtsUtils.log("PIN ENCRYPTION (INSIDE) ", requestData.getPinEncryptionInside());
-        request.addRange(requestData.getPinEncryptionInside(), 1);
+        request.addRange(StringUtils.padRight(requestData.getPinEncryptionInside(), 1, ' '), 1);
 
         NtsUtils.log("OUTSIDE PED TYPE", requestData.getOutsidePedType());
-        request.addRange(requestData.getOutsidePedType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getOutsidePedType(), 1, ' '), 1);
 
         NtsUtils.log("OUTSIDE PED VENDOR", requestData.getOutsidePedVendor());
         request.addRange(StringUtils.padRight(requestData.getOutsidePedVendor(), 15, ' '), 15);
@@ -147,10 +147,10 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getOutsidePedProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("KEY MANAGEMENT SCHEME (OUTSIDE)", requestData.getKeyManagementSchemeOutside());
-        request.addRange(requestData.getKeyManagementSchemeOutside(), 1);
+        request.addRange(StringUtils.padRight(requestData.getKeyManagementSchemeOutside(), 1, ' '), 1);
 
         NtsUtils.log("PIN ENCRYPTION (OUTSIDE) ", requestData.getPinEncryptionOutside());
-        request.addRange(requestData.getPinEncryptionOutside(), 1);
+        request.addRange(StringUtils.padRight(requestData.getPinEncryptionOutside(), 1, ' '), 1);
 
         NtsUtils.log("CHECK READER VENDOR", requestData.getCheckReaderVendor());
         request.addRange(StringUtils.padRight(requestData.getCheckReaderVendor(), 15, ' '), 15);
@@ -159,7 +159,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getCheckReaderProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("INSIDE CONTACTLESS READER TYPE", requestData.getInsideContactlessReaderType());
-        request.addRange(requestData.getInsideContactlessReaderType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getInsideContactlessReaderType(), 1, ' '), 1);
 
         NtsUtils.log("INSIDE CONTACTLESS READER VENDOR", requestData.getInsideContactlessReaderVendor());
         request.addRange(StringUtils.padRight(requestData.getInsideContactlessReaderVendor(), 15, ' '), 15);
@@ -168,7 +168,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getInsideContactlessReaderProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("OUTSIDE CONTACTLESS READER TYPE ", requestData.getOutsideContactlessReaderType());
-        request.addRange(requestData.getOutsideContactlessReaderType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getOutsideContactlessReaderType(), 1, ' '), 1);
 
         NtsUtils.log("OUTSIDE CONTACTLESS READER VENDOR", requestData.getOutsideContactlessReaderVendor());
         request.addRange(StringUtils.padRight(requestData.getOutsideContactlessReaderVendor(), 15, ' '), 15);
@@ -177,16 +177,16 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getOutsideContactlessReaderProductNameOrModel(), 15, ' '), 15);
 
         NtsUtils.log("COMMUNICATION MEDIA ", requestData.getCommunicationMedia());
-        request.addRange(requestData.getCommunicationMedia(), 1);
+        request.addRange(StringUtils.padRight(requestData.getCommunicationMedia(), 1, ' '), 1);
 
         NtsUtils.log("COMMUNICATION PROTOCOL ", requestData.getCommunicationProtocol());
-        request.addRange(requestData.getCommunicationProtocol(), 1);
+        request.addRange(StringUtils.padRight(requestData.getCommunicationProtocol(), 1, ' '), 1);
 
         NtsUtils.log("INTERNET / BROADBAND USE", requestData.getInternetBroadbandUse());
-        request.addRange(requestData.getInternetBroadbandUse(), 1);
+        request.addRange(StringUtils.padRight(requestData.getInternetBroadbandUse(), 1, ' '), 1);
 
         NtsUtils.log("DATAWIRE ACCESS", requestData.getDatawireAccess());
-        request.addRange(requestData.getDatawireAccess(), 1);
+        request.addRange(StringUtils.padRight(requestData.getDatawireAccess(), 1, ' '), 1);
 
         NtsUtils.log("MICRONODE MODEL NUMBER", requestData.getMicronodeModelNumber());
         request.addRange(StringUtils.padRight(requestData.getMicronodeModelNumber(), 8, ' '), 8);
@@ -195,7 +195,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getMicronodeSoftwareVersion(), 8, ' '), 8);
 
         NtsUtils.log("MODEM/ROUTER TYPE", requestData.getModemRouterType());
-        request.addRange(requestData.getModemRouterType(), 1);
+        request.addRange(StringUtils.padRight(requestData.getModemRouterType(), 1, ' '), 1);
 
         NtsUtils.log("MODEM/ROUTER VENDOR", requestData.getModemRouterVendor());
         request.addRange(StringUtils.padRight(requestData.getModemRouterVendor(), 15, ' '), 15);

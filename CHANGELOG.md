@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.3.14 (08/17/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue:
+- Added Null check for host response area Issue(10232)
+- Resolved error in position of Several Fields in POS Site Configuration Message Request.
+
 ## v10.3.13 (08/14/2023)
  
 ### Enhancements:

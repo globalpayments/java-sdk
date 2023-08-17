@@ -116,19 +116,23 @@ public class NtsConnector extends GatewayConnectorConfig {
                     if (transactionType.equals(TransactionType.Auth) && userData != null) {
                         NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
                         String hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
-                        StringParser responseParser = new StringParser(hostResponseArea);
-                        String amount = responseParser.readString(7);
-                        userData.put(UserDataTag.ApprovedAmount, amount);
-                        reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
-                        userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
+                        if(!StringUtils.isNullOrEmpty(hostResponseArea)) {
+                            StringParser responseParser = new StringParser(hostResponseArea);
+                            String amount = responseParser.readString(7);
+                            userData.put(UserDataTag.ApprovedAmount, amount);
+                            reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
+                            userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
+                        }
                     } else if (transactionType.equals(TransactionType.Sale) && userData != null) {
                         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
                         String hostResponseArea = ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea();
-                        StringParser responseParser = new StringParser(hostResponseArea);
-                        String amount = responseParser.readString(7);
-                        userData.put(UserDataTag.ApprovedAmount, amount);
-                        reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
-                        userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
+                        if(!StringUtils.isNullOrEmpty(hostResponseArea)) {
+                            StringParser responseParser = new StringParser(hostResponseArea);
+                            String amount = responseParser.readString(7);
+                            userData.put(UserDataTag.ApprovedAmount, amount);
+                            reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
+                            userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
+                        }
                     }
                 }
             }
@@ -143,10 +147,12 @@ public class NtsConnector extends GatewayConnectorConfig {
                 && ntsResponse.getNtsResponseMessage() instanceof NtsAuthCreditResponseMapper) {
             NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
             String hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
-            StringParser responseParser = new StringParser(hostResponseArea);
-            reference.setOriginalTransactionTypeIndicator(ReverseStringEnumMap.parse(responseParser.readString(8).trim(), TransactionTypeIndicator.class));
-            reference.setSystemTraceAuditNumber(responseParser.readString(6));
-            userData.put(UserDataTag.RemainingBalance, responseParser.readString(6));
+            if(!StringUtils.isNullOrEmpty(hostResponseArea)) {
+                StringParser responseParser = new StringParser(hostResponseArea);
+                reference.setOriginalTransactionTypeIndicator(ReverseStringEnumMap.parse(responseParser.readString(8).trim(), TransactionTypeIndicator.class));
+                reference.setSystemTraceAuditNumber(responseParser.readString(6));
+                userData.put(UserDataTag.RemainingBalance, responseParser.readString(6));
+            }
         } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)
                 && transactionType != TransactionType.DataCollect
                 && transactionType != TransactionType.Capture) {
