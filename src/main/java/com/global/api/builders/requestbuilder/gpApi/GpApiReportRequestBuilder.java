@@ -288,18 +288,18 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
 
                     return request;
 
-                case PayLinkDetail:
+                case PayByLinkDetail:
                     return (GpApiRequest)
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + trb.getSearchBuilder().getPayLinkId());
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT + "/" + trb.getSearchBuilder().getPayByLinkId());
 
-                case FindPayLinkPaged:
+                case FindPayByLinkPaged:
                     request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartDate()));
                     request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndDate()));
                     request.addQueryStringParam("order", trb.getOrder().getValue());
                     request.addQueryStringParam("order_by", EnumUtils.getMapping(Target.GP_API, trb.getActionOrderBy()));
-                    request.addQueryStringParam("status", trb.getSearchBuilder().getPayLinkStatus());
+                    request.addQueryStringParam("status", trb.getSearchBuilder().getPayByLinkStatus());
                     request.addQueryStringParam("usage_mode", trb.getSearchBuilder().getPaymentMethodUsageMode());
                     request.addQueryStringParam("name", trb.getSearchBuilder().getDisplayName());
                     request.addQueryStringParam("amount", StringUtils.toNumeric(trb.getSearchBuilder().getAmount()));
@@ -314,7 +314,7 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
                     return (GpApiRequest)
                             request
                                     .setVerb(GpApiRequest.HttpMethod.Get)
-                                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT);
+                                    .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT);
 
                 default:
                     throw new UnsupportedTransactionException();

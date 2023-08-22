@@ -1,6 +1,6 @@
 package com.global.api.entities.enums;
 
-public enum PayLinkStatus {
+public enum PayByLinkStatus {
     ACTIVE,
     INACTIVE,
     CLOSED,

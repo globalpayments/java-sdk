@@ -37,7 +37,7 @@ public class GpApiRequest extends Request {
 
     public static final String DCC_ENDPOINT = "/currency-conversions";
 
-    public static final String PAYLINK_ENDPOINT = "/links";
+    public static final String PAYBYLINK_ENDPOINT = "/links";
 
     public static final String RISK_ASSESSMENTS = "/risk-assessments";
 

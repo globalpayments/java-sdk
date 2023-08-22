@@ -486,6 +486,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             BatchSummary summary = new BatchSummary();
+            NtsRequestToBalanceResponse responseMessage = (NtsRequestToBalanceResponse) ntsResponse.getNtsResponseMessage();
             if (builder instanceof ManagementBuilder) {
                 ManagementBuilder manageBuilder = (ManagementBuilder) builder;
                 NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
@@ -497,8 +498,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setReturnAmount(manageBuilder.getTotalReturns());
                 summary.setTransactionToken(result.getTransactionToken());
                 summary.setTotalAmount(manageBuilder.getTotalAmount());
-                summary.setDebitAmount(manageBuilder.getTotalSales());
-                summary.setCreditAmount(manageBuilder.getTotalReturns());
+                summary.setDebitAmount(BigDecimal.valueOf(responseMessage.getHostTotalSales()));
+                summary.setCreditAmount(BigDecimal.valueOf(responseMessage.getHostTotalReturns()));
+                summary.setHostTransactionCount(responseMessage.getHostTransactionCount());
                 batchSummaryList.add(summary);
                 result.setBatchSummary(summary);
             } else if (builder instanceof ResubmitBuilder && (batchSummaryList != null)) {
@@ -547,10 +549,10 @@ public class NtsConnector extends GatewayConnectorConfig {
     }
 
     private <T extends TransactionBuilder<Transaction>> Boolean isAllowedRCForRetransmit(NtsHostResponseCode responseCode, T builder) {
-           return builder instanceof ResubmitBuilder  && responseCode == NtsHostResponseCode.HostSystemFailure
+           return builder instanceof ResubmitBuilder  && (responseCode == NtsHostResponseCode.HostSystemFailure
                     || responseCode == NtsHostResponseCode.TerminalTimeout
                     || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
-                    || responseCode == NtsHostResponseCode.FormatError;
+                    || responseCode == NtsHostResponseCode.FormatError);
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

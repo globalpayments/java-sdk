@@ -1,5 +1,20 @@
 # Changelog
 
+## v11.0.0 (08/22/2023)
+
+### Enhancements:
+NTS Issue :
+  - Added hostTransactionCount in batchSummary and mapped HostTotalSales with debitAmount and HostTotalReturns with creditAmount(10230)
+ 
+GP-API :
+  - Rename PayLink to PayByLink
+  
+Portico : 
+  - Map Portico response tag "ClientTxnId" to transaction response
+  - Commercial card values
+  - Add Void-by-ClientTxnId for Heartland ACH
+  - ADD SAF indicator and SAF data
+
 ## v10.3.14 (08/17/2023)
 
 ### Enhancements:

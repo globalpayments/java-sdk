@@ -849,9 +849,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
-    public AuthorizationBuilder withPayLinkData(PayLinkData payLinkData)
+    public AuthorizationBuilder withPayByLinkData(PayByLinkData payByLinkData)
     {
-        this.payLinkData = payLinkData;
+        this.payByLinkData = payByLinkData;
         return this;
     }
 

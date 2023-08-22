@@ -49,6 +49,8 @@ public class BatchSummary {
     private List<String> formatErrorDataCollectToken;
     @Getter @Setter
     private String hostResponseCode;
+    @Getter @Setter
+    private Integer hostTransactionCount;
     private static final String CONFIG_NAME = "default";
     private static final String FORMATERRORTWICEINROW = "79";
     int counter = 0;

@@ -10,6 +10,7 @@ import com.global.api.serviceConfigs.PorticoConfig;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -26,8 +27,8 @@ public class PorticoAchTests {
         ServicesContainer.configureService(config);
 
         check = new eCheck();
-        check.setAccountNumber("24413815");
-        check.setRoutingNumber("490000018");
+        check.setAccountNumber("1357902468");
+        check.setRoutingNumber("122000030");
         check.setCheckType(CheckType.Personal);
         check.setSecCode(SecCode.Ppd);
         check.setAccountType(AccountType.Checking);
@@ -38,6 +39,7 @@ public class PorticoAchTests {
         check.setPhoneNumber("8003214567");
         check.setBirthYear(1997);
         check.setSsnLast4("4321");
+        check.setCheckName("John Doe");
 
         address = new Address();
         address.setStreetAddress1("123 Main St.");

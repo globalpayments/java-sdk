@@ -128,4 +128,5 @@ public class TransactionSummary {
     private String paymentPurposeCode;
     private String verificationCode;
     private BigDecimal batchAmount;
+    private String hasLevelIII;
 }

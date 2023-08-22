@@ -105,15 +105,15 @@ public class GpApiMapping {
                 case LINK_CREATE:
                 case LINK_EDIT:
 
-                    PayLinkResponse payLinkResponse = mapPayLinkResponse(json);
+                    PayByLinkResponse payByLinkResponse = mapPayByLinkResponse(json);
 
                     if (json.has("transactions")) {
                         JsonDoc trn = json.get("transactions");
                         transaction.setBalanceAmount(trn.getString("amount") != null ? trn.getAmount("amount") : null);
-                        payLinkResponse.setAllowedPaymentMethods(trn.getStringArrayList("allowed_payment_methods").toArray(new String[0]));
+                        payByLinkResponse.setAllowedPaymentMethods(trn.getStringArrayList("allowed_payment_methods").toArray(new String[0]));
                     }
 
-                    transaction.setPayLinkResponse(payLinkResponse);
+                    transaction.setPayByLinkResponse(payByLinkResponse);
                     break;
                 case TRANSFER:
                     transaction.setPaymentMethodType(PaymentMethodType.AccountFunds);
@@ -484,8 +484,8 @@ public class GpApiMapping {
         return summary;
     }
 
-    public static PayLinkSummary mapPayLinkSummary(JsonDoc doc) throws GatewayException {
-        PayLinkSummary summary = new PayLinkSummary();
+    public static PayByLinkSummary mapPayByLinkSummary(JsonDoc doc) throws GatewayException {
+        PayByLinkSummary summary = new PayByLinkSummary();
 
         summary.setId(doc.getString("id"));
         summary.setMerchantId(doc.getString("merchant_id"));
@@ -493,8 +493,8 @@ public class GpApiMapping {
         summary.setAccountId(doc.getString("account_id"));
         summary.setAccountName(doc.getString("account_name"));
         summary.setUrl(doc.getString("url"));
-        summary.setStatus(PayLinkStatus.valueOf(doc.getString("status")));
-        summary.setType(PayLinkType.valueOf(doc.getString("type").toUpperCase()));
+        summary.setStatus(PayByLinkStatus.valueOf(doc.getString("status")));
+        summary.setType(PayByLinkType.valueOf(doc.getString("type").toUpperCase()));
         summary.setAllowedPaymentMethods(getAllowedPaymentMethods(doc));
         summary.setUsageMode(getPaymentMethodUsageMode(doc));
         summary.setUsageCount(doc.getString("usage_count"));
@@ -525,14 +525,14 @@ public class GpApiMapping {
         return summary;
     }
 
-    private static PayLinkResponse mapPayLinkResponse(JsonDoc doc) {
+    private static PayByLinkResponse mapPayByLinkResponse(JsonDoc doc) {
         return
-                new PayLinkResponse()
+                new PayByLinkResponse()
                         .setId(doc.getString("id"))
                         .setAccountName(doc.getString("account_name"))
                         .setUrl(doc.getString("url"))
-                        .setStatus(PayLinkStatus.valueOf(doc.getString("status")))
-                        .setType(PayLinkType.valueOf(doc.getString("type")))
+                        .setStatus(PayByLinkStatus.valueOf(doc.getString("status")))
+                        .setType(PayByLinkType.valueOf(doc.getString("type")))
                         .setUsageMode(PaymentMethodUsageMode.valueOf(doc.getString("usage_mode")))
                         .setUsageLimit(doc.getInt("usage_limit"))
                         .setReference(doc.getString("reference"))
@@ -632,11 +632,11 @@ public class GpApiMapping {
             case FindActionsPaged:
                 return (T) mapActions(json);
 
-            case PayLinkDetail:
-                return (T) mapPayLinkSummary(json);
+            case PayByLinkDetail:
+                return (T) mapPayByLinkSummary(json);
 
-            case FindPayLinkPaged:
-                return (T) mapPayLinks(json);
+            case FindPayByLinkPaged:
+                return (T) mapPayByLinks(json);
 
             case FindMerchantsPaged:
                 return (T) mapMerchants(json);
@@ -1180,12 +1180,12 @@ public class GpApiMapping {
         return pagedResult;
     }
 
-    public static PayLinkSummaryPaged mapPayLinks(JsonDoc doc) throws GatewayException {
-        PayLinkSummaryPaged pagedResult = new PayLinkSummaryPaged();
+    public static PayByLinkSummaryPaged mapPayByLinks(JsonDoc doc) throws GatewayException {
+        PayByLinkSummaryPaged pagedResult = new PayByLinkSummaryPaged();
         setPagingInfo(pagedResult, doc);
 
         for (JsonDoc transaction : doc.getEnumerator("links")) {
-            pagedResult.add(mapPayLinkSummary(transaction));
+            pagedResult.add(mapPayByLinkSummary(transaction));
         }
 
         return pagedResult;

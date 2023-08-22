@@ -1,7 +1,7 @@
 package com.global.api.entities;
 
-import com.global.api.entities.enums.PayLinkStatus;
-import com.global.api.entities.enums.PayLinkType;
+import com.global.api.entities.enums.PayByLinkStatus;
+import com.global.api.entities.enums.PayByLinkType;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,15 +14,15 @@ import java.util.List;
 @Accessors(chain = true)
 @Getter
 @Setter
-public class PayLinkData {
+public class PayByLinkData {
     // Describes the type of link that will be created.
-    private PayLinkType type;
+    private PayByLinkType type;
     // Indicates whether the link can be used once or multiple times
     private PaymentMethodUsageMode usageMode;
     private String[] allowedPaymentMethods;
     // The number of the times that the link can be used or paid.
     private Integer usageLimit;
-    private PayLinkStatus status;
+    private PayByLinkStatus status;
     // A descriptive name for the link. This will be visible to the customer on the payment page.
     private String name;
     // Indicates if you want to capture the customers shipping information on the hosted payment page.

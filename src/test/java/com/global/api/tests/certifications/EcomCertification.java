@@ -1,10 +1,9 @@
 package com.global.api.tests.certifications;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.BatchSummary;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.TaxType;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
@@ -12,6 +11,7 @@ import com.global.api.paymentMethods.GiftCard;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.BatchService;
 import com.global.api.tests.testdata.TestCards;
+import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +32,8 @@ public class EcomCertification {
     private String mastercard_token;
     private String discover_token;
     private String amex_token;
+    private CommercialData commercialData;
+    private String clientTxnID;
 
     public EcomCertification() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -38,6 +41,38 @@ public class EcomCertification {
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
         ServicesContainer.configureService(config);
+
+        commercialData = new CommercialData(TaxType.SalesTax,TransactionModifier.Level_III) ;
+        commercialData.setPoNumber("9876543210");
+        commercialData.setTaxAmount(new BigDecimal(10));
+        commercialData.setDestinationPostalCode("85212");
+        commercialData.setDestinationCountryCode("USA");
+        commercialData.setOriginPostalCode("22193");
+        commercialData.setSummaryCommodityCode("SSC");
+        commercialData.setCustomerReferenceId("UVATREF162");
+        commercialData.setOrderDate(DateTime.now());
+        commercialData.setFreightAmount(new BigDecimal(10));
+        commercialData.setDutyAmount(new BigDecimal(10));
+
+        AdditionalTaxDetails ad = new AdditionalTaxDetails();
+        ad.setTaxAmount(new BigDecimal(10));
+        ad.setTaxRate(new BigDecimal(10));
+
+        commercialData.setAdditionalTaxDetails(ad);
+        CommercialLineItem commercialLineItem = new CommercialLineItem();
+
+        commercialLineItem.setDescription("PRODUCT 1 NOTES");
+        commercialLineItem.setProductCode("PRDCD1");
+        commercialLineItem.setUnitCost(new BigDecimal(0.01));
+        commercialLineItem.setQuantity(new BigDecimal(1));
+        commercialLineItem.setUnitOfMeasure("METER");
+        commercialLineItem.setTotalAmount(new BigDecimal(10));
+
+        DiscountDetails discountDetails = new DiscountDetails();
+        discountDetails.setDiscountAmount(new BigDecimal(1));
+        commercialLineItem.setDiscountDetails(discountDetails);
+
+        commercialData.AddLineItems(commercialLineItem);
     }
 
     @Test
@@ -415,8 +450,7 @@ public class EcomCertification {
         assertEquals("B", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withTaxType(TaxType.NotUsed)
-                .withPoNumber("9876543210")
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -439,8 +473,7 @@ public class EcomCertification {
         assertEquals("B", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+                .withCommercialData(commercialData)
                 .execute();
         assertNotNull(cpcResponse);
         assertEquals("00", cpcResponse.getResponseCode());
@@ -462,7 +495,7 @@ public class EcomCertification {
         assertEquals("R", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withTaxType(TaxType.TaxExempt)
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -487,9 +520,7 @@ public class EcomCertification {
         //var cpcData = new HpsCpcData { CardHolderPoNumber = "9876543210", TaxType = taxTypeType.SalesTax, TaxAmount = 1.00m };
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -512,8 +543,7 @@ public class EcomCertification {
         assertEquals("S", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.NotUsed)
+                .withCommercialData(commercialData)
                 .execute();
         assertNotNull(cpcResponse);
         assertEquals("00", cpcResponse.getResponseCode());
@@ -535,8 +565,7 @@ public class EcomCertification {
         assertEquals("S", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -561,9 +590,8 @@ public class EcomCertification {
         //var cpcData = new HpsCpcData { CardHolderPoNumber = "9876543210", TaxAmount = 1.00m, TaxType = taxTypeType.SalesTax };
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+//                PONumber, TaxType, TaxAmount
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -586,8 +614,7 @@ public class EcomCertification {
         assertEquals("S", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.TaxExempt)
+                .withCommercialData(commercialData)
                 .execute();
         assertNotNull(cpcResponse);
         assertEquals("00", cpcResponse.getResponseCode());
@@ -609,8 +636,8 @@ public class EcomCertification {
         assertEquals("0", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.NotUsed)
+//               PO Number, TaxType
+                .withCommercialData(commercialData)
                 .execute();
         assertNotNull(cpcResponse);
         assertEquals("00", cpcResponse.getResponseCode());
@@ -631,8 +658,8 @@ public class EcomCertification {
         assertEquals("0", chargeResponse.getCommercialIndicator());
 
         Transaction cpcResponse = chargeResponse.edit()
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+                //TaxType, TaxAmount
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -654,12 +681,8 @@ public class EcomCertification {
         assertEquals("00", chargeResponse.getResponseCode());
         assertEquals("0", chargeResponse.getCommercialIndicator());
 
-        //var cpcData = new HpsCpcData { CardHolderPoNumber = "9876543210", TaxAmount = 1.00m, TaxType = taxTypeType.SalesTax };
-
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.SalesTax)
-                .withTaxAmount(new BigDecimal("1"))
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
@@ -681,16 +704,90 @@ public class EcomCertification {
         assertEquals("00", chargeResponse.getResponseCode());
         assertEquals("0", chargeResponse.getCommercialIndicator());
 
-        //var cpcData = new HpsCpcData { CardHolderPoNumber = "9876543210", TaxType = taxTypeType.TaxExempt };
-
         Transaction cpcResponse = chargeResponse.edit()
-                .withPoNumber("9876543210")
-                .withTaxType(TaxType.TaxExempt)
+                .withCommercialData(commercialData)
                 .execute();
 
         assertNotNull(cpcResponse);
         assertEquals("00", cpcResponse.getResponseCode());
     }
+
+    //level 3
+    @Test
+    public void ecomm_025_level_iii_response_s_MC() throws ApiException {
+        Address address = new Address("6860", "75024");
+
+        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        clientTxnID = Integer.toString(randomID);
+
+        CreditCardData card = TestCards.MasterCardManual();
+        Transaction chargeResponse = card.charge(new BigDecimal("111.06"))
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCommercialRequest(true)
+                .withClientTransactionId(clientTxnID)
+                .execute();
+
+        assertNotNull(chargeResponse);
+        assertEquals("00", chargeResponse.getResponseCode());
+        assertEquals("S", chargeResponse.getCommercialIndicator());
+
+        Transaction cpcResponse = chargeResponse.edit()
+                .withCommercialData(commercialData)
+                .execute();
+        assertNotNull(cpcResponse);
+        assertEquals("00", cpcResponse.getResponseCode());
+        assertEquals(clientTxnID, cpcResponse.getClientTransactionId());
+    }
+
+    @Test
+    public void ecomm_025_level_iii_response_s_Visa() throws ApiException {
+        Address address = new Address("6860", "75024");
+
+        commercialData = new CommercialData(TaxType.SalesTax,TransactionModifier.Level_III) ;
+        commercialData.setPoNumber("9876543210");
+        commercialData.setTaxAmount(new BigDecimal(10));
+        commercialData.setDestinationPostalCode("85212");
+        commercialData.setDestinationCountryCode("USA");
+        commercialData.setOriginPostalCode("22193");
+        commercialData.setSummaryCommodityCode("SSC");
+        commercialData.setCustomerReferenceId("UVATREF162");
+        commercialData.setOrderDate(DateTime.now());
+        commercialData.setFreightAmount(new BigDecimal(10));
+        commercialData.setDutyAmount(new BigDecimal(10));
+
+        AdditionalTaxDetails ad = new AdditionalTaxDetails();
+        ad.setTaxAmount(new BigDecimal(10));
+        ad.setTaxRate(new BigDecimal(10));
+
+        commercialData.setAdditionalTaxDetails(ad);
+        CommercialLineItem commercialLineItem = new CommercialLineItem();
+
+        commercialLineItem.setDescription("PRODUCT 1 NOTES");
+        commercialLineItem.setProductCode("PRDCD1");
+        commercialLineItem.setQuantity(new BigDecimal(1));
+
+        commercialData.AddLineItems(commercialLineItem);
+
+        CreditCardData card = TestCards.VisaManual();
+        Transaction chargeResponse = card.charge(new BigDecimal("134.56"))
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCommercialRequest(true)
+                .execute();
+
+        assertNotNull(chargeResponse);
+        assertEquals("00", chargeResponse.getResponseCode());
+        assertEquals("S", chargeResponse.getCommercialIndicator());
+
+        Transaction cpcResponse = chargeResponse.edit()
+                .withCommercialData(commercialData)
+                .execute();
+
+        assertNotNull(cpcResponse);
+        assertEquals("00", cpcResponse.getResponseCode());
+    }
+
 
     // PRIOR / VOICE AUTHORIZATION
 

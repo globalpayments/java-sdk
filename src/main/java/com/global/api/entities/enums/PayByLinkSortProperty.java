@@ -2,7 +2,7 @@ package com.global.api.entities.enums;
 
 import java.util.HashMap;
 
-public enum PayLinkSortProperty implements IMappedConstant {
+public enum PayByLinkSortProperty implements IMappedConstant {
 
     TimeCreated(new HashMap<Target, String>() {{
         put(Target.GP_API, "TIME_CREATED");
@@ -10,7 +10,7 @@ public enum PayLinkSortProperty implements IMappedConstant {
 
     HashMap<Target, String> value;
 
-    PayLinkSortProperty(HashMap<Target, String> value){
+    PayByLinkSortProperty(HashMap<Target, String> value){
         this.value = value;
     }
 

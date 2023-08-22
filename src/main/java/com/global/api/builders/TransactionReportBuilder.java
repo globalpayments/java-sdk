@@ -23,8 +23,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     @Getter @Setter private StoredPaymentMethodSortProperty storedPaymentMethodOrderBy;
     @Getter @Setter private SortDirection storedPaymentMethodOrder;
     @Getter @Setter private ActionSortProperty actionOrderBy;
-    @Getter @Setter private PayLinkSortProperty payLinkOrderBy;
-    @Getter @Setter private String payLinkId;
+    @Getter @Setter private PayByLinkSortProperty payByLinkOrderBy;
+    @Getter @Setter private String payByLinkId;
 
     private SearchCriteriaBuilder<TResult> _searchBuilder;
 
@@ -121,9 +121,9 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
-    public TransactionReportBuilder<TResult> withPayLinkId(String payLinkId) {
-        getSearchBuilder().setPayLinkId(payLinkId);
-        this.payLinkId = payLinkId;
+    public TransactionReportBuilder<TResult> withPayByLinkId(String payByLinkId) {
+        getSearchBuilder().setPayByLinkId(payByLinkId);
+        this.payByLinkId = payByLinkId;
         return this;
     }
 
@@ -158,8 +158,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
-    public TransactionReportBuilder<TResult> orderBy(PayLinkSortProperty orderBy, SortDirection direction) {
-        payLinkOrderBy = orderBy;
+    public TransactionReportBuilder<TResult> orderBy(PayByLinkSortProperty orderBy, SortDirection direction) {
+        payByLinkOrderBy = orderBy;
         order = (direction != null) ? direction : SortDirection.Ascending;
         return this;
     }
@@ -171,6 +171,6 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
         this.validations.of(ReportType.DocumentDisputeDetail)
                 .check("_searchBuilder").propertyOf(String.class, "disputeDocumentId").isNotNull();
-        this.validations.of(ReportType.PayLinkDetail).check("payLinkId").isNotNull();
+        this.validations.of(ReportType.PayByLinkDetail).check("payByLinkId").isNotNull();
     }
 }

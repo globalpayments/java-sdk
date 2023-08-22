@@ -96,15 +96,16 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter private Customer customer;
     @Getter private String country;
     @Getter private boolean generateReceipt;
-    // TODO: Remove these PayLinkData members when a validation for subProperties is working in ValidationClause class
+    // TODO: Remove these PayByLinkData members when a validation for subProperties is working in ValidationClause class
     @Getter @Setter protected PaymentMethodUsageMode usageMode;
     @Getter @Setter protected Integer usageLimit;
-    @Getter @Setter protected PayLinkType type;
+    @Getter @Setter protected PayByLinkType type;
     @Getter
     private ArrayList<Product> miscProductData;
 
     @Getter @Setter private String reference;
     @Getter @Setter private FundsData fundsData;
+    @Getter @Setter private CommercialData commercialData;
 
     public ManagementBuilder withMiscProductData(ArrayList<Product> values) {
         this.miscProductData = values;
@@ -499,6 +500,16 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.posSequenceNumber = value;
         return this;
     }
+
+     public ManagementBuilder withCommercialData(CommercialData data) {
+        this.commercialData = data;
+    if (data.getCommercialIndicator().equals(TransactionModifier.LevelII)) {
+        this.transactionModifier = TransactionModifier.LevelII;
+    }
+    else { this.transactionModifier = TransactionModifier.Level_III;}
+    return this;
+}
+
     public ManagementBuilder withPriorMessageInformation(PriorMessageInformation value) {
         this.priorMessageInformation = value;
         return this;
@@ -516,9 +527,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.paymentLinkId = value;
         return this;
     }
-    public ManagementBuilder withPayLinkData(PayLinkData payLinkData)
+    public ManagementBuilder withPayByLinkData(PayByLinkData payByLinkData)
     {
-        this.payLinkData = payLinkData;
+        this.payByLinkData = payByLinkData;
         return this;
     }
     public ManagementBuilder withReasonCode(ReasonCode value) {
@@ -707,9 +718,6 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
                 // Validation extracted from .NET SDK to be aligned between different SDKs
                 .check("paymentMethod").isNotNull();
 
-        this.validations.of(TransactionType.Edit).with(TransactionModifier.LevelII)
-                .check("taxType").isNotNull();
-
         this.validations.of(TransactionType.Refund)
                 .when("amount").isNotNull()
                 .check("currency").isNotNull();
@@ -729,12 +737,12 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.validations.of(EnumSet.of(TransactionType.TokenUpdate))
                 .check("paymentMethod").isInstanceOf(CreditCardData.class);
 
-        this.validations.of(TransactionType.PayLinkUpdate)
+        this.validations.of(TransactionType.PayByLinkUpdate)
                 .check("amount").isNotNull()
-                .check("payLinkData").isNotNull()
-                .check("payLinkData").propertyOf(PaymentMethodUsageMode.class, "usageMode").isNotNull()
-                .check("payLinkData").propertyOf(Integer.class, "usageLimit").isNotNull()
-                .check("payLinkData").propertyOf(PayLinkType.class, "type").isNotNull();
+                .check("payByLinkData").isNotNull()
+                .check("payByLinkData").propertyOf(PaymentMethodUsageMode.class, "usageMode").isNotNull()
+                .check("payByLinkData").propertyOf(Integer.class, "usageLimit").isNotNull()
+                .check("payByLinkData").propertyOf(PayByLinkType.class, "type").isNotNull();
 
         this.validations.of(TransactionType.Reversal)
                 .check("paymentMethod").isNotNull();

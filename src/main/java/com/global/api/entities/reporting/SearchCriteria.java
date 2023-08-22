@@ -56,8 +56,8 @@ public enum SearchCriteria {
     PaymentMethodUsageMode,
     PaymentMethodMode,
     PaymentProvider,
-    PayLinkId,
-    PayLinkStatus,
+    PayByLinkId,
+    PayByLinkStatus,
     ReturnPII,
     RiskAssessmentMode,
     RiskAssessmentResult,
@@ -81,6 +81,7 @@ public enum SearchCriteria {
     DisputeDocumentId,
     UniqueDeviceId,
     Username,
+    SafIndicator,
     UserStatus,
     Version
 }

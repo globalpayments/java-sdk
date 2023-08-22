@@ -8,15 +8,15 @@ import com.global.api.paymentMethods.eCheck;
 
 public class TestChecks {
     public static eCheck certification() {
-        return certification(SecCode.Ppd, CheckType.Personal, AccountType.Checking, null);
+        return certification(SecCode.Ppd, CheckType.Personal, AccountType.Checking, "Jane Doe");
     }
     public static eCheck certification(SecCode secCode, CheckType checkType, AccountType accountType) {
         return certification(secCode, checkType, accountType, null);
     }
     public static eCheck certification(SecCode secCode, CheckType checkType, AccountType accountType, String checkName) {
         eCheck rvalue = new eCheck();
-        rvalue.setAccountNumber("24413815");
-        rvalue.setRoutingNumber("490000018");
+        rvalue.setAccountNumber("1357902468");
+        rvalue.setRoutingNumber("122000030");
         rvalue.setCheckType(checkType);
         rvalue.setSecCode(secCode);
         rvalue.setAccountType(accountType);

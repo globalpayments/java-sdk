@@ -74,7 +74,7 @@ public class Transaction {
     @Getter @Setter private List<String> formatErrorDataCollectToken;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
-    @Getter @Setter private PayLinkResponse payLinkResponse;
+    @Getter @Setter private PayByLinkResponse payByLinkResponse;
     @Getter private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
     public void setTransferFundsAccountDetailsList(List<TransferFundsAccountDetails> value){
         if (transactionReference == null) {

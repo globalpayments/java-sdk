@@ -28,10 +28,22 @@ public class CheckService {
 
     // Void
     public ManagementBuilder voidTransaction(String transactionId) {
-        TransactionReference reference = new TransactionReference();
-        reference.setPaymentMethodType(PaymentMethodType.ACH);
-        reference.setTransactionId(transactionId);
+        return voidTransaction(transactionId,false);
+    }
 
-        return new ManagementBuilder(TransactionType.Void).withPaymentMethod(reference);
+    // Void using client transaction ID
+    public ManagementBuilder voidTransaction(String transactionId, boolean isClientTxnId) {
+        if (isClientTxnId) {
+            TransactionReference reference = new TransactionReference();
+            reference.setPaymentMethodType(PaymentMethodType.ACH);
+            reference.setClientTransactionId(transactionId);
+            return new ManagementBuilder(TransactionType.Void).withPaymentMethod(reference);
+        } else {
+            TransactionReference reference = new TransactionReference();
+            reference.setPaymentMethodType(PaymentMethodType.ACH);
+            reference.setTransactionId(transactionId);
+            return new ManagementBuilder(TransactionType.Void).withPaymentMethod(reference);
+        }
     }
 }
+

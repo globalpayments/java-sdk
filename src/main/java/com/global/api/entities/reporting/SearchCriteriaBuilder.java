@@ -88,7 +88,7 @@ public class SearchCriteriaBuilder<TResult> {
     private String name;
     private boolean oneTime;
     private String orderId;
-    private String payLinkStatus;
+    private String payByLinkStatus;
     private MerchantAccountStatus accountStatus;
     private PaymentEntryMode paymentEntryMode;
     private String paymentMethodKey;
@@ -101,7 +101,7 @@ public class SearchCriteriaBuilder<TResult> {
     private ArrayList<PaymentMethodType> paymentTypes;
     private String referenceNumber;
     private String bankPaymentId;
-    private String payLinkId;
+    private String payByLinkId;
     private Address address;
     private Boolean returnPII;
     private FraudFilterMode riskAssessmentMode;
@@ -130,6 +130,7 @@ public class SearchCriteriaBuilder<TResult> {
     private BankPaymentStatus bankPaymentStatus;
     private String uniqueDeviceId;
     private String username;
+    private String safIndicator;
     String timezone;
     String version;
 

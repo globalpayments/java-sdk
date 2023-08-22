@@ -1,7 +1,6 @@
 package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
@@ -429,25 +428,25 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             }
         }
 
-        if (builderTransactionType == TransactionType.Create && builder.getPayLinkData() instanceof PayLinkData) {
-            var payLinkData = builder.getPayLinkData();
+        if (builderTransactionType == TransactionType.Create && builder.getPayByLinkData() instanceof PayByLinkData) {
+            var payByLinkData = builder.getPayByLinkData();
 
             var requestData =
                     new JsonDoc()
                             .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                             .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
-                            .set("type", payLinkData.getType().toString())
-                            .set("usage_mode", payLinkData.getUsageMode() != null ? payLinkData.getUsageMode().getValue() : null)
-                            .set("usage_limit",  payLinkData.getUsageLimit() != null ? payLinkData.getUsageLimit() : null)
+                            .set("type", payByLinkData.getType().toString())
+                            .set("usage_mode", payByLinkData.getUsageMode() != null ? payByLinkData.getUsageMode().getValue() : null)
+                            .set("usage_limit",  payByLinkData.getUsageLimit() != null ? payByLinkData.getUsageLimit() : null)
                             .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : java.util.UUID.randomUUID().toString())
-                            .set("name", payLinkData.getName() != null ? payLinkData.getName() : null)
+                            .set("name", payByLinkData.getName() != null ? payByLinkData.getName() : null)
                             .set("description", builder.getDescription() != null ? builder.getDescription() : null)
-                            .set("shippable", payLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
-                            .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()))
-                            .set("expiration_date", payLinkData.getExpirationDate() != null ? getDateIfNotNull(payLinkData.getExpirationDate()) : null)
-                            // .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
-                            .set("status", PayLinkStatus.ACTIVE.toString())
-                            .set("images", payLinkData.getImages() != null ? payLinkData.getImages().toString() : null);
+                            .set("shippable", payByLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
+                            .set("shipping_amount", StringUtils.toNumeric(payByLinkData.getShippingAmount()))
+                            .set("expiration_date", payByLinkData.getExpirationDate() != null ? getDateIfNotNull(payByLinkData.getExpirationDate()) : null)
+                            // .set("status", payByLinkData.getStatus() != null ? payByLinkData.getStatus().toString() : null)
+                            .set("status", PayByLinkStatus.ACTIVE.toString())
+                            .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null);
 
             var transactions =
                     new JsonDoc()
@@ -455,13 +454,13 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("channel", gateway.getGpApiConfig().getChannel())
                             .set("currency", builder.getCurrency())
                             .set("country", gateway.getGpApiConfig().getCountry())
-                            .set("allowed_payment_methods", payLinkData.getAllowedPaymentMethods());
+                            .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
 
             var notifications =
                     new JsonDoc()
-                            .set("cancel_url", payLinkData.getCancelUrl())
-                            .set("return_url", payLinkData.getReturnUrl())
-                            .set("status_url", payLinkData.getStatusUpdateUrl());
+                            .set("cancel_url", payByLinkData.getCancelUrl())
+                            .set("return_url", payByLinkData.getReturnUrl())
+                            .set("status_url", payByLinkData.getStatusUpdateUrl());
 
             requestData.set("transactions", transactions);
             requestData.set("notifications", notifications);
@@ -469,7 +468,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT)
+                            .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT)
                             .setRequestBody(requestData.toString());
 
         }

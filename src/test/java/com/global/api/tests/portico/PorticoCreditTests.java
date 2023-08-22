@@ -5,6 +5,8 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.StoredCredentialInitiator;
+import com.global.api.entities.enums.TaxType;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -12,10 +14,13 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
+import com.global.api.tests.testdata.TestCards;
+import org.joda.time.DateTime;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
@@ -23,6 +28,8 @@ import static org.junit.Assert.assertEquals;
 public class PorticoCreditTests {
 	private CreditCardData card;
 	private CreditTrackData track;
+    private String clientTxnID;
+    private CommercialData commercialData;
 
 	public PorticoCreditTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -31,6 +38,7 @@ public class PorticoCreditTests {
 		config.setDeveloperId("002914");
 		config.setVersionNumber("3026");
 		config.setEnableLogging(true);
+        config.setSafDataSupported(true);
 
 		ServicesContainer.configureService(config);
 
@@ -43,6 +51,41 @@ public class PorticoCreditTests {
 		track = new CreditTrackData();
 		track.setValue("<E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;");
 		track.setEncryptionData(EncryptionData.version1());
+
+        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        clientTxnID = Integer.toString(randomID);
+
+        commercialData = new CommercialData(TaxType.SalesTax, TransactionModifier.Level_III) ;
+        commercialData.setPoNumber("9876543210");
+        commercialData.setTaxAmount(new BigDecimal(10));
+        commercialData.setDestinationPostalCode("85212");
+        commercialData.setDestinationCountryCode("USA");
+        commercialData.setOriginPostalCode("22193");
+        commercialData.setSummaryCommodityCode("SSC");
+        commercialData.setCustomerReferenceId("UVATREF162");
+        commercialData.setOrderDate(DateTime.now());
+        commercialData.setFreightAmount(new BigDecimal(10));
+        commercialData.setDutyAmount(new BigDecimal(10));
+
+        AdditionalTaxDetails ad = new AdditionalTaxDetails();
+        ad.setTaxAmount(new BigDecimal(10));
+        ad.setTaxRate(new BigDecimal(10));
+
+        commercialData.setAdditionalTaxDetails(ad);
+        CommercialLineItem commercialLineItem = new CommercialLineItem();
+
+        commercialLineItem.setDescription("PRODUCT 1 NOTES");
+        commercialLineItem.setProductCode("PRDCD1");
+        commercialLineItem.setUnitCost(new BigDecimal(0.01));
+        commercialLineItem.setQuantity(new BigDecimal(1));
+        commercialLineItem.setUnitOfMeasure("METER");
+        commercialLineItem.setTotalAmount(new BigDecimal(10));
+
+        DiscountDetails discountDetails = new DiscountDetails();
+        discountDetails.setDiscountAmount(new BigDecimal(1));
+        commercialLineItem.setDiscountDetails(discountDetails);
+
+        commercialData.AddLineItems(commercialLineItem);
 	}
 
 	@Test
@@ -85,10 +128,12 @@ public class PorticoCreditTests {
 	public void creditSale() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
+                .withClientTransactionId(clientTxnID)
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+        assertEquals(clientTxnID, response.getClientTransactionId());
 	}
     @Test
     public void creditSaleWithCardHolderLanguage() throws ApiException {
@@ -292,7 +337,9 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).execute();
+        Transaction capture = response.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
@@ -302,9 +349,11 @@ public class PorticoCreditTests {
         Transaction response = track.charge(new BigDecimal(15))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withClientTransactionId(clientTxnID)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+        assertEquals(clientTxnID, response.getClientTransactionId());
     }
 
     @Test
@@ -351,9 +400,11 @@ public class PorticoCreditTests {
         Transaction response = track.refund(new BigDecimal(16))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withClientTransactionId(clientTxnID)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+        assertEquals(clientTxnID, response.getClientTransactionId());
     }
 
     @Test
@@ -361,6 +412,7 @@ public class PorticoCreditTests {
         Transaction response = track.charge(new BigDecimal(19))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withClientTransactionId(clientTxnID)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
@@ -370,6 +422,7 @@ public class PorticoCreditTests {
                 .execute();
         assertNotNull(reverseResponse);
         assertEquals("00", reverseResponse.getResponseCode());
+        assertEquals(clientTxnID, response.getClientTransactionId());
     }
 
     @Test
@@ -399,21 +452,20 @@ public class PorticoCreditTests {
 
     @Test
     public void creditReversalFromClientTransactionId() throws ApiException {
-        String clientTransactionId = "123456789";
-
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
-                .withClientTransactionId(clientTransactionId)
+                .withClientTransactionId(clientTxnID)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction voidResponse = Transaction.fromClientTransactionId(clientTransactionId)
+        Transaction voidResponse = Transaction.fromClientTransactionId(clientTxnID)
                 .reverse(new BigDecimal(10))
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
+        assertEquals(clientTxnID,response.getClientTransactionId());
     }
 
     @Test
@@ -666,4 +718,5 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
 }

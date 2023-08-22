@@ -11,14 +11,10 @@ import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
-import com.global.api.utils.Element;
-import com.global.api.utils.ElementTree;
-import com.global.api.utils.EnumUtils;
-import com.global.api.utils.ReverseStringEnumMap;
-import com.global.api.utils.StringUtils;
-import lombok.Getter;
+import com.global.api.utils.*;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,10 +23,7 @@ import java.math.BigDecimal;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Accessors(chain = true)
 @Setter
@@ -44,9 +37,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String versionNumber;
     private String secretApiKey;
     private String sdkNameVersion;
+    private String cardType;
+    private boolean isSAFDataSupported;
 
     @Override
-    public boolean supportsHostedPayments() { return false; }
+    public boolean supportsHostedPayments() {
+        return false;
+    }
 
     @Override
     public boolean supportsOpenBanking() {
@@ -104,7 +101,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             if (isCheck) {
-                eCheck check = (eCheck)builder.getPaymentMethod();
+                eCheck check = (eCheck) builder.getPaymentMethod();
                 if (!StringUtils.isNullOrEmpty(check.getCheckHolderName())) {
                     String[] names = check.getCheckHolderName().split(" ", 2);
                     et.subElement(holder, "FirstName", names[0]);
@@ -120,8 +117,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(identity, "SSNL4", check.getSsnLast4());
                     et.subElement(identity, "DOBYear", check.getBirthYear());
                 }
-            }
-            else if (builder.getPaymentMethod() instanceof CreditCardData) {
+            } else if (builder.getPaymentMethod() instanceof CreditCardData) {
                 CreditCardData card = (CreditCardData) builder.getPaymentMethod();
                 if (!StringUtils.isNullOrEmpty(card.getCardHolderName())) {
                     String[] names = card.getCardHolderName().split(" ", 2);
@@ -133,7 +129,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             // card holder language
-            if(!isCheck && !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
+            if (!isCheck && !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
                 et.subElement(holder, "CardHolderLanguage", builder.getCardHolderLanguage());
             }
         }
@@ -152,12 +148,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             ICardData card = (ICardData) builder.getPaymentMethod();
 
             // card on File
-            if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
+            if (builder.getTransactionInitiator() != null || !StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
-                if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
+                if (builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
-                }
-                else {
+                } else {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
@@ -173,12 +168,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             block1.append(cardData);
 
             // secure 3d
-            if(card instanceof CreditCardData) {
-                ThreeDSecure secureEcom = ((CreditCardData)card).getThreeDSecure();
+            if (card instanceof CreditCardData) {
+                ThreeDSecure secureEcom = ((CreditCardData) card).getThreeDSecure();
                 CreditCardData creditCardData = (CreditCardData) card;
-                if(secureEcom != null) {
+                if (secureEcom != null) {
                     // 3d Secure Element
-                    if(!StringUtils.isNullOrEmpty(secureEcom.getEci()) && !isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
+                    if (!StringUtils.isNullOrEmpty(secureEcom.getEci()) && !isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
                         Element secure3D = et.subElement(block1, "Secure3D");
                         et.subElement(secure3D, "Version", getSecure3DVersion(secureEcom.getVersion()));
                         et.subElement(secure3D, "AuthenticationValue", secureEcom.getCavv());
@@ -187,7 +182,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     }
 
                     // WalletData Element
-                    if(isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
+                    if (isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
                         Element walletData = et.subElement(block1, "WalletData");
                         et.subElement(walletData, "PaymentSource", secureEcom.getPaymentDataSource());
                         et.subElement(walletData, "Cryptogram", secureEcom.getCavv());
@@ -199,23 +194,22 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 if (
                         (
                                 creditCardData.getMobileType() == MobilePaymentMethodType.APPLEPAY
-                                || creditCardData.getMobileType() == MobilePaymentMethodType.GOOGLEPAY
+                                        || creditCardData.getMobileType() == MobilePaymentMethodType.GOOGLEPAY
                         )
-                        && creditCardData.getPaymentDataSourceType() != null
-                        && isAppleOrGooglePay(creditCardData.getPaymentDataSourceType())
-                ){
+                                && creditCardData.getPaymentDataSourceType() != null
+                                && isAppleOrGooglePay(creditCardData.getPaymentDataSourceType())
+                ) {
                     Element walletData = et.subElement(block1, "WalletData");
                     et.subElement(walletData, "PaymentSource", creditCardData.getPaymentDataSourceType());
-                    et.subElement(walletData, "Cryptogram", secureEcom != null? secureEcom.getCavv(): null);
+                    et.subElement(walletData, "Cryptogram", secureEcom != null ? secureEcom.getCavv() : null);
                     et.subElement(walletData, "ECI", creditCardData.getEci());
-                    if (creditCardData.getMobileType() != null)
-                    {
+                    if (creditCardData.getMobileType() != null) {
 
                         et.subElementCdata(walletData, "DigitalPaymentToken", creditCardData.getToken());
-                        if(block1.has("CardData")) {
+                        if (block1.has("CardData")) {
                             block1.remove("CardData");
                         }
-                        if(block1.has("CardHolderData")) {
+                        if (block1.has("CardHolderData")) {
                             block1.remove("CardHolderData");
                         }
                     }
@@ -224,14 +218,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             // recurring data
-            if(builder.getTransactionModifier().equals(TransactionModifier.Recurring)) {
+            if (builder.getTransactionModifier().equals(TransactionModifier.Recurring)) {
                 Element recurring = et.subElement(block1, "RecurringData");
                 et.subElement(recurring, "ScheduleID", builder.getScheduleId());
                 et.subElement(recurring, "OneTime").text(builder.isOneTimePayment() ? "Y" : "N");
             }
-        }
-        else if (builder.getPaymentMethod() instanceof ITrackData) {
-            ITrackData track = (ITrackData)builder.getPaymentMethod();
+        } else if (builder.getPaymentMethod() instanceof ITrackData) {
+            ITrackData track = (ITrackData) builder.getPaymentMethod();
 
             Element trackData = et.subElement(cardData, hasToken ? "TokenData" : "TrackData");
             if (!hasToken) {
@@ -239,7 +232,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 trackData.set("method", track.getEntryMethod());
                 if (paymentType == PaymentMethodType.Credit) {
                     // tag data
-                    if(!StringUtils.isNullOrEmpty(builder.getTagData())) {
+                    if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                         Element tagData = et.subElement(block1, "TagData");
                         Element tagValues = et.subElement(tagData, "TagValues", builder.getTagData());
                         tagValues.set("source", "chip");
@@ -249,16 +242,16 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         String chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
                         et.subElement(emvData, "EMVChipCondition", chipCondition);
                     }
-                    if (builder.getPaymentMethod() instanceof IPinProtected && (((IPinProtected)builder.getPaymentMethod()).getPinBlock())!=null) {
-                        et.subElement(emvData, "PINBlock", ((IPinProtected)builder.getPaymentMethod()).getPinBlock());
+                    if (builder.getPaymentMethod() instanceof IPinProtected && (((IPinProtected) builder.getPaymentMethod()).getPinBlock()) != null) {
+                        et.subElement(emvData, "PINBlock", ((IPinProtected) builder.getPaymentMethod()).getPinBlock());
                     }
-                    if(!block1.has("EMVChipCondition") && !block1.has("PINBlock")) {
+                    if (!block1.has("EMVChipCondition") && !block1.has("PINBlock")) {
                         block1.remove("EMVData");
                     }
                 }
                 if (paymentType == PaymentMethodType.Debit) {
                     String chipCondition = null;
-                    if(builder.getEmvChipCondition() != null)
+                    if (builder.getEmvChipCondition() != null)
                         chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
 
                     et.subElement(block1, "AccountType",
@@ -267,17 +260,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(block1, "MessageAuthenticationCode", builder.getMessageAuthenticationCode());
                     et.subElement(block1, "PosSequenceNbr", builder.getPosSequenceNumber());
                     et.subElement(block1, "ReversalReasonCode", builder.getReversalReasonCode());
-                    if(!StringUtils.isNullOrEmpty(builder.getTagData())){
+                    if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                         Element tagData = et.subElement(block1, "TagData");
                         et.subElement(tagData, "TagValues", builder.getTagData()).set("source", "chip");
                     }
-                }
-                else block1.append(cardData);
-            }
-            else et.subElement(trackData, "TokenValue").text(tokenValue);
-        }
-        else if (builder.getPaymentMethod() instanceof GiftCard) {
-            GiftCard card = (GiftCard)builder.getPaymentMethod();
+                } else block1.append(cardData);
+            } else et.subElement(trackData, "TokenValue").text(tokenValue);
+        } else if (builder.getPaymentMethod() instanceof GiftCard) {
+            GiftCard card = (GiftCard) builder.getPaymentMethod();
 
             // currency
             et.subElement(block1, "Currency", builder.getCurrency());
@@ -296,9 +286,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
             if (builder.getAliasAction() != AliasAction.Create)
                 block1.append(cardData);
-        }
-        else if (builder.getPaymentMethod() instanceof eCheck) {
-            eCheck check = (eCheck)builder.getPaymentMethod();
+        } else if (builder.getPaymentMethod() instanceof eCheck) {
+            eCheck check = (eCheck) builder.getPaymentMethod();
 
             // check action
             et.subElement(block1, "CheckAction").text("SALE");
@@ -312,8 +301,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(accountInfo, "MICRData", check.getMicrNumber());
                 et.subElement(accountInfo, "AccountType", EnumUtils.getMapping(Target.Portico,
                         check.getAccountType()));
-            }
-            else et.subElement(block1, "TokenValue").text(tokenValue);
+            } else et.subElement(block1, "TokenValue").text(tokenValue);
 
             et.subElement(block1, "DataEntryMode", check.getEntryMode().getValue().toUpperCase(Locale.ENGLISH));
             et.subElement(block1, "CheckType", check.getCheckType());
@@ -323,36 +311,33 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             Element verify = et.subElement(block1, "VerifyInfo");
             et.subElement(verify, "CheckVerify").text(check.isCheckVerify() ? "Y" : "N");
             et.subElement(verify, "ACHVerify").text(check.isAchVerify() ? "Y" : "N");
-        }
-        else if(builder.getPaymentMethod() instanceof TransactionReference) {
-            TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
+        } else if (builder.getPaymentMethod() instanceof TransactionReference) {
+            TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
             et.subElement(block1, "GatewayTxnId", reference.getTransactionId());
             et.subElement(block1, "ClientTxnId", reference.getClientTransactionId());
-        }
-        else if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
-            RecurringPaymentMethod method = (RecurringPaymentMethod)builder.getPaymentMethod();
+        } else if (builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
+            RecurringPaymentMethod method = (RecurringPaymentMethod) builder.getPaymentMethod();
 
             // card on File
-            if(builder.getTransactionInitiator() != null || ! StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
+            if (builder.getTransactionInitiator() != null || !StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
-                if(builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
+                if (builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
-                }
-                else {
+                } else {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
             }
             // check action
-            if(method.getPaymentType().equals("ACH")) {
+            if (method.getPaymentType().equals("ACH")) {
                 block1.remove("AllowDup");
                 et.subElement(block1, "CheckAction").text("SALE");
             }
 
             // payment method stuff
             et.subElement(block1, "PaymentMethodKey").text(method.getKey());
-            if(method.getPaymentMethod() != null && method.getPaymentMethod() instanceof CreditCardData) {
-                CreditCardData card = (CreditCardData)method.getPaymentMethod();
+            if (method.getPaymentMethod() != null && method.getPaymentMethod() instanceof CreditCardData) {
+                CreditCardData card = (CreditCardData) method.getPaymentMethod();
                 Element data = et.subElement(block1, "PaymentMethodKeyData");
                 et.subElement(data, "ExpMonth", card.getExpMonth());
                 et.subElement(data, "ExpYear", card.getExpYear());
@@ -367,13 +352,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         // pin block
         if (builder.getPaymentMethod() instanceof IPinProtected) {
-            if(!type.equals(TransactionType.Reversal))
-                et.subElement(block1, "PinBlock", ((IPinProtected)builder.getPaymentMethod()).getPinBlock());
+            if (!type.equals(TransactionType.Reversal))
+                et.subElement(block1, "PinBlock", ((IPinProtected) builder.getPaymentMethod()).getPinBlock());
         }
 
         // encryption
         if (builder.getPaymentMethod() instanceof IEncryptable) {
-            EncryptionData encryptionData = ((IEncryptable)builder.getPaymentMethod()).getEncryptionData();
+            EncryptionData encryptionData = ((IEncryptable) builder.getPaymentMethod()).getEncryptionData();
 
             if (encryptionData != null) {
                 Element enc = et.subElement(cardData, "EncryptionData");
@@ -391,7 +376,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         // balance inquiry type
         if (builder.getPaymentMethod() instanceof IBalanceable)
-        et.subElement(block1, "BalanceInquiryType", builder.getBalanceInquiryType());
+            et.subElement(block1, "BalanceInquiryType", builder.getBalanceInquiryType());
 
         // cpc request
         if (builder.isLevel2Request())
@@ -406,10 +391,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
 
         // ecommerce info
-        if(builder.getEcommerceInfo() != null) {
+        if (builder.getEcommerceInfo() != null) {
             EcommerceInfo ecom = builder.getEcommerceInfo();
             et.subElement(block1, "Ecommerce", ecom.getChannel());
-            if(!StringUtils.isNullOrEmpty(builder.getInvoiceNumber()) || ecom.getShipMonth() != null) {
+            if (!StringUtils.isNullOrEmpty(builder.getInvoiceNumber()) || ecom.getShipMonth() != null) {
                 Element direct = et.subElement(block1, "DirectMktData");
                 et.subElement(direct, "DirectMktInvoiceNbr").text(builder.getInvoiceNumber());
                 et.subElement(direct, "DirectMktShipDay").text(ecom.getShipDay().toString());
@@ -421,14 +406,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(block1, "TxnDescriptor", builder.getDynamicDescriptor());
 
         // auto substantiation
-        if(builder.getAutoSubstantiation() != null) {
+        if (builder.getAutoSubstantiation() != null) {
             Element autoSub = et.subElement(block1, "AutoSubstantiation");
 
             int index = 0;
-            String[] fieldNames = new String[] {"First", "Second", "Third", "Fourth"};
-            for(Map.Entry<String, BigDecimal> amount: builder.getAutoSubstantiation().getAmounts().entrySet()) {
-                if(amount.getValue() != null && !amount.getValue().equals(new BigDecimal("0"))) {
-                    if(index > 3) {
+            String[] fieldNames = new String[]{"First", "Second", "Third", "Fourth"};
+            for (Map.Entry<String, BigDecimal> amount : builder.getAutoSubstantiation().getAmounts().entrySet()) {
+                if (amount.getValue() != null && !amount.getValue().equals(new BigDecimal("0"))) {
+                    if (index > 3) {
                         throw new BuilderException("You may only specify three different subtotals in a single transaction.");
                     }
 
@@ -484,11 +469,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         ElementTree et = new ElementTree();
         TransactionType type = builder.getTransactionType();
         TransactionModifier modifier = builder.getTransactionModifier();
-
         // payment method
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
-        if(paymentMethod instanceof TransactionReference) {
-            TransactionReference reference = (TransactionReference)paymentMethod;
+        PaymentMethodType paymentMethodType = paymentMethod.getPaymentMethodType();
+        if (paymentMethod instanceof TransactionReference) {
+            TransactionReference reference = (TransactionReference) paymentMethod;
             paymentMethod = reference.getOriginalPaymentMethod();
         }
 
@@ -527,14 +512,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             // Transaction ID
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
-            // reversal and Capture
-            if(type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture)) {
+            // reversal
+            if (type.equals(TransactionType.Reversal) || ((paymentMethodType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
 
                 // reversal reason code & PosSequenceNumber
-                if(paymentType.equals(PaymentMethodType.Debit)) {
-                    if(builder.getEmvChipCondition() != null) {
+                if (paymentType.equals(PaymentMethodType.Debit)) {
+                    if (builder.getEmvChipCondition() != null) {
                         String chipCondition = builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess ? "CHIP_FAILED_PREV_SUCCESS" : "CHIP_FAILED_PREV_FAILED";
                         et.subElement(root, "EMVChipCondition", chipCondition);
                     }
@@ -544,9 +529,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                             EnumUtils.getMapping(Target.Portico, builder.getAccountType()));
 
                     // track data
-                    if(paymentMethod != null) {
-                        DebitTrackData track = (DebitTrackData)paymentMethod;
-                        if(type.equals(TransactionType.Reversal))
+                    if (paymentMethod != null) {
+                        DebitTrackData track = (DebitTrackData) paymentMethod;
+                        if (type.equals(TransactionType.Reversal))
                             et.subElement(root, "TrackData", track.getValue());
                         et.subElement(root, "PinBlock", track.getPinBlock());
 
@@ -569,24 +554,54 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
             }
 
-            // Level II Data
-            if (type.equals(TransactionType.Edit) && modifier.equals(TransactionModifier.LevelII)) {
-                Element cpc = et.subElement(root, "CPCData");
-                et.subElement(cpc, "CardHolderPONbr", builder.getPoNumber());
-                et.subElement(cpc, "TaxType", builder.getTaxType());
-                et.subElement(cpc, "TaxAmt", builder.getTaxAmount());
+            // Level II Data and Level_III Data
+            if (builder.getCommercialData() != null) {
+                CommercialData cd = builder.getCommercialData();
+                if (modifier.equals(TransactionModifier.LevelII) || modifier.equals(TransactionModifier.Level_III)) {
+                    Element cpc = et.subElement(root, "CPCData");
+                    et.subElement(cpc, "CardHolderPONbr", cd.getPoNumber());
+                    et.subElement(cpc, "TaxType", cd.getTaxType());
+                    et.subElement(cpc, "TaxAmt", cd.getTaxAmount());
+                }
+
+                if (modifier.equals(TransactionModifier.Level_III) && (paymentMethodType != null) && (paymentMethodType.equals(PaymentMethodType.Credit))) {
+                    Element cdc = et.subElement(root, "CorporateData");
+                    boolean isVisa = cardType.equals("Visa");
+                    Element data = et.subElement(cdc, isVisa ? "Visa" : "MC");
+
+                    buildLineItems(et, data, isVisa, cd.getLineItems());
+
+                    if (isVisa) {
+                        et.subElement(data, "SummaryCommodityCode", cd.getSummaryCommodityCode());
+                        et.subElement(data, "DiscountAmt", cd.getDiscountAmount());
+                        et.subElement(data, "FreightAmt", cd.getFreightAmount());
+                        et.subElement(data, "DutyAmt", cd.getDutyAmount());
+                        et.subElement(data, "DestinationPostalZipCode", cd.getDestinationPostalCode());
+                        et.subElement(data, "ShipFromPostalZipCode", cd.getOriginPostalCode());
+                        et.subElement(data, "DestinationCountryCode", cd.getDestinationCountryCode());
+                        et.subElement(data, "InvoiceRefNbr", cd.getCustomerReferenceId());
+                        et.subElement(data, "VATTaxAmtFreight", cd.getAdditionalTaxDetails() != null && cd.getAdditionalTaxDetails()
+                                .getTaxAmount() != null ? cd.getAdditionalTaxDetails().getTaxAmount() : cd.getTaxAmount());
+                        if (cd.getOrderDate() != null) {
+                            et.subElement(data, "OrderDate", cd.getOrderDate().toString("yyyy-MM-dd'T'HH:mm:ss"));
+                        }
+                        if (cd.getAdditionalTaxDetails() != null) {
+                            et.subElement(data, "VATTaxRateFreight", cd.getAdditionalTaxDetails().getTaxRate());
+                        }
+                    }
+                }
             }
 
             // lodging data
-            if(builder.getLodgingData() != null) {
+            if (builder.getLodgingData() != null) {
                 LodgingData lodging = builder.getLodgingData();
 
                 //Element lodgingElement = et.subElement(root, "LodgingData");
-                if(lodging.getExtraCharges() != null) {
+                if (lodging.getExtraCharges() != null) {
                     Element lodgingDataEdit = et.subElement(root, "LodgingDataEdit");
 
                     Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
-                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
+                    for (ExtraChargeType chargeType : lodging.getExtraCharges().keySet()) {
                         et.subElement(extraChargesElement, chargeType.toString(), "Y");
                     }
                     et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
@@ -595,9 +610,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
             // Token Management
             if (builder.getTransactionType() == TransactionType.TokenUpdate
-                        || builder.getTransactionType() == TransactionType.TokenDelete
-                        || builder.getTransactionType() == TransactionType.Capture) {
-                if(builder.getPaymentMethod() instanceof ITokenizable) {
+                    || builder.getTransactionType() == TransactionType.TokenDelete
+                    || builder.getTransactionType() == TransactionType.Capture) {
+                if (builder.getPaymentMethod() instanceof ITokenizable) {
                     ITokenizable token = (ITokenizable) builder.getPaymentMethod();
 
                     // Set the token value
@@ -640,12 +655,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         Element transaction = et.element(mapReportType(builder.getReportType()));
         et.subElement(transaction, "TzConversion", builder.getTimeZoneConversion());
-        if(builder instanceof TransactionReportBuilder) {
-            TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>)builder;
+        if (builder instanceof TransactionReportBuilder) {
+            TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>) builder;
             if (trb.getTransactionId() != null) {
                 et.subElement(transaction, "TxnId", trb.getTransactionId());
-            }
-            else{
+            } else {
                 Element criteria = et.subElement(transaction, "Criteria");
                 et.subElement(criteria, "StartUtcDT", trb.getStartDate() == null ? null : formatDate(trb.getStartDate()));
                 et.subElement(criteria, "EndUtcDT", trb.getEndDate() == null ? null : formatDate(trb.getEndDate()));
@@ -681,6 +695,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(criteria, "ScheduleID", trb.getSearchBuilder().getScheduleId());
                 et.subElement(criteria, "BuyerEmailAddress", trb.getSearchBuilder().getBuyerEmailAddress());
                 et.subElement(criteria, "AltPaymentStatus", trb.getSearchBuilder().getAltPaymentStatus());
+                et.subElement(criteria, "SAFIndicator", trb.getSearchBuilder().getSafIndicator());
             }
         }
 
@@ -691,6 +706,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String buildEnvelope(ElementTree et, Element transaction) {
         return buildEnvelope(et, transaction, null);
     }
+
     private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId) {
         et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -713,19 +729,16 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "DeveloperID", developerId);
         et.subElement(header, "VersionNbr", versionNumber);
         et.subElement(header, "ClientTxnId", clientTransactionId);
-
         et.subElement(header, "PosReqDT", this.getPosReqDT());
-        if(sdkNameVersion!=null){
-            et.subElement(header, "SDKNameVersion", sdkNameVersion);
-        }
-        else{
-            et.subElement(header, "SDKNameVersion", "java;version=" + getReleaseVersion());
-        }
+        et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
+
+        Element safData = et.subElement(header, "SAFData");
+        et.subElement(safData, "SAFIndicator", isSAFDataSupported ? "Y" : "N");
+        et.subElement(safData, "SAFOrigDT", DateTime.now().toString());
 
         // Transaction
         Element trans = et.subElement(version1, "Transaction");
         trans.append(transaction);
-        
         return et.toString(envelope);
     }
 
@@ -744,6 +757,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         // check gateway responses
         String gatewayRspCode = normalizeResponse(root.getString("GatewayRspCode"));
         String gatewayRspText = root.getString("GatewayRspMsg");
+        cardType = root.getString("CardType");
 
         if (!acceptedCodes.contains(gatewayRspCode)) {
             throw new GatewayException(
@@ -751,8 +765,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     gatewayRspCode,
                     gatewayRspText
             );
-        }
-        else {
+        } else {
             result.setAuthorizedAmount(root.getDecimal("AuthAmt"));
             result.setAvailableBalance(root.getDecimal("AvailableBalance"));
             result.setAvsResponseCode(root.getString("AVSRsltCode"));
@@ -782,6 +795,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 TransactionReference reference = new TransactionReference();
                 reference.setPaymentMethodType(paymentMethod.getPaymentMethodType());
                 reference.setTransactionId(root.getString("GatewayTxnId"));
+                reference.setClientTransactionId(root.getString("ClientTxnId"));
                 reference.setAuthCode(root.getString("AuthCode"));
                 result.setTransactionReference(reference);
             }
@@ -797,12 +811,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             // token data
-            if(root.has("TokenData")) {
+            if (root.has("TokenData")) {
                 result.setToken(root.getString("TokenValue"));
             }
 
             // batch information
-            if(root.has("BatchId")) {
+            if (root.has("BatchId")) {
                 BatchSummary summary = new BatchSummary();
                 summary.setBatchId(root.getInt("BatchId"));
                 summary.setTransactionCount(root.getInt("TxnCnt"));
@@ -812,7 +826,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             // debit mac
-            if(root.has("DebitMac")) {
+            if (root.has("DebitMac")) {
                 DebitMac debitMac = new DebitMac();
                 debitMac.setTransactionCode(root.getString("TransactionCode"));
                 debitMac.setTransmissionNumber(root.getString("TransmissionNumber"));
@@ -829,7 +843,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
 
             //duplicate transaction
-            if(root.has("AdditionalDuplicateData")) {
+            if (root.has("AdditionalDuplicateData")) {
                 AdditionalDuplicateData additionalDuplicateData = new AdditionalDuplicateData();
                 additionalDuplicateData.setOriginalGatewayTxnId(root.getString("OriginalGatewayTxnId"));
                 additionalDuplicateData.setOriginalRspDT(root.getDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"), "OriginalRspDT").toString());
@@ -870,32 +884,29 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         try {
             TResult rvalue = clazz.newInstance();
-            if(reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail)) {
+            if (reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail)) {
                 // Activity
-                if (rvalue instanceof ActivityReport){
+                if (rvalue instanceof ActivityReport) {
                     ActivityReport list = new ActivityReport();
-                    for(Element detail: doc.getAll("Details")) {
+                    for (Element detail : doc.getAll("Details")) {
                         list.add(hydrateTransactionSummary(detail));
                     }
-                }
-                else if(rvalue instanceof TransactionSummaryList) {
-                	for(Element transaction: doc.getAll("Transactions")) {
+                } else if (rvalue instanceof TransactionSummaryList) {
+                    for (Element transaction : doc.getAll("Transactions")) {
                         ((TransactionSummaryList) rvalue).add(hydrateTransactionSummary(transaction));
                     }
-                }
-                else{
+                } else {
                     rvalue = (TResult) hydrateTransactionSummary(doc);
                 }
             }
             return rvalue;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             throw new ApiException(e.getMessage(), e);
         }
     }
 
     private String normalizeResponse(String input) {
-        if(input != null) {
+        if (input != null) {
             if (input.equals("0") || input.equals("85"))
                 return "00";
         }
@@ -905,24 +916,24 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private <T extends TransactionBuilder<Transaction>> String mapTransactionType(T builder) throws ApiException {
         TransactionModifier modifier = builder.getTransactionModifier();
         PaymentMethodType paymentMethodType = null;
-        if(builder.getPaymentMethod() != null)
+        if (builder.getPaymentMethod() != null)
             paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
 
-        switch(builder.getTransactionType()) {
+        switch (builder.getTransactionType()) {
             case BatchClose:
                 return "BatchClose";
             case Decline:
-                if(modifier.equals(TransactionModifier.ChipDecline))
+                if (modifier.equals(TransactionModifier.ChipDecline))
                     return "ChipCardDecline";
-                else if(modifier.equals(TransactionModifier.FraudDecline))
+                else if (modifier.equals(TransactionModifier.FraudDecline))
                     return "OverrideFraudDecline";
                 throw new UnsupportedTransactionException();
             case Verify:
-                if(modifier.equals(TransactionModifier.EncryptedMobile))
+                if (modifier.equals(TransactionModifier.EncryptedMobile))
                     throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 return "CreditAccountVerify";
             case Capture:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "CreditAddToBatch";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit))
@@ -930,7 +941,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 }
             case Auth:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit)) {
                         if (modifier.equals(TransactionModifier.Additional))
                             return "CreditAdditionalAuth";
@@ -950,7 +961,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                 }
             case Sale:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit)) {
                         if (modifier.equals(TransactionModifier.Offline))
                             return "CreditOfflineSale";
@@ -978,7 +989,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException();
                 }
             case Refund:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "CreditReturn";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
@@ -995,7 +1006,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException();
                 }
             case Reversal:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "CreditReversal";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
@@ -1010,11 +1021,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException();
                 }
             case Edit:
-                if (modifier.equals(TransactionModifier.LevelII))
+                if (modifier.equals(TransactionModifier.LevelII) || modifier.equals(TransactionModifier.Level_III))
                     return "CreditCPCEdit";
                 else return "CreditTxnEdit";
             case Void:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "CreditVoid";
                     else if (paymentMethodType.equals(PaymentMethodType.ACH))
@@ -1024,7 +1035,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException();
                 }
             case AddValue:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "PrePaidAddValue";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit))
@@ -1034,7 +1045,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     throw new UnsupportedTransactionException();
                 }
             case Balance:
-                if(paymentMethodType != null) {
+                if (paymentMethodType != null) {
                     if (paymentMethodType.equals(PaymentMethodType.EBT))
                         return "EBTBalanceInquiry";
                     else if (paymentMethodType.equals(PaymentMethodType.Gift))
@@ -1058,7 +1069,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             case Increment:
                 return "CreditIncrementalAuth";
             case Tokenize:
-            	return "Tokenize";
+                return "Tokenize";
             case TokenUpdate:
             case TokenDelete:
                 return "ManageTokens";
@@ -1069,7 +1080,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     }
 
     private String mapReportType(ReportType type) throws UnsupportedTransactionException {
-        switch(type) {
+        switch (type) {
             case TransactionDetail:
                 return "ReportTxnDetail";
             case Activity:
@@ -1081,9 +1092,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     }
 
     private String getToken(IPaymentMethod paymentMethod) {
-        if(paymentMethod instanceof ITokenizable) {
-            String tokenValue = ((ITokenizable)paymentMethod).getToken();
-            if(tokenValue != null && !tokenValue.equals(""))
+        if (paymentMethod instanceof ITokenizable) {
+            String tokenValue = ((ITokenizable) paymentMethod).getToken();
+            if (tokenValue != null && !tokenValue.equals(""))
                 return tokenValue;
             return null;
         }
@@ -1154,6 +1165,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         summary.setTransactionStatus(root.getString("TxnStatus"));
         summary.setUniqueDeviceId(root.getString("UniqueDeviceId"));
         summary.setUsername(root.getString("UserName"));
+        summary.setHasLevelIII(root.getString("HasLevelIII"));
 
         // lodging data
         if (root.has("LodgingData")) {
@@ -1215,8 +1227,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
         return version;
     }
+
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
-    	throw new ApiException("Portico does not support KeepAlive.");
+        throw new ApiException("Portico does not support KeepAlive.");
     }
 
     protected String getPosReqDT() {
@@ -1240,11 +1253,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         return dateFormat.format(new Date()).replace("::", ":");
     }
 
-    private int getSecure3DVersion(Secure3dVersion version){
-        if(version == null){
+    private int getSecure3DVersion(Secure3dVersion version) {
+        if (version == null) {
             return 1;
         }
-        switch (version){
+        switch (version) {
             case TWO:
                 return 2;
             case ONE:
@@ -1254,12 +1267,37 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
     }
 
-    private boolean isAppleOrGooglePay(PaymentDataSourceType paymentDataSource)
-    {
+    private boolean isAppleOrGooglePay(PaymentDataSourceType paymentDataSource) {
         return paymentDataSource == PaymentDataSourceType.APPLEPAY
                 || paymentDataSource == PaymentDataSourceType.APPLEPAYAPP
                 || paymentDataSource == PaymentDataSourceType.APPLEPAYWEB
                 || paymentDataSource == PaymentDataSourceType.GOOGLEPAYAPP
                 || paymentDataSource == PaymentDataSourceType.GOOGLEPAYWEB;
+    }
+
+    private void buildLineItems(ElementTree et, Element data, boolean isVisa, List<CommercialLineItem> items) {
+        if (items == null || items.size() == 0) {
+            return;
+        }
+
+        Element lineItems = et.subElement(data, "LineItems");
+        for (CommercialLineItem item : items) {
+            Element lineItem = et.subElement(lineItems, "LineItemDetail");
+            et.subElement(lineItem, "ItemDescription", item.getDescription());
+            et.subElement(lineItem, "ProductCode", item.getProductCode());
+            et.subElement(lineItem, "Quantity", item.getQuantity());
+            et.subElement(lineItem, "ItemTotalAmt", item.getTotalAmount());
+            et.subElement(lineItem, "UnitOfMeasure", item.getUnitOfMeasure());
+
+            if (!isVisa) {
+                continue;
+            }
+
+            // The schema says this field should exist, but it's not currently allowed.
+            et.subElement(lineItem, "ItemCommodityCode ", item.getCommodityCode());
+            et.subElement(lineItem, "UnitCost", item.getUnitCost());
+            et.subElement(lineItem, "VATTaxAmt", item.getTaxAmount());
+            et.subElement(lineItem, "DiscountAmt", item.getDiscountDetails().getDiscountAmount());
+        }
     }
 }

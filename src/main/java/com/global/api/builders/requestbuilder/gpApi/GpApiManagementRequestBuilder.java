@@ -283,19 +283,19 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/adjustment")
                     .setRequestBody(data.toString());
         }
-        else if (builderTransactionType == TransactionType.PayLinkUpdate) {
-            var payLinkData = builder.getPayLinkData();
+        else if (builderTransactionType == TransactionType.PayByLinkUpdate) {
+            var payByLinkData = builder.getPayByLinkData();
 
             data =
                     new JsonDoc()
-                            .set("usage_mode", payLinkData.getUsageMode() != null ? payLinkData.getUsageMode().getValue() : null)
-                            .set("usage_limit", payLinkData.getUsageLimit() != null ? payLinkData.getUsageLimit() : null)
-                            .set("name", payLinkData.getName() != null ? payLinkData.getName() : null)
+                            .set("usage_mode", payByLinkData.getUsageMode() != null ? payByLinkData.getUsageMode().getValue() : null)
+                            .set("usage_limit", payByLinkData.getUsageLimit() != null ? payByLinkData.getUsageLimit() : null)
+                            .set("name", payByLinkData.getName() != null ? payByLinkData.getName() : null)
                             .set("description", builder.getDescription() != null ? builder.getDescription() : null)
-                            .set("type", payLinkData.getType() != null ? payLinkData.getType().toString() : null)
-                            .set("status", payLinkData.getStatus() != null ? payLinkData.getStatus().toString() : null)
-                            .set("shippable", payLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
-                            .set("shipping_amount", StringUtils.toNumeric(payLinkData.getShippingAmount()));
+                            .set("type", payByLinkData.getType() != null ? payByLinkData.getType().toString() : null)
+                            .set("status", payByLinkData.getStatus() != null ? payByLinkData.getStatus().toString() : null)
+                            .set("shippable", payByLinkData.isShippable() == Boolean.TRUE ? "YES" : "NO")
+                            .set("shipping_amount", StringUtils.toNumeric(payByLinkData.getShippingAmount()));
 
             var transactions =
                     new JsonDoc()
@@ -303,12 +303,12 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
 
             data
                     .set("transactions", transactions)
-                    .set("expiration_date", payLinkData.getExpirationDate() != null ? payLinkData.getExpirationDate().toString("yyyy-MM-dd") : null)
-                    .set("images", payLinkData.getImages() != null ? payLinkData.getImages().toString() : null);
+                    .set("expiration_date", payByLinkData.getExpirationDate() != null ? payByLinkData.getExpirationDate().toString("yyyy-MM-dd") : null)
+                    .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null);
 
             return  (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Patch)
-                    .setEndpoint(merchantUrl + GpApiRequest.PAYLINK_ENDPOINT + "/" + builder.getPaymentLinkId())
+                    .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT + "/" + builder.getPaymentLinkId())
                     .setRequestBody(data.toString());
 
         }

@@ -10,6 +10,7 @@ import com.global.api.tests.testdata.TestChecks;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -47,13 +48,35 @@ public class CheckServiceTests {
     }
 
     @Test
-    public void CheckServiceVoid() throws ApiException {
+    public void CheckServiceVoid_clientTxnID() throws ApiException {
+        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        String clientTxnID = Integer.toString(randomID);
+
+        Transaction response = service.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withPaymentMethod(check)
+                .withClientTransactionId(clientTxnID)
+                .withAddress(address)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertEquals(clientTxnID,response.getClientTransactionId());
+
+        Transaction voidResponse = service.voidTransaction(response.getClientTransactionId(),true)
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void CheckServiceVoid_transactionID() throws ApiException {
         Transaction response = service.charge(new BigDecimal(11))
                 .withCurrency("USD")
                 .withPaymentMethod(check)
                 .withAddress(address)
                 .execute();
         assertNotNull(response);
+        assertNotNull(response.getTransactionId());
         assertEquals("00", response.getResponseCode());
 
         Transaction voidResponse = service.voidTransaction(response.getTransactionId()).execute();

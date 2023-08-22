@@ -86,6 +86,14 @@ public class PorticoReportingTests {
     }
 
     @Test
+    public void ReportFindTransactionWithSAFIndicatorCriteria() throws ApiException {
+        TransactionSummaryList response = ReportingService.findTransactions()
+                .where(SearchCriteria.SafIndicator,"N")
+                .execute();
+        assertNotNull(response);
+    }
+
+    @Test
     public void ReportFindTransactionWithCriteria() throws ApiException {
         CreditCardData creditCardData = new CreditCardData();
         creditCardData.setCardHolderName("John Doe");
@@ -135,6 +143,7 @@ public class PorticoReportingTests {
 
         TransactionSummaryList summary3 = ReportingService.findTransactions()
             .where(SearchCriteria.InvoiceNumber, "11115")
+                .and(SearchCriteria.SafIndicator,"N")
             .execute();
 
         assertNotNull(summary3);

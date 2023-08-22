@@ -26,8 +26,8 @@ public enum ReportType implements IFlag {
     FindActionsPaged,
     DocumentDisputeDetail,
     FindBankPayment,
-    PayLinkDetail,
-    FindPayLinkPaged,
+    PayByLinkDetail,
+    FindPayByLinkPaged,
     FindMerchantsPaged,
     FindAccountsPaged,
     FindAccountDetail;
