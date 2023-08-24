@@ -39,6 +39,8 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthab
     private String checkReference;
     private String merchantNotes;
     private Address bankAddress;
+    private String birthMonth;
+    private String birthDate;
     private String transitNumber;
     private String financialInstituteNumber;
 

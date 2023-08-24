@@ -19,6 +19,7 @@ public class CreditCardData extends Credit implements ICardData {
     private Integer expYear;
     private String number;
     private boolean readerPresent = false;
+    @Getter @Setter private String tokenizationData;
 
     public String getCvn() {
         return cvn;

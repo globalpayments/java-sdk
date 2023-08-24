@@ -6,6 +6,7 @@ import com.global.api.gateways.GnapConnector;
 import com.global.api.entities.enums.LogicProcessFlag;
 import com.global.api.entities.enums.TerminalType;
 import com.global.api.gateways.NtsConnector;
+import com.global.api.gateways.NwsConnector;
 import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
@@ -48,7 +49,7 @@ public class NetworkGatewayConfig extends Configuration {
     private LogicProcessFlag logicProcessFlag;
     @Setter
     private TerminalType terminalType;
-
+    private String ewicMerchantId;
 
     public NetworkGatewayConfig() {
         this(Target.VAPS);
@@ -159,6 +160,8 @@ public class NetworkGatewayConfig extends Configuration {
     public void setPersistentConnection(Boolean persistentConnection) {
         this.persistentConnection = persistentConnection;
     }
+    public String getEwicMerchantId() {return ewicMerchantId;}
+    public void setEwicMerchantId(String ewicMerchantId) {this.ewicMerchantId = ewicMerchantId;}
 
     public void configureContainer(ConfiguredServices services) {
         //System.out.println("Target: " + target);
@@ -167,7 +170,9 @@ public class NetworkGatewayConfig extends Configuration {
             gateway = new VapsConnector();
         } else if(target.equals(Target.GNAP)) {
             gateway = new GnapConnector();
-        }else if(target.equals(Target.NTS)) {
+        } else if(target.equals(Target.NWS)) {
+            gateway = new NwsConnector();
+        } else if(target.equals(Target.NTS)) {
             gateway = new NtsConnector();
 
             // NTS related fields
@@ -200,7 +205,7 @@ public class NetworkGatewayConfig extends Configuration {
             gateway.setMerchantType(merchantType);
             gateway.setUniqueDeviceId(uniqueDeviceId);
             gateway.setProcessingFlag(persistentConnection ? NetworkProcessingFlag.PersistentConnection : NetworkProcessingFlag.NonPersistentConnection);
-
+            gateway.setEwicMerchantId(ewicMerchantId);
 
             // acceptor config
             if (acceptorConfig == null) {

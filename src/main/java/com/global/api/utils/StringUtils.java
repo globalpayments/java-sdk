@@ -261,7 +261,12 @@ public class StringUtils {
         value1=value1.replaceAll("[^0-9]","");
         return StringUtils.padLeft(value1,totalLength,'0');
     }
-
+    public static String checkForNull(String str) {
+        if (str == null) {
+            return "";
+        }
+        return str;
+    }
     public static String subString(String value, int length, char paddingChar){
         if(value.length() >= length){
             return value.substring(0, length);

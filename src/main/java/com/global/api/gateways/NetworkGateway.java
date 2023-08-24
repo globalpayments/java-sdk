@@ -248,6 +248,7 @@ public class NetworkGateway {
             throw exc;
         } finally {
             disconnect();
+            // remove the force timeout
             raiseGatewayEvent(new DisconnectEvent(connectorName));
 
             // remove simulated errors

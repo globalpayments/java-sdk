@@ -5,6 +5,7 @@ import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.elements.DE123_ReconciliationTotals_nws;
 import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
@@ -107,12 +108,15 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private FundsData fundsData;
     @Getter @Setter private CommercialData commercialData;
 
+    @Getter @Setter private DE123_ReconciliationTotals_nws reconciliationTotals;
+
     public ManagementBuilder withMiscProductData(ArrayList<Product> values) {
         this.miscProductData = values;
         return this;
     }
     @Getter
     private EBTVoucherEntryData voucherEntryData;
+    private String eWICIssuingEntity;
 
     public ManagementBuilder withCardSequenceNumber(String value) {
         this.cardSequenceNumber = value;
@@ -341,6 +345,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.totalDebits = totalDebits;
         this.totalCredits = totalCredits;
 
+        return this;
+    }
+    public ManagementBuilder withBatchTotals(int transactionCount ,DE123_ReconciliationTotals_nws totals) {
+        this.transactionCount = transactionCount;
+        this.reconciliationTotals = totals;
         return this;
     }
 
@@ -770,6 +779,10 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     }
     public ManagementBuilder withVoucherEntryData(EBTVoucherEntryData data) {
         this.voucherEntryData = data;
+        return this;
+    }
+    public ManagementBuilder WithEWICIssuingEntity(String value) {
+        eWICIssuingEntity = value;
         return this;
     }
 }

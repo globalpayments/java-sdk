@@ -18,7 +18,7 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
     }
 
     public DE127_ForwardingData() {
-        entries = new LinkedList<DE127_ForwardingDataEntry>();
+        entries = new LinkedList<>();
     }
     @Setter @Getter
     private ServiceType serviceType;
@@ -26,6 +26,20 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
     private OperationType operationType=OperationType.Reserved;
     @Setter @Getter
     private EncryptedFieldMatrix encryptedField;
+    @Getter @Setter
+    private TokenizationType tokenizationType;
+    @Getter @Setter
+    private TokenizedFieldMatrix tokenizedFieldMatrix;
+    @Getter @Setter
+    private TokenizationOperationType tokenizationOperationType;
+    @Getter @Setter
+    private String merchantId;
+    @Getter @Setter
+    private String tokenOrAcctNum;
+    @Getter @Setter
+    private String expiryDate;
+
+
 
     public void addEncryptionData(EncryptionType encryptionType,EncryptionData encryptionData) {
         addEncryptionData(encryptionType,encryptionData,null);
@@ -62,8 +76,24 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
 
         add(entry);
     }
+    public void addTokenizationData(TokenizationType tokenizationType) {
+        DE127_ForwardingDataEntry entry = new DE127_ForwardingDataEntry();
+                entry.setTag(DE127_ForwardingDataTag.Tokenization_TOK) ;
+                entry.setRecordId(RecordId.Tokenization_TD);
+                entry.setRecordType("001");
+                entry.setServiceType(serviceType);
+                entry.setTokenizationType(tokenizationType.getValue());
+                entry.setTokenizedFieldMatrix(tokenizedFieldMatrix.getValue());
+                entry.setTokenizationOperationType(tokenizationOperationType.getValue());
+                entry.setMerchantId(StringUtils.padRight(merchantId,32,' '));
+                entry.setTokenOrAcctNum(StringUtils.padRight(tokenOrAcctNum,128,' '));
+                entry.setExpiryDate(expiryDate!=null?expiryDate:StringUtils.padRight("",4,' '));
+
+                add(entry);
+
+    }
+
     public void add(DE127_ForwardingDataEntry entry) {
-        entries.clear();
         entries.add(entry);
     }
 
@@ -104,6 +134,21 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                     ed.readString(8); // reserved
                     entry.setEntryData(ed.readString(256));
                     ed.readString(32); // reserved
+                }break;
+                case Tokenization_TOK:{
+                    StringParser ed = new StringParser(data.getBytes());
+                    entry.setRecordId(ed.readStringConstant(2,RecordId.class));
+                    entry.setRecordType(ed.readString(3));
+                    entry.setServiceType(ed.readStringConstant(1,ServiceType.class));
+                    entry.setTokenizationType(ed.readString(1));
+                    entry.setTokenizedFieldMatrix(ed.readString(1));
+                    entry.setTokenizationOperationType(ed.readString(1));
+                    ed.readString(7);
+                    entry.setMerchantId(ed.readString(32));
+                    entry.setTokenOrAcctNum(ed.readString(128));
+                    entry.setExpiryDate(ed.readString(4));
+                    ed.readString(36);
+
                 }break;
                 default: {
                     entry.setEntryData(data);
@@ -152,6 +197,20 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                             .concat(StringUtils.padRight("", 32, ' '));
                     rvalue = rvalue.concat(StringUtils.toLLLVar(entryData));
                 } break;
+                case Tokenization_TOK :{
+                    String entryData = entry.getRecordId().getValue()
+                            .concat(entry.getRecordType())
+                            .concat(entry.getServiceType().getValue())
+                            .concat(entry.getTokenizationType())
+                            .concat(entry.getTokenizedFieldMatrix())
+                            .concat(entry.getTokenizationOperationType())
+                            .concat(StringUtils.padRight("", 7, ' '))
+                            .concat(StringUtils.padRight(entry.getMerchantId(),32,' '))
+                            .concat(StringUtils.padRight(entry.getTokenOrAcctNum(),128,' '))
+                            .concat(entry.getExpiryDate()!=null?entry.getExpiryDate():StringUtils.padRight("", 4, ' '))
+                            .concat(StringUtils.padRight("", 36, ' '));
+                    rvalue = rvalue.concat(StringUtils.toLLLVar(entryData));
+                }break;
                 default: {
                     rvalue = rvalue.concat(StringUtils.toLLLVar(entry.getEntryData()));
                 }

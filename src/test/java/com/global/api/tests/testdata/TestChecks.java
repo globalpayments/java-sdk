@@ -27,6 +27,8 @@ public class TestChecks {
         rvalue.setPhoneNumber("8003214567");
         rvalue.setBirthYear(1997);
         rvalue.setSsnLast4("4321");
+        rvalue.setBirthMonth("06");
+        rvalue.setBirthDate("19");
         rvalue.setCheckName(checkName);
         
         return rvalue;

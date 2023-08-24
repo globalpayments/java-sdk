@@ -21,5 +21,6 @@ public enum UpaMessageId {
     PreAuth,
     Restart,
     AuthCompletion,
-    StartCardTransaction
+    StartCardTransaction,
+    RegisterPOS
 }

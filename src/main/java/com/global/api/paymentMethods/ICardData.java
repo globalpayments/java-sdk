@@ -37,4 +37,6 @@ public interface ICardData {
 
     ManualEntryMethod getEntryMethod();
     void setEntryMethod(ManualEntryMethod manualEntryMethod);
+    String getTokenizationData();
+    void setTokenizationData(String s);
 }

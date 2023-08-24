@@ -13,6 +13,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.subgroups.RegisterPOS;
 
 import java.math.BigDecimal;
 
@@ -30,6 +31,8 @@ public interface IDeviceInterface extends IDisposable {
     IInitializeResponse initialize() throws ApiException;
     IDeviceResponse openLane() throws ApiException;
     IDeviceResponse ping() throws ApiException; // UPA
+    void sendReady() throws ApiException; //UPA
+    IDeviceResponse registerPOS(RegisterPOS data) throws ApiException; //UPA
     ISignatureResponse promptForSignature() throws ApiException;
     ISignatureResponse promptForSignature(String transactionId) throws ApiException;    
     IDeviceResponse reboot() throws ApiException;

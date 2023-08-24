@@ -4,7 +4,8 @@ import com.global.api.entities.enums.IStringConstant;
 
 public enum RecordId implements IStringConstant {
     E3_Encryption("E3"),
-    Encryption_3DE("3D");
+    Encryption_3DE("3D"),
+    Tokenization_TD("TD");
 
     String value;
     RecordId(String value) {

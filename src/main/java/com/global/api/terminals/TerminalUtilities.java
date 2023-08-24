@@ -1,7 +1,5 @@
 package com.global.api.terminals;
 
-import java.sql.Timestamp;
-
 import com.global.api.entities.enums.*;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
@@ -62,6 +60,14 @@ public class TerminalUtilities {
         buffer.add(lrc);
 
         return new DeviceMessage(buffer.toArray());
+    }
+
+    public static DeviceMessage buildMessage(String message) {
+        JsonDoc json = new JsonDoc();
+        json.set("message", message);
+        json.set("data", "", true);
+
+        return compileMessage(json.toString());
     }
 
     public static DeviceMessage buildMessage(UpaMessageId messageType, String requestId, JsonDoc body) {

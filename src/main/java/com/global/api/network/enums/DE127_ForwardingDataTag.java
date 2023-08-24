@@ -7,7 +7,8 @@ public enum DE127_ForwardingDataTag implements IStringConstant {
     ForwardedHeaderOnly("HDR"),
     ForwardedRequest("REQ"),
     ForwardedResponse("RSP"),
-    Encryption_3DES("3DE");
+    Encryption_3DES("3DE"),
+    Tokenization_TOK("TOK");
 
     private final String value;
     DE127_ForwardingDataTag(String value) { this.value = value; }

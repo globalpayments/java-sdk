@@ -4,6 +4,8 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -12,6 +14,8 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     private PaymentMethodType paymentMethodType = PaymentMethodType.Debit;
     private String pinBlock;
     protected String cardType = "Unknown";
+    @Getter @Setter
+    private String tokenizedData;
 
     public String getCardType() {
         return cardType;

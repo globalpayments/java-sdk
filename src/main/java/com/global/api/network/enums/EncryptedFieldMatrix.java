@@ -1,6 +1,5 @@
 package com.global.api.network.enums;
 
-import com.global.api.entities.Customer;
 import com.global.api.entities.enums.IStringConstant;
 
 public enum EncryptedFieldMatrix implements IStringConstant {

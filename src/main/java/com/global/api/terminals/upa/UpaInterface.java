@@ -15,12 +15,14 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.builders.UpaTerminalManageBuilder;
 import com.global.api.terminals.upa.responses.UpaDeviceResponse;
 import com.global.api.terminals.upa.responses.UpaEODResponse;
 import com.global.api.terminals.upa.responses.UpaReportResponse;
 import com.global.api.terminals.upa.responses.UpaSafResponse;
+import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.utils.JsonDoc;
 
 public class UpaInterface implements IDeviceInterface {
@@ -263,6 +265,41 @@ public class UpaInterface implements IDeviceInterface {
         );
 
         return new UpaReportResponse(responseObj);
+    }
+
+    public void sendReady() throws ApiException {
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                Constants.READY_MESSAGE
+        );
+        controller.send(message);
+    }
+
+    public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc param = new JsonDoc();
+
+        if (data.getAppName() != null) {
+            param.set("appName", data.getAppName());
+        } else {
+            throw new ApiException("The package name of the application is required.");
+        }
+        if (data.getLaunchOrder() != null) {
+            param.set("launchOrder", data.getLaunchOrder());
+        }
+        if (data.getRemove() != null) {
+            param.set("remove", data.getRemove());
+        }
+        body.set("params", param);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.RegisterPOS,
+                controller.getRequestId().toString(),
+                body
+        );
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+        return new UpaDeviceResponse(responseObj, UpaMessageId.RegisterPOS);
     }
 
     public IDeviceResponse ping() throws ApiException {

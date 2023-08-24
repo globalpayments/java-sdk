@@ -2,10 +2,7 @@ package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
-import com.global.api.entities.EncryptionData;
-import com.global.api.entities.PaymentDataSourceType;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -33,7 +30,6 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     private boolean readyLinkCard;
     private String pinBlock;
     private PaymentDataSourceType paymentDataSourceType;
-
     public boolean isFleet() {
         return fleetCard;
     }
@@ -206,6 +202,13 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
                 .execute(configName);
 
         return true;
+    }
+    public AuthorizationBuilder fileAction() {
+        return new AuthorizationBuilder(TransactionType.FileAction, this);
+    }
+
+    public AuthorizationBuilder cashAdvanced(BigDecimal amount) {
+        return new AuthorizationBuilder(TransactionType.CashAdvance, this).withAmount(amount);
     }
 
 }

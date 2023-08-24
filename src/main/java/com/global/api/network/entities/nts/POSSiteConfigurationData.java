@@ -103,10 +103,14 @@ public class POSSiteConfigurationData {
 
     public POSSiteConfigurationData( Target target){
         this.target = target;
-        if (this.target == Target.VAPS){
+        if (this.target == Target.VAPS ){
             merchantType = "5542";
             heartlandTerminalSpec = "P";
             heartlandPaymentEngine = "V";
+        }else if (this.target == Target.NWS ){
+            merchantType = "5542";
+            heartlandTerminalSpec = "P";
+            heartlandPaymentEngine = "N";
         }
     }
 }

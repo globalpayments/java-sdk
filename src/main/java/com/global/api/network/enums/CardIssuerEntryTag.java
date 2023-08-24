@@ -56,10 +56,17 @@ public enum CardIssuerEntryTag implements IStringConstant {
     NTS_System("NTS"),
     VisaTransactionId("NV1"),
     HeartlandTimeRequest("HTR"),
+    MastercardECommerceIndicators("IME"),
+    MastercardWalletId("IMW"),
+    CheckInformation("C00"),
+    CheckExpandedOrRawMICRData("C02"),
+    EWICMerchantId("EIS"),
+    EwicIssuingEntity("EWS"),
     MerchantActionCode("IAC"),
     ActualStan("IST"),
     DeclineCategoryCode("ICA"),
-    WexAvailableProductRestrictions("WAP");
+    WexAvailableProductRestrictions("WAP"),
+    StoreAndForwardFlag("GSF");
 
     private final String value;
     CardIssuerEntryTag(String value) { this.value = value; }

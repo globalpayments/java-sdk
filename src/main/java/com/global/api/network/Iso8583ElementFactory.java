@@ -36,6 +36,7 @@ class Iso8583ElementFactory {
             factory.addElementMapping(DataElementId.DE_023, DataElementType.NUMERIC, "Card Sequence Number", 3);
             factory.addElementMapping(DataElementId.DE_024, DataElementType.NUMERIC, "Function Code", 3);
             factory.addElementMapping(DataElementId.DE_025, DataElementType.NUMERIC, "Message Reason Code", 4);
+            factory.addElementMapping(DataElementId.DE_028, DataElementType.NUMERIC, "Date, Reconciliation", 4);
             factory.addElementMapping(DataElementId.DE_030, DataElementType.NUMERIC, "Amounts, Original", 24);
             factory.addElementMapping(DataElementId.DE_032, DataElementType.LLVAR, "Acquiring Institution Identification Code", 11);
             factory.addElementMapping(DataElementId.DE_034, DataElementType.LLVAR, "Primary Account Number, Extended", 28);
@@ -107,6 +108,31 @@ class Iso8583ElementFactory {
             factory.addElementMapping(DataElementId.DE_047, DataElementType.LLVAR, "Address 8", 99);
             factory.addElementMapping(DataElementId.DE_048, DataElementType.LLVAR, "Address 9", 99);
             factory.addElementMapping(DataElementId.DE_049, DataElementType.LLVAR, "Address 10", 99);
+        }
+        else if (messageType.equals(Iso8583MessageType.SubElement_DE_0117_EA)) {
+            factory.addElementMapping(DataElementId.DE_002, DataElementType.NUMERIC, "UPC_PLU Data", 17);
+            factory.addElementMapping(DataElementId.DE_003, DataElementType.ALPHA_NUMERIC_PAD, "Item Description", 50);
+            factory.addElementMapping(DataElementId.DE_004, DataElementType.NUMERIC, "Category Code", 2);
+            factory.addElementMapping(DataElementId.DE_005, DataElementType.ALPHA_NUMERIC_PAD, "Category Description", 50);
+            factory.addElementMapping(DataElementId.DE_006, DataElementType.NUMERIC, "Sub-Category Code", 3);
+            factory.addElementMapping(DataElementId.DE_007, DataElementType.ALPHA_NUMERIC_PAD, "Sub-Category Description", 50);
+            factory.addElementMapping(DataElementId.DE_008, DataElementType.ALPHA_NUMERIC, "Unit Of Measure", 10);
+            factory.addElementMapping(DataElementId.DE_009, DataElementType.NUMERIC, "Package Size", 5);
+            factory.addElementMapping(DataElementId.DE_011, DataElementType.NUMERIC, "Benefit Quantity", 5);
+            factory.addElementMapping(DataElementId.DE_012, DataElementType.ALPHA_NUMERIC_SPECIAL, "Benefit Unit Description", 50);
+            factory.addElementMapping(DataElementId.DE_013, DataElementType.NUMERIC, "UPC_PLU Data Length", 2);
+        }
+        else if (messageType.equals(Iso8583MessageType.SubElement_DE_0117_PS)) {
+            factory.addElementMapping(DataElementId.DE_002, DataElementType.NUMERIC, "UPC_PLU Data", 17);
+            factory.addElementMapping(DataElementId.DE_003, DataElementType.NUMERIC, "Category Code", 2);
+            factory.addElementMapping(DataElementId.DE_004, DataElementType.NUMERIC, "Sub-Category Code", 3);
+            factory.addElementMapping(DataElementId.DE_005, DataElementType.NUMERIC, "Units", 5);
+            factory.addElementMapping(DataElementId.DE_006, DataElementType.NUMERIC, "Item Price", 6);
+            factory.addElementMapping(DataElementId.DE_007, DataElementType.NUMERIC, "Purchase Quantity", 5);
+            factory.addElementMapping(DataElementId.DE_008, DataElementType.NUMERIC, "Item Action Code", 2);
+            factory.addElementMapping(DataElementId.DE_009, DataElementType.NUMERIC, "Original Item Price", 6);
+            factory.addElementMapping(DataElementId.DE_010, DataElementType.NUMERIC, "original Purchase Quantity", 5);
+            factory.addElementMapping(DataElementId.DE_011, DataElementType.NUMERIC, "UPC_PLU Data Length", 2);
         }
 
         return factory;

@@ -1,5 +1,27 @@
 # Changelog
 
+## v11.1.0 (08/24/2023)
+### Enhancements:
+
+-NWS:
+ - Debit Cards Implementation
+ - Bankcards Implementation
+ - EBT EWIC Implementation
+ - EBT Implementation
+ - Visa Ready Link Implementation
+ - Fleet Cards Implementation
+ - SVS Gift Cards Implementation
+ - HMS Gift Cards Implementation
+ - Card On File Implementation
+ - Tokenization Implementation
+ - Request to balance Implementation
+ - EMV Bankcards Implementation
+ - 3DES Implementation
+ 
+-UPA:
+ - Add sendReady message
+ - Add registerPOS command
+
 ## v11.0.0 (08/22/2023)
 
 ### Enhancements:

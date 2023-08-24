@@ -7,18 +7,16 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IOpenBankingProvider;
-import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.gateways.IPaymentGateway;
-
-import com.global.api.network.entities.nts.*;
+import com.global.api.network.elements.EWICData;
 import com.global.api.network.entities.*;
-
+import com.global.api.network.entities.gnap.GnapRequestData;
+import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
-
 import lombok.Setter;
 import lombok.var;
 
@@ -131,8 +129,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     private String goodsSold;
     @Getter
+    private EWICData ewicData;
+    private String eWICIssuingEntity;
+    @Getter
+    private String checkCustomerId;
+    @Getter
+    private String rawMICRData;
+    @Getter
     private POSSiteConfigurationData posSiteConfigurationData;
-
     @Getter
     private String country;
 
@@ -1003,6 +1007,25 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withGoodsSold(String goodsSold) {
         this.goodsSold = goodsSold;
+        return this;
+    }
+    public AuthorizationBuilder withCheckCustomerId(String checkCustomerId) {
+        this.checkCustomerId = checkCustomerId;
+        return this;
+    }
+    public AuthorizationBuilder withRawMICRData(String rawMICRData) {
+        this.rawMICRData = rawMICRData;
+        return this;
+    }
+    public  AuthorizationBuilder withEWICData(EWICData ewicData){
+        this.ewicData=ewicData;
+        return this;
+    }
+    public EWICData getEwicData(){
+        return ewicData;
+    }
+    public AuthorizationBuilder WithEWICIssuingEntity(String eWICIssuingEntity) {
+        this.eWICIssuingEntity = eWICIssuingEntity;
         return this;
     }
     public AuthorizationBuilder withCountry(String country) {

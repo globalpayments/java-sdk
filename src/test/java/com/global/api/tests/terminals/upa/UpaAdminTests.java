@@ -7,6 +7,7 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.FixMethodOrder;
@@ -23,7 +24,7 @@ public class UpaAdminTests {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
         config.setIpAddress("192.168.0.198");
-        config.setTimeout(20000);
+        config.setTimeout(450000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
@@ -68,6 +69,33 @@ public class UpaAdminTests {
     @Test
     public void test04_reboot() throws ApiException {
         runBasicTests(device.reboot());
+    }
+
+    @Test
+    public void test05_sendReady() throws ApiException {
+        device.sendReady();
+    }
+
+    @Test
+    public void test_registerPOS() throws ApiException{
+        RegisterPOS data = new RegisterPOS();
+        data.setAppName("com.global.testapp");
+        data.setLaunchOrder(1);
+        data.setRemove(false);
+
+        IDeviceResponse response = device.registerPOS(data);
+        runBasicTests(response);
+    }
+
+    @Test
+    public void test_registerPOS_O1() throws ApiException{
+        RegisterPOS data = new RegisterPOS();
+        data.setAppName("com.global.testapp");
+        data.setLaunchOrder(1);
+        data.setRemove(true);
+
+        IDeviceResponse response = device.registerPOS(data);
+        runBasicTests(response);
     }
 
     public void runBasicTests(IDeviceResponse response) {

@@ -19,6 +19,7 @@ public class EBTCardData extends EBT implements ICardData {
     private boolean readerPresent;
     private String serialNumber;
     public ManualEntryMethod entryMethod;
+    private String tokenizationData;
 
     @Override
     public String getCardType() {

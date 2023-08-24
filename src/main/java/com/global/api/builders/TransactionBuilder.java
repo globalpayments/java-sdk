@@ -5,6 +5,7 @@ import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.network.elements.EWICData;
 import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -95,6 +96,9 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     protected String transactionDate;
     @Getter
     protected String transactionTime;
+    @Getter
+    protected EWICData ewicData;
+    protected String ewicIssuingEntity;
     @Getter
     private String zipCode;
 
@@ -199,6 +203,17 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     public TransactionBuilder<TResult> withEcommerceData2(String ecommerceData2) {
         this.ecommerceData2 = ecommerceData2;
         return this;
+    }
+    public  TransactionBuilder<TResult> withEWICData(EWICData ewicData){
+        this.ewicData=ewicData;
+        return this;
+    }
+
+    public String getEwicIssuingEntity() {
+        return ewicIssuingEntity;
+    }
+    public void setEwicIssuingEntity(String ewicIssuingEntity) {
+        this.ewicIssuingEntity = ewicIssuingEntity;
     }
     public TransactionBuilder<TResult> withZipCode(String zipCode) {
         this.zipCode = zipCode;

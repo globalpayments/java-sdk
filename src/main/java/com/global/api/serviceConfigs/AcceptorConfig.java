@@ -64,6 +64,8 @@ public class AcceptorConfig {
     private Boolean echoSettlementData;
     private Boolean includeLoyaltyData;
     private Boolean performDateCheck;
+    @Getter @Setter
+    private String merchantId;
 
     public Boolean getEchoSettlementData() {
         return echoSettlementData;
@@ -93,6 +95,12 @@ public class AcceptorConfig {
     private ServiceType serviceType;
     @Getter @Setter
     private OperationType operationType;
+    @Getter@Setter
+    private TokenizationOperationType tokenizationOperationType;
+    @Getter @Setter
+    private TokenizationType tokenizationType;
+    @Getter @Setter
+    private DE22_CardDataInputMode cardDataInputMode;
 
     // DE32 - Acquiring Institution Identification Code
     public String getAcquiringInstitutionIdentificationCode() {

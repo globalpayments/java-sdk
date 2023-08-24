@@ -26,6 +26,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -343,7 +344,17 @@ public class HpaInterface implements IDeviceInterface {
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
     }
-    
+
+    @Override
+    public void sendReady() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
         throw new UnsupportedTransactionException();
     }

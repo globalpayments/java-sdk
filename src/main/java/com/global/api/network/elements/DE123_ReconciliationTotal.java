@@ -1,7 +1,10 @@
 package com.global.api.network.elements;
 
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.network.enums.DE123_TransactionType;
 import com.global.api.network.enums.DE123_TotalType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -11,7 +14,10 @@ public class DE123_ReconciliationTotal {
     private String cardType = "    ";
     private int transactionCount;
     private BigDecimal totalAmount;
-
+    @Getter @Setter
+    private PaymentMethodType paymentMethodType;
+    @Getter @Setter
+    private boolean isRefund;
     public DE123_TransactionType getTransactionType() {
         return transactionType;
     }

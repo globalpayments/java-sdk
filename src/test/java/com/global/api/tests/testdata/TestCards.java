@@ -44,7 +44,7 @@ public class TestCards {
         rvalue.setNumber("4012002000060016");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2025);
-        rvalue.setCvn("123");
+        rvalue.setCvn("811");
         rvalue.setCardPresent(cardPresent);
         rvalue.setReaderPresent(readerPresent);
         return rvalue;
@@ -69,7 +69,7 @@ public class TestCards {
     }
     public static CreditTrackData VisaSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        rvalue.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?"); //partial Approval
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -145,7 +145,7 @@ public class TestCards {
     }
     public static CreditCardData VisaFleetManual(boolean cardPresent, boolean readerPresent) {
         CreditCardData rvalue = new CreditCardData();
-        rvalue.setNumber("4484630000000126");
+        rvalue.setNumber("4485530000000127");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2025);
         rvalue.setCvn("123");
@@ -159,7 +159,7 @@ public class TestCards {
     }
     public static CreditTrackData VisaFleetSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?;4484630000000126=16111019206100000001?");
+        rvalue.setValue("%B4485530000000127^VISA TEST CARD/GOOD^21121019206100000013?;4485530000000127=21121019206100000013?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -201,7 +201,7 @@ public class TestCards {
     }
     public static CreditTrackData MasterCardSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%B5473500000000014^MC TEST CARD^251210199998888777766665555444433332?;5473500000000014=25121019999888877776?");
+        rvalue.setValue("%B222110000001239^MC TEST CARD^251210199998888777766665555444433332?; 2221100000000122=2512101123456789?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -331,7 +331,7 @@ public class TestCards {
         rvalue.setNumber("6011000990156527");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2025);
-        rvalue.setCvn("123");
+        rvalue.setCvn("804");
         rvalue.setCardPresent(cardPresent);
         rvalue.setReaderPresent(readerPresent);
         return rvalue;
@@ -392,7 +392,7 @@ public class TestCards {
         rvalue.setNumber("372700699251018");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2025);
-        rvalue.setCvn("1234");
+        rvalue.setCvn("8101");
         rvalue.setCardPresent(cardPresent);
         rvalue.setReaderPresent(readerPresent);
         return rvalue;
@@ -484,7 +484,7 @@ public class TestCards {
     }
     public static CreditTrackData VoyagerSwipe(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("%07088869008250005056^VOYAGER TEST ACCT THREE  ^2212100000000000000?");
+        rvalue.setValue(";7088850950270000131=32010000010100600?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -512,7 +512,7 @@ public class TestCards {
     }
     public static CreditTrackData FuelmanFleet(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("70764912345100040=4912");
+        rvalue.setValue("% DRIVER ID 11411?;70764912345100003=4912?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -526,7 +526,7 @@ public class TestCards {
     }
     public static CreditCardData FleetWideManual(boolean cardPresent, boolean readerPresent) {
         CreditCardData rvalue = new CreditCardData();
-        rvalue.setNumber("70768512345200005");
+        rvalue.setNumber(";70768512345200000");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2099);
         rvalue.setCvn("123");
@@ -540,7 +540,7 @@ public class TestCards {
     }
     public static CreditTrackData FleetWide(EntryMethod entryMethod) {
         CreditTrackData rvalue = new CreditTrackData();
-        rvalue.setValue("70768512345200005=99120");
+        rvalue.setValue(";70768512345200000=99120?");
         rvalue.setEntryMethod(entryMethod);
         return rvalue;
     }
@@ -574,6 +574,18 @@ public class TestCards {
         return rvalue;
     }
 
+    public static GiftCard HMSManual() {
+        GiftCard rvalue = new GiftCard();
+        rvalue.setValue("7083559900008163201");
+        rvalue.setPin("7055");
+        return rvalue;
+    }
+    public static GiftCard HMSSwipe() {
+        GiftCard rvalue = new GiftCard();
+        rvalue.setValue("7083559900008163219=391200075871");
+        return rvalue;
+    }
+
     /*
     SVS
     ;7083559900007000792=99990018010300000?
@@ -582,13 +594,51 @@ public class TestCards {
     */
     public static GiftCard SvsManual() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue("6394700000001113");
-        rvalue.setPin("1234");
+        rvalue.setValue("B6006491260550251182^SVSMC^711211006H");
+        rvalue.setPin("1422");
         return rvalue;
     }
+
     public static GiftCard SvsSwipe() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue(";7083559900007000818=99990012504400000?");
+        rvalue.setValue("6006491260550251158=711211030308484");
+        return rvalue;
+    }
+
+    //Union Pay
+    public static CreditTrackData UnionPaySwipe() {
+        return UnionPaySwipe(EntryMethod.Swipe);
+    }
+    public static CreditTrackData UnionPaySwipe(EntryMethod entryMethod) {
+        CreditTrackData rvalue = new CreditTrackData();
+        rvalue.setValue("%B6221260012345674^CHINA UNION PAY^251210110000?;6221260012345674=251210110000?");
+        rvalue.setEntryMethod(entryMethod);
+        return rvalue;
+    }
+    public static CreditCardData UnionPayManual() {
+        return UnionPayManual(false, false);
+    }
+    public static CreditCardData UnionPayManual(boolean cardPresent, boolean readerPresent) {
+        CreditCardData rvalue = new CreditCardData();
+        rvalue.setNumber("6221260012345674");
+        rvalue.setExpMonth(12);
+        rvalue.setExpYear(2025);
+        rvalue.setCvn("123");
+        rvalue.setCardPresent(cardPresent);
+        rvalue.setReaderPresent(readerPresent);
+        return rvalue;
+    }
+    public static CreditCardData Paypal() {
+        return Paypal(false, false);
+    }
+    public static CreditCardData Paypal(boolean cardPresent, boolean readerPresent) {
+        CreditCardData rvalue = new CreditCardData();
+        rvalue.setNumber("6506001000010029");
+        rvalue.setExpMonth(12);
+        rvalue.setExpYear(2025);
+        rvalue.setCvn("123");
+        rvalue.setCardPresent(cardPresent);
+        rvalue.setReaderPresent(readerPresent);
         return rvalue;
     }
 }

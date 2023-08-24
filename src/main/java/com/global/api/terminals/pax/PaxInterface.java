@@ -16,6 +16,7 @@ import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.pax.responses.SignatureResponse;
+import com.global.api.terminals.upa.subgroups.RegisterPOS;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -339,6 +340,16 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public IDeviceResponse ping() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public void sendReady() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 

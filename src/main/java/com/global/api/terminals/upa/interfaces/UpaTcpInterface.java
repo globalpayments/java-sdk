@@ -21,6 +21,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
+import com.global.api.utils.StringUtils;
 
 public class UpaTcpInterface implements IDeviceCommInterface {
     private Socket client;
@@ -108,7 +109,14 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                 Thread.sleep(100);
             } while (!readyReceived);
 
-            return responseMessageString.getBytes();
+            //This check is put in place for UPA message "READY".
+            if(getMessageType(message).equalsIgnoreCase(Constants.READY_MESSAGE) &&
+                    StringUtils.isNullOrEmpty(responseMessageString))
+            {
+                return readyMessageSent();
+            } else {
+                return responseMessageString.getBytes();
+            }
         }
         catch(Exception exc) {
             throw new MessageException(exc.getMessage(), exc);
@@ -122,6 +130,27 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                 e.printStackTrace();
             }
         }
+    }
+
+    private String getMessageType(IDeviceMessage message){
+        String messageType = "NONE";
+        try {
+            if (message != null) {
+                String formMsg = new String(message.getSendBuffer(), StandardCharsets.UTF_8)
+                        .trim();
+                JsonDoc responseObj = JsonDoc.parse(
+                        new String(formMsg.getBytes(), StandardCharsets.UTF_8)
+                );
+                messageType = responseObj.getString("message");
+                String data = responseObj.getString("data");
+                if(StringUtils.isNullOrEmpty(data)){
+                    responseMessageString = "";
+                }
+            }
+        }catch (Exception e){
+            return messageType;
+        }
+        return messageType;
     }
 
     private void getTerminalResponse() throws Exception {
@@ -239,5 +268,16 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         } catch(IOException exc) {
             throw new IOException(exc.getMessage(), exc);
         }
+    }
+
+    private byte[] readyMessageSent(){
+        if(onMessageSent != null) {
+            JsonDoc jsonMsg = new JsonDoc();
+            jsonMsg.set("message", "READY");
+            long currentMillis = System.currentTimeMillis();
+            Timestamp t = new Timestamp(currentMillis);
+            onMessageSent.messageSent(t + ":\n" + jsonMsg.toString());
+        }
+        return Constants.READY_MESSAGE.getBytes();
     }
 }

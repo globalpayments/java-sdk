@@ -15,7 +15,8 @@ public enum DE25_MessageReasonCode implements IStringConstant {
     CustomerInitiated_PartialApproval("4353"),
     SystemTimeout_Malfunction("4354"),
     ForceVoid_PartialApproval("4355"),
-    ForceVoid_ApprovedTransaction("4356");
+    ForceVoid_ApprovedTransaction("4356"),
+    Failure_To_Dispense("4358");
 
     private String value;
     DE25_MessageReasonCode(String value) { this.value = value; }

@@ -13,7 +13,10 @@ public enum DE22_CardDataInputMode implements IStringConstant {
     ContactlessMsd("A"),
     UnalteredTrackData("B"),
     ContactEmv("C"),
-    ContactlessEmv("D");
+    ContactlessEmv("D"),
+    CredentialOnFile("S"),
+    Ecommerce("T"),
+    SecureEcommerce("U");
 
     private final String value;
     DE22_CardDataInputMode(String value) { this.value = value; }

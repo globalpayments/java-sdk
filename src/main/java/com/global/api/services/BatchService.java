@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.BatchCloseType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.elements.DE123_ReconciliationTotals_nws;
 import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
@@ -97,6 +98,13 @@ public class BatchService {
         return new ManagementBuilder(TransactionType.BatchClose)
                 .withCurrency("USD")
                 .withGnapRequestData(data)
+                .withBatchCloseType(closeType);
+    }
+
+    public static ManagementBuilder closeBatch(BatchCloseType closeType, int batchNumber, int sequenceNumber, int transactionTotal, DE123_ReconciliationTotals_nws totals) {
+        return new ManagementBuilder(TransactionType.BatchClose)
+                .withBatchNumber(batchNumber, sequenceNumber)
+                .withBatchTotals(transactionTotal,totals)
                 .withBatchCloseType(closeType);
     }
 //    public static BatchSummary closeBatch(BatchCloseType closeType) throws ApiException {

@@ -9,6 +9,9 @@ public class GatewayException extends ApiException {
     private String processingCode;
     private String transactionToken;
     private String transmissionTime;
+    private int reversalCount = 0;
+    private String reversalResponseCode;
+    private String reversalResponseText;
 
     public String getResponseCode() {
         return responseCode;
@@ -52,6 +55,18 @@ public class GatewayException extends ApiException {
     }
     public void setTransmissionTime(String transmissionTime) {
         this.transmissionTime = transmissionTime;
+    }
+    public int getReversalCount(){return reversalCount;}
+    public void setReversalCount(int reversalCount) {
+        this.reversalCount = reversalCount;
+    }
+    public String getReversalResponseCode(){return reversalResponseCode;}
+    public void setReversalResponseCode(String reversalResponseCode) {
+        this.reversalResponseCode = reversalResponseCode;
+    }
+
+    public void setReversalResponseText(String reversalResponseText) {
+        this.reversalResponseText = reversalResponseText;
     }
 
     public GatewayException(String message) {
