@@ -487,6 +487,10 @@ public class NtsConnector extends GatewayConnectorConfig {
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             BatchSummary summary = new BatchSummary();
             NtsRequestToBalanceResponse responseMessage = (NtsRequestToBalanceResponse) ntsResponse.getNtsResponseMessage();
+            BigDecimal debitAmount = responseMessage.getHostTotalSales() != 0 ?StringUtils.getStringToAmount(String.valueOf(responseMessage.getHostTotalSales()),2)
+                    :BigDecimal.ZERO;
+            BigDecimal creditAmount = responseMessage.getHostTotalReturns() != 0 ?StringUtils.getStringToAmount(String.valueOf(responseMessage.getHostTotalReturns()),2)
+                    :BigDecimal.ZERO;
             if (builder instanceof ManagementBuilder) {
                 ManagementBuilder manageBuilder = (ManagementBuilder) builder;
                 NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
@@ -498,8 +502,8 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setReturnAmount(manageBuilder.getTotalReturns());
                 summary.setTransactionToken(result.getTransactionToken());
                 summary.setTotalAmount(manageBuilder.getTotalAmount());
-                summary.setDebitAmount(BigDecimal.valueOf(responseMessage.getHostTotalSales()));
-                summary.setCreditAmount(BigDecimal.valueOf(responseMessage.getHostTotalReturns()));
+                summary.setDebitAmount(debitAmount);
+                summary.setCreditAmount(creditAmount);
                 summary.setHostTransactionCount(responseMessage.getHostTransactionCount());
                 batchSummaryList.add(summary);
                 result.setBatchSummary(summary);
@@ -512,7 +516,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         return result;
     }
-
     private <T extends TransactionBuilder<Transaction>> String checkResponse(String responseCode, MessageWriter messageData, T builder) {
         String encodedRequest = null;
 

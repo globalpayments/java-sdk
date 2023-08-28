@@ -1,6 +1,14 @@
 # Changelog
 
+## v11.1.1 (08/28/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue:  
+  -Added 2 byte decimal to creditAmount and debitAmount in BatchSummary Object(10237)
+
 ## v11.1.0 (08/24/2023)
+
 ### Enhancements:
 
 -NWS:
@@ -27,6 +35,7 @@
 ### Enhancements:
 NTS Issue :
   - Added hostTransactionCount in batchSummary and mapped HostTotalSales with debitAmount and HostTotalReturns with creditAmount(10230)
+  - Added missed open and closed braces to be in sync with previous 40/80/90 exception(10236).
  
 GP-API :
   - Rename PayLink to PayByLink
