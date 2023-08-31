@@ -18,7 +18,7 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         POSSiteConfigurationData requestData = builder.getPosSiteConfigurationData();
 
         NtsUtils.log("MESSAGE VERSION ", requestData.getMessageVersion());
-        request.addRange(StringUtils.padRight(requestData.getMessageVersion(),3,'0'), 3);
+        request.addRange(StringUtils.padLeft(requestData.getMessageVersion(),3,'0'), 3);
 
         NtsUtils.log("TRANSACTION DATE ", requestData.getTransactionDate());
         request.addRange(requestData.getTransactionDate(), 8);
@@ -231,10 +231,10 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         request.addRange(StringUtils.padRight(requestData.getDispenserSoftwareVersion(), 8, ' '), 8);
 
         NtsUtils.log("DISPENSER QUANTITY", requestData.getDispenserQuantity());
-        request.addRange(StringUtils.padRight(requestData.getDispenserQuantity(), 2, '0'), 2);
+        request.addRange(StringUtils.padLeft(requestData.getDispenserQuantity(), 2, '0'), 2);
 
         NtsUtils.log("NUMBER OF SCANNERS / PERIPHERALS", requestData.getNumberOfScannersPeripherals());
-        request.addRange(StringUtils.padRight(requestData.getNumberOfScannersPeripherals(), 2, '0'), 2);
+        request.addRange(StringUtils.padLeft(requestData.getNumberOfScannersPeripherals(), 2, '0'), 2);
 
         NtsUtils.log("SCANNER 1 VENDOR", requestData.getScanner1Vendor());
         request.addRange(StringUtils.padRight(requestData.getScanner1Vendor(), 15, ' '), 15);

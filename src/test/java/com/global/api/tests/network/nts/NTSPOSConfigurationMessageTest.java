@@ -105,7 +105,7 @@ public class NTSPOSConfigurationMessageTest {
 
         // Preparing for POS site configuration.
         POSSiteConfigurationData posSiteConfiguration = new POSSiteConfigurationData();
-        posSiteConfiguration.setMessageVersion("001");
+        posSiteConfiguration.setMessageVersion("1");
         posSiteConfiguration.setCompanyName("Test Company");
         posSiteConfiguration.setHeartlandCompanyId("045");
         posSiteConfiguration.setMerchantFranchiseName("Test Merchant");
@@ -113,7 +113,7 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setMerchantAddressStreet("My Street");
         posSiteConfiguration.setMerchantAddressCity("My City");
         posSiteConfiguration.setMerchantAddressState("US");
-        posSiteConfiguration.setMerchantAddressZip("12345");
+        posSiteConfiguration.setMerchantAddressZip("345");
         posSiteConfiguration.setMerchantPhoneNumber("123-123-1234");
         posSiteConfiguration.setSiteBrand("My Site Brand");
         posSiteConfiguration.setPosSystemType("I");
@@ -122,7 +122,7 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setPosProductNameOrModel("RUBY 2 C1");
         posSiteConfiguration.setHeartlandPosTerminalType("88");
         posSiteConfiguration.setHeartlandPosSoftwareVersion("1.1.1.1");
-        posSiteConfiguration.setHeartlandTerminalSpecVersion("0212");
+        posSiteConfiguration.setHeartlandTerminalSpecVersion("31");
         posSiteConfiguration.setPosHardwareVersion("0212");
         posSiteConfiguration.setPosSoftwareVersion("1.1.1");
         posSiteConfiguration.setPosOperatingSystem("V2");
@@ -168,8 +168,8 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setDispenserVendor("Vendor 1");
         posSiteConfiguration.setDispenserProductNameOrModel("Model 1");
         posSiteConfiguration.setDispenserSoftwareVersion("0001");
-        posSiteConfiguration.setDispenserQuantity("02");
-        posSiteConfiguration.setNumberOfScannersPeripherals("01");
+        posSiteConfiguration.setDispenserQuantity("8");
+        posSiteConfiguration.setNumberOfScannersPeripherals("2");
         posSiteConfiguration.setScanner1Vendor("vendor 1");
         posSiteConfiguration.setScanner1ProductNameOrModel("product 1");
         posSiteConfiguration.setScanner1SoftwareVersion("001");

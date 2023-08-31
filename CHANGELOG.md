@@ -1,5 +1,13 @@
 # Changelog
 
+## v11.1.2 (08/31/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue: 
+  - Updated right padding with left padding for DISPENSER QUANTITY and NUMBER OF SCANNERS / PERIPHERALS fields of POS Site Configuration Message Request Format (Issue-10238)
+  - Fuel and non fuel product code will combined when two same product code is there for non fleet bankcard,Pin debit and stored value data collects (Issue-10233) 
+
 ## v11.1.1 (08/28/2023)
 
 ### Enhancements:

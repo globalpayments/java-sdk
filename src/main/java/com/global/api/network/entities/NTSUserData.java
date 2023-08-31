@@ -19,10 +19,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NTSUserData {
@@ -631,12 +628,28 @@ public class NTSUserData {
                 // Preparing product data fuel
                 if (fuelFlag && !fuel.isEmpty()) {
                     String code = "";
+                    String pcode = null;
                     BigDecimal price = new BigDecimal(0),
                             quantity = new BigDecimal(0),
                             amount = new BigDecimal(0);
+                    List<DE63_ProductDataEntry> uniqueList=new ArrayList<>();
+
+                    for (int i = 0; i < fuel.size(); i++) {
+                        for (int j = i+1; j < fuel.size(); j++) {
+                            if (fuel.get(i).getCode().equals(fuel.get(j).getCode())) {
+                                pcode = StringUtils.padLeft(fuel.get(i).getCode(), 3, '0');
+                                uniqueList.add(fuel.get(j));
+                            }
+                        }
+                    }
+
                     for (int i = 0; i < fuel.size(); i++) {
                         if (fuel.size() > 1) {
-                            code = StringUtils.padLeft("99", 3, '0');
+                            if (!uniqueList.isEmpty()) {
+                                code = StringUtils.padLeft(pcode, 3, '0');
+                            } else {
+                                code = StringUtils.padLeft("99", 3, '0');
+                            }
                             price = new BigDecimal(0);
                             quantity = quantity.add(fuel.get(i).getQuantity());
                             amount = amount.add(fuel.get(i).getAmount());
@@ -661,6 +674,41 @@ public class NTSUserData {
                 BigDecimal price = new BigDecimal(0),
                         quantity = new BigDecimal(0),
                         amount = new BigDecimal(0);
+                List<DE63_ProductDataEntry> duplicateListNonFuel=new ArrayList<>();
+
+                for (int i = 0; i < nonFuel.size(); i++) {
+                    for (int j = i+1; j < nonFuel.size(); j++) {
+                        if (nonFuel.get(i).getCode().equals(nonFuel.get(j).getCode())) {
+                            duplicateListNonFuel.add(nonFuel.get(j));
+                            duplicateListNonFuel.add(nonFuel.get(i));
+                        }
+                    }
+                }
+                if(!duplicateListNonFuel.isEmpty()){
+                    HashSet uniqueSet = new HashSet(duplicateListNonFuel);
+                    duplicateListNonFuel.clear();
+                    duplicateListNonFuel.addAll(uniqueSet);
+
+                    for (int i = 0; i < duplicateListNonFuel.size(); i++) {
+                        if (duplicateListNonFuel.size() > 1) {
+                            code = duplicateListNonFuel.get(i).getCode();
+                            price = new BigDecimal(0);
+                            quantity = quantity.add(duplicateListNonFuel.get(i).getQuantity());
+                            amount = amount.add(duplicateListNonFuel.get(i).getAmount());
+                        }
+                    }
+
+                    DE63_ProductDataEntry de63ProductDataEntry = new DE63_ProductDataEntry();
+                    de63ProductDataEntry.setCode(code);
+                    de63ProductDataEntry.setPrice(price);
+                    de63ProductDataEntry.setQuantity(quantity);
+                    de63ProductDataEntry.setAmount(amount);
+
+                    nonFuel.removeAll(duplicateListNonFuel);
+                    nonFuel.add(de63ProductDataEntry);
+
+                }
+
                 for (int i = 0; i < Math.max(nonFuel.size(), nonFuelProductLimit); i++) {
                     if (nonFuel.size() > nonFuelProductLimit && i >= nonFuelProductLimit - 1) {
                         code = StringUtils.padLeft("400", 3, '0');
