@@ -1,5 +1,7 @@
 package com.global.api.tests.gpEcom;
 
+import com.global.api.entities.AlternativePaymentResponse;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.entities.Transaction;
@@ -9,9 +11,9 @@ import com.global.api.utils.JsonDoc;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class GpEcomHppResponseTest {
     private HostedService _service;
@@ -244,4 +246,103 @@ public class GpEcomHppResponseTest {
         assertEquals("M", response.getCvnResponseCode());
         assertEquals("20170725154824", response.getTimestamp());
     }
+
+    @Test
+    public void testParseResponseForFinalStatus() throws ApiException {
+
+        String jsonResponse = "{\"sha1hash\":\"7e42cdf9f2127410f16b5d5afb08cb63b1b6fc0f\"," +
+                "\"timestamp\":\"20230720101400\"," +
+                "\"merchantid\":\"heartlandgpsandbox\"," +
+                "\"orderid\":\"MDc5ZjAxZmEtZGZjMjgxMg\"," +
+                "\"result\":\"00\"," +
+                "\"message\":\"SUCCEEDED\"," +
+                "\"pasref\":\"16898444372586159\"," +
+                "\"paymentmethod\":\"testpay\"," +
+                "\"fundsstatus\":\"NOT_EXPECTED\"," +
+                "\"paymentpurpose\":\"5IGBQGQ\"," +
+                "\"accountholdername\":\"Former Glory\"," +
+                "\"customeremail\":\"james.mason@example.com\"," +
+                "\"country\":\"DE\"," +
+                "\"iban\":\"DE25700251750322205970\"," +
+                "\"bic\":\"HYVEDEMM643\"," +
+                "\"bankname\":\"HypoVereinsbank Penzberg\"," +
+                "\"accountnumber\":\"68087\"," +
+                "\"bankcode\":\"70025175\"}";
+
+        Map<String, String> expectedResponseValues = new HashMap<>();
+        expectedResponseValues.put("COUNTRY", "DE");
+        expectedResponseValues.put("ACCOUNT_HOLDER_NAME", "Former Glory");
+        expectedResponseValues.put("ACCOUNT_NUMBER", "68087");
+        expectedResponseValues.put("ORDER_ID", "MDc5ZjAxZmEtZGZjMjgxMg");
+        expectedResponseValues.put("TRANSACTION_STATUS", "NOT_EXPECTED");
+        expectedResponseValues.put("SHA1HASH", "7e42cdf9f2127410f16b5d5afb08cb63b1b6fc0f");
+        expectedResponseValues.put("MESSAGE", "SUCCEEDED");
+        expectedResponseValues.put("RESULT", "00");
+        expectedResponseValues.put("PAYMENT_PURPOSE", "5IGBQGQ");
+        expectedResponseValues.put("HPP_CUSTOMER_EMAIL", "james.mason@example.com");
+        expectedResponseValues.put("MERCHANT_ID", "heartlandgpsandbox");
+        expectedResponseValues.put("IBAN", "DE25700251750322205970");
+        expectedResponseValues.put("PASREF", "16898444372586159");
+        expectedResponseValues.put("BANK_NAME", "HypoVereinsbank Penzberg");
+        expectedResponseValues.put("HPP_CUSTOMER_BIC", "HYVEDEMM643");
+        expectedResponseValues.put("PAYMENTMETHOD", "testpay");
+        expectedResponseValues.put("BANK_CODE", "70025175");
+        expectedResponseValues.put("TIMESTAMP", "20230720101400");
+
+        Transaction resultTransaction = _service.parseResponse(jsonResponse);
+
+        assertEquals("", resultTransaction.getTransactionReference().getAuthCode());
+        assertEquals("MDc5ZjAxZmEtZGZjMjgxMg", resultTransaction.getTransactionReference().getOrderId());
+        assertEquals(PaymentMethodType.Credit, resultTransaction.getTransactionReference().getPaymentMethodType());
+        assertEquals("16898444372586159", resultTransaction.getTransactionReference().getTransactionId());
+
+        assertEquals(null, resultTransaction.getAuthorizedAmount());
+        assertEquals(null, resultTransaction.getCvnResponseCode());
+        assertEquals("00", resultTransaction.getResponseCode());
+        assertEquals("SUCCEEDED", resultTransaction.getResponseMessage());
+        assertEquals(null, resultTransaction.getAvsResponseCode());
+        assertEquals(null, resultTransaction.getAutoSettleFlag());
+        assertEquals("20230720101400", resultTransaction.getTimestamp());
+
+        assertEquals("DE", resultTransaction.getAlternativePaymentResponse().getCountry());
+        assertEquals("testpay", resultTransaction.getAlternativePaymentResponse().getProviderName());
+        assertEquals("NOT_EXPECTED", resultTransaction.getAlternativePaymentResponse().getPaymentStatus());
+        assertEquals("5IGBQGQ", resultTransaction.getAlternativePaymentResponse().getReasonCode());
+        assertEquals("Former Glory", resultTransaction.getAlternativePaymentResponse().getAccountHolderName());
+
+        assertMapsAreEquals(expectedResponseValues, resultTransaction.getResponseValues());
+
+    }
+
+    private void assertMapsAreEquals(Map<String, String> expected, Map<String, String> actual) {
+
+        if (expected == null && actual != null) {
+            fail("Map should be null");
+        }
+
+        if (expected != null && actual == null) {
+            fail("Map should not be null");
+        }
+
+        if (expected.size() != actual.size()) {
+            fail("Maps are not equal: size");
+        }
+
+        Set<String> expectedKeys = expected.keySet();
+        Set<String> actualKeys = actual.keySet();
+
+        for (String expectedKey : expectedKeys) {
+            if (!actualKeys.contains(expectedKey)) {
+                fail("Maps are not equal: key: " + expectedKey);
+            }
+        }
+
+        for (String expectedKey : expectedKeys) {
+            if (!expected.get(expectedKey).equals(actual.get(expectedKey))) {
+                fail("Maps are not equal: value for key: " + expectedKey);
+            }
+        }
+
+    }
+
 }

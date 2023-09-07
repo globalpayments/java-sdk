@@ -206,6 +206,15 @@ public class JsonDoc {
         }
         return null;
     }
+    public String getStringOrNull(String name) {
+        if(dict.containsKey(name)) {
+            Object value = dict.get(name);
+            if(value != null) {
+                return getString(name);
+            }
+        }
+        return null;
+    }
     public BigDecimal getDecimal(String name) {
         String value = getString(name);
         if(!StringUtils.isNullOrEmpty(value)) {

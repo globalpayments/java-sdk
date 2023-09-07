@@ -1,5 +1,15 @@
 # Changelog
 
+## v11.1.3 (09/07/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue:
+ - Updated the values of hostTransactionCount, Host Toital Sales,Host Total Returns, Response Code and Token from Batchsummary object at the time of retransmit(Issue -10239).
+
+-[GP-ECOM]:
+ - Support parseResponse for status_url on HostedService (HPP APMs)
+
 ## v11.1.2 (08/31/2023)
 
 ### Enhancements:

@@ -47,6 +47,8 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     Transaction result1 = new Transaction();
 
+    BatchSummary summary = new BatchSummary();
+
     @Override
     public int getTimeout() {
         if (super.getTimeout() == 30000)
@@ -485,12 +487,12 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
-            BatchSummary summary = new BatchSummary();
             NtsRequestToBalanceResponse responseMessage = (NtsRequestToBalanceResponse) ntsResponse.getNtsResponseMessage();
             BigDecimal debitAmount = responseMessage.getHostTotalSales() != 0 ?StringUtils.getStringToAmount(String.valueOf(responseMessage.getHostTotalSales()),2)
                     :BigDecimal.ZERO;
             BigDecimal creditAmount = responseMessage.getHostTotalReturns() != 0 ?StringUtils.getStringToAmount(String.valueOf(responseMessage.getHostTotalReturns()),2)
                     :BigDecimal.ZERO;
+
             if (builder instanceof ManagementBuilder) {
                 ManagementBuilder manageBuilder = (ManagementBuilder) builder;
                 NtsRequestToBalanceData data = manageBuilder.getNtsRequestsToBalanceData();
@@ -508,6 +510,11 @@ public class NtsConnector extends GatewayConnectorConfig {
                 batchSummaryList.add(summary);
                 result.setBatchSummary(summary);
             } else if (builder instanceof ResubmitBuilder && (batchSummaryList != null)) {
+                summary.setResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue());
+                summary.setTransactionToken(result.getTransactionToken());
+                summary.setDebitAmount(debitAmount);
+                summary.setCreditAmount(creditAmount);
+                summary.setHostTransactionCount(responseMessage.getHostTransactionCount());
                 for (BatchSummary batchSummary : batchSummaryList) {
                     result.setBatchSummary(batchSummary);
                 }
