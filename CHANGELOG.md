@@ -1,5 +1,13 @@
 # Changelog
 
+## v11.1.4 (09/12/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue:
+ - Updated the condition of Expanded User Data Indicator(E) for fallback transaction & resolved the Exception of Synchrony Card - Issue 10242
+
+
 ## v11.1.3 (09/07/2023)
 
 ### Enhancements:

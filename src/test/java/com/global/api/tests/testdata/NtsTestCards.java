@@ -189,5 +189,12 @@ public class NtsTestCards {
         return track;
     }
 
+    public static CreditTrackData SynchronyDiscoverTrack2(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";6502702431894196=250660100200714?");
+        //track.setValue(";6502702431894196=250660100200616?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
 
 }

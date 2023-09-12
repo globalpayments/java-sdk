@@ -88,7 +88,7 @@ public class NtsCreditTest {
 
 
         header = new NtsRequestMessageHeader();
-        header.setTerminalDestinationTag("510");
+        header.setTerminalDestinationTag("999");
         header.setPinIndicator(PinIndicator.NotPromptedPin);
         header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
 
@@ -119,10 +119,10 @@ public class NtsCreditTest {
         // NTS Related configurations
         config.setBinTerminalId(" ");
         config.setBinTerminalType(" ");
-        config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
+        config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
-        config.setSoftwareVersion("21");
+        config.setUnitNumber("00093292399");
+        config.setSoftwareVersion("01");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
         config.setGatewayEventHandler(new IGatewayEventHandler() {
@@ -3185,5 +3185,21 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_synchrony_discover_FallBack_Scenario() throws ApiException {
+        track = NtsTestCards.SynchronyDiscoverTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData("\\99\\FALLBACK2")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

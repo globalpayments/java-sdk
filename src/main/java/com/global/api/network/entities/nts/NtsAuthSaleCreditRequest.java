@@ -172,7 +172,8 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
         if (paymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) builder.getPaymentMethod();
             NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), operatingEnvironment);
-            if (!StringUtils.isNullOrEmpty(builder.getTagData()) || NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
+            if ((!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains("\\99\\FALLBACK2")))
+                    || NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
                 request.addRange("E", 1);
                 isExtendedUserData = true;
             }

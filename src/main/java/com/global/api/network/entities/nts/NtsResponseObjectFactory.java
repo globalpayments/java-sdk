@@ -22,7 +22,7 @@ public class NtsResponseObjectFactory {
         INtsResponseMessage ntsResponseMessage = null;
         MessageReader mr = new MessageReader(buffer);
         // EMV flag requirements.
-        boolean emvFlag = !StringUtils.isNullOrEmpty(builder.getTagData());
+        boolean emvFlag = (!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains("\\99\\FALLBACK")));
 
         PaymentMethodType paymentMethodType = (builder.getPaymentMethod() != null)
                 ? builder.getPaymentMethod().getPaymentMethodType() : null;
