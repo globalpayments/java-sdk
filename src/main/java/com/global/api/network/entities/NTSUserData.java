@@ -561,6 +561,7 @@ public class NTSUserData {
         switch (ntsCardTypes) {
             case VisaFleet:
                 sb.append(purchaseType.getValue());
+                addProductDataForSimilarFuelProducts(fuel);
                 for (int i = 0; i < 1; i++) {
                     if (fuelFlag && i < fuel.size()) {
                         sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, ' '));
@@ -586,6 +587,9 @@ public class NTSUserData {
 
             case MastercardFleet:
                 sb.append(productData.getProductCodeType().getValue());
+
+                addProductDataForSimilarFuelProducts(fuel);
+
                 for (int i = 0; i < 1; i++) {
                     if (fuelFlag && i < fuel.size()) {
 
@@ -594,7 +598,7 @@ public class NTSUserData {
                             sb.append(serviceLevel);
                         if(serviceLevel!=3) {
                             sb.append(StringUtils.padLeft(mapUnitMeasureFleet(fuel.get(i).getUnitOfMeasure()), 1, '0'));
-                            sb.append(StringUtils.toNumeric(fuel.get(i).getPrice(), 5));
+                            sb.append(StringUtils.toDecimal(fuel.get(i).getPrice(), 5));
                             sb.append(StringUtils.toNumeric(fuel.get(i).getQuantity(), 6));
                             sb.append(StringUtils.toNumeric(fuel.get(i).getAmount(), 9));
                         }else{
@@ -688,24 +692,32 @@ public class NTSUserData {
                     HashSet uniqueSet = new HashSet(duplicateListNonFuel);
                     duplicateListNonFuel.clear();
                     duplicateListNonFuel.addAll(uniqueSet);
+                    nonFuel.removeAll(duplicateListNonFuel);
 
-                    for (int i = 0; i < duplicateListNonFuel.size(); i++) {
-                        if (duplicateListNonFuel.size() > 1) {
-                            code = duplicateListNonFuel.get(i).getCode();
-                            price = new BigDecimal(0);
-                            quantity = quantity.add(duplicateListNonFuel.get(i).getQuantity());
-                            amount = amount.add(duplicateListNonFuel.get(i).getAmount());
+                    for(int i=0; i< duplicateListNonFuel.size();i++){
+                        amount= duplicateListNonFuel.get(i).getAmount();
+                        quantity = duplicateListNonFuel.get(i).getQuantity();
+                        int cnt = 0;
+
+                        for(int j=i+1; j< duplicateListNonFuel.size(); j++){
+                            if(duplicateListNonFuel.get(i).getCode().equals(duplicateListNonFuel.get(j).getCode()) && !(duplicateListNonFuel.get(j).getCode().equals("-1")) ) {
+                                cnt ++;
+                                code = duplicateListNonFuel.get(i).getCode();
+                                price = new BigDecimal(0);
+                                quantity = quantity.add(duplicateListNonFuel.get(j).getQuantity());
+                                amount = amount.add(duplicateListNonFuel.get(j).getAmount());
+                                duplicateListNonFuel.get(j).setCode("-1");
+                            }
+                        }
+                        if(cnt>= 1) {
+                            DE63_ProductDataEntry de63ProductDataEntry = new DE63_ProductDataEntry();
+                            de63ProductDataEntry.setCode(code);
+                            de63ProductDataEntry.setPrice(price);
+                            de63ProductDataEntry.setQuantity(quantity);
+                            de63ProductDataEntry.setAmount(amount);
+                            nonFuel.add(de63ProductDataEntry);
                         }
                     }
-
-                    DE63_ProductDataEntry de63ProductDataEntry = new DE63_ProductDataEntry();
-                    de63ProductDataEntry.setCode(code);
-                    de63ProductDataEntry.setPrice(price);
-                    de63ProductDataEntry.setQuantity(quantity);
-                    de63ProductDataEntry.setAmount(amount);
-
-                    nonFuel.removeAll(duplicateListNonFuel);
-                    nonFuel.add(de63ProductDataEntry);
 
                 }
 
@@ -902,6 +914,9 @@ public class NTSUserData {
                         && !messageCode.equals(NtsMessageCode.CreditAdjustment)) {
                     List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
                     sb.append(getWexFleetPromptList(builder));
+
+                    addProductDataForSimilarFuelProducts(fuelList);
+
                     if (fuelList != null && !fuelList.isEmpty()) {
                         for (int i = 0; i < fuelList.size(); i++) {
                             if (i == 0) {
@@ -1050,6 +1065,12 @@ public class NTSUserData {
         int nonFuelSize = nonFuel.size();
         float sumAmount = 0.0f;
         if (cardType.equals(NTSCardTypes.VisaFleet)) {
+
+            if(transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Sale)){
+                combineProductDataForSimilarNonFuelProducts(nonFuel);
+                nonFuelSize = nonFuel.size();
+            }
+
             if (nonFuelSize >= rollUpAt) {
                 for (int i = 0; i < nonFuelSize; i++) {
                     if (i < rollUpAt - 1) {
@@ -1077,6 +1098,12 @@ public class NTSUserData {
                 }
             }
         }else if (cardType.equals(NTSCardTypes.MastercardFleet)) {
+
+            if(transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Sale)){
+                combineProductDataForSimilarNonFuelProducts(nonFuel);
+                nonFuelSize = nonFuel.size();
+            }
+
             if (nonFuelSize >= rollUpAt) {
                 for (int i = 0; i < nonFuelSize; i++) {
                     if (i < rollUpAt - 1) {
@@ -1150,8 +1177,10 @@ public class NTSUserData {
                     }
                 }
             } else {
-                int x = productData.getFuelDataEntries().size() == 2 ? 1 : 0;
-                rollUpAt = rollUpAt - x;
+                combineProductDataForSimilarNonFuelProducts(nonFuel);
+                nonFuelSize = nonFuel.size();
+
+                int x = productData.getFuelDataEntries().size() >= 2 ? 1 : 0;
                 if (nonFuelSize > rollUpAt) {
                     for (int i = 0; i < nonFuelSize; i++) {
                         if (i < rollUpAt - 1) {
@@ -1238,6 +1267,10 @@ public class NTSUserData {
             }
         } else if (cardType.equals(NTSCardTypes.VoyagerFleet)) {
             sumAmount = 0.0f;
+
+            combineProductDataForSimilarNonFuelProducts(nonFuel);
+            nonFuelSize = nonFuel.size();
+
             if (nonFuelSize > rollUpAt) {
                 for (int i = 0; i < nonFuelSize; i++) {
                     if (i < rollUpAt - 1) {
@@ -1300,6 +1333,7 @@ public class NTSUserData {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
+        if(!fuelList.isEmpty()){addProductDataForSimilarFuelProducts(fuelList);}
         for (int i = 0; i < 1; i++) {
             if (fuelList != null && i < fuelList.size()) {
 
@@ -1323,6 +1357,7 @@ public class NTSUserData {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> nonFuelList = productData.getNonFuelDataEntries();
+        if(!nonFuelList.isEmpty()){combineProductDataForSimilarNonFuelProducts(nonFuelList);}
         for (int i = 0; i < 2; i++) {
             if (nonFuelList != null && i < nonFuelList.size()) {
 
@@ -1371,6 +1406,7 @@ public class NTSUserData {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
+        addProductDataForSimilarFuelProducts(fuelList);
         for (int i = 0; i < 2; i++) {
             if (fuelList != null && i < fuelList.size()) {
 
@@ -1396,7 +1432,7 @@ public class NTSUserData {
                 sb.append(mapUnitMeasureFleet(fuelList.get(i).getUnitOfMeasure()));
                 sb.append(serviceLevel);
                 sb.append(StringUtils.padLeft(fuelList.get(i).getCode(), 3, ' '));
-                sb.append(NtsUtils.toNumeric(fuelList.get(i).getPrice(), 5));
+                sb.append(StringUtils.toDecimal(fuelList.get(i).getPrice(), 5));
                 sb.append(NtsUtils.toNumeric(fuelList.get(i).getQuantity(), 6));
                 sb.append(StringUtils.toNumeric(fuelList.get(i).getAmount(), 5));
             } else {
@@ -1509,5 +1545,108 @@ public class NTSUserData {
         promptCode.clear();
 
         return noOfPrompt;
+    }
+
+    public static void addProductDataForSimilarFuelProducts(List<DE63_ProductDataEntry> fuel){
+        // Preparing product data fuel
+        String code = "";
+        BigDecimal price = new BigDecimal(0),
+                quantity = new BigDecimal(0),
+                amount = new BigDecimal(0);
+        UnitOfMeasure unitOfMeasure = UnitOfMeasure.NoFuelPurchased;
+        List<DE63_ProductDataEntry> duplicateListFuel=new ArrayList<>();
+
+        for (int i = 0; i < fuel.size(); i++) {
+            for (int j = i+1; j < fuel.size(); j++) {
+                if (fuel.get(i).getCode().equals(fuel.get(j).getCode())) {
+                    duplicateListFuel.add(fuel.get(j));
+                    duplicateListFuel.add(fuel.get(i));
+                }
+            }
+        }
+        if(!duplicateListFuel.isEmpty()){
+            HashSet uniqueSet = new HashSet(duplicateListFuel);
+            duplicateListFuel.clear();
+            duplicateListFuel.addAll(uniqueSet);
+
+            for (int i = 0; i < duplicateListFuel.size(); i++) {
+                if (duplicateListFuel.size() > 1) {
+                    code = duplicateListFuel.get(i).getCode();
+                    price = new BigDecimal(0);
+                    quantity = quantity.add(duplicateListFuel.get(i).getQuantity());
+                    amount = amount.add(duplicateListFuel.get(i).getAmount());
+                    unitOfMeasure = duplicateListFuel.get(i).getUnitOfMeasure();
+                }
+            }
+            DE63_ProductDataEntry de63ProductDataEntry = new DE63_ProductDataEntry();
+            de63ProductDataEntry.setCode(code);
+            de63ProductDataEntry.setPrice(price);
+            de63ProductDataEntry.setQuantity(quantity);
+            de63ProductDataEntry.setAmount(amount);
+            de63ProductDataEntry.setUnitOfMeasure(unitOfMeasure);
+
+            fuel.removeAll(duplicateListFuel);
+            fuel.add(de63ProductDataEntry);
+        }
+    }
+    private static void combineProductDataForSimilarNonFuelProducts(List<DE63_ProductDataEntry> nonFuel){
+
+        // Preparing product data non-fuel
+        String code = "";
+        BigDecimal price = new BigDecimal(0),
+                quantity = new BigDecimal(0),
+                amount = new BigDecimal(0);
+        UnitOfMeasure unitOfMeasure = UnitOfMeasure.NoFuelPurchased;
+        List<DE63_ProductDataEntry> duplicateListNonFuel = new ArrayList<>();
+        HashSet< DE63_ProductDataEntry> duplicateMap = new HashSet<>();
+
+        int cnt = 0;
+        String previousCode="";
+        for (int i = 0; i < nonFuel.size(); i++) {
+            if(!duplicateMap.contains(nonFuel.get(i).getCode())) {
+                cnt = 0;
+            }
+            for (int j = i + 1; j < nonFuel.size(); j++) {
+                cnt++;
+                if (nonFuel.get(i).getCode().equals(nonFuel.get(j).getCode())) {
+                    duplicateMap.add(nonFuel.get(j));
+                    if(cnt==1) {
+                        duplicateMap.add(nonFuel.get(i));
+                    }
+                }
+            }
+        }
+        duplicateListNonFuel.addAll(duplicateMap);
+        nonFuel.removeAll(duplicateListNonFuel);
+
+        if(duplicateListNonFuel.size()>0){
+
+            for(int i=0; i< duplicateListNonFuel.size();i++){
+                amount= duplicateListNonFuel.get(i).getAmount();
+                quantity = duplicateListNonFuel.get(i).getQuantity();
+                cnt = 0;
+
+                for(int j=i+1; j< duplicateListNonFuel.size(); j++){
+                    if(duplicateListNonFuel.get(i).getCode().equals(duplicateListNonFuel.get(j).getCode()) && !(duplicateListNonFuel.get(j).getCode().equals("-1")) ) {
+                        cnt ++;
+                        code = duplicateListNonFuel.get(i).getCode();
+                        price = new BigDecimal(0);
+                        quantity = quantity.add(duplicateListNonFuel.get(j).getQuantity());
+                        amount = amount.add(duplicateListNonFuel.get(j).getAmount());
+                        unitOfMeasure = duplicateListNonFuel.get(j).getUnitOfMeasure();
+                        duplicateListNonFuel.get(j).setCode("-1");
+                    }
+                }
+                if(cnt>= 1) {
+                    DE63_ProductDataEntry de63ProductDataEntry = new DE63_ProductDataEntry();
+                    de63ProductDataEntry.setCode(code);
+                    de63ProductDataEntry.setPrice(price);
+                    de63ProductDataEntry.setQuantity(quantity);
+                    de63ProductDataEntry.setAmount(amount);
+                    de63ProductDataEntry.setUnitOfMeasure(unitOfMeasure);
+                    nonFuel.add(de63ProductDataEntry);
+                }
+            }
+        }
     }
 }

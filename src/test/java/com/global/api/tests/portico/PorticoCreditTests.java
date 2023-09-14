@@ -38,7 +38,6 @@ public class PorticoCreditTests {
 		config.setDeveloperId("002914");
 		config.setVersionNumber("3026");
 		config.setEnableLogging(true);
-        config.setSafDataSupported(true);
 
 		ServicesContainer.configureService(config);
 
@@ -719,4 +718,73 @@ public class PorticoCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Test
+    public void creditSale_withSAFIndicator01() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withSAFIndicator(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_withSAFIndicator02() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withSAFIndicator(false)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_withoutSAFIndicator03() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthorization_withSAFIndicator01() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+                .withSAFIndicator(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).withSAFIndicator(true).execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthorization_withSAFIndicator02() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true).withSAFIndicator(false)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).withSAFIndicator(false).execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthorization_withoutSAFIndicator03() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+  
 }

@@ -144,7 +144,7 @@ public class NtsFleetTest {
 
     private NtsProductData getProductDataForNonFleetBankCards(IPaymentMethod method) throws ApiException {
         productData = new NtsProductData(ServiceLevel.FullServe, method);
-        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 1.259);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
         productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons, 20.24, 1.259);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
@@ -2345,4 +2345,100 @@ public class NtsFleetTest {
         assertEquals("00", voidResponse.getResponseCode());
     }
 
+    @Test
+    public void test_VisaFleet_sale_UnitPriceValidation_10244() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = TestCards.VisaFleetSwipe();
+        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.Wine, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.AutoGlass, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_mastercardFleet_sale_UnitPrice_10244() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        fleetData.setDriverId("123456");
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 1, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_masterCardFleet_DataCollect_UnitPriceValidations_10244() throws ApiException{
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("5555");
+        fleetData.setVehicleNumber("85214");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // Data-Collect request preparation.
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
 }

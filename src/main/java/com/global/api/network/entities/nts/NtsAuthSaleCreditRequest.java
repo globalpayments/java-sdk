@@ -11,8 +11,18 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
+
+    StringBuilder maskedRequest = new StringBuilder("");
+    @Getter @Setter
+    String accNo;
+    @Getter @Setter
+    String expDate;
+    @Getter @Setter
+    String trackData;
 
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
@@ -65,9 +75,13 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             ICardData cardData = (ICardData) paymentMethod;
             String accNumber = cardData.getNumber();
             request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-            NtsUtils.log("Account No", StringUtils.padRight(accNumber, 19, ' '));
+            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+            this.setAccNo(accNumber);
+            StringUtils.setAccNo(accNumber);
             request.addRange(cardData.getShortExpiry(), 4);
-            NtsUtils.log("Expiration Date", cardData.getShortExpiry());
+            NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+            this.setExpDate(cardData.getShortExpiry());
+            StringUtils.setExpDate(cardData.getShortExpiry());
 
         } else if (paymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) paymentMethod;
@@ -75,20 +89,27 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             if (NtsUtils.isNoTrackEntryMethods(entryMethod)) {
                 String accNumber = trackData.getPan();
                 request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.padRight(accNumber, 19, ' '));
+                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+                this.setAccNo(accNumber);
+                StringUtils.setAccNo(accNumber);
 
                 String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
-
                 request.addRange(expiryDate, 4);
-                NtsUtils.log("Expiration Date", expiryDate);
+                NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+                this.setExpDate(expiryDate);
+                StringUtils.setExpDate(expiryDate);
             }
         } else if (paymentMethod instanceof GiftCard) {
             GiftCard gift = (GiftCard) paymentMethod;
             if(StringUtils.isNullOrEmpty(gift.getTrackData())) {
                 request.addRange(StringUtils.padRight(gift.getNumber(), 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.padRight(gift.getNumber(), 19, ' '));
+                NtsUtils.log("Account No", StringUtils.maskAccountNumber(gift.getNumber()));
+                this.setAccNo(gift.getNumber());
+                StringUtils.setAccNo(gift.getNumber());
                 request.addRange(gift.getExpiry(), 4);
-                NtsUtils.log("Expiration Date", gift.getExpiry());
+                NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+                this.setExpDate(gift.getExpiry());
+                StringUtils.setExpDate(gift.getExpiry());
             }
         }
 
@@ -107,7 +128,12 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 } else {
                     request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
                 }
-                NtsUtils.log("Track 1 or Track 2 & Expanded User Data", trackData.getValue());
+                NtsUtils.log("Track 1 or Track 2 & Expanded User Data", StringUtils.maskTrackData(trackData.getValue(),trackData));
+                this.setTrackData(trackData.getValue());
+                StringUtils.setAccNo(trackData.getPan());
+                StringUtils.setExpDate(trackData.getExpiry());
+                StringUtils.setTrackData(trackData.getValue());
+
             }
         } else if (paymentMethod instanceof GiftCard) {
             GiftCard gift = (GiftCard) paymentMethod;
@@ -117,7 +143,11 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 } else {
                     request.addRange(StringUtils.padRight(gift.getValue(), 40, ' '), 40);
                 }
-                NtsUtils.log("Gift card data: ", gift.getValue());
+                NtsUtils.log("Gift card data: ", StringUtils.maskTrackData(gift.getValue()));
+                this.setTrackData(gift.getValue());
+                StringUtils.setAccNo(gift.getNumber());
+                StringUtils.setExpDate(gift.getExpiry());
+                StringUtils.setTrackData(gift.getValue());
             }
         }
 
@@ -191,6 +221,25 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
         NtsUtils.log("USER DATA", userData);
         request.addRange(StringUtils.padRight(userData, userData.length(), ' '), userData.length());
 
+        maskedRequest.append(request.getMessageRequest());
+        if (this.getTrackData() != null) {
+            int startIndex = maskedRequest.indexOf(this.getTrackData());
+            int stopIndex = startIndex + this.getTrackData().length();
+            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+        }
+
+        if (this.getAccNo() != null) {
+            int startIndex1 = maskedRequest.indexOf(this.getAccNo());
+            int stopIndex1 = startIndex1 + this.getAccNo().length();
+            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+        }
+
+        if (this.getExpDate() != null) {
+            int startIndex2 = maskedRequest.indexOf(this.getExpDate());
+            int stopIndex2 = startIndex2 + this.getExpDate().length();
+            maskedRequest.replace(startIndex2, stopIndex2, "****");
+        }
+        StringUtils.setMaskRequest(maskedRequest);
         return request;
     }
 }

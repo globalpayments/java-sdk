@@ -174,7 +174,7 @@ public class NtsCreditTest {
 
     private NtsProductData getProductDataForNonFleetBankCards(IPaymentMethod method) throws ApiException {
         productData = new NtsProductData(ServiceLevel.FullServe, method);
-        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,1.24, 1.259);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,1.24, 2.899);
         productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,2.24, 1.259);
         productData.addNonFuel(NtsProductCode.Batteries,UnitOfMeasure.NoFuelPurchased,1,1.74);
         productData.addNonFuel(NtsProductCode.CarWash,UnitOfMeasure.NoFuelPurchased,1,1.74);
@@ -3194,6 +3194,27 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withCurrency("USD")
                 .withTagData("\\99\\FALLBACK2")
                 .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_visa_sale_UnitPriceValidation_Issue_10244() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.VisaTrack1(EntryMethod.Swipe);
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(BigDecimal.valueOf(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsProductData(productData)
                 .withUniqueDeviceId("0102")
                 .withNtsTag16(tag)
                 .withCvn("123")

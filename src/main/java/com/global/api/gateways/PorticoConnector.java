@@ -38,7 +38,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String secretApiKey;
     private String sdkNameVersion;
     private String cardType;
-    private boolean isSAFDataSupported;
 
     @Override
     public boolean supportsHostedPayments() {
@@ -457,7 +456,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 //            }
 //        }
 
-        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));
+        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder.getIsSAFIndicator()));
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -646,7 +645,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
         }
 
-        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId()));
+        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder.getIsSAFIndicator()));
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -704,10 +703,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     }
 
     private String buildEnvelope(ElementTree et, Element transaction) {
-        return buildEnvelope(et, transaction, null);
+        return buildEnvelope(et, transaction, null, null);
     }
-
-    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId) {
+  
+    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, Boolean isSAFIndicator) {
         et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         et.addNamespace("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -732,9 +731,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
 
-        Element safData = et.subElement(header, "SAFData");
-        et.subElement(safData, "SAFIndicator", isSAFDataSupported ? "Y" : "N");
-        et.subElement(safData, "SAFOrigDT", DateTime.now().toString());
+        if(isSAFIndicator != null) {
+            Element safData = et.subElement(header, "SAFData");
+            et.subElement(safData, "SAFIndicator", isSAFIndicator ? "Y" : "N");
+            et.subElement(safData, "SAFOrigDT", DateTime.now().toString());
+        }
 
         // Transaction
         Element trans = et.subElement(version1, "Transaction");

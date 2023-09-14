@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 public class CardUtils {
     private static final Pattern AmexRegex = Pattern.compile("^3[47]");
-    private static final Pattern MasterCardRegex = Pattern.compile("^(?:5[1-6]|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)");
+    private static final Pattern MasterCardRegex = Pattern.compile("^(?:5[1-8]|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)");
     private static final Pattern VisaRegex = Pattern.compile("^4");
     private static final Pattern DinersClubRegex = Pattern.compile("^3(?:0[0-5]|[68][0-9])");
     private static final Pattern RouteClubRegex = Pattern.compile("^(2014|2149)");

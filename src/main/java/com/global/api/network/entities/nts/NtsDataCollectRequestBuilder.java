@@ -13,12 +13,17 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
 
 public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
+    StringBuilder maskedRequest = new StringBuilder("");
+    @Getter @Setter
+    String accNo;
+    @Getter @Setter
+    String expDate;
+    @Getter @Setter
+    String trackData;
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
         TransactionBuilder builder = ntsObjectParam.getNtsBuilder();
@@ -77,35 +82,51 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             if (paymentMethod instanceof ICardData) {
                 ICardData cardData = (ICardData) paymentMethod;
                 String accNumber = cardData.getNumber();
+                this.setAccNo(accNumber);
+                StringUtils.setAccNo(accNumber);
                 request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.padRight(accNumber, 19, ' '));
+                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
                 request.addRange(cardData.getShortExpiry(), 4);
-                NtsUtils.log("Expiration Date", cardData.getShortExpiry());
+                this.setExpDate(cardData.getShortExpiry());
+                StringUtils.setExpDate(cardData.getShortExpiry());
+                NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
 
             } else if (paymentMethod instanceof ITrackData) {
                 ITrackData trackData = (ITrackData) paymentMethod;
                 if (trackData.getPan() != null) {
+                    this.setAccNo(trackData.getPan());
+                    StringUtils.setAccNo(trackData.getPan());
                     // Account number
-                    NtsUtils.log("Account Number", StringUtils.padRight(trackData.getPan(), 19, ' '));
+                    NtsUtils.log("Account Number", StringUtils.maskAccountNumber(trackData.getPan()));
                     request.addRange(StringUtils.padRight(trackData.getPan(), 19, ' '), 19);
 
                     String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
+                    this.setExpDate(expiryDate);
+                    StringUtils.setExpDate(expiryDate);
                     // Expiry date
-                    NtsUtils.log("Expiry Date", StringUtils.padRight(expiryDate, 4, ' '));
+                    NtsUtils.log("Expiry Date", StringUtils.padRight("", 4, '*'));
                     request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
                 } else {
-                    NtsUtils.log("TrackData 2", StringUtils.padRight(trackData.getValue(), 40, ' '));
+                    this.setTrackData(trackData.getValue());
+                    StringUtils.setTrackData(trackData.getValue());
+                    StringUtils.setAccNo(trackData.getPan());
+                    StringUtils.setExpDate(trackData.getExpiry());
+                    NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
                     request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
                 }
             } else if (paymentMethod instanceof GiftCard) {
                 GiftCard gift = (GiftCard) paymentMethod;
                 // Account number
-                NtsUtils.log("Account Number", StringUtils.padRight(gift.getPan(), 19, ' '));
+                this.setAccNo(gift.getPan());
+                StringUtils.setAccNo(gift.getPan());
+                NtsUtils.log("Account Number", StringUtils.maskAccountNumber(gift.getPan()));
                 request.addRange(StringUtils.padRight(gift.getPan(), 19, ' '), 19);
 
                 String expiryDate = NtsUtils.prepareExpDateWithoutTrack(gift.getExpiry());
                 // Expiry date
-                NtsUtils.log("Exp Date", StringUtils.padRight(expiryDate, 4, ' '));
+                this.setExpDate(expiryDate);
+                StringUtils.setExpDate(expiryDate);
+                NtsUtils.log("Exp Date", StringUtils.padRight("", 4, '*'));
                 request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
             }
 
@@ -179,6 +200,26 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
             }
 
         }
+        maskedRequest.append(request.getMessageRequest());
+        if (this.getTrackData() != null) {
+            int startIndex = maskedRequest.indexOf(this.getTrackData());
+            int stopIndex = startIndex + this.getTrackData().length();
+            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+        }
+
+        if (this.getAccNo() != null) {
+            int startIndex1 = maskedRequest.indexOf(this.getAccNo());
+            int stopIndex1 = startIndex1 + this.getAccNo().length();
+            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+        }
+
+        if (this.getExpDate() != null) {
+            int startIndex2 = maskedRequest.indexOf(this.getExpDate());
+            int stopIndex2 = startIndex2 + this.getExpDate().length();
+            maskedRequest.replace(startIndex2, stopIndex2, "****");
+        }
+
+        StringUtils.setMaskRequest(maskedRequest);
         return request;
     }
 }

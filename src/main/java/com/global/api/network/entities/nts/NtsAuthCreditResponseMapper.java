@@ -4,6 +4,7 @@ import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
+import com.global.api.utils.StringUtils;
 
 public class NtsAuthCreditResponseMapper implements INtsResponseMessage {
     private NtsCreditResponse ntsCreditResponse;
@@ -23,7 +24,7 @@ public class NtsAuthCreditResponseMapper implements INtsResponseMessage {
         NtsUtils.log("Card Type", ntsCreditResponse.getCardType());
 
         ntsCreditResponse.setAccountNumber(sp.readString(19));
-        NtsUtils.log("Account Number", ntsCreditResponse.getAccountNumber());
+        NtsUtils.log("Account Number", StringUtils.maskAccountNumber(ntsCreditResponse.getAccountNumber()));
 
         ntsCreditResponse.setApprovalCode(sp.readString(6));
         NtsUtils.log("Approval Code", ntsCreditResponse.getApprovalCode());

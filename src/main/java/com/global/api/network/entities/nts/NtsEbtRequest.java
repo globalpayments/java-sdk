@@ -15,6 +15,8 @@ import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -22,6 +24,14 @@ public class NtsEbtRequest implements INtsRequestMessage {
     private BigDecimal surcharge;
     private TransactionCode transactionCode;
     private BigDecimal cashBackAmount;
+
+    StringBuilder maskedRequest = new StringBuilder("");
+    @Getter @Setter
+    String accNo;
+    @Getter @Setter
+    String expDate;
+    @Getter @Setter
+    String trackData;
 
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
@@ -92,26 +102,38 @@ public class NtsEbtRequest implements INtsRequestMessage {
             NTSEntryMethod entryMethod=NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(),trackData.getTrackNumber(),ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
             if (NtsUtils.isNoTrackEntryMethods(entryMethod) || isReversalTransaction(transactionCode)) {
                 // Account number
-                NtsUtils.log("Account Number", StringUtils.padRight(trackData.getPan(), 19, ' '));
+                NtsUtils.log("Account Number", StringUtils.maskAccountNumber(trackData.getPan()));
                 request.addRange(StringUtils.padRight(trackData.getPan(), 19, ' '), 19);
+                this.setAccNo(trackData.getPan());
+                StringUtils.setAccNo(trackData.getPan());
 
                 String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
                 // Expiry date
-                NtsUtils.log("Exp Date", StringUtils.padRight(expiryDate, 4, ' '));
+                NtsUtils.log("Exp Date", StringUtils.padRight("", 4, '*'));
                 request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                this.setExpDate(expiryDate);
+                StringUtils.setExpDate(expiryDate);
             } else {
-                NtsUtils.log("TrackData 2", StringUtils.padRight(trackData.getValue(), 40, ' '));
+                NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
                 request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
+                this.setTrackData(trackData.getValue());
+                StringUtils.setTrackData(trackData.getValue());
+                StringUtils.setAccNo(trackData.getPan());
+                StringUtils.setExpDate(trackData.getExpiry());
             }
         } else if (paymentMethod instanceof EBTCardData) {
             // Account number
             EBTCardData cardData = (EBTCardData) paymentMethod;
-            NtsUtils.log("Account Number", StringUtils.padRight(cardData.getNumber(), 19, ' '));
+            NtsUtils.log("Account Number", StringUtils.maskAccountNumber(cardData.getNumber()));
             request.addRange(StringUtils.padRight(cardData.getNumber(), 19, ' '), 19);
+            this.setAccNo(cardData.getNumber());
+            StringUtils.setAccNo(cardData.getNumber());
 
             // Expiry date
-            NtsUtils.log("Exp Date", StringUtils.padRight(cardData.getShortExpiry(), 4, ' '));
+            NtsUtils.log("Exp Date", StringUtils.padRight("", 4, '*'));
             request.addRange(StringUtils.padRight(cardData.getShortExpiry(), 4, ' '), 4);
+            this.setExpDate(cardData.getShortExpiry());
+            StringUtils.setExpDate(cardData.getShortExpiry());
         }
 
         if (transactionCode.equals(TransactionCode.VoucherSale)
@@ -208,6 +230,26 @@ public class NtsEbtRequest implements INtsRequestMessage {
                 }
             }
         }
+        maskedRequest.append(request.getMessageRequest());
+        if (this.getTrackData() != null) {
+            int startIndex = maskedRequest.indexOf(this.getTrackData());
+            int stopIndex = startIndex + this.getTrackData().length();
+            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+        }
+
+        if (this.getAccNo() != null) {
+            int startIndex1 = maskedRequest.indexOf(this.getAccNo());
+            int stopIndex1 = startIndex1 + this.getAccNo().length();
+            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+        }
+
+        if (this.getExpDate() != null) {
+            int startIndex2 = maskedRequest.indexOf(this.getExpDate());
+            int stopIndex2 = startIndex2 + this.getExpDate().length();
+            maskedRequest.replace(startIndex2, stopIndex2, "****");
+        }
+
+        StringUtils.setMaskRequest(maskedRequest);
         return request;
     }
 

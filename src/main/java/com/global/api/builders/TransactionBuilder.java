@@ -108,6 +108,8 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     private String hostResponseCode = "";
     @Getter@Setter
     private String offlineDeclineIndicator;
+    @Getter
+    private Boolean isSAFIndicator;
 
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
@@ -230,6 +232,11 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     public TransactionBuilder<TResult> withOfflineDeclineIndicator(String offlineDeclineIndicator){
         this.offlineDeclineIndicator = offlineDeclineIndicator;
+        return this;
+    }
+
+    public TransactionBuilder<TResult> withSAFIndicator(Boolean value){
+        this.isSAFIndicator = value;
         return this;
     }
 }

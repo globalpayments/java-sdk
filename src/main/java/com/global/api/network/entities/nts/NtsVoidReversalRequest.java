@@ -16,8 +16,18 @@ import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class NtsVoidReversalRequest implements INtsRequestMessage {
+    StringBuilder maskedRequest = new StringBuilder("");
+    @Getter
+    @Setter
+    String accNo;
+    @Getter @Setter
+    String expDate;
+    @Getter @Setter
+    String trackData;
 
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
@@ -71,22 +81,30 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             ICardData cardData = (ICardData) originalPaymentMethod;
             String accNumber = cardData.getNumber();
             request.addRange(StringUtils.padLeft(accNumber, 19, ' '), 19);
-            NtsUtils.log("Account No", StringUtils.padLeft(accNumber, 19, ' '));
+            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+            this.setAccNo(cardData.getNumber());
+            StringUtils.setAccNo(cardData.getNumber());
 
             request.addRange(cardData.getShortExpiry(), 4);
-            NtsUtils.log("Expiration Date", cardData.getShortExpiry());
+            NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+            this.setExpDate(cardData.getShortExpiry());
+            StringUtils.setExpDate(cardData.getShortExpiry());
 
         } else if (originalPaymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) originalPaymentMethod;
             String accNumber = trackData.getPan();
 
             request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-            NtsUtils.log("Account No", StringUtils.padRight(accNumber, 19, ' '));
+            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+            this.setAccNo(accNumber);
+            StringUtils.setAccNo(accNumber);
 
             String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
 
             request.addRange(expiryDate, 4);
-            NtsUtils.log("Expiration Date", expiryDate);
+            NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+            this.setExpDate(expiryDate);
+            StringUtils.setExpDate(expiryDate);
         }
 
 
@@ -187,7 +205,26 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             request.addRange(StringUtils.padLeft(userData, userData.length(), ' '), userData.length());
             NtsUtils.log("User data", userData);
         }
+        maskedRequest.append(request.getMessageRequest());
+        if (this.getTrackData() != null) {
+            int startIndex = maskedRequest.indexOf(this.getTrackData());
+            int stopIndex = startIndex + this.getTrackData().length();
+            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+        }
 
+        if (this.getAccNo() != null) {
+            int startIndex1 = maskedRequest.indexOf(this.getAccNo());
+            int stopIndex1 = startIndex1 + this.getAccNo().length();
+            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+        }
+
+        if (this.getExpDate() != null) {
+            int startIndex2 = maskedRequest.indexOf(this.getExpDate());
+            int stopIndex2 = startIndex2 + this.getExpDate().length();
+            maskedRequest.replace(startIndex2, stopIndex2, "****");
+        }
+
+        StringUtils.setMaskRequest(maskedRequest);
         return request;
     }
 

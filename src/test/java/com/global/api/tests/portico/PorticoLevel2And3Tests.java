@@ -31,7 +31,6 @@ public class PorticoLevel2And3Tests {
         config.setDeveloperId("002914");
         config.setVersionNumber("3026");
         config.setEnableLogging(true);
-        config.setSafDataSupported(true);
 
         ServicesContainer.configureService(config);
 

@@ -44,8 +44,6 @@ public class PorticoConfig extends GatewayConfig {
     private String X509CertificateBase64String;
     // If true (default), use the US ProPay endpoints. If false, use the Canadian ProPay endpoints
     private boolean proPayUS = true;
-    //Use for SafData for transactions
-    private boolean safDataSupported;
 
     private String getPayPlanEndpoint() {
         if (
@@ -80,7 +78,6 @@ public class PorticoConfig extends GatewayConfig {
                         .setSecretApiKey(secretApiKey)
                         .setDeveloperId(developerId)
                         .setVersionNumber(versionNumber)
-                        .setSAFDataSupported(safDataSupported)
                         .setSdkNameVersion(sdkNameVersion);
 
         gateway

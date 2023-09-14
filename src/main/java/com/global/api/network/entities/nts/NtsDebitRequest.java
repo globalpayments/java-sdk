@@ -11,6 +11,8 @@ import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.utils.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -19,6 +21,15 @@ public class NtsDebitRequest implements INtsRequestMessage {
     private TransactionCode transactionCode;
     private BigDecimal cashBackAmount;
     private NTSEntryMethod entryMethod;
+
+    StringBuilder maskedRequest = new StringBuilder("");
+    @Getter
+    @Setter
+    String accNo;
+    @Getter @Setter
+    String expDate;
+    @Getter @Setter
+    String trackData;
 
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) {
@@ -110,8 +121,9 @@ public class NtsDebitRequest implements INtsRequestMessage {
                     || transactionCode.equals(TransactionCode.PurchaseCashBackReversal)
                     || transactionCode.equals(TransactionCode.PurchaseReturnReversal))) {
                 ITrackData trackData = (ITrackData) paymentMethod;
-                NtsUtils.log("TrackData 2", trackData.getValue());
+                NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
                 request.addRange(trackData.getValue(), 40);
+                this.setTrackData(trackData.getValue());
             } else {
                 ITrackData trackData = (ITrackData) paymentMethod;  //Without Track Data
                 String accNumber = trackData.getPan();
@@ -120,8 +132,13 @@ public class NtsDebitRequest implements INtsRequestMessage {
 
                 String shortExpiry = expMonth + expYear;
                 String panWithExpiry = accNumber + "=" + shortExpiry;
+                String maskedPanWithExpiry = StringUtils.maskAccountNumber(accNumber) + "*" + StringUtils.padLeft("",4,'*');
+                this.setAccNo(accNumber);
+                StringUtils.setAccNo(accNumber);
+                this.setExpDate(shortExpiry);
+                StringUtils.setExpDate(shortExpiry);
                 request.addRange(StringUtils.padRight(panWithExpiry, 40, ' '), 40);
-                NtsUtils.log("PAN With Expiry", StringUtils.padRight(panWithExpiry, 40, ' '));
+                NtsUtils.log("PAN With Expiry", StringUtils.padRight(maskedPanWithExpiry, 40, ' '));
                 request.addRange(StringUtils.padLeft(" ", 1, ' '), 1);
                 request.addRange(StringUtils.padLeft(" ", 16, ' '), 16);
             }
@@ -129,11 +146,21 @@ public class NtsDebitRequest implements INtsRequestMessage {
             if (paymentMethod instanceof CreditCardData) {
                 CreditCardData card = (CreditCardData) paymentMethod;
                 String trackFormat = card.getNumber() + "=" + card.getExpYear() + card.getExpMonth();
-                NtsUtils.log("TrackData 2", trackFormat);
+                int len = card.getExpMonth().toString().length() + card.getExpYear().toString().length();
+                String maskedTrackFormat = StringUtils.maskAccountNumber(card.getNumber()) + "*" + StringUtils.padLeft("",len,'*');
+                NtsUtils.log("TrackData 2", maskedTrackFormat);
                 request.addRange(trackFormat, 40);
+                StringUtils.setAccNo(card.getNumber());
+                String expDate = card.getExpYear().toString() + card.getExpMonth().toString();
+                StringUtils.setExpDate(expDate);
+                StringUtils.setTrackData(trackFormat);
             } else {
                 ITrackData trackData = (ITrackData) paymentMethod;
-                NtsUtils.log("TrackData 2", trackData.getValue());
+                NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
+                this.setTrackData(trackData.getValue());
+                StringUtils.setTrackData(trackData.getValue());
+                StringUtils.setAccNo(trackData.getPan());
+                StringUtils.setExpDate(trackData.getExpiry());
                 request.addRange(trackData.getValue(), 40);
             }
         }
@@ -234,6 +261,28 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("Added FILLER", "");
             request.addRange("                    ", 20);
          }
+
+        maskedRequest.append(request.getMessageRequest());
+        if (this.getTrackData() != null) {
+            int startIndex = maskedRequest.indexOf(this.getTrackData());
+            int stopIndex = startIndex + this.getTrackData().length();
+            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+        }
+
+        if (this.getAccNo() != null) {
+            int startIndex1 = maskedRequest.indexOf(this.getAccNo());
+            int stopIndex1 = startIndex1 + this.getAccNo().length();
+            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+        }
+
+        if (this.getExpDate() != null) {
+            int startIndex2 = maskedRequest.indexOf(this.getExpDate());
+            int stopIndex2 = startIndex2 + this.getExpDate().length();
+            maskedRequest.replace(startIndex2, stopIndex2, "****");
+        }
+
+
+        StringUtils.setMaskRequest(maskedRequest);
         return request;
     }
 

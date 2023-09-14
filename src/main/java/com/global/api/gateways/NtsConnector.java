@@ -422,7 +422,8 @@ public class NtsConnector extends GatewayConnectorConfig {
             req.add(messageData.getMessageRequest().toString());
 
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
-            NtsUtils.log("Request", buildMessage.toString());
+            NtsUtils.log("Request", StringUtils.getMaskRequest());
+
             byte[] responseBuffer = send(buildMessage);
             Transaction response = mapResponse(responseBuffer, builder, messageData);
 
@@ -448,8 +449,9 @@ public class NtsConnector extends GatewayConnectorConfig {
         MessageReader mr = new MessageReader(buffer);
         NTSCardTypes cardType = NtsUtils.mapCardType(paymentMethod);
         StringParser sp = new StringParser(buffer);
-        NtsUtils.log("--------------------- RESPONSE ---------------------");
-        NtsUtils.log("Response", sp.getBuffer());
+
+        displayMaskedResponse(sp);
+
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
         NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
@@ -523,6 +525,37 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         return result;
     }
+
+    private static void displayMaskedResponse(StringParser sp) {
+        StringBuilder maskedResponse = new StringBuilder("");
+        maskedResponse.append(sp.getBuffer());
+
+        int trackIndex = StringUtils.getTrackData() != null ? maskedResponse.indexOf(StringUtils.getTrackData()): 0;
+        int accIndex = StringUtils.getAccNo() != null ? maskedResponse.indexOf(StringUtils.getAccNo()): 0;
+        int expIndex = StringUtils.getExpDate() != null ? maskedResponse.indexOf(StringUtils.getExpDate()): 0;
+
+        if (StringUtils.getTrackData() != null && trackIndex != -1) {
+            int startIndex = maskedResponse.indexOf(StringUtils.getTrackData());
+            int stopIndex = startIndex + StringUtils.getTrackData().length();
+            maskedResponse.replace(startIndex, stopIndex, StringUtils.maskTrackData(StringUtils.getTrackData()));
+        }
+
+        if (StringUtils.getAccNo() != null && accIndex != -1) {
+            int startIndex1 = maskedResponse.indexOf(StringUtils.getAccNo());
+            int stopIndex1 = startIndex1 + StringUtils.getAccNo().length();
+            maskedResponse.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(StringUtils.getAccNo()));
+        }
+
+        if (StringUtils.getExpDate() != null && expIndex != -1) {
+            int startIndex2 = maskedResponse.indexOf(StringUtils.getExpDate());
+            int stopIndex2 = startIndex2 + StringUtils.getExpDate().length();
+            maskedResponse.replace(startIndex2, stopIndex2, "****");
+        }
+
+        NtsUtils.log("--------------------- RESPONSE ---------------------");
+        NtsUtils.log("Response", maskedResponse.toString());
+    }
+
     private <T extends TransactionBuilder<Transaction>> String checkResponse(String responseCode, MessageWriter messageData, T builder) {
         String encodedRequest = null;
 

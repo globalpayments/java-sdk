@@ -216,7 +216,7 @@ public class NtsFleetCorTest {
         fleetData.setDriverId("11411");
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 1.111, 2.899);
         productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.addNonFuel(NtsProductCode.BeerOrAlc, UnitOfMeasure.NoFuelPurchased, 10, 20);

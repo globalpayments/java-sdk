@@ -3,6 +3,7 @@ package com.global.api.network.entities.nts;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringParser;
+import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,7 +51,7 @@ public class NtsDataCollectResponse implements INtsResponseMessage {
 		NtsUtils.log("Card Type", ntsDataCollectResponse.getCardType());
 
 		ntsDataCollectResponse.setAccountNumber(sp.readString(19));
-		NtsUtils.log("Account Number", ntsDataCollectResponse.getAccountNumber());
+		NtsUtils.log("Account Number", StringUtils.maskAccountNumber(ntsDataCollectResponse.getAccountNumber()));
 
 		ntsDataCollectResponse.setApprovalCode(sp.readString(6)); // Data collect
 		NtsUtils.log("Approval Code", ntsDataCollectResponse.getApprovalCode());
