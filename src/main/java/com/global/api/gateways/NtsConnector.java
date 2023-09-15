@@ -422,8 +422,9 @@ public class NtsConnector extends GatewayConnectorConfig {
             req.add(messageData.getMessageRequest().toString());
 
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
-            NtsUtils.log("Request", StringUtils.getMaskRequest());
-
+           Optional<StringBuilder>  maskRequest = Optional.ofNullable(StringUtils.getMaskRequest());
+            NtsUtils.log("Request", maskRequest.isPresent()?
+                   maskRequest.get().toString():buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
             Transaction response = mapResponse(responseBuffer, builder, messageData);
 
@@ -537,19 +538,22 @@ public class NtsConnector extends GatewayConnectorConfig {
         if (StringUtils.getTrackData() != null && trackIndex != -1) {
             int startIndex = maskedResponse.indexOf(StringUtils.getTrackData());
             int stopIndex = startIndex + StringUtils.getTrackData().length();
-            maskedResponse.replace(startIndex, stopIndex, StringUtils.maskTrackData(StringUtils.getTrackData()));
+            maskedResponse = startIndex != -1 && stopIndex != -1 ?
+                    maskedResponse.replace(startIndex, stopIndex, StringUtils.maskTrackData(StringUtils.getTrackData())):maskedResponse;
         }
 
         if (StringUtils.getAccNo() != null && accIndex != -1) {
             int startIndex1 = maskedResponse.indexOf(StringUtils.getAccNo());
             int stopIndex1 = startIndex1 + StringUtils.getAccNo().length();
-            maskedResponse.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(StringUtils.getAccNo()));
+            maskedResponse = startIndex1 != -1 && startIndex1 != -1 ?
+                    maskedResponse.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(StringUtils.getAccNo())):maskedResponse;
         }
 
         if (StringUtils.getExpDate() != null && expIndex != -1) {
             int startIndex2 = maskedResponse.indexOf(StringUtils.getExpDate());
             int stopIndex2 = startIndex2 + StringUtils.getExpDate().length();
-            maskedResponse.replace(startIndex2, stopIndex2, "****");
+            maskedResponse = startIndex2 != -1 && stopIndex2 != -1?
+                    maskedResponse.replace(startIndex2, stopIndex2, "****"):maskedResponse;
         }
 
         NtsUtils.log("--------------------- RESPONSE ---------------------");

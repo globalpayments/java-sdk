@@ -1,6 +1,5 @@
 package com.global.api.tests.portico;
 
-import com.global.api.ServicesConfig;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.EmvChipCondition;
@@ -14,7 +13,6 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
-import com.global.api.tests.testdata.TestCards;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,8 +20,8 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Random;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PorticoCreditTests {
 	private CreditCardData card;
@@ -719,22 +717,24 @@ public class PorticoCreditTests {
     }
 
     @Test
-    public void creditSale_withSAFIndicator01() throws ApiException {
+    public void creditSale_withSAFIndicator_And_SAFOrigDT_01() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .withSAFIndicator(true)
+                .withSAFOrigDT(DateTime.now().toString())
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
     @Test
-    public void creditSale_withSAFIndicator02() throws ApiException {
+    public void creditSale_withSAFIndicator_And_SAFOrigDT_02() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .withSAFIndicator(false)
+                .withSAFOrigDT("2023-09-1512:58:32.073+05:30")
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
@@ -751,26 +751,35 @@ public class PorticoCreditTests {
     }
 
     @Test
-    public void creditAuthorization_withSAFIndicator01() throws ApiException {
+    public void creditAuthorization_withSAFIndicator_And_SAFOrigDT_01() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
                 .withSAFIndicator(true)
+                .withSAFOrigDT(DateTime.now().toString())
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).withSAFIndicator(true).execute();
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2))
+                .withSAFIndicator(true)
+                .withSAFOrigDT(DateTime.now().toString())
+                .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
 
     @Test
-    public void creditAuthorization_withSAFIndicator02() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true).withSAFIndicator(false)
+    public void creditAuthorization_withSAFIndicator_And_SAFOrigDT_02() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+                .withSAFIndicator(false)
+                .withSAFOrigDT(DateTime.now().toString())
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).withSAFIndicator(false).execute();
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2))
+                .withSAFIndicator(false)
+                .withSAFOrigDT(DateTime.now().toString())
+                .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }

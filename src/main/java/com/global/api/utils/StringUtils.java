@@ -336,7 +336,7 @@ public class StringUtils {
         message = sb;
     }
 
-    public static String getMaskRequest(){
-        return message.toString();
+    public static StringBuilder getMaskRequest(){
+        return message;
     }
 }

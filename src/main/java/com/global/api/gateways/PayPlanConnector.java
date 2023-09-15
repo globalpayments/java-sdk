@@ -491,7 +491,7 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
                 // dept repay indicator
                 ((Schedule)schedule).setInvoiceNumber(response.getString("invoiceNbr"));
                 ((Schedule)schedule).setPoNumber(response.getString("poNumber"));
-                ((Schedule)schedule).setDescription(response.getString("Description"));
+                ((Schedule)schedule).setDescription(response.getString("description"));
                 // statusSetDate
                 ((Schedule)schedule).setNextProcessingDate(response.getValue("nextProcessingDate", dateConverter));
                 // previousProcessingDate

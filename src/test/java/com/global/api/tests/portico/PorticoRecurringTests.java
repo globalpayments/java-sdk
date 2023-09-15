@@ -180,9 +180,11 @@ public class PorticoRecurringTests {
                 .withStatus("Active")
                 .withReprocessingCount(2)
                 .withEndDate(DateUtils.parse("04/01/2027"))
+                .withDescription("Test-Schedule")
                 .create();
         assertNotNull(schedule);
         assertNotNull(schedule.getKey());
+        assertEquals("Test-Schedule", schedule.getDescription());
     }
 
     @Test

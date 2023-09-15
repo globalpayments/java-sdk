@@ -14,7 +14,6 @@ import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.joda.time.DateTime;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -456,7 +455,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 //            }
 //        }
 
-        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder.getIsSAFIndicator()));
+        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder));
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -645,7 +644,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
         }
 
-        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder.getIsSAFIndicator()));
+        String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder));
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -706,7 +705,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         return buildEnvelope(et, transaction, null, null);
     }
   
-    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, Boolean isSAFIndicator) {
+    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, TransactionBuilder builder) {
         et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         et.addNamespace("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -731,10 +730,15 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
 
-        if(isSAFIndicator != null) {
+        if(builder.getIsSAFIndicator() != null) {
             Element safData = et.subElement(header, "SAFData");
-            et.subElement(safData, "SAFIndicator", isSAFIndicator ? "Y" : "N");
-            et.subElement(safData, "SAFOrigDT", DateTime.now().toString());
+            et.subElement(safData, "SAFIndicator", builder.getIsSAFIndicator() ? "Y" : "N");
+
+            if(builder.getSafOrignDT() != null) {
+                et.subElement(safData, "SAFOrigDT", builder.getSafOrignDT());
+            }else{
+                throw new UnsupportedOperationException("SAFData operation not supported without SAFOrigDT");
+            }
         }
 
         // Transaction

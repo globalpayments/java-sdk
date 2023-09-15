@@ -1,5 +1,16 @@
 # Changelog
 
+## v11.1.6 (09/15/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue :
+- Handled exception while masking request and response(Issue 10240)
+
+-Portico:
+- Fixed SAFOrigDT hardcoded issue, It is now configurable.
+- Fix description response from Portico to be consumed by schedule
+
 ## v11.1.5 (09/14/2023)
 
 ### Enhancements:
@@ -9,7 +20,8 @@
 - Issue 10240: masked account Number, expiry Date and track Data in logs individually and also in request or response.
 - Issue 10241: Fixed incorrect User Data Length and Error in Positions of several fields for Wex Fleet transactions with multiple products.
 - Issue 10244 :Formatted the Price per unit correctly without rounding.
-- Updated MC bin to 51-58 to address MC-regex internal query.
+
+-Updated MC bin to 51-58 to address MC-regex internal query.
 
 -Portico:
 - Added SAF to transaction builder.
