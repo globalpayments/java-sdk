@@ -7,10 +7,12 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceMessage;
+import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
@@ -134,6 +136,11 @@ public class UpaInterface implements IDeviceInterface {
         return new UpaTerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
     }
 
+    @Override
+    public TerminalManageBuilder voidRefund() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public TerminalAuthBuilder debitRefund() throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit);
     }
@@ -141,6 +148,11 @@ public class UpaInterface implements IDeviceInterface {
     public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit)
             .withAmount(amount);
+    }
+
+    @Override
+    public TerminalManageBuilder debitVoid() throws ApiException {
+        return null;
     }
 
     public TerminalAuthBuilder debitSale() throws ApiException {
@@ -265,6 +277,16 @@ public class UpaInterface implements IDeviceInterface {
         );
 
         return new UpaReportResponse(responseObj);
+    }
+
+    @Override
+    public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException();
     }
 
     public void sendReady() throws ApiException {

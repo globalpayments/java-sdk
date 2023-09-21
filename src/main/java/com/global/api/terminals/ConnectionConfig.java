@@ -5,6 +5,8 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.genius.GeniusController;
+import com.global.api.terminals.genius.serviceConfigs.MitcConfig;
 import com.global.api.terminals.hpa.HpaController;
 import com.global.api.terminals.pax.PaxController;
 import com.global.api.terminals.upa.UpaController;
@@ -24,6 +26,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private int port;
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
+    private MitcConfig geniusMitcConfig;
 
     public void setConnectionMode(ConnectionModes connectionModes) {
         this.connectionMode = connectionModes;
@@ -52,6 +55,9 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
         this.requestIdProvider = requestIdProvider;
     }
+    public void setGeniusMitcConfig(MitcConfig geniusMitcConfig) {
+        this.geniusMitcConfig = geniusMitcConfig;
+    }
 
     public ConnectionConfig(){
         timeout = 30000;
@@ -67,17 +73,26 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
                 break;
             case UPA_DEVICE:
                 services.setDeviceController(new UpaController(this));
+                break;
+            case GENIUS_VERIFONE_P400:
+                services.setDeviceController(new GeniusController(this));
+                break;
             default:
                 break;
         }
     }
 
+    @Override
     public void validate() throws ConfigurationException {
         if(connectionMode == ConnectionModes.TCP_IP || connectionMode == ConnectionModes.HTTP) {
             if(StringUtils.isNullOrEmpty(ipAddress))
                 throw new ConfigurationException("IpAddress is required for TCP or HTTP communication modes.");
             if(port == 0)
                 throw new ConfigurationException("Port is required for TCP or HTTP communication modes.");
+        } else if(connectionMode == ConnectionModes.MEET_IN_THE_CLOUD){
+            if(this.geniusMitcConfig == null){
+                throw new ConfigurationException("meetInTheCloudConfig object is required for this connection method");
+            }
         }
     }
 }

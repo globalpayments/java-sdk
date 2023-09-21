@@ -3,6 +3,8 @@ package com.global.api.terminals;
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.enums.CardType;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -58,6 +60,9 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationCryptogram;
     protected String customerVerificationMethod;
     protected String terminalVerificationResults;
+    @Getter
+    @Setter
+    protected String errorCode;
     protected String unmaskedCardNumber;
 
     public String getStatus() {

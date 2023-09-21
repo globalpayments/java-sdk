@@ -1,10 +1,8 @@
 package com.global.api.utils;
-
 import com.global.api.entities.enums.IStringConstant;
 import com.global.api.entities.exceptions.GatewayException;
 import com.google.gson.*;
 import org.joda.time.DateTime;
-
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,7 +11,7 @@ import java.util.*;
 import static com.global.api.gateways.DateParsingUtils.parseDateTime;
 
 public class JsonDoc {
-    private HashMap<String, Object> dict;
+    public HashMap<String, Object> dict;
     private IRequestEncoder encoder;
     private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -338,7 +336,6 @@ public class JsonDoc {
         }
         return response;
     }
-
     private static List<JsonDoc> parseArray(JsonArray objs, IRequestEncoder encoder) {
         List<JsonDoc> responses = new ArrayList<JsonDoc>();
         for (JsonElement obj: objs) {

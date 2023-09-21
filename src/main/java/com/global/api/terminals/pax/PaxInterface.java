@@ -4,8 +4,10 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -184,6 +186,11 @@ class PaxInterface implements IDeviceInterface {
     public TerminalManageBuilder creditVoid() throws ApiException {
         return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
     }
+
+    @Override
+    public TerminalManageBuilder voidRefund() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
     //</editor-fold>
 
     //<editor-fold desc="DEBIT MESSAGES">
@@ -192,6 +199,11 @@ class PaxInterface implements IDeviceInterface {
     }
     public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit).withAmount(amount);
+    }
+
+    @Override
+    public TerminalManageBuilder debitVoid() throws ApiException {
+        return null;
     }
 
     public TerminalAuthBuilder debitSale() throws ApiException {
@@ -339,6 +351,11 @@ class PaxInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    @Override
+    public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -366,6 +383,10 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public TerminalManageBuilder reverse() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 }

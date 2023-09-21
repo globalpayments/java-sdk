@@ -11,9 +11,11 @@ import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
 import com.global.api.terminals.hpa.responses.SipSendFileResponse;
@@ -221,6 +223,11 @@ public class HpaInterface implements IDeviceInterface {
         return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
     }
 
+    @Override
+    public TerminalManageBuilder voidRefund() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public TerminalAuthBuilder debitSale() {
         return debitSale(null);
     }
@@ -231,8 +238,14 @@ public class HpaInterface implements IDeviceInterface {
     public TerminalAuthBuilder debitRefund() {
         return debitRefund(null);
     }
+
     public TerminalAuthBuilder debitRefund(BigDecimal amount) {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit).withAmount(amount);
+    }
+
+    @Override
+    public TerminalManageBuilder debitVoid() {
+        return null;
     }
 
     public TerminalAuthBuilder giftSale() {
@@ -341,6 +354,11 @@ public class HpaInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    @Override
+    public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -368,6 +386,10 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     public TerminalManageBuilder reverse() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 }

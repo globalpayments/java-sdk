@@ -4,7 +4,7 @@
 
 # Heartland & Global Payments Java SDK
 
-This SDK makes it easy to integrate your Java application with our Card Not Present and Card Present APIs. 
+This SDK makes it easy to integrate your Java application with our Card Not Present and Card Present APIs.
 
 ## Solutions
 
@@ -18,7 +18,7 @@ This SDK makes it easy to integrate your Java application with our Card Not Pres
 
 ### Card Not Present (Ecommerce & MOTO) Specific
 
-* Minimize PCI compliance requirements with Hosted Payment Solutions 
+* Minimize PCI compliance requirements with Hosted Payment Solutions
 * 140+ Authorization Currencies & 16 Settlement Currencies
 * 150+ Local Payment Methods Worldwide
 * Account Updater

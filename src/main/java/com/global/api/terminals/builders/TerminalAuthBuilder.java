@@ -10,6 +10,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -17,7 +18,7 @@ import java.util.EnumSet;
 public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private Address address;
     private boolean allowDuplicates;
-    private BigDecimal amount;
+    protected BigDecimal amount;
     private String authCode;
     private AutoSubstantiation autoSubstantiation;
     private StoredCredentialInitiator cardBrandStorage;
@@ -37,6 +38,12 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private Integer tokenRequest;
     private String tokenValue;
     private String transactionId;
+    @Getter
+    private boolean allowPartialAuth;
+    @Getter
+    private StoredCredentialInitiator storedCredentialInitiator;
+    @Getter
+    private String clientTransactionId;
     private TransactionType giftTransactionType;
 
     public Address getAddress() {
@@ -217,6 +224,21 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return this;
     }
 
+    public TerminalAuthBuilder withAllowPartialAuth(boolean value) {
+        this.allowPartialAuth = value;
+        return this;
+    }
+
+    public TerminalAuthBuilder withStoredCredentialInitiator(StoredCredentialInitiator value) {
+        this.storedCredentialInitiator = value;
+        return this;
+    }
+
+    public TerminalAuthBuilder withClientTransactionId(String value) {
+        this.clientTransactionId = value;
+        return this;
+    }
+
     public TerminalAuthBuilder withGiftTransactionType(TransactionType value) {
         this.giftTransactionType = value;
         return this;
@@ -242,8 +264,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 //                .check("authCode").isNotNull();
         this.validations.of(TransactionType.Refund)
                 .with(PaymentMethodType.Credit)
-                .when("transactionId").isNotNull()
-                .check("authCode").isNotNull();
+                .when("transactionId").isNotNull();
+//                .check("authCode").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
         this.validations.of(TransactionType.AddValue).check("amount").isNotNull();
 

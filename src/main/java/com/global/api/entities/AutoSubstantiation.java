@@ -55,6 +55,14 @@ public class AutoSubstantiation {
         amounts.put("TOTAL_HEALTHCARE_AMT", amounts.get("TOTAL_HEALTHCARE_AMT").add(value));
     }
 
+    public BigDecimal getCopaySubTotal() {
+        return amounts.get("SUBTOTAL_COPAY_AMT");
+    }
+    public void setCopaySubTotal(BigDecimal value) {
+        amounts.put("SUBTOTAL_COPAY_AMT", value);
+        amounts.put("TOTAL_HEALTHCARE_AMT", amounts.get("TOTAL_HEALTHCARE_AMT").add(value));
+    }
+
     public AutoSubstantiation() {
         amounts = new HashMap<String, BigDecimal>();
         amounts.put("TOTAL_HEALTHCARE_AMT", new BigDecimal("0"));
@@ -62,5 +70,6 @@ public class AutoSubstantiation {
         amounts.put("SUBTOTAL_VISION__OPTICAL_AMT", new BigDecimal("0"));
         amounts.put("SUBTOTAL_CLINIC_OR_OTHER_AMT", new BigDecimal("0"));
         amounts.put("SUBTOTAL_DENTAL_AMT", new BigDecimal("0"));
+        amounts.put("SUBTOTAL_COPAY_AMT", new BigDecimal("0"));
     }
 }

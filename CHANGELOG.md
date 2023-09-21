@@ -1,5 +1,16 @@
 # Changelog
 
+## v11.1.7 (09/20/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue :
+- Batch and Sequence Number aligned with Original Sale Transaction for WexFleet Credit Adjustment User Data (Issue 10248)
+
+ -Verifone P400:
+ - Added initial Meet-In-The-Cloud connectivity support for this device
+
+
 ## v11.1.6 (09/15/2023)
 
 ### Enhancements:
@@ -258,14 +269,14 @@ Portico :
 -GP-API: String usage refactor.
 
 ## v10.2.16 (05/25/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
-  - Correct the formatting for Wex Fleet Approved Amount field (Issue-10204)
-  - Rollback code of calling primary to secondary,now it will call only primary end point and return 40,80,90(Issue-10185)
-  - Changes of Transaction time for both PreAuthCompletion and DataCollect must match with that of Pre Auth transaction and user data changes for pre auth ,completion and datacollect(Issue 10198)
-  
+- Correct the formatting for Wex Fleet Approved Amount field (Issue-10204)
+- Rollback code of calling primary to secondary,now it will call only primary end point and return 40,80,90(Issue-10185)
+- Changes of Transaction time for both PreAuthCompletion and DataCollect must match with that of Pre Auth transaction and user data changes for pre auth ,completion and datacollect(Issue 10198)
+
 - GP-API: Refacto on the GpApiRequest class
 - Unit tests updates on our utils classes
 
@@ -273,86 +284,86 @@ Portico :
 - GP-ECOM: Fix serialization issue on PM_METHODS field to support both card and APMs
 
 ## v10.2.15 (05/16/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
-  - Synchorny value S added in Authorizer code (Issue-10183)
-  - Primary and Secondary fallback scenario's((For host response code 40,80,90) changes (Issue-10185)
-  - Batch Summary Total credits and Total debits related changes (Issue-10188)
-  - Batch close Retransmits : Updating message code when response code is 01(out of balance)  (Issue-10194,10201)
-  - Estimated Purchase amount changes for WEX (Issue-10197)
-  
-- GP-API: Manage fund transfers, splits and reverse splits in your partner network. 
-     - https://developer.globalpay.com/api/transfers
-     - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction  
-     - Exclude  vulnerable dependency on "commons-logging" suggested by Macroscope
+- Synchorny value S added in Authorizer code (Issue-10183)
+- Primary and Secondary fallback scenario's((For host response code 40,80,90) changes (Issue-10185)
+- Batch Summary Total credits and Total debits related changes (Issue-10188)
+- Batch close Retransmits : Updating message code when response code is 01(out of balance)  (Issue-10194,10201)
+- Estimated Purchase amount changes for WEX (Issue-10197)
+
+- GP-API: Manage fund transfers, splits and reverse splits in your partner network.
+  - https://developer.globalpay.com/api/transfers
+  - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction
+  - Exclude  vulnerable dependency on "commons-logging" suggested by Macroscope
 
 ## v10.2.14 (05/08/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
-  - HOST RESPONSE CODE field changes Issue(10186,10196)
-  - Debit Pre-Auth Cancellation: Card Sequence Number ,Offline Decline Indicator and Unique Device Id fields changes Issues (10189,10190,10191)
+- HOST RESPONSE CODE field changes Issue(10186,10196)
+- Debit Pre-Auth Cancellation: Card Sequence Number ,Offline Decline Indicator and Unique Device Id fields changes Issues (10189,10190,10191)
 
-GP-ECOM: 
-  -Add to the mapping response fields: acs_reference_number, acs_signed_content,acs_interface and acs_ui_template for the authentication source MOBILE_SDK
+GP-ECOM:
+-Add to the mapping response fields: acs_reference_number, acs_signed_content,acs_interface and acs_ui_template for the authentication source MOBILE_SDK
 
-Portico Gateway: 
-  -Enable CreditAuth transaction type for Apple Pay & Google Pay
-  
+Portico Gateway:
+-Enable CreditAuth transaction type for Apple Pay & Google Pay
+
 ## v10.2.13 (05/02/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
-  - Primary and secondary end point (10185)
-  - HOST RESPONSE CODE field Added(10186)
-  - Wex Prompting(10187)
-  - Visa Fleet Data Collect User data Length(10177)
-  - Batch Summary missing values(10188)
+- Primary and secondary end point (10185)
+- HOST RESPONSE CODE field Added(10186)
+- Wex Prompting(10187)
+- Visa Fleet Data Collect User data Length(10177)
+- Batch Summary missing values(10188)
 - GP-API:
   -  Manage merchant accounts for partner solution
 
 ## v10.2.12 (04/18/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
-  -Tokenization (10121)
-  - Addition of HostResponseCode field (10186)
+-Tokenization (10121)
+- Addition of HostResponseCode field (10186)
 
 
 ## v10.2.11 (04/10/2023)
- 
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
- - Tokenization changes (10121)
- - Batch Summary Changes (10180)- Addition to isNtsBalanced() method
+- Tokenization changes (10121)
+- Batch Summary Changes (10180)- Addition to isNtsBalanced() method
 
- ## v10.2.10 (04/06/2023)
- 
+## v10.2.10 (04/06/2023)
+
 ### Enhancements:
 
 -NTS Phase1 Issue:
- - Prior message Information changes (10142)
- - FleetCor Credit Adjustment User Data changes(10158)
- - MasterCard Purchasing DataCollect changes(10171)
- - customer code change for mastercard purchasing (10173)
- - MasterCard Purchasing MasterCard code Changes (10172)
- - Batch Summary changes (10176)
- - User Data Expansion for Data Collect(10180)
+- Prior message Information changes (10142)
+- FleetCor Credit Adjustment User Data changes(10158)
+- MasterCard Purchasing DataCollect changes(10171)
+- customer code change for mastercard purchasing (10173)
+- MasterCard Purchasing MasterCard code Changes (10172)
+- Batch Summary changes (10176)
+- User Data Expansion for Data Collect(10180)
 
 
 ## v10.2.9 (04/03/2023)
 
 ### Enhancements:
 -NTS Phase1 Issue:
- -  Prior Message Information Issue updates(10142)
- -  Batch Close Issue(10161)
- 
+-  Prior Message Information Issue updates(10142)
+-  Batch Close Issue(10161)
+
 ## v10.2.8 (03/30/2023)
 
 ### Enhancements:
@@ -365,9 +376,9 @@ Portico Gateway:
 
 ### Enhancements:
 -NTS Phase1 Issue:
- - NTS Debit Partial Approval Issue(10166)
- - Pin Block Format change(10169)
- - Debit Offline Pin Verified Scenarios(10170)
+- NTS Debit Partial Approval Issue(10166)
+- Pin Block Format change(10169)
+- Debit Offline Pin Verified Scenarios(10170)
 
 ## v10.2.6 (03/23/2023)
 
@@ -388,7 +399,7 @@ Portico Gateway:
 - NTS Phase1 Issue:
   - Void Timestamp Issue for credit card(10123)
   - Gift Card Entry Method Issues(10150, 10155, 10156, 10157, 10162, 10163)
-  - Authorizer Code for data collect Issue(10149) 
+  - Authorizer Code for data collect Issue(10149)
   - Mastercard Purchasing Partial Approval mapping Issue(10151,10165)
   - Primary and Secondary Endpoints Issue (10159)
   - Tokenization POC for resubmit Transaction Issue(10121)
@@ -420,24 +431,24 @@ Portico Gateway:
 ## v10.2.1 (02/23/2023)
 
 ### Enhancements:
-- NTS phase1 Issues: 
-    - PAN With Expiry,Pin block and KSN Changes For Pin debit Without Track Format(Issue-10146)
-- Portico: 
-	- EMVDATA tag bug fixes  
-	
+- NTS phase1 Issues:
+  - PAN With Expiry,Pin block and KSN Changes For Pin debit Without Track Format(Issue-10146)
+- Portico:
+  - EMVDATA tag bug fixes
+
 ## v10.2.0 (02/21/2023)
 
 ### Enhancements:
-- NTS Phase1 Issue: 
-    - PAN With Expiry changes for PIN Debit Request Format without Track Data (Issue-10146)    
+- NTS Phase1 Issue:
+  - PAN With Expiry changes for PIN Debit Request Format without Track Data (Issue-10146)
 - GP-API: add risk assessment feature
 
 ## v10.1.3 (02/14/2023)
 
 ### Enhancements:
-- NTS Phase1 Issues: 
-    - Approved Amount changes for Fuelman and Fleet wide(Issue-10140)
-    - Fleet Data correction for Fuelman and FleetWide(Issue-10143)
+- NTS Phase1 Issues:
+  - Approved Amount changes for Fuelman and Fleet wide(Issue-10140)
+  - Fleet Data correction for Fuelman and FleetWide(Issue-10143)
 - GP-API : Miscellaneous Tests Update
 - GP-API: Click To Pay
 - Add XGP Signature validation
@@ -458,12 +469,12 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 ### Enhancements:
 - Transaction API Connector Implementation
 - NTS: NTS phase 2 Implementation except Heartland gift card code changes
-- NTS phase1 Issues: 
-    - Date timestamp
-    - Visa Fleet and Mastercard Fleet user data Data collect(Tag 09 changes)
-    - Zip code changes for tag 07 and user data layout.
+- NTS phase1 Issues:
+  - Date timestamp
+  - Visa Fleet and Mastercard Fleet user data Data collect(Tag 09 changes)
+  - Zip code changes for tag 07 and user data layout.
     -Timeout and Entry method Contact EMV Unattended AFD
-- Add UPA StartCardTransaction command	
+- Add UPA StartCardTransaction command
 - GP-API: Exemption Fields
 - GP-API: Misc Tests Updated
 - Request Logger Refactor
@@ -500,7 +511,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- Align CountryData & CountryUtils to other SDKs 
+- Align CountryData & CountryUtils to other SDKs
 - GP-API: Misc Test Fixed
 - NTS: Added Changes for Wex Fleet Service prompt list & Voyager Fleet Driver ID Update
 
@@ -526,7 +537,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- GP-API, GP-ECOM/REALEX: Sunset 3DS1 
+- GP-API, GP-ECOM/REALEX: Sunset 3DS1
 - Java Server Demo for a Client app
 - GP-API: Update unit tests with new set of credentials for GP-API
 
@@ -547,7 +558,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- VAPS: Added support for FleetCor 
+- VAPS: Added support for FleetCor
 - VAPS: Added Support for DE49 and DE50 Currency Code
 - NTS: Added Terminal Types N1 and N2
 
@@ -555,8 +566,8 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- PORTICO: Added PorticoConfig for Portico Configuration instead of GatewayConfig 
-- GP-ECOM/REALEX: Added GpEcomConfig for GP-ECOM/Realex Configuration instead of GatewayConfig 
+- PORTICO: Added PorticoConfig for Portico Configuration instead of GatewayConfig
+- GP-ECOM/REALEX: Added GpEcomConfig for GP-ECOM/Realex Configuration instead of GatewayConfig
 
 ## v8.0.7 (09/08/2022)
 
@@ -582,7 +593,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - GP-ECOM/REALEX: Supported Stored Credential when creating a new card
 - Security changes: Set TLS 1.2 as default for socket connections
 - GP-API: Updated Misc Tests
-- 
+-
 
 ## v8.0.4 (08/02/2022)
 
@@ -610,7 +621,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- GP-API Dynamic Descriptor 
+- GP-API Dynamic Descriptor
 - HPP EnableExemptionOptimization field
 - Flag to do not insert "x-gp-sdk" header on GpApiConnector requests for Android SDK
 
@@ -648,7 +659,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ### Enhancements:
 
-- Added Fingerprint 
+- Added Fingerprint
 - Updated code for Secure3D and WalletData Element
 - Added Challenge Indicator Nullity validation
 - Fixed comments on verfifySignature methods
@@ -662,7 +673,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Added challenge request indicator on 3DS2 initiate step on Gp3DSProvider
 - Aligned processAuthorization() logic of an APM to .NET & PHP SDKs.
 - Updated Misc Tests
-- Deprecate verifySignature() and VerifyEnrolled() from CreditCardData 
+- Deprecate verifySignature() and VerifyEnrolled() from CreditCardData
 - Updated BaseGpApiTest Credentials
 - Changed TimeCreated field on Stored Payments Method from Date to DateTime
 

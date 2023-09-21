@@ -1,14 +1,11 @@
 package com.global.api.terminals.abstractions;
 
-import com.global.api.entities.enums.SafDelete;
-import com.global.api.entities.enums.SafMode;
-import com.global.api.entities.enums.SafReportSummary;
-import com.global.api.entities.enums.SafUpload;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.SendFileType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
@@ -61,6 +58,7 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder creditSale() throws ApiException;
     TerminalAuthBuilder creditVerify() throws ApiException;
     TerminalManageBuilder creditVoid() throws ApiException;
+    TerminalManageBuilder voidRefund() throws ApiException;
     TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException;
 
     // debit calls
@@ -68,6 +66,7 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException;
     TerminalAuthBuilder debitSale() throws ApiException;
     TerminalAuthBuilder debitRefund() throws ApiException;
+    TerminalManageBuilder debitVoid() throws ApiException;
 
     // gift calls
     TerminalAuthBuilder giftSale(BigDecimal amount) throws ApiException;
@@ -94,4 +93,7 @@ public interface IDeviceInterface extends IDisposable {
     IBatchReportResponse getBatchDetails(String batchId) throws ApiException;
     IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException;
     IBatchReportResponse getOpenTabDetails() throws ApiException;
+    TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException;
+
+    TerminalManageBuilder refundById(BigDecimal amount) throws ApiException;
 }

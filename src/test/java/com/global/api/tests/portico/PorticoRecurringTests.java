@@ -1,7 +1,10 @@
 package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.*;
+import com.global.api.entities.Address;
+import com.global.api.entities.Customer;
+import com.global.api.entities.Schedule;
+import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -12,6 +15,7 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.utils.DateUtils;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -22,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PorticoRecurringTests {
@@ -153,8 +156,8 @@ public class PorticoRecurringTests {
         assertNotNull(customer);
 
         eCheck check = new eCheck();
-        check.setRoutingNumber("490000018");
-        check.setAccountNumber("24413815");
+        check.setRoutingNumber("122000030");
+        check.setAccountNumber("1357902468");
         check.setCheckType(CheckType.Personal);
         check.setSecCode(SecCode.Ppd);
         check.setAccountType(AccountType.Checking);
@@ -420,7 +423,39 @@ public class PorticoRecurringTests {
         schedule.delete();
         sleepOne();
     }
+    @Test
+    public void Test_008b_CreditCharge_WithNewCryptoURL_Validate_Decline() throws ApiException {
+        PorticoConfig config = new PorticoConfig();
+        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+        ServicesContainer.configureService(config);
 
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("10.08")) // This amount is used for Visa specific - Decline
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("51", response.getResponseCode());
+    }
+
+    @Test
+    public void Test_008b_CreditCharge_WithNewCryptoURL() throws ApiException {
+        PorticoConfig config = new PorticoConfig();
+        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
+        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
+        ServicesContainer.configureService(config);
+
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("11.00"))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
     @Test
     public void Test_008c_DeletePaymentMethod_Credit() throws ApiException {
         RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
@@ -453,23 +488,7 @@ public class PorticoRecurringTests {
         sleepOne();
     }
 
-    @Test
-    public void Test_008g_CreditCharge_WithNewCryptoURL() throws ApiException {
-        PorticoConfig config = new PorticoConfig();
-        config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
-        config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
-        ServicesContainer.configureService(config);
-
-        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
-        assertNotNull(paymentMethod);
-
-        Transaction response = paymentMethod.charge(new BigDecimal("10.08"))
-                .withCurrency("USD")
-                .execute();
-        assertNotNull(response);
-        assertEquals("51", response.getResponseCode());
-    }
-
+    @Ignore("This test is currently failing. Needs a production secret API key to pass.")
     @Test
     public void Test_PROD_endpoint() throws ApiException {
         PorticoConfig config = new PorticoConfig();

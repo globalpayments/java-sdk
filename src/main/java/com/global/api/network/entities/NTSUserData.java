@@ -969,9 +969,9 @@ public class NTSUserData {
                         sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, ' '));
                     else
                         sb.append(StringUtils.padRight("", 6, '0'));
-                    sb.append(StringUtils.padLeft(builder.getBatchNumber(), 2, '0'));
-                    sb.append(StringUtils.padLeft(builder.getSequenceNumber(), 3, '0'));
                     TransactionReference transactionReference = (TransactionReference) builder.getPaymentMethod();
+                    sb.append(StringUtils.padLeft(transactionReference.getBatchNumber(), 2, '0'));
+                    sb.append(StringUtils.padLeft(transactionReference.getSequenceNumber(), 3, '0'));
                     sb.append(transactionReference.getOriginalTransactionDate());
                 } else if (referenceMessageCode != null && referenceMessageCode.equals("01")
                         && builder.getTransactionType().equals(TransactionType.Reversal)) {

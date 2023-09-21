@@ -4,6 +4,7 @@ import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.TerminalResponse;
+import lombok.Getter;
 
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
@@ -15,6 +16,8 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
      */
     protected Integer clerkId;
     protected String referenceNumber;
+    @Getter
+    protected String clerkNumber;
 
     public PaymentMethodType getPaymentMethodType() {
         return paymentMethodType;
@@ -39,6 +42,11 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
 
     public TerminalBuilder<T> withRequestId(Integer value) {
         requestId = value;
+        return this;
+    }
+
+    public TerminalBuilder<T> withClerkNumber(String value) {
+        this.clerkNumber = value;
         return this;
     }
 

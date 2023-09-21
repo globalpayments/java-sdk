@@ -1,6 +1,7 @@
 package com.global.api.utils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class AmountUtils {
     public static boolean areEqual(BigDecimal var1, BigDecimal var2) {
@@ -13,5 +14,11 @@ public class AmountUtils {
         BigDecimal amount2 = var2.setScale(scale);
 
         return amount1.equals(amount2);
+    }
+
+    public static String transitFormat(BigDecimal value){
+        if(value != null)
+            return String.valueOf(value.setScale(2, RoundingMode.HALF_UP));
+        return null;
     }
 }
