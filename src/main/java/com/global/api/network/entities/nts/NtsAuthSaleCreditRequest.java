@@ -145,7 +145,7 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 }
                 NtsUtils.log("Gift card data: ", StringUtils.maskTrackData(gift.getValue()));
                 this.setTrackData(gift.getValue());
-                StringUtils.setAccNo(gift.getNumber());
+                StringUtils.setAccNo(gift.getPan());
                 StringUtils.setExpDate(gift.getExpiry());
                 StringUtils.setTrackData(gift.getValue());
             }

@@ -49,6 +49,8 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     BatchSummary summary = new BatchSummary();
 
+    StringBuilder maskedRequest = new StringBuilder("");
+
     @Override
     public int getTimeout() {
         if (super.getTimeout() == 30000)
@@ -337,6 +339,8 @@ public class NtsConnector extends GatewayConnectorConfig {
                 }
             }
         }
+        setMaskedReq(originalReq,builder);
+        StringUtils.setMaskRequest(setMaskedReq(originalReq,builder));
         request.setMessageRequest(new StringBuilder(originalReq));
         result = sendRequest(request, builder);
         return result;
@@ -422,8 +426,8 @@ public class NtsConnector extends GatewayConnectorConfig {
             req.add(messageData.getMessageRequest().toString());
 
             IDeviceMessage buildMessage = new DeviceMessage(req.toArray());
-           Optional<StringBuilder>  maskRequest = Optional.ofNullable(StringUtils.getMaskRequest());
-            NtsUtils.log("Request", maskRequest.isPresent()?
+            Optional<StringBuilder> maskRequest = Optional.ofNullable(StringUtils.getMaskRequest());
+            NtsUtils.log("Request", maskRequest.isPresent() && !StringUtils.isNullOrEmpty(String.valueOf(maskRequest.get()))?
                    maskRequest.get().toString():buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
             Transaction response = mapResponse(responseBuffer, builder, messageData);
@@ -524,6 +528,10 @@ public class NtsConnector extends GatewayConnectorConfig {
                 batchSummaryList.clear();
             }
         }
+        StringUtils.setAccNo(null);
+        StringUtils.setExpDate(null);
+        StringUtils.setTrackData(null);
+        StringUtils.setMaskRequest(new StringBuilder(""));
         return result;
     }
 
@@ -991,4 +999,28 @@ public class NtsConnector extends GatewayConnectorConfig {
                                 || Objects.equals(paymentMethodType, PaymentMethodType.EBT)
                 );
     }
+
+    private StringBuilder setMaskedReq(String originalReq,ResubmitBuilder builder){
+        maskedRequest = new StringBuilder(originalReq);
+        switch (builder.getTransactionType()) {
+            case BatchClose: {
+                StringUtils.setMaskRequest(maskedRequest);
+            }
+            break;
+            case Refund:
+            case Sale:
+            case DataCollect:{
+                String actNum = originalReq.substring(61,80);
+                String expiry = originalReq.substring(80,84);
+                StringUtils.setAccNo(actNum.trim());
+                StringUtils.setExpDate(expiry);
+                maskedRequest.replace(61, 80,StringUtils.padRight(StringUtils.maskAccountNumber(actNum.trim()), 19, ' ') );
+                maskedRequest.replace(80, 84, "****");
+            }
+            break;
+            default: StringUtils.setMaskRequest(new StringBuilder(originalReq));
+        }
+        return maskedRequest;
+    }
+
 }

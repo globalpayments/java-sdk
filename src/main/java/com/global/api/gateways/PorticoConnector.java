@@ -663,7 +663,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(criteria, "EndUtcDT", trb.getEndDate() == null ? null : formatDate(trb.getEndDate()));
                 et.subElement(criteria, "AuthCode", trb.getSearchBuilder().getAuthCode());
                 et.subElement(criteria, "CardHolderLastName", trb.getSearchBuilder().getCardHolderLastName());
-                et.subElement(criteria, "CardHolderFirtName", trb.getSearchBuilder().getCardHolderFirstName());
+                et.subElement(criteria, "CardHolderFirstName", trb.getSearchBuilder().getCardHolderFirstName());
                 et.subElement(criteria, "CardNbrFirstSix", trb.getSearchBuilder().getCardNumberFirstSix());
                 et.subElement(criteria, "CardNbrLastFour", trb.getSearchBuilder().getCardNumberLastFour());
                 et.subElement(criteria, "InvoiceNbr", trb.getSearchBuilder().getInvoiceNumber());
@@ -682,7 +682,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(criteria, "ClientTxnId", trb.getSearchBuilder().getClientTransactionId());
                 et.subElement(criteria, "UniqueDeviceId", trb.getSearchBuilder().getUniqueDeviceId());
                 et.subElement(criteria, "AcctNbrLastFour", trb.getSearchBuilder().getAccountNumberLastFour());
-                et.subElement(criteria, "BankRountingNbr", trb.getSearchBuilder().getBankRoutingNumber());
+                et.subElement(criteria, "BankRoutingNbr", trb.getSearchBuilder().getBankRoutingNumber());
                 et.subElement(criteria, "CheckNbr", trb.getSearchBuilder().getCheckNumber());
                 et.subElement(criteria, "CheckFirstName", trb.getSearchBuilder().getCheckFirstName());
                 et.subElement(criteria, "CheckLastName", trb.getSearchBuilder().getCheckLastName());

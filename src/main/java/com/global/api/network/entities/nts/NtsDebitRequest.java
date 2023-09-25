@@ -150,6 +150,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 String maskedTrackFormat = StringUtils.maskAccountNumber(card.getNumber()) + "*" + StringUtils.padLeft("",len,'*');
                 NtsUtils.log("TrackData 2", maskedTrackFormat);
                 request.addRange(trackFormat, 40);
+                this.setTrackData(trackFormat);
                 StringUtils.setAccNo(card.getNumber());
                 String expDate = card.getExpYear().toString() + card.getExpMonth().toString();
                 StringUtils.setExpDate(expDate);

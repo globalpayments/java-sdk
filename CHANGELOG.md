@@ -1,5 +1,16 @@
 # Changelog
 
+## v11.1.8 (09/25/2023)
+
+### Enhancements:
+
+-NTS Phase1 Issue :
+- Masked request & response of retransmit & resubmit Transaction(Issue -10240)
+- Aligned masked request & response with respective transaction itself(Issue-10249)
+
+-Portico:
+- Fixed typo CardHolderFirstName & BankingRoutingNbr
+
 ## v11.1.7 (09/20/2023)
 
 ### Enhancements:
