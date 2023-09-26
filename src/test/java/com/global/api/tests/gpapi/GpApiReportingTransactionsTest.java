@@ -1236,11 +1236,13 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
                         .and(DataServiceCriteria.StartBatchDate, startBatchDate)
                         .and(DataServiceCriteria.EndBatchDate, endBatchDate)
                         .execute(GP_API_CONFIG_NAME);
+
         assertNotNull(transactions);
         for (TransactionSummary transactionSummary : transactions.getResults()) {
             Date transactionDate = transactionSummary.getTransactionDate().toDate();
             assertTrue(DateUtils.isAfterOrEquals(transactionDate, startBatchDate));
             assertTrue(DateUtils.isBeforeOrEquals(transactionDate, endBatchDate));
+            assertNotNull(transactionSummary.getBatchCloseDate());
         }
     }
 

@@ -460,38 +460,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
         NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
-        if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.HostSystemFailure)
-                || hrc.equals(NtsHostResponseCode.TerminalTimeout)
-                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
-            resubmitNonApprovedToken.add(result1.getTransactionToken());
-            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
-        }else if(builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.FormatError)){
-            resubmitFormatErrorToken.add(result1.getTransactionToken());
-            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
-        }
-
-        if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))
-            && Boolean.FALSE.equals(isAllowedRCForRetransmit(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))) {
-            throw new GatewayException(
-                    String.format("Unexpected response from gateway: %s %s", ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
-                            ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().toString()),
-                    ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
-                    ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
-        } else {
-            String responseCode = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
-            String transactionToken = checkResponse(responseCode, messageData, builder);
-
-            NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
-            result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
-            result.setNtsResponse(ntsResponse);
-            result.setPendingRequestIndicator(ntsResponseMessageHeader.getPendingRequestIndicator());
-            if (paymentMethod != null) {
-                result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
-            }
-            if (transactionToken != null) {
-                result.setTransactionToken(transactionToken);
-            }
-        }
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             NtsRequestToBalanceResponse responseMessage = (NtsRequestToBalanceResponse) ntsResponse.getNtsResponseMessage();
@@ -528,6 +496,39 @@ public class NtsConnector extends GatewayConnectorConfig {
                 batchSummaryList.clear();
             }
         }
+
+        if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.HostSystemFailure)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeout)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
+            resubmitNonApprovedToken.add(result1.getTransactionToken());
+            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
+        }else if(builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.FormatError)){
+            resubmitFormatErrorToken.add(result1.getTransactionToken());
+            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
+        }
+
+        if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))
+            && Boolean.FALSE.equals(isAllowedRCForRetransmit(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))) {
+            throw new GatewayException(
+                    String.format("Unexpected response from gateway: %s %s", ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
+                            ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().toString()),
+                    ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
+                    ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
+        } else {
+            String responseCode = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
+            String transactionToken = checkResponse(responseCode, messageData, builder);
+
+            NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
+            result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
+            result.setNtsResponse(ntsResponse);
+            result.setPendingRequestIndicator(ntsResponseMessageHeader.getPendingRequestIndicator());
+            if (paymentMethod != null) {
+                result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
+            }
+            if (transactionToken != null) {
+                result.setTransactionToken(transactionToken);
+            }
+        }
         StringUtils.setAccNo(null);
         StringUtils.setExpDate(null);
         StringUtils.setTrackData(null);
@@ -553,7 +554,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         if (StringUtils.getAccNo() != null && accIndex != -1) {
             int startIndex1 = maskedResponse.indexOf(StringUtils.getAccNo());
             int stopIndex1 = startIndex1 + StringUtils.getAccNo().length();
-            maskedResponse = startIndex1 != -1 && startIndex1 != -1 ?
+            maskedResponse = startIndex1 != -1 && stopIndex1 != -1 ?
                     maskedResponse.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(StringUtils.getAccNo())):maskedResponse;
         }
 

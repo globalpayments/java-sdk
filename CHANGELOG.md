@@ -1,5 +1,13 @@
 # Changelog
 
+## v11.1.9 (09/26/2023)
+
+### Enhancements:
+-NTS Phase1 Issue :
+- Updated code for BatchSummary transactionCount, creditAmount and debitAmount(Issue - 10251).
+
+- GP-API: add mapping for batch_time_created on settlement transactions reporting.
+
 ## v11.1.8 (09/25/2023)
 
 ### Enhancements:

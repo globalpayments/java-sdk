@@ -369,6 +369,7 @@ public class GpApiMapping {
         summary.setDepositStatus(doc.getString("deposit_status"));
         summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setOrderId(doc.getString("order_reference"));
+        summary.setBatchCloseDate(parseGpApiDateTime(doc.getString("batch_time_created")));
 
         if (doc.has("payment_method")) {
             final JsonDoc paymentMethod = doc.get("payment_method");
