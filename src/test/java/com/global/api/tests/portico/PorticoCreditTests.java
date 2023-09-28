@@ -734,7 +734,7 @@ public class PorticoCreditTests {
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .withSAFIndicator(false)
-                .withSAFOrigDT("2023-09-1512:58:32.073+05:30")
+                .withSAFOrigDT(DateTime.now().toString())
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());

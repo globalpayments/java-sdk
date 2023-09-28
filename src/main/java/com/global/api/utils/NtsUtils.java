@@ -5,6 +5,7 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
+import com.global.api.gateways.NtsConnector;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.NTSCardTypes;
@@ -633,4 +634,16 @@ public class NtsUtils {
         return StringUtils.padLeft(rvalue, length, paddingCharacter);
     }
 
+    public static int getExcludedUserDataLength(String userData,NTSCardTypes cardType,TransactionBuilder builder){
+        int userDataLength = 0;
+        final int NUMBER_OF_TAG_LENGTH = 2;
+        if (!StringUtils.isNullOrEmpty(userData) &&
+                !(NtsConnector.isNonBankCard(cardType) ||
+                        NtsConnector.isDataCollectForNonFleetBankCard(cardType, builder.getTransactionType()))
+        ) {
+            userDataLength = Integer.parseInt(userData.substring(0, 2));
+            userDataLength = (userDataLength * 4 + NUMBER_OF_TAG_LENGTH);
+        }
+        return userDataLength;
+    }
 }

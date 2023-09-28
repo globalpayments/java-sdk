@@ -460,6 +460,12 @@ public class NtsConnector extends GatewayConnectorConfig {
         NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
         NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
+        String transactionToken = checkResponse(hrc.getValue(), messageData, builder);
+
+        if (transactionToken != null) {
+            result.setTransactionToken(transactionToken);
+        }
+
         //Batch Summary
         if (builder.getTransactionType().equals(TransactionType.BatchClose)) {
             NtsRequestToBalanceResponse responseMessage = (NtsRequestToBalanceResponse) ntsResponse.getNtsResponseMessage();
@@ -515,8 +521,6 @@ public class NtsConnector extends GatewayConnectorConfig {
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
         } else {
-            String responseCode = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue();
-            String transactionToken = checkResponse(responseCode, messageData, builder);
 
             NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
             result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
@@ -525,9 +529,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (paymentMethod != null) {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
-            if (transactionToken != null) {
-                result.setTransactionToken(transactionToken);
-            }
+
         }
         StringUtils.setAccNo(null);
         StringUtils.setExpDate(null);
@@ -676,7 +678,7 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @param cardType
      * @return True: if card type is non bank card.
      */
-    private boolean isNonBankCard(NTSCardTypes cardType) {
+    public static boolean isNonBankCard(NTSCardTypes cardType) {
         return (cardType.equals(NTSCardTypes.StoredValueOrHeartlandGiftCard)
                 || cardType.equals(NTSCardTypes.WexFleet)
                 || cardType.equals(NTSCardTypes.VoyagerFleet)
@@ -692,7 +694,7 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @param transactionType
      * @return True: if card type is non-fleet BankCard and DataCollect.
      */
-    private boolean isDataCollectForNonFleetBankCard(NTSCardTypes cardType, TransactionType transactionType) {
+    public static boolean isDataCollectForNonFleetBankCard(NTSCardTypes cardType, TransactionType transactionType) {
         return (
                 transactionType == TransactionType.DataCollect
                         || transactionType == TransactionType.Capture

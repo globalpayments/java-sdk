@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.1.10 (09/28/2023)
+
+### Enhancements:
+-NTS Phase1 Issue :
+- User Data length calculated excluding the slashes & tag Number & added into logging(Issue-10250)
+
+-Portico:
+- Added builder check condition for SAFData in buildEnvelope method.
+
 ## v11.1.9 (09/26/2023)
 
 ### Enhancements:

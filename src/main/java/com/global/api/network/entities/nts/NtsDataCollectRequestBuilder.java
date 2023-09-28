@@ -30,6 +30,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
         MessageWriter request = ntsObjectParam.getNtsRequest();
         NTSCardTypes cardType = ntsObjectParam.getNtsCardType();
         String userData = ntsObjectParam.getNtsUserData();
+        int excludedUserDataLength = NtsUtils.getExcludedUserDataLength(userData,cardType,builder);
         NtsRequestMessageHeader ntsRequestMessageHeader = builder.getNtsRequestMessageHeader();
 
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -192,7 +193,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
 
                     // User data length
                     request.addRange(userData.length(), 3);
-                    NtsUtils.log("User Data Length", Integer.toString(userData.length()));
+                    NtsUtils.log("User Data Length", (userData.length()-excludedUserDataLength));
                 }
 
                 request.addRange(userData, userData.length());

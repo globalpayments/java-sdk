@@ -31,6 +31,7 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
         MessageWriter request = ntsObjectParam.getNtsRequest();
         NTSCardTypes cardType = ntsObjectParam.getNtsCardType();
         String userData = ntsObjectParam.getNtsUserData();
+        int excludedUserDataLength = NtsUtils.getExcludedUserDataLength(userData,cardType,builder);
         IBatchProvider batchProvider = ntsObjectParam.getNtsBatchProvider();
         OperatingEnvironment operatingEnvironment = ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment();
 
@@ -211,10 +212,10 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
 
         // UserDataLength & UserData
         if (isExtendedUserData) {
-            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
+            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft((userData.length()-excludedUserDataLength), 4, '0'));
             request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
         } else {
-            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 3, ' '));
+            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft((userData.length()-excludedUserDataLength), 3, ' '));
             request.addRange(userData.length(), 3);
         }
 
