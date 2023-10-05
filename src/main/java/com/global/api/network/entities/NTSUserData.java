@@ -1238,6 +1238,12 @@ public class NTSUserData {
             }
 
         } else if (cardType.equals(NTSCardTypes.FuelmanFleet) || cardType.equals(NTSCardTypes.FleetWide)) {
+
+            if(!nonFuel.isEmpty()){
+                combineProductDataForSimilarNonFuelProducts(nonFuel);
+            }
+            nonFuelSize = nonFuel.size();
+
             if (nonFuelSize > 4) {
                 for (int index = 0; index < nonFuelSize; index++) {
                     if (index < rollUpAt - 1) {
@@ -1426,6 +1432,9 @@ public class NTSUserData {
         StringBuffer sb = new StringBuffer();
         NtsProductData productData = builder.getNtsProductData();
         List<DE63_ProductDataEntry> fuelList = productData.getFuelDataEntries();
+        if(!fuelList.isEmpty()) {
+            addProductDataForSimilarFuelProducts(fuelList);
+        }
         int serviceLevel = mapServiceByCardType(productData.getServiceLevel(), ntsCardTypes);
         for (int i = 0; i < 1; i++) {
             if (fuelList != null && i < fuelList.size()) {
@@ -1601,23 +1610,21 @@ public class NTSUserData {
         HashSet< DE63_ProductDataEntry> duplicateMap = new HashSet<>();
 
         int cnt = 0;
-        String previousCode="";
+
         for (int i = 0; i < nonFuel.size(); i++) {
-            if(!duplicateMap.contains(nonFuel.get(i).getCode())) {
-                cnt = 0;
-            }
-            for (int j = i + 1; j < nonFuel.size(); j++) {
-                cnt++;
+            for (int j = i+1; j < nonFuel.size(); j++) {
                 if (nonFuel.get(i).getCode().equals(nonFuel.get(j).getCode())) {
-                    duplicateMap.add(nonFuel.get(j));
-                    if(cnt==1) {
-                        duplicateMap.add(nonFuel.get(i));
-                    }
+                    duplicateListNonFuel.add(nonFuel.get(j));
+                    duplicateListNonFuel.add(nonFuel.get(i));
                 }
             }
         }
-        duplicateListNonFuel.addAll(duplicateMap);
-        nonFuel.removeAll(duplicateListNonFuel);
+        if(!duplicateListNonFuel.isEmpty()) {
+            HashSet uniqueSet = new HashSet(duplicateListNonFuel);
+            duplicateListNonFuel.clear();
+            duplicateListNonFuel.addAll(uniqueSet);
+            nonFuel.removeAll(duplicateListNonFuel);
+        }
 
         if(duplicateListNonFuel.size()>0){
 

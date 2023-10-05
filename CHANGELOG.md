@@ -1,5 +1,12 @@
 # Changelog
 
+## v11.1.11 (10/05/2023)
+
+### Enhancements:
+-NTS Phase1 Issue:
+- Issue 10233- Product roll-up data(combine product with similar product code)
+- Issue 10253 - HPS-8583-Incorrect Batch Summary reported after retransmit RTB
+
 ## v11.1.10 (09/28/2023)
 
 ### Enhancements:

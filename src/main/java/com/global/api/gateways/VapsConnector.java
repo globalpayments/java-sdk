@@ -54,6 +54,8 @@ public class VapsConnector extends GatewayConnectorConfig {
 
     private boolean lrcFailure;
 
+    BatchSummary summary = new BatchSummary();
+
     public void setAcceptorConfig(AcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
     }
@@ -1527,7 +1529,6 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                     // batch summary
                     if(builder.getTransactionType().equals(TransactionType.BatchClose)) {
-                        BatchSummary summary = new BatchSummary();
                         summary.setResponseCode(responseCode);
                         summary.setResentTransactions(resentTransactions);
                         summary.setResentBatchClose(resentBatch);
