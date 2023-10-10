@@ -42,11 +42,10 @@ public class NtsConnector extends GatewayConnectorConfig {
     private IRequestEncoder requestEncoder;
     private List<BatchSummary> batchSummaryList = new ArrayList<>();
 
-    List<String> resubmitNonApprovedToken = new ArrayList<>();
-    List<String> resubmitFormatErrorToken = new ArrayList<>();
+    Set<String> resubmitNonApprovedToken = new LinkedHashSet<>();
+    Set<String> resubmitFormatErrorToken = new LinkedHashSet<>();
 
-    Transaction result1 = new Transaction();
-
+    Set<String> allDataCollectToken = new LinkedHashSet<>();
     BatchSummary summary = new BatchSummary();
 
     StringBuilder maskedRequest = new StringBuilder("");
@@ -284,7 +283,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         String transactionToken = builder.getTransactionToken();
         Transaction result = null;
-        result1.setTransactionToken(transactionToken);
         byte[] decodeRequest = this.decodeRequest(transactionToken);
         MessageWriter request = new MessageWriter();
         String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
@@ -329,6 +327,8 @@ public class NtsConnector extends GatewayConnectorConfig {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceReversalOrForceVoid.getValue() + originalReq.substring(count + 2);
                     }
                     if (messageCode.equals(NtsMessageCode.RetransmitDataCollect.getValue())) {
+                        originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceCollectOrForceSale.getValue() + originalReq.substring(count + 2);
+                    } else if (messageCode.equals(NtsMessageCode.ForceCollectOrForceSale.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count + 2);
                     } else if (messageCode.equals(NtsMessageCode.RetransmitCreditAdjustment.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
@@ -461,9 +461,26 @@ public class NtsConnector extends GatewayConnectorConfig {
         NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
         String transactionToken = checkResponse(hrc.getValue(), messageData, builder);
-
         if (transactionToken != null) {
             result.setTransactionToken(transactionToken);
+        }
+
+        if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.Success) &&
+                !builder.getTransactionType().equals(TransactionType.BatchClose)){
+            allDataCollectToken.add(result.getTransactionToken());
+            result.setAllDataCollectToken(allDataCollectToken);
+        }
+
+        if (builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)
+                && hrc.equals(NtsHostResponseCode.HostSystemFailure)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeout)
+                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
+            resubmitNonApprovedToken.add(result.getTransactionToken());
+            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
+        }else if(builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)
+                && hrc.equals(NtsHostResponseCode.FormatError)){
+            resubmitFormatErrorToken.add(result.getTransactionToken());
+            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
         }
 
         //Batch Summary
@@ -503,25 +520,16 @@ public class NtsConnector extends GatewayConnectorConfig {
             }
         }
 
-        if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.HostSystemFailure)
-                || hrc.equals(NtsHostResponseCode.TerminalTimeout)
-                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
-            resubmitNonApprovedToken.add(result1.getTransactionToken());
-            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
-        }else if(builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.FormatError)){
-            resubmitFormatErrorToken.add(result1.getTransactionToken());
-            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
-        }
-
         if (Boolean.FALSE.equals(isAllowedResponseCode(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode()))
-            && Boolean.FALSE.equals(isAllowedRCForRetransmit(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))) {
+            && Boolean.FALSE.equals(isAllowedRCForRetransmit(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))
+            && Boolean.FALSE.equals(isAllowedRCForBatchClose(ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode(),builder))
+        ) {
             throw new GatewayException(
                     String.format("Unexpected response from gateway: %s %s", ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                             ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().toString()),
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().getValue(),
                     ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode().name());
         } else {
-
             NtsResponseMessageHeader ntsResponseMessageHeader = ntsResponse.getNtsResponseMessageHeader();
             result.setResponseCode(ntsResponseMessageHeader.getNtsNetworkMessageHeader().getResponseCode().getValue());
             result.setNtsResponse(ntsResponse);
@@ -529,7 +537,6 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (paymentMethod != null) {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
-
         }
         StringUtils.setAccNo(null);
         StringUtils.setExpDate(null);
@@ -611,6 +618,13 @@ public class NtsConnector extends GatewayConnectorConfig {
                     || responseCode == NtsHostResponseCode.TerminalTimeout
                     || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
                     || responseCode == NtsHostResponseCode.FormatError);
+    }
+
+    private <T extends TransactionBuilder<Transaction>> Boolean isAllowedRCForBatchClose(NtsHostResponseCode responseCode, T builder) {
+        return builder.getTransactionType().equals(TransactionType.BatchClose)  && (responseCode == NtsHostResponseCode.HostSystemFailure
+                || responseCode == NtsHostResponseCode.TerminalTimeout
+                || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
+                || responseCode == NtsHostResponseCode.FormatError);
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

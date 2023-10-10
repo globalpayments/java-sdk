@@ -797,30 +797,12 @@ public class NTSUserData {
             referenceMessageCode = ((TransactionReference) builder.getPaymentMethod()).getOriginalMessageCode();
         }
         switch (cardType) {
-            case MastercardPurchasing:
-                if (builder.getTransactionType().equals(TransactionType.DataCollect) ||
-                        builder.getTransactionType().equals(TransactionType.Capture)) {
-                    if (messageCode.equals(NtsMessageCode.DataCollectOrSale) || messageCode.equals(NtsMessageCode.CreditAdjustment)) {
-                        if (builder.getCustomerCode() != null)
-                                sb.append(StringUtils.padRight(builder.getCustomerCode(), 17, ' '));
-                             else
-                                sb.append(String.format("%17s", " "));
-                        sb.append(getMastercardPurchasingFuelList(builder));
-                        sb.append(getMastercardPurchasingNonFuelList(builder));
-                        if (productData.getSalesTax() != null)
-                            sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
-                        else
-                            sb.append(String.format("%05d", 0));
-                        sb.append(StringUtils.padLeft("", 12, ' '));
-                        sb.append("?");
-                    }
-                }
-                break;
             case Mastercard:
             case Visa:
             case AmericanExpress:
             case Discover:
             case StoredValueOrHeartlandGiftCard:
+            case MastercardPurchasing:
             case PinDebit:
                 IPaymentMethod paymentMethod =  builder.getPaymentMethod();
                 if(paymentMethod instanceof TransactionReference){

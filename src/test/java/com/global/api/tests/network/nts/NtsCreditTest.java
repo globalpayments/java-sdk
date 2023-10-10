@@ -2786,6 +2786,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
+                .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(header)
                 .execute();
         assertNotNull(dataCollectResponse);
@@ -2800,6 +2801,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
 
         track = NtsTestCards.MasterCardPurchasingTrack2(EntryMethod.Swipe);
+        track.setCardType("MC");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -2823,6 +2825,7 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
+                .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(header)
                 //.withCustomerCode("123456789")
                 .execute();

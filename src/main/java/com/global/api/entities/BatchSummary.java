@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class BatchSummary {
     private Integer batchId;
@@ -44,9 +45,11 @@ public class BatchSummary {
     @Getter @Setter
     private LinkedList<Transaction> resentbatchTransactions;
     @Getter @Setter
-    private List<String> nonApprovedDataCollectToken;
+    private Set<String> nonApprovedDataCollectToken;
     @Getter @Setter
-    private List<String> formatErrorDataCollectToken;
+    private Set<String> formatErrorDataCollectToken;
+    @Getter @Setter
+    private Set<String> allDataCollectToken;
     @Getter @Setter
     private String hostResponseCode;
     @Getter @Setter
@@ -226,15 +229,18 @@ public class BatchSummary {
             throw new BuilderException("Batch recovery has not been requested for this batch.");
         }
 
+        ArrayList<String> tokenList = new ArrayList<>(transactionTokens);
+        transactionTokens.clear();
         // resubmit the tokens
         LinkedList<Transaction> responses = new LinkedList<>();
-        for(String token: transactionTokens) {
+        for(String token: tokenList) {
             Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
                     .withTransactionToken(token)
                     .execute(configName);
             responses.add(response);
             this.setNonApprovedDataCollectToken(response.getNonApprovedDataCollectToken());
             this.setFormatErrorDataCollectToken(response.getFormatErrorDataCollectToken());
+            this.setAllDataCollectToken(response.getAllDataCollectToken());
         }
         this.setResentTransactions(responses);
 
@@ -260,7 +266,7 @@ public class BatchSummary {
         return this;
     }
 
-    public BatchSummary resubmitTransactions(boolean isFormatErrorToken, List<String> transactionTokens) throws ApiException {
+    public BatchSummary resubmitTransactions(boolean isFormatErrorToken, Set<String> transactionTokens, boolean isForcedToHost) throws ApiException {
         //Data collect
         ArrayList<String> tokenList = new ArrayList<>(transactionTokens);
         transactionTokens.clear();
@@ -271,19 +277,28 @@ public class BatchSummary {
             counter++;
             performFormatErrorOperation(tokenList, responses);
         }else{
-            performNonApprovedErrorOperation(tokenList, responses);
+            performNonApprovedErrorOperation(tokenList, responses, isForcedToHost);
         }
 
         return this;
     }
 
-    private void performNonApprovedErrorOperation(ArrayList<String> tokenList, LinkedList<Transaction> responses) throws ApiException {
-        for (String token : tokenList) {
-            Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
-                    .withTransactionToken(token)
-                    .withForceToHost(true)
-                    .execute(CONFIG_NAME);
-            responses.add(response);
+    private void performNonApprovedErrorOperation(ArrayList<String> tokenList, LinkedList<Transaction> responses, boolean isForcedToHost) throws ApiException {
+        if(isForcedToHost){
+            for (String token : tokenList) {
+                Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
+                        .withTransactionToken(token)
+                        .withForceToHost(true)
+                        .execute(CONFIG_NAME);
+                responses.add(response);
+            }
+        }else{
+            for (String token : tokenList) {
+                Transaction response = new ResubmitBuilder(TransactionType.DataCollect)
+                        .withTransactionToken(token)
+                        .execute(CONFIG_NAME);
+                responses.add(response);
+            }
         }
         this.setResentTransactions(responses);
     }

@@ -24,10 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Transaction {
     private String additionalResponseCode;
@@ -70,12 +67,14 @@ public class Transaction {
     @Getter @Setter private boolean multiCapture;
     @Getter @Setter private Integer multiCapturePaymentCount;
     @Getter @Setter private Integer multiCaptureSequence;
-    @Getter @Setter private List<String> nonApprovedDataCollectToken;
-    @Getter @Setter private List<String> formatErrorDataCollectToken;
+    @Getter @Setter private Set<String> nonApprovedDataCollectToken;
+    @Getter @Setter private Set<String> formatErrorDataCollectToken;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayByLinkResponse payByLinkResponse;
     @Getter private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
+    @Getter @Setter
+    private Set<String> allDataCollectToken;
     public void setTransferFundsAccountDetailsList(List<TransferFundsAccountDetails> value){
         if (transactionReference == null) {
             transactionReference = new TransactionReference();

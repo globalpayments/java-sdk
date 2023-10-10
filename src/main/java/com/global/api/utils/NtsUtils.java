@@ -130,11 +130,15 @@ public class NtsUtils {
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDebitResponse) {
             authorizer = AuthorizerCode.Interchange_Authorized;
             approvalCode = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getCode();
-            debitAuthorizer = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+            if(((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode()!=null) {
+                debitAuthorizer = ((NtsDebitResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+            }
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsEbtResponse) {
             authorizer = AuthorizerCode.Interchange_Authorized;
             approvalCode = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
-            debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+            if(((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode()!=null) {
+                debitAuthorizer = ((NtsEbtResponse) ntsResponse.getNtsResponseMessage()).getAuthorizerCode().getValue();
+            }
         } else if (ntsResponse.getNtsResponseMessage() instanceof NtsDataCollectResponse) {
             approvalCode = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getApprovalCode();
             batchNumber = ((NtsDataCollectResponse) ntsResponse.getNtsResponseMessage()).getBatchNumber();
