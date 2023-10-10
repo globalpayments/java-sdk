@@ -225,6 +225,11 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                         .set("currency", builder.getCurrency())
                                         .set("country", gateway.getGpApiConfig().getCountry())
                                         .set("payment_method", paymentMethod);
+                        if (builder.getStoredCredential() != null) {
+                            verificationData.set("initiator", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getInitiator()));
+                            JsonDoc storedCredential = (new JsonDoc()).set("model", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getType())).set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason())).set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
+                            verificationData.set("stored_credential", storedCredential);
+                        }
 
                         if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
                             verificationData.remove("payment_method");
