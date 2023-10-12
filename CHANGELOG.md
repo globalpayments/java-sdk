@@ -1,16 +1,21 @@
 # Changelog
 
+## v11.1.13 (10/12/2023)
+
+### Enhancements:
+-NTS Phase1 Issue:
+- reverted code of calculating userdata length excluding tagId and separators for logs(Issue-10250).
+
+
 ## v11.1.12 (10/10/2023)
 
 ### Enhancements:
 -NTS Phase1 Issue:
--Code handled for (10213, 10214, 10243) -
-   RTB(16) returned 40/80/90
-   DC (12) returned 40/80/90 and RTB(16) returned 01
--MasterCard Purchasing UserData Format (10254)
--Fixes for debit authorizer (10255)
--Added Authorizer Codes For ChaseNet & heartland Gift Card (10256)
--Return batch summary object instead of throwing an exception(10257)
+- Code added for 10213, 10214 & 10243 to handle RTB(16) returned 40/80/90 & DC (12) returned 40/80/90 and RTB(16) returned 01 scenario.
+- MasterCard Purchasing UserData Format (10254)
+- Fixes for debit authorizer (10255)
+- Added Authorizer Codes For ChaseNet & heartland Gift Card (10256)
+- Return batch summary object instead of throwing an exception(10257)
 
 
 ## v11.1.11 (10/05/2023)

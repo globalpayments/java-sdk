@@ -39,7 +39,6 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
         TransactionType transactionType = builder.getTransactionType();
         boolean isExtendedUserData = false;
-        int excludedUserDataLength = NtsUtils.getExcludedUserDataLength(userData,cardType,builder);
 
         TransactionReference transactionReference = null;
         if (paymentMethod instanceof TransactionReference) {
@@ -181,10 +180,10 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
 
             // UserDataLength & UserData
             if (isExtendedUserData) {
-                NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft((userData.length()-excludedUserDataLength), 4, '0'));
+                NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
                 request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
             } else {
-                NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft((userData.length()-excludedUserDataLength), 3, ' '));
+                NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 3, ' '));
                 request.addRange(userData.length(), 3);
             }
 
@@ -200,7 +199,7 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
 
             // User data length
             request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
-            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft((userData.length()-excludedUserDataLength), 4, '0'));
+            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
 
             // User data
             request.addRange(StringUtils.padLeft(userData, userData.length(), ' '), userData.length());

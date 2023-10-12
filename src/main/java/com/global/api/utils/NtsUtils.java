@@ -638,16 +638,4 @@ public class NtsUtils {
         return StringUtils.padLeft(rvalue, length, paddingCharacter);
     }
 
-    public static int getExcludedUserDataLength(String userData,NTSCardTypes cardType,TransactionBuilder builder){
-        int userDataLength = 0;
-        final int NUMBER_OF_TAG_LENGTH = 2;
-        if (!StringUtils.isNullOrEmpty(userData) &&
-                !(NtsConnector.isNonBankCard(cardType) ||
-                        NtsConnector.isDataCollectForNonFleetBankCard(cardType, builder.getTransactionType()))
-        ) {
-            userDataLength = Integer.parseInt(userData.substring(0, 2));
-            userDataLength = (userDataLength * 4 + NUMBER_OF_TAG_LENGTH);
-        }
-        return userDataLength;
-    }
 }

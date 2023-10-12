@@ -692,7 +692,7 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @param cardType
      * @return True: if card type is non bank card.
      */
-    public static boolean isNonBankCard(NTSCardTypes cardType) {
+    private static boolean isNonBankCard(NTSCardTypes cardType) {
         return (cardType.equals(NTSCardTypes.StoredValueOrHeartlandGiftCard)
                 || cardType.equals(NTSCardTypes.WexFleet)
                 || cardType.equals(NTSCardTypes.VoyagerFleet)
@@ -708,7 +708,7 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @param transactionType
      * @return True: if card type is non-fleet BankCard and DataCollect.
      */
-    public static boolean isDataCollectForNonFleetBankCard(NTSCardTypes cardType, TransactionType transactionType) {
+    private static boolean isDataCollectForNonFleetBankCard(NTSCardTypes cardType, TransactionType transactionType) {
         return (
                 transactionType == TransactionType.DataCollect
                         || transactionType == TransactionType.Capture
