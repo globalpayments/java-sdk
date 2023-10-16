@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.1.14 (10/16/2023)
+
+### Enhancements:
+-NTS Phase1 Issue :
+- Added missing condition of Mastercard Purchasing(Issue-10254)
+
+-Portico:
+- Added Cardholder email support property.
+
 ## v11.1.13 (10/12/2023)
 
 ### Enhancements:

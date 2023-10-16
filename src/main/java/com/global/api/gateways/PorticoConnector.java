@@ -87,7 +87,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
 
         boolean isCheck = (paymentType.equals(PaymentMethodType.ACH));
-        if (isCheck || builder.getBillingAddress() != null || !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())) {
+        if (
+                isCheck
+                || builder.getBillingAddress() != null
+                || !StringUtils.isNullOrEmpty(builder.getCardHolderLanguage())
+                || (builder.getCustomerData() != null && !StringUtils.isNullOrEmpty(builder.getCustomerData().getEmail()))
+        ) {
             Element holder = et.subElement(block1, isCheck ? "ConsumerInfo" : "CardHolderData");
 
             Address address = builder.getBillingAddress();
@@ -96,6 +101,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(holder, isCheck ? "City" : "CardHolderCity", address.getCity());
                 et.subElement(holder, isCheck ? "State" : "CardHolderState", address.getProvince());
                 et.subElement(holder, isCheck ? "Zip" : "CardHolderZip", address.getPostalCode());
+            }
+
+            if (!StringUtils.isNullOrEmpty(builder.getCustomerData().getEmail())) {
+                et.subElement(holder, isCheck ? "EmailAddress" : "CardHolderEmail", builder.getCustomerData().getEmail());
             }
 
             if (isCheck) {
@@ -724,8 +733,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "DeviceId", deviceId);
         et.subElement(header, "UserName", username);
         et.subElement(header, "Password", password);
-        et.subElement(header, "DeveloperID", developerId);
         et.subElement(header, "VersionNbr", versionNumber);
+        et.subElement(header, "DeveloperID", developerId);
         et.subElement(header, "ClientTxnId", clientTransactionId);
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
@@ -1120,6 +1129,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         summary.setBatchCloseDate(root.getDateTime("BatchCloseDT"));
         summary.setBatchSequenceNumber(root.getString("BatchSeqNbr"));
         summary.setCaptureAmount(root.getDecimal("CaptureAmtInfo"));
+        summary.setEmail(root.getString("CardHolderEmail"));
         summary.setCardSwiped(root.getString("CardSwiped"));
         summary.setCardType(root.getString("CardType"));
         summary.setCavvResponseCode(root.getString("CAVVResultCode"));

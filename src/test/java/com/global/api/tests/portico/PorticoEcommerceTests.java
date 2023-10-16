@@ -1,24 +1,22 @@
 package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.EcommerceInfo;
-import com.global.api.entities.PaymentDataSourceType;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.EcommerceChannel;
 import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.PorticoConfig;
+import com.global.api.services.ReportingService;
 import com.global.api.tests.testdata.TestCards;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PorticoEcommerceTests {
     private CreditCardData card;
@@ -144,6 +142,25 @@ public class PorticoEcommerceTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void testCardHolderEmail() throws ApiException {
+        String customerEmail = "john.doe@test.com";
+        Customer customer = new Customer();
+        customer.setEmail(customerEmail);
+        Transaction response = card.charge(new BigDecimal("11"))
+                .withCurrency("USD")
+                .withCustomerData(customer)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary txnSummary = ReportingService.transactionDetail(response.getTransactionId()).execute();
+
+        assertNotNull(txnSummary);
+        assertEquals(customerEmail, txnSummary.getEmail() );
     }
 
     @Test

@@ -56,6 +56,7 @@ public class TransactionSummary {
     private String description;
     private int deviceId;
     private String eciIndicator;
+    private String email;
     private String emvChipCondition;
     private String emvIssuerResponse;
 	private String entryMode;

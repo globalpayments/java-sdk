@@ -628,6 +628,7 @@ public class NTSUserData {
             case AmericanExpress:
             case Discover:
             case StoredValueOrHeartlandGiftCard:
+            case MastercardPurchasing:
             case PinDebit:
                 // Preparing product data fuel
                 if (fuelFlag && !fuel.isEmpty()) {
