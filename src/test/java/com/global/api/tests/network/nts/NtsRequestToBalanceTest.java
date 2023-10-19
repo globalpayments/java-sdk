@@ -649,12 +649,21 @@ public class NtsRequestToBalanceTest {
         BatchSummary summary = batchSummary.resubmitTransactions(list);
         assertNotNull(summary);
 
-        BatchSummary newSummary = batchSummary.resubmitTransactions(true,summary.getFormatErrorDataCollectToken(),false);
-        assertNotNull(newSummary);
-
-        batchSummary.setHostResponseCode("79");
-        BatchSummary newSummary1 = batchSummary.resubmitTransactions(true,newSummary.getFormatErrorDataCollectToken(),false);
-        assertNotNull(newSummary1);
+        ArrayList<String> tokens = new ArrayList<>(summary.getFormatErrorDataCollectToken());
+        for(String token :tokens){
+            for(int i = 0; i <= 1; i++){
+                Transaction dataCollect = null;
+                if(i ==0){
+                    dataCollect = NetworkService.resubmitDataCollect(token)
+                            .execute();
+                }else if(!dataCollect.getResponseCode().equals("00")){
+                    dataCollect = NetworkService.resubmitDataCollect(token)
+                            .withHostResponseCode("79")
+                            .execute();
+                }
+                assertNotNull(dataCollect);
+            }
+        }
     }
     @Test
     public void test_BatchCloseIssue_10214_16_to_C6() throws ApiException {
@@ -782,8 +791,11 @@ public class NtsRequestToBalanceTest {
         assertNotNull(summary);
 
         for(int i = 0; i < 10; i++){
-            NetworkService.resubmitBatchClose(summary.getTransactionToken())
+            Transaction transaction = NetworkService.resubmitBatchClose(summary.getTransactionToken())
                     .execute();
+            BatchSummary newSummary = transaction.getBatchSummary();
+            assertNotNull(newSummary);
+
         }
 
 

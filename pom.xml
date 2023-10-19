@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.heartlandpaymentsystems</groupId>
   <artifactId>globalpayments-sdk</artifactId>
-  <version>11.1.14</version>
+  <version>11.1.15</version>
   <packaging>jar</packaging>
   <name>Heartland &amp; Global Payments SDK</name>
   <description>API for processing payments through Global Payments</description>
@@ -147,7 +147,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.12</version>
+      <version>1.18.30</version>
     </dependency>
   </dependencies>
   <properties>

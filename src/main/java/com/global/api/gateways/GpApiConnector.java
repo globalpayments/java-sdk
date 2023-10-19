@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.var;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,8 +34,6 @@ import java.util.Date;
 import java.util.HashMap;
 
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
-import static com.global.api.gateways.DateParsingUtils.DATE_TIME_DTF;
-import static com.global.api.gateways.DateParsingUtils.DATE_SDF;
 
 public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, IPayFacProvider, IFraudCheckService {
 
@@ -240,6 +237,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiAuthorizationRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
+            addMaskedData(request.maskedData);
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
@@ -260,6 +258,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiManagementRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
+            addMaskedData(request.maskedData);
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             if (builder.getPaymentMethod() instanceof TransactionReference && builder.getPaymentMethod().getPaymentMethodType() == PaymentMethodType.APM) {
@@ -281,6 +280,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiReportRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
+            addMaskedData(request.maskedData);
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), null);
 
             return GpApiMapping.mapReportResponse(response, builder.getReportType());
@@ -301,6 +301,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiSecureRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
+            addMaskedData(request.maskedData);
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             return GpApiMapping.map3DSecureData(response);
@@ -319,6 +320,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiPayFacRequestBuilder.buildRequest(builder, this);
 
         if (request != null){
+            addMaskedData(request.maskedData);
             var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
 
             return GpApiMapping.mapMerchantEndpointResponse(response);
@@ -403,6 +405,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = gpApiSecureRequestBuilder.buildRequest(builder, this);
 
         if (request != null) {
+            addMaskedData(request.maskedData);
             var response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), builder.getIdempotencyKey());
             return GpApiMapping.mapRiskAssessmentResponse(response);
         }

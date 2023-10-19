@@ -1,5 +1,16 @@
 # Changelog
 
+## v11.1.15 (10/19/2023)
+
+### Enhancements:
+-NTS Phase1 Issue :
+- Added BatchSummary Object when reSubmitting batchClose transaction(issue:10259)
+- Fixed Incorrect amount and quantity for Gift Card & Fixed unit of measure value for WexFleet(Issue: 10233)
+
+-[GP-API]
+- Credit Or Debit a Funds Management Account (FMA) - https://developer.globalpay.com/api/funds
+- Enhance logs based on environment (GP-API & GP-ECOM)
+
 ## v11.1.14 (10/16/2023)
 
 ### Enhancements:

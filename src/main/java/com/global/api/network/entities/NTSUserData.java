@@ -634,9 +634,9 @@ public class NTSUserData {
                 if (fuelFlag && !fuel.isEmpty()) {
                     String code = "";
                     String pcode = null;
-                    BigDecimal price = new BigDecimal(0),
-                            quantity = new BigDecimal(0),
-                            amount = new BigDecimal(0);
+                    BigDecimal price = new BigDecimal(0);
+                    BigDecimal quantity = new BigDecimal(0);
+                    BigDecimal amount = new BigDecimal(0);
                     List<DE63_ProductDataEntry> uniqueList=new ArrayList<>();
 
                     for (int i = 0; i < fuel.size(); i++) {
@@ -676,9 +676,9 @@ public class NTSUserData {
                 // Preparing product data non-fuel
                 int nonFuelProductLimit = fuel.size() >= 1 ? 4 : 5;
                 String code = "";
-                BigDecimal price = new BigDecimal(0),
-                        quantity = new BigDecimal(0),
-                        amount = new BigDecimal(0);
+                BigDecimal price = new BigDecimal(0);
+                BigDecimal quantity = new BigDecimal(0);
+                BigDecimal amount = new BigDecimal(0);
                 List<DE63_ProductDataEntry> duplicateListNonFuel=new ArrayList<>();
 
                 for (int i = 0; i < nonFuel.size(); i++) {
@@ -721,7 +721,9 @@ public class NTSUserData {
                     }
 
                 }
-
+                price = new BigDecimal(0);
+                quantity = new BigDecimal(0);
+                amount = new BigDecimal(0);
                 for (int i = 0; i < Math.max(nonFuel.size(), nonFuelProductLimit); i++) {
                     if (nonFuel.size() > nonFuelProductLimit && i >= nonFuelProductLimit - 1) {
                         code = StringUtils.padLeft("400", 3, '0');
@@ -1047,6 +1049,7 @@ public class NTSUserData {
         List<DE63_ProductDataEntry> nonFuel = productData.getNonFuelDataEntries();
         int nonFuelSize = nonFuel.size();
         float sumAmount = 0.0f;
+        int unitOfMeasure= 0;
         if (cardType.equals(NTSCardTypes.VisaFleet)) {
 
             if(transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Sale)){
@@ -1129,11 +1132,12 @@ public class NTSUserData {
                             }
                             sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 6));
                         } else {
+                            unitOfMeasure = mapUnitMeasure(nonFuel.get(i).getUnitOfMeasure());
                             sumAmount += nonFuel.get(i).getAmount().floatValue();
                         }
                     }
                     sb.append(StringUtils.padLeft(400, 3, '0'));
-                    sb.append(String.format("%01d", 0));
+                    sb.append(StringUtils.padLeft(unitOfMeasure, 1, '0'));
                     sb.append(StringUtils.padLeft(1, 1, '0'));
                     sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 6));
                 } else {
@@ -1180,11 +1184,12 @@ public class NTSUserData {
                             }
                             sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 6));
                         } else {
+                            unitOfMeasure = mapUnitMeasure(nonFuel.get(i).getUnitOfMeasure());
                             sumAmount += nonFuel.get(i).getAmount().floatValue();
                         }
                     }
                     sb.append(StringUtils.padLeft(400, 3, '0'));
-                    sb.append(String.format("%01d", 0));
+                    sb.append(StringUtils.padLeft(unitOfMeasure, 1, '0'));
                     sb.append(StringUtils.padLeft(1, 1, '0'));
                     sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 6));
                 } else {
@@ -1542,9 +1547,9 @@ public class NTSUserData {
     public static void addProductDataForSimilarFuelProducts(List<DE63_ProductDataEntry> fuel){
         // Preparing product data fuel
         String code = "";
-        BigDecimal price = new BigDecimal(0),
-                quantity = new BigDecimal(0),
-                amount = new BigDecimal(0);
+        BigDecimal price = new BigDecimal(0);
+        BigDecimal quantity = new BigDecimal(0);
+        BigDecimal amount = new BigDecimal(0);
         UnitOfMeasure unitOfMeasure = UnitOfMeasure.NoFuelPurchased;
         List<DE63_ProductDataEntry> duplicateListFuel=new ArrayList<>();
 
@@ -1585,12 +1590,11 @@ public class NTSUserData {
 
         // Preparing product data non-fuel
         String code = "";
-        BigDecimal price = new BigDecimal(0),
-                quantity = new BigDecimal(0),
-                amount = new BigDecimal(0);
+        BigDecimal price = new BigDecimal(0);
+        BigDecimal quantity = new BigDecimal(0);
+        BigDecimal amount = new BigDecimal(0);
         UnitOfMeasure unitOfMeasure = UnitOfMeasure.NoFuelPurchased;
         List<DE63_ProductDataEntry> duplicateListNonFuel = new ArrayList<>();
-        HashSet< DE63_ProductDataEntry> duplicateMap = new HashSet<>();
 
         int cnt = 0;
 

@@ -417,6 +417,20 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     @Test
     public void CreatePayByLink_ThenCharge_WithTokenizedCard() throws ApiException, InterruptedException {
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+        GpApiConfig config = new GpApiConfig();
+
+        // GP-API settings
+        config
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
+                .setPermissions(permissions);
+
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+        ServicesContainer.configureService(setupTransactionConfig(), "createTransaction");
+
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
@@ -427,12 +441,10 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
         assertPayByLinkResponse(response);
 
-        ServicesContainer.configureService(setupTransactionConfig(), "createTransaction");
-
         String token =
                 card
                         .tokenize(true, PaymentMethodUsageMode.SINGLE)
-                        .execute("createTransaction")
+                        .execute("singleUseToken")
                         .getToken();
 
         CreditCardData tokenizedCard = new CreditCardData();

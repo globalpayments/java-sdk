@@ -6,6 +6,8 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.gateways.OpenBankingProvider;
 import com.global.api.paymentMethods.*;
@@ -15,6 +17,7 @@ import lombok.var;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
@@ -26,6 +29,8 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 import static com.global.api.utils.StringUtils.toNumeric;
 
 public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<AuthorizationBuilder> {
+
+    private final Map<String, String> maskedData = new HashMap<>();
 
     @Override
     public GpApiRequest buildRequest(AuthorizationBuilder builder, GpApiConnector gateway) throws GatewayException, UnsupportedTransactionException {
@@ -41,8 +46,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         TransactionModifier builderTransactionModifier = builder.getTransactionModifier();
         Address builderBillingAddress = builder.getBillingAddress();
 
-        if (builderPaymentMethod instanceof CreditCardData && (builderTransactionModifier == TransactionModifier.EncryptedMobile || builderTransactionModifier == TransactionModifier.DecryptedMobile))
-        {
+        if (builderPaymentMethod instanceof CreditCardData && (builderTransactionModifier == TransactionModifier.EncryptedMobile || builderTransactionModifier == TransactionModifier.DecryptedMobile)) {
             JsonDoc digitalWallet = new JsonDoc();
             CreditCardData creditCardData = (CreditCardData) builderPaymentMethod;
 
@@ -62,9 +66,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
                 digitalWallet
                         .set("payment_token", payment_token);
-            }
-            else if (builderTransactionModifier == TransactionModifier.DecryptedMobile)
-            {
+            } else if (builderTransactionModifier == TransactionModifier.DecryptedMobile) {
                 DigitalWalletTokenFormat tokenFormat = DigitalWalletTokenFormat.CARD_NUMBER;
                 digitalWallet
                         .set("token", creditCardData.getToken())
@@ -73,6 +75,15 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         .set("expiry_year", creditCardData.getExpYear() != null ? StringUtils.padLeft(creditCardData.getExpYear(), 4, '0').substring(2, 4) : null)
                         .set("cryptogram", creditCardData.getCryptogram())
                         .set("eci", creditCardData.getEci());
+
+                maskedData.putAll(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment_method.digital_wallet.expiry_month", digitalWallet.getString("expiry_month")),
+                                new ElementToMask("payment_method.digital_wallet.expiry_year", digitalWallet.getString("expiry_year"))
+                        )
+                );
+
+
             }
             digitalWallet.set("provider", mapDigitalWalletType(Target.GP_API, ((CreditCardData) builderPaymentMethod).getMobileType()));
             paymentMethod.set("digital_wallet", digitalWallet);
@@ -110,6 +121,15 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
                 if (!hasToken) {
                     paymentMethod.set("card", card);
+
+                    maskedData.putAll(
+                            MaskValueUtil.hideValues(
+                                    new ElementToMask("payment_method.card.number", card.getString("number"), 4, 6),
+                                    new ElementToMask("payment_method.card.cvv", card.getString("cvv")),
+                                    new ElementToMask("payment_method.card.expiry_month", card.getString("expiry_month")),
+                                    new ElementToMask("payment_method.card.expiry_year", card.getString("expiry_year"))
+                            )
+                    );
                 }
                 // Brand reference when card was tokenized
                 else {
@@ -129,13 +149,23 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("card", card);
 
+                    maskedData.putAll(
+                            MaskValueUtil.hideValues(
+                                    new ElementToMask("card.number", card.getString("number")),
+                                    new ElementToMask("card.cvv", card.getString("cvv")),
+                                    new ElementToMask("card.expiry_month", card.getString("expiry_month")),
+                                    new ElementToMask("card.expiry_year", card.getString("expiry_year"))
+                            )
+                    );
+
                     return (GpApiRequest)
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
-                                    .setRequestBody(tokenizationData.toString());
-                }
-                else if (builderTransactionType == TransactionType.DccRateLookup) {
+                                    .setRequestBody(tokenizationData.toString())
+                                    .setMaskedData(maskedData);
+
+                } else if (builderTransactionType == TransactionType.DccRateLookup) {
                     // tokenized payment method
                     if (builderPaymentMethod instanceof ITokenizable) {
                         String token = ((ITokenizable) builderPaymentMethod).getToken();
@@ -159,9 +189,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.DCC_ENDPOINT)
-                                    .setRequestBody(requestData.toString());
-                }
-                else if (builderTransactionType == TransactionType.Verify) {
+                                    .setRequestBody(requestData.toString())
+                                    .setMaskedData(maskedData);
+
+                } else if (builderTransactionType == TransactionType.Verify) {
                     if (builder.isRequestMultiUseToken() && StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
                         JsonDoc tokenizationData = new JsonDoc();
                         tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
@@ -171,14 +202,23 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         tokenizationData.set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
                         tokenizationData.set("card", card);
 
+                        maskedData.putAll(
+                                MaskValueUtil.hideValues(
+                                        new ElementToMask("card.number", card.getString("number"), 4, 6),
+                                        new ElementToMask("card.cvv", card.getString("cvv")),
+                                        new ElementToMask("card.expiry_month", card.getString("expiry_month")),
+                                        new ElementToMask("card.expiry_year", card.getString("expiry_year"))
+                                )
+                        );
+
                         return (GpApiRequest)
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
                                         .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT)
-                                        .setRequestBody(tokenizationData.toString());
+                                        .setRequestBody(tokenizationData.toString())
+                                        .setMaskedData(maskedData);
 
-                    }
-                    else {
+                    } else {
                         JsonDoc verificationData =
                                 new JsonDoc()
                                         .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
@@ -202,7 +242,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 new GpApiRequest()
                                         .setVerb(GpApiRequest.HttpMethod.Post)
                                         .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
-                                        .setRequestBody(verificationData.toString());
+                                        .setRequestBody(verificationData.toString())
+                                        .setMaskedData(maskedData);
                     }
                 }
             }
@@ -236,7 +277,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             new GpApiRequest()
                                     .setVerb(GpApiRequest.HttpMethod.Post)
                                     .setEndpoint(merchantUrl + GpApiRequest.VERIFICATIONS_ENDPOINT)
-                                    .setRequestBody(verificationData.toString());
+                                    .setRequestBody(verificationData.toString())
+                                    .setMaskedData(maskedData);
                 }
 
                 if (builderTransactionType == TransactionType.Sale || builderTransactionType == TransactionType.Refund) {
@@ -244,6 +286,14 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         card.set("number", track.getPan());
                         card.set("expiry_month", track.getExpiry().substring(2, 4));
                         card.set("expiry_year", track.getExpiry().substring(0, 2));
+
+                        maskedData.putAll(
+                                MaskValueUtil.hideValues(
+                                        new ElementToMask("payment_method.card.number", card.getString("number"), 4, 6),
+                                        new ElementToMask("payment_method.card.expiry_month", card.getString("expiry_month")),
+                                        new ElementToMask("payment_method.card.expiry_year", card.getString("expiry_year"))
+                                )
+                        );
                     }
                     if (StringUtils.isNullOrEmpty(builder.getTagData())) {
                         card.set("chip_condition", getChipCondition(builder.getEmvChipCondition())); // [PREV_SUCCESS, PREV_FAILED]
@@ -294,13 +344,13 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 JsonDoc authentication =
                         new JsonDoc()
                                 .set("id", secureEcom.getServerTransactionId())
-                                .set("three_ds",  three_ds);
+                                .set("three_ds", three_ds);
 
                 paymentMethod.set("authentication", authentication);
             }
         }
 
-        if(builderPaymentMethod instanceof EBT) {
+        if (builderPaymentMethod instanceof EBT) {
             EBT ebt = (EBT) builderPaymentMethod;
             paymentMethod.set("name", ebt.getCardHolderName());
         }
@@ -322,7 +372,14 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("code", check.getRoutingNumber())
                             .set("name", check.getBankName());
 
-            if(check.getBankAddress() != null) {
+            maskedData.putAll(
+                    MaskValueUtil.hideValues(
+                            new ElementToMask("payment_method.bank_transfer.bank.code", check.getRoutingNumber(), 0, check.getRoutingNumber().length() - 4),
+                            new ElementToMask("payment_method.bank_transfer.account_number", check.getAccountNumber(), 0, check.getAccountNumber().length() - 4)
+                    )
+            );
+
+            if (check.getBankAddress() != null) {
                 Address checkBankAddress = check.getBankAddress();
                 JsonDoc address =
                         new JsonDoc()
@@ -372,6 +429,21 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("account_number", bankPaymentType == BankPaymentType.FASTERPAYMENTS ? bankpaymentMethod.getAccountNumber() : "")
                             .set("iban", bankPaymentType == BankPaymentType.SEPA ? bankpaymentMethod.getIban() : "");
 
+            if (bankpaymentMethod.getAccountNumber() != null && !bankpaymentMethod.getAccountNumber().isEmpty()) {
+                maskedData.putAll(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment_method.bank_transfer.account_number", bankTransfer.getString("account_number"), 0, bankTransfer.getString("account_number").length() - 4)
+                        )
+                );
+            }
+            if (bankpaymentMethod.getIban() != null && !bankpaymentMethod.getIban().isEmpty()) {
+                maskedData.putAll(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment_method.bank_transfer.iban", bankTransfer.getString("iban"), 0, bankTransfer.getString("iban").length() - 4)
+                        )
+                );
+            }
+
             var bank =
                     new JsonDoc()
                             .set("code", bankpaymentMethod.getSortCode())
@@ -416,8 +488,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 if (!StringUtils.isNullOrEmpty(encryptionData.getKtb())) {
                     encryption.set("method", "KTB");
                     encryption.set("info", encryptionData.getKtb());
-                }
-                else if (!StringUtils.isNullOrEmpty(encryptionData.getKsn())) {
+                } else if (!StringUtils.isNullOrEmpty(encryptionData.getKsn())) {
                     encryption.set("method", "KSN");
                     encryption.set("info", encryptionData.getKsn());
                 }
@@ -437,7 +508,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                             .set("type", payByLinkData.getType().toString())
                             .set("usage_mode", payByLinkData.getUsageMode() != null ? payByLinkData.getUsageMode().getValue() : null)
-                            .set("usage_limit",  payByLinkData.getUsageLimit() != null ? payByLinkData.getUsageLimit() : null)
+                            .set("usage_limit", payByLinkData.getUsageLimit() != null ? payByLinkData.getUsageLimit() : null)
                             .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : java.util.UUID.randomUUID().toString())
                             .set("name", payByLinkData.getName() != null ? payByLinkData.getName() : null)
                             .set("description", builder.getDescription() != null ? builder.getDescription() : null)
@@ -469,7 +540,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT)
-                            .setRequestBody(requestData.toString());
+                            .setRequestBody(requestData.toString())
+                            .setMaskedData(maskedData);
 
         }
 
@@ -501,7 +573,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint + GpApiRequest.TRANSFER_ENDPOINT)
-                            .setRequestBody(payload.toString());
+                            .setRequestBody(payload.toString())
+                            .setMaskedData(maskedData);
         }
 
         JsonDoc data = new JsonDoc()
@@ -555,7 +628,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             setOrderInformation(builder, data);
         }
 
-        if(     builderPaymentMethod instanceof AlternativePaymentMethod ||
+        if (builderPaymentMethod instanceof AlternativePaymentMethod ||
                 builderPaymentMethod instanceof BNPL ||
                 builderPaymentMethod instanceof BankPayment) {
             data.set("notifications", setNotificationUrls(builder));
@@ -576,7 +649,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT)
-                        .setRequestBody(data.toString());
+                        .setRequestBody(data.toString())
+                        .setMaskedData(maskedData);
     }
 
     @Override
@@ -616,10 +690,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         JsonDoc payer = new JsonDoc();
         payer.set("reference", builder.getCustomerId() != null ? builder.getCustomerId() : (builder.getCustomerData() != null ? builder.getCustomerData().getId() : null));
 
-        if(builder.getPaymentMethod() instanceof eCheck) {
+        if (builder.getPaymentMethod() instanceof eCheck) {
             JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress());
 
-            if(!billingAddress.getKeys().isEmpty()) {
+            if (!billingAddress.getKeys().isEmpty()) {
                 payer.set("billing_address", billingAddress);
             }
 
@@ -653,7 +727,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     payer.set("work_phone", workPhone);
                 }
             }
-        } else if(builder.getPaymentMethod() instanceof BNPL && builder.getCustomerData() != null) {
+        } else if (builder.getPaymentMethod() instanceof BNPL && builder.getCustomerData() != null) {
             payer
                     .set("email", builder.getCustomerData().getEmail())
                     .set("date_of_birth", builder.getCustomerData().getDateOfBirth());
@@ -747,15 +821,13 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 return "MANUAL";
             }
             return "SWIPE";
-        }
-        else {
+        } else {
             if (builderPaymentMethod instanceof ICardData) {
                 ICardData paymentMethod = (ICardData) builderPaymentMethod;
 
                 if (paymentMethod.isReaderPresent()) {
                     return "ECOM";
-                }
-                else {
+                } else {
                     if (paymentMethod.getEntryMethod() != null) {
                         switch (paymentMethod.getEntryMethod()) {
                             case Phone:
@@ -770,7 +842,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     }
                 }
 
-                if (    builder.getTransactionModifier() == TransactionModifier.EncryptedMobile &&
+                if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile &&
                         builderPaymentMethod instanceof CreditCardData &&
                         ((CreditCardData) builder.getPaymentMethod()).hasInAppPaymentData()
                 ) {
@@ -788,12 +860,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
         if (address != null) {
             basicAddressInformation
-                .set("line_1", address.getStreetAddress1())
-                .set("line_2", address.getStreetAddress2())
-                .set("city", address.getCity())
-                .set("postal_code", address.getPostalCode())
-                .set("state", address.getState())
-                .set("country", address.getCountryCode());
+                    .set("line_1", address.getStreetAddress1())
+                    .set("line_2", address.getStreetAddress2())
+                    .set("city", address.getCity())
+                    .set("postal_code", address.getPostalCode())
+                    .set("state", address.getState())
+                    .set("country", address.getCountryCode());
         }
 
         return basicAddressInformation;
@@ -802,8 +874,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
     private static String getCaptureMode(AuthorizationBuilder builder) {
         if (builder.isMultiCapture()) {
             return "MULTIPLE";
-        }
-        else if (builder.getTransactionType() == TransactionType.Auth) {
+        } else if (builder.getTransactionType() == TransactionType.Auth) {
             return "LATER";
         }
         return "AUTO";
@@ -879,7 +950,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             order.set("insurance_amount", StringUtils.toNumeric(builder.getOrderDetails().getInsuranceAmount()));
             order.set("handling_amount", StringUtils.toNumeric(builder.getOrderDetails().getHandlingAmount()));
             BigDecimal insuranceAmount = builder.getOrderDetails().getInsuranceAmount() != null ? builder.getOrderDetails().getInsuranceAmount() : new BigDecimal(0);
-            BigDecimal handlingAmount = builder.getOrderDetails().getHandlingAmount() != null ?builder.getOrderDetails().getHandlingAmount() : new BigDecimal(0);
+            BigDecimal handlingAmount = builder.getOrderDetails().getHandlingAmount() != null ? builder.getOrderDetails().getHandlingAmount() : new BigDecimal(0);
 
             orderAmount = itemsAmount.add(taxTotalAmount).add(handlingAmount).add(insuranceAmount).add(shippingAmount);
 
@@ -963,7 +1034,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
     }
 
     private static String getCvvIndicator(CvnPresenceIndicator cvnPresenceIndicator) {
-        if(cvnPresenceIndicator == null) return "";
+        if (cvnPresenceIndicator == null) return "";
         switch (cvnPresenceIndicator) {
             case Present:
                 return "PRESENT";

@@ -7,7 +7,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
-import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.entities.reporting.*;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.eCheck;
@@ -230,7 +230,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
         assertNotNull(splitResponse.getTransferFundsAccountDetailsList());
 
-        TransferFundsAccountDetails transferFund = splitResponse.getTransferFundsAccountDetailsList().get(0);
+        FundsAccountDetails transferFund = splitResponse.getTransferFundsAccountDetailsList().get(0);
 
         assertEquals("00", transferFund.getStatus());
         assertEquals(transferAmount.toString(), transferFund.getAmount());
@@ -310,7 +310,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
         assertNotNull(splitResponse.getTransferFundsAccountDetailsList());
 
-        TransferFundsAccountDetails transferFund = splitResponse.getTransferFundsAccountDetailsList().get(0);
+        FundsAccountDetails transferFund = splitResponse.getTransferFundsAccountDetailsList().get(0);
 
         assertEquals("00", transferFund.getStatus());
         assertEquals(transferAmount.toString(), transferFund.getAmount());

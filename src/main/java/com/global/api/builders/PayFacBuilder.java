@@ -39,6 +39,11 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
     private String idempotencyKey;
     private HashMap<AddressType, Address> addresses;
     private String accountNumber;
+    private String amount;
+    private PaymentMethodName paymentMethodName;
+    private PaymentMethodType paymentMethodType;
+    private String currency;
+    private String clientTransactionId;
 
     public PayFacBuilder(TransactionType type) {
         this.transactionType = type;
@@ -87,6 +92,12 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
         validations
                 .of(TransactionType.EditAccount)
                 .check("accountNumber").isNotNull();
+
+        validations
+                .of(TransactionType.AddFunds)
+                .with(TransactionModifier.None)
+                .check("accountNumber").isNotNull()
+                .check("amount").isNotNull();
     }
 
     public PayFacBuilder<TResult> withBankAccountData(BankAccountData bankAccountData, PaymentMethodFunction paymentMethodFunction) {
@@ -185,4 +196,28 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
         return this;
     }
 
+    public PayFacBuilder<TResult> withAmount(String amount){
+        this.amount = amount;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withPaymentMethodType(PaymentMethodType paymentMethodType){
+        this.paymentMethodType = paymentMethodType;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withPaymentMethodName(PaymentMethodName paymentMethodName){
+        this.paymentMethodName = paymentMethodName;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withCurrency(String currency){
+        this.currency = currency;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withClientTransactionId(String clientTransactionId){
+        this.clientTransactionId = clientTransactionId;
+        return this;
+    }
 }

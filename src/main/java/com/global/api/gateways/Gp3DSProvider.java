@@ -13,6 +13,8 @@ import com.global.api.utils.CardUtils;
 import com.global.api.utils.GenerationUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.joda.time.DateTime;
@@ -119,6 +121,14 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
                         .set("expiry_month", cardData.getExpMonth().toString())
                         .set("expiry_year", cardData.getExpYear().toString().substring(2))
                         .set("full_name", cardData.getCardHolderName());
+
+                addMaskedData(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("card_detail.number", cardData.getNumber(), 4,6),
+                                new ElementToMask("card_detail.expiry_month", cardData.getExpMonth().toString()),
+                                new ElementToMask("card_detail.expiry_year", cardData.getExpYear().toString().substring(2))
+                        )
+                );
 
                 if(!StringUtils.isNullOrEmpty(cardData.getCardHolderName())) {
                     String[] names = cardData.getCardHolderName().split("\\s+");

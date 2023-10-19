@@ -7,6 +7,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.entities.reporting.SearchCriteriaBuilder;
 import com.global.api.mapping.OpenBankingMapping;
 import com.global.api.paymentMethods.BankPayment;
@@ -86,6 +88,13 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
                                 .set("sort_code", BankPaymentType.FASTERPAYMENTS.equals(bankPaymentType) ? paymentMethod.getSortCode() : null)
                                 .set("iban", BankPaymentType.SEPA.equals(bankPaymentType) ? paymentMethod.getIban() : null)
                                 .set("name", paymentMethod.getAccountName());
+
+                addMaskedData(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment.destination.account_number", destination.getString("account_number")),
+                                new ElementToMask("payment.destination.iban", destination.getString("iban"))
+                        )
+                );
 
 
                 JsonDoc payment = new JsonDoc();

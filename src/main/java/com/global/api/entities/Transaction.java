@@ -8,7 +8,7 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.TransactionTypeIndicator;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.propay.ProPayResponseData;
-import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.network.entities.gnap.GnapResponse;
 import com.global.api.network.entities.NtsData;
@@ -72,10 +72,10 @@ public class Transaction {
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayByLinkResponse payByLinkResponse;
-    @Getter private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
+    @Getter private List<FundsAccountDetails> transferFundsAccountDetailsList;
     @Getter @Setter
     private Set<String> allDataCollectToken;
-    public void setTransferFundsAccountDetailsList(List<TransferFundsAccountDetails> value){
+    public void setTransferFundsAccountDetailsList(List<FundsAccountDetails> value){
         if (transactionReference == null) {
             transactionReference = new TransactionReference();
         }

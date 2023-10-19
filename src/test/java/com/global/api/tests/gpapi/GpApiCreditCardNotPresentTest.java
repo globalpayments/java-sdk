@@ -13,7 +13,6 @@ import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import com.global.api.logging.RequestFileLogger;
 import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
@@ -251,11 +250,24 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
 
     @Test
     public void CardTokenizationThenUpdateAndThenCharge() throws ApiException {
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+        GpApiConfig config = new GpApiConfig();
+
+        // GP-API settings
+        config
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
+                .setPermissions(permissions);
+
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+
         Transaction response =
                 card
                         .tokenize(null, null)
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("singleUseToken");
 
         String tokenId = response.getToken();
 

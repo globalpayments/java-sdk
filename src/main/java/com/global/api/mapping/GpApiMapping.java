@@ -6,7 +6,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.PagedResult;
-import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
+import com.global.api.entities.gpApi.entities.UserAccount;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
@@ -42,6 +43,7 @@ public class GpApiMapping {
     private static final String MERCHANT_SINGLE = "MERCHANT_SINGLE";
     private static final String MERCHANT_EDIT = "MERCHANT_EDIT";
     private static final String MERCHANT_EDIT_INITIATED = "MERCHANT_EDIT_INITIATED";
+    private static final String FUNDS = "FUNDS";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -247,13 +249,13 @@ public class GpApiMapping {
         return transaction;
     }
 
-    private static List<TransferFundsAccountDetails> mapTransferFundsAccountDetails(JsonDoc json) {
+    private static List<FundsAccountDetails> mapTransferFundsAccountDetails(JsonDoc json) {
 
-        var transferResponse = new ArrayList<TransferFundsAccountDetails>();
+        var transferResponse = new ArrayList<FundsAccountDetails>();
 
         for(JsonDoc item : json.getEnumerator("transfers")) {
 
-            var transfer = new TransferFundsAccountDetails();
+            var transfer = new FundsAccountDetails();
 
             transfer.setId(item.getString("id"));
             transfer.setStatus(item.getString("status"));
@@ -1334,6 +1336,31 @@ public class GpApiMapping {
                     }
 
                     return (T) user;
+
+                case FUNDS:
+                    var userFunds = new User()
+                            .setUserReference(
+                                    new UserReference()
+                                            .setUserId(json.getString("merchant_id"))
+                            )
+                            .setName(json.getString("merchant_name"))
+                            .setFundsAccountDetails(
+                                    new FundsAccountDetails()
+                                            .setId(json.getString("id"))
+                                            .setTimeCreated(json.getString("time_created"))
+                                            .setTimeLastUpdated(json.getString("time_last_updated"))
+                                            .setPaymentMethodType(json.getString("type"))
+                                            .setPaymentMethodName(json.getString("payment_method"))
+                                            .setStatus(json.getString("status"))
+                                            .setAmount(json.getString("amount"))
+                                            .setCurrency(json.getString("currency"))
+                                            .setAccount(
+                                                    new UserAccount(json.getString("account_id"), json.getString("account_name"))
+                                            )
+                            )
+                            .setResponseCode(json.get("action").getString("result_code"));
+
+                    return (T) userFunds;
 
                 default:
                     throw new UnsupportedTransactionException("Unknown transaction type " + actionType);

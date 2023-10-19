@@ -4,6 +4,7 @@ import com.global.api.builders.PayFacBuilder;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.enums.UserType;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class User {
     private UserReference userReference;
     private List<Person> personList;
     private List<PaymentMethodList> paymentMethods;
+    private FundsAccountDetails fundsAccountDetails;
 
     /**
      * Creates an `User` object from an existing user ID
@@ -58,4 +60,10 @@ public class User {
         return builder;
     }
 
+    public PayFacBuilder<User> addFunds() {
+        PayFacBuilder<User> builder = new PayFacBuilder<User>(TransactionType.AddFunds)
+                .withUserReference(this.userReference);
+
+        return builder;
+    }
 }

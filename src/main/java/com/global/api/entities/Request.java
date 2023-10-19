@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @Accessors(chain = true)
 public abstract class Request {
@@ -14,6 +15,8 @@ public abstract class Request {
     @Getter @Setter private String endpoint;
     @Getter @Setter private String RequestBody = "";
     @Getter private HashMap<String, String> queryStringParams;
+    @Getter @Setter
+    public Map<String, String> maskedData = new HashMap<>();
 
     public Request() {
         queryStringParams = new HashMap<>();
@@ -38,5 +41,4 @@ public abstract class Request {
             queryStringParams.put(name, value);
         }
     }
-
 }

@@ -7,6 +7,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
@@ -40,19 +42,31 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     private String sharedSecret;
     private String channel;
     private HostedPaymentConfig hostedPaymentConfig;
-    @Getter @Setter private String paymentValues;
-    @Getter @Setter private ShaHashType shaHashType;
+    @Getter
+    @Setter
+    private String paymentValues;
+    @Getter
+    @Setter
+    private ShaHashType shaHashType;
 
-    public Secure3dVersion getVersion() { return Secure3dVersion.ONE; }
+    public Secure3dVersion getVersion() {
+        return Secure3dVersion.ONE;
+    }
 
     @Override
-    public boolean supportsRetrieval() { return false; }
+    public boolean supportsRetrieval() {
+        return false;
+    }
 
     @Override
-    public boolean supportsUpdatePaymentDetails() { return true; }
+    public boolean supportsUpdatePaymentDetails() {
+        return true;
+    }
 
     @Override
-    public boolean supportsHostedPayments() { return true; }
+    public boolean supportsHostedPayments() {
+        return true;
+    }
 
     @Override
     public boolean supportsOpenBanking() {
@@ -84,7 +98,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                         .set("timestamp", timestamp);
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
-        if(builder.getAmount() != null) {
+        if (builder.getAmount() != null) {
             et.subElement(request, "amount").text(StringUtils.toNumeric(builder.getAmount()))
                     .set("currency", builder.getCurrency());
         }
@@ -103,29 +117,36 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         // Hydrate the payment data fields
         //<editor-fold desc="CREDIT CARD DATA">
         if (builder.getPaymentMethod() instanceof CreditCardData) {
-            CreditCardData card = (CreditCardData)builder.getPaymentMethod();
+            CreditCardData card = (CreditCardData) builder.getPaymentMethod();
 
             // for google-pay & apple-pay
             if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
                 et.subElement(request, "token", card.getToken());
                 et.subElement(request, "mobile", card.getMobileType().getValue());
-            }
-            else {
+            } else {
                 Element cardElement = et.subElement(request, "card");
                 et.subElement(cardElement, "number", card.getNumber());
                 et.subElement(cardElement, "expdate", card.getShortExpiry());
                 et.subElement(cardElement, "chname").text(card.getCardHolderName());
                 et.subElement(cardElement, "type", mapCardType(getBaseCardType(card.getCardType())).toUpperCase());
 
+                addMaskedData(MaskValueUtil.hideValues(
+                        new ElementToMask("request.card.number", card.getNumber(), 4, 6),
+                        new ElementToMask("request.card.expdate", card.getShortExpiry())
+                ));
+
                 if (card.getCvn() != null) {
                     Element cvnElement = et.subElement(cardElement, "cvn");
                     et.subElement(cvnElement, "number", card.getCvn());
                     et.subElement(cvnElement, "presind", card.getCvnPresenceIndicator().getValue());
+                    addMaskedData(MaskValueUtil.hideValues(
+                            new ElementToMask("request.card.cvn.number", card.getCvn())
+                    ));
                 }
             }
 
             String hash = null;
-            if(builder.getTransactionType() == TransactionType.Verify)
+            if (builder.getTransactionType() == TransactionType.Verify)
                 hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, card.getNumber());
             else {
                 if (builder.getTransactionModifier() == TransactionModifier.EncryptedMobile) {
@@ -140,8 +161,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 }
             }
             et.subElement(request, "sha1hash", hash);
-        }
-        else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
+        } else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
             this.buildAlternativePaymentMethod(builder, request, et);
         }
         //</editor-fold>
@@ -159,7 +179,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         //<editor-fold desc="RECURRING PAYMENT METHOD">
-        if(builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
+        if (builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
             RecurringPaymentMethod recurring = (RecurringPaymentMethod) builder.getPaymentMethod();
             et.subElement(request, "payerref").text(recurring.getCustomerKey());
             et.subElement(request, "paymentmethod").text(recurring.getKey());
@@ -172,9 +192,10 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             }
 
             String hash;
-            if(builder.getTransactionType() == TransactionType.Verify)
+            if (builder.getTransactionType() == TransactionType.Verify)
                 hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, recurring.getCustomerKey());
-            else hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), recurring.getCustomerKey());
+            else
+                hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), recurring.getCustomerKey());
             et.subElement(request, "sha1hash", hash);
         }
         //</editor-fold>
@@ -213,7 +234,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         //</editor-fold>
 
         //<editor-fold desc="DCC">
-        if(builder.getDccRateData() != null) {
+        if (builder.getDccRateData() != null) {
             DccRateData dccRateData = builder.getDccRateData();
 
             Element dccInfo = et.subElement(request, "dccinfo");
@@ -223,7 +244,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
             // authorization elements
             et.subElement(dccInfo, "rate", dccRateData.getCardHolderRate());
-            if(dccRateData.getCardHolderAmount() != null) {
+            if (dccRateData.getCardHolderAmount() != null) {
                 et.subElement(dccInfo, "amount", dccRateData.getCardHolderAmount())
                         .set("currency", dccRateData.getCardHolderCurrency());
             }
@@ -246,7 +267,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // recurring fraud filter
-        if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
+        if (builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             et.subElement(request, "recurring")
                     .set("type", builder.getRecurringType().getValue().toLowerCase())
                     .set("sequence", builder.getRecurringSequence().getValue().toLowerCase());
@@ -278,9 +299,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         //</editor-fold>
 
         //<editor-fold desc="3DS">
-        if(builder.getPaymentMethod() instanceof ISecure3d) {
-            ThreeDSecure secureEcom = ((ISecure3d)builder.getPaymentMethod()).getThreeDSecure();
-            if(secureEcom != null) {
+        if (builder.getPaymentMethod() instanceof ISecure3d) {
+            ThreeDSecure secureEcom = ((ISecure3d) builder.getPaymentMethod()).getThreeDSecure();
+            if (secureEcom != null) {
                 Element mpi = et.subElement(request, "mpi");
                 et.subElement(mpi, "eci", secureEcom.getEci());
                 et.subElement(mpi, "cavv", secureEcom.getCavv());
@@ -288,7 +309,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(mpi, "ds_trans_id", secureEcom.getDirectoryServerTransactionId());
                 et.subElement(mpi, "authentication_value", secureEcom.getAuthenticationValue());
                 et.subElement(mpi, "message_version", secureEcom.getMessageVersion());
-                if(secureEcom.getExemptStatus() != null) {
+                if (secureEcom.getExemptStatus() != null) {
                     et.subElement(mpi, "exempt_status", secureEcom.getExemptStatus().getValue());
                 }
             }
@@ -315,23 +336,23 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         //<editor-fold desc="REFUND HASH">
         if (builder.getTransactionType() == TransactionType.Refund) {
             String refundHash = GenerationUtils.generateHash(refundPassword);
-            if(refundHash == null)
+            if (refundHash == null)
                 refundHash = "";
             et.subElement(request, "refundhash", refundHash);
         }
         //</editor-fold>
 
         //<editor-fold desc="STORED CREDENTIAL">
-        if(builder.getStoredCredential() != null) {
+        if (builder.getStoredCredential() != null) {
             Element storedCredentialElement = et.subElement(request, "storedcredential");
             et.subElement(storedCredentialElement, "type", EnumUtils.getMapping(Target.Realex, builder.getStoredCredential().getType()));
-            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.CardHolder) {
+            if (builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.CardHolder) {
                 et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.CardHolder));
             }
-            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Merchant) {
+            if (builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Merchant) {
                 et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.Merchant));
             }
-            if(builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Scheduled) {
+            if (builder.getStoredCredential().getInitiator() == StoredCredentialInitiator.Scheduled) {
                 et.subElement(storedCredentialElement, "initiator", EnumUtils.getMapping(Target.Realex, StoredCredentialInitiator.Scheduled));
             }
             et.subElement(storedCredentialElement, "sequence", EnumUtils.getMapping(Target.Realex, builder.getStoredCredential().getSequence()));
@@ -347,9 +368,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             for (String key : suppData.keySet()) {
                 ArrayList<String[]> dataSets = suppData.get(key);
 
-                for(String[] data: dataSets) {
+                for (String[] data : dataSets) {
                     Element item = et.subElement(supplementaryData, "item").set("type", key);
-                    for(int i = 1; i <= data.length; i++) {
+                    for (int i = 1; i <= data.length; i++) {
                         et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
                     }
                 }
@@ -365,9 +386,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             et.subElement(tssInfo, "varref", builder.getClientTransactionId());
             et.subElement(tssInfo, "custipaddress", builder.getCustomerIpAddress());
 
-            if(builder.getBillingAddress() != null)
+            if (builder.getBillingAddress() != null)
                 tssInfo.append(buildAddress(et, builder.getBillingAddress()));
-            if(builder.getShippingAddress() != null)
+            if (builder.getShippingAddress() != null)
                 tssInfo.append(buildAddress(et, builder.getShippingAddress()));
         }
         //</editor-fold>
@@ -407,7 +428,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("ACCOUNT", accountId);
         request.set("HPP_CHANNEL", channel);
         request.set("ORDER_ID", orderId);
-        if(builder.getAmount() != null) {
+        if (builder.getAmount() != null) {
             request.set("AMOUNT", StringUtils.toNumeric(builder.getAmount()));
         }
         request.set("CURRENCY", builder.getCurrency());
@@ -415,26 +436,26 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("AUTO_SETTLE_FLAG", (builder.getTransactionType() == TransactionType.Sale) ? "1" : builder.isMultiCapture() ? "MULTI" : "0");
         request.set("COMMENT1", builder.getDescription());
         // request.set("COMMENT2", );
-        if(hostedPaymentConfig.isRequestTransactionStabilityScore() != null) {
+        if (hostedPaymentConfig.isRequestTransactionStabilityScore() != null) {
             request.set("RETURN_TSS", hostedPaymentConfig.isRequestTransactionStabilityScore() ? "1" : "0");
         }
-        if(hostedPaymentConfig.isDynamicCurrencyConversionEnabled() != null) {
+        if (hostedPaymentConfig.isDynamicCurrencyConversionEnabled() != null) {
             request.set("DCC_ENABLE", hostedPaymentConfig.isDynamicCurrencyConversionEnabled() ? "1" : "0");
         }
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
 
             request.set("CUST_NUM", paymentData.getCustomerNumber());
-            if(hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null) {
+            if (hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null) {
                 request.set("HPP_SELECT_STORED_CARD", paymentData.getCustomerKey());
             }
-            if(paymentData.isOfferToSaveCard() != null) {
+            if (paymentData.isOfferToSaveCard() != null) {
                 request.set("OFFER_SAVE_CARD", paymentData.isOfferToSaveCard() ? "1" : "0");
             }
-            if(paymentData.isCustomerExists() != null) {
+            if (paymentData.isCustomerExists() != null) {
                 request.set("PAYER_EXIST", paymentData.isCustomerExists() ? "1" : "0");
             }
-            if(hostedPaymentConfig.isDisplaySavedCards() == null) {
+            if (hostedPaymentConfig.isDisplaySavedCards() == null) {
                 request.set("PAYER_REF", paymentData.getCustomerKey());
             }
             request.set("PMT_REF", paymentData.getPaymentKey());
@@ -459,7 +480,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_PHONE", paymentData.getCustomerPhoneMobile());
             request.set("HPP_CHALLENGE_REQUEST_INDICATOR", paymentData.getChallengeRequestIndicator() != null ? paymentData.getChallengeRequestIndicator().getValue() : null);
             request.set("HPP_ENABLE_EXEMPTION_OPTIMIZATION", builder.getHostedPaymentData().getEnableExemptionOptimization());
-            if(paymentData.getAddressesMatch() != null) {
+            if (paymentData.getAddressesMatch() != null) {
                 request.set("HPP_ADDRESS_MATCH_INDICATOR", paymentData.getAddressesMatch() ? "TRUE" : "FALSE");
             }
         } else if (builder.getCustomerId() != null) {
@@ -501,7 +522,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         request.set("HPP_LANG", hostedPaymentConfig.getLanguage());
         request.set("MERCHANT_RESPONSE_URL", hostedPaymentConfig.getResponseUrl());
         request.set("CARD_PAYMENT_BUTTON", hostedPaymentConfig.getPaymentButtonText());
-        if(hostedPaymentConfig.isCardStorageEnabled() != null) {
+        if (hostedPaymentConfig.isCardStorageEnabled() != null) {
             request.set("CARD_STORAGE_ENABLE", hostedPaymentConfig.isCardStorageEnabled() ? "1" : "0");
         }
         if (builder.getTransactionType() == TransactionType.Verify) {
@@ -515,7 +536,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 }
             }
         }
-        if(builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
+        if (builder.getRecurringType() != null || builder.getRecurringSequence() != null) {
             request.set("RECURRING_TYPE", builder.getRecurringType().getValue().toLowerCase());
             request.set("RECURRING_SEQUENCE", builder.getRecurringSequence().getValue().toLowerCase());
         }
@@ -529,8 +550,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 for (String[] arrayValues : entry.getValue()) {
                     if (arrayValues.length == 1) {
                         request.set(entry.getKey(), arrayValues[0]);
-                    }
-                    else {
+                    } else {
                         StringBuilder serializedValues = new StringBuilder("[");
                         for (int i = 0; i < arrayValues.length; i++) {
                             serializedValues.append(arrayValues[i]);
@@ -549,7 +569,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 (builder.getAmount() != null) ? StringUtils.toNumeric(builder.getAmount()) : null,
                 builder.getCurrency()));
 
-        if(builder.getHostedPaymentData() != null) {
+        if (builder.getHostedPaymentData() != null) {
             if (hostedPaymentConfig.isCardStorageEnabled() != null || builder.getHostedPaymentData().isOfferToSaveCard() != null || hostedPaymentConfig.isDisplaySavedCards() != null) {
                 toHash.add(builder.getHostedPaymentData().getCustomerKey() != null ? builder.getHostedPaymentData().getCustomerKey() : null);
                 toHash.add(builder.getHostedPaymentData().getPaymentKey() != null ? builder.getHostedPaymentData().getPaymentKey() : null);
@@ -564,7 +584,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             }
         }
 
-        if (    hostedPaymentConfig.getFraudFilterMode() != null &&
+        if (hostedPaymentConfig.getFraudFilterMode() != null &&
                 hostedPaymentConfig.getFraudFilterMode() != FraudFilterMode.None) {
             toHash.add(hostedPaymentConfig.getFraudFilterMode().getValue());
         }
@@ -579,6 +599,13 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             request.set("HPP_OB_DST_ACCOUNT_NAME", bankPaymentMethod.getAccountName());
             request.set("HPP_OB_DST_ACCOUNT_NUMBER", bankPaymentMethod.getAccountNumber());
             request.set("HPP_OB_DST_ACCOUNT_SORT_CODE", bankPaymentMethod.getSortCode());
+
+            addMaskedData(
+                    MaskValueUtil.hideValues(
+                            new ElementToMask("request.HPP_OB_DST_ACCOUNT_IBAN", bankPaymentMethod.getIban()),
+                            new ElementToMask("request.HPP_OB_DST_ACCOUNT_NUMBER", bankPaymentMethod.getAccountNumber(), 0, bankPaymentMethod.getAccountNumber().length() - 4)
+                    )
+            );
 
             if (builder.getHostedPaymentData() != null) {
                 var hostedPaymentData = builder.getHostedPaymentData();
@@ -661,7 +688,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         String countryCode = CountryUtils.getCountryCodeByCountry(address.getCountry());
         switch (countryCode) {
             case "GB":
-                return extractDigits(address.getPostalCode()) + (address.getStreetAddress1() != null ? "|" + extractDigits(address.getStreetAddress1()): "");
+                return extractDigits(address.getPostalCode()) + (address.getStreetAddress1() != null ? "|" + extractDigits(address.getStreetAddress1()) : "");
             case "US":
             case "CA":
                 return address.getPostalCode() + (address.getStreetAddress1() != null ? "|" + address.getStreetAddress1() : "");
@@ -680,7 +707,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 .set("type", mapManageRequestType(builder));
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
-        if(builder.getAmount() != null) {
+        if (builder.getAmount() != null) {
             et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
         }
         et.subElement(request, "channel", channel);
@@ -688,7 +715,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(request, "pasref", builder.getTransactionId());
 
         //<editor-fold desc="DCC">
-        if(builder.getDccRateData() != null) {
+        if (builder.getDccRateData() != null) {
             DccRateData dccRateData = builder.getDccRateData();
 
             Element dccInfo = et.subElement(request, "dccinfo");
@@ -698,7 +725,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
             // settlement elements
             et.subElement(dccInfo, "rate", dccRateData.getCardHolderRate());
-            if(dccRateData.getCardHolderAmount() != null) {
+            if (dccRateData.getCardHolderAmount() != null) {
                 et.subElement(dccInfo, "amount", dccRateData.getCardHolderAmount())
                         .set("currency", dccRateData.getCardHolderCurrency());
             }
@@ -706,12 +733,12 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         //</editor-fold>
 
         // payer authentication response
-        if(builder.getTransactionType().equals(TransactionType.VerifySignature)) {
+        if (builder.getTransactionType().equals(TransactionType.VerifySignature)) {
             et.subElement(request, "pares", builder.getPayerAuthenticationResponse());
         }
 
         // reason code
-        if(builder.getReasonCode() != null) {
+        if (builder.getReasonCode() != null) {
             et.subElement(request, "reasoncode").text(builder.getReasonCode().toString());
         }
 
@@ -730,7 +757,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             }
         }
 
-        if(builder.getDescription() != null) {
+        if (builder.getDescription() != null) {
             Element comments = et.subElement(request, "comments");
             et.subElement(comments, "comment", builder.getDescription()).set("id", "1");
         }
@@ -743,9 +770,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             for (String key : suppData.keySet()) {
                 ArrayList<String[]> dataSets = suppData.get(key);
 
-                for(String[] data: dataSets) {
+                for (String[] data : dataSets) {
                     Element item = et.subElement(supplementaryData, "item").set("type", key);
-                    for(int i = 1; i <= data.length; i++) {
+                    for (int i = 1; i <= data.length; i++) {
                         et.subElement(item, "field" + StringUtils.padLeft(i, 2, '0'), data[i - 1]);
                     }
                 }
@@ -772,7 +799,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         et.subElement(request, "sha1hash", GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, StringUtils.toNumeric(builder.getAmount()), builder.getCurrency(), builder.getAlternativePaymentType() != null ? builder.getAlternativePaymentType().getValue() : null));
 
-        if(builder.getTransactionType() == TransactionType.Refund) {
+        if (builder.getTransactionType() == TransactionType.Refund) {
             if (builder.getAuthorizationCode() != null) {
                 et.subElement(request, "authcode").text(builder.getAuthorizationCode());
             }
@@ -794,9 +821,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
 
-        if(builder instanceof TransactionReportBuilder) {
-            TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>)builder;
-            et.subElement(request,"orderid", trb.getTransactionId());
+        if (builder instanceof TransactionReportBuilder) {
+            TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>) builder;
+            et.subElement(request, "orderid", trb.getTransactionId());
 
             String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, trb.getTransactionId(), "", "", "");
             et.subElement(request, "sha1hash").text(sha1hash);
@@ -826,16 +853,15 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 Customer customer = (Customer) builder.getEntity();
                 request.append(buildCustomer(et, customer));
                 et.subElement(request, "sha1hash").text(GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, null, null, customer.getKey()));
-            }
-            else if (builder.getEntity() instanceof RecurringPaymentMethod) {
+            } else if (builder.getEntity() instanceof RecurringPaymentMethod) {
                 et.subElement(request, "orderid", orderId);
 
-                RecurringPaymentMethod payment = (RecurringPaymentMethod)builder.getEntity();
+                RecurringPaymentMethod payment = (RecurringPaymentMethod) builder.getEntity();
                 Element cardElement = et.subElement(request, "card");
                 et.subElement(cardElement, "ref").text(payment.getKey());
                 et.subElement(cardElement, "payerref").text(payment.getCustomerKey());
 
-                CreditCardData card = (CreditCardData)payment.getPaymentMethod();
+                CreditCardData card = (CreditCardData) payment.getPaymentMethod();
                 String expiry = card.getShortExpiry();
 
                 if (payment.getPaymentMethod() != null) {
@@ -843,6 +869,11 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                     et.subElement(cardElement, "expdate").text(expiry);
                     et.subElement(cardElement, "chname").text(card.getCardHolderName());
                     et.subElement(cardElement, "type").text(mapCardType(getBaseCardType(card.getCardType())));
+
+                    addMaskedData(MaskValueUtil.hideValues(
+                            new ElementToMask("request.card.number", card.getNumber(), 4, 6),
+                            new ElementToMask("request.card.expdate", card.getShortExpiry())
+                    ));
                 }
 
                 if (payment.getStoredCredential() != null) {
@@ -853,11 +884,12 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 String sha1hash;
                 if (builder.getTransactionType() == TransactionType.Create)
                     sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, orderId, null, null, payment.getCustomerKey(), card.getCardHolderName(), card.getNumber());
-                else sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey(), expiry, card.getNumber());
+                else
+                    sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, payment.getCustomerKey(), payment.getKey(), expiry, card.getNumber());
                 et.subElement(request, "sha1hash").text(sha1hash);
             }
             //Schedule
-            else if(builder.getEntity() instanceof Schedule) {
+            else if (builder.getEntity() instanceof Schedule) {
                 var schedule = (Schedule) builder.getEntity();
                 var amount = StringUtils.toNumeric(schedule.getAmount());
                 var frequency = MapScheduleFrequency(schedule.getFrequency());
@@ -874,7 +906,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 }
                 et.subElement(request, "numtimes", schedule.getNumberOfPayments());
                 if (schedule.getEndDate() != null) {
-                    et.subElement(request, "enddate", schedule.getEndDate() != null ? SDF.format(schedule.getEndDate()): null);
+                    et.subElement(request, "enddate", schedule.getEndDate() != null ? SDF.format(schedule.getEndDate()) : null);
                 }
                 et.subElement(request, "payerref", schedule.getCustomerKey());
                 et.subElement(request, "paymentmethod", schedule.getPaymentKey());
@@ -889,10 +921,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 et.subElement(request, "comment", schedule.getDescription());
                 et.subElement(request, "sha1hash").text(hash);
             }
-        }
-        else if (builder.getTransactionType() == TransactionType.Delete) {
+        } else if (builder.getTransactionType() == TransactionType.Delete) {
             if (builder.getEntity() instanceof RecurringPaymentMethod) {
-                RecurringPaymentMethod payment = (RecurringPaymentMethod)builder.getEntity();
+                RecurringPaymentMethod payment = (RecurringPaymentMethod) builder.getEntity();
                 Element cardElement = et.subElement(request, "card");
                 et.subElement(cardElement, "ref").text(payment.getKey());
                 et.subElement(cardElement, "payerref").text(payment.getCustomerKey());
@@ -907,8 +938,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 var hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, schedule.getKey());
                 et.subElement(request, "sha1hash").text(hash);
             }
-        }
-        else if (builder.getTransactionType() == TransactionType.Fetch) {
+        } else if (builder.getTransactionType() == TransactionType.Fetch) {
             if (builder.getEntity() instanceof Schedule) {
                 var scheduleRef = builder.getEntity().getKey();
 
@@ -917,8 +947,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 String sha1hash = GenerationUtils.generateHash(sharedSecret, timestamp, merchantId, scheduleRef);
                 et.subElement(request, "sha1hash").text(sha1hash);
             }
-        }
-        else if (builder.getTransactionType() == TransactionType.Search) {
+        } else if (builder.getTransactionType() == TransactionType.Search) {
             if (builder.getEntity() instanceof Schedule) {
                 String customerKey = "", paymentKey = "";
 
@@ -943,7 +972,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     }
 
     private String MapScheduleFrequency(ScheduleFrequency frequency) {
-        if(frequency == null) {
+        if (frequency == null) {
             return null;
         }
 
@@ -989,7 +1018,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         // alternativePaymentResponse
         Element paymentMethodDetails = root.get("paymentmethoddetails");
 
-        if(paymentMethodDetails != null) {
+        if (paymentMethodDetails != null) {
 
             AlternativePaymentResponse alternativePaymentResponse = new AlternativePaymentResponse();
 
@@ -1036,7 +1065,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // fraud response
-        if(root.has("fraudresponse")) {
+        if (root.has("fraudresponse")) {
             Element fraudResponseElement = root.get("fraudresponse");
 
             FraudResponse fraudResponse =
@@ -1068,7 +1097,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         // dccinfo
         if (root.has("dccinfo")) {
             DccRateData dccRateData = new DccRateData();
-            if(builder instanceof AuthorizationBuilder && ((AuthorizationBuilder) builder).getDccRateData() != null) {
+            if (builder instanceof AuthorizationBuilder && ((AuthorizationBuilder) builder).getDccRateData() != null) {
                 dccRateData = ((AuthorizationBuilder) builder).getDccRateData();
             }
 
@@ -1085,7 +1114,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // 3d secure enrolled
-        if(root.has("enrolled")) {
+        if (root.has("enrolled")) {
             ThreeDSecure secureEcom = new ThreeDSecure();
             secureEcom.setEnrolled(root.getString("enrolled").equals("Y"));
             secureEcom.setPayerAuthenticationRequest(root.getString("pareq"));
@@ -1095,7 +1124,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
 
         // three d secure
-        if(root.has("threedsecure")) {
+        if (root.has("threedsecure")) {
             ThreeDSecure secureEcom = new ThreeDSecure();
             secureEcom.setStatus(root.getString("status"));
             secureEcom.setEci(root.getString("eci"));
@@ -1118,7 +1147,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         try {
             TResult rvalue = clazz.newInstance();
-            if(reportType.equals(ReportType.TransactionDetail)) {
+            if (reportType.equals(ReportType.TransactionDetail)) {
                 TransactionSummary summary = new TransactionSummary();
                 summary.setTransactionId(response.getString("pasref"));
                 summary.setClientTransactionId(response.getString("orderid"));
@@ -1132,22 +1161,21 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 summary.setBatchId(response.getString("batchid"));
                 summary.setSchemeReferenceData(response.getString("srd"));
 
-                if(response.has("fraudresponse")) {
+                if (response.has("fraudresponse")) {
                     Element fraud = response.get("fraudresponse");
                     summary.setFraudRuleInfo(fraud.getString("result"));
                 }
 
-                if(response.has("threedsecure")) {
+                if (response.has("threedsecure")) {
                     summary.setCavvResponseCode(response.getString("cavv"));
                     summary.setEciIndicator(response.getString("eci"));
                     summary.setXid(response.getString("xid"));
                 }
 
-                rvalue = (TResult)summary;
+                rvalue = (TResult) summary;
             }
             return rvalue;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             throw new ApiException(e.getMessage(), e);
         }
     }
@@ -1171,7 +1199,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                         throw new ApiException(pe.getMessage(), pe);
                     }
                 }
-            break;
+                break;
             case Search:
                 if (builder instanceof RecurringBuilder && builder.getEntity() instanceof Schedule) {
                     try {
@@ -1180,7 +1208,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                         throw new ApiException(pe.getMessage(), pe);
                     }
                 }
-            break;
+                break;
 
             default:
                 break;
@@ -1226,15 +1254,16 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     private void checkResponse(Element root) throws GatewayException {
         checkResponse(root, null);
     }
+
     private void checkResponse(Element root, List<String> acceptCodes) throws GatewayException {
-        if(acceptCodes == null) {
+        if (acceptCodes == null) {
             acceptCodes = new ArrayList<String>();
             acceptCodes.add("00");
         }
 
         String responseCode = root.getString("result");
         String responseMessage = root.getString("message");
-        if(!acceptCodes.contains(responseCode)) {
+        if (!acceptCodes.contains(responseCode)) {
             throw new GatewayException(String.format("Unexpected Gateway Response: %s - %s", responseCode, responseMessage), responseCode, responseMessage);
         }
     }
@@ -1243,7 +1272,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         TransactionType trans = builder.getTransactionType();
         IPaymentMethod payment = builder.getPaymentMethod();
 
-        switch(trans) {
+        switch (trans) {
             case Sale:
             case Auth: {
                 if (payment instanceof Credit) {
@@ -1252,8 +1281,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                             return "manual";
                         }
                         return "offline";
-                    }
-                    else if (builder.getTransactionModifier().equals(TransactionModifier.EncryptedMobile)) {
+                    } else if (builder.getTransactionModifier().equals(TransactionModifier.EncryptedMobile)) {
                         return "auth-mobile";
                     }
                     return "auth";
@@ -1266,7 +1294,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 return "settle";
             }
             case Verify: {
-                if(payment instanceof RecurringPaymentMethod) {
+                if (payment instanceof RecurringPaymentMethod) {
                     return "receipt-in-otb";
                 }
                 return "otb";
@@ -1278,13 +1306,13 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 return "credit";
             }
             case DccRateLookup: {
-                if(payment instanceof RecurringPaymentMethod) {
+                if (payment instanceof RecurringPaymentMethod) {
                     return "realvault-dccrate";
                 }
                 return "dccrate";
             }
             case VerifyEnrolled: {
-                if(payment instanceof RecurringPaymentMethod) {
+                if (payment instanceof RecurringPaymentMethod) {
                     return "realvault-3ds-verifyenrolled";
                 }
                 return "3ds-verifyenrolled";
@@ -1301,7 +1329,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     private String mapManageRequestType(ManagementBuilder builder) {
         TransactionType trans = builder.getTransactionType();
 
-        switch(trans) {
+        switch (trans) {
             case Capture:
                 return "settle";
             case Hold:
@@ -1336,31 +1364,27 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     @SuppressWarnings("unchecked")
     private <TResult> String mapRecurringRequestType(RecurringBuilder<TResult> builder) throws UnsupportedTransactionException {
         TResult entity = (TResult) builder.getEntity();
-        switch(builder.getTransactionType()) {
+        switch (builder.getTransactionType()) {
             case Create:
-                if(entity instanceof Customer) {
+                if (entity instanceof Customer) {
                     return "payer-new";
-                }
-                else if(entity instanceof IPaymentMethod) {
+                } else if (entity instanceof IPaymentMethod) {
                     return "card-new";
-                }
-                else if (entity instanceof Schedule) {
+                } else if (entity instanceof Schedule) {
                     return "schedule-new";
                 }
                 throw new UnsupportedTransactionException();
             case Edit:
-                if(entity instanceof Customer) {
+                if (entity instanceof Customer) {
                     return "payer-edit";
-                }
-                else if(entity instanceof IPaymentMethod) {
+                } else if (entity instanceof IPaymentMethod) {
                     return "card-update-card";
                 }
                 throw new UnsupportedTransactionException();
             case Delete:
-                if(entity instanceof RecurringPaymentMethod) {
+                if (entity instanceof RecurringPaymentMethod) {
                     return "card-cancel-card";
-                }
-                else if (entity instanceof Schedule) {
+                } else if (entity instanceof Schedule) {
                     return "schedule-delete";
                 }
                 throw new UnsupportedTransactionException();
@@ -1426,7 +1450,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             case PAYPAL:
                 return Arrays.asList("ReturnURL", "StatusUpdateURL", "CancelURL");
             default:
-              return Arrays.asList("returnurl", "statusupdateurl", "cancelurl");
+                return Arrays.asList("returnurl", "statusupdateurl", "cancelurl");
         }
     }
 
@@ -1466,22 +1490,20 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     }
 
     private Element buildAddress(ElementTree et, Address address) {
-        if(address == null)
+        if (address == null)
             return null;
 
         String code = address.getPostalCode();
-        if(!StringUtils.isNullOrEmpty(code) && !code.contains("|")) {
+        if (!StringUtils.isNullOrEmpty(code) && !code.contains("|")) {
             if (address.getStreetAddress1() != null) {
                 code = String.format("%s|%s", address.getPostalCode(), address.getStreetAddress1());
-            }
-            else{
+            } else {
                 code = String.format("%s|", address.getPostalCode());
             }
             if (address.isCountry("GB"))
                 if (address.getStreetAddress1() != null) {
                     code = String.format("%s|%s", address.getPostalCode().replaceAll("[^0-9]", ""), address.getStreetAddress1().replaceAll("[^0-9]", ""));
-                }
-                else{
+                } else {
                     code = String.format("%s|", address.getPostalCode().replaceAll("[^0-9]", ""));
                 }
         }

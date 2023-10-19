@@ -1256,5 +1256,257 @@ public class NtsGiftTests {
         assertEquals("00", dataCollectResponse2.getResponseCode());
     }
 
+    @Test
+    public void test_DataCollect_Individual() throws ApiException {
 
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,20.24, 1);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2.0);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,1,4);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,3,1);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal("32.33"),new BigDecimal(0));
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(card)
+                .withDebitAuthorizer("00")
+                .withAuthorizer(AuthorizerCode.Host_Authorized)
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("03")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction reverseResponse = transaction.capture(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Purchase_capture_only_fuel() throws ApiException {
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,20.24, 1);
+        productData.setPurchaseType(PurchaseType.Fuel);
+        productData.add(new BigDecimal("32.33"),new BigDecimal(0));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromNetwork(response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getTransactionReference().getOriginalTransactionTypeIndicator(),
+                response.getTransactionReference().getSystemTraceAuditNumber(),
+                response.getTransactionReference().getOriginalTransactionDate(),
+                response.getTransactionReference().getOriginalTransactionTime(),
+                card);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_SVS_Purchase_capture_only_non_fuel() throws ApiException {
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2.0);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,1,4);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,3,1);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal("32.33"),new BigDecimal(0));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromNetwork(response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getTransactionReference().getOriginalTransactionTypeIndicator(),
+                response.getTransactionReference().getSystemTraceAuditNumber(),
+                response.getTransactionReference().getOriginalTransactionDate(),
+                response.getTransactionReference().getOriginalTransactionTime(),
+                card);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_SVS_Purchase_capture_fuel_nonFuel_unique_products() throws ApiException {
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,20.24, 1);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,3,1);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal("32.33"),new BigDecimal(0));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromNetwork(response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getTransactionReference().getOriginalTransactionTypeIndicator(),
+                response.getTransactionReference().getSystemTraceAuditNumber(),
+                response.getTransactionReference().getOriginalTransactionDate(),
+                response.getTransactionReference().getOriginalTransactionTime(),
+                card);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Purchase_capture_issue_10233() throws ApiException {
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons,20.24, 1);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2.0);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,1,4);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,3,1);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal("32.33"),new BigDecimal(0));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        assertNotNull(response.getTransactionReference().getOriginalTransactionTypeIndicator().getValue());
+        assertNotNull(response.getTransactionReference().getSystemTraceAuditNumber());
+        assertNotNull(response.getTransactionReference().getBankcardData().get(UserDataTag.RemainingBalance));
+
+        // Data-Collect request preparation.
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction transaction = Transaction.fromNetwork(response.getTransactionReference().getAuthorizer(),
+                response.getTransactionReference().getApprovalCode(),
+                response.getResponseCode(),
+                response.getTransactionReference().getOriginalTransactionTypeIndicator(),
+                response.getTransactionReference().getSystemTraceAuditNumber(),
+                response.getTransactionReference().getOriginalTransactionDate(),
+                response.getTransactionReference().getOriginalTransactionTime(),
+                card);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Integer.parseInt(transaction.getTransactionReference().getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
 }

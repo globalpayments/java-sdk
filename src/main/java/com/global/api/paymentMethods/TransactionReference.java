@@ -4,7 +4,7 @@ import com.global.api.entities.AlternativePaymentResponse;
 import com.global.api.entities.BNPLResponse;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.gpApi.entities.TransferFundsAccountDetails;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.gnap.ISOResponseCode;
@@ -42,7 +42,7 @@ public class TransactionReference implements IPaymentMethod {
     private Integer sequenceNumber;
     private String systemTraceAuditNumber;
     private String transactionId;
-    private List<TransferFundsAccountDetails> transferFundsAccountDetailsList;
+    private List<FundsAccountDetails> transferFundsAccountDetailsList;
     private String originalTransactionDate;
     private String responseCode;
     private boolean useAuthorizedAmount;

@@ -20,7 +20,7 @@ public class RequestConsoleLogger extends PrettyLogger {
         return AppendText("%s\nTimestamp:     %s\n%s\n%s\n", new String[]{middleLine, getTimestamp(), response, endLine});
     }
 
-    public void logInConsole(String text) {
+    private void logInConsole(String text) {
         System.out.println(super.AppendText("%s",  new String[]{text}));
     }
 

@@ -112,6 +112,21 @@ public class ElementTree {
         this.namespaces.put(prefix, uri);
     }
 
+    public String toString(){
+        try {
+            TransformerFactory tFact = TransformerFactory.newInstance();
+            Transformer trans = tFact.newTransformer();
+
+            StringWriter writer = new StringWriter();
+            StreamResult result = new StreamResult(writer);
+            DOMSource source = new DOMSource(doc);
+            trans.transform(source, result);
+            return writer.toString();
+        } catch (TransformerException e) {
+            return e.getMessage();
+        }
+    }
+
     public String toString(Element root) {
         doc.appendChild(root.getElement());
 

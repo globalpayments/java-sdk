@@ -910,4 +910,174 @@ public class NtsWexFleetTest {
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    // Negative - Incorrect user data length scenario
+    //purchase quantity for product 6&7 should be 1 as per spec
+    @Test
+    public void test_WexFleet_issue_10233_product_roll_up() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=21121012203100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1221");
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.PkgBevNa,UnitOfMeasure.NoFuelPurchased,12,2);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,12,1);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withCardSequenceNumber("101")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+    // Positive -correct user data length scenario
+    @Test
+    public void test_WexFleet_issue_10233_product_roll_up_positive_scenario() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=21121012203100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1221");
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.PkgBevNa,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,1,1);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withCardSequenceNumber("101")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+    //positive scenario
+    @Test
+    public void test_WexFleet_issue_10233_product_roll_up_measure_value_fixed() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=21121012203100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1221");
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.PkgBevNa,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.Units,1,1);
+        productData.addNonFuel(NtsProductCode.PlusE10,UnitOfMeasure.Units,1,1);
+        productData.addNonFuel(NtsProductCode.Premium,UnitOfMeasure.Units,1,1);
+
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withCardSequenceNumber("101")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+    @Test
+    public void test_WexFleet_issue_10233_product_roll_up_with_different_measure() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=21121012203100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setExpiry("1221");
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.FoodSvc,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.OilChange,UnitOfMeasure.NoFuelPurchased,1,3);
+        productData.addNonFuel(NtsProductCode.GenTobaco,UnitOfMeasure.NoFuelPurchased,2,4);
+        productData.addNonFuel(NtsProductCode.Alcohol,UnitOfMeasure.NoFuelPurchased,1,5);
+        productData.addNonFuel(NtsProductCode.SalesTax,UnitOfMeasure.NoFuelPurchased,2,2);
+        productData.addNonFuel(NtsProductCode.PkgBevNa,UnitOfMeasure.NoFuelPurchased,1,2);
+        productData.addNonFuel(NtsProductCode.Tires,UnitOfMeasure.NoFuelPurchased,1,1);
+        productData.addNonFuel(NtsProductCode.PlusE10,UnitOfMeasure.Pounds,1,1);
+        productData.addNonFuel(NtsProductCode.Premium,UnitOfMeasure.Quarts,1,1);
+
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withCardSequenceNumber("101")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+
+
 }

@@ -68,10 +68,23 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
     public void TokenizePaymentMethodSingle() throws ApiException {
         card.setExpYear(expYear);
 
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+        GpApiConfig config = new GpApiConfig();
+
+        // GP-API settings
+        config
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
+                .setPermissions(permissions);
+
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+
         Transaction response =
                 card
                         .tokenize(true, PaymentMethodUsageMode.SINGLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute("singleUseToken");
 
         assertNotNull(response);
         assertNotNull(response.getToken());
@@ -303,10 +316,23 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
 
     @Test
     public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+        GpApiConfig config = new GpApiConfig();
+
+        // GP-API settings
+        config
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY)
+                .setPermissions(permissions);
+
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+
         // process an auto-capture authorization
         String tokenId =
                 card
-                        .tokenize(true, GP_API_CONFIG_NAME, PaymentMethodUsageMode.SINGLE);
+                        .tokenize(true, "singleUseToken", PaymentMethodUsageMode.SINGLE);
 
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(tokenId);

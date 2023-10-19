@@ -11,6 +11,8 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.ICardData;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -22,6 +24,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.var;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
@@ -29,7 +33,10 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilder> {
 
-    @Getter @Setter private static Secure3dBuilder _3dBuilder;
+    @Getter
+    @Setter
+    private static Secure3dBuilder _3dBuilder;
+    private final Map<String, String> maskedData = new HashMap<>();
 
     public GpApiRequest buildRequest(FraudBuilder builder, GpApiConnector gateway) {
 
@@ -56,7 +63,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
                                 .setEndpoint(merchantUrl + GpApiRequest.RISK_ASSESSMENTS)
-                                .setRequestBody(requestData.toString());
+                                .setRequestBody(requestData.toString())
+                                .setMaskedData(maskedData);
             default:
                 break;
         }
@@ -75,14 +83,14 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                     .set("java_enabled", builder.getBrowserData().isJavaEnabled())
                     .set("javascript_enabled", builder.getBrowserData().isJavaScriptEnabled())
                     .set("language", builder.getBrowserData().getLanguage())
-                    .set("screen_height",  builder.getBrowserData().getScreenHeight() != 0 ? builder.getBrowserData().getScreenHeight() : null)
+                    .set("screen_height", builder.getBrowserData().getScreenHeight() != 0 ? builder.getBrowserData().getScreenHeight() : null)
                     .set("screen_width", builder.getBrowserData().getScreenWidth() != 0 ? builder.getBrowserData().getScreenWidth() : null)
                     .set("challenge_window_size", getValueIfNotNull(builder.getBrowserData().getChallengeWindowSize()))
                     .set("timezone", builder.getBrowserData().getTimezone())
                     .set("user_agent", builder.getBrowserData().getUserAgent());
         }
 
-        return ! browserData.getKeys().isEmpty() ? browserData : null;
+        return !browserData.getKeys().isEmpty() ? browserData : null;
     }
 
     private static JsonDoc SetPayerLoginDataParam(SecureBuilder builder) {
@@ -139,7 +147,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("reference", builder.getCustomerAccountId())
                         .set("account_age", getValueIfNotNull(builder.getAccountAgeIndicator()))
                         .set("account_creation_date", builder.getAccountCreateDate() != null ? builder.getAccountCreateDate().toString("yyyy-MM-dd") : null)
-                        .set("account_change_date", builder.getAccountChangeDate() !=  null ? builder.getAccountChangeDate().toString("yyyy-MM-dd") : null)
+                        .set("account_change_date", builder.getAccountChangeDate() != null ? builder.getAccountChangeDate().toString("yyyy-MM-dd") : null)
                         .set("account_change_indicator", getValueIfNotNull(builder.getAccountChangeIndicator()))
                         .set("account_password_change_date", builder.getPasswordChangeDate() != null ? builder.getPasswordChangeDate().toString("yyyy-MM-dd") : null)
                         .set("account_password_change_indicator", getValueIfNotNull(builder.getPasswordChangeIndicator()))
@@ -156,7 +164,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString("yyyy-MM-dd'T'HH:mm:ss") : null)
                         .set("shipping_address_creation_indicator", getValueIfNotNull(builder.getShippingAddressUsageIndicator()));
 
-        if(builder.getBillingAddress() != null) {
+        if (builder.getBillingAddress() != null) {
             var billingAddress =
                     new JsonDoc()
                             .set("line1", builder.getBillingAddress().getStreetAddress1())
@@ -174,8 +182,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
     }
 
-    private static JsonDoc SetOrderParam(SecureBuilder builder)
-    {
+    private static JsonDoc SetOrderParam(SecureBuilder builder) {
         var order =
                 new JsonDoc()
                         .set("time_created_reference", builder.getOrderCreateDate() != null ? builder.getOrderCreateDate().toString("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") : null)
@@ -211,7 +218,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
         return !order.getKeys().isEmpty() ? order : null;
     }
 
-    private static JsonDoc SetPaymentMethodParam(SecureBuilder builder, boolean is3DSecure) {
+    private JsonDoc SetPaymentMethodParam(SecureBuilder builder, boolean is3DSecure) {
         var paymentMethod = new JsonDoc();
 
         if (builder.getPaymentMethod() instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builder.getPaymentMethod()).getToken())) {
@@ -225,9 +232,12 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                     .set("expiry_month", cardData.getExpMonth() != null ? StringUtils.padLeft(cardData.getExpMonth(), 2, '0') : null)
                     .set("expiry_year", cardData.getExpYear() != null ? StringUtils.padLeft(cardData.getExpYear().toString(), 4, '0').substring(2, 4) : null);
 
+            maskPaymentMethodSensitiveData(card);
+
             paymentMethod
                     .set("card", card)
                     .set("name", !StringUtils.isNullOrEmpty(cardData.getCardHolderName()) ? cardData.getCardHolderName() : null);
+
         }
 
         return paymentMethod;
@@ -243,7 +253,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
             case VerifyEnrolled: {
                 JsonDoc storedCredential = new JsonDoc();
 
-                if(builder.getStoredCredential() != null) {
+                if (builder.getStoredCredential() != null) {
                     storedCredential
                             .set("model", getValueIfNotNull(builder.getStoredCredential().getType()))
                             .set("reason", getValueIfNotNull(builder.getStoredCredential().getReason()))
@@ -277,12 +287,13 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                 return (GpApiRequest) new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT)
-                        .setRequestBody(data.toString());
+                        .setRequestBody(data.toString())
+                        .setMaskedData(maskedData);
             }
             case InitiateAuthentication: {
                 JsonDoc storedCredential = new JsonDoc();
 
-                if(builder.getStoredCredential() != null) {
+                if (builder.getStoredCredential() != null) {
                     storedCredential
                             .set("model", getValueIfNotNull(builder.getStoredCredential().getType()))
                             .set("reason", getValueIfNotNull(builder.getStoredCredential().getReason()))
@@ -409,7 +420,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
                                 .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/initiate")
-                                .setRequestBody(data.toString());
+                                .setRequestBody(data.toString())
+                                .setMaskedData(maskedData);
             }
             case VerifySignature: {
                 JsonDoc data = new JsonDoc();
@@ -422,7 +434,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
                                 .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + builder.getServerTransactionId() + "/result")
-                                .setRequestBody(data.toString());
+                                .setRequestBody(data.toString())
+                                .setMaskedData(maskedData);
             }
             case RiskAssess: {
                 JsonDoc threeDS =
@@ -438,7 +451,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         new GpApiRequest()
                                 .setVerb(GpApiRequest.HttpMethod.Post)
                                 .setEndpoint(merchantUrl + GpApiRequest.RISK_ASSESSMENTS)
-                                .setRequestBody(threeDS.toString());
+                                .setRequestBody(threeDS.toString())
+                                .setMaskedData(maskedData);
             }
             default:
                 throw new UnsupportedTransactionException();
@@ -450,13 +464,12 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
         return builder instanceof Secure3dBuilder;
     }
 
-    private static JsonDoc setPaymentMethodParam(IPaymentMethod builderPaymentMethod) {
+    private JsonDoc setPaymentMethodParam(IPaymentMethod builderPaymentMethod) {
         JsonDoc paymentMethod = new JsonDoc();
 
         if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
             paymentMethod.set("id", ((ITokenizable) builderPaymentMethod).getToken());
-        }
-        else if (builderPaymentMethod instanceof ICardData) {
+        } else if (builderPaymentMethod instanceof ICardData) {
             ICardData cardData = (ICardData) builderPaymentMethod;
             JsonDoc card = new JsonDoc()
                     .set("number", cardData.getNumber())
@@ -464,6 +477,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                     .set("expiry_year", cardData.getExpYear() != null ? cardData.getExpYear().toString().substring(2, 4) : null);
 
             paymentMethod.set("card", card);
+
+            maskPaymentMethodSensitiveData(card);
         }
 
         return paymentMethod;
@@ -507,5 +522,12 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
         return order;
     }
-    
+
+    private void maskPaymentMethodSensitiveData(JsonDoc card) {
+        maskedData.putAll(MaskValueUtil.hideValues(
+                new ElementToMask("payment_method.card.expiry_month", card.getString("expiry_month")),
+                new ElementToMask("payment_method.card.expiry_year", card.getString("expiry_year")),
+                new ElementToMask("payment_method.card.number", card.getString("number"), 4, 6)
+        ));
+    }
 }

@@ -1,11 +1,9 @@
 package com.global.api.builders.requestbuilder.gpApi;
 
 import com.global.api.builders.ManagementBuilder;
-import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.DccRateData;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.IRequestBuilder;
-import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.PaymentMethodName;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.Target;
@@ -14,6 +12,8 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
@@ -31,10 +31,15 @@ import lombok.var;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class GpApiManagementRequestBuilder implements IRequestBuilder<ManagementBuilder> {
 
-    @Getter @Setter private static HashMap<String, ArrayList<String>> allowedActions;
+    @Getter
+    @Setter
+    private static HashMap<String, ArrayList<String>> allowedActions;
+
+    private final Map<String, String> maskedData = new HashMap<>();
 
     @Override
     public GpApiRequest buildRequest(ManagementBuilder builder, GpApiConnector gateway) throws GatewayException, BuilderException, UnsupportedTransactionException {
@@ -48,7 +53,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
         String merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
         if (builderPaymentMethod != null && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
-            if (    allowedActions.get(PaymentMethodType.BankPayment.toString()) == null ||
+            if (allowedActions.get(PaymentMethodType.BankPayment.toString()) == null ||
                     !allowedActions.get(PaymentMethodType.BankPayment.toString()).contains(builder.getTransactionType().toString())) {
                 throw new BuilderException("The " + builder.getTransactionType().toString() + " is not supported for " + PaymentMethodName.BankPayment);
             }
@@ -63,10 +68,10 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/capture")
-                            .setRequestBody(data.toString());
+                            .setRequestBody(data.toString())
+                            .setMaskedData(maskedData);
 
-        }
-        else if (builderTransactionType == TransactionType.Refund) {
+        } else if (builderTransactionType == TransactionType.Refund) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
@@ -74,10 +79,10 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/refund")
-                            .setRequestBody(data.toString());
+                            .setRequestBody(data.toString())
+                            .setMaskedData(maskedData);
 
-        }
-        else if (builderTransactionType == TransactionType.Reversal) {
+        } else if (builderTransactionType == TransactionType.Reversal) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
@@ -91,17 +96,17 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                 }
                 endpoint = endpoint + GpApiRequest.TRANSFER_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
             } else {
-                endpoint  = endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
+                endpoint = endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reversal";
             }
 
             return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint)
-                            .setRequestBody(data.toString());
+                            .setRequestBody(data.toString())
+                            .setMaskedData(maskedData);
 
-        }
-        else if (builderTransactionType == TransactionType.TokenUpdate) {
+        } else if (builderTransactionType == TransactionType.TokenUpdate) {
             if (!(builderPaymentMethod instanceof CreditCardData)) {
                 throw new GatewayException("Payment method doesn't support this action!");
             }
@@ -114,6 +119,13 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .set("expiry_year", cardData.getExpYear() != null ? StringUtils.padLeft(cardData.getExpYear().toString(), 4, '0').substring(2, 4) : "")
                             .set("number", cardData.getNumber() != null ? cardData.getNumber() : null);
 
+            //Mask card
+            maskedData.putAll(MaskValueUtil.hideValues(
+                    new ElementToMask("card.expiry_month", card.getString("expiry_month")),
+                    new ElementToMask("card.expiry_year", card.getString("expiry_year")),
+                    new ElementToMask("card.number", card.getString("number"), 4, 6)
+            ));
+
             data =
                     new JsonDoc()
                             .set("card", card)
@@ -124,26 +136,26 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Patch)
                             .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken())
-                            .setRequestBody(data.toString());
-        }
-        else if (builderTransactionType == TransactionType.TokenDelete && builderPaymentMethod instanceof ITokenizable) {
+                            .setRequestBody(data.toString())
+                            .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.TokenDelete && builderPaymentMethod instanceof ITokenizable) {
             return (GpApiRequest)
                     new GpApiRequest()
-                        .setVerb(GpApiRequest.HttpMethod.Delete)
-                        .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken());
-        }
-        else if (builderTransactionType == TransactionType.DisputeAcceptance) {
+                            .setVerb(GpApiRequest.HttpMethod.Delete)
+                            .setEndpoint(merchantUrl + GpApiRequest.PAYMENT_METHODS_ENDPOINT + "/" + ((ITokenizable) builderPaymentMethod).getToken())
+                            .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.DisputeAcceptance) {
             return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
-                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/acceptance");
-        }
-        else if (builderTransactionType == TransactionType.DisputeChallenge) {
+                            .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/acceptance")
+                            .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.DisputeChallenge) {
             JsonArray documentsJsonArray = new JsonArray();
-            for(DisputeDocument document : builder.getDisputeDocuments()) {
+            for (DisputeDocument document : builder.getDisputeDocuments()) {
                 JsonObject innerJsonDoc = new JsonObject();
 
-                if(document.getType() != null ) {
+                if (document.getType() != null) {
                     innerJsonDoc.add("type", new JsonPrimitive(document.getType()));
                 }
 
@@ -157,20 +169,20 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
             JsonObject disputeChallengeData = new JsonObject();
             disputeChallengeData.add("documents", documentsJsonArray);
 
-            return  (GpApiRequest)
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.DISPUTES_ENDPOINT + "/" + builder.getDisputeId() + "/challenge")
-                            .setRequestBody(disputeChallengeData.toString());
-        }
-        else if (builderTransactionType == TransactionType.BatchClose) {
-            return  (GpApiRequest) new GpApiRequest()
+                            .setRequestBody(disputeChallengeData.toString())
+                            .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.BatchClose) {
+            return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference());
-        }
-        else if (builderTransactionType == TransactionType.Reauth) {
+                    .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference())
+                    .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
-                            .set("amount", builder.getAmount());
+                    .set("amount", builder.getAmount());
 
             if (builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.ACH) {
                 data.set("description", builder.getDescription());
@@ -188,10 +200,18 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                                     .set("account_type", (bankTransferDetails.getAccountType() != null) ? EnumUtils.getMapping(Target.GP_API, bankTransferDetails.getAccountType()) : null)
                                     .set("check_reference", bankTransferDetails.getCheckReference());
 
+                    maskedData.putAll(MaskValueUtil.hideValues(new ElementToMask("account_number", bankTransferDetails.getAccountNumber(), 4, 0)));
+
                     var bank =
                             new JsonDoc()
                                     .set("code", bankTransferDetails.getRoutingNumber())
                                     .set("name", bankTransferDetails.getBankName());
+
+                    maskedData.putAll(
+                            MaskValueUtil.hideValues(
+                                    new ElementToMask("payment_method.bank_transfer.bank.code", bankTransferDetails.getRoutingNumber(), 0, bankTransferDetails.getRoutingNumber().length() - 5)
+                            )
+                    );
 
                     bankTransfer.set("bank", bank);
 
@@ -204,9 +224,9 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
             return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/reauthorization")
-                    .setRequestBody(data.toString());
-        }
-        else if (builderTransactionType == TransactionType.Confirm) {
+                    .setRequestBody(data.toString())
+                    .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.Confirm) {
             if (builderPaymentMethod instanceof TransactionReference && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.APM) {
                 var transactionReference = (com.global.api.paymentMethods.TransactionReference) builderPaymentMethod;
                 var apmResponse = transactionReference.getAlternativePaymentResponse();
@@ -222,13 +242,13 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                 data
                         .set("payment_method", payment_method);
 
-                return  (GpApiRequest) new GpApiRequest()
+                return (GpApiRequest) new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
                         .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/confirmation")
-                        .setRequestBody(data.toString());
+                        .setRequestBody(data.toString())
+                        .setMaskedData(maskedData);
             }
-        }
-        else if (builderTransactionType == TransactionType.Auth) {
+        } else if (builderTransactionType == TransactionType.Auth) {
             data.set("amount", builder.getAmount());
 
             if (builder.getLodgingData() != null) {
@@ -259,12 +279,12 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                 }
             }
 
-            return  (GpApiRequest) new GpApiRequest()
+            return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/incremental")
-                    .setRequestBody(data.toString());
-        }
-        else if (builderTransactionType == TransactionType.Edit) {
+                    .setRequestBody(data.toString())
+                    .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.Edit) {
             var card =
                     new JsonDoc()
                             .set("tag", builder.getTagData());
@@ -274,16 +294,16 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .set("card", card);
 
             data
-                    .set("amount",  StringUtils.toNumeric(builder.getAmount()))
-                    .set("gratuity_amount",  StringUtils.toNumeric(builder.getGratuity()))
-                    .set("payment_method",  payment_method);
+                    .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                    .set("gratuity_amount", StringUtils.toNumeric(builder.getGratuity()))
+                    .set("payment_method", payment_method);
 
-            return  (GpApiRequest) new GpApiRequest()
+            return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
                     .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/adjustment")
-                    .setRequestBody(data.toString());
-        }
-        else if (builderTransactionType == TransactionType.PayByLinkUpdate) {
+                    .setRequestBody(data.toString())
+                    .setMaskedData(maskedData);
+        } else if (builderTransactionType == TransactionType.PayByLinkUpdate) {
             var payByLinkData = builder.getPayByLinkData();
 
             data =
@@ -306,13 +326,13 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                     .set("expiration_date", payByLinkData.getExpirationDate() != null ? payByLinkData.getExpirationDate().toString("yyyy-MM-dd") : null)
                     .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null);
 
-            return  (GpApiRequest) new GpApiRequest()
+            return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Patch)
                     .setEndpoint(merchantUrl + GpApiRequest.PAYBYLINK_ENDPOINT + "/" + builder.getPaymentLinkId())
-                    .setRequestBody(data.toString());
+                    .setRequestBody(data.toString())
+                    .setMaskedData(maskedData);
 
-        }
-        else if (builderTransactionType == TransactionType.Release || builderTransactionType == TransactionType.Hold) {
+        } else if (builderTransactionType == TransactionType.Release || builderTransactionType == TransactionType.Hold) {
             var payload =
                     new JsonDoc()
                             .set("reason_code", builder.getReasonCode() != null ? EnumUtils.getMapping(Target.GP_API, builder.getReasonCode()) : null);
@@ -322,11 +342,12 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             "release" :
                             builderTransactionType == TransactionType.Hold ? "hold" : null;
 
-            return  (GpApiRequest)
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/" + endpoint)
-                            .setRequestBody(payload.toString());
+                            .setRequestBody(payload.toString())
+                            .setMaskedData(maskedData);
 
         }
 
@@ -350,11 +371,12 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                 endpoint = GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + builder.getFundsData().getMerchantId();
             }
 
-            return  (GpApiRequest)
+            return (GpApiRequest)
                     new GpApiRequest()
                             .setVerb(GpApiRequest.HttpMethod.Post)
                             .setEndpoint(endpoint + GpApiRequest.TRANSACTION_ENDPOINT + "/" + builder.getTransactionId() + "/split")
-                            .setRequestBody(transfer.toString());
+                            .setRequestBody(transfer.toString())
+                            .setMaskedData(maskedData);
         }
 
         return null;
@@ -365,8 +387,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
         return builder instanceof ManagementBuilder;
     }
 
-    static JsonDoc getDccId(DccRateData dccRateData)
-    {
+    static JsonDoc getDccId(DccRateData dccRateData) {
         return
                 new JsonDoc()
                         .set("id", dccRateData.getDccId());

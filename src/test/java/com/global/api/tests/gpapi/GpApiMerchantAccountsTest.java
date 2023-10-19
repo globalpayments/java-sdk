@@ -9,6 +9,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.entities.gpApi.entities.FundsAccountDetails;
+import com.global.api.entities.gpApi.entities.UserAccount;
 import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.AccountFunds;
 import com.global.api.paymentMethods.CreditCardData;
@@ -1125,6 +1127,163 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         }
     }
 
+    @Test
+    public void AddFunds() throws ApiException {
+        String amount = "10";
+        String currency = "USD";
+        String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        String merchantId = "MER_5096d6b88b0b49019c870392bd98ddac";
+        User merchant = User.fromId(merchantId, UserType.MERCHANT);
+
+        User response = merchant
+                .addFunds()
+                .withAmount(amount)
+                .withAccountNumber(accountId)
+                .withPaymentMethodName(PaymentMethodName.BankTransfer)
+                .withPaymentMethodType(PaymentMethodType.Credit)
+                .withCurrency(currency)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        FundsAccountDetails fundsAccountDetails = response.getFundsAccountDetails();
+        assertNotNull(fundsAccountDetails);
+        assertEquals(FundsStatus.CAPTURED.toString(), fundsAccountDetails.getStatus());
+        assertEquals(amount, fundsAccountDetails.getAmount());
+        assertEquals(currency, fundsAccountDetails.getCurrency());
+        assertEquals("CREDIT", fundsAccountDetails.getPaymentMethodType());
+        assertEquals("BANK_TRANSFER", fundsAccountDetails.getPaymentMethodName());
+        UserAccount userAccount = fundsAccountDetails.getAccount();
+        assertNotNull(userAccount);
+        assertEquals(accountId, userAccount.getId());
+    }
+
+    @Test
+    public void AddFunds_OnlyMandatory() throws ApiException {
+        String amount = "10";
+        String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        String merchantId = "MER_5096d6b88b0b49019c870392bd98ddac";
+        User merchant = User.fromId(merchantId, UserType.MERCHANT);
+
+        User response = merchant
+                    .addFunds()
+                    .withAmount(amount)
+                    .withAccountNumber(accountId)
+                    .withPaymentMethodType(PaymentMethodType.Credit)
+                    .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        FundsAccountDetails fundsAccountDetails = response.getFundsAccountDetails();
+        assertNotNull(fundsAccountDetails);
+        assertEquals(FundsStatus.CAPTURED.toString(), fundsAccountDetails.getStatus());
+        assertEquals(amount, fundsAccountDetails.getAmount());
+        assertEquals("CREDIT", fundsAccountDetails.getPaymentMethodType());
+        assertEquals("BANK_TRANSFER", fundsAccountDetails.getPaymentMethodName());
+        UserAccount userAccount = fundsAccountDetails.getAccount();
+        assertNotNull(userAccount);
+        assertEquals(accountId, userAccount.getId());
+    }
+
+    @Test
+    public void AddFunds_InsufficientFunds() throws ApiException {
+
+        String amount = "10";
+        String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        String merchantId = "MER_5096d6b88b0b49019c870392bd98ddac";
+        User merchant = User.fromId(merchantId, UserType.MERCHANT);
+
+        User response = merchant
+                .addFunds()
+                .withAmount(amount)
+                .withAccountNumber(accountId)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("DECLINED", response.getResponseCode());
+        FundsAccountDetails fundsAccountDetails = response.getFundsAccountDetails();
+        assertNotNull(fundsAccountDetails);
+        assertEquals(FundsStatus.DECLINE.toString(), fundsAccountDetails.getStatus());
+        assertEquals(amount, fundsAccountDetails.getAmount());
+        assertEquals("DEBIT", fundsAccountDetails.getPaymentMethodType());
+        assertEquals("BANK_TRANSFER", fundsAccountDetails.getPaymentMethodName());
+        UserAccount userAccount = fundsAccountDetails.getAccount();
+        assertNotNull(userAccount);
+        assertEquals(accountId, userAccount.getId());
+    }
+
+    @Test
+    public void AddFunds_WithoutAmount() throws ApiException {
+        String currency = "USD";
+        String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+        String merchantId = "MER_5096d6b88b0b49019c870392bd98ddac";
+        User merchant = User.fromId(merchantId, UserType.MERCHANT);
+
+        boolean errorFound = false;
+        try {
+            User response = merchant
+                    .addFunds()
+                    .withAccountNumber(accountId)
+                    .withPaymentMethodName(PaymentMethodName.BankTransfer)
+                    .withPaymentMethodType(PaymentMethodType.Credit)
+                    .withCurrency(currency)
+                    .execute();
+        } catch (BuilderException exception) {
+            errorFound = true;
+            assertEquals("amount cannot be null for this transaction type.", exception.getMessage());
+        }finally {
+            assertTrue(errorFound);
+        }
+    }
+
+    @Test
+    public void AddFunds_WithoutAccountNumber() throws ApiException {
+        String amount = "10";
+        String currency = "USD";
+        String merchantId = "MER_5096d6b88b0b49019c870392bd98ddac";
+        User merchant = User.fromId(merchantId, UserType.MERCHANT);
+
+        boolean errorFound = false;
+        try {
+            User response = merchant
+                    .addFunds()
+                    .withAmount(amount)
+                    .withPaymentMethodName(PaymentMethodName.BankTransfer)
+                    .withPaymentMethodType(PaymentMethodType.Credit)
+                    .withCurrency(currency)
+                    .execute();
+        } catch (BuilderException exception) {
+            errorFound = true;
+            assertEquals("accountNumber cannot be null for this transaction type.", exception.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+    }
+
+    @Test
+    public void AddFunds_WithoutUserRef() throws ApiException {
+        String amount = "10";
+        String currency = "USD";
+        String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
+
+        boolean errorFound = false;
+
+        try {
+            User response = new User()
+                    .addFunds()
+                    .withAmount(amount)
+                    .withAccountNumber(accountId)
+                    .withPaymentMethodName(PaymentMethodName.BankTransfer)
+                    .withPaymentMethodType(PaymentMethodType.Credit)
+                    .withCurrency(currency)
+                    .execute();
+            response.addFunds();
+        } catch (NullPointerException exception) {
+            errorFound = true;
+        } finally {
+            assertTrue(errorFound);
+        }
+    }
     //endregion
 
     private CreditCardData cardInformation() {

@@ -513,6 +513,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setDebitAmount(debitAmount);
                 summary.setCreditAmount(creditAmount);
                 summary.setHostTransactionCount(responseMessage.getHostTransactionCount());
+                if(batchSummaryList.isEmpty()){
+                    batchSummaryList.add(summary);
+                }
                 for (BatchSummary batchSummary : batchSummaryList) {
                     result.setBatchSummary(batchSummary);
                 }

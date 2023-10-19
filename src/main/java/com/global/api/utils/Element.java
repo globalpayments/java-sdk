@@ -51,6 +51,12 @@ public class Element {
         this.element.appendChild(doc.createTextNode(text));
         return this;
     }
+    public Element setText(String text){
+        if(text == null)
+            text = "";
+        element.getFirstChild().setNodeValue(text);
+        return this;
+    }
     public Element cData(String text){
         if(text == null)
             text = "";
