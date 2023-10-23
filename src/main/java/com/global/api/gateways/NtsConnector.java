@@ -612,22 +612,23 @@ public class NtsConnector extends GatewayConnectorConfig {
                 || code == NtsHostResponseCode.Denial
                 || code == NtsHostResponseCode.VelocityReferral
                 || code == NtsHostResponseCode.AvsReferralForFullyOrPartially
-                || code == NtsHostResponseCode.DenialRequestToBalance
-                || code == NtsHostResponseCode.InvalidPin;
+                || code == NtsHostResponseCode.DenialRequestToBalance;
     }
 
     private <T extends TransactionBuilder<Transaction>> Boolean isAllowedRCForRetransmit(NtsHostResponseCode responseCode, T builder) {
            return builder instanceof ResubmitBuilder  && (responseCode == NtsHostResponseCode.HostSystemFailure
                     || responseCode == NtsHostResponseCode.TerminalTimeout
                     || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
-                    || responseCode == NtsHostResponseCode.FormatError);
+                    || responseCode == NtsHostResponseCode.FormatError
+                    || responseCode == NtsHostResponseCode.InvalidPin);
     }
 
     private <T extends TransactionBuilder<Transaction>> Boolean isAllowedRCForBatchClose(NtsHostResponseCode responseCode, T builder) {
         return builder.getTransactionType().equals(TransactionType.BatchClose)  && (responseCode == NtsHostResponseCode.HostSystemFailure
                 || responseCode == NtsHostResponseCode.TerminalTimeout
                 || responseCode == NtsHostResponseCode.TerminalTimeoutLostConnection
-                || responseCode == NtsHostResponseCode.FormatError);
+                || responseCode == NtsHostResponseCode.FormatError
+                || responseCode == NtsHostResponseCode.InvalidPin);
     }
 
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {

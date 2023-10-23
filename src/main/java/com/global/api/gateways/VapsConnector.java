@@ -2605,7 +2605,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
             }
 
-            authCode = response.getString(DataElementId.DE_038);
+            authCode = !StringUtils.isNullOrEmpty(response.getString(DataElementId.DE_038)) ? response.getString(DataElementId.DE_038) : request.getString(DataElementId.DE_038);
 
             DE62_CardIssuerData responseIssuerData = response.getDataElement(DataElementId.DE_062, DE62_CardIssuerData.class);
             if(responseIssuerData != null) {

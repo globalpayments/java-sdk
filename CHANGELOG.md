@@ -1,5 +1,14 @@
 # Changelog
 
+## v11.1.16 (10/23/2023)
+
+### Enhancements:
+-NTS Phase1 Issue :
+- Exception thrown for 02 RC for Regular Transactions(Issue -10260).
+
+-VAPS:
+- Approval Code changes for Refund Retransmit Transaction(Issue- 10258).
+
 ## v11.1.15 (10/19/2023)
 
 ### Enhancements:

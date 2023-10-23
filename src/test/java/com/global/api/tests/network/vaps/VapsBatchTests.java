@@ -203,6 +203,41 @@ public class VapsBatchTests {
         mockSummary.resubmitTransactions(tokens);
     }
 
+    // Negative scenario - refund with 909 error
+    @Test
+    public void test_002_resubmits_refund_10258_Issue() throws ApiException {
+        configName = "NoBatch";
+
+        Transaction creditSaleResponse = creditSale(9.99);
+        assertNotNull(creditSaleResponse.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSaleResponse.getTransactionToken()));
+
+        CreditTrackData track = TestCards.VisaSwipe();
+        Transaction refundResponse = track.refund(new BigDecimal(9.99))
+                .withOfflineAuthCode(creditSaleResponse.getAuthorizationCode())
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(refundResponse);
+
+        Transaction response = BatchService.closeBatch(
+                batchProvider.getBatchNumber(),
+                batchProvider.getSequenceNumber(),
+                new BigDecimal(30),
+                BigDecimal.ZERO
+        ).execute(configName);
+        assertNotNull(response);
+
+        BatchSummary summary = response.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+        LinkedList<String> tokens = new LinkedList<String>();
+        tokens.add(creditSaleResponse.getTransactionToken());
+        tokens.add(refundResponse.getTransactionToken());
+        BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
+        assertNotNull(newSummary);
+    }
+
     private Transaction creditAuth(double amount) throws ApiException {
         CreditTrackData track = TestCards.VisaSwipe();
 
