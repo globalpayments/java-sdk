@@ -754,7 +754,7 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
                                 rvalue.setAmount(amount);
                                 rvalue.setCurrency(currency);
                                 rvalue.setOrderId(response.getOrderId());
-                                rvalue.setVersion(provider.getVersion());
+                                rvalue.setVersion(rvalue.getVersion() != null ? rvalue.getVersion() : provider.getVersion());
                             }
                             else if(canDowngrade) {
                                 return execute(Secure3dVersion.ONE, configName);

@@ -103,7 +103,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(holder, isCheck ? "Zip" : "CardHolderZip", address.getPostalCode());
             }
 
-            if (!StringUtils.isNullOrEmpty(builder.getCustomerData().getEmail())) {
+            if ( builder.getCustomerData() != null && !StringUtils.isNullOrEmpty(builder.getCustomerData().getEmail())) {
                 et.subElement(holder, isCheck ? "EmailAddress" : "CardHolderEmail", builder.getCustomerData().getEmail());
             }
 

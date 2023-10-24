@@ -162,6 +162,22 @@ public class PorticoEcommerceTests {
         assertNotNull(txnSummary);
         assertEquals(customerEmail, txnSummary.getEmail() );
     }
+    @Test
+    public void testCardHolderEmailIfCustomerDataIsNull() throws ApiException {
+        Customer customerData = null;
+        Transaction response = card.charge(new BigDecimal("11"))
+                .withCurrency("USD")
+                .withCustomerData(customerData)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TransactionSummary txnSummary = ReportingService.transactionDetail(response.getTransactionId()).execute();
+
+        assertNotNull(txnSummary);
+        assertEquals("", txnSummary.getEmail() );
+    }
 
     @Test
     @Ignore("Having the token invalidate known error for mobile transactions.")

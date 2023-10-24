@@ -67,9 +67,10 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals(transaction.getTransactionId(), response.getTransactionId());
+        assertNotNull(response.getAccountNumberLast4());
         assertNotNull(response.getBankPaymentResponse().getSortCode());
+        assertNotNull(response.getBankPaymentResponse().getAccountName());
         assertNull(response.getBankPaymentResponse().getIban());
-        assertNotNull(response.getBankPaymentResponse().getAccountNumber());
     }
 
     @Test
@@ -96,9 +97,10 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
 
         assertNotNull(getTransactionResponse);
         assertEquals(transactionResponse.getTransactionId(), getTransactionResponse.getTransactionId());
-        assertNotNull(getTransactionResponse.getBankPaymentResponse().getIban());
+        assertNotNull(getTransactionResponse.getBankPaymentResponse().getMaskedIbanLast4());
         assertNull(getTransactionResponse.getBankPaymentResponse().getSortCode());
         assertNull(getTransactionResponse.getBankPaymentResponse().getAccountNumber());
+        assertNull(getTransactionResponse.getAccountNumberLast4());
     }
 
     @Test

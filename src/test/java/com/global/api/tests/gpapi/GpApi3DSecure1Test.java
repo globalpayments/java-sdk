@@ -112,6 +112,7 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
         assertNotNull(secureEcom.getMessageType());
         assertNull(secureEcom.getEci());
         assertEquals("NO", secureEcom.getLiabilityShift());
+        assertFalse(secureEcom.isEnrolled());
     }
 
 }

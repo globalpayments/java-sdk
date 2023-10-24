@@ -63,7 +63,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
 
         config.setEnableLogging(true);
 
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        ServicesContainer.configureService(config);
 
         // Create card data
         card = new CreditCardData();
@@ -150,7 +150,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                     .withAuthenticationSource(AuthenticationSource.Browser)
                     .withChallengeRequestIndicator(ChallengeRequestIndicator.ChallengeMandated)
                     .withStoredCredential(storedCredential)
-                    .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
+                    .execute(Secure3dVersion.ONE);
         } catch (BuilderException e) {
             errorFound = true;
             assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
@@ -166,7 +166,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
 
         // Tokenize payment method
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
 
         assertNotNull(tokenizedCard.getToken());
 
@@ -177,7 +177,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                     .checkEnrollment(tokenizedCard)
                     .withCurrency(currency)
                     .withAmount(amount)
-                    .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
+                    .execute(Secure3dVersion.ONE);
         } catch (BuilderException e) {
             errorFound = true;
             assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
@@ -197,7 +197,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                     .checkEnrollment(card)
                     .withCurrency(currency)
                     .withAmount(amount)
-                    .execute(Secure3dVersion.ONE, GP_API_CONFIG_NAME);
+                    .execute(Secure3dVersion.ONE);
         } catch (BuilderException e) {
             errorFound = true;
             assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
@@ -217,12 +217,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         storedCredential.setType(StoredCredentialType.Unscheduled);
         storedCredential.setSequence(StoredCredentialSequence.First);
@@ -240,7 +241,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
@@ -251,7 +252,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -263,7 +264,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -277,7 +278,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
 
         // Tokenize payment method
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
 
         assertNotNull(tokenizedCard.getToken());
 
@@ -287,12 +288,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .checkEnrollment(tokenizedCard)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -306,7 +308,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
@@ -317,7 +319,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -329,7 +331,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -342,7 +344,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
 
         // Tokenize payment method
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
 
         assertNotNull(tokenizedCard.getToken());
 
@@ -353,13 +355,14 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withAmount(amount)
                         .withAuthenticationSource(AuthenticationSource.Browser)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
         assertNull(secureEcom.getEci());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -373,7 +376,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
@@ -384,7 +387,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -396,7 +399,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -409,7 +412,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withStoredCredential(storedCredential)
                         .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response2);
         assertEquals(SUCCESS, response2.getResponseCode());
@@ -428,12 +431,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withAmount(amount)
                         .withAuthenticationSource(AuthenticationSource.MobileSDK)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -446,7 +450,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withMethodUrlCompletion(MethodUrlCompletion.Yes)
                         .withOrderCreateDate(DateTime.now())
                         .withAddress(shippingAddress, AddressType.Shipping)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, initAuth.getStatus());
@@ -458,7 +462,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -470,7 +474,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -488,12 +492,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -507,13 +512,14 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(CHALLENGE_REQUIRED, initAuth.getStatus());
         assertTrue(initAuth.isChallengeMandated());
         assertNotNull(initAuth.getIssuerAcsUrl());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
+        assertTrue(secureEcom.isChallengeMandated());
 
         // Perform ACS authentication
         GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());
@@ -525,7 +531,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
@@ -538,7 +544,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -556,7 +562,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(AVAILABLE, secureEcom.getStatus());
@@ -567,6 +573,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNotNull(secureEcom.getMessageType());
         assertEquals(amount, secureEcom.getAmount());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -580,7 +587,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(Secure3dVersion.TWO, initAuth.getVersion());
@@ -598,7 +605,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
@@ -614,7 +621,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -632,12 +639,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .checkEnrollment(card)
                         .withCurrency(currency)
                         .withAmount(amount)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         // Initiate authentication
         ThreeDSecure initAuth =
@@ -651,13 +659,14 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
                         .withChallengeRequestIndicator(ChallengeRequestIndicator.ChallengeMandated)
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(CHALLENGE_REQUIRED, initAuth.getStatus());
         assertTrue(initAuth.isChallengeMandated());
         assertNotNull(initAuth.getIssuerAcsUrl());
         assertNotNull(initAuth.getPayerAuthenticationRequest());
+        assertTrue(secureEcom.isChallengeMandated());
 
         // Perform ACS authentication
         GpApi3DSecureAcsClient acsClient = new GpApi3DSecureAcsClient(initAuth.getIssuerAcsUrl());
@@ -669,7 +678,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(initAuth.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -681,7 +690,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -693,7 +702,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
         tokenizedCard.setCardHolderName("James Mason");
 
         ThreeDSecure secureEcom =
@@ -702,12 +711,13 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withAmount(amount)
                         .withDecoupledNotificationUrl("https://www.example.com/decoupledNotification")
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(secureEcom);
         assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
         assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
         assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
 
         ThreeDSecure initAuth =
                 Secure3dService
@@ -722,7 +732,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withDecoupledFlowRequest(true)
                         .withDecoupledFlowTimeout(9001)
                         .withDecoupledNotificationUrl("https://www.example.com/decoupledNotification")
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
@@ -732,7 +742,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 Secure3dService
                         .getAuthenticationData()
                         .withServerTransactionId(secureEcom.getServerTransactionId())
-                        .execute(Secure3dVersion.TWO, GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
         assertEquals("YES", secureEcom.getLiabilityShift());
@@ -743,7 +753,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -763,7 +773,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());

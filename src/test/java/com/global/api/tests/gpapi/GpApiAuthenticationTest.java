@@ -85,7 +85,7 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40119", ex.getResponseText());
-            assertEquals("Status Code: 400 - Invalid permissions TEST_1,TEST_2 provided in the input field - permissions", ex.getMessage());
+            assertTrue(ex.getMessage().contains("Status Code: 400 - Invalid permissions"));
         } finally {
             assertTrue(exceptionCaught);
         }

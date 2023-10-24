@@ -1,5 +1,18 @@
 # Changelog
 
+## v11.1.17 (10/24/2023)
+### Enhancements:
+[GP-API]:
+- Map enrolled field on 3ds response.
+- Improve unit tests on Merchants onboard.
+### Bug Fixes:
+[GP-API]:
+- Fix mapping of accountNumber for Open Banking.
+- Fix NullPointerException on request logger for open banking.
+
+[Portico]:
+- Fixed Null Pointer exception with customer data.
+
 ## v11.1.16 (10/23/2023)
 
 ### Enhancements:

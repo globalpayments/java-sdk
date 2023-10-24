@@ -712,7 +712,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
                 paymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
             IOpenBankingProvider obClient = ServicesContainer.getInstance().getOpenBankingClient(configName);
 
-            if (obClient != client) {
+            if (obClient != null && obClient != client) {
                 return obClient.manageOpenBanking(this);
             }
         }

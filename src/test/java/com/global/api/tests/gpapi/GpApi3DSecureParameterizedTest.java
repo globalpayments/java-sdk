@@ -124,6 +124,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
             assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
+            assertTrue(secureEcom.isEnrolled());
 
             ThreeDSecure initAuth =
                     Secure3dService
@@ -200,6 +201,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
             assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
+            assertTrue(secureEcom.isEnrolled());
 
             ThreeDSecure initAuth =
                     Secure3dService
@@ -310,6 +312,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
             assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
             assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
             assertEquals(AVAILABLE, secureEcom.getStatus());
+            assertTrue(secureEcom.isEnrolled());
 
             ThreeDSecure initAuth =
                     Secure3dService

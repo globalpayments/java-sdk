@@ -502,127 +502,95 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void BoardMerchant_WithoutLegalName() {
+    public void BoardMerchant_WithoutLegalName() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setLegalName(null);
 
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
         PaymentStatistics paymentStatistics = GetPaymentStatistics();
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields legal_name", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutDba() {
+    public void BoardMerchant_WithoutDba() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setDBA(null);
 
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
         PaymentStatistics paymentStatistics = GetPaymentStatistics();
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields dba", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutWebsite() {
+    public void BoardMerchant_WithoutWebsite() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setWebsite(null);
 
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
         PaymentStatistics paymentStatistics = GetPaymentStatistics();
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields website", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutNotificationStatusUrl() {
+    public void BoardMerchant_WithoutNotificationStatusUrl() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setNotificationStatusUrl(null);
 
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
         PaymentStatistics paymentStatistics = GetPaymentStatistics();
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields notifications.status_url", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
@@ -653,34 +621,26 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void BoardMerchant_WithoutPaymentStatistics() {
+    public void BoardMerchant_WithoutPaymentStatistics() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutTotalMonthlySalesAmount() {
+    public void BoardMerchant_WithoutTotalMonthlySalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
@@ -688,31 +648,23 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .setAverageTicketSalesAmount(new BigDecimal(50000))
                 .setHighestTicketSalesAmount(new BigDecimal(60000));
 
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.total_monthly_sales_amount", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutAverageTicketSalesAmount() {
+    public void BoardMerchant_WithoutAverageTicketSalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
@@ -720,31 +672,22 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .setTotalMonthlySalesAmount(new BigDecimal(3000000))
                 .setHighestTicketSalesAmount(new BigDecimal(60000));
 
-        boolean exceptionCaught = false;
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.average_ticket_sales_amount", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutHighestTicketSalesAmount() {
+    public void BoardMerchant_WithoutHighestTicketSalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
@@ -752,56 +695,39 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .setTotalMonthlySalesAmount(new BigDecimal(3000000))
                 .setAverageTicketSalesAmount(new BigDecimal(50000));
 
-        boolean exceptionCaught = false;
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withDescription("Merchant Business Description")
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_processing_statistics.highest_ticket_sales_amount", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withDescription("Merchant Business Description")
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
+
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     @Test
-    public void BoardMerchant_WithoutDescription() {
+    public void BoardMerchant_WithoutDescription() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
         PaymentStatistics paymentStatistics = GetPaymentStatistics();
 
-        boolean exceptionCaught = false;
+        User merchant = payFacService
+                .createMerchant()
+                .withUserPersonalData(merchantData)
+                .withProductData(productData)
+                .withPersonsData(persons)
+                .withPaymentStatistics(paymentStatistics)
+                .execute();
 
-        try {
-            payFacService
-                    .createMerchant()
-                    .withUserPersonalData(merchantData)
-                    .withProductData(productData)
-                    .withPersonsData(persons)
-                    .withPaymentStatistics(paymentStatistics)
-                    .execute();
-        } catch (GatewayException ex) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields description", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        } finally {
-            assertTrue(exceptionCaught);
-        }
+        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
+        assertNotNull(merchant.getUserReference().getUserId());
     }
 
     private List<Person> GetPersonList(String type) {

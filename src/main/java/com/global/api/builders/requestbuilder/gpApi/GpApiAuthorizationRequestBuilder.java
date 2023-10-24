@@ -6,19 +6,16 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
-import com.global.api.utils.masking.ElementToMask;
-import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.gateways.OpenBankingProvider;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
@@ -372,12 +369,22 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("code", check.getRoutingNumber())
                             .set("name", check.getBankName());
 
-            maskedData.putAll(
-                    MaskValueUtil.hideValues(
-                            new ElementToMask("payment_method.bank_transfer.bank.code", check.getRoutingNumber(), 0, check.getRoutingNumber().length() - 4),
-                            new ElementToMask("payment_method.bank_transfer.account_number", check.getAccountNumber(), 0, check.getAccountNumber().length() - 4)
-                    )
-            );
+            if (bank.has("code")) {
+                String code = bank.getString("code");
+                maskedData.putAll(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment_method.bank_transfer.bank.code", code, 0, code.length() - 4)
+                        )
+                );
+            }
+            if (bankTransfer.has("account_number")) {
+                String accountNumber = bankTransfer.getString("account_number");
+                maskedData.putAll(
+                        MaskValueUtil.hideValues(
+                                new ElementToMask("payment_method.bank_transfer.account_number", accountNumber, 0, accountNumber.length() - 4)
+                        )
+                );
+            }
 
             if (check.getBankAddress() != null) {
                 Address checkBankAddress = check.getBankAddress();
@@ -415,10 +422,17 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         if (builderPaymentMethod instanceof BankPayment) {
             var bankpaymentMethod = (BankPayment) builderPaymentMethod;
 
+
+            String[] countriesArray = null;
+            if (bankpaymentMethod.getCountries() != null) {
+                countriesArray = new String[bankpaymentMethod.getCountries().size()];
+                countriesArray = bankpaymentMethod.getCountries().toArray(countriesArray);
+            }
+
             JsonDoc apm =
                     new JsonDoc()
                             .set("provider", PaymentProvider.OPEN_BANKING.toString())
-                            .set("countries", bankpaymentMethod.getCountries() != null ? (String[]) bankpaymentMethod.getCountries().toArray() : null);
+                            .set("countries", countriesArray);
 
             paymentMethod.set("apm", apm);
 
@@ -429,17 +443,19 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("account_number", bankPaymentType == BankPaymentType.FASTERPAYMENTS ? bankpaymentMethod.getAccountNumber() : "")
                             .set("iban", bankPaymentType == BankPaymentType.SEPA ? bankpaymentMethod.getIban() : "");
 
-            if (bankpaymentMethod.getAccountNumber() != null && !bankpaymentMethod.getAccountNumber().isEmpty()) {
+            if (bankTransfer.has("account_number")) {
+                String accountNumber = bankTransfer.getString("account_number");
                 maskedData.putAll(
                         MaskValueUtil.hideValues(
-                                new ElementToMask("payment_method.bank_transfer.account_number", bankTransfer.getString("account_number"), 0, bankTransfer.getString("account_number").length() - 4)
+                                new ElementToMask("payment_method.bank_transfer.account_number", accountNumber, 0, accountNumber.length() - 4)
                         )
                 );
             }
-            if (bankpaymentMethod.getIban() != null && !bankpaymentMethod.getIban().isEmpty()) {
+            if (bankTransfer.has("iban")) {
+                String iban = bankTransfer.getString("iban");
                 maskedData.putAll(
                         MaskValueUtil.hideValues(
-                                new ElementToMask("payment_method.bank_transfer.iban", bankTransfer.getString("iban"), 0, bankTransfer.getString("iban").length() - 4)
+                                new ElementToMask("payment_method.bank_transfer.iban", iban, 0, iban.length() - 4)
                         )
                 );
             }

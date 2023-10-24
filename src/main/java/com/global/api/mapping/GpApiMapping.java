@@ -16,15 +16,15 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import lombok.var;
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import lombok.var;
-import org.joda.time.DateTime;
-
-import static com.global.api.gateways.GpApiConnector.*;
+import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
+import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
 
 public class GpApiMapping {
 
@@ -164,7 +164,7 @@ public class GpApiMapping {
                         transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
                     }
                 }
-                if (    paymentMethod.has("apm") &&
+                if (paymentMethod.has("apm") &&
                         paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
                     transaction.setPaymentMethodType(PaymentMethodType.BankPayment);
 
@@ -179,7 +179,7 @@ public class GpApiMapping {
                         obResponse.setAccountNumber(bankTransfer.getString("account_number") != null ? bankTransfer.getString("account_number") : null);
                         obResponse.setIban(bankTransfer.getString("iban") != null ? bankTransfer.getString("iban") : null);
 
-                        if(bankTransfer.has("bank")) {
+                        if (bankTransfer.has("bank")) {
                             JsonDoc bank = bankTransfer.get("bank");
 
                             obResponse.setSortCode(bank.getString("code") != null ? bank.getString("code") : null);
@@ -188,11 +188,9 @@ public class GpApiMapping {
                     }
 
                     transaction.setBankPaymentResponse(obResponse);
-                }
-                else if (paymentMethod.has("bank_transfer")) {
+                } else if (paymentMethod.has("bank_transfer")) {
                     transaction.setPaymentMethodType(PaymentMethodType.ACH);
-                }
-                else if (paymentMethod.has("apm")) {
+                } else if (paymentMethod.has("apm")) {
                     transaction.setPaymentMethodType(PaymentMethodType.APM);
                 }
             }
@@ -253,7 +251,7 @@ public class GpApiMapping {
 
         var transferResponse = new ArrayList<FundsAccountDetails>();
 
-        for(JsonDoc item : json.getEnumerator("transfers")) {
+        for (JsonDoc item : json.getEnumerator("transfers")) {
 
             var transfer = new FundsAccountDetails();
 
@@ -312,7 +310,7 @@ public class GpApiMapping {
 
         JsonDoc paymentMethodApm = json.get("payment_method").get("apm");
 
-        if(paymentMethodApm != null) {
+        if (paymentMethodApm != null) {
             apm.setProviderName(paymentMethodApm.getString("provider"));
             apm.setAck(paymentMethodApm.getString("ack"));
             apm.setSessionToken(paymentMethodApm.getString("session_token"));
@@ -425,15 +423,15 @@ public class GpApiMapping {
                 JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
                 summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
                 summary.setPaymentType(PaymentMethodName.DigitalWallet.getValue(Target.GP_API));
-            } else if (     paymentMethod.has("bank_transfer") &&
-                            paymentMethod.has("apm") &&
-                            !paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
+            } else if (paymentMethod.has("bank_transfer") &&
+                    paymentMethod.has("apm") &&
+                    !paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
                 JsonDoc bankTransfer = paymentMethod.get("bank_transfer");
                 summary.setAccountNumberLast4(bankTransfer.getString("masked_account_number_last4"));
                 summary.setAccountType(bankTransfer.getString("account_type"));
                 summary.setPaymentType(PaymentMethodName.BankTransfer.getValue(Target.GP_API));
                 summary.setAccountType(bankTransfer.getString("account_type"));
-            } else if(paymentMethod.has("apm")) {
+            } else if (paymentMethod.has("apm")) {
                 if (paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
 
                     summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BankPayment));
@@ -455,12 +453,11 @@ public class GpApiMapping {
                             bankPaymentResponse.setRemittanceReferenceValue(bankTransfer.get("remittance_reference").getString("value"));
                             bankPaymentResponse.setRemittanceReferenceType(bankTransfer.get("remittance_reference").getString("type"));
                         }
-                        summary.setAccountDataSource(bankTransfer.getString("masked_account_number_last4"));
+                        summary.setAccountNumberLast4(bankTransfer.getString("masked_account_number_last4"));
                     }
 
                     summary.setBankPaymentResponse(bankPaymentResponse);
-                }
-                else {
+                } else {
                     JsonDoc apm = paymentMethod.get("apm");
                     var alternativePaymentResponse = new AlternativePaymentResponse();
 
@@ -515,7 +512,7 @@ public class GpApiMapping {
 
         if (doc.has("transactions")) {
             JsonDoc transactions = doc.get("transactions");
-            if(transactions.has("transaction_list")) {
+            if (transactions.has("transaction_list")) {
                 List<TransactionSummary> transactionSummaryList = new ArrayList<>();
                 for (JsonDoc transaction : transactions.getEnumerator("transaction_list")) {
                     transactionSummaryList.add(createTransactionSummary(transaction));
@@ -612,7 +609,7 @@ public class GpApiMapping {
                 return (T) mapDisputeSummary(json);
 
             case DocumentDisputeDetail:
-                return (T) mapDisputeDocument(json) ;
+                return (T) mapDisputeDocument(json);
 
             case SettlementDisputeDetail:
                 return (T) mapSettlementDisputeSummary(json);
@@ -736,8 +733,7 @@ public class GpApiMapping {
         return summary;
     }
 
-    public static DisputeDocument mapDisputeDocument(JsonDoc doc)
-    {
+    public static DisputeDocument mapDisputeDocument(JsonDoc doc) {
         DisputeDocument document = new DisputeDocument();
         document.setId(doc.getString("id"));
         document.setType(doc.get("action") != null ? doc.get("action").getString("type") : "");
@@ -921,7 +917,7 @@ public class GpApiMapping {
         if (fraudResponse.has("rules")) {
             fraudFilterResponse.setFraudResponseRules(new ArrayList<>());
 
-            for(var rule : fraudResponse.getEnumerator("rules")) {
+            for (var rule : fraudResponse.getEnumerator("rules")) {
                 var fraudRule = new FraudRule();
 
                 fraudRule.setKey(rule.getString("reference"));
@@ -977,9 +973,9 @@ public class GpApiMapping {
             ThreeDSecure threeDSecure = new ThreeDSecure();
             threeDSecure.setServerTransactionId(json.getString("id"));
             threeDSecure.setProviderServerTransRef(
-                            !StringUtils.isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
-                                    json.get("three_ds").getString("server_trans_ref") :
-                                    null);
+                    !StringUtils.isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
+                            json.get("three_ds").getString("server_trans_ref") :
+                            null);
             threeDSecure.setStatus(json.getString("status"));
             threeDSecure.setCurrency(json.getString("currency"));
             threeDSecure.setAmount(json.getAmount("amount"));
@@ -997,6 +993,7 @@ public class GpApiMapping {
                 // In other SDKs, enrolled is simply a String.
                 // In JAVA, enrolled was used in another connectors as boolean. So enrolledStatus was created as String for that purpose.
                 threeDSecure.setEnrolledStatus(three_ds.getString("enrolled_status"));
+                threeDSecure.setEnrolled(!StringUtils.isNullOrEmpty(three_ds.getString("enrolled_status")) && three_ds.getString("enrolled_status").equals("ENROLLED"));
                 threeDSecure.setEci(!StringUtils.isNullOrEmpty(three_ds.getString("eci")) ? three_ds.getString("eci") : null);
                 threeDSecure.setAcsInfoIndicator(three_ds.getStringArrayList("acs_info_indicator"));
                 threeDSecure.setChallengeMandated(three_ds.getString("challenge_status").equals("MANDATED"));
@@ -1255,7 +1252,7 @@ public class GpApiMapping {
         merchantAccountSummary.setPermissions(account.getStringArrayList("permissions"));
         merchantAccountSummary.setCountries(account.getStringArrayList("countries"));
 
-        if(account != null && account.has("channels")) {
+        if (account != null && account.has("channels")) {
             List<Channel> channelsList = new ArrayList<>();
             for (String channel : account.getStringArrayList("channels")) {
                 channelsList.add(Channel.fromString(channel));
@@ -1320,9 +1317,8 @@ public class GpApiMapping {
                     }
 
                     if (json.has("contact_phone")) {
-                        if (    !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("country_code")) &&
-                                !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("subscriber_number")))
-                        {
+                        if (!StringUtils.isNullOrEmpty(json.get("contact_phone").getString("country_code")) &&
+                                !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("subscriber_number"))) {
                             PhoneNumber phoneNumber = new PhoneNumber();
                             phoneNumber.setCountryCode(json.get("contact_phone").getString("country_code"));
                             phoneNumber.setNumber(json.get("contact_phone").getString("subscriber_number"));
@@ -1381,11 +1377,11 @@ public class GpApiMapping {
                 var bankTransfer = payment.get("bank_transfer");
                 var pm = new eCheck();
 
-                if (bankTransfer.has("account_holder_type") && ! StringUtils.isNullOrEmpty(bankTransfer.getString("account_holder_type"))) {
+                if (bankTransfer.has("account_holder_type") && !StringUtils.isNullOrEmpty(bankTransfer.getString("account_holder_type"))) {
                     pm.setCheckType(CheckType.valueOf(bankTransfer.getString("account_holder_type")));
                 }
 
-                if (bankTransfer.has("account_type") && ! StringUtils.isNullOrEmpty(bankTransfer.getString("account_type")) ) {
+                if (bankTransfer.has("account_type") && !StringUtils.isNullOrEmpty(bankTransfer.getString("account_type"))) {
                     pm.setAccountType(AccountType.valueOf(bankTransfer.getString("account_type")));
                 }
 
@@ -1478,7 +1474,7 @@ public class GpApiMapping {
     private static List<PaymentMethodName> getPaymentMethodsName(JsonDoc doc) {
         var result = new ArrayList<PaymentMethodName>();
 
-        if(doc.has("payment_methods")) {
+        if (doc.has("payment_methods")) {
             for (var payment : doc.getStringArrayList("payment_methods")) {
                 switch (payment) {
                     case "BANK_TRANSFER":
