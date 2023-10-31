@@ -35,15 +35,7 @@ public class GpApiAvsCheckTest extends BaseGpApiTest {
         @BeforeClass
         @SneakyThrows
         public static void init() {
-            GpApiConfig config = new GpApiConfig();
-
-            // GP-API settings
-            config.setAppId(APP_ID);
-            config.setAppKey(APP_KEY);
-            config.setChannel(Channel.CardNotPresent);
-
-            config.setEnableLogging(true);
-
+            GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
             ServicesContainer.configureService(config);
 
             card = new CreditCardData();

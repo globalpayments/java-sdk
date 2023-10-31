@@ -31,16 +31,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     public GpApiFraudManagementTest() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent);
-
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         card = new CreditCardData();

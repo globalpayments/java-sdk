@@ -26,16 +26,8 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
     private final String currency = "USD";
 
     public GpApiTokenManagementTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -44,7 +36,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         card.setCvn("123");
 
         try {
-            token = card.tokenize(GP_API_CONFIG_NAME);
+            token = card.tokenize();
 
             assertFalse("Token could not be generated.", StringUtils.isNullOrEmpty(token));
         } catch (GatewayException ex) {
@@ -58,7 +50,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
 
         String response =
                 card
-                        .tokenize(GP_API_CONFIG_NAME);
+                        .tokenize();
 
         assertNotNull(response);
         assertTrue(response.startsWith("PMT_"));
@@ -101,7 +93,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         Transaction response =
                 card
                         .tokenize(true, PaymentMethodUsageMode.MULTIPLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertNotNull(response.getToken());
@@ -120,7 +112,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                 tokenizedCard
                         .verify()
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertNotNull(response.getTransactionId());
@@ -142,7 +134,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                         .verify()
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -155,7 +147,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -173,13 +165,13 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         tokenizedCard.setExpMonth(12);
         tokenizedCard.setExpYear(2030); // Expiration Year is updated until 2030
 
-        assertTrue(tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME));
+        assertTrue(tokenizedCard.updateTokenExpiry());
 
         Transaction response =
                 tokenizedCard
                         .verify()
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -187,7 +179,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         // assertEquals(30, response.getCardExpYear());
 
         tokenizedCard.setExpYear(2025);
-        assertTrue(tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME));
+        assertTrue(tokenizedCard.updateTokenExpiry());
     }
 
     @Test
@@ -200,7 +192,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40116", ex.getResponseText());
@@ -219,7 +211,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         Transaction response = tokenizedCard
                 .charge(amount)
                 .withCurrency(currency)
-                .execute(GP_API_CONFIG_NAME);
+                .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -242,7 +234,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                 .charge(amount)
                 .withCurrency(currency)
                 .withStoredCredential(storedCredential)
-                .execute(GP_API_CONFIG_NAME);
+                .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -262,7 +254,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                 .charge(amount)
                 .withCurrency(currency)
                 .withStoredCredential(storedCredential)
-                .execute(GP_API_CONFIG_NAME);
+                .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -277,14 +269,14 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
-        assertTrue(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
-        assertFalse(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
+        assertTrue(tokenizedCard.deleteToken());
+        assertFalse(tokenizedCard.deleteToken());
 
         try {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
         }
@@ -300,15 +292,15 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(token);
 
-        assertTrue(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
-        assertFalse(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
+        assertTrue(tokenizedCard.deleteToken());
+        assertFalse(tokenizedCard.deleteToken());
 
         try {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
         }
@@ -343,7 +335,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withRequestMultiUseToken(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -356,7 +348,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());

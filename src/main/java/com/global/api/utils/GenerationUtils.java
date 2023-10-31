@@ -2,11 +2,11 @@ package com.global.api.utils;
 
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
 import com.global.api.entities.enums.ShaHashType;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -158,13 +158,13 @@ public class GenerationUtils {
 
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
-        return Base64.encodeBase64URLSafeString(bb.array());
+        return trimEnd(Base64.getUrlEncoder().encodeToString(bb.array()), '=');
     }
 
     public static String generateScheduleId() {
         String uuid =  UUID.randomUUID().toString();
         return
-                trimEnd(Base64.encodeBase64String(uuid.getBytes()), '=')
+                trimEnd(Base64.getEncoder().encodeToString(uuid.getBytes()), '=')
                         .replace("+", "-")
                         .replace("/", "_")
                         .toLowerCase()

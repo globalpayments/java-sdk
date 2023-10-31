@@ -27,15 +27,8 @@ import static org.junit.Assert.*;
 public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
 
     public GpApiReportingDepositsTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, null);
+        ServicesContainer.configureService(config);
     }
 
     @Test
@@ -45,7 +38,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
         DepositSummary deposit =
                 ReportingService
                         .depositDetail(depositId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposit);
         assertEquals(depositId, deposit.getDepositId());
@@ -58,7 +51,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .depositDetail(depositId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40118", ex.getResponseText());
@@ -77,7 +70,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .orderBy(DepositSortProperty.TimeCreated, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_END_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -92,7 +85,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.TimeCreated, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -107,7 +100,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.DepositId, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -122,7 +115,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.Status, SortDirection.Ascending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -137,7 +130,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.Type, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -149,7 +142,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.Type, SortDirection.Ascending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(depositsAsc);
 
@@ -163,7 +156,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.DepositId, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(deposits);
 
         DepositSummaryPaged depositsType =
@@ -171,7 +164,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DepositSortProperty.Type, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(depositsType);
 
         assertNotSame(deposits, depositsType);
@@ -186,7 +179,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .withDepositReference(depositReference)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(deposits);
         assertEquals(1, deposits.getResults().size());
         assertEquals(depositReference, deposits.getResults().get(0).getDepositId());
@@ -201,7 +194,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .withDepositReference(depositReference)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(deposits);
         assertEquals(0, deposits.getResults().size());
     }
@@ -214,7 +207,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                             .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                             .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DepositStatus, depositStatus)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
             assertNotNull(deposits);
             for (DepositSummary depositSummary : deposits.getResults()) {
                 assertEquals(depositStatus.toString().toUpperCase().trim().replace("IRREGULAR", "IRREG"),
@@ -231,7 +224,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(deposits);
     }
 
@@ -244,7 +237,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.Amount, amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
             assertEquals(amount, depositSummary.getAmount());
@@ -260,7 +253,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.Amount, amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         assertEquals(0, deposits.getResults().size());
@@ -275,7 +268,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AccountNumberLastFour, masked_account_number_last4)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -292,7 +285,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -309,7 +302,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, hierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         for (DepositSummary depositSummary : deposits.getResults()) {
@@ -326,7 +319,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         assertEquals(0, deposits.getResults().size());
@@ -341,7 +334,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                         .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, hierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(deposits);
         assertEquals(0, deposits.getResults().size());
@@ -355,7 +348,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
                     .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
                     .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                     .and(DataServiceCriteria.SystemHierarchy, UUID.randomUUID().toString())
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -375,7 +368,7 @@ public class GpApiReportingDepositsTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .findDepositsPaged(FIRST_PAGE, PAGE_SIZE)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40008", ex.getResponseText());

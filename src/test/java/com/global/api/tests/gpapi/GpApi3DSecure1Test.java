@@ -2,6 +2,7 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.ThreeDSecure;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -26,17 +27,8 @@ public class GpApi3DSecure1Test extends BaseGpApiTest {
     private CreditCardData card;
 
     public GpApi3DSecure1Test() throws ConfigurationException {
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setAppId(APP_ID);
-        gpApiConfig.setAppKey(APP_KEY);
-        gpApiConfig.setCountry("GB");
-        gpApiConfig.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        gpApiConfig.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        gpApiConfig.setMerchantContactUrl("'https://enp4qhvjseljg.x.pipedream.net/");
-
-        gpApiConfig.setEnableLogging(true);
-
-        ServicesContainer.configureService(gpApiConfig);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         // Create card data
         card = new CreditCardData();

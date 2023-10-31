@@ -39,29 +39,14 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     @Before
     public void initialize() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setChannel(Channel.CardNotPresent);
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-        config.setEnableLogging(true);
-
-//      DO NOT DELETE - usage example for some settings
-//        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
-//            put("x-gp-platform", "prestashop;version=1.7.2");
-//            put("x-gp-extension", "coccinet;version=2.4.1");
-//        }};
-//
-//        config.setDynamicHeaders(dynamicHeaders);
-
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
         card.setExpMonth(expMonth);
         card.setExpYear(expYear);
+        card.setCvn("123");
 
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -619,7 +604,14 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     @Test
     public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
-        String token = card.tokenize(true, merchantConfig, PaymentMethodUsageMode.SINGLE);
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        config.setPermissions(permissions);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+
+        String token = card.tokenize(true, "singleUseToken", PaymentMethodUsageMode.SINGLE);
 
         assertNotNull(token);
 

@@ -36,16 +36,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
     public GpApiAchTest() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent);
-
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
     }
 
@@ -105,13 +96,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplit() throws ApiException, InterruptedException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         MerchantSummaryPaged merchants = getMerchants();
@@ -170,13 +155,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplitThenReverse_WithConfigMerchantId() throws ApiException, InterruptedException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         MerchantSummaryPaged merchants = getMerchants();
@@ -250,13 +229,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplitThenReverse_WithFundsData() throws ApiException, InterruptedException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         MerchantSummaryPaged merchants = getMerchants();
@@ -330,13 +303,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplit_WithoutFundsData() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         Transaction transaction = Transaction.fromId(UUID.randomUUID().toString());
@@ -359,13 +326,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplit_WithoutAmount() throws ApiException, InterruptedException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         MerchantSummaryPaged merchants = getMerchants();
@@ -425,13 +386,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     @Test
     public void CreditSaleThenSplit_WithoutRecipientId() throws ApiException, InterruptedException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID_FOR_MERCHANT);
-        config.setAppKey(APP_KEY_FOR_MERCHANT);
-        config.setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-        config.setRequestLogger(new RequestConsoleLogger());
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         MerchantSummaryPaged merchants = getMerchants();
@@ -582,7 +537,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         return
                 new ReportingService()
                         .findMerchants(1, 10)
-                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Descending)
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
     }
@@ -592,7 +547,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         MerchantAccountSummaryPaged response =
                 ReportingService
                         .findAccounts(1, 10)
-                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
                         .and(DataServiceCriteria.MerchantId, merchantSenderId)

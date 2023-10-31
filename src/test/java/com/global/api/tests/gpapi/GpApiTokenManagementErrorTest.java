@@ -1,6 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
@@ -17,15 +18,8 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
     private static final String currency = "USD";
 
     public GpApiTokenManagementErrorTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         CreditCardData card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -33,7 +27,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
         card.setExpYear(expYear);
         card.setCvn("123");
 
-        String token = card.tokenize(GP_API_CONFIG_NAME);
+        String token = card.tokenize();
 
         assertNotNull("Token could not be generated.", token);
     }
@@ -50,7 +44,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -73,7 +67,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
         try {
             card
-                    .tokenize(GP_API_CONFIG_NAME);
+                    .tokenize();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
@@ -94,7 +88,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -114,7 +108,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME);
+            tokenizedCard.updateTokenExpiry();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -134,7 +128,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            tokenizedCard.updateTokenExpiry(GP_API_CONFIG_NAME);
+            tokenizedCard.updateTokenExpiry();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -157,14 +151,14 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
         card.setCvn("123");
 
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
 
         assertNotNull(tokenizedCard.getToken());
-        assertTrue(tokenizedCard.deleteToken(GP_API_CONFIG_NAME));
+        assertTrue(tokenizedCard.deleteToken());
 
         boolean exceptionCaught = false;
         try {
-            tokenizedCard.deleteToken(GP_API_CONFIG_NAME);
+            tokenizedCard.deleteToken();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 404 - payment_method " + tokenizedCard.getToken() + " not found at this location.", ex.getMessage());
@@ -179,7 +173,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 404 - payment_method " + tokenizedCard.getToken() + " not found at this location.", ex.getMessage());
@@ -200,7 +194,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            tokenizedCard.deleteToken(GP_API_CONFIG_NAME);
+            tokenizedCard.deleteToken();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -215,7 +209,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -238,7 +232,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            tokenizedCard.deleteToken(GP_API_CONFIG_NAME);
+            tokenizedCard.deleteToken();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - payment_method.id: This_is_not_a_payment_id contains unexpected data", ex.getMessage());
@@ -253,7 +247,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             tokenizedCard
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - payment_method.id: This_is_not_a_payment_id contains unexpected data", ex.getMessage());

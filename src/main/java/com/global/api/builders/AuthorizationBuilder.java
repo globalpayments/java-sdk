@@ -905,7 +905,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         if (client.supportsOpenBanking() && paymentMethod instanceof BankPayment) {
             IOpenBankingProvider obClient = ServicesContainer.getInstance().getOpenBankingClient(configName);
 
-            if (obClient != null && obClient != client) {
+            if (obClient != null) {
                 return obClient.processOpenBanking(this);
             }
         }

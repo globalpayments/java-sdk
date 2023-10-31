@@ -3,6 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.DisputeStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -19,16 +20,8 @@ public class GpApiDisputeTest extends BaseGpApiTest {
     DisputeSummary dispute;
 
     public GpApiDisputeTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
     }
 
     @Before
@@ -42,7 +35,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         Transaction response =
                 dispute
                         .accept()
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -57,7 +50,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         try {
             dispute
                     .accept()
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40067", ex.getResponseText());
@@ -80,7 +73,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         Transaction response =
                 dispute
                         .challenge(documents)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -106,7 +99,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         Transaction response =
                 dispute
                         .challenge(documents)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -131,7 +124,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         try {
             dispute
                     .challenge(documents)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40072", ex.getResponseText());
@@ -149,7 +142,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         try {
             dispute
                     .challenge(new ArrayList<>())
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40065", ex.getResponseText());
@@ -171,7 +164,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         Transaction response =
                 dispute
                         .challenge(documents)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -193,7 +186,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         try {
             dispute
                     .challenge(documents)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40060", ex.getResponseText());

@@ -310,6 +310,8 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
     public void Verify_UseOnlyAccessToken() throws ApiException {
         GpApiConfig gpApiConfig = configAccessTokenCall();
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(gpApiConfig);
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
+        accessTokenInfo.setTransactionProcessingAccountID("TRA_c9967ad7d8ec4b46b6dd44a61cde9a91");
 
         GpApiConfig newGpApiConfig = configAccessTokenCall();
         newGpApiConfig.setAccessTokenInfo(accessTokenInfo);

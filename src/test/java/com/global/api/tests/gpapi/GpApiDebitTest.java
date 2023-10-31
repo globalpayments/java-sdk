@@ -25,14 +25,7 @@ public class GpApiDebitTest extends BaseGpApiTest {
     private final String tagData;
 
     public GpApiDebitTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent);
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
         ServicesContainer.configureService(config);
 
         debitTrackData.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");

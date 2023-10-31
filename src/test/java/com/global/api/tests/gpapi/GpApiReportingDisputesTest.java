@@ -31,15 +31,8 @@ import static org.junit.Assert.*;
 public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
 
     public GpApiReportingDisputesTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, null);
+        ServicesContainer.configureService(config);
     }
 
     @Test
@@ -49,7 +42,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         DisputeSummary response =
                 ReportingService
                         .disputeDetail(disputeId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(disputeId, response.getCaseId());
@@ -63,7 +56,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .disputeDetail(disputeId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40073", ex.getResponseText());
@@ -81,7 +74,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
 
@@ -90,7 +83,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAscending);
 
@@ -105,7 +98,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.ARN, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndStageDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -121,7 +114,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -133,7 +126,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -145,7 +138,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -159,7 +152,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -171,7 +164,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -183,7 +176,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -195,7 +188,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -207,7 +200,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -220,7 +213,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -241,7 +234,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getPageSize());
@@ -258,7 +251,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                             .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
                             .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.CardBrand, cardBrand)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(disputes);
             for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -278,7 +271,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                             .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                             .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStatus, disputeStatus)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(disputes);
             for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -301,7 +294,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                             .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
                             .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStage, disputeStage)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(disputes);
             for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -317,7 +310,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndStageDate, new Date())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -333,7 +326,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -349,7 +342,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, Integer.toString(new Random().nextInt(999999999)))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -363,7 +356,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, hierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -374,7 +367,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .findDisputesPaged(FIRST_PAGE, PAGE_SIZE)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             assertEquals("40074", ex.getResponseText());
@@ -391,7 +384,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.CardBrand, "VISA")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -404,7 +397,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.UnderReview)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -417,7 +410,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, DisputeStage.Chargeback)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -431,7 +424,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                 ReportingService
                         .documentDisputeDetail(disputeId)
                         .where(SearchCriteria.DisputeDocumentId, documentId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(documentId, response.getId());
@@ -449,7 +442,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
             ReportingService
                     .documentDisputeDetail(disputeId)
                     .where(SearchCriteria.DisputeDocumentId, documentId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -470,7 +463,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
             ReportingService
                     .documentDisputeDetail(disputeId)
                     .where(SearchCriteria.DisputeDocumentId, documentId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
@@ -489,7 +482,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .documentDisputeDetail(disputeId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (BuilderException e) {
             exceptionCaught = true;
             assertEquals("disputeDocumentId cannot be null for this transaction type.", e.getMessage());
@@ -508,7 +501,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         DisputeSummary response =
                 ReportingService
                         .settlementDisputeDetail(settlementDisputeId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(settlementDisputeId, response.getCaseId());
@@ -522,7 +515,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .settlementDisputeDetail(disputeId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -539,7 +532,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .settlementDisputeDetail(null)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
@@ -558,7 +551,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -570,7 +563,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ARN, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -583,7 +576,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.Id, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.UnderReview)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
     }
@@ -595,7 +588,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -604,7 +597,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Brand, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -618,7 +611,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -627,7 +620,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Status, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -641,7 +634,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -650,7 +643,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.Stage, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -665,7 +658,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -674,7 +667,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromStageTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -689,7 +682,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -698,7 +691,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToStageTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -713,7 +706,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -722,7 +715,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.AdjustmentFunding, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -737,7 +730,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -746,7 +739,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.FromAdjustmentTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -761,7 +754,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Ascending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesAsc);
 
@@ -770,7 +763,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(DisputeSortProperty.ToAdjustmentTimeCreated, SortDirection.Descending)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesDesc);
 
@@ -786,7 +779,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -803,7 +796,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.AquirerReferenceNumber, arn)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -820,7 +813,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                             .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                             .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.CardBrand, cardBrand)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(disputes);
             for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -842,7 +835,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.CardBrand, cardBrand)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -855,7 +848,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStatus, DisputeStatus.Funded)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -871,7 +864,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .orderBy(DisputeSortProperty.Id, SortDirection.Descending)
                         .where(DataServiceCriteria.StartDepositDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndDepositDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (DisputeSummary disputeSummary : result.getResults()) {
@@ -888,7 +881,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                             .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                             .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                             .and(SearchCriteria.DisputeStage, disputeStage)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(disputes);
             for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -906,7 +899,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, disputeStage)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -920,7 +913,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(SearchCriteria.DisputeStage, disputeStageReversal)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputesReversal);
         for (DisputeSummary disputeSummary : disputesReversal.getResults()) {
@@ -937,7 +930,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndStageDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -957,7 +950,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {
@@ -975,7 +968,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.MerchantId, merchantId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -990,7 +983,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.SystemHierarchy, systemHierarchy)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         assertEquals(0, disputes.getResults().size());
@@ -1005,7 +998,7 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
                         .findSettlementDisputesPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartStageDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.DepositReference, DEPOSIT_ID)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(disputes);
         for (DisputeSummary disputeSummary : disputes.getResults()) {

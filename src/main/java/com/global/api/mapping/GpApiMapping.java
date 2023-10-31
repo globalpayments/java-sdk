@@ -44,6 +44,7 @@ public class GpApiMapping {
     private static final String MERCHANT_EDIT = "MERCHANT_EDIT";
     private static final String MERCHANT_EDIT_INITIATED = "MERCHANT_EDIT_INITIATED";
     private static final String FUNDS = "FUNDS";
+    private static final String DOCUMENT_UPLOAD = "DOCUMENT_UPLOAD";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -1284,6 +1285,26 @@ public class GpApiMapping {
             String actionType = json.get("action").getString("type");
 
             switch (actionType) {
+
+                case DOCUMENT_UPLOAD:
+                    var userDoc = new User();
+                    userDoc.setUserReference(new UserReference());
+                    userDoc.getUserReference().setUserId(json.getString("merchant_id"));
+                    userDoc.getUserReference().setUserType(UserType.MERCHANT);
+                    userDoc.setName(json.getString("merchant_name"));
+                    var doc = new Document();
+                    doc.setName(json.getString("name"));
+                    doc.setId(json.getString("id"));
+                    doc.setStatus(json.getString("status"));
+                    doc.setTimeCreated(json.getString("time_created"));
+                    doc.setFormat(FileType.valueOf(json.getString("format")));
+                    doc.setCategory(DocumentCategory.valueOf(json.getString("function")));
+                    userDoc.setDocument(doc);
+                    if (json.has("action")) {
+                        userDoc.setResponseCode(json.get("action").getString("result_code"));
+                    }
+                    return (T) userDoc;
+
                 case MERCHANT_CREATE:
                 case MERCHANT_EDIT:
                 case MERCHANT_EDIT_INITIATED:

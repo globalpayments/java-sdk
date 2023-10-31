@@ -8,6 +8,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FraudService;
@@ -32,20 +33,8 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
     private final static BigDecimal Amount = new BigDecimal("10.01");
 
     public GpApiRiskAssessmentTest() throws ConfigurationException {
-        GpApiConfig config = new GpApiConfig();
 
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setCountry("GB");
-
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
     }
 

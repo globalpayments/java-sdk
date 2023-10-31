@@ -18,6 +18,7 @@ import com.global.api.services.PayByLinkService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
 import org.joda.time.DateTime;
+import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -35,7 +36,7 @@ import static org.junit.Assert.*;
 public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     private final CreditCardData card;
-    private PayByLinkData payByLink;
+    private final PayByLinkData payByLink;
     private final Address shippingAddress;
     private final BrowserData browserData;
     private BigDecimal amount = new BigDecimal("2.11");
@@ -43,24 +44,13 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     private String payByLinkId = null;
 
     public GpApiPayByLinkTest() throws ApiException {
-
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK")
-                .setAppKey("oKZpWitk6tORoCVT")
-                .setChannel(Channel.CardNotPresent);
-
-        config.setEnvironment(Environment.TEST);
+        GpApiConfig config = gpApiSetup("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK", "oKZpWitk6tORoCVT", Channel.CardNotPresent);
         config.setCountry("GB");
         AccessTokenInfo accessTokenInfo =
                 new AccessTokenInfo()
                         .setTransactionProcessingAccountName("LinkManagement");
 
         config.setAccessTokenInfo(accessTokenInfo);
-
-        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 
@@ -115,9 +105,14 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
                         .and(SearchCriteria.PayByLinkStatus, PayByLinkStatus.ACTIVE.toString())
                         .execute();
 
-        if (response.getResults().size() >= 1) {
+        if (!response.getResults().isEmpty()) {
             payByLinkId = response.getResults().get(0).getId();
         }
+    }
+
+    @After
+    public void removeConfig() throws ApiException {
+        ServicesContainer.removeConfig();
     }
 
     @Test
@@ -146,7 +141,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
             exceptionCaught = true;
             assertEquals("40118", ex.getResponseText());
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
-            assertEquals("Status Code: 404 - Links " + payByLinkId + " not found at this /ucp/links/" + payByLinkId + "", ex.getMessage());
+            assertEquals("Status Code: 404 - Links " + payByLinkId + " not found at this /ucp/links/" + payByLinkId, ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -249,7 +244,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_ThenCharge() throws ApiException, InterruptedException {
+    public void CreatePayByLink_ThenCharge() throws ApiException {
         List<String> imagesList = new ArrayList<>();
         imagesList.add("\"https://gpapi-sandbox.truust.io/assets/images/37272.jpg\"");
         imagesList.add("\"https://gpapi-sandbox.truust.io/assets/images/37272.jpg\"");
@@ -279,7 +274,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertEquals(SUCCESS, chargeTransaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -291,7 +286,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_ThenCharge_DifferentAmount() throws ApiException, InterruptedException {
+    public void CreatePayByLink_ThenCharge_DifferentAmount() throws ApiException {
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
@@ -315,7 +310,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertEquals(SUCCESS, chargeTransaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -328,7 +323,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_MultipleUsage_ThenCharge() throws ApiException, InterruptedException {
+    public void CreatePayByLink_MultipleUsage_ThenCharge() throws ApiException {
         payByLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payByLink.setUsageLimit(2);
 
@@ -357,7 +352,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
             assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
         }
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -369,7 +364,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_ThenAuthorizeAndCapture() throws ApiException, InterruptedException {
+    public void CreatePayByLink_ThenAuthorizeAndCapture() throws ApiException {
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
@@ -404,7 +399,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertEquals(SUCCESS, capture.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -416,21 +411,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_ThenCharge_WithTokenizedCard() throws ApiException, InterruptedException {
-        String[] permissions = new String[]{"PMT_POST_Create_Single"};
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setPermissions(permissions);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, "singleUseToken");
-        ServicesContainer.configureService(setupTransactionConfig(), "createTransaction");
-
+    public void CreatePayByLink_ThenCharge_WithTokenizedCard() throws ApiException {
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
@@ -441,14 +422,21 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
         assertPayByLinkResponse(response);
 
-        String token =
+        String[] permissions = new String[]{"PMT_POST_Create_Single"};
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        config.setPermissions(permissions);
+
+        ServicesContainer.configureService(config, "singleUseToken");
+
+        Transaction token =
                 card
                         .tokenize(true, PaymentMethodUsageMode.SINGLE)
-                        .execute("singleUseToken")
-                        .getToken();
+                        .execute("singleUseToken");
 
         CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(token);
+        tokenizedCard.setToken(token.getToken());
+
+        ServicesContainer.configureService(setupTransactionConfig(), "createTransaction");
 
         Transaction chargeTransaction =
                 tokenizedCard
@@ -461,7 +449,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertEquals(SUCCESS, chargeTransaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -473,7 +461,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreatePayByLink_ThenCharge_With3DS() throws ApiException, InterruptedException {
+    public void CreatePayByLink_ThenCharge_With3DS() throws ApiException {
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
@@ -538,7 +526,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertEquals(SUCCESS, chargeTransaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), chargeTransaction.getResponseMessage());
 
-        Thread.sleep(2000);
+        waitForGpApiReplication();
 
         PayByLinkSummary getPayByLinkById =
                 PayByLinkService
@@ -976,16 +964,6 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     private GpApiConfig setupTransactionConfig() {
-        GpApiConfig config = new GpApiConfig();
-
-        config.setAppId(APP_ID);
-        config.setAppKey(APP_KEY);
-        config.setChannel(Channel.CardNotPresent);
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-        config.setEnableLogging(true);
-
-        return config;
+        return gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
     }
 }

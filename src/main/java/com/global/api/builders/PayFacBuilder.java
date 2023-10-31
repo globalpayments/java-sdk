@@ -6,6 +6,7 @@ import com.global.api.entities.Product;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.payFac.*;
+import com.global.api.entities.propay.DocumentUploadData;
 import com.global.api.paymentMethods.CreditCardData;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +36,7 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
     private PaymentStatistics paymentStatistics;
     private StatusChangeReason statusChangeReason;
     private UserReference userReference;
+    private DocumentUploadData documentUploadData;
     private HashMap<String, PaymentMethodFunction> paymentMethodsFunctions;
     private String idempotencyKey;
     private HashMap<AddressType, Address> addresses;
@@ -98,6 +100,12 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
                 .with(TransactionModifier.None)
                 .check("accountNumber").isNotNull()
                 .check("amount").isNotNull();
+
+        validations
+                .of(TransactionType.UploadDocument)
+                .with(TransactionModifier.Merchant)
+                .check("documentUploadData").isNotNull()
+                .check("documentUploadData").propertyOf(FileType.class, "docType").isNotNull();
     }
 
     public PayFacBuilder<TResult> withBankAccountData(BankAccountData bankAccountData, PaymentMethodFunction paymentMethodFunction) {
@@ -129,6 +137,11 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
 
     public PayFacBuilder<TResult> withUserReference(UserReference userReference) {
         this.userReference = userReference;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withDocumentUploadData(DocumentUploadData docUploadData) {
+        this.documentUploadData = docUploadData;
         return this;
     }
 

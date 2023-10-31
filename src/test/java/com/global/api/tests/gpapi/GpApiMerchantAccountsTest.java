@@ -42,20 +42,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     private static final Date endDate = DateUtils.addDays(new Date(), -3);
 
     public GpApiMerchantAccountsTest() throws ApiException {
-        config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID_FOR_MERCHANT)
-                .setAppKey(APP_KEY_FOR_MERCHANT)
-                .setChannel(Channel.CardNotPresent);
-
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-
-        config.setEnableLogging(true);
-
+        config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
     }
 
@@ -66,7 +53,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         MerchantAccountSummaryPaged response =
                 ReportingService
                         .findAccounts(1, 10)
-                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Ascending)
+                        .orderBy(MerchantAccountsSortProperty.TIME_CREATED, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
                         .and(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
@@ -1166,11 +1153,11 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         User merchant = User.fromId(merchantId, UserType.MERCHANT);
 
         User response = merchant
-                    .addFunds()
-                    .withAmount(amount)
-                    .withAccountNumber(accountId)
-                    .withPaymentMethodType(PaymentMethodType.Credit)
-                    .execute();
+                .addFunds()
+                .withAmount(amount)
+                .withAccountNumber(accountId)
+                .withPaymentMethodType(PaymentMethodType.Credit)
+                .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -1231,7 +1218,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         } catch (BuilderException exception) {
             errorFound = true;
             assertEquals("amount cannot be null for this transaction type.", exception.getMessage());
-        }finally {
+        } finally {
             assertTrue(errorFound);
         }
     }

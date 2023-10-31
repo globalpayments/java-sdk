@@ -1,6 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.enums.StoredPaymentMethodSortProperty;
 import com.global.api.entities.enums.StoredPaymentMethodStatus;
@@ -32,15 +33,8 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
     private static CreditCardData card;
 
     public GpApiReportingStoredPaymentMethodsTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -49,7 +43,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         card.setCvn("123");
 
         try {
-            token = card.tokenize(GP_API_CONFIG_NAME);
+            token = card.tokenize();
             assertFalse("Token could not be generated.", StringUtils.isNullOrEmpty(token));
         } catch (GatewayException ex) {
             Assert.fail(ex.getMessage());
@@ -61,7 +55,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         StoredPaymentMethodSummary response =
                 ReportingService
                         .storedPaymentMethodDetail(token)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(token, response.getId());
@@ -75,7 +69,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         try {
             ReportingService
                     .storedPaymentMethodDetail(storedPaymentMethodId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -94,7 +88,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         try {
             ReportingService
                     .storedPaymentMethodDetail(storedPaymentMethodId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -111,7 +105,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StoredPaymentMethodId, token)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -127,7 +121,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StoredPaymentMethodId, storedPaymentMethodId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         assertEquals(0, result.getTotalRecordCount());
@@ -144,7 +138,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -163,7 +157,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.CardNumberLastFour, numberLast4)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         assertEquals(0, result.getTotalRecordCount());
@@ -174,7 +168,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         StoredPaymentMethodSummary response =
                 ReportingService
                         .storedPaymentMethodDetail(token)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response.getReference());
 
@@ -182,7 +176,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ReferenceNumber, response.getReference())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -198,7 +192,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StoredPaymentMethodStatus, status)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -216,7 +210,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -232,7 +226,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -248,7 +242,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_END_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (StoredPaymentMethodSummary storedPaymentMethodSummary : result.getResults()) {
@@ -264,7 +258,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(DataServiceCriteria.StartLastUpdatedDate, REPORTING_START_DATE)
                         .and(DataServiceCriteria.EndLastUpdatedDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         // TODO: There is no way to validate the response data
@@ -276,7 +270,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Ascending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(storedPaymentMethodSummaryAscending.getResults());
 
@@ -294,7 +288,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
                 ReportingService
                         .findStoredPaymentMethodsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(storedPaymentMethodSummaryDescending.getResults());
 

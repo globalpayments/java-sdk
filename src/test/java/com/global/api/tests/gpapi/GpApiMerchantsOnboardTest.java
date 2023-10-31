@@ -7,12 +7,14 @@ import com.global.api.entities.Product;
 import com.global.api.entities.User;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.payFac.BankAccountData;
 import com.global.api.entities.payFac.PaymentStatistics;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserPersonalData;
+import com.global.api.entities.propay.DocumentUploadData;
 import com.global.api.entities.reporting.MerchantAccountSummaryPaged;
 import com.global.api.entities.reporting.MerchantSummaryPaged;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -21,15 +23,14 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import org.joda.time.DateTime;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -43,14 +44,8 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     public void TestInitialize() throws ConfigurationException {
         payFacService = new PayFacService();
 
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setAppId(APP_ID_FOR_MERCHANT);
-        gpApiConfig.setAppKey(APP_KEY_FOR_MERCHANT);
-        gpApiConfig.setEnvironment(Environment.TEST);
-        gpApiConfig.setChannel(Channel.CardNotPresent);
-        gpApiConfig.setEnableLogging(true);
-
-        ServicesContainer.configureService(gpApiConfig);
+        GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
@@ -58,6 +53,11 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         card.setExpYear(expYear);
         card.setCvn("123");
         card.setCardPresent(true);
+    }
+
+    @After
+    public void removeConfig() throws ConfigurationException {
+        ServicesContainer.removeConfig();
     }
 
     @Test
@@ -728,6 +728,141 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         assertEquals("SUCCESS", merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
+    }
+
+    @Test
+    public void uploadMerchantDocs() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocument("VGVzdGluZw==");
+
+        documentDetail.setDocType(FileType.TIF);
+        documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
+
+        User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+        User response = merchant.uploadDocument(documentDetail)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertNotNull(response.getDocument());
+        assertNotNull(response.getDocument().getId());
+        assertEquals(FileType.TIF, response.getDocument().getFormat());
+        assertEquals(DocumentCategory.IDENTITY_VERIFICATION, response.getDocument().getCategory());
+    }
+
+    @Test
+    public void uploadMerchantDocs_AllDocumentFormats() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocument("VGVzdGluZw==");
+        documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
+
+        for (FileType fileType : FileType.values()) {
+            User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+
+            documentDetail.setDocType(fileType);
+
+            User response = merchant.uploadDocument(documentDetail)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("SUCCESS", response.getResponseCode());
+            assertNotNull(response.getDocument());
+            assertNotNull(response.getDocument().getId());
+            assertEquals(fileType, response.getDocument().getFormat());
+            assertEquals(DocumentCategory.IDENTITY_VERIFICATION, response.getDocument().getCategory());
+        }
+    }
+
+    @Test
+    public void uploadMerchantDocs_AllDocumentCategories() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocument("VGVzdGluZw==");
+        documentDetail.setDocType(FileType.TIF);
+        documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
+
+        for (DocumentCategory documentCategory : DocumentCategory.values()) {
+            User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+
+            Set<DocumentCategory> documentCategoryToExcludeFromThisTest = new HashSet<>();
+            documentCategoryToExcludeFromThisTest.add(DocumentCategory.VERIFICATION);
+            if (documentCategoryToExcludeFromThisTest.contains(documentCategory)) {
+                continue;
+            }
+
+            documentDetail.setDocCategory(documentCategory);
+
+            User response = merchant.uploadDocument(documentDetail)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("SUCCESS", response.getResponseCode());
+            assertNotNull(response.getDocument());
+            assertNotNull(response.getDocument().getId());
+            assertEquals(FileType.TIF, response.getDocument().getFormat());
+            assertEquals(documentCategory, response.getDocument().getCategory());
+        }
+    }
+
+    @Test
+    public void uploadMerchantDocs_MissingDocFormat() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocument("VGVzdGluZw==");
+        documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
+
+        User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+        boolean exceptionCaught = false;
+        try {
+            merchant.uploadDocument(documentDetail)
+                    .execute();
+        } catch (BuilderException e) {
+            exceptionCaught = true;
+            assertEquals("docType cannot be null for this transaction type.", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void uploadMerchantDocs_MissingDocCategory() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocument("VGVzdGluZw==");
+        documentDetail.setDocType(FileType.TIF);
+
+        User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+        boolean exceptionCaught = false;
+        try {
+            merchant.uploadDocument(documentDetail)
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 -  Request expects the following fields: function", e.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", e.getResponseCode());
+            assertEquals("40251", e.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void uploadMerchantDocs_MissingDocBaseContent() throws ApiException {
+        DocumentUploadData documentDetail = new DocumentUploadData();
+        documentDetail.setDocType(FileType.TIF);
+        documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
+
+
+        User merchant = User.fromId("MER_5096d6b88b0b49019c870392bd98ddac", UserType.MERCHANT);
+        boolean exceptionCaught = false;
+        try {
+            merchant.uploadDocument(documentDetail)
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 -  Request expects the following fields: b64_content", e.getMessage());
+            assertEquals("MANDATORY_DATA_MISSING", e.getResponseCode());
+            assertEquals("40251", e.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     private List<Person> GetPersonList(String type) {

@@ -7,6 +7,7 @@ import com.global.api.entities.enums.UserType;
 import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
+import com.global.api.entities.propay.DocumentUploadData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -35,6 +36,7 @@ public class User {
     private List<Person> personList;
     private List<PaymentMethodList> paymentMethods;
     private FundsAccountDetails fundsAccountDetails;
+    private Document document;
 
     /**
      * Creates an `User` object from an existing user ID
@@ -66,4 +68,17 @@ public class User {
 
         return builder;
     }
+
+    public PayFacBuilder<User> uploadDocument(DocumentUploadData data)
+    {
+        PayFacBuilder<User> builder = new PayFacBuilder<User>(TransactionType.UploadDocument)
+                .withUserReference(this.userReference)
+                .withDocumentUploadData(data);
+
+        if (this.userReference.getUserType() != null) {
+            builder = builder.withModifier(TransactionModifier.valueOf(userReference.getUserType().getValue()));
+        }
+        return builder;
+    }
+
 }

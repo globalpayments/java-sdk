@@ -29,20 +29,13 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     private final ActionSummary sampleAction;
 
     public GpApiReportingActionsTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, null);
+        ServicesContainer.configureService(config);
 
         sampleAction = ReportingService
                 .findActionsPaged(1, 1)
                 .where(SearchCriteria.StartDate, DateUtils.addDays(DateTime.now().toDate(), -5))
-                .execute(GP_API_CONFIG_NAME).getResults().get(0);
+                .execute().getResults().get(0);
     }
 
     @Test
@@ -52,7 +45,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
         ActionSummary response =
                 ReportingService
                         .actionDetail(actionId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(actionId, response.getId());
@@ -66,7 +59,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
         try {
             ReportingService
                     .actionDetail(actionId)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -85,7 +78,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ActionId, actionId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -101,7 +94,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ActionId, actionId)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         assertEquals(0, result.getTotalRecordCount());
@@ -115,7 +108,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ActionType, actionType)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -131,7 +124,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ActionType, actionType)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         assertEquals(0, result.getTotalRecordCount());
@@ -145,7 +138,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.Resource, resource)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -161,7 +154,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ResourceStatus, resourceStatus)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -177,7 +170,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
             List<ActionSummary> results = ReportingService
                     .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                     .where(SearchCriteria.StartDate, REPORTING_START_DATE)
-                    .execute(GP_API_CONFIG_NAME).getResults();
+                    .execute().getResults();
 
             for (ActionSummary actionSummary : results) {
                 resourceId = actionSummary.getResourceId();
@@ -193,7 +186,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ResourceId, resourceId)
                         .and(SearchCriteria.Resource, "TRANSACTION")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -208,7 +201,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -227,7 +220,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
             ReportingService
                     .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                     .where(SearchCriteria.MerchantName, merchantName)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
@@ -246,7 +239,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.MerchantName, merchantName)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -262,7 +255,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.AccountName, accountName)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -278,7 +271,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.AppName, appName)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -294,7 +287,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.Version, version)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -310,7 +303,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.Version, version)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -327,7 +320,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ResponseCode, responseCode)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -343,7 +336,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.ResponseCode, responseCode)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -359,7 +352,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.HttpResponseCode, httpResponseCode)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -375,7 +368,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .where(SearchCriteria.HttpResponseCode, httpResponseCode)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(result.getResults());
         for (ActionSummary el : result.getResults()) {
@@ -389,7 +382,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(ActionSortProperty.TimeCreated, SortDirection.Ascending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         List<ActionSummary> results = result.getResults();
         assertNotNull(results);
@@ -407,7 +400,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(ActionSortProperty.TimeCreated, SortDirection.Descending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         List<ActionSummary> results = result.getResults();
         assertNotNull(results);
@@ -425,7 +418,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(ActionSortProperty.TimeCreated, SortDirection.Descending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         List<ActionSummary> resultsDesc = actionSummaryDescending.getResults();
         assertNotNull(resultsDesc);
@@ -439,7 +432,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                 ReportingService
                         .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
                         .orderBy(ActionSortProperty.TimeCreated, SortDirection.Ascending)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         List<ActionSummary> resultsAsc = actionSummaryAscending.getResults();
         assertNotNull(resultsAsc);
@@ -472,7 +465,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
                         .and(SearchCriteria.Version, version)
                         .and(SearchCriteria.StartDate, REPORTING_START_DATE)
                         .and(SearchCriteria.EndDate, REPORTING_LAST_MONTH_DATE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         List<ActionSummary> results = result.getResults();
         assertNotNull(results);

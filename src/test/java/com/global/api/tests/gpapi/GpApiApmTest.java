@@ -42,13 +42,8 @@ public class GpApiApmTest extends BaseGpApiTest {
     @Before
     public void initialize() throws ConfigurationException {
 
-        GpApiConfig config = new GpApiConfig();
-        config.setAppId(APP_ID);
-        config.setAppKey(APP_KEY);
-        config.setChannel(Channel.CardNotPresent);
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         paymentMethod =
                 new AlternativePaymentMethod()
@@ -80,7 +75,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                 .charge(1.34)
                 .withCurrency(currency)
                 .withDescription("New APM")
-                .execute(GP_API_CONFIG_NAME);
+                .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -98,7 +93,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
@@ -116,7 +111,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             response =
                     transaction
                             .confirm()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(response);
             assertEquals("SUCCESS", response.getResponseCode());
@@ -131,7 +126,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .authorize(1.34)
                         .withCurrency(currency)
                         .withDescription("New APM")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -149,7 +144,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
@@ -168,7 +163,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             response =
                     transaction
                             .confirm()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(response);
             assertEquals("SUCCESS", response.getResponseCode());
@@ -177,7 +172,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction capture =
                     transaction
                             .capture()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(capture);
             assertEquals("SUCCESS", capture.getResponseCode());
@@ -192,7 +187,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .charge(1.22)
                         .withCurrency(currency)
                         .withDescription("New APM")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(trn);
         assertEquals("SUCCESS", trn.getResponseCode());
@@ -210,7 +205,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
@@ -229,7 +224,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction response =
                     transaction
                             .confirm()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(response);
             assertEquals("SUCCESS", response.getResponseCode());
@@ -239,7 +234,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                     transaction
                             .refund()
                             .withCurrency(currency)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(trnRefund);
             assertEquals("SUCCESS", trnRefund.getResponseCode());
@@ -256,7 +251,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .charge(1.22)
                         .withCurrency(currency)
                         .withDescription("New APM")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(trn);
         assertEquals("SUCCESS", trn.getResponseCode());
@@ -272,7 +267,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(trn.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertTrue(response.getTotalRecordCount() > 0);
@@ -290,7 +285,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction responseTrn =
                     transaction
                             .confirm()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(responseTrn);
             assertEquals("SUCCESS", responseTrn.getResponseCode());
@@ -300,7 +295,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                     responseTrn
                             .reverse()
                             .withCurrency(currency)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(trnReverse);
             assertEquals("SUCCESS", trnReverse.getResponseCode());
@@ -316,7 +311,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withMultiCapture(true)
                         .withDescription("PayPal Multicapture")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -332,7 +327,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .findTransactionsPaged(1, 1)
                         .withTransactionId(response.getTransactionId())
                         .where(SearchCriteria.StartDate, startDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(responseFind);
         assertTrue(responseFind.getTotalRecordCount() > 0);
@@ -351,7 +346,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction responseConf =
                     transaction
                             .confirm()
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(responseConf);
             assertEquals("SUCCESS", responseConf.getResponseCode());
@@ -360,7 +355,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction capture =
                     transaction
                             .capture(1)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(capture);
             assertEquals("SUCCESS", capture.getResponseCode());
@@ -369,7 +364,7 @@ public class GpApiApmTest extends BaseGpApiTest {
             Transaction capture2 =
                     transaction
                             .capture(2)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(capture2);
             assertEquals("SUCCESS", capture2.getResponseCode());
@@ -422,7 +417,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .withShippingAmt(new BigDecimal(3))
                         //.withShippingDiscount(1)
                         .withOrderDetails(order)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());

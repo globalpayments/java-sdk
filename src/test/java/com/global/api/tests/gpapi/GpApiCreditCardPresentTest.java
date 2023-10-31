@@ -42,14 +42,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     private final String tagData;
 
     public GpApiCreditCardPresentTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent);
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
         ServicesContainer.configureService(config);
 
         creditTrackData.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
@@ -505,14 +498,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     public void CreditSale_WithoutPermissions() {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setPermissions(permissions)
-                .setChannel(Channel.CardPresent);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
+        config.setPermissions(permissions);
 
         final String _WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
 

@@ -27,21 +27,12 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     private final CreditCardData card;
 
     public GpApiDccCardNotPresentTest() throws ApiException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setCountry("GB")
-                .setEnvironment(Environment.TEST);
-        config.setChannel(Channel.CardNotPresent);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         config
                 .setAccessTokenInfo(new AccessTokenInfo().setTransactionProcessingAccountName("dcc"))
                 .setEnableLogging(true);
 
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4006097467207025");
@@ -57,7 +48,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -67,7 +58,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured, expectedDccAmountValue);
     }
 
@@ -78,7 +69,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -88,7 +79,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Preauthorized, expectedDccAmountValue);
     }
 
@@ -99,7 +90,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -109,7 +100,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .refund(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(refund, TransactionStatus.Captured, expectedDccAmountValue);
     }
 
@@ -120,7 +111,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -130,13 +121,13 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured, expectedDccAmountValue);
 
         Transaction reverse =
                 transaction
                         .reverse(amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(reverse, TransactionStatus.Reversed, expectedDccAmountValue);
     }
 
@@ -147,7 +138,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -157,7 +148,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured, expectedDccAmountValue);
 
         Transaction refund =
@@ -165,7 +156,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .refund(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(refund, TransactionStatus.Captured, expectedDccAmountValue);
     }
 
@@ -176,7 +167,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -186,14 +177,14 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized, expectedDccAmountValue);
 
         Transaction capture =
                 transaction
                         .capture()
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture, TransactionStatus.Captured, expectedDccAmountValue);
     }
 
@@ -201,14 +192,14 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
     public void CardTokenizationThenPayingWithToken() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
 
-        tokenizedCard.setToken(card.tokenize(GP_API_CONFIG_NAME));
+        tokenizedCard.setToken(card.tokenize());
 
         Transaction dccDetails =
                 tokenizedCard
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -218,7 +209,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured, expectedDccAmountValue);
     }
 
@@ -232,7 +223,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .withAmount(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
         assertDccInfoResponse(dccDetails, expectedDccAmountValue);
 
@@ -244,7 +235,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                     .withAmount(amount)
                     .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -264,7 +255,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
                         .getDccRate()
                         .withAmount(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(dccDetails);
         assertEquals(SUCCESS, dccDetails.getResponseCode());
@@ -275,7 +266,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         Transaction transaction = card.charge(amount)
                 .withCurrency(currency)
                 .withDccRateData(dccDetails.getDccRateData())
-                .execute(GP_API_CONFIG_NAME);
+                .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured, valueOf(amount));
     }
 
@@ -287,7 +278,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
             card.getDccRate()
                     .withAmount(amount)
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -305,7 +296,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         try {
             card.getDccRate()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
@@ -323,7 +314,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         try {
             card.getDccRate()
                     .withAmount(amount)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());

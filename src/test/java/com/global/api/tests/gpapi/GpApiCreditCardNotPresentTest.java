@@ -9,7 +9,6 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.StoredPaymentMethodSummaryPaged;
-import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
@@ -34,27 +33,8 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
 
     public GpApiCreditCardNotPresentTest() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent);
-
-        //DO NOT DELETE - usage example for some settings
-//        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
-//            put("x-gp-platform", "prestashop;version=1.7.2");
-//            put("x-gp-extension", "coccinet;version=2.4.1");
-//        }};
-//
-//        config.setDynamicHeaders(dynamicHeaders);
-
-        config.setEnableLogging(true);
-        config.setRequestLogger(new RequestConsoleLogger());
-//        config.setRequestLogger(new RequestFileLogger("C:\\temp\\GpApiCreditCardNotPresentTests.txt"));
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
@@ -70,7 +50,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .authorize(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
     }
 
@@ -92,7 +72,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .withCurrency("GBP")
                         .withAddress(address)
                         .withCustomerData(customer)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -113,7 +93,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .tokenize(true, PaymentMethodUsageMode.MULTIPLE)
                         .withCustomerData(customer)
-                        .execute(GP_API_CONFIG_NAME)
+                        .execute()
                         .getToken();
 
         tokenizedCard.setToken(token);
@@ -123,7 +103,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .verify()
                         .withCurrency("GBP")
                         .withCustomerData(customer)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -143,7 +123,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(2)
                         .withCurrency("GBP")
                         .withCustomerData(customer)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
@@ -171,7 +151,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .withCurrency("GBP")
                     .withAddress(address)
                     .withCustomerData(customer)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - fingerprint_mode contains unexpected data", ex.getMessage());
@@ -190,7 +170,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(1, response.getResults().size());
         String pmtToken = response.getResults().get(0).getId();     // Check if id or other field
@@ -208,7 +188,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 tokenizedCard
                         .updateToken()
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals("SUCCESS", response2.getResponseCode());
         assertEquals("ACTIVE", response2.getResponseMessage());
@@ -224,7 +204,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .orderBy(StoredPaymentMethodSortProperty.TimeCreated, SortDirection.Descending)
                         .where(SearchCriteria.StartDate, startDate)
                         .and(SearchCriteria.EndDate, endDate)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals(1, response.getResults().size());
         String pmtToken = response.getResults().get(0).getId();     // Check if id or other field
@@ -240,7 +220,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 tokenizedCard
                         .updateToken()
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEquals("SUCCESS", response2.getResponseCode());
         assertEquals("ACTIVE", response2.getResponseMessage());
@@ -251,15 +231,9 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     @Test
     public void CardTokenizationThenUpdateAndThenCharge() throws ApiException {
         String[] permissions = new String[]{"PMT_POST_Create_Single"};
-        GpApiConfig config = new GpApiConfig();
 
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setPermissions(permissions);
-
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        config.setPermissions(permissions);
 
         ServicesContainer.configureService(config, "singleUseToken");
 
@@ -279,7 +253,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 tokenizedCard
                         .updateToken()
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(responseUpdateToken);
         assertEquals("SUCCESS", responseUpdateToken.getResponseCode());
@@ -290,7 +264,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 tokenizedCard
                         .charge(1)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(chargeResponse);
         assertEquals("SUCCESS", chargeResponse.getResponseCode());
@@ -308,7 +282,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             tokenizedCard
                     .updateToken()
                     .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("50020", e.getResponseText());
@@ -328,7 +302,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         try {
             tokenizedCard
                     .updateToken()
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("50021", e.getResponseText());
@@ -345,7 +319,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withPaymentLinkId("LNK_W1xgWehivDP8P779cFDDTZwzL01EEw4")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
     }
 
@@ -355,14 +329,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .authorize(5)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         Transaction capture =
                 transaction
                         .capture(2.99)
                         .withGratuity(new BigDecimal(2))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture, TransactionStatus.Captured);
     }
 
@@ -373,14 +347,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         Transaction capture =
                 transaction
                         .capture(amount.doubleValue() * 1.15)
                         .withGratuity(new BigDecimal(2))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture, TransactionStatus.Captured);
     }
 
@@ -390,7 +364,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .authorize(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         boolean exceptionCaught = false;
@@ -398,7 +372,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             transaction
                     .capture(amount.doubleValue() * 1.16)
                     .withGratuity(new BigDecimal(2))
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("50020", ex.getResponseText());
@@ -415,14 +389,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .authorize(new BigDecimal(14))
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         Transaction capture =
                 transaction
                         .capture(new BigDecimal(16))
                         .withGratuity(new BigDecimal(2))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture, TransactionStatus.Captured);
     }
 
@@ -435,7 +409,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         boolean exceptionCaught = false;
@@ -444,7 +418,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .capture(new BigDecimal(16))
                     .withIdempotencyKey(idempotencyKey)
                     .withGratuity(new BigDecimal(2))
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -464,7 +438,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .authorize(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
 
         boolean exceptionCaught = false;
@@ -473,7 +447,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .authorize(amount)
                     .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -493,7 +467,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         try {
             authorization
                     .capture(amount)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -517,7 +491,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withAddress(address)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
         assertNull(response.getPayerDetails());
@@ -530,7 +504,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withRequestMultiUseToken(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
         assertTrue(response.getToken().startsWith("PMT_"));
@@ -543,7 +517,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 creditCardData
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
     }
 
@@ -552,25 +526,19 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     public void CreditSale_WithoutPermissions() {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
-        GpApiConfig config = new GpApiConfig();
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        config.setPermissions(permissions);
 
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setPermissions(permissions)
-                .setChannel(Channel.CardNotPresent);
+        final String _WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
 
-        final String GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS = "GpApiConfig_WithoutPermissions";
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS);
+        ServicesContainer.configureService(config, _WITHOUT_PERMISSIONS);
 
         boolean exceptionCaught = false;
         try {
             card
                     .charge(new BigDecimal("19.99"))
                     .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME_WITHOUT_PERMISSIONS);
+                    .execute(_WITHOUT_PERMISSIONS);
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40212", ex.getResponseText());
@@ -587,7 +555,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card.charge(amount)
                         .withCurrency(currency)
                         .withRequestMultiUseToken(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertNotNull(response.getToken());
     }
@@ -598,7 +566,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .refund(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
@@ -608,14 +576,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
                 transaction
                         .refund(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
@@ -625,14 +593,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .charge(new BigDecimal("5.95"))
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
                 transaction
                         .refund(new BigDecimal("3.25"))
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
@@ -642,14 +610,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
                 transaction
                         .refund(amount.doubleValue() * 1.1)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
@@ -660,7 +628,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         boolean exceptionCaught = false;
@@ -668,7 +636,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             transaction
                     .refund(amount.doubleValue() * 1.2)
                     .withCurrency("USD")
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("40087", ex.getResponseText());
@@ -688,7 +656,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         boolean exceptionCaught = false;
@@ -697,7 +665,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .refund(amount)
                     .withIdempotencyKey(idempotencyKey)
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -718,7 +686,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             charge
                     .refund(amount)
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -737,7 +705,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             card
                     .refund(0)
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -755,13 +723,13 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction reverse =
                 transaction
                         .reverse(amount)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(reverse, TransactionStatus.Reversed);
     }
 
@@ -774,7 +742,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         boolean exceptionCaught = false;
@@ -782,7 +750,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             transaction
                     .reverse(amount)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -801,7 +769,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(50)
                         .withCurrency("EUR")
                         .withDynamicDescriptor(dynamicDescriptor)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
@@ -817,7 +785,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         try {
             charge
                     .reverse(amount)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
@@ -834,14 +802,14 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .charge(new BigDecimal("3.99"))
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         boolean exceptionCaught = false;
         try {
             transaction
                     .reverse(new BigDecimal("1.29"))
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -859,25 +827,25 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .authorize(new BigDecimal(14))
                         .withCurrency(currency)
                         .withMultiCapture(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(authorization, TransactionStatus.Preauthorized);
         assertTrue(authorization.isMultiCapture());
 
         Transaction capture1 =
                 authorization
                         .capture(new BigDecimal(3))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture1, TransactionStatus.Captured);
 
         Transaction capture2 =
                 authorization.capture(new BigDecimal(5))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture2, TransactionStatus.Captured);
 
         Transaction capture3 =
                 authorization
                         .capture(new BigDecimal(7))
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(capture3, TransactionStatus.Captured);
     }
 
@@ -887,7 +855,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 card
                         .verify()
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -905,7 +873,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .verify()
                         .withCurrency(currency)
                         .withAddress(address)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -922,7 +890,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .verify()
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -934,7 +902,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .verify()
                     .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -952,7 +920,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         String token =
                 card
                         .tokenize(true, PaymentMethodUsageMode.MULTIPLE)
-                        .execute(GP_API_CONFIG_NAME)
+                        .execute()
                         .getToken();
 
         tokenizedCard.setToken(token);
@@ -961,7 +929,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 tokenizedCard
                         .verify()
                         .withCurrency("GBP")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
@@ -974,7 +942,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         try {
             card
                     .verify()
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -994,7 +962,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             card
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -1014,7 +982,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             card
                     .verify()
                     .withCurrency(currency)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
 
         } catch (GatewayException ex) {
             exceptionCaught = true;
@@ -1035,7 +1003,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(idempotencyKey)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         boolean exceptionCaught = false;
@@ -1044,7 +1012,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .charge(amount)
                     .withCurrency(currency)
                     .withIdempotencyKey(idempotencyKey)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
@@ -1062,7 +1030,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(UUID.randomUUID().toString())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         Transaction response =
@@ -1070,7 +1038,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .charge(amount)
                         .withCurrency(currency)
                         .withIdempotencyKey(UUID.randomUUID().toString())
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertNotEquals(response.getTransactionId(), transaction.getTransactionId());
     }
@@ -1085,7 +1053,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                     .charge(new BigDecimal(14))
                     .withCurrency("USD")
                     .withAllowDuplicates(true)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
@@ -1099,13 +1067,8 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     @Test
     public void CreditSale_For_Android() throws ApiException {
         // GP-API settings for Android SDK
-        GpApiConfig config =
-                new GpApiConfig()
-                        .setAppId(APP_ID)
-                        .setAppKey(APP_KEY)
-                        .setAndroid(true);
-
-        config.setEnableLogging(true);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        config.setAndroid(true);
 
         final String GP_API_CONFIG_FOR_ANDROID_SDK = "GP_API_CONFIG_FOR_ANDROID_SDK";
         ServicesContainer.configureService(config, GP_API_CONFIG_FOR_ANDROID_SDK);

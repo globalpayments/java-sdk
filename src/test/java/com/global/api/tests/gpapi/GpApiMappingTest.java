@@ -3,6 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.ActionSummary;
@@ -27,16 +28,8 @@ public class GpApiMappingTest extends BaseGpApiTest {
 
     public GpApiMappingTest() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
     }
 
     @Test

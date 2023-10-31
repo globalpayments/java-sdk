@@ -26,17 +26,8 @@ public class GpApiEbtTest extends BaseGpApiTest {
 
     public GpApiEbtTest() throws ApiException {
 
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
+        ServicesContainer.configureService(config);
     }
 
     @Before
@@ -62,7 +53,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -73,7 +64,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -84,7 +75,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtCardData
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -95,7 +86,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtTrackData
                         .refund(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -106,7 +97,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
@@ -114,7 +105,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 transaction
                         .refund()
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -125,7 +116,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
@@ -133,7 +124,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 transaction
                         .refund()
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Captured);
     }
@@ -144,7 +135,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtTrackData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
@@ -152,7 +143,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 transaction
                         .reverse()
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Reversed);
     }
@@ -163,7 +154,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 ebtCardData
                         .charge(AMOUNT)
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(transaction, TransactionStatus.Captured);
 
@@ -171,7 +162,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
                 transaction
                         .reverse()
                         .withCurrency(CURRENCY)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertEbtResponse(response, TransactionStatus.Reversed);
     }

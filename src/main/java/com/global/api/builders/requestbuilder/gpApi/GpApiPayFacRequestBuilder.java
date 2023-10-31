@@ -4,6 +4,7 @@ import com.global.api.builders.PayFacBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.DocumentCategory;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.GatewayException;
@@ -63,6 +64,20 @@ public class GpApiPayFacRequestBuilder implements IRequestBuilder<PayFacBuilder>
                                     .setMaskedData(maskedData);
                 }
                 break;
+
+            case UploadDocument:
+                var requestData = new JsonDoc();
+                DocumentCategory docCategory = builder.getDocumentUploadData().getDocCategory();
+                requestData
+                        .set("function", docCategory == null ? null : docCategory.toString())
+                        .set("b64_content", builder.getDocumentUploadData().getDocument())
+                        .set("format", builder.getDocumentUploadData().getDocType().toString());
+
+                return (GpApiRequest) new GpApiRequest()
+                        .setVerb(Request.HttpMethod.Post)
+                        .setEndpoint(merchantUrl + GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + _builder.getUserReference().getUserId() + "/documents")
+                        .setRequestBody(requestData.toString())
+                        .setMaskedData(maskedData);
 
             case Fetch:
                 if (builder.getTransactionModifier() == TransactionModifier.Merchant) {

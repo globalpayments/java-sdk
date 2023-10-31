@@ -9,6 +9,7 @@ import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
@@ -30,18 +31,10 @@ public class GpApiBatchTest extends BaseGpApiTest {
     private final CreditTrackData creditCard;
     private final BigDecimal amount = new BigDecimal("1.00");
     private final String currency = "USD";
-    private final String TAG_DATA = "82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019";
+    private final String TAG_DATA = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
 
     public GpApiBatchTest() throws ConfigurationException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardPresent);
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
 
         creditCard = new CreditTrackData();
@@ -382,14 +375,10 @@ public class GpApiBatchTest extends BaseGpApiTest {
     @SneakyThrows
     @Test
     public void CloseBatch_CardNotPresentChannel() {
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setAppId(APP_ID);
-        gpApiConfig.setAppKey(APP_KEY);
-        gpApiConfig.setChannel(Channel.CardNotPresent);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
-        gpApiConfig.setEnableLogging(true);
-
-        ServicesContainer.configureService(gpApiConfig, GP_API_CONFIG_NAME);
+        ServicesContainer.configureService(config, GP_API_CONFIG_NAME + "CNP");
 
         CreditCardData creditCardData = new CreditCardData();
         creditCardData.setNumber("5425230000004415");
@@ -401,7 +390,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
                 creditCardData
                         .charge(amount)
                         .withCurrency(currency)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute(GP_API_CONFIG_NAME + "CNP");
         assertTransactionResponse(transaction, TransactionStatus.Captured);
 
         //TODO - remove when api fix polling issue
@@ -409,7 +398,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
+            BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME+ "CNP");
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: country - US, channel - CNP, currency - USD", ex.getMessage());

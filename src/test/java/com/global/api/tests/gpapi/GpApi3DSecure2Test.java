@@ -38,18 +38,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     private final String currency = "GBP";
 
     public GpApi3DSecure2Test() throws ConfigurationException {
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config.setAppId(APP_ID);
-        config.setAppKey(APP_KEY);
-        config.setCountry("GB");
-        config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-
-        config.setEnableLogging(true);
-
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
 
         // Create card data

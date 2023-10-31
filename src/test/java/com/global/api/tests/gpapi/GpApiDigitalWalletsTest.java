@@ -31,18 +31,8 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
             "}";
 
     public GpApiDigitalWalletsTest() throws ApiException {
-
-        GpApiConfig config = new GpApiConfig();
-
-        // GP-API settings
-        config
-                .setAppId(APP_ID)
-                .setAppKey(APP_KEY)
-                .setChannel(Channel.CardNotPresent);
-
-        config.setEnableLogging(true);
-
-        ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
 
         card = new CreditCardData();
         card.setCardHolderName("James Mason");
@@ -59,7 +49,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
                         .withMaskedDataResponse(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
@@ -79,7 +69,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
                         .withMaskedDataResponse(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
@@ -90,7 +80,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .refund()
                         .withCurrency("EUR")
                         .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(refund);
         assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
@@ -108,7 +98,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
                         .withMaskedDataResponse(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(response);
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
@@ -119,7 +109,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .reverse()
                         .withCurrency("EUR")
                         .withAllowDuplicates(true)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(reverse);
         assertEquals(TransactionStatus.Reversed.getValue(), reverse.getResponseMessage());
@@ -138,7 +128,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                     .withCurrency("EUR")
                     .withModifier(TransactionModifier.EncryptedMobile)
                     .withMaskedDataResponse(true)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             errorFound = true;
             assertEquals("Status Code: 400 - capture_mode contains unexpected data.", ex.getMessage());
@@ -161,7 +151,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                     .withCurrency("EUR")
                     .withModifier(TransactionModifier.EncryptedMobile)
                     .withMaskedDataResponse(true)
-                    .execute(GP_API_CONFIG_NAME);
+                    .execute();
         } catch (GatewayException ex) {
             errorFound = true;
             assertEquals("Status Code: 400 - Mandatory Fields missing [ request card number] See Developers Guide", ex.getMessage());
@@ -184,7 +174,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(new BigDecimal(10))
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
@@ -204,7 +194,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(10)
                         .withCurrency("USD")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
@@ -215,7 +205,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                 transaction
                         .refund()
                         .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(refund);
         assertEquals("Success", refund.getResponseCode());
@@ -234,7 +224,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(10)
                         .withCurrency("USD")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
@@ -245,7 +235,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                 transaction
                         .reverse()
                         .withCurrency("USD")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(reverse);
         assertEquals("Success", reverse.getResponseCode());
@@ -268,7 +258,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                             .charge(new BigDecimal(5))
                             .withCurrency("EUR")
                             .withModifier(TransactionModifier.DecryptedMobile)
-                            .execute(GP_API_CONFIG_NAME);
+                            .execute();
 
             assertNotNull(transaction);
             assertEquals(SUCCESS, transaction.getResponseCode());
@@ -288,7 +278,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(new BigDecimal(10))
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -306,7 +296,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(new BigDecimal(10))
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -317,7 +307,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                 transaction
                         .refund()
                         .withCurrency("EUR")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(refund);
         assertEquals(SUCCESS, refund.getResponseCode());
@@ -334,7 +324,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .charge(new BigDecimal(10))
                         .withCurrency("EUR")
                         .withModifier(TransactionModifier.EncryptedMobile)
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(transaction);
         assertEquals(SUCCESS, transaction.getResponseCode());
@@ -345,7 +335,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                 transaction
                         .reverse()
                         .withCurrency("EUR")
-                        .execute(GP_API_CONFIG_NAME);
+                        .execute();
 
         assertNotNull(reverse);
         assertEquals(SUCCESS, reverse.getResponseCode());

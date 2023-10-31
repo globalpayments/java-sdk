@@ -3,7 +3,9 @@ package com.global.api.tests.propay;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.DocumentCategory;
 import com.global.api.entities.enums.Environment;
+import com.global.api.entities.enums.FileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.propay.*;
@@ -181,7 +183,7 @@ public class ProPayAccountTests {
     public void UploadDocument() throws Exception {
         DocumentUploadData docUploadData = new DocumentUploadData();
         docUploadData.setDocumentName("TestDocCB_12345");
-        docUploadData.setDocCategory("Verification");
+        docUploadData.setDocCategory(DocumentCategory.VERIFICATION);
         docUploadData.setDocumentPath(documentPath);
 
         Transaction response = _service.uploadDocument()
@@ -199,7 +201,7 @@ public class ProPayAccountTests {
         docUploadData.setDocumentName("TestDocCB_12345");
         docUploadData.setTransactionReference("2");
         docUploadData.setDocumentPath(documentPath);
-        docUploadData.setDocType("docx");
+        docUploadData.setDocType(FileType.DOCX);
 
         Transaction response = _service.uploadDocumentChargeback()
                 .withAccountNumber("718134204")
@@ -214,9 +216,9 @@ public class ProPayAccountTests {
     public void UploadDocumentByDocumentString() throws Exception {
         DocumentUploadData docUploadData = new DocumentUploadData();
         docUploadData.setDocumentName("TestDocCB_12345");
-        docUploadData.setDocCategory("Verification");
+        docUploadData.setDocCategory(DocumentCategory.VERIFICATION);
         docUploadData.setDocumentPath(documentPath);
-        docUploadData.setDocType("docx");
+        docUploadData.setDocType(FileType.DOCX);
 
         Transaction response = _service.uploadDocument()
                 .withAccountNumber("718134204")

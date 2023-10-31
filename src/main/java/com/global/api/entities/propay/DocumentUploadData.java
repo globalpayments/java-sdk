@@ -1,5 +1,7 @@
 package com.global.api.entities.propay;
 
+import com.global.api.entities.enums.DocumentCategory;
+import com.global.api.entities.enums.FileType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,10 +22,10 @@ public class DocumentUploadData {
     private String transactionReference;
 
     /** The file format of the Document to be uploaded. This property MUST be set if using the Document property directly, but will be set automatically if using the DocumentPath property */
-    private String docType;
+    private FileType docType;
 
     /** Type of document */
-    private static List<String> docTypeList=Arrays.asList("tif", "tiff", "bmp", "jpg", "jpeg", "gif", "png", "doc", "docx");
+    private static List<String> docTypeList=Arrays.asList("TIF", "TIFF", "BMP", "JPG", "JPEG", "GIF", "PNG", "DOC", "DOCX");
 
     /**
      * The document data in base64 format.
@@ -36,7 +38,7 @@ public class DocumentUploadData {
      * The type of document you've been asked to provide by ProPay's Risk team. Valid values are:
      * Verification, FraudHolds, Underwriting, RetrievalRequest
     */
-    private String docCategory;
+    private DocumentCategory docCategory;
 
     @Setter(AccessLevel.NONE)
     private String documentPath;
@@ -44,9 +46,9 @@ public class DocumentUploadData {
     public void setDocumentPath(String path) throws Exception {
         documentPath=path;
         if(path!=null){
-            String docTypeValue=path.substring(path.lastIndexOf('.') + 1);
+            String docTypeValue=path.substring(path.lastIndexOf('.') + 1).toUpperCase();
             if (docTypeList.contains(docTypeValue)) {
-                this.docType = docTypeValue;
+                this.docType = FileType.valueOf(docTypeValue);
                 this.document = Base64.encodeBase64String(Files.readAllBytes(Paths.get(path)));
             }
             else {

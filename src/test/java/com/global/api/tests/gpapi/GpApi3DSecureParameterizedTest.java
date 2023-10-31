@@ -49,18 +49,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
         @BeforeClass
         @SneakyThrows
         public static void init() {
-            GpApiConfig config = new GpApiConfig();
-
-            // GP-API settings
-            config.setAppId(APP_ID);
-            config.setAppKey(APP_KEY);
-            config.setCountry("GB");
-            config.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-            config.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-            config.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-
-            config.setEnableLogging(true);
-
+            GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
             ServicesContainer.configureService(config);
 
             card = new CreditCardData();

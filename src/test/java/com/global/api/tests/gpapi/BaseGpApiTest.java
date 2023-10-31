@@ -1,11 +1,19 @@
 package com.global.api.tests.gpapi;
 
+import com.global.api.entities.enums.Channel;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.logging.RequestConsoleLogger;
+import com.global.api.logging.RequestFileLogger;
+import com.global.api.serviceConfigs.GpApiConfig;
+import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class BaseGpApiTest {
 
@@ -28,6 +36,50 @@ public class BaseGpApiTest {
 
     static final Date startDate = DateUtils.atStartOfDay(DateUtils.addDays(new Date(), -30));
     static final Date endDate = DateUtils.atEndOfDay(new Date());
+
+    public static GpApiConfig gpApiSetup(String APP_ID, String APP_KEY, Channel channel) {
+        GpApiConfig gpApiConfig = new GpApiConfig()
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
+
+        gpApiConfig.setChannel(channel);
+
+        gpApiConfig.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
+        gpApiConfig.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
+        gpApiConfig.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
+
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+//        gpApiConfig.setRequestLogger(new RequestFileLogger("C:\\temp\\GpApiCreditCardNotPresentTests.txt"));
+
+        //DO NOT DELETE - usage example for some settings
+//        HashMap<String, String> dynamicHeaders = new HashMap<String, String>() {{
+//            put("x-gp-platform", "prestashop;version=1.7.2");
+//            put("x-gp-extension", "coccinet;version=2.4.1");
+//        }};
+//
+//        gpApiConfig.setDynamicHeaders(dynamicHeaders);
+
+        return gpApiConfig;
+    }
+
+    public static GpEcomConfig gpEcomSetup() {
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("api");
+        config.setSharedSecret("secret");
+        config.setRebatePassword("rebate");
+        config.setRefundPassword("refund");
+        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
+        config.setEnableLogging(true);
+
+        return config;
+    }
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {

@@ -715,8 +715,8 @@ public class ProPayConnector extends XmlGateway implements IProPayProvider{
 
         xml.subElement(xmlTrans, docNameTag, docUploadData.getDocumentName());
         xml.subElement(xmlTrans, "TransactionReference", docUploadData.getTransactionReference());
-        xml.subElement(xmlTrans, "DocCategory", docUploadData.getDocCategory());
-        xml.subElement(xmlTrans, docTypeTag, docUploadData.getDocType());
+        xml.subElement(xmlTrans, "DocCategory", docUploadData.getDocCategory() == null ? null : docUploadData.getDocCategory().toString().toLowerCase());
+        xml.subElement(xmlTrans, docTypeTag, docUploadData.getDocType() == null ? null : docUploadData.getDocType().toString().toLowerCase());
         xml.subElement(xmlTrans, "Document", docUploadData.getDocument());
     }
 

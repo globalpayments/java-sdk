@@ -1,6 +1,13 @@
 # Changelog
 
-## v11.1.17 (10/24/2023)
+## Last version - v11.1.18 (10/31/23)
+### Enhancements:
+[GP-API]:
+- Upload Merchant Documentst - https://developer.globalpay.com/api/merchants#/Upload%20Merchant%20Documentation/UploadMerchantDocumentation
+- Improve unit tests.
+- Replace Base64 from apache to the one from jdk.
+
+## v11.1.17 (10/24/23)
 ### Enhancements:
 [GP-API]:
 - Map enrolled field on 3ds response.
@@ -13,7 +20,7 @@
 [Portico]:
 - Fixed Null Pointer exception with customer data.
 
-## v11.1.16 (10/23/2023)
+## v11.1.16 (10/23/23)
 
 ### Enhancements:
 -NTS Phase1 Issue :
@@ -22,7 +29,7 @@
 -VAPS:
 - Approval Code changes for Refund Retransmit Transaction(Issue- 10258).
 
-## v11.1.15 (10/19/2023)
+## v11.1.15 (10/19/23)
 
 ### Enhancements:
 -NTS Phase1 Issue :
@@ -33,7 +40,7 @@
 - Credit Or Debit a Funds Management Account (FMA) - https://developer.globalpay.com/api/funds
 - Enhance logs based on environment (GP-API & GP-ECOM)
 
-## v11.1.14 (10/16/2023)
+## v11.1.14 (10/16/23)
 
 ### Enhancements:
 -NTS Phase1 Issue :
@@ -42,14 +49,14 @@
 -Portico:
 - Added Cardholder email support property.
 
-## v11.1.13 (10/12/2023)
+## v11.1.13 (10/12/23)
 
 ### Enhancements:
 -NTS Phase1 Issue:
 - reverted code of calculating userdata length excluding tagId and separators for logs(Issue-10250).
 
 
-## v11.1.12 (10/10/2023)
+## v11.1.12 (10/10/23)
 
 ### Enhancements:
 -NTS Phase1 Issue:
@@ -60,14 +67,14 @@
 - Return batch summary object instead of throwing an exception(10257)
 
 
-## v11.1.11 (10/05/2023)
+## v11.1.11 (10/05/23)
 
 ### Enhancements:
 -NTS Phase1 Issue:
 - Issue 10233- Product roll-up data(combine product with similar product code)
 - Issue 10253 - HPS-8583-Incorrect Batch Summary reported after retransmit RTB
 
-## v11.1.10 (09/28/2023)
+## v11.1.10 (09/28/23)
 
 ### Enhancements:
 -NTS Phase1 Issue :
@@ -76,7 +83,7 @@
 -Portico:
 - Added builder check condition for SAFData in buildEnvelope method.
 
-## v11.1.9 (09/26/2023)
+## v11.1.9 (09/26/23)
 
 ### Enhancements:
 -NTS Phase1 Issue :
@@ -84,7 +91,7 @@
 
 - GP-API: add mapping for batch_time_created on settlement transactions reporting.
 
-## v11.1.8 (09/25/2023)
+## v11.1.8 (09/25/23)
 
 ### Enhancements:
 
@@ -95,7 +102,7 @@
 -Portico:
 - Fixed typo CardHolderFirstName & BankingRoutingNbr
 
-## v11.1.7 (09/20/2023)
+## v11.1.7 (09/20/23)
 
 ### Enhancements:
 
@@ -106,7 +113,7 @@
  - Added initial Meet-In-The-Cloud connectivity support for this device
 
 
-## v11.1.6 (09/15/2023)
+## v11.1.6 (09/15/23)
 
 ### Enhancements:
 
@@ -117,7 +124,7 @@
 - Fixed SAFOrigDT hardcoded issue, It is now configurable.
 - Fix description response from Portico to be consumed by schedule
 
-## v11.1.5 (09/14/2023)
+## v11.1.5 (09/14/23)
 
 ### Enhancements:
 
@@ -132,7 +139,7 @@
 -Portico:
 - Added SAF to transaction builder.
 
-## v11.1.4 (09/12/2023)
+## v11.1.4 (09/12/23)
 
 ### Enhancements:
 
@@ -140,7 +147,7 @@
  - Updated the condition of Expanded User Data Indicator(E) for fallback transaction & resolved the Exception of Synchrony Card - Issue 10242
 
 
-## v11.1.3 (09/07/2023)
+## v11.1.3 (09/07/23)
 
 ### Enhancements:
 
@@ -150,7 +157,7 @@
 -[GP-ECOM]:
  - Support parseResponse for status_url on HostedService (HPP APMs)
 
-## v11.1.2 (08/31/2023)
+## v11.1.2 (08/31/23)
 
 ### Enhancements:
 
@@ -158,14 +165,14 @@
   - Updated right padding with left padding for DISPENSER QUANTITY and NUMBER OF SCANNERS / PERIPHERALS fields of POS Site Configuration Message Request Format (Issue-10238)
   - Fuel and non fuel product code will combined when two same product code is there for non fleet bankcard,Pin debit and stored value data collects (Issue-10233) 
 
-## v11.1.1 (08/28/2023)
+## v11.1.1 (08/28/23)
 
 ### Enhancements:
 
 -NTS Phase1 Issue:  
   -Added 2 byte decimal to creditAmount and debitAmount in BatchSummary Object(10237)
 
-## v11.1.0 (08/24/2023)
+## v11.1.0 (08/24/23)
 
 ### Enhancements:
 
@@ -188,7 +195,7 @@
  - Add sendReady message
  - Add registerPOS command
 
-## v11.0.0 (08/22/2023)
+## v11.0.0 (08/22/23)
 
 ### Enhancements:
 NTS Issue :
@@ -204,7 +211,7 @@ Portico :
   - Add Void-by-ClientTxnId for Heartland ACH
   - ADD SAF indicator and SAF data
 
-## v10.3.14 (08/17/2023)
+## v10.3.14 (08/17/23)
 
 ### Enhancements:
 
@@ -212,7 +219,7 @@ Portico :
 - Added Null check for host response area Issue(10232)
 - Resolved error in position of Several Fields in POS Site Configuration Message Request.
 
-## v10.3.13 (08/14/2023)
+## v10.3.13 (08/14/23)
  
 ### Enhancements:
 
@@ -220,7 +227,7 @@ Portico :
   - Transaction date and transaction time changes for credit adjustment scenario  - Issue(10229) 
   - Added the code for retransmit request to balance(16) to forced request to balance changes - Issue(10214)
  
-## v10.3.12 (08/10/2023)
+## v10.3.12 (08/10/23)
  
 ### Enhancements:
 
@@ -235,14 +242,14 @@ Portico :
   - Improve customer number setting.
   - Add logic for Open Banking Refund.
 
-## v10.3.11 (08/09/2023)
+## v10.3.11 (08/09/23)
  
 ### Enhancements:
 
 -NTS Phase1 Issue:
   - Added code for 40/80/90 and 70/70/79 scenario while retransmitting (Issue-10213)
 
-## v10.3.10 (08/03/2023)
+## v10.3.10 (08/03/23)
  
 ### Enhancements:
 
@@ -252,7 +259,7 @@ Portico :
  
 -Replaced NotImplementedException with UnsupportedOperationException 
 
-## v10.3.9 (08/01/2023)
+## v10.3.9 (08/01/23)
  
 ### Enhancements:
 
@@ -260,14 +267,14 @@ Portico :
   - Minor code changes in emv data length pin debit request  (Issue-10220) 
   - Batch No and sequence No changes for reversal transaction (Issue-10226)
   
-## v10.3.8 (07/25/2023)
+## v10.3.8 (07/25/23)
  
 ### Enhancements:
 
 -NTS Phase1 Issue:
   - Removed unwanted checks from toNumeric method (Issue-10221)
 
-## v10.3.7 (07/18/2023)
+## v10.3.7 (07/18/23)
  
 ### Enhancements:
 
@@ -277,14 +284,14 @@ Portico :
 
 - [GP-API]: Added integration examples using Hosted Fields (GP JS library), 3DS library
 
-## v10.3.6 (07/11/2023)
+## v10.3.6 (07/11/23)
  
 ### Enhancements:
 
 -NTS Phase1 Issue:
   - Added code for reformatting sale request into datacollect request (Issue-10213) 
   
-## v10.3.5 (07/06/2023)
+## v10.3.5 (07/06/23)
  
 ### Enhancements:
 
@@ -296,7 +303,7 @@ Portico :
   
 - [GP-API] Unit tests improvements
 
-## v10.3.4 (06/28/2023)
+## v10.3.4 (06/28/23)
  
 ### Enhancements:
 
@@ -308,7 +315,7 @@ Portico :
 
 [GP-ECOM]: Send the correct message_version in the initiate step on 3DS2
   
-## v10.3.3 (06/27/2023)
+## v10.3.3 (06/27/23)
  
 ### Enhancements:
 
@@ -317,14 +324,14 @@ Portico :
   - Provided new method in batch summery with forceToHost parameter for Issue(10214)
   - Added code for MTI change for force data collect 3des(Issue-10215)
   
-## v10.3.2 (06/20/2023)
+## v10.3.2 (06/20/23)
  
 ### Enhancements:
 
 -NTS Phase1 Issue:
   - fleetdata null handling for Wex fleet refunds(Issue-10210)
 
-## v10.3.1 (06/15/2023)
+## v10.3.1 (06/15/23)
  
 ### Enhancements:
 
@@ -332,7 +339,7 @@ Portico :
   - Wex fleet refunds changes (Issue-10210)
   - Set Emv Fallback changes (Issue-10211)
 
-## v10.3.0 (06/13/2023)
+## v10.3.0 (06/13/23)
  
 ### Enhancements:
 
@@ -350,7 +357,7 @@ Portico :
 -GP-ECOM: 
   - Fix nullpointer for frictionless cards on getAuthenticationData for authentication source MOBILE_SDK
 
-## v10.2.17 (06/06/2023)
+## v10.2.17 (06/06/23)
  
 ### Enhancements:
 
@@ -363,7 +370,7 @@ Portico :
   
 -GP-API: String usage refactor.
 
-## v10.2.16 (05/25/2023)
+## v10.2.16 (05/25/23)
 
 ### Enhancements:
 
@@ -378,7 +385,7 @@ Portico :
 #### Bug Fixes:
 - GP-ECOM: Fix serialization issue on PM_METHODS field to support both card and APMs
 
-## v10.2.15 (05/16/2023)
+## v10.2.15 (05/16/23)
 
 ### Enhancements:
 
@@ -394,7 +401,7 @@ Portico :
   - https://developer.globalpay.com/api/transactions#/Split%20a%20Transaction%20Amount/splitTransaction
   - Exclude  vulnerable dependency on "commons-logging" suggested by Macroscope
 
-## v10.2.14 (05/08/2023)
+## v10.2.14 (05/08/23)
 
 ### Enhancements:
 
@@ -408,7 +415,7 @@ GP-ECOM:
 Portico Gateway:
 -Enable CreditAuth transaction type for Apple Pay & Google Pay
 
-## v10.2.13 (05/02/2023)
+## v10.2.13 (05/02/23)
 
 ### Enhancements:
 
@@ -421,7 +428,7 @@ Portico Gateway:
 - GP-API:
   -  Manage merchant accounts for partner solution
 
-## v10.2.12 (04/18/2023)
+## v10.2.12 (04/18/23)
 
 ### Enhancements:
 
@@ -430,7 +437,7 @@ Portico Gateway:
 - Addition of HostResponseCode field (10186)
 
 
-## v10.2.11 (04/10/2023)
+## v10.2.11 (04/10/23)
 
 ### Enhancements:
 
@@ -438,7 +445,7 @@ Portico Gateway:
 - Tokenization changes (10121)
 - Batch Summary Changes (10180)- Addition to isNtsBalanced() method
 
-## v10.2.10 (04/06/2023)
+## v10.2.10 (04/06/23)
 
 ### Enhancements:
 
@@ -452,14 +459,14 @@ Portico Gateway:
 - User Data Expansion for Data Collect(10180)
 
 
-## v10.2.9 (04/03/2023)
+## v10.2.9 (04/03/23)
 
 ### Enhancements:
 -NTS Phase1 Issue:
 -  Prior Message Information Issue updates(10142)
 -  Batch Close Issue(10161)
 
-## v10.2.8 (03/30/2023)
+## v10.2.8 (03/30/23)
 
 ### Enhancements:
 - GP-API: Update /merchants create request
@@ -467,7 +474,7 @@ Portico Gateway:
 - GP-API: Avoid setting empty fields on GpApiAuthorizationRequestBuilder
 - GP-ECOM/REALEX: Improvements for 3DS and Recurring unit test
 
-## v10.2.7 (03/27/2023)
+## v10.2.7 (03/27/23)
 
 ### Enhancements:
 -NTS Phase1 Issue:
@@ -475,7 +482,7 @@ Portico Gateway:
 - Pin Block Format change(10169)
 - Debit Offline Pin Verified Scenarios(10170)
 
-## v10.2.6 (03/23/2023)
+## v10.2.6 (03/23/23)
 
 ### Enhancements:
 - NTS Phase1 Issue:
@@ -483,12 +490,12 @@ Portico Gateway:
   - Gift Card Track1 entry method Issues(10174)
   - Prior Message Information changes Issue(10142)
 
-## v10.2.5 (03/16/2023)
+## v10.2.5 (03/16/23)
 
 ### Enhancements:
 - GP-ECOM/REALEX: Add Payment Scheduler
 
-## v10.2.4 (03/15/2023)
+## v10.2.4 (03/15/23)
 
 ### Enhancements:
 - NTS Phase1 Issue:
@@ -499,7 +506,7 @@ Portico Gateway:
   - Primary and Secondary Endpoints Issue (10159)
   - Tokenization POC for resubmit Transaction Issue(10121)
 
-## v10.2.3 (03/07/2023)
+## v10.2.3 (03/07/23)
 
 ### Enhancements:
 
@@ -511,7 +518,7 @@ Portico Gateway:
 - GP-ECOM/REALEX: Rename Test Classes
 - Update GSON & HttpMime Dependencies
 
-## v10.2.2 (02/28/2023)
+## v10.2.2 (02/28/23)
 
 ### Enhancements:
 - NTS Phase1 Issue:
@@ -523,7 +530,7 @@ Portico Gateway:
 - GP-API: Misc Tests Updated
 - REALEX: OpenBanking_GetBankPaymentById() test updated
 
-## v10.2.1 (02/23/2023)
+## v10.2.1 (02/23/23)
 
 ### Enhancements:
 - NTS phase1 Issues:
@@ -531,14 +538,14 @@ Portico Gateway:
 - Portico:
   - EMVDATA tag bug fixes
 
-## v10.2.0 (02/21/2023)
+## v10.2.0 (02/21/23)
 
 ### Enhancements:
 - NTS Phase1 Issue:
   - PAN With Expiry changes for PIN Debit Request Format without Track Data (Issue-10146)
 - GP-API: add risk assessment feature
 
-## v10.1.3 (02/14/2023)
+## v10.1.3 (02/14/23)
 
 ### Enhancements:
 - NTS Phase1 Issues:
@@ -548,18 +555,18 @@ Portico Gateway:
 - GP-API: Click To Pay
 - Add XGP Signature validation
 
-## v10.1.2 (02/07/2023)
+## v10.1.2 (02/07/23)
 
 ### Enhancements:
 NTS Issue: Mastercard purchasing Conditions is added for MasterCardBanknetRefId & Settlement Date Changes
 
-## v10.1.1 (01/31/2023)
+## v10.1.1 (01/31/23)
 
 ### Enhancements:
 NTS Issue: Approval Code Changes for Void Transaction
 GP-API: Update Java Server Demo for a Client app to support decoupled authentication on 3DS flow
 
-## v10.1.0 (01/19/2023)
+## v10.1.0 (01/19/23)
 
 ### Enhancements:
 - Transaction API Connector Implementation
@@ -574,12 +581,12 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - GP-API: Misc Tests Updated
 - Request Logger Refactor
 
-## v10.0.6 (01/05/2023)
+## v10.0.6 (01/05/23)
 
 ### Enhancements:
 - GP-API: Buy Now and Pay Later
 
-## v10.0.5 (12/13/2022)
+## v10.0.5 (12/13/22)
 
 ### Enhancements:
 - UPA Devices: Added initial support for SendSAF command
@@ -594,7 +601,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - GP-API: Brand Reference missed on Recurring Transaction
 - Portico : Pinblock tag issue changes for Credit Sale EMV transactions
 
-## v10.0.4 (12/01/2022)
+## v10.0.4 (12/01/22)
 
 ### Enhancements:
 - VAPS : VAPS Spec update 19.1, 20.1, 21.1 and 21.2.
@@ -602,7 +609,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - NTS issue : NTS Visa Fleet Odometer Changes
 - Macroscope Security Issues
 
-## v10.0.3 (11/17/2022)
+## v10.0.3 (11/17/22)
 
 ### Enhancements:
 
@@ -610,14 +617,14 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - GP-API: Misc Test Fixed
 - NTS: Added Changes for Wex Fleet Service prompt list & Voyager Fleet Driver ID Update
 
-## v10.0.2 (11/08/2022)
+## v10.0.2 (11/08/22)
 
 ### Enhancements:
 
 - GP-API: Fraud Management
 - GP-API: Misc Tests Updated
 
-## v10.0.1 (11/03/2022)
+## v10.0.1 (11/03/22)
 
 ### Enhancements:
 
@@ -628,7 +635,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - NTS: Added `bankcardData` variable to reference object.
 - NTS: Log optimization.
 
-## v10.0.0 (10/25/2022)
+## v10.0.0 (10/25/22)
 
 ### Enhancements:
 
@@ -636,20 +643,20 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Java Server Demo for a Client app
 - GP-API: Update unit tests with new set of credentials for GP-API
 
-## v9.0.3 (10/11/2022)
+## v9.0.3 (10/11/22)
 
 ### Enhancements:
 
 - NTS : Added Changes for DataCollect & Void transaction
 - GP-API: PayLink enhancements
 
-## v9.0.2 (09/29/2022)
+## v9.0.2 (09/29/22)
 
 ### Enhancements:
 
 - Genius/Merchantware: Added initial support
 
-## v9.0.1 (09/27/2022)
+## v9.0.1 (09/27/22)
 
 ### Enhancements:
 
@@ -657,14 +664,14 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - VAPS: Added Support for DE49 and DE50 Currency Code
 - NTS: Added Terminal Types N1 and N2
 
-## v9.0.0 (09/13/2022)
+## v9.0.0 (09/13/22)
 
 ### Enhancements:
 
 - PORTICO: Added PorticoConfig for Portico Configuration instead of GatewayConfig
 - GP-ECOM/REALEX: Added GpEcomConfig for GP-ECOM/Realex Configuration instead of GatewayConfig
 
-## v8.0.7 (09/08/2022)
+## v8.0.7 (09/08/22)
 
 ### Enhancements:
 
@@ -672,7 +679,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Realex: Set CountryCode for country node
 - Realex: Set ChallengeRequestIndicator value for HPP_CHALLENGE_REQUEST_INDICATOR property
 
-## v8.0.6 (08/29/2022)
+## v8.0.6 (08/29/22)
 
 ### Enhancements:
 
@@ -681,7 +688,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - VAPS: Batch close issue fixed.
 - isNotNullInSubProperty validation on Builders
 
-## v8.0.5 (08/09/2022)
+## v8.0.5 (08/09/22)
 
 ### Enhancements:
 
@@ -690,20 +697,20 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - GP-API: Updated Misc Tests
 -
 
-## v8.0.4 (08/02/2022)
+## v8.0.4 (08/02/22)
 
 ### Enhancements:
 
 - GP-API: Added PayLink API that allows you to generate single or multi-use unique payment links.
 
-## v8.0.3 (07/14/2022)
+## v8.0.3 (07/14/22)
 
 ### Enhancements:
 
 - GP-ECOM/REALEX: Updated unit test for SupplementaryData
 - GP-API: Added Incremental Auth
 
-## v8.0.2 (07/05/2022)
+## v8.0.2 (07/05/22)
 
 ### Enhancements:
 
@@ -712,7 +719,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - PORTICO: Added EBT reversal support
 - GP-API: Mapped providerServerTransRef field on ThreeDSecure class
 
-## v8.0.1 (06/29/2022)
+## v8.0.1 (06/29/22)
 
 ### Enhancements:
 
@@ -720,19 +727,19 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - HPP EnableExemptionOptimization field
 - Flag to do not insert "x-gp-sdk" header on GpApiConnector requests for Android SDK
 
-## v8.0.0 (06/27/2022)
+## v8.0.0 (06/27/22)
 
 ### Enhancements:
 
 - GNAP Connector Implementation
 
-## v7.0.5 (06/14/2022)
+## v7.0.5 (06/14/22)
 
 ### Enhancements:
 
 - Portico: Add support for AdditionalDuplicateData response element
 
-## v7.0.4 (06/07/2022)
+## v7.0.4 (06/07/22)
 
 ### Enhancements:
 
@@ -742,7 +749,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Add New HPP Fields in the SDKs for HPP Capture Billing enhancement
 - Update VerifyTokenizedPaymentMethodWithFingerprint() test
 
-## v7.0.3 (05/16/2022)
+## v7.0.3 (05/16/22)
 
 ### Enhancements:
 
@@ -750,7 +757,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Portico: added DebitAuth and DebitAddToBatch
 - Portico: Updated the existing DebitReversal request with Track 2 Data
 
-## v7.0.2 (04/21/2022)
+## v7.0.2 (04/21/22)
 
 ### Enhancements:
 
@@ -761,7 +768,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Aligned HostedPaymentData constructor with other SDKs
 - Updated Misc Tests
 
-## v7.0.1 (04/05/2022)
+## v7.0.1 (04/05/22)
 
 ### Enhancements:
 
@@ -779,7 +786,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v7.0.0 (03/24/2022)
+## v7.0.0 (03/24/22)
 
 ### Enhancements:
 
@@ -787,7 +794,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.7 (03/22/2022)
+## v6.3.7 (03/22/22)
 
 ### Enhancements:
 
@@ -800,7 +807,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.6 (03/15/2022)
+## v6.3.6 (03/15/22)
 
 ### Enhancements:
 
@@ -818,7 +825,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.5 (03/01/2022)
+## v6.3.5 (03/01/22)
 
 ### Bug Fixes:
 
@@ -826,7 +833,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.4 (03/01/2022)
+## v6.3.4 (03/01/22)
 
 ### Enhancements:
 
@@ -839,7 +846,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.3 (02/17/2022)
+## v6.3.3 (02/17/22)
 
 ### Enhancements:
 
@@ -849,7 +856,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.2 (02/10/2022)
+## v6.3.2 (02/10/22)
 
 ### Enhancements:
 
@@ -864,7 +871,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.1 (12/16/2021)
+## v6.3.1 (12/16/21)
 
 ### Enhancements:
 
@@ -877,7 +884,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.3.0 (11/18/2021)
+## v6.3.0 (11/18/21)
 
 ### Enhancements:
 
@@ -885,7 +892,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.8 (11/16/2021)
+## v6.2.8 (11/16/21)
 
 ### Enhancements:
 
@@ -899,7 +906,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.7 (11/11/2021)
+## v6.2.7 (11/11/21)
 
 ### Enhancements:
 
@@ -911,7 +918,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.6 (02/11/2021)
+## v6.2.6 (02/11/21)
 
 ### Enhancements:
 
@@ -919,7 +926,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.4 (28/10/2021)
+## v6.2.4 (28/10/21)
 
 ### Enhancements:
 
@@ -928,7 +935,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.3 (14/10/2021)
+## v6.2.3 (14/10/21)
 
 ### Enhancements:
 
@@ -936,7 +943,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.2 (08/09/2021)
+## v6.2.2 (08/09/21)
 
 ### Enhancements:
 
@@ -944,7 +951,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.2 (08/09/2021)
+## v6.2.2 (08/09/21)
 
 ### Enhancements:
 
@@ -959,7 +966,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.94 (12/08/2021)
+## v6.1.94 (12/08/21)
 
 ### Enhancements:
 
@@ -967,7 +974,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.94 (12/08/2021)
+## v6.1.94 (12/08/21)
 
 ### Enhancements:
 
@@ -975,7 +982,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.93 (05/08/2021)
+## v6.1.93 (05/08/21)
 
 ### Enhancements:
 
@@ -988,7 +995,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.90 (13/07/2021)
+## v6.1.90 (13/07/21)
 
 ### Enhancements:
 
@@ -1001,7 +1008,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.89 (01/07/2021)
+## v6.1.89 (01/07/21)
 
 ### Enhancements:
 
@@ -1009,7 +1016,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.84 (17/06/2021)
+## v6.1.84 (17/06/21)
 
 ### Enhancements:
 
@@ -1017,7 +1024,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.83 (08/06/2021)
+## v6.1.83 (08/06/21)
 
 ### Enhancements:
 
@@ -1037,7 +1044,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 - Fix TokenManagement and Misc Tests
 ---
 
-## v6.1.80 (04/13/2021)
+## v6.1.80 (04/13/21)
 
 ### Enhancements:
 
