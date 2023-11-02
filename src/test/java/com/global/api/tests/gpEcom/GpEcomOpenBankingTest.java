@@ -22,32 +22,21 @@ import java.util.UUID;
 
 import static com.global.api.entities.enums.BankPaymentStatus.PAYMENT_INITIATED;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
-public class GpEcomOpenBankingTest {
-
+public class GpEcomOpenBankingTest extends BaseGpEComTest {
     private final String currency = "GBP";
-
     private final BigDecimal amount = new BigDecimal("10.99");
-
     private final String remittanceReferenceValue = "Nike Bounce Shoes";
-
     private boolean runAuto = true;
 
-
     public GpEcomOpenBankingTest() throws ApiException {
-        GpEcomConfig config = getConfig();
-        ServicesContainer.configureService(config);
-    }
-
-    private GpEcomConfig getConfig() {
-        GpEcomConfig config = new GpEcomConfig();
+        GpEcomConfig config = gpEComSetup();
         config.setMerchantId("openbankingsandbox");
         config.setSharedSecret("sharedsecret");
         config.setAccountId("internet3");
         config.setShaHashType(ShaHashType.SHA512);
-        config.setEnableLogging(true);
-        return config;
+
+        ServicesContainer.configureService(config);
     }
 
     @Test
@@ -70,7 +59,7 @@ public class GpEcomOpenBankingTest {
         Thread.sleep(2000);
 
         TransactionSummaryPaged response = ReportingService.bankPaymentDetail(
-                transaction.getBankPaymentResponse().getId(), 1, 10)
+                        transaction.getBankPaymentResponse().getId(), 1, 10)
                 .execute();
 
         assertNotNull(response);
@@ -206,7 +195,7 @@ public class GpEcomOpenBankingTest {
         System.out.println(trn.getBankPaymentResponse().getRedirectUrl());
         System.out.println();
         Thread.sleep(2000);
-        
+
         Transaction refund =
                 trn
                         .refund(amount)

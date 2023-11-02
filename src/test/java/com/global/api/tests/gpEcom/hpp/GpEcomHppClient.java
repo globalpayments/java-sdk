@@ -58,6 +58,33 @@ public class GpEcomHppClient {
         String billingCountry = json.getString("BILLING_CO");
         String fraudFilterMode = json.getString("HPP_FRAUDFILTER_MODE");
 
+        BlockedCardType cardTypesBlocking = null;
+
+        String cardTypes = json.getStringOrNull("BLOCK_CARD_TYPE");
+        if (cardTypes != null && cardTypes.length() > 0) {
+            cardTypesBlocking = new BlockedCardType();
+            String[] cardTypeDescriptions = cardTypes.split("\\|");
+            for (String cardType : cardTypeDescriptions) {
+                BlockCardType cardTypeEnum = BlockCardType.fromValue(cardType);
+                switch (cardTypeEnum) {
+                    case COMMERCIAL_CREDIT:
+                        cardTypesBlocking.setCommercialCredit(true);
+                        break;
+                    case COMMERCIAL_DEBIT:
+                        cardTypesBlocking.setCommercialDebit(true);
+                        break;
+                    case CONSUMER_CREDIT:
+                        cardTypesBlocking.setConsumerCredit(true);
+                        break;
+                    case CONSUMER_DEBIT:
+                        cardTypesBlocking.setConsumerDebit(true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         ArrayList<String> hashParam = new ArrayList<>();
         hashParam.add(timestamp);
         hashParam.add(merchantId);
@@ -212,6 +239,10 @@ public class GpEcomHppClient {
                 gatewayRequest.withFraudFilter(FraudFilterMode.fromString(fraudFilterMode), getFraudFilterRules(json));
             }
 
+            if (cardTypesBlocking != null) {
+                gatewayRequest.withBlockedCardType(cardTypesBlocking);
+            }
+
             gatewayResponse = gatewayRequest.execute("realexResponder");
         }
                 if (gatewayResponse.getResponseCode().equals("00") || gatewayResponse.getResponseCode().equals("01")) {
@@ -345,6 +376,7 @@ public class GpEcomHppClient {
         response.set("SHA1HASH", GenerationUtils.generateHash(sharedSecret, trans.getTimestamp(), merchantId, trans.getOrderId(), trans.getResponseCode(), trans.getResponseMessage(), trans.getTransactionId(), trans.getAuthorizationCode()));
         response.set("DCC_INFO_REQUST", request.getString("DCC_INFO"));
         response.set("HPP_FRAUDFILTER_MODE", request.getString("HPP_FRAUDFILTER_MODE"));
+        response.set("BLOCK_CARD_TYPE", request.getString("BLOCK_CARD_TYPE"));
 
         if (trans.getFraudResponse() != null) {
             response.set("HPP_FRAUDFILTER_RESULT", trans.getFraudResponse().getResult());

@@ -22,7 +22,7 @@ import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
-public class GpEcomSecure3dServiceTest {
+public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
     private CreditCardData card;
     private RecurringPaymentMethod stored;
     private Address shippingAddress;
@@ -33,14 +33,9 @@ public class GpEcomSecure3dServiceTest {
     private final String currency = "USD";
 
     public GpEcomSecure3dServiceTest() throws ApiException {
-        GpEcomConfig config = new GpEcomConfig();
+        GpEcomConfig config = gpEComSetup();
         config.setMerchantId("myMerchantId");
         config.setAccountId("ecom3ds");
-        config.setSharedSecret("secret");
-        config.setEnableLogging(true);
-        config.setMethodNotificationUrl("https://www.example.com/methodNotificationUrl");
-        config.setChallengeNotificationUrl("https://www.example.com/challengeNotificationUrl");
-        config.setSecure3dVersion(Secure3dVersion.ANY);
         ServicesContainer.configureService(config);
 
         // create card data
@@ -195,7 +190,7 @@ public class GpEcomSecure3dServiceTest {
                 assertNotNull(initAuth.getAcsReferenceNumber());
                 assertNotNull(initAuth.getAuthenticationValue());
                 assertNotNull(initAuth.getServerTransactionId());
-                assertEquals("05",initAuth.getEci());
+                assertEquals("05", initAuth.getEci());
                 assertEquals(enrolledCards.get(cardNumber), initAuth.getAcsEndVersion());
 
                 // get authentication data

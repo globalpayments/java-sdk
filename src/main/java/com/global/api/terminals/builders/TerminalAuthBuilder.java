@@ -10,6 +10,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.upa.Entities.Enums.UpaCardTypeFilter;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -45,6 +46,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     @Getter
     private String clientTransactionId;
     private TransactionType giftTransactionType;
+    @Getter
+    private EnumSet<UpaCardTypeFilter> cardTypeFilter;
 
     public Address getAddress() {
         return address;
@@ -236,6 +239,11 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 
     public TerminalAuthBuilder withClientTransactionId(String value) {
         this.clientTransactionId = value;
+        return this;
+    }
+
+    public TerminalAuthBuilder withCardTypeFilter(EnumSet<UpaCardTypeFilter> cardTypeFilter) {
+        this.cardTypeFilter = cardTypeFilter;
         return this;
     }
 

@@ -25,7 +25,7 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GpEcomRecurringTest {
+public class GpEcomRecurringTest extends BaseGpEComTest {
     private Customer new_customer;
     private CreditCardData card;
 
@@ -38,14 +38,10 @@ public class GpEcomRecurringTest {
     }
 
     public GpEcomRecurringTest() throws ApiException {
-        GpEcomConfig config = new GpEcomConfig();
-        config.setMerchantId("heartlandgpsandbox");
+        GpEcomConfig config = gpEComSetup();
         config.setAccountId("3dsecure");
         config.setSharedSecret("secret");
-        config.setRefundPassword("refund");
         config.setChannel("ECOM");
-        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
-        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 

@@ -17,16 +17,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GpEcomReportingTest {
-    public GpEcomReportingTest() throws ApiException {
-        GpEcomConfig config = new GpEcomConfig();
-        config.setMerchantId("heartlandgpsandbox");
-        config.setAccountId("api");
-        config.setSharedSecret("secret");
-        config.setRefundPassword("refund");
-        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
-        config.setEnableLogging(true);
+public class GpEcomReportingTest extends BaseGpEComTest {
 
+    public GpEcomReportingTest() throws ApiException {
+        GpEcomConfig config = gpEComSetup();
         ServicesContainer.configureService(config);
     }
 

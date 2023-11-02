@@ -614,6 +614,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 //.set("language", language)
                 .set("ip_address", builder.getCustomerIpAddress())
                 //.set("site_reference", "")
+                .set("merchant_category", builder.getMerchantCategory() != null ? builder.getMerchantCategory().toString() : null)
                 .set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null)
                 .set("payment_method", paymentMethod)
                 .set("risk_assessment", builder.getFraudFilterMode() != null ? mapFraudManagement(builder) : null)

@@ -5,15 +5,12 @@ import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.logging.RequestFileLogger;
 import com.global.api.serviceConfigs.GpApiConfig;
-import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
 
 public class BaseGpApiTest {
 
@@ -66,19 +63,6 @@ public class BaseGpApiTest {
 //        gpApiConfig.setDynamicHeaders(dynamicHeaders);
 
         return gpApiConfig;
-    }
-
-    public static GpEcomConfig gpEcomSetup() {
-        GpEcomConfig config = new GpEcomConfig();
-        config.setMerchantId("heartlandgpsandbox");
-        config.setAccountId("api");
-        config.setSharedSecret("secret");
-        config.setRebatePassword("rebate");
-        config.setRefundPassword("refund");
-        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
-        config.setEnableLogging(true);
-
-        return config;
     }
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit

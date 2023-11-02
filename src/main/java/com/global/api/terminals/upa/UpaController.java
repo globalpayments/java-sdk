@@ -85,7 +85,7 @@ public class UpaController extends DeviceController {
             body.set("transaction", transactionFields.getElementsJson());
         }
 
-        if (messageId == UpaMessageId.StartCardTransaction) {
+        if (processingIndicators != null && messageId == UpaMessageId.StartCardTransaction) {
             body.set("processingIndicators", processingIndicators.getElementsJson());
         }
 
@@ -127,6 +127,7 @@ public class UpaController extends DeviceController {
         requestTransactionFields.setParams(builder);
 
         RequestProcessingIndicatorsFields processingIndicators = new RequestProcessingIndicatorsFields();
+        processingIndicators.setParams(builder);
 
         return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, processingIndicators);
     }

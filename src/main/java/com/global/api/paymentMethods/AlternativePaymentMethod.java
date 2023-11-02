@@ -45,6 +45,7 @@ public class AlternativePaymentMethod implements IPaymentMethod, IChargable, INo
     public AuthorizationBuilder charge(BigDecimal amount) {
         return
                 new AuthorizationBuilder(TransactionType.Sale, this)
+                        .withModifier(TransactionModifier.AlternativePaymentMethod)
                         .withAmount(amount);
     }
 

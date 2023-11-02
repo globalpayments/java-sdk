@@ -11,7 +11,6 @@ import com.global.api.services.HostedService;
 import com.global.api.tests.JsonComparator;
 import com.global.api.tests.gpEcom.hpp.GpEcomHppClient;
 import com.global.api.utils.JsonDoc;
-import com.global.api.utils.JsonEncoders;
 import lombok.var;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -1599,6 +1598,97 @@ public class GpEcomHppRequestTest {
         assertNotNull(hppJson);
         assertTrue(hppJson.contains("\"HPP_BILLING_COUNTRY\":\"530\""));
         assertTrue(hppJson.contains("\"BILLING_CO\":\"AN\""));
+    }
+
+    @Test
+    public void cardBlockingPayment() throws ApiException {
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+
+        config.setHostedPaymentConfig(new HostedPaymentConfig());
+        // TODO(mfranzoy) in dotnet we use version 1 but in have we only have version 2
+        config.getHostedPaymentConfig().setVersion(HppVersion.Version2);
+
+        GpEcomHppClient client = new GpEcomHppClient(config.getServiceUrl(), config.getSharedSecret());
+        HostedService service = new HostedService(config);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setCustomerCountry("DE");
+        hostedPaymentData.setCustomerFirstName("James");
+        hostedPaymentData.setCustomerLastName("Mason");
+        hostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        hostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+        BlockCardType[] blockCardTypes = new BlockCardType[]{ BlockCardType.COMMERCIAL_CREDIT, BlockCardType.COMMERCIAL_DEBIT};
+        hostedPaymentData.setBlockCardTypes(blockCardTypes);
+
+        String blockCardTypesToValidate = BlockCardType.COMMERCIAL_CREDIT.getValue() + "|" + BlockCardType.COMMERCIAL_DEBIT.getValue();
+
+        String json = service.charge(new BigDecimal(10.01))
+                .withCurrency("EUR")
+                .withHostedPaymentData(hostedPaymentData)
+                .serialize();
+
+        String response = client.sendRequest(json);
+        Transaction parsedResponse = service.parseResponse(response, true);
+        String actualBlockCardType = parsedResponse.getResponseValues().get("BLOCK_CARD_TYPE");
+        assertEquals(blockCardTypesToValidate, actualBlockCardType);
+
+        assertEquals("00", parsedResponse.getResponseCode());
+    }
+
+    @Test
+    public void cardBlockingPayment_AllCardTypes() throws ApiException {
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("heartlandgpsandbox");
+        config.setAccountId("hpp");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+
+        config.setHostedPaymentConfig(new HostedPaymentConfig());
+        config.getHostedPaymentConfig().setVersion(HppVersion.Version2);
+
+        GpEcomHppClient client = new GpEcomHppClient(config.getServiceUrl(), config.getSharedSecret());
+        HostedService service = new HostedService(config);
+
+        HostedPaymentData hostedPaymentData = new HostedPaymentData();
+        hostedPaymentData.setCustomerCountry("DE");
+        hostedPaymentData.setCustomerFirstName("James");
+        hostedPaymentData.setCustomerLastName("Mason");
+        hostedPaymentData.setMerchantResponseUrl("https://www.example.com/returnUrl");
+        hostedPaymentData.setTransactionStatusUrl("https://www.example.com/statusUrl");
+
+        BlockCardType[] blockCardTypes = {BlockCardType.CONSUMER_CREDIT,
+                BlockCardType.CONSUMER_DEBIT,
+                BlockCardType.COMMERCIAL_CREDIT,
+                BlockCardType.COMMERCIAL_DEBIT};
+
+        hostedPaymentData.setBlockCardTypes(blockCardTypes);
+
+        String blockCardTypesToValidate = BlockCardType.CONSUMER_CREDIT.getValue()
+                + "|" + BlockCardType.CONSUMER_DEBIT.getValue()
+                + "|" +  BlockCardType.COMMERCIAL_CREDIT.getValue()
+                + "|" +  BlockCardType.COMMERCIAL_DEBIT.getValue();
+
+
+        String json = service.charge(new BigDecimal(10.01))
+                .withCurrency("EUR")
+                .withHostedPaymentData(hostedPaymentData)
+                .serialize();
+
+        boolean exceptionCaught = false;
+        try {
+            String response = client.sendRequest(json);
+        } catch (Exception e) {
+            exceptionCaught = true;
+            assertEquals("Unexpected Gateway Response: 561 - All card types are blocked, invalid request", e.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     @Test

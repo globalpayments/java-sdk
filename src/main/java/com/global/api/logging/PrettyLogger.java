@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 
 public abstract class PrettyLogger implements IRequestLogger {
     private static final JsonParser parser = new JsonParser();
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     public final String initialLine =  "================================================================================";
     public final String middleLine =   "--------------------------------------------------------------------------------";

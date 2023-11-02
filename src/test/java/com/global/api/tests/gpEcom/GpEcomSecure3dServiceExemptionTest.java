@@ -7,7 +7,6 @@ import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
@@ -21,7 +20,7 @@ import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
-public class GpEcomSecure3dServiceExemptionTest {
+public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
 
     private final CreditCardData card;
     private final RecurringPaymentMethod stored;
@@ -29,17 +28,10 @@ public class GpEcomSecure3dServiceExemptionTest {
     private final Address billingAddress;
     private final BrowserData browserData;
 
-    public GpEcomSecure3dServiceExemptionTest() throws ConfigurationException {
-
-        GpEcomConfig config = new GpEcomConfig();
+    public GpEcomSecure3dServiceExemptionTest() throws ApiException {
+        GpEcomConfig config = gpEComSetup();
         config.setMerchantId("myMerchantId");
         config.setAccountId("ecomeos");
-        config.setSharedSecret("secret");
-        config.setMethodNotificationUrl("https://www.example.com/methodNotificationUrl");
-        config.setChallengeNotificationUrl("https://www.example.com/challengeNotificationUrl");
-        config.setSecure3dVersion(Secure3dVersion.ANY);
-
-        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
 
@@ -88,7 +80,7 @@ public class GpEcomSecure3dServiceExemptionTest {
         browserData.setTimezone("0");
         browserData.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36");
     }
-    
+
     // 'APPLY_EXEMPTION' - Amount is less than or equal to 250 EUR (or converted equivalent)
     // The 3D Secure Service will populate the outbound authentication message with the appropriate exemption flag.
     @Test
@@ -199,12 +191,10 @@ public class GpEcomSecure3dServiceExemptionTest {
 
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
-            }
-            else {
+            } else {
                 Assert.fail("Signature verification Assert.Failed.");
             }
-        }
-        else {
+        } else {
             Assert.fail("Card not enrolled.");
         }
     }
@@ -253,8 +243,7 @@ public class GpEcomSecure3dServiceExemptionTest {
 
             assertNotNull(secureEcom);
             assertEquals("CHALLENGE_REQUIRED", secureEcom.getStatus());
-        }
-        else {
+        } else {
             Assert.fail("Card not enrolled.");
         }
     }
@@ -286,13 +275,11 @@ public class GpEcomSecure3dServiceExemptionTest {
                         .withBrowserData(browserData)
                         .withEnableExemptionOptimization(true)
                         .execute();
-            }
-            catch (GatewayException ex) {
+            } catch (GatewayException ex) {
                 String message = ex.getMessage().replace("\n", "").replace("\r", "").replace("\"", "'");
                 assertEquals("Status code: 202 - {  'eos_reason' : 'Blocked by Transaction Risk Analysis.'}", message);
             }
-        }
-        else {
+        } else {
             Assert.fail("Card not enrolled.");
         }
     }

@@ -19,10 +19,7 @@ import com.global.api.services.GpApiService;
 import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
@@ -59,7 +56,12 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .and(SearchCriteria.AccountStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        accounts = response.getResults().size() > 0 ? response.getResults() : null;
+        accounts = !response.getResults().isEmpty() ? response.getResults() : null;
+    }
+
+    @After
+    public void RemoveConfig() throws ApiException {
+        ServicesContainer.removeConfig();
     }
 
     @Test

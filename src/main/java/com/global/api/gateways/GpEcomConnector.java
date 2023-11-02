@@ -143,6 +143,25 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                             new ElementToMask("request.card.cvn.number", card.getCvn())
                     ));
                 }
+
+                // Card block
+                if (builder.getCardTypesBlocking() != null) {
+                    var cardTypes = builder.getCardTypesBlocking();
+
+                    var cardTypeBlock = et.subElement(request, "blockcard");
+                    if (cardTypes.getCommercialCredit() != null) {
+                        et.subElement(cardTypeBlock, "commercialcredit", cardTypes.getCommercialCredit().toString().toLowerCase());
+                    }
+                    if (cardTypes.getCommercialDebit() != null) {
+                        et.subElement(cardTypeBlock, "commercialdebit", cardTypes.getCommercialDebit().toString().toLowerCase());
+                    }
+                    if (cardTypes.getConsumerCredit() != null) {
+                        et.subElement(cardTypeBlock, "consumercredit", cardTypes.getConsumerCredit().toString().toLowerCase());
+                    }
+                    if (cardTypes.getConsumerDebit() != null) {
+                        et.subElement(cardTypeBlock, "consumerdebit", cardTypes.getConsumerDebit().toString().toLowerCase());
+                    }
+                }
             }
 
             String hash = null;
@@ -444,6 +463,17 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         }
         if (builder.getHostedPaymentData() != null) {
             HostedPaymentData paymentData = builder.getHostedPaymentData();
+
+            BlockCardType[] blockCardTypes = paymentData.getBlockCardTypes();
+            if(blockCardTypes != null && blockCardTypes.length > 0) {
+                StringBuilder blockCardTypesStringBuilder = new StringBuilder();
+                for (BlockCardType blockCardType : blockCardTypes) {
+                    blockCardTypesStringBuilder.append(blockCardType.getValue());
+                    blockCardTypesStringBuilder.append("|");
+                }
+                blockCardTypesStringBuilder.deleteCharAt(blockCardTypesStringBuilder.length() - 1);
+                request.set("BLOCK_CARD_TYPE", blockCardTypesStringBuilder.toString());
+            }
 
             request.set("CUST_NUM", paymentData.getCustomerNumber());
             if (hostedPaymentConfig.isDisplaySavedCards() != null && paymentData.getCustomerKey() != null) {

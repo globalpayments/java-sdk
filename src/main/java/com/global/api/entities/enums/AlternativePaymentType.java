@@ -138,7 +138,8 @@ public enum AlternativePaymentType implements IStringConstant{
 	WECHAT_PAY("wechatpay"),
 	ZIMPLER("zimpler"),
 	UK_DIRECT_DEBIT("ukdirectdebit"),
-	PAYBYBANKAPP("paybybankapp");
+	PAYBYBANKAPP("paybybankapp"),
+	ALIPAY("alipay");
 	
     String value;
     AlternativePaymentType(String value) { this.value = value; }

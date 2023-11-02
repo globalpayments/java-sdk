@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
@@ -19,20 +20,12 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GpEcomCreditTest {
+public class GpEcomCreditTest extends BaseGpEComTest {
     private CreditCardData card;
 
     // Similar to ApiCaseTest.php file in the PHP-SDK
     public GpEcomCreditTest() throws ApiException {
-        GpEcomConfig config = new GpEcomConfig();
-        config.setMerchantId("heartlandgpsandbox");
-        config.setAccountId("api");
-        config.setSharedSecret("secret");
-        config.setRebatePassword("rebate");
-        config.setRefundPassword("refund");
-        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
-        config.setEnableLogging(true);
-
+        GpEcomConfig config = gpEComSetup();
         ServicesContainer.configureService(config);
 
         config.setAccountId("apidcc");
@@ -521,7 +514,7 @@ public class GpEcomCreditTest {
         assertNotNull(response.getFraudResponse());
         assertEquals(FraudFilterMode.Passive, response.getFraudResponse().getMode());
         assertEquals("PASS", response.getFraudResponse().getResult());
-        for(FraudResponse.Rule rule : response.getFraudResponse().getRules()) {
+        for (FraudResponse.Rule rule : response.getFraudResponse().getRules()) {
             switch (rule.getId()) {
                 case rule1:
                     assertEquals("NOT_EXECUTED", rule.getAction());
@@ -715,6 +708,21 @@ public class GpEcomCreditTest {
                 .execute();
         assertNotNull(captureResponse);
         assertEquals("00", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void cardBlockingPaymentRequest() throws ApiException {
+        BlockedCardType cardTypesBlocked = new BlockedCardType();
+        cardTypesBlocked.setCommercialDebit(true);
+        cardTypesBlocked.setConsumerDebit(true);
+
+        Transaction authorization = card.authorize(14)
+                .withCurrency("USD")
+                .withBlockedCardType(cardTypesBlocked)
+                .execute();
+
+        assertNotNull(authorization);
+        assertEquals("00", authorization.getResponseCode());
     }
 
     @Test

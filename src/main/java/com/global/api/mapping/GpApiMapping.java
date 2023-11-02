@@ -307,12 +307,26 @@ public class GpApiMapping {
 
         JsonDoc json = JsonDoc.parse(rawResponse);
 
-        apm.setRedirectUrl(json.get("payment_method").getString("redirect_url"));
-
         JsonDoc paymentMethodApm = json.get("payment_method").get("apm");
+        String redirectUrl = json.get("payment_method").has("redirect_url")
+                ? json.get("payment_method").getString("redirect_url")
+                : (paymentMethodApm.has("redirect_url")
+                ? paymentMethodApm.getString("redirect_url")
+                : null
+        );
+        apm.setRedirectUrl(redirectUrl);
 
         if (paymentMethodApm != null) {
-            apm.setProviderName(paymentMethodApm.getString("provider"));
+            if (paymentMethodApm.has("provider")) {
+                if (paymentMethodApm.get("provider") != null) {
+                    JsonDoc provider = paymentMethodApm.get("provider");
+                    apm.setProviderName(provider.getString("name"));
+                    apm.setProviderReference(provider.getString("merchant_identifier"));
+                    apm.setTimeCreatedReference(provider.getDateTime("time_created_reference"));
+                } else if (paymentMethodApm.getString("provider") != null) {
+                    apm.setProviderName(paymentMethodApm.getString("provider"));
+                }
+            }
             apm.setAck(paymentMethodApm.getString("ack"));
             apm.setSessionToken(paymentMethodApm.getString("session_token"));
             apm.setCorrelationReference(paymentMethodApm.getString("correlation_reference"));

@@ -1,6 +1,20 @@
 # Changelog
 
-## Last version - v11.1.18 (10/31/23)
+## Last version - v11.1.19 (11/02/23)
+### Enhancements:
+[UPA]:
+- StartCardTransaction.
+
+[GP-ECOM]:
+- Limit what card types to accept for payment or storage (HPP & API)
+  * https://developer.globalpay.com/hpp/card-blocking
+  * https://developer.globalpay.com/api/card-blocking
+
+[GP-API]:
+- Add a new alternative payment method, ALIPAY.
+- Tests enhancement.
+
+## v11.1.18 (10/31/23)
 ### Enhancements:
 [GP-API]:
 - Upload Merchant Documentst - https://developer.globalpay.com/api/merchants#/Upload%20Merchant%20Documentation/UploadMerchantDocumentation
@@ -918,7 +932,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.6 (02/11/21)
+## v6.2.6 (11/02/21)
 
 ### Enhancements:
 
@@ -926,7 +940,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.4 (28/10/21)
+## v6.2.4 (10/28/21)
 
 ### Enhancements:
 
@@ -935,7 +949,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.3 (14/10/21)
+## v6.2.3 (10/14/21)
 
 ### Enhancements:
 
@@ -943,15 +957,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.2.2 (08/09/21)
-
-### Enhancements:
-
-- Add Multiple merchants to GpApi
-
----
-
-## v6.2.2 (08/09/21)
+## v6.2.2 (09/08/21)
 
 ### Enhancements:
 
@@ -966,7 +972,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.94 (12/08/21)
+## v6.1.94 (08/12/21)
 
 ### Enhancements:
 
@@ -974,15 +980,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.94 (12/08/21)
-
-### Enhancements:
-
-- Tests clean up
-
----
-
-## v6.1.93 (05/08/21)
+## v6.1.93 (08/05/21)
 
 ### Enhancements:
 
@@ -995,7 +993,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.90 (13/07/21)
+## v6.1.90 (07/13/21)
 
 ### Enhancements:
 
@@ -1008,7 +1006,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.89 (01/07/21)
+## v6.1.89 (07/01/21)
 
 ### Enhancements:
 
@@ -1016,7 +1014,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.84 (17/06/21)
+## v6.1.84 (06/17/21)
 
 ### Enhancements:
 
@@ -1024,7 +1022,7 @@ GP-API: Update Java Server Demo for a Client app to support decoupled authentica
 
 ---
 
-## v6.1.83 (08/06/21)
+## v6.1.83 (06/08/21)
 
 ### Enhancements:
 

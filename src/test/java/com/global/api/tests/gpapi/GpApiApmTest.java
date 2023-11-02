@@ -4,7 +4,9 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
@@ -424,4 +426,145 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertEquals("INITIATED", response.getResponseMessage());
     }
 
+    @Test
+    public void Alipay() throws ApiException{
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setReturnUrl("https://example.com/returnUrl")
+                .setStatusUpdateUrl("https://example.com/statusUrl")
+                .setCountry("US")
+                .setAccountHolderName("Jana Doe");
+
+        Transaction response = paymentMethod
+                .charge(19.99)
+                .withCurrency("HKD")
+                .withMerchantCategory(MerchantCategory.OTHER)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(TransactionStatus.Initiated.toString().toUpperCase(),response.getResponseMessage());
+        assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
+        assertEquals(AlternativePaymentType.ALIPAY.toString(),response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+    }
+
+    @Test
+    public void Alipay_MissingReturnUrl() throws ApiException {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setStatusUpdateUrl("https://example.com/statusUrl")
+                .setCountry("US")
+                .setAccountHolderName("Jana Doe");
+
+        boolean exceptionCaught = false;
+
+        try {
+            Transaction response = paymentMethod
+                    .charge(19.99)
+                    .withCurrency("HKD")
+                    .withMerchantCategory(MerchantCategory.OTHER)
+                    .execute();
+        } catch (BuilderException exception) {
+            exceptionCaught = true;
+            assertEquals("returnUrl cannot be null for this transaction type.", exception.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void Alipay_MissingStatusUrl() throws ApiException {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setReturnUrl("https://example.com/returnUrl")
+                .setCountry("US")
+                .setAccountHolderName("Jana Doe");
+
+        boolean exceptionCaught = false;
+
+        try {
+            Transaction response = paymentMethod
+                    .charge(19.99)
+                    .withCurrency("HKD")
+                    .withMerchantCategory(MerchantCategory.OTHER)
+                    .execute();
+        } catch (BuilderException exception) {
+            exceptionCaught = true;
+            assertEquals("statusUpdateUrl cannot be null for this transaction type.", exception.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void Alipay_MissingAccountHolderName() throws ApiException {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setReturnUrl("https://example.com/returnUrl")
+                .setStatusUpdateUrl("https://example.com/statusUrl")
+                .setCountry("US");
+
+        boolean exceptionCaught = false;
+
+        try {
+            Transaction response = paymentMethod
+                    .charge(19.99)
+                    .withCurrency("HKD")
+                    .withMerchantCategory(MerchantCategory.OTHER)
+                    .execute();
+        } catch (BuilderException exception) {
+            exceptionCaught = true;
+            assertEquals("accountHolderName cannot be null for this transaction type.", exception.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void Alipay_MissingCurrency() throws ApiException {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setStatusUpdateUrl("https://example.com/statusUrl")
+                .setCountry("US")
+                .setReturnUrl("https://example.com/returnUrl")
+                .setAccountHolderName("Jana Doe");
+
+        boolean exceptionCaught = false;
+
+        try {
+            Transaction response = paymentMethod
+                    .charge(19.99)
+                    .withMerchantCategory(MerchantCategory.OTHER)
+                    .execute();
+        } catch (BuilderException exception) {
+            exceptionCaught = true;
+            assertEquals("currency cannot be null for this transaction type.", exception.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void Alipay_MissingMerchantCategory() throws ApiException {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
+                .setStatusUpdateUrl("https://example.com/statusUrl")
+                .setReturnUrl("https://example.com/returnUrl")
+                .setCountry("US")
+                .setAccountHolderName("Jana Doe");
+
+        boolean exceptionCaught = false;
+
+        try {
+            Transaction response = paymentMethod
+                    .charge(19.99)
+                    .withCurrency("HKD")
+                    .execute();
+        } catch (GatewayException exception) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following fields merchant_category", exception.getMessage());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
 }

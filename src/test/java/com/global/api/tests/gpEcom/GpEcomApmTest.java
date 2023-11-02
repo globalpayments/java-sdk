@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class GpEcomApmTest {
+public class GpEcomApmTest extends BaseGpEComTest {
 
     static final BigDecimal amount = new BigDecimal(10);
     static final String currency = "EUR";
@@ -33,16 +33,7 @@ public class GpEcomApmTest {
 
     @Before
     public void Init() throws ConfigurationException {
-        GpEcomConfig config = new GpEcomConfig();
-
-        config.setMerchantId("heartlandgpsandbox");
-        config.setAccountId("api");
-        config.setSharedSecret("secret");
-        config.setRebatePassword("rebate");
-        config.setRefundPassword("refund");
-        config.setServiceUrl("https://api.sandbox.realexpayments.com/epage-remote.cgi");
-        config.setEnableLogging(true);
-
+        GpEcomConfig config = gpEComSetup();
         ServicesContainer.configureService(config);
     }
 

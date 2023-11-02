@@ -9,6 +9,7 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.upa.Entities.Enums.UpaCardTypeFilter;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 import com.global.api.logging.RequestFileLogger;
 import org.junit.FixMethodOrder;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
 
 import static org.junit.Assert.*;
 
@@ -32,7 +34,7 @@ public class UpaGiftTests {
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
 
-        config.setRequestLogger(new RequestFileLogger("giftTests.txt"));
+        config.setRequestLogger(new RequestFileLogger("C:\\Temp\\giftTests.txt"));
 
         device = DeviceService.create(config);
         assertNotNull(device);
@@ -51,9 +53,33 @@ public class UpaGiftTests {
         assertEquals("5022440000000000007", response.getUnmaskedCardNumber());
     }
 
+    //Positive Scenarios
+    @Test
+    public void giftCardTypeFilter01() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("10.01"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .withCardTypeFilter(EnumSet.allOf(UpaCardTypeFilter.class))
+                .execute();
+
+        runBasicTests(response);
+
+    }
+
+    @Test
+    public void giftCardTypeFilter02() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("10.01"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .withCardTypeFilter(EnumSet.of(UpaCardTypeFilter.VISA,UpaCardTypeFilter.AMEX,UpaCardTypeFilter.DISCOVER))
+                .execute();
+
+        runBasicTests(response);
+
+    }
+
     public void runBasicTests(IDeviceResponse response) {
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
     }
+
 }

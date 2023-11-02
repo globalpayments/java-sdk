@@ -1,10 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.entities.billing.Bill;
-import com.global.api.entities.enums.AlternativePaymentType;
-import com.global.api.entities.enums.ChallengeRequest;
-import com.global.api.entities.enums.HostedPaymentType;
-import com.global.api.entities.enums.HostedPaymentMethods;
+import com.global.api.entities.enums.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +30,7 @@ public class HostedPaymentData {
     // Determines whether the HPP response will contain the address and contact information
     @Getter @Setter private Boolean returnAddress = false;
     @Getter @Setter private Boolean enableExemptionOptimization;
+    @Getter @Setter private BlockCardType[] blockCardTypes;
     private AlternativePaymentType[] presetPaymentMethods;
     private HashMap<String, String> supplementaryData;
     private String transactionStatusUrl;

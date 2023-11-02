@@ -5,6 +5,7 @@ import com.global.api.entities.*;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.gateways.IPaymentGateway;
@@ -37,6 +38,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
+    @Getter @Setter
+    private BlockedCardType cardTypesBlocking;
     private String cardBrandTransactionId;
     private String cardHolderLanguage;
     private BigDecimal cashBackAmount;
@@ -95,6 +98,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private HashMap<String, ArrayList<String[]>> supplementaryData;
     private BigDecimal surchargeAmount;
     @Getter @Setter private Boolean maskedDataResponse;
+    @Getter
+    private MerchantCategory merchantCategory;
     private boolean hasEmvFallbackData;
 
     private String tagData;
@@ -438,6 +443,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withBills(List<Bill> values) {
         this.bills = values;
+        return this;
+    }
+    public AuthorizationBuilder withBlockedCardType(BlockedCardType cardTypesBlocking) throws BuilderException {
+        if (cardTypesBlocking.areAllPropertiesSetToNull()) {
+            throw new BuilderException("No properties set on the object");
+        }
+        this.cardTypesBlocking = cardTypesBlocking;
+
         return this;
     }
     public AuthorizationBuilder withCashBack(BigDecimal value) {
@@ -987,6 +1000,23 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
                 .with(TransactionType.LoadReversal)
                 .check("paymentMethod").propertyOf(Credit.class, "cardType").isEqualTo("VisaReadyLink");
 
+        this.validations.of(TransactionType.Sale)
+                .with(TransactionModifier.AlternativePaymentMethod)
+                .check("paymentMethod").isNotNull()
+                .check("amount").isNotNull()
+                .check("currency").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "statusUpdateUrl").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "accountHolderName").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "returnUrl").isNotNull();
+
+        this.validations.of(TransactionType.Auth)
+                .with(TransactionModifier.AlternativePaymentMethod)
+                .check("paymentMethod").isNotNull()
+                .check("amount").isNotNull()
+                .check("currency").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "statusUpdateUrl").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "accountHolderName").isNotNull()
+                .check("paymentMethod").propertyOf(String.class, "returnUrl").isNotNull();
     }
 
 
@@ -1035,6 +1065,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withMaskedDataResponse(Boolean value) {
         this.maskedDataResponse = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withMerchantCategory(MerchantCategory merchantCategory) {
+        this.merchantCategory = merchantCategory;
         return this;
     }
 }
