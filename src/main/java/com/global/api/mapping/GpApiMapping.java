@@ -796,6 +796,21 @@ public class GpApiMapping {
                 summary.setTransactionCardType(card.getString("brand"));
             }
         }
+        if (doc.has("transaction")) {
+            JsonDoc transaction = doc.get("transaction");
+            if (transaction.has("payment_method")) {
+                JsonDoc paymentMethod = transaction.get("payment_method");
+
+                if (paymentMethod.has("card")) {
+                    JsonDoc card = paymentMethod.get("card");
+
+                    summary.setTransactionMaskedCardNumber(card.getString("number"));
+                    summary.setTransactionARN(card.getString("arn"));
+                    summary.setTransactionCardType(card.getString("brand"));
+                    summary.setTransactionBrandReference(card.getString("brand_reference"));
+                }
+            }
+        }
 
         String timeToRespondBy = doc.getString("time_to_respond_by");
         if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
