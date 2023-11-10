@@ -16,6 +16,7 @@ import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
+import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -1005,5 +1006,22 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
             assertEquals(DEPOSIT_ID, disputeSummary.getDepositReference());
         }
     }
+
+    @Test
+    public void ReportDisputeDetail_stageTime() throws ApiException {
+        String disputeId = "DIS_SAND_abcd1234";
+        String dateFormat = "dd-MM-yyyy";
+        String expectedStageDate = DateUtils.toString(DateTime.now().minusDays(7).toDate(), dateFormat);
+
+        DisputeSummary response =
+                ReportingService
+                        .disputeDetail(disputeId)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals(disputeId, response.getCaseId());
+        assertEquals(expectedStageDate, DateUtils.toString(response.getCaseStageTime().toDate(), dateFormat));
+    }
+
 
 }
