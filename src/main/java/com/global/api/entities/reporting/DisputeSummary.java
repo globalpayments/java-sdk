@@ -47,6 +47,7 @@ public class DisputeSummary {
     private String transactionAuthCode;
     private String transactionCardType;
     private String transactionMaskedCardNumber;
+    private String transactionBrandReference;
     private String reason;
     private String reasonCode;
     private String result;
