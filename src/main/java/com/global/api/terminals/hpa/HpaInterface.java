@@ -29,6 +29,7 @@ import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
+import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.utils.StringUtils;
 
 import java.math.BigDecimal;
@@ -355,9 +356,15 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     @Override
+    public ISAFResponse safDelete(String referenceNumber, String transactionNumber) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
         throw new UnsupportedTransactionException();
     }
+
 
     public IDeviceResponse ping() throws ApiException {
         throw new UnsupportedTransactionException();
@@ -391,5 +398,15 @@ public class HpaInterface implements IDeviceInterface {
 
     public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
         throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
+        throw new UnsupportedOperationException();
     }
 }

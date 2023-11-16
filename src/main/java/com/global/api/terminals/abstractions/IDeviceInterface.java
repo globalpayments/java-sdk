@@ -2,6 +2,7 @@ package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -10,8 +11,8 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
-
 import java.math.BigDecimal;
 
 public interface IDeviceInterface extends IDisposable {
@@ -40,6 +41,7 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse setStoreAndForwardMode(SafMode safMode) throws ApiException;
     IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
     TerminalManageBuilder reverse() throws ApiException;
+    ISignatureResponse getSignatureFile(SignatureData data) throws ApiException;
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;
@@ -93,7 +95,9 @@ public interface IDeviceInterface extends IDisposable {
     IBatchReportResponse getBatchDetails(String batchId) throws ApiException;
     IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException;
     IBatchReportResponse getOpenTabDetails() throws ApiException;
+    ISAFResponse safDelete(String referenceNumber,String transactionNumber) throws ApiException;
     TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException;
-
     TerminalManageBuilder refundById(BigDecimal amount) throws ApiException;
+    ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException;
+
 }

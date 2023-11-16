@@ -12,7 +12,7 @@ import java.util.*;
 @Setter
 @Getter
 public class MitcResponse extends TerminalResponse {
-    private String gatewayResponseCode;
+    private Integer gatewayResponseCode;
     private String gatewayResponseMessage;
     private String invoiceNumber;
     private String transactionId;
@@ -27,12 +27,12 @@ public class MitcResponse extends TerminalResponse {
     private String cvvResultCode;
     private String avsResultText;
     private String cashbackAmount;
-    private String authorizedAmount;
+    private BigDecimal authorizedAmount;
     private String amountOther;
-    private String tokenResponseCode;
+    private Integer tokenResponseCode;
     private String tokenResponseMsg;
     private String token;
-    private String traceNumber;
+    private Integer traceNumber;
     private String availableBalance;
     private IntegratedCircuitCard icc;
     private String currencyCode;
@@ -119,7 +119,7 @@ public class MitcResponse extends TerminalResponse {
                 break;
         }
 
-        gatewayResponseCode = statusCode.toString();
+        gatewayResponseCode = statusCode;
         gatewayResponseMessage = statusMessage;
     }
 
@@ -259,16 +259,16 @@ public class MitcResponse extends TerminalResponse {
             this.customerId= value;
         }
         if (key.equals("debit_trace_number")) {
-            this.traceNumber=value;
+            this.traceNumber=new Integer(value);
         }
         if (key.equals("tokenization_error_code")) {
-            this.tokenResponseCode=value;
+            this.tokenResponseCode= new Integer(value);
         }
         if (key.equals("tokenization_error_message")) {
             this.tokenResponseMsg= value;
         }
         if (key.equals("amount_authorized")) {
-            this.authorizedAmount=value;
+            this.authorizedAmount=new BigDecimal(value);
         }
     }
 }

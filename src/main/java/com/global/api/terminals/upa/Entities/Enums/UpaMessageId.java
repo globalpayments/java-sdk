@@ -22,5 +22,7 @@ public enum UpaMessageId {
     Restart,
     AuthCompletion,
     StartCardTransaction,
+    GetSignature,
+    DeleteSAF,
     RegisterPOS
 }

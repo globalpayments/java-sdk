@@ -15,8 +15,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class PorticoEcommerceTests {
     private CreditCardData card;
@@ -182,6 +181,9 @@ public class PorticoEcommerceTests {
     @Test
     @Ignore("Having the token invalidate known error for mobile transactions.")
     public void ecomWithWalletData_with_mobileType_04() throws ApiException {
+        Address addy = new Address();
+        addy.setPostalCode("56789");
+
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
         card.setPaymentDataSourceType(PaymentDataSourceType.GOOGLEPAYWEB);
         card.setToken("{\"signature\":\"MEYCIQCIIwGEk/CH0wEq5CwljA0F2+IGPuE201FgF3uwRvmqFwIhAIRScN6Amim13SvoPO5DudEKQ/FpCy+1PhVyTKLDlKCC\",\"protocolVersion\":\"ECv1\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"6QT/y8Qep7unsjxtv2QmoE0G+CiONgHA+SGAlizsjWbokS6mlTM63Y3XJii9544Nlj3dqWK86rsXu6bscnNZFmMdjlPRtCJSetvzP3uuuvDtlp/2bOscONy30dfwld+/XoxwwGzTepx9VeiG5j5jvuxuCGSI8cpMoT/ILLYx0rrxn1C/UBb8VU2kgbfPPsrVO2ODMtRLzpoQuOKYiKOi9DPebqkw/By4laaSD58clgRgbZ9yfsQUhiIWzEmJD4+l7J1YdZ+/6zqhsNLrV4vUmzpyx4C5FS4ZvSsXpTsCBryKotcMIBfWlsuo9u/S4kNori7fUchVj+aw6Yeik7LqG5ARAfYNFHaSkq4J9/2IbVVgeJiRAIpZ1s3qB/cm3foZHOzOtk0E6xKswj8Su2wHtx75PzSb9J01o4JGNmng7EIxejOxve6vot6HfMx2kAS0TXMFiA2F/Q\\\\u003d\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BJApLY3ZMqKxi+eVDkh59mugSa74fTLYNHxQG2wSks29bzwRRktCzyUQyyrIJM2KLonxH1eIFmDfz6ID9dK2PGs\\\\u003d\\\",\\\"tag\\\":\\\"YQnZEkEBPGcyR1p1NkLzvoA+6druD8X6ghrqGwQlyUA\\\\u003d\\\"}\"}");
@@ -190,6 +192,7 @@ public class PorticoEcommerceTests {
                 .withCurrency("USD")
                 .withInvoiceNumber("1234567890")
                 .withAllowDuplicates(true)
+                .withAddress(addy)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());

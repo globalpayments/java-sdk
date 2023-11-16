@@ -19,6 +19,13 @@ public class RequestParamFields implements IRequestSubGroup {
     String clerkId;
     Integer tokenRequest;
     String tokenValue;
+    String directMarketInvoiceNumber;
+    Integer directMarketShipMonth;
+    Integer directMarketShipDay;
+
+    private static final String DIRECT_MARKET_INVOICE_NUMBER = "directMktInvoiceNbr";
+    private static final String DIRECT_MARKET_SHIP_MONTH = "directMktShipMonth";
+    private static final String DIRECT_MARKET_SHIP_DAY = "directMktShipDay";
 
     public void setParams(TerminalAuthBuilder builder) {
         if (builder.getClerkId() != null) {
@@ -51,6 +58,18 @@ public class RequestParamFields implements IRequestSubGroup {
                 this.acquisitionTypes.add(UpaAcquisitionType.Scan);
                 this.acquisitionTypes.add(UpaAcquisitionType.Swipe);
             }
+        }
+
+        if (builder.getDirectMarketInvoiceNumber() != null){
+            this.directMarketInvoiceNumber = builder.getDirectMarketInvoiceNumber();
+        }
+
+        if (builder.getDirectMarketShipMonth() != null){
+            this.directMarketShipMonth = builder.getDirectMarketShipMonth();
+        }
+
+        if (builder.getDirectMarketShipDay() != null){
+            this.directMarketShipDay = builder.getDirectMarketShipDay();
         }
     }
 
@@ -108,6 +127,21 @@ public class RequestParamFields implements IRequestSubGroup {
             acquisitionTypesString = acquisitionTypesString.substring(0, acquisitionTypesString.length() - 1);
 
             params.set("acquisitionTypes", acquisitionTypesString);
+            hasContents = true;
+        }
+
+        if (directMarketInvoiceNumber != null){
+            params.set(DIRECT_MARKET_INVOICE_NUMBER,directMarketInvoiceNumber);
+            hasContents = true;
+        }
+
+        if (directMarketShipMonth != null){
+            params.set(DIRECT_MARKET_SHIP_MONTH,directMarketShipMonth);
+            hasContents = true;
+        }
+
+        if (directMarketShipDay != null){
+            params.set(DIRECT_MARKET_SHIP_DAY,directMarketShipDay);
             hasContents = true;
         }
         

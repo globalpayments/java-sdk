@@ -14,6 +14,7 @@ import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
+import com.global.api.terminals.upa.subgroups.SignatureData;
 
 import java.math.BigDecimal;
 
@@ -37,6 +38,12 @@ public class GeniusInterface implements IDeviceInterface {
     public MitcManageBuilder refundById(BigDecimal amount) throws ApiException {
         return new MitcManageBuilder(TransactionType.Sale,null,TransactionType.Refund).withAmount(amount);
     }
+
+    @Override
+    public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
         return this.controller.processReport(transactionType, transactionId, transactionIdType);
     }
@@ -113,7 +120,7 @@ public class GeniusInterface implements IDeviceInterface {
 
     @Override
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
-        return null;
+        throw new UnsupportedTransactionException();
     }
 
     @Override
@@ -282,6 +289,12 @@ public class GeniusInterface implements IDeviceInterface {
     public TerminalManageBuilder reverse() throws ApiException {
         throw new UnsupportedTransactionException();
     }
+
+    @Override
+    public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     @Override
     public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
         throw new UnsupportedTransactionException();
@@ -316,6 +329,10 @@ public class GeniusInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    @Override
+    public ISAFResponse safDelete(String referenceNumber, String transactionNumber) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
     @Override
     public void dispose() {
 

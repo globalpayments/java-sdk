@@ -1,6 +1,24 @@
 # Changelog
 
-## Last version - v11.1.19 (11/02/23)
+## v11.1.20 (11/16/23)
+### Enhancements
+[UPA]
+- Add Signature Data
+- GetSAF Report
+- DeleteSAF
+- Removed IS HSAFSA parameter
+- Added Ref/Saf reference number
+- Incremental Auth addition.
+
+[NTS Phase1 Issue]
+- rearranged product 6 & 7 when quantity length is more than 1 for WEX (Issue -10233).
+-Portico:
+-bug fixes for Batch close
+
+[Portico]:
+- Allow address info with digital wallet transactions.
+
+## v11.1.19 (11/02/23)
 ### Enhancements:
 [UPA]:
 - StartCardTransaction.

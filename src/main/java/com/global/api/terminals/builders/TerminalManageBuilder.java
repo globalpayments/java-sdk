@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.upa.Entities.Lodging;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -34,6 +35,10 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
 
     @Getter
     protected String clientTransactionId;
+    @Getter
+    private Lodging lodging;
+    @Getter
+    private BigDecimal preAuthAmount;
 
     public BigDecimal getAmount() {
         return amount;
@@ -129,6 +134,16 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
 
     public TerminalManageBuilder withClientTransactionId(String value) {
         this.clientTransactionId = value;
+        return this;
+    }
+
+    public TerminalManageBuilder withLodging(Lodging lodging){
+        this.lodging = lodging;
+        return this;
+    }
+
+    public TerminalManageBuilder withPreAuthAmount(BigDecimal preAuthAmount){
+        this.preAuthAmount = preAuthAmount;
         return this;
     }
 

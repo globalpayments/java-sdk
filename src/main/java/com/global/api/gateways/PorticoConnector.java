@@ -216,9 +216,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         if (block1.has("CardData")) {
                             block1.remove("CardData");
                         }
-                        if (block1.has("CardHolderData")) {
-                            block1.remove("CardHolderData");
-                        }
                     }
                 }
 
@@ -478,7 +475,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         TransactionModifier modifier = builder.getTransactionModifier();
         // payment method
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
-        PaymentMethodType paymentMethodType = paymentMethod.getPaymentMethodType();
         if (paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             paymentMethod = reference.getOriginalPaymentMethod();
@@ -520,7 +516,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
             // reversal
-            if (type.equals(TransactionType.Reversal) || ((paymentMethodType != null) && paymentType.equals(PaymentMethodType.ACH))) {
+            if (type.equals(TransactionType.Reversal) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
 
@@ -571,7 +567,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(cpc, "TaxAmt", cd.getTaxAmount());
                 }
 
-                if (modifier.equals(TransactionModifier.Level_III) && (paymentMethodType != null) && (paymentMethodType.equals(PaymentMethodType.Credit))) {
+                if (modifier.equals(TransactionModifier.Level_III) && (paymentType != null) && (paymentType.equals(PaymentMethodType.Credit))) {
                     Element cdc = et.subElement(root, "CorporateData");
                     boolean isVisa = cardType.equals("Visa");
                     Element data = et.subElement(cdc, isVisa ? "Visa" : "MC");

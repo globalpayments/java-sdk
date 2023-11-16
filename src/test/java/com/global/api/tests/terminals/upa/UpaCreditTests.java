@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.upa;
 
 import java.math.BigDecimal;
 
+import com.global.api.entities.AutoSubstantiation;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.enums.StoredCredentialInitiator;
@@ -11,9 +12,10 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
-import com.global.api.logging.RequestFileLogger;
+import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -27,7 +29,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.198");
+        config.setIpAddress("192.168.1.130");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -44,7 +46,7 @@ public class UpaCreditTests {
     @Test
     public void creditSaleSwipe() throws ApiException
     {
-        TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
+        TerminalResponse response = device.creditSale(new BigDecimal("18.01"))
             .withGratuity(new BigDecimal("0.00"))
             .execute();
 
@@ -167,6 +169,147 @@ public class UpaCreditTests {
 
         assertNotNull(response2);
         assertEquals("00", response2.getResponseCode());
+    }
+
+    @Test
+    public void preAuths_And_IncrementalAuth() throws ApiException {
+        Lodging lodging = new Lodging();
+        lodging.setCheckInDate(DateTime.now().toString("MMddyyyy"));
+        lodging.setDailyRate(new BigDecimal(12.5));
+        lodging.setFolioNumber(10);
+        lodging.setStayDuration(30);
+
+        TerminalResponse preAuthResponse = device.creditAuth(new BigDecimal("10.00"))
+                .withInvoiceNumber("12345")
+                .withLodging(lodging)
+                .withTokenRequest(1)
+                .withTokenValue("test")
+                .withDirectMarketInvoiceNumber("12345")
+                .withDirectMarketShipDay(12)
+                .withDirectMarketShipMonth(10)
+                .execute();
+
+        assertNotNull(preAuthResponse);
+        assertEquals("00", preAuthResponse.getDeviceResponseCode());
+        assertTrue(preAuthResponse.getStatus().equalsIgnoreCase("Success"));
+
+        TerminalResponse incrementResponse = device.creditAuth(new BigDecimal("10.00"))
+                .withPreAuthAmount(preAuthResponse.getTransactionAmount())
+
+                .withLodging(lodging)
+                .withTokenRequest(1)
+                .withTokenValue("test")
+                .withReferenceNumber(preAuthResponse.getTransactionId())
+                .execute();
+
+        assertNotNull(incrementResponse);
+        assertEquals("00", incrementResponse.getDeviceResponseCode());
+
+        String transactionId= preAuthResponse.getTransactionId();
+
+        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("20.00"))
+                .withTerminalRefNumber(preAuthResponse.getTransactionId())
+                .withTransactionId(transactionId)
+                .execute();
+
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getDeviceResponseCode());
+    }
+
+    @Test
+    public void preAuths_capture() throws ApiException {
+        Lodging lodging = new Lodging();
+        lodging.setCheckInDate(DateTime.now().toString("MMddyyyy"));
+        lodging.setDailyRate(new BigDecimal(12.50));
+        lodging.setFolioNumber(10);
+        lodging.setStayDuration(30);
+
+        TerminalResponse preAuthResponse = device.creditAuth(new BigDecimal("10.00"))
+                .withInvoiceNumber("12345")
+                .withLodging(lodging)
+                .withTokenRequest(1)
+                .withTokenValue("test")
+                .withDirectMarketInvoiceNumber("12345")
+                .withDirectMarketShipDay(12)
+                .withDirectMarketShipMonth(10)
+                .execute();
+
+        assertNotNull(preAuthResponse);
+        assertEquals("00", preAuthResponse.getDeviceResponseCode());
+        assertTrue(preAuthResponse.getStatus().equalsIgnoreCase("Success"));
+
+        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("15"))
+                .withReferenceNumber(preAuthResponse.getTransactionId())
+                .execute();
+
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getResponseCode());
+
+    }
+    @Test
+    public void creditSaleSwipe_withoutHSAFSA() throws ApiException
+    {
+        AutoSubstantiation substantiation = new AutoSubstantiation();
+        substantiation.setPrescriptionSubTotal(new BigDecimal(10));
+        substantiation.setVisionSubTotal(new BigDecimal(10));
+        TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
+                .withGratuity(new BigDecimal("0.00"))
+                .withAutoSubstantiation(substantiation)
+                .execute();
+
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
+    }
+
+    @Test
+    public void TipAdjust_AddReferenceNo() throws ApiException
+    {
+        TerminalResponse saleResponse = device.creditSale(new BigDecimal("10.50"))
+                .execute();
+
+        runBasicTests(saleResponse);
+
+        TerminalResponse tipAdjustResponse = device.tipAdjust(new BigDecimal("1.50"))
+                .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
+                .execute();
+
+        runBasicTests(tipAdjustResponse);
+        assertEquals(new BigDecimal("1.50"), tipAdjustResponse.getTipAmount());
+        assertEquals(new BigDecimal("12.00"), tipAdjustResponse.getTransactionAmount());
+    }
+
+    @Test
+    public void preAuthIncrementCompletion() throws ApiException {
+        TerminalResponse preAuthResponse = device.creditAuth(new BigDecimal(100))
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,"transId")
+                .withClerkId(123)
+                .execute();
+        assertNotNull(preAuthResponse);
+        assertEquals("00",preAuthResponse.getResponseCode());
+
+        Lodging lodging = new Lodging();
+        lodging.setCheckInDate(DateTime.now().toString("MMddyyyy"));
+        lodging.setDailyRate(new BigDecimal(12.50));
+        lodging.setFolioNumber(10);
+        lodging.setStayDuration(30);
+
+        TerminalResponse incrementalAuthResponse = device.creditAuth(new BigDecimal(50))
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,"transId")
+                .withLodging(lodging)
+                .withPreAuthAmount(preAuthResponse.getTransactionAmount())
+                .withReferenceNumber(preAuthResponse.getTerminalRefNumber())
+                .withClerkId(123)
+                .execute();
+        assertNotNull(incrementalAuthResponse);
+        assertEquals("00",incrementalAuthResponse.getResponseCode());
+
+        TerminalResponse completionResponse = device.creditCapture(new BigDecimal(145))
+                .withTransactionId(preAuthResponse.getTransactionId())
+                .withPreAuthAmount(preAuthResponse.getTransactionAmount())
+                .withTerminalRefNumber(preAuthResponse.getTerminalRefNumber())
+                .execute();
+        assertNotNull(completionResponse);
+        assertEquals("00",completionResponse);
     }
 
     public void runBasicTests(IDeviceResponse response) {

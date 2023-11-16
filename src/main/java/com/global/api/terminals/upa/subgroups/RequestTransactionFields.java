@@ -7,6 +7,7 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.utils.JsonDoc;
+import com.global.api.utils.StringUtils;
 
 public class RequestTransactionFields {
     private String amount;
@@ -22,6 +23,9 @@ public class RequestTransactionFields {
     private String terminalRefNumber;
     private String gatewayRefNumber;
     private String giftTransactionType;
+    private String preAuthAmount;
+
+    private static final String PREAUTH_AMOUNT = "preAuthAmount";
 
     public void setParams(TerminalManageBuilder builder) {
         if (builder.getTerminalRefNumber() != null) {
@@ -32,13 +36,17 @@ public class RequestTransactionFields {
             this.tipAmount = builder.getGratuity();
         }
 
-        if (builder.getTransactionId() != null) {
+        if (builder.getTransactionId() != null && !builder.getTransactionType().equals(TransactionType.Capture)) {
             this.gatewayRefNumber = builder.getTransactionId();
         }
 
         if (builder.getAmount() != null) {
-            this.amount = builder.getAmount().toString();
+            this.amount = StringUtils.toCurrencyString(builder.getAmount());
         }
+        if (builder.getPreAuthAmount() != null) {
+            this.preAuthAmount = StringUtils.toCurrencyString(builder.getPreAuthAmount());
+        }
+
     }
 
     public void setParams(TerminalAuthBuilder builder) {
@@ -46,7 +54,7 @@ public class RequestTransactionFields {
             if (builder.getTransactionType() == TransactionType.Refund || builder.getTransactionType() == TransactionType.Activate) {
                 this.totalAmount = builder.getAmount().toString();
             } else if (builder.getTransactionType() == TransactionType.Auth) {
-                this.amount = builder.getAmount().toString();
+                this.amount = StringUtils.toCurrencyString(builder.getAmount());
             } else {
                 this.baseAmount = builder.getAmount().toString();
             }
@@ -73,7 +81,7 @@ public class RequestTransactionFields {
         }
 
         if (builder.getReferenceNumber() != null) {
-            this.gatewayRefNumber = builder.getReferenceNumber();
+            this.terminalRefNumber = builder.getReferenceNumber();
         }
 
         if (builder.getTransactionId() != null) {
@@ -87,6 +95,10 @@ public class RequestTransactionFields {
         if (builder.getGiftTransactionType() != null) {
             this.giftTransactionType = builder.getGiftTransactionType().name();
         }
+
+        if (builder.getPreAuthAmount() != null) {
+            this.preAuthAmount = builder.getPreAuthAmount().toString();
+        }
     }
 
     public JsonDoc getElementsJson() {
@@ -98,8 +110,8 @@ public class RequestTransactionFields {
             hasContents = true;
         }
 
-        if (terminalRefNumber != null) {
-            params.set("tranNo", terminalRefNumber);
+        if (gatewayRefNumber != null) {
+            params.set("tranNo", gatewayRefNumber);
             hasContents = true;
         }
 
@@ -138,29 +150,28 @@ public class RequestTransactionFields {
             hasContents = true;
         }
 
-        if (gatewayRefNumber != null) {
-            params.set("referenceNumber", gatewayRefNumber);
+        if (terminalRefNumber != null) {
+            params.set("referenceNumber", terminalRefNumber);
             hasContents = true;
         }
 
         if (autoSubstantiation != null) {
-            params.set("cardIsHSAFSA", "1");
             hasContents = true;
 
             if (!autoSubstantiation.getPrescriptionSubTotal().equals(new BigDecimal("0"))) {
-                params.set("prescriptionAmount", autoSubstantiation.getPrescriptionSubTotal().toString());
+                params.set("prescriptionAmount", StringUtils.toCurrencyString(autoSubstantiation.getPrescriptionSubTotal()));
             }
 
             if (!autoSubstantiation.getVisionSubTotal().equals(new BigDecimal("0"))) {
-                params.set("visionOpticalAmount", autoSubstantiation.getVisionSubTotal().toString());
+                params.set("visionOpticalAmount", StringUtils.toCurrencyString(autoSubstantiation.getVisionSubTotal()));
             }
 
             if (!autoSubstantiation.getDentalSubTotal().equals(new BigDecimal("0"))) {
-                params.set("dentalAmount", autoSubstantiation.getDentalSubTotal().toString());
+                params.set("dentalAmount", StringUtils.toCurrencyString(autoSubstantiation.getDentalSubTotal()));
             }
 
             if (!autoSubstantiation.getClinicSubTotal().equals(new BigDecimal("0"))) {
-                params.set("clinicAmount", autoSubstantiation.getClinicSubTotal().toString());
+                params.set("clinicAmount", StringUtils.toCurrencyString(autoSubstantiation.getClinicSubTotal()));
             }
         }
 
@@ -170,6 +181,10 @@ public class RequestTransactionFields {
 
         if (giftTransactionType != null) {
             params.set("transactionType", giftTransactionType);
+        }
+
+        if (preAuthAmount != null) {
+            params.set(PREAUTH_AMOUNT, preAuthAmount);
         }
 
         return hasContents ? params : null;

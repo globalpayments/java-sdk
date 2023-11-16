@@ -12,6 +12,9 @@ import java.util.Date;
 @Getter
 @Setter
 public class TransactionSummary {
+    private String appName;
+    private BigDecimal availableBalance;
+    private String approvalCode;
     private String accountDataSource;
     private BigDecimal adjustmentAmount;
     private String adjustmentCurrency;
@@ -88,6 +91,7 @@ public class TransactionSummary {
     private String originalTransactionId;
     private String paymentMethodKey;
     private String paymentType;
+    private String pinVerified;
     private String poNumber;
     private String recurringDataCode;
     private String referenceNumber;
@@ -103,6 +107,7 @@ public class TransactionSummary {
     private BigDecimal surchargeAmount;
     private BigDecimal taxAmount;
     private String taxType;
+    private String tranNo;
     private String terminalId;
     private String tokenPanLastFour;
     private DateTime transactionDate;
@@ -129,5 +134,10 @@ public class TransactionSummary {
     private String paymentPurposeCode;
     private String verificationCode;
     private BigDecimal batchAmount;
+    private String safTotal;
+    private String totalAmount;
+    private String safReferenceNumber;
+    private String cardAcquisition;
+    private String transactionTime;
     private String hasLevelIII;
 }

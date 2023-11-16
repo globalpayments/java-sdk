@@ -10,6 +10,7 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.terminals.upa.Entities.Enums.UpaCardTypeFilter;
 import lombok.Getter;
 
@@ -46,6 +47,16 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     @Getter
     private String clientTransactionId;
     private TransactionType giftTransactionType;
+    @Getter
+    private String directMarketInvoiceNumber;
+    @Getter
+    private Integer directMarketShipMonth;
+    @Getter
+    private Integer directMarketShipDay;
+    @Getter
+    private Lodging lodging;
+    @Getter
+    private BigDecimal preAuthAmount;
     @Getter
     private EnumSet<UpaCardTypeFilter> cardTypeFilter;
 
@@ -249,6 +260,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 
     public TerminalAuthBuilder withGiftTransactionType(TransactionType value) {
         this.giftTransactionType = value;
+        return this;
+    }
+    public TerminalAuthBuilder withDirectMarketInvoiceNumber(String directMarketInvoiceNumber) {
+        this.directMarketInvoiceNumber = directMarketInvoiceNumber;
+        return this;
+    }
+    public TerminalAuthBuilder withDirectMarketShipMonth(Integer directMarketShipMonth) {
+        this.directMarketShipMonth = directMarketShipMonth;
+        return this;
+    }
+    public TerminalAuthBuilder withDirectMarketShipDay(Integer directMarketShipDay) {
+        this.directMarketShipDay = directMarketShipDay;
+        return this;
+    }
+    public TerminalAuthBuilder withLodging(Lodging lodging){
+        this.lodging = lodging;
+        return this;
+    }
+    public TerminalAuthBuilder withPreAuthAmount(BigDecimal preAuthAmount){
+        this.preAuthAmount = preAuthAmount;
         return this;
     }
 

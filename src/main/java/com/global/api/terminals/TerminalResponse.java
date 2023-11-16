@@ -64,6 +64,103 @@ public abstract class TerminalResponse implements IDeviceResponse {
     @Setter
     protected String errorCode;
     protected String unmaskedCardNumber;
+    @Getter @Setter
+    protected String applicationIdentifier;
+    @Getter @Setter
+    protected String transactionCurrencyCode;
+    @Getter @Setter
+    protected String sequenceNo;
+    @Getter @Setter
+    protected String applicationInterchangeProfile;
+    @Getter @Setter
+    protected String dedicatedFileName;
+    @Getter @Setter
+    protected String authorizedResponse;
+    @Getter @Setter
+    protected String terminalVerificationResult;
+    @Getter @Setter
+    protected String transactionPin;
+    @Getter @Setter
+    protected String transactionDate;
+    @Getter @Setter
+    protected String transactionStatusInfo;
+    @Getter @Setter
+    protected String emvTransactionType;
+    @Getter @Setter
+    protected String amountAuthorized;
+    @Getter @Setter
+    protected String otherAmount;
+    @Getter @Setter
+    protected String applicationVersionNumber;
+    @Getter @Setter
+    protected String issuerActionCode;
+    @Getter @Setter
+    protected String iacDenial;
+    @Getter @Setter
+    protected String iacOnline;
+    @Getter @Setter
+    protected String issuerApplicationData;
+    @Getter @Setter
+    protected String countryCode;
+    @Getter @Setter
+    protected String serialNo;
+    @Getter @Setter
+    protected Integer cryptogramInfoData;
+    @Getter @Setter
+    protected String terminalCapabilities;
+    @Getter @Setter
+    protected String cvmResult;
+    @Getter @Setter
+    protected String terminalType;
+    @Getter @Setter
+    protected String applicationTransactionCounter;
+    @Getter @Setter
+    protected String unpredictableNumber;
+    @Getter @Setter
+    protected String additionalTerminalCapabilities;
+    @Getter @Setter
+    protected String transactionSequenceCounter;
+    @Getter @Setter
+    protected String tacDefault;
+    @Getter @Setter
+    protected String tacDenial;
+    @Getter @Setter
+    protected String tacOnline;
+
+    //Host
+    @Getter @Setter
+    protected String responsesId;
+    @Getter @Setter
+    protected String responseDateTime;
+    @Getter @Setter
+    protected Integer gatewayResponsCode;
+    @Getter @Setter
+    protected String gatewayResponseMessage;
+    @Getter @Setter
+    protected BigDecimal authorizeAmount;
+    @Getter @Setter
+    protected String transactionDescriptor;
+    @Getter @Setter
+    protected String recurringDataCode;
+    @Getter @Setter
+    protected String cavvResultCode;
+    @Getter @Setter
+    protected Integer traceNo;
+    @Getter @Setter
+    protected String tokenResponsCode;
+    protected String traceNumber;
+    @Getter @Setter
+    protected String tokenResponseMessage;
+    @Getter @Setter
+    protected String customHash;
+
+    //DCC
+    @Getter @Setter
+    protected BigDecimal exchangeRate;
+    @Getter @Setter
+    protected BigDecimal markUp;
+    @Getter @Setter
+    protected String transactionCurrency;
 
     public String getStatus() {
         return status;
