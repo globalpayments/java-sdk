@@ -2,13 +2,9 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.DateParsingUtils;
-import com.global.api.gateways.GpApiConnector;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DateParsingUtilsTest extends BaseGpApiTest {
 
@@ -33,7 +29,7 @@ public class DateParsingUtilsTest extends BaseGpApiTest {
     }
 
     @Test
-    public void testNonValidValueForOldPattern_9() throws GatewayException {
+    public void testNonValidValueForOldPattern_9() {
         try {
             // old wrong pattern 9: // "yyyy-mm-dd"
             DateParsingUtils.parseDateTime("2023-59-01");
@@ -108,5 +104,5 @@ public class DateParsingUtilsTest extends BaseGpApiTest {
         DateTime parsedResult = DateParsingUtils.parseDateTime("2023-07-20T18:22:49.0710761");
         Assert.assertEquals(new DateTime(2023, 7, 20, 18, 22, 49, 71), parsedResult);
     }
-    
+
 }

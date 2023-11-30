@@ -18,8 +18,7 @@ import static com.global.api.entities.enums.AlternativePaymentType.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class GpEcomApmTest extends BaseGpEComTest {
 
@@ -90,6 +89,7 @@ public class GpEcomApmTest extends BaseGpEComTest {
 
     @Test
     public void testApmWithoutReturnUrl() throws ApiException {
+        boolean errorFound = false;
         try {
             new AlternativePaymentMethod()
                     .setAlternativePaymentMethodType(SOFORTUBERWEISUNG)
@@ -101,13 +101,17 @@ public class GpEcomApmTest extends BaseGpEComTest {
                     .withCurrency(currency)
                     .withDescription(chargeDescription)
                     .execute();
-        } catch (GatewayException ex) {
-            assertThat(ex.getMessage(), containsString("does not conform to the schema"));
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("returnUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
         }
     }
 
     @Test
     public void testApmWithoutStatusUpdateUrl() throws ApiException {
+        boolean errorFound = false;
         try {
             new AlternativePaymentMethod()
                     .setAlternativePaymentMethodType(SOFORTUBERWEISUNG)
@@ -119,8 +123,11 @@ public class GpEcomApmTest extends BaseGpEComTest {
                     .withCurrency(currency)
                     .withDescription(chargeDescription)
                     .execute();
-        } catch (GatewayException ex) {
-            assertThat(ex.getMessage(), containsString("does not conform to the schema"));
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
         }
     }
 

@@ -3,6 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
+import com.global.api.entities.StoredCredential;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -495,6 +496,103 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
         assertNull(response.getPayerDetails());
+    }
+
+    @Test
+    public void CreditSale_WithStoredCredentials() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        Address address = new Address();
+        address.setStreetAddress1("123 Main St.");
+        address.setCity("Downtown");
+        address.setState("NJ");
+        address.setPostalCode("12345");
+
+        Transaction response =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .withAddress(address)
+                        .withStoredCredential(storedCredential)
+                        .execute();
+        assertTransactionResponse(response, TransactionStatus.Captured);
+        assertEquals(amount, response.getBalanceAmount());
+        assertNull(response.getPayerDetails());
+    }
+
+    @Test
+    public void CreditSale_MissingStoredCredentialInitiator() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withStoredCredential(storedCredential)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields initiator, model and sequence.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40007", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditSale_MissingStoredCredentialType() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withStoredCredential(storedCredential)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields initiator, model and sequence.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40007", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditSale_MissingStoredCredentialSequence() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setType(StoredCredentialType.Recurring);
+
+        boolean exceptionCaught = false;
+        try {
+            card
+                    .charge(amount)
+                    .withCurrency(currency)
+                    .withStoredCredential(storedCredential)
+                    .execute();
+        } catch (GatewayException ex) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields initiator, model and sequence.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40007", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
     }
 
     @Test

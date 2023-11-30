@@ -38,9 +38,11 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder authorize(BigDecimal amount) {
         return authorize(amount, false);
     }
+
     public AuthorizationBuilder authorize(double amount) {
         return authorize(new BigDecimal(amount));
     }
+
     public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
         return new AuthorizationBuilder(TransactionType.Auth, this)
                 .withAmount(amount != null ? amount : threeDSecure != null ? threeDSecure.getAmount() : null)
@@ -68,6 +70,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder balanceInquiry() {
         return balanceInquiry(null);
     }
+
     public AuthorizationBuilder balanceInquiry(InquiryType inquiry) {
         return new AuthorizationBuilder(TransactionType.Balance, this).withBalanceInquiryType(inquiry);
     }
@@ -75,6 +78,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder loadReversal() {
         return loadReversal(null);
     }
+
     public AuthorizationBuilder loadReversal(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.LoadReversal, this).withAmount(amount);
     }
@@ -83,6 +87,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder refund(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Refund, this).withAmount(amount);
     }
+
     public AuthorizationBuilder refund(double amount) {
         return refund(new BigDecimal(amount));
     }
@@ -91,9 +96,11 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     public AuthorizationBuilder reverse(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Reversal, this).withAmount(amount);
     }
+
     public AuthorizationBuilder reverse(double amount) {
         return reverse(new BigDecimal(amount));
     }
+
     public AuthorizationBuilder verify() {
         return new AuthorizationBuilder(TransactionType.Verify, this);
     }
@@ -203,12 +210,24 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
 
         return true;
     }
+
     public AuthorizationBuilder fileAction() {
         return new AuthorizationBuilder(TransactionType.FileAction, this);
     }
 
     public AuthorizationBuilder cashAdvanced(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.CashAdvance, this).withAmount(amount);
+    }
+
+    public Transaction getTokenInformation() throws ApiException {
+        return getTokenInformation("default");
+    }
+
+    public Transaction getTokenInformation(String configName) throws ApiException {
+        if(StringUtils.isNullOrEmpty(configName)) {
+            configName = "default";
+        }
+        return new AuthorizationBuilder(TransactionType.GetTokenInfo, this).execute(configName);
     }
 
 }

@@ -8,7 +8,6 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FraudService;
@@ -154,7 +153,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
         source.add(AuthenticationSource.MerchantInitiated);
         source.add(AuthenticationSource.MobileSDK);
 
-        for (AuthenticationSource item : source){
+        for (AuthenticationSource item : source) {
 
             RiskAssessment response = FraudService.RiskAssess(card)
                     .WithAmount(Amount)
@@ -343,7 +342,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
             errorFound = true;
             assertEquals("Status Code: 400 - Request expects the following field browser_data.accept_header", e.getMessage());
             assertEquals("40005", e.getResponseText());
-        }finally {
+        } finally {
             assertTrue(errorFound);
         }
     }

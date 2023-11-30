@@ -681,7 +681,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
         assertNotNull(resultTransactions);
 
-        if (resultTransactions.results.size() > 0) {
+        if (!resultTransactions.results.isEmpty()) {
 
             int random = new Random().nextInt(resultTransactions.results.size());
 

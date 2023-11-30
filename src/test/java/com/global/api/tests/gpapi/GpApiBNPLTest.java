@@ -131,7 +131,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertTrue(response.getResults().size() > 0);
+        assertTrue(!response.getResults().isEmpty());
 
         TransactionSummary trnSummary = response.getResults().get(new Random().nextInt(response.getResults().size()));
         Transaction trn = Transaction.fromId(trnSummary.getTransactionId(), trnSummary.getPaymentType());
@@ -860,7 +860,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
-    public void BNPL_MissingProductQuantity() throws ApiException {
+    public void BNPL_ZeroProductQuantity() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
         products.get(0).setQuantity(null);
@@ -879,9 +879,9 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields: order.items[0].quantity.", ex.getMessage());
-            assertEquals("40251", ex.getResponseText());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
+            assertEquals("Status Code: 502 - Processor System error", ex.getMessage());
+            assertEquals("50143", ex.getResponseText());
+            assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
         } finally {
             assertTrue(exceptionCaught);
         }

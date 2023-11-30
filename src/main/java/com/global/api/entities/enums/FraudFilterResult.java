@@ -7,8 +7,8 @@ public enum FraudFilterResult implements IStringConstant {
     BLOCK("REJECTED"),
     NOT_EXECUTED("NOT_EXECUTED"),
     ERROR("ERROR"),
-    RELEASE_SUCCESSFUL("RELEASE_SUCCESSFULL"),
-    HOLD_SUCCESSFUL("HOLD_SUCCESSFULL");
+    RELEASE_SUCCESSFUL("RELEASE_SUCCESSFUL"),
+    HOLD_SUCCESSFUL("HOLD_SUCCESSFUL");
 
     String value;
     FraudFilterResult(String value) {this.value = value;}

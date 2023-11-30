@@ -5,6 +5,7 @@ import com.global.api.entities.enums.IStringConstant;
 public enum ProductCodeType implements IStringConstant{
 	
 	NoPrompt("0"),
+	NoPromptMCFleet("5"),
 	IdnumberAndOdometerOrVehicleId("1"),
 	VehicleNumberAndOdometerOrUserId("2"),
 	DriverNumberAndOdometerOrDriverId("3"),

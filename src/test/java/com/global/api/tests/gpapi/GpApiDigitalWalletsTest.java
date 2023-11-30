@@ -25,9 +25,9 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
     private final CreditCardData card;
     private final String clickToPayToken = "8144735251653223601";
     private final String googlePayToken = "{\n" +
-            "    \"signature\": \"MEQCIDoMJc0jcHAzk846Y7BT6XVN/YrwypNtShE+nF/XWMiAAiAd0nhStaWT0Fw3mWjJXPRy4J+GXhdm5WOjlgEu9DS7pQ\\u003d\\u003d\",\n" +
+            "    \"signature\": \"MEQCICeHhPSrVhVghzBUwtQcBZq9ed1+oe8wcInjOG5TciXeAiBmw35LvnI0POMW5p+oxisD2ImtZ9HmyKcYIYUX4kINtw\\u003d\\u003d\",\n" +
             "    \"protocolVersion\": \"ECv1\",\n" +
-            "    \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"c9G2ljhM/OK3IrJapYrVYCi/HUQOX9IZfPE7mSLhxe26R/fpCkXF8i0j9DhM7kttoQBa1KmzNwAP4kaIR9XQB/IZsnZ0YllS+Jo0KYmOoLfcW/OUFYzRXZGbvJZRts7PP4U/NPXDiSDQM7ACna7Nca9o5UBIrY4ZL8MLiIbdBI8BSlCdJYqw4kyXibY2C5QMG+2lzF3fn4kSsz2odC8c9BuW/2D2Rz2Lau9awUMtQUpIHI4W6VU8t1FtDWppWzPUbD0CBw88ZlBOdHTgu2OJE5bR/+NXz99Rn7h3hmqnnMu/0JNxryvZr+Ed1cmLqoVbRf+3ik5WVUsyOcQWrouH8vjOTVq208o8MbSA1wX0LK4gAWVnyRpPsUkz5KJOKvKWIzT3VlV7m9BxlVc7E4RQe7/QJO5LKVcV5cotKXdGK9YINLSyIwkLRcKR9qQ92Q4z0h4g\\\",\\\"ephemeralPublicKey\\\":\\\"BPUg4L7vjs5ucmOzR+GNmLxWp1LnEsFV/Bc6WQY6qgtyxT4HFnziN/3nkbspF0l4auZX1UjCV1scYjE910Lp2TU\\\\u003d\\\",\\\"tag\\\":\\\"x0md5a9GwLxoCWrxQYS4jJfPjuQv9ajrJMd5zNjbd+A\\\\u003d\\\"}\"\n" +
+            "    \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"E+gmqwjr4RZUMA0iQKJJS69k+kQirnRQGf4F0OglGXNcXnBCHDAmgKyjFxTS8l0pRkgG6f6qvgrTDPL6m+XxOIAQ9mh6yM2MerybNYaPUuVZl2MGBe1eckVg3oYYsuIOLkF6Qrq/+fpZhcXZPQbsAgx0dt1IDOE3XL245aIrxHED01gFLZQE2eizQIXVtbU4eJahysBjzDu9nUMhHKE3eAHW+ltuyFtB4jGTUKRJHM5x2YsXgyy5hzY9zjiPYc7uNNSCWQUUSYdVY0dzT9DUO5jvl0YhsZVvjHgSCRKEsBisDbbhs3pkUvCQnPZYSqflTl/EendCyUDq8PgtVSNYdyH+ByAe67kOMbiQ2LTXu8Nry0/UUvTdc8RdRR3aC1LpKf2KlEFiYdbYTi1IiGiK16cJHqrbOyjXXzqWp878jn2hSO3/ONAdshacHGrFWw58BHH9\\\",\\\"ephemeralPublicKey\\\":\\\"BJlb3xtHbQ/7thj/4D+eXls+fbjewUw1EWEc6diZOvkeIBPvUbbTCzHo448t6sEuffCZ9u+rqVWnA2p6djT+1h8\\\\u003d\\\",\\\"tag\\\":\\\"CSB0z2fhjaY5KjRnh1k0G5X2HiTxLTdXUYTiflKm7So\\\\u003d\\\"}\"\n" +
             "}";
 
     public GpApiDigitalWalletsTest() throws ApiException {

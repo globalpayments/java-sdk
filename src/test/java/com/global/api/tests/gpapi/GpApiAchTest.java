@@ -9,7 +9,6 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.gpApi.entities.FundsAccountDetails;
 import com.global.api.entities.reporting.*;
-import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
@@ -316,7 +315,7 @@ public class GpApiAchTest extends BaseGpApiTest {
                     .execute();
         } catch (BuilderException ex) {
             exceptionCaught = true;
-            assertEquals("fundsData cannot be null for this transaction type.", ex.getMessage().toString());
+            assertEquals("fundsData cannot be null for this transaction type.", ex.getMessage());
         } finally {
             ServicesContainer.removeConfig();
             assertTrue(exceptionCaught);
@@ -417,7 +416,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            transaction.split(new BigDecimal(0.01))
+            transaction.split(new BigDecimal("0.01"))
                     .withFundsData(fundsData)
                     .withReference("Split Identifier")
                     .withDescription("Split Test")
@@ -503,7 +502,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertNotNull(response.getResults());
-        assertTrue(response.getResults().size() > 0);
+        assertFalse(response.getResults().isEmpty());
 
         TransactionSummary transactionSummary = response.getResults().get(0);
         assertNotNull(transactionSummary);

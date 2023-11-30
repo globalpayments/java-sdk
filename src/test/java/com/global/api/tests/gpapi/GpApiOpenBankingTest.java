@@ -249,9 +249,9 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 502 - Unable to process your request due to an error with a system down stream.", ex.getMessage());
-            assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
-            assertEquals("50046", ex.getResponseText());
+            assertEquals("Status Code: 400 - return_url value is invalid. Please check the format and data provided is correct.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40090", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -271,9 +271,9 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 502 - Unable to process your request due to an error with a system down stream.", ex.getMessage());
-            assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
-            assertEquals("50046", ex.getResponseText());
+            assertEquals("Status Code: 400 - status_url value is invalid. Please check the format and data provided is correct.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40090", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -315,9 +315,9 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_method.bank_transfer.bank.name", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
+            assertEquals("Status Code: 400 - payment_method.bank_transfer.bank.name value is invalid. Please check the format and data provided is correct.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40090", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -402,9 +402,9 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields payment_method.bank_transfer.bank.name", ex.getMessage());
-            assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
-            assertEquals("40005", ex.getResponseText());
+            assertEquals("Status Code: 400 - payment_method.bank_transfer.bank.name value is invalid. Please check the format and data provided is correct.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40090", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }

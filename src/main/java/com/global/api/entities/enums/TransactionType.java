@@ -83,8 +83,8 @@ public enum TransactionType implements IFlag {
     ReverseSplitPay,
     GetAccountDetails,
     GetAccountBalance,
+    GetTokenInfo,
     OrderDevice;
-
 
     public long getLongValue() {
         return 1L << this.ordinal();

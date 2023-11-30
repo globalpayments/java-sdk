@@ -169,7 +169,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
 
     @Test
     public void AccountDetails() throws ApiException {
-        String accountId = accounts.size() > 0 ? accounts.get(0).getId() : null;
+        String accountId = !accounts.isEmpty() ? accounts.get(0).getId() : null;
 
         MerchantAccountSummary response =
                 ReportingService
@@ -235,7 +235,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
@@ -293,7 +293,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.Address, address)
                         .execute();
 
-        assertTrue(response.getAddresses().size() > 0);
+        assertFalse(response.getAddresses().isEmpty());
         assertEquals(address.getPostalCode(), response.getAddresses().get(0).getPostalCode());
     }
 
@@ -312,7 +312,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.Address, address)
                         .execute();
 
-        assertTrue(response.getAddresses().size() > 0);
+        assertFalse(response.getAddresses().isEmpty());
         assertEquals(address.getPostalCode(), response.getAddresses().get(0).getPostalCode());
     }
 
@@ -331,7 +331,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.Address, address)
                         .execute();
 
-        assertTrue(response.getAddresses().size() > 0);
+        assertFalse(response.getAddresses().isEmpty());
         assertEquals(address.getPostalCode(), response.getAddresses().get(0).getPostalCode());
     }
 
@@ -354,7 +354,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
@@ -407,7 +407,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
@@ -461,7 +461,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
@@ -523,7 +523,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         User merchant = User.fromId(merchants.getResults().get(0).getId(), UserType.MERCHANT);
 
@@ -564,7 +564,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
 
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -1210,7 +1210,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
 
         boolean errorFound = false;
         try {
-            User response = merchant
+            merchant
                     .addFunds()
                     .withAccountNumber(accountId)
                     .withPaymentMethodName(PaymentMethodName.BankTransfer)
@@ -1234,7 +1234,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
 
         boolean errorFound = false;
         try {
-            User response = merchant
+            merchant
                     .addFunds()
                     .withAmount(amount)
                     .withPaymentMethodName(PaymentMethodName.BankTransfer)

@@ -707,7 +707,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
-    public void CreditVerify_WithoutCurrency() {
+    public void CreditVerify_WithoutCurrency() throws ApiException {
         boolean exceptionCaught = false;
         try {
             card
@@ -718,8 +718,6 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
             assertEquals("Status Code: 400 - Request expects the following fields currency", ex.getMessage());
-        } catch (ApiException e) {
-            e.printStackTrace();
         } finally {
             assertTrue(exceptionCaught);
         }

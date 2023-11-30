@@ -33,7 +33,7 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
     }
 
     @Test
-    public void VerifyTokenizedPaymentMethod_WithMalformedId() {
+    public void VerifyTokenizedPaymentMethod_WithMalformedId() throws ApiException {
         String token = "This_is_not_a_payment_id";
 
         CreditCardData tokenizedCard = new CreditCardData();
@@ -50,8 +50,6 @@ public class GpApiTokenManagementErrorTest extends BaseGpApiTest {
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40213", ex.getResponseText());
             assertEquals("Status Code: 400 - payment_method.id: " + token + " contains unexpected data", ex.getMessage());
-        } catch (ApiException e) {
-            e.printStackTrace();
         } finally {
             assertTrue(exceptionCaught);
         }

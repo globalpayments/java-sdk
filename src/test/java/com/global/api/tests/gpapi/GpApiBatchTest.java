@@ -9,7 +9,6 @@ import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
@@ -398,7 +397,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
         boolean exceptionCaught = false;
         try {
-            BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME+ "CNP");
+            BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME + "CNP");
         } catch (GatewayException ex) {
             exceptionCaught = true;
             assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: country - US, channel - CNP, currency - USD", ex.getMessage());

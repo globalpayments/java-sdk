@@ -1139,7 +1139,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             dccRateData.setMarginRatePercentage(root.getString("marginratepercentage"));
             dccRateData.setExchangeRateSourceName(root.getString("exchangeratesourcename"));
             dccRateData.setCommissionPercentage(root.getString("commissionpercentage"));
-            dccRateData.setExchangeRateSourceTimestamp(root.getDateTime(DateTimeFormat.forPattern("yyyyMMdd hh:mm"), "exchangeratesourcetimestamp"));
+            dccRateData.setExchangeRateSourceTimestamp(root.getDateTime(DateTimeFormat.forPattern("yyyyMMdd HH:mm"), "exchangeratesourcetimestamp"));
             result.setDccRateData(dccRateData);
         }
 

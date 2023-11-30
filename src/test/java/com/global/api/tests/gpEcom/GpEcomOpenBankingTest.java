@@ -108,7 +108,7 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
                 .withCurrency(currency)
                 .execute();
 
-        assertEquals(BankPaymentStatus.INITIATION_PROCESSING, refund.getResponseMessage());
+        assertEquals(BankPaymentStatus.INITIATION_PROCESSING.toString(), refund.getResponseMessage());
         assertNotNull(refund.getTransactionId());
         assertNotNull(refund.getClientTransactionId());
         assertNull(refund.getBankPaymentResponse().getRedirectUrl());

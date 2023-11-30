@@ -427,7 +427,7 @@ public class GpApiApmTest extends BaseGpApiTest {
     }
 
     @Test
-    public void Alipay() throws ApiException{
+    public void Alipay() throws ApiException {
         AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
                 .setAlternativePaymentMethodType(AlternativePaymentType.ALIPAY)
                 .setReturnUrl("https://example.com/returnUrl")
@@ -443,9 +443,9 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("SUCCESS", response.getResponseCode());
-        assertEquals(TransactionStatus.Initiated.toString().toUpperCase(),response.getResponseMessage());
+        assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), response.getResponseMessage());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
-        assertEquals(AlternativePaymentType.ALIPAY.toString(),response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+        assertEquals(AlternativePaymentType.ALIPAY.toString(), response.getAlternativePaymentResponse().getProviderName().toUpperCase());
     }
 
     @Test
@@ -459,7 +459,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
 
         try {
-            Transaction response = paymentMethod
+            paymentMethod
                     .charge(19.99)
                     .withCurrency("HKD")
                     .withMerchantCategory(MerchantCategory.OTHER)
@@ -483,7 +483,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
 
         try {
-            Transaction response = paymentMethod
+            paymentMethod
                     .charge(19.99)
                     .withCurrency("HKD")
                     .withMerchantCategory(MerchantCategory.OTHER)
@@ -507,7 +507,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
 
         try {
-            Transaction response = paymentMethod
+            paymentMethod
                     .charge(19.99)
                     .withCurrency("HKD")
                     .withMerchantCategory(MerchantCategory.OTHER)
@@ -532,7 +532,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
 
         try {
-            Transaction response = paymentMethod
+            paymentMethod
                     .charge(19.99)
                     .withMerchantCategory(MerchantCategory.OTHER)
                     .execute();
@@ -556,7 +556,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         boolean exceptionCaught = false;
 
         try {
-            Transaction response = paymentMethod
+            paymentMethod
                     .charge(19.99)
                     .withCurrency("HKD")
                     .execute();

@@ -861,46 +861,6 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         }
 
         /**
-         * Performs ACS authentication for 3DS v1
-         *
-         * @return Raw html result
-         **/
-        public String authenticate_v1(ThreeDSecure secureEcom, StringBuffer paRes, AuthenticationResultCode authenticationResultCode) throws GatewayException {
-
-            if (authenticationResultCode == null) {
-                authenticationResultCode = AuthenticationResultCode.Successful;
-            }
-
-            // Step 1
-            ArrayList<HashMap<String, String>> formData = new ArrayList<>();
-            HashMap<String, String> keyValues = new HashMap<>();
-
-            keyValues.put(secureEcom.getMessageType(), secureEcom.getPayerAuthenticationRequest());
-            keyValues.put(secureEcom.getSessionDataFieldName(), secureEcom.getServerTransactionId());
-            keyValues.put("TermUrl", secureEcom.getChallengeReturnUrl());
-            keyValues.put("AuthenticationResultCode", String.valueOf(authenticationResultCode.getValue()));
-
-            formData.add(keyValues);
-
-            String rawResponse = submitFormData(secureEcom.getIssuerAcsUrl(), formData);
-
-            paRes.append(getInputValue(rawResponse, "PaRes"));
-
-            // Step 2
-            formData = new ArrayList<>();
-            keyValues = new HashMap<>();
-
-            keyValues.put("MD", getInputValue(rawResponse, "MD"));
-            keyValues.put("PaRes", paRes.toString());
-
-            formData.add(keyValues);
-
-            rawResponse = submitFormData(getFormAction(rawResponse, "PAResForm"), formData);
-
-            return rawResponse;
-        }
-
-        /**
          * Performs ACS authentication for 3DS v2
          *
          * @return Raw html result

@@ -766,8 +766,8 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException e) {
             exceptionCaught = true;
-            assertEquals("40005", e.getResponseText());
             assertEquals("Status Code: 400 - Request expects the following field name", e.getMessage());
+            assertEquals("40005", e.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -809,8 +809,8 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException e) {
             exceptionCaught = true;
-            assertEquals("40005", e.getResponseText());
             assertEquals("Status Code: 400 - Request expects the following field description", e.getMessage());
+            assertEquals("40005", e.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }

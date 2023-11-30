@@ -319,7 +319,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .where(SearchCriteria.MerchantStatus, MerchantAccountStatus.ACTIVE)
                         .execute();
 
-        assertTrue(merchants.getResults().size() > 0);
+        assertFalse(merchants.getResults().isEmpty());
         assertTrue(merchants.getResults().size() <= 10);
 
         String merchantId = merchants.getResults().get(0).getId();
@@ -342,7 +342,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .execute("accounts");
 
         assertNotNull(accounts);
-        assertTrue(accounts.getResults().size() > 0);
+        assertFalse(accounts.getResults().isEmpty());
     }
 
     @Test
@@ -415,7 +415,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
         UserPersonalData merchantData =
                 new UserPersonalData()
-                        .setFirstName("Username")
+                        .setUserName("Username")
                         .setDBA("Doing Business As")
                         .setWebsite("https://abcd.com")
                         .setTaxIdReference("987654321");
@@ -436,7 +436,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 merchant
                         .edit()
                         .withUserPersonalData(merchantData)
-                        //.withDescription("Sample Data for description")
+                        .withDescription("Sample Data for description")
                         .execute();
 
         assertEquals("PENDING", response.getResponseCode());
@@ -731,7 +731,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs() throws ApiException {
+    public void UploadMerchantDocs() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
 
@@ -751,7 +751,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs_AllDocumentFormats() throws ApiException {
+    public void UploadMerchantDocs_AllDocumentFormats() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
         documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
@@ -774,7 +774,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs_AllDocumentCategories() throws ApiException {
+    public void UploadMerchantDocs_AllDocumentCategories() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
         documentDetail.setDocType(FileType.TIF);
@@ -804,7 +804,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs_MissingDocFormat() throws ApiException {
+    public void UploadMerchantDocs_MissingDocFormat() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
         documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);
@@ -823,7 +823,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs_MissingDocCategory() throws ApiException {
+    public void UploadMerchantDocs_MissingDocCategory() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
         documentDetail.setDocType(FileType.TIF);
@@ -844,7 +844,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
-    public void uploadMerchantDocs_MissingDocBaseContent() throws ApiException {
+    public void UploadMerchantDocs_MissingDocBaseContent() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocType(FileType.TIF);
         documentDetail.setDocCategory(DocumentCategory.IDENTITY_VERIFICATION);

@@ -768,9 +768,9 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
                         .and(SearchCriteria.EndDate, REPORTING_END_DATE)
                         .execute();
         assertNotNull(resultByTimeCreated.getResults());
-        assertTrue(resultByTimeCreated.getResults().size() > 0);
+        assertFalse(resultByTimeCreated.getResults().isEmpty());
         assertNotNull(resultByType.getResults());
-        assertTrue(resultByType.getResults().size() > 0);
+        assertFalse(resultByType.getResults().isEmpty());
         assertNotEquals(resultByTimeCreated.getResults(), resultByType.getResults());
     }
 

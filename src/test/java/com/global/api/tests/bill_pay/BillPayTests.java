@@ -1,15 +1,5 @@
 package com.global.api.tests.bill_pay;
 
-import com.global.api.entities.enums.*;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.UUID;
-
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Customer;
@@ -18,6 +8,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.billing.LoadHostedPaymentResponse;
 import com.global.api.entities.billing.LoadSecurePayResponse;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
@@ -28,6 +19,16 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.BillPayConfig;
 import com.global.api.services.BillPayService;
 import com.global.api.utils.StringUtils;
+import org.joda.time.DateTime;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assert.*;
 
 public class BillPayTests {
     eCheck ach;
@@ -40,22 +41,14 @@ public class BillPayTests {
     Bill blindBill;
 
     public BillPayTests() throws ConfigurationException {
+
         BillPayConfig config = new BillPayConfig();
-        config.setMerchantName("IntegrationTesting");
-        config.setUsername("IntegrationTestCashier");
-        config.setPassword("G?vaXhg6<@V'Y)-m");
-        config.setEnvironment(Environment.TEST);
+        config.setMerchantName("Dev_Exp_Team_Merchant");
+        config.setUsername("DevExpTeam");
+        config.setPassword("devexpteam_R0cks!");
+        config.setServiceUrl(ServiceEndpoints.BILLPAY_CERTIFICATION.getValue());
         config.setEnableLogging(true);
-
         ServicesContainer.configureService(config);
-
-        config = new BillPayConfig();
-        config.setMerchantName("IntegrationTestingBillUpload");
-        config.setUsername("IntegrationTestCashier");
-        config.setPassword("G?vaXhg6<@V'Y)-m");
-        config.setEnvironment(Environment.TEST);
-        config.setEnableLogging(true);
-        ServicesContainer.configureService(config, "billload");
 
         ach = new eCheck();
         ach.setAccountNumber("12345");
@@ -145,7 +138,6 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(result);
     }
-
     @Test
     public void Charge_WithMultipleBills_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -167,7 +159,6 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(result);
     }
-
     @Test
     public void Tokenize_UsingCreditCard_ReturnsToken() throws ApiException {
         Address address = new Address();
@@ -180,7 +171,6 @@ public class BillPayTests {
 
         assertFalse(StringUtils.isNullOrEmpty(result.getToken()));
     }
-
     @Test
     public void UpdateTokenExpiry_UsingCreditCardToken_DoesNotThrow() throws ApiException {
         Address address = new Address();
@@ -203,7 +193,6 @@ public class BillPayTests {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Tokenize_UsingACH_ReturnsToken() throws ApiException {
         Address address = new Address();
@@ -215,7 +204,6 @@ public class BillPayTests {
 
         assertFalse(StringUtils.isNullOrEmpty(result.getToken()));
     }
-
     @Test
     public void Charge_UsingTokenizedCreditCard_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -249,7 +237,148 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(result);
     }
+     @Test
+    public void Tokenize_UsingCreditCard_returns_TokenDetails_Along_with_cardBrand() throws ApiException {
+        String cardTypeVisa = "VISA";
+        String cardTypeDiscover = "DISC";
+        String cardTypeMasterCard = "MC";
+        String cardTypeAmericanExpress = "AMEX";
 
+        String postalCode = address.getPostalCode();
+        String custFirstName = customer.getFirstName();
+        String custLastName = customer.getLastName();
+        String cardHoldeName = "Test Tester";
+
+        CreditCardData clearTextCreditVisa = new CreditCardData();
+        clearTextCreditVisa.setNumber( "4444444444444448");
+        clearTextCreditVisa.setExpMonth(DateTime.now().getMonthOfYear());
+        clearTextCreditVisa.setExpYear(DateTime.now().getYear());
+        clearTextCreditVisa.setCvn("123");
+        clearTextCreditVisa.setCardHolderName(cardHoldeName);
+
+        CreditCardData clearTextCreditDiscover = new CreditCardData();
+        clearTextCreditDiscover.setNumber( "6011000000000087");
+        clearTextCreditDiscover.setExpMonth(DateTime.now().getMonthOfYear());
+        clearTextCreditDiscover.setExpYear(DateTime.now().getYear());
+        clearTextCreditDiscover.setCvn("123");
+        clearTextCreditDiscover.setCardHolderName(cardHoldeName);
+
+        CreditCardData clearTextCreditMasterCard = new CreditCardData();
+        clearTextCreditMasterCard.setNumber( "5425230000004415");
+        clearTextCreditMasterCard.setExpMonth(DateTime.now().getMonthOfYear());
+        clearTextCreditMasterCard.setExpYear(DateTime.now().getYear());
+        clearTextCreditMasterCard.setCvn("123");
+        clearTextCreditMasterCard.setCardHolderName(cardHoldeName);
+
+        CreditCardData clearTextCreditAmericanExpress = new CreditCardData();
+        clearTextCreditAmericanExpress.setNumber( "374101000000608");
+        clearTextCreditAmericanExpress.setExpMonth(DateTime.now().getMonthOfYear());
+        clearTextCreditAmericanExpress.setExpYear(DateTime.now().getYear());
+        clearTextCreditAmericanExpress.setCvn("123");
+        clearTextCreditAmericanExpress.setCardHolderName(cardHoldeName);
+
+        // VISA
+         Transaction tokenResponseVisa = clearTextCreditVisa.charge(bill.getAmount())
+                 .withAddress(address)
+                 .withCustomerData(customer)
+                 .withBills(bill)
+                 .withCurrency("USD")
+                 .withRequestMultiUseToken(true)
+                 .execute();
+
+       assertNotNull(tokenResponseVisa);
+
+       clearTextCreditVisa.setToken(tokenResponseVisa.getToken());
+       Transaction tokenInfoResponseVisa = clearTextCreditVisa.getTokenInformation();
+
+        assertNotNull(tokenInfoResponseVisa);
+        assertEquals(cardTypeVisa, tokenInfoResponseVisa.getCardType());
+        assertNotNull(tokenInfoResponseVisa.getAddress());
+        assertEquals(postalCode, tokenInfoResponseVisa.getAddress().getPostalCode());
+        assertEquals(custFirstName, tokenInfoResponseVisa.getCustomerData().getFirstName());
+        assertEquals(custLastName, tokenInfoResponseVisa.getCustomerData().getLastName());
+        assertNotNull(tokenInfoResponseVisa.getTokenData());
+        assertNotNull(tokenInfoResponseVisa.getTokenData().getLastUsedDateUTC());
+        assertTrue(tokenInfoResponseVisa.getTokenData().getLastUsedDateUTC() instanceof DateTime);
+        assertFalse(tokenInfoResponseVisa.getTokenData().getMerchants().isEmpty());
+        assertEquals("Dev_Exp_Team_Merchant", tokenInfoResponseVisa.getTokenData().getMerchants().get(0));
+
+        //Discover
+         Transaction tokenResponseDiscover = clearTextCreditDiscover.charge(bill.getAmount())
+                 .withAddress(address)
+                 .withCustomerData(customer)
+                 .withBills(bill)
+                 .withCurrency("USD")
+                 .withRequestMultiUseToken(true)
+                 .execute();
+         assertNotNull(tokenResponseDiscover);
+
+         clearTextCreditDiscover.setToken(tokenResponseDiscover.getToken());
+         Transaction tokenInfoResponseDiscover = clearTextCreditDiscover.getTokenInformation();
+
+         assertNotNull(tokenInfoResponseDiscover);
+         assertEquals(cardTypeDiscover, tokenInfoResponseDiscover.getCardType());
+         assertNotNull(tokenInfoResponseDiscover.getAddress());
+         assertEquals(postalCode, tokenInfoResponseDiscover.getAddress().getPostalCode());
+         assertEquals(custFirstName, tokenInfoResponseDiscover.getCustomerData().getFirstName());
+         assertEquals(custLastName, tokenInfoResponseDiscover.getCustomerData().getLastName());
+         assertNotNull(tokenInfoResponseDiscover.getTokenData());
+         assertNotNull(tokenInfoResponseDiscover.getTokenData().getLastUsedDateUTC());
+         assertTrue(tokenInfoResponseDiscover.getTokenData().getLastUsedDateUTC() instanceof DateTime);
+         assertFalse(tokenInfoResponseDiscover.getTokenData().getMerchants().isEmpty());
+         assertEquals("Dev_Exp_Team_Merchant", tokenInfoResponseDiscover.getTokenData().getMerchants().get(0));
+
+       //Master Card
+         Transaction tokenResponseMasterCard = clearTextCreditMasterCard.charge(bill.getAmount())
+                 .withAddress(address)
+                 .withCustomerData(customer)
+                 .withBills(bill)
+                 .withCurrency("USD")
+                 .withRequestMultiUseToken(true)
+                 .execute();
+         assertNotNull(tokenResponseMasterCard);
+
+         clearTextCreditMasterCard.setToken(tokenResponseMasterCard.getToken());
+         Transaction tokenInfoResponseMasterCard = clearTextCreditMasterCard.getTokenInformation();
+
+         assertNotNull(tokenInfoResponseMasterCard);
+         assertEquals(cardTypeMasterCard, tokenInfoResponseMasterCard.getCardType());
+         assertNotNull(tokenInfoResponseMasterCard.getAddress());
+         assertEquals(postalCode, tokenInfoResponseMasterCard.getAddress().getPostalCode());
+         assertEquals(custFirstName, tokenInfoResponseMasterCard.getCustomerData().getFirstName());
+         assertEquals(custLastName, tokenInfoResponseMasterCard.getCustomerData().getLastName());
+         assertNotNull(tokenInfoResponseMasterCard.getTokenData());
+         assertNotNull(tokenInfoResponseMasterCard.getTokenData().getLastUsedDateUTC());
+         assertTrue(tokenInfoResponseMasterCard.getTokenData().getLastUsedDateUTC() instanceof DateTime);
+         assertFalse(tokenInfoResponseMasterCard.getTokenData().getMerchants().isEmpty());
+         assertEquals("Dev_Exp_Team_Merchant", tokenInfoResponseMasterCard.getTokenData().getMerchants().get(0));
+
+       //America Express
+         Transaction tokenResponseAmericanExpress = clearTextCreditAmericanExpress.charge(bill.getAmount())
+                 .withAddress(address)
+                 .withCustomerData(customer)
+                 .withBills(bill)
+                 .withCurrency("USD")
+                 .withRequestMultiUseToken(true)
+                 .execute();
+         assertNotNull(tokenResponseAmericanExpress);
+
+         clearTextCreditAmericanExpress.setToken(tokenResponseAmericanExpress.getToken());
+         Transaction tokenInfoResponseAmericanExpress = clearTextCreditAmericanExpress.getTokenInformation();
+
+         assertNotNull(tokenInfoResponseAmericanExpress);
+         assertEquals(cardTypeAmericanExpress, tokenInfoResponseAmericanExpress.getCardType());
+         assertNotNull(tokenInfoResponseAmericanExpress.getAddress());
+         assertEquals(postalCode, tokenInfoResponseAmericanExpress.getAddress().getPostalCode());
+         assertEquals(custFirstName, tokenInfoResponseAmericanExpress.getCustomerData().getFirstName());
+         assertEquals(custLastName, tokenInfoResponseAmericanExpress.getCustomerData().getLastName());
+         assertNotNull(tokenInfoResponseAmericanExpress.getTokenData());
+         assertNotNull(tokenInfoResponseAmericanExpress.getTokenData().getLastUsedDateUTC());
+         assertTrue(tokenInfoResponseAmericanExpress.getTokenData().getLastUsedDateUTC() instanceof DateTime);
+         assertFalse(tokenInfoResponseAmericanExpress.getTokenData().getMerchants().isEmpty());
+         assertEquals("Dev_Exp_Team_Merchant", tokenInfoResponseAmericanExpress.getTokenData().getMerchants().get(0));
+
+    }
     @Test
     public void Charge_UsingTokenizedACH_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -283,7 +412,6 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(result);
     }
-
     @Test
     public void Charge_UsingTokenFromPreviousPayment_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -318,7 +446,6 @@ public class BillPayTests {
 
         // validateSuccesfulTransaction(result);
     }
-
     @Test(expected = BuilderException.class)
     public void Charge_WithoutAddingBills_ThrowsBuilderException() throws ApiException {
         clearTextCredit
@@ -327,7 +454,6 @@ public class BillPayTests {
             .withConvenienceAmt(new BigDecimal(3))
             .execute();
     }
-
     @Test(expected = BuilderException.class)
     public void Charge_WithMismatchingAmounts_ThrowsBuilderException() throws ApiException {
         clearTextCredit
@@ -340,7 +466,6 @@ public class BillPayTests {
     // #endregion
 
     // #region Management Builder Cases
-
     @Test
     public void ReversePayment_WithPreviousTransaction_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -365,7 +490,6 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(reversal);
     }
-
     @Test
     public void ReversePayment_WithPreviousMultiBillTransaction_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -396,7 +520,6 @@ public class BillPayTests {
 
         validateSuccesfulTransaction(reversal);
     }
-
     @Test
     public void PartialReversal_WithCreditCard_ReturnsSuccessfulTransaction() throws ApiException {
         BillPayService service = new BillPayService();
@@ -446,7 +569,6 @@ public class BillPayTests {
     // #endregion
 
     // #region Billing Builder Cases
-
     @Test
     public void LoadHostedPayment_WithMakePaymentType_ReturnsIdentifier() throws ApiException {
         BillPayService service = new BillPayService();
@@ -471,7 +593,6 @@ public class BillPayTests {
         assertTrue(!StringUtils.isNullOrEmpty(response.getPaymentIdentifier()));
 
     }
-
     @Test
     public void LoadHostedPayment_WithMakePaymentReturnToken_ReturnsIdentifier() throws ApiException {
         BillPayService service = new BillPayService();
@@ -500,7 +621,6 @@ public class BillPayTests {
 
         assertTrue(!StringUtils.isNullOrEmpty(response.getPaymentIdentifier()));
     }
-
     @Test(expected = BuilderException.class)
     public void LoadHostedPayment_WithoutBills_ThrowsBuilderException() throws ApiException {
         BillPayService service = new BillPayService();
@@ -516,7 +636,6 @@ public class BillPayTests {
 
         LoadHostedPaymentResponse response = service.loadHostedPayment(hostedPaymentData);
     }
-
     @Test(expected = BuilderException.class)
     public void LoadHostedPayment_WithoutPaymentType_ThrowsBuilderException() throws ApiException {
         BillPayService service = new BillPayService();
@@ -535,7 +654,6 @@ public class BillPayTests {
 
         service.loadHostedPayment(hostedPaymentData);
     }
-
     @Test
     public void Load_WithOneBill_DoesNotThrow() {
         try {
@@ -544,34 +662,31 @@ public class BillPayTests {
             List<Bill> bills = new ArrayList<>();
             bills.add(blindBill);
 
-            service.loadBills(bills, "billload");
+            service.loadBills(bills);
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Load_WithOneThousandBills_DoesNotThrow() {
         try {
             BillPayService service = new BillPayService();
 
-            service.loadBills(makeNumberOfBills(1000), "billload");
+            service.loadBills(makeNumberOfBills(1000));
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Load_WithFiveThousandBills_DoesNotThrow() {
         try {
             BillPayService service = new BillPayService();
 
-            service.loadBills(makeNumberOfBills(5000), "billload");
+            service.loadBills(makeNumberOfBills(5000));
         } catch (Exception ex) {
             fail(ex.getMessage());
         }
     }
-
     @Test(expected = GatewayException.class)
     public void Load_WithDuplicateBills_ThrowsGatewayException() throws ApiException {
         BillPayService service = new BillPayService();
@@ -579,9 +694,8 @@ public class BillPayTests {
         bills.add(billLoad);
         bills.add(billLoad);
 
-        service.loadBills(bills, "billload");
+        service.loadBills(bills);
     }
-
     @Test(expected = GatewayException.class)
     public void Load_WithInvalidBillType_ThrowsGatewayException() throws ApiException {
         BillPayService service = new BillPayService();
@@ -597,13 +711,12 @@ public class BillPayTests {
         newBill.setIdentifier1(billLoad.getIdentifier1());
         bills.add(newBill);
 
-        service.loadBills(bills, "billload");
+        service.loadBills(bills);
     }
 
     // #endregion
 
     // #region Recurring Builder Cases
-
     @Test
     public void Create_Customer_ReturnsCustomer() {
         try {
@@ -619,7 +732,6 @@ public class BillPayTests {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Update_Customer_ReturnsCustomer() {
         try {
@@ -641,7 +753,6 @@ public class BillPayTests {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Delete_Customer_ReturnsCustomer() {
         String id = UUID.randomUUID().toString();
@@ -665,7 +776,6 @@ public class BillPayTests {
             fail(ex.getMessage());
         }
     }
-
     @Test
     public void Create_CustomerAccount_ReturnsPaymentMethod() {
         try {
@@ -683,7 +793,6 @@ public class BillPayTests {
             fail((ex.getCause() != null ? ex.getCause() : ex).getMessage());
         }
     }
-
     @Test
     public void Update_CustomerAccount_ReturnsSuccess() {
         try {
@@ -705,7 +814,6 @@ public class BillPayTests {
             fail((ex.getCause() != null ? ex.getCause() : ex).getMessage());
         }
     }
-
     @Test
     public void Delete_CustomerAccount_ReturnsSuccess() {
         try {
@@ -725,7 +833,6 @@ public class BillPayTests {
             fail((ex.getCause() != null ? ex.getCause() : ex).getMessage());
         }
     }
-
     @Test(expected = ApiException.class)
     public void Delete_NonexistingCustomer_ThrowsApiException() throws ApiException {
         Customer customer = new Customer();
@@ -734,17 +841,14 @@ public class BillPayTests {
         customer.setId("DoesntExist");
         customer.delete();
     }
-
     // #endregion
 
     // #region Helpers
-
     private void validateSuccesfulTransaction(Transaction transaction) {
         int transactionId = Integer.parseInt(transaction.getTransactionId());
 
         assertNotEquals(transaction.getResponseMessage(), transactionId, 0);
     }
-    
     private List<Bill> makeNumberOfBills(int number) {
         List<Bill> bills = new ArrayList<>();
 
@@ -762,6 +866,5 @@ public class BillPayTests {
 
         return bills;
     }
-
     // #endregion
 }

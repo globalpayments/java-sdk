@@ -2,6 +2,7 @@ package com.global.api.entities;
 
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionRebuilder;
+import com.global.api.entities.billing.TokenData;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.enums.TransactionType;
@@ -75,18 +76,6 @@ public class Transaction {
     @Getter private List<FundsAccountDetails> transferFundsAccountDetailsList;
     @Getter @Setter
     private Set<String> allDataCollectToken;
-    public void setTransferFundsAccountDetailsList(List<FundsAccountDetails> value){
-        if (transactionReference == null) {
-            transactionReference = new TransactionReference();
-        }
-
-        if(value.size() > 0) {
-            transactionReference.setTransferFundsAccountDetailsList(value);
-        }
-
-        transferFundsAccountDetailsList = value;
-    }
-
     @Getter @Setter private CardIssuerResponse cardIssuerResponse;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;
@@ -129,7 +118,43 @@ public class Transaction {
     private String receiptText;
     @Getter @Setter
     private ProPayResponseData proPayResponseData;
+    private Address address;
+    private  Customer customerData;
+    private TokenData tokenData;
 
+    public Customer getCustomerData() {
+        return customerData;
+    }
+
+    public void setCustomerData(Customer customerData) {
+        this.customerData = customerData;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public TokenData getTokenData() {
+        return tokenData;
+    }
+
+    public void setTokenData(TokenData tokenData) {
+        this.tokenData = tokenData;
+    }
+
+    public void setTransferFundsAccountDetailsList(List<FundsAccountDetails> value){
+        if (transactionReference == null) {
+            transactionReference = new TransactionReference();
+        }
+        if(value.size() > 0) {
+            transactionReference.setTransferFundsAccountDetailsList(value);
+        }
+        transferFundsAccountDetailsList = value;
+    }
     public BigDecimal getOrigionalAmount() {
         return origionalAmount;
     }
@@ -157,6 +182,7 @@ public class Transaction {
     public String getTransactionCode() {
         return transactionCode;
     }
+
     public void setTransactionCode(String transactionCode) {
         this.transactionCode = transactionCode;
     }
@@ -168,35 +194,42 @@ public class Transaction {
     public void setNtsResponse(NtsResponse ntsResponse) {
         this.ntsResponse = ntsResponse;
     }
+
     public String getAdditionalResponseCode() {
         return additionalResponseCode;
     }
+
     public void setAdditionalResponseCode(String additionalResponseCode) {
         this.additionalResponseCode = additionalResponseCode;
     }
+
     public String getAcquiringInstitutionId() {
         if(transactionReference != null) {
             return transactionReference.getAcquiringInstitutionId();
         }
         return null;
     }
+
     public void setAcquiringInstitutionId(String value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
         }
         transactionReference.setAcquiringInstitutionId(value);
     }
+
     public BigDecimal getAuthorizedAmount() {
         return authorizedAmount;
     }
     public void setAuthorizedAmount(BigDecimal authorizedAmount) {
         this.authorizedAmount = authorizedAmount;
     }
+
     public String getAuthorizationCode() {
         if(transactionReference != null)
             return transactionReference.getAuthCode();
         return null;
     }
+
     public void setAuthorizationCode(String value) {
         if(transactionReference == null)
             this.transactionReference = new TransactionReference();
@@ -205,33 +238,42 @@ public class Transaction {
     public BigDecimal getAvailableBalance() {
         return availableBalance;
     }
+
     public void setAvailableBalance(BigDecimal availableBalance) {
         this.availableBalance = availableBalance;
     }
+
     public String getAvsResponseCode() {
         return avsResponseCode;
     }
     public void setAvsResponseCode(String avsResponseCode) {
         this.avsResponseCode = avsResponseCode;
     }
+
     public String getAvsResponseMessage() {
         return avsResponseMessage;
     }
+
     public void setAvsResponseMessage(String avsResponseMessage) {
         this.avsResponseMessage = avsResponseMessage;
     }
+
     public String getAvsAddressResponse() {
         return avsAddressResponse;
     }
+
     public void setAvsAddressResponse(String avsAddressResponse) {
         this.avsAddressResponse = avsAddressResponse;
     }
+
     public BigDecimal getBalanceAmount() {
         return balanceAmount;
     }
+
     public void setBalanceAmount(BigDecimal balanceAmount) {
         this.balanceAmount = balanceAmount;
     }
+
     public Integer getBatchId() {
         if(transactionReference != null) {
             return transactionReference.getBatchNumber();
@@ -241,24 +283,31 @@ public class Transaction {
     public BatchSummary getBatchSummary() {
         return batchSummary;
     }
+
     public void setBatchSummary(BatchSummary batchSummary) {
         this.batchSummary = batchSummary;
     }
+
     public String getCardBrandTransactionId() {
         return cardBrandTransactionId;
     }
+
     public void setCardBrandTransactionId(String cardBrandTxnId) {
         this.cardBrandTransactionId = cardBrandTxnId;
     }
+
     public String getCardType() {
         return cardType;
     }
+
     public void setCardType(String cardType) {
         this.cardType = cardType;
     }
+
     public AlternativePaymentResponse getAlternativePaymentResponse() {
         return transactionReference.getAlternativePaymentResponse();
     }
+
     public void setAlternativePaymentResponse(AlternativePaymentResponse value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
@@ -280,118 +329,153 @@ public class Transaction {
     public String getCardLast4() {
         return cardLast4;
     }
+
     public void setCardLast4(String cardLast4) {
         this.cardLast4 = cardLast4;
     }
+
     public String getCardNumber() {
         return cardNumber;
     }
+
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
     }
+
     public int getCardExpMonth() {
         return cardExpMonth;
     }
+
     public void setCardExpMonth(int cardExpMonth) {
         this.cardExpMonth = cardExpMonth;
     }
+
     public int getCardExpYear() {
         return cardExpYear;
     }
+
     public void setCardExpYear(int cardExpYear) {
         this.cardExpYear = cardExpYear;
     }
+
     public String getCavvResponseCode() {
         return cavvResponseCode;
     }
+
     public void setCavvResponseCode(String cavvResponseCode) {
         this.cavvResponseCode = cavvResponseCode;
     }
+
     public String getClientTransactionId() {
         if(transactionReference != null)
             return transactionReference.getClientTransactionId();
         return null;
     }
+
     public void setClientTransactionId(String clientTransactionId) {
         if(transactionReference == null)
             transactionReference = new TransactionReference();
         this.transactionReference.setClientTransactionId(clientTransactionId);
     }
+
     public String getCommercialIndicator() {
         return commercialIndicator;
     }
+
     public void setCommercialIndicator(String commercialIndicator) {
         this.commercialIndicator = commercialIndicator;
     }
+
     public BigDecimal getConvenienceFee() {
         return convenienceFee;
     }
+
     public void setConvenienceFee(BigDecimal convenienceFee) {
         this.convenienceFee = convenienceFee;
     }
+
     public String getCvnResponseCode() {
         return cvnResponseCode;
     }
+
     public void setCvnResponseCode(String cvnResponseCode) {
         this.cvnResponseCode = cvnResponseCode;
     }
+
     public Date getResponseDate() {
         return responseDate;
     }
+
     public void setResponseDate(Date responseDate) {
         this.responseDate = responseDate;
     }
+
     public String getCvnResponseMessage() {
         return cvnResponseMessage;
     }
+
     public void setCvnResponseMessage(String cvnResponseMessage) {
         this.cvnResponseMessage = cvnResponseMessage;
     }
+
     public DccRateData getDccRateData() {
         return dccRateData;
     }
+
     public void setDccRateData(DccRateData dccRateData) {
         this.dccRateData = dccRateData;
     }
+
     public DebitMac getDebitMac() {
         return debitMac;
     }
+
     public void setDebitMac(DebitMac debitMac) {
         this.debitMac = debitMac;
     }
+
     public LinkedList<IGatewayEvent> getGatewayEvents() {
         return gatewayEvents;
     }
+
     public void setGatewayEvents(LinkedList<IGatewayEvent> gatewayEvents) {
         this.gatewayEvents = gatewayEvents;
     }
+
     public Date getHostResponseDate() {
         return hostResponseDate;
     }
+
     public void setHostResponseDate(Date hostResponseDate) {
         this.hostResponseDate = hostResponseDate;
     }
+
     public HashMap<CardIssuerEntryTag, String> getIssuerData() {
         return issuerData;
     }
+
     public void setIssuerData(CardIssuerEntryTag tag, String value) {
         if(issuerData == null) {
             issuerData = new HashMap<CardIssuerEntryTag, String>();
         }
         this.issuerData.put(tag, value);
     }
+
     public PriorMessageInformation getMessageInformation() {
         return this.messageInformation;
     }
+
     public void setMessageInformation(PriorMessageInformation value) {
         this.messageInformation = value;
     }
+
     public String getMessageTypeIndicator() {
         if(transactionReference != null) {
             return transactionReference.getMessageTypeIndicator();
         }
         return null;
     }
+
     public void setMessageTypeIndicator(String value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
@@ -402,43 +486,52 @@ public class Transaction {
     public HashMap<String, String> getResponseValues() {
         return responseValues;
     }
+
     public void setResponseValues(HashMap<String, String> responseValues) {
         this.responseValues = responseValues;
     }
+
     public String getEmvIssuerResponse() {
         return emvIssuerResponse;
     }
+
     public void setEmvIssuerResponse(String emvIssuerResponse) {
         this.emvIssuerResponse = emvIssuerResponse;
     }
+
     public NtsData getNtsData() {
         if(transactionReference != null) {
             return transactionReference.getNtsData();
         }
         return null;
     }
+
     public void setNtsData(NtsData value) throws GatewayException {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
         }
         transactionReference.setNtsData(value.toString());
     }
+
     public String getOrderId() {
         if(transactionReference != null)
             return transactionReference.getOrderId();
         return null;
     }
+
     public void setOrderId(String value) {
         if(transactionReference == null)
             transactionReference = new TransactionReference();
         transactionReference.setOrderId(value);
     }
+
     public String getOriginalTransactionTime() {
         if(transactionReference != null) {
             return transactionReference.getOriginalTransactionTime();
         }
         return null;
     }
+
     public void setOriginalTransactionTime(String value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
@@ -457,140 +550,178 @@ public class Transaction {
             return transactionReference.getPaymentMethodType();
         return null;
     }
+
     public void setPaymentMethodType(PaymentMethodType value) {
         if(transactionReference == null)
             transactionReference = new TransactionReference();
         transactionReference.setPaymentMethodType(value);
     }
+
     public Transaction getPreAuthCompletion() {
         return preAuthCompletion;
     }
+
     public void setPreAuthCompletion(Transaction preAuthCompletion) {
         this.preAuthCompletion = preAuthCompletion;
     }
+
     public BigDecimal getPointsBalanceAmount() {
         return pointsBalanceAmount;
     }
+
     public void setPointsBalanceAmount(BigDecimal pointsBalanceAmount) {
         this.pointsBalanceAmount = pointsBalanceAmount;
     }
+
     public String getPosDataCode() {
         if(transactionReference != null) {
             return transactionReference.getPosDataCode();
         }
         return null;
     }
+
     public String getProcessingCode() {
         if(transactionReference != null) {
             return transactionReference.getOriginalProcessingCode();
         }
         return null;
     }
+
     public void setProcessingCode(String value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
         }
         transactionReference.setOriginalProcessingCode(value);
     }
+
     public String getRecurringDataCode() {
         return recurringDataCode;
     }
+
     public void setRecurringDataCode(String recurringDataCode) {
         this.recurringDataCode = recurringDataCode;
     }
+
     public String getReferenceNumber() {
         return referenceNumber;
     }
+
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
     }
+
     public String getReceiptText() {
         HashMap<CardIssuerEntryTag, String> issData = getIssuerData();
         String tagData = issData.get(CardIssuerEntryTag.ReceiptText);
         return tagData;
     }
+
     public void setReceiptText(String receiptText) {
         this.receiptText = receiptText;
     }
+
     public String getResponseCode() {
         return responseCode;
     }
+
     public void setResponseCode(String responseCode) {
         this.responseCode = responseCode;
     }
+
     public String getResponseMessage() {
         return responseMessage;
     }
+
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
     }
+
     public String getSchemeId() {
         return schemeId;
     }
+
     public void setSchemeId(String schemeId) {
         this.schemeId = schemeId;
     }
+
     public String getSystemTraceAuditNumber() {
         if(transactionReference != null) {
             return transactionReference.getSystemTraceAuditNumber();
         }
         return null;
     }
+
     public void setSystemTraceAuditNumber(String value) {
         if(transactionReference == null) {
             transactionReference = new TransactionReference();
         }
         transactionReference.setSystemTraceAuditNumber(value);
     }
+
     public ThreeDSecure getThreeDsecure() {
         return threeDsecure;
     }
+
     public void setThreeDsecure(ThreeDSecure threeDsecure) {
         this.threeDsecure = threeDsecure;
     }
+
     public String getTimestamp() {
         return timestamp;
     }
+
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
+
     public String getTransactionDescriptor() {
         return transactionDescriptor;
     }
+
     public void setTransactionDescriptor(String transactionDescriptor) {
         this.transactionDescriptor = transactionDescriptor;
     }
+
     public String getTransactionToken() {
         return transactionToken;
     }
+
     public void setTransactionToken(String transactionToken) {
         this.transactionToken = transactionToken;
     }
+
     public String getTransactionId() {
         if(transactionReference != null)
             return transactionReference.getTransactionId();
         return null;
     }
+
     public void setTransactionId(String value) {
         if(transactionReference == null)
             transactionReference = new TransactionReference();
         transactionReference.setTransactionId(value);
     }
+
     public String getToken() {
         return token;
     }
+
     public void setToken(String token) {
         this.token = token;
     }
+
     public GiftCard getGiftCard() {
         return giftCard;
     }
+
     public void setGiftCard(GiftCard giftCard) {
         this.giftCard = giftCard;
     }
+
     public TransactionReference getTransactionReference() {
         return transactionReference;
     }
+
     public void setTransactionReference(TransactionReference transactionReference) {
         this.transactionReference = transactionReference;
     }
@@ -612,9 +743,11 @@ public class Transaction {
     public ManagementBuilder fetch() {
         return fetch(null);
     }
+
     public ManagementBuilder fetch(double amount) {
         return fetch(new BigDecimal(amount));
     }
+
     public ManagementBuilder fetch(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Fetch)
                         .withPaymentMethod(transactionReference)
@@ -624,9 +757,11 @@ public class Transaction {
     public ManagementBuilder capture() {
         return capture(null);
     }
+
     public ManagementBuilder capture(double amount) {
         return capture(new BigDecimal(amount));
     }
+
     public ManagementBuilder capture(BigDecimal amount) {
         ManagementBuilder builder =
                 new ManagementBuilder(TransactionType.Capture)
@@ -643,6 +778,7 @@ public class Transaction {
     public ManagementBuilder cancel() {
         return cancel(null);
     }
+
     public ManagementBuilder cancel(BigDecimal amount) {
         TransactionType transType = TransactionType.Void;
         if(transactionReference != null && transactionReference.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
@@ -665,6 +801,7 @@ public class Transaction {
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
     }
+
     public ManagementBuilder edit(double amount) {
         return edit(new BigDecimal(amount));
     }
@@ -695,6 +832,7 @@ public class Transaction {
     public ManagementBuilder increment() {
         return increment(null);
     }
+
     public ManagementBuilder increment(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Increment)
                 .withAmount(amount)
@@ -704,6 +842,7 @@ public class Transaction {
     public ManagementBuilder preAuthCompletion() {
         return preAuthCompletion(null);
     }
+
     public ManagementBuilder preAuthCompletion(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.PreAuthCompletion)
                 .withPaymentMethod(transactionReference)
@@ -713,11 +852,13 @@ public class Transaction {
     public ManagementBuilder refund() {
         return refund(null);
     }
+
     public ManagementBuilder refund(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Refund)
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
     }
+
     public ManagementBuilder refund(double amount) {
         return refund(new BigDecimal(amount));
     }
@@ -729,11 +870,13 @@ public class Transaction {
     public ManagementBuilder reverse() {
         return reverse(null);
     }
+
     public ManagementBuilder reverse(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Reversal)
                 .withPaymentMethod(transactionReference)
                 .withAmount(amount);
     }
+
     public ManagementBuilder reverse(double amount) {
         return reverse(new BigDecimal(amount));
     }
@@ -741,6 +884,7 @@ public class Transaction {
     public ManagementBuilder reauthorize() {
         return reauthorize(null);
     }
+
     public ManagementBuilder reauthorize(BigDecimal amount) {
         return new ManagementBuilder(TransactionType.Reauth)
                 .withPaymentMethod(transactionReference)
@@ -750,12 +894,15 @@ public class Transaction {
     public ManagementBuilder voidTransaction() {
         return voidTransaction(null, false);
     }
+
     public ManagementBuilder voidTransaction(BigDecimal amount) {
         return voidTransaction(amount, false);
     }
+
     public ManagementBuilder voidTransaction(boolean force) {
         return voidTransaction(null, force);
     }
+
     public ManagementBuilder voidTransaction(BigDecimal amount, boolean force) {
         return new ManagementBuilder(TransactionType.Void)
                 .withAmount(amount)
@@ -766,12 +913,15 @@ public class Transaction {
     public static Transaction fromId(String transactionId) {
         return fromId(transactionId, null, PaymentMethodType.Credit);
     }
+
     public static Transaction fromId(String transactionId, PaymentMethodType paymentMethodType) {
         return fromId(transactionId, null, paymentMethodType);
     }
+
     public static Transaction fromId(String transactionId, String orderId) {
         return fromId(transactionId, orderId, PaymentMethodType.Credit);
     }
+
     public static Transaction fromId(String transactionId, String orderId, PaymentMethodType paymentMethodType) {
         return new TransactionRebuilder()
                 .withTransactionId(transactionId)
@@ -796,10 +946,10 @@ public class Transaction {
                 .build();
     }
 
-
     public static Transaction fromClientTransactionId(String clientTransactionId) {
         return fromClientTransactionId(clientTransactionId, null, PaymentMethodType.Credit);
     }
+
     public static Transaction fromClientTransactionId(String clientTransactionId, PaymentMethodType paymentMethodType) {
         return fromClientTransactionId(clientTransactionId, null, paymentMethodType);
     }
@@ -809,6 +959,7 @@ public class Transaction {
     public static Transaction fromClientTransactionId(String clientTransactionId, String orderId) {
         return fromClientTransactionId(clientTransactionId, orderId, PaymentMethodType.Credit);
     }
+
     public static Transaction fromClientTransactionId(String clientTransactionId, String orderId, PaymentMethodType paymentMethodType) {
         TransactionReference reference = new TransactionReference();
         reference.setClientTransactionId(clientTransactionId);
@@ -835,15 +986,19 @@ public class Transaction {
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod) {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null);
     }
+
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String originalProcessingCode) {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, null, null, null, originalProcessingCode);
     }
+
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime) {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, messageTypeIndicator, stan, originalTransactionTime, null);
     }
+
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime, String originalProcessingCode) {
         return fromNetwork(amount, authCode, originalNtsCode, originalPaymentMethod, messageTypeIndicator, stan, originalTransactionTime, originalProcessingCode, null);
     }
+
     public static Transaction fromNetwork(BigDecimal amount, String authCode, NtsData originalNtsCode, IPaymentMethod originalPaymentMethod, String messageTypeIndicator, String stan, String originalTransactionTime, String originalProcessingCode, String acquirerId) {
         return new TransactionRebuilder()
                 .withAmount(amount)

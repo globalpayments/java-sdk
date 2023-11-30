@@ -3,7 +3,6 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;

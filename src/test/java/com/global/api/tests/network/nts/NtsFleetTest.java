@@ -2441,4 +2441,46 @@ public class NtsFleetTest {
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
+    @Test
+    public void test_mastercardFleet_sale_No_Prompt_masterCardFleet_10263() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        fleetData.setDriverId("123456");
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 1, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.NoPromptMCFleet);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
 }

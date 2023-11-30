@@ -942,7 +942,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .and(SearchCriteria.RiskAssessmentResult, FraudFilterResult.PASS)
                         .execute();
 
-        assertTrue(response.getResults().size() > 0);
+        assertTrue(!response.getResults().isEmpty());
 
         TransactionSummary trnSummary = response.getResults().get(0);
         assertNotNull(trnSummary.getFraudManagementResponse());

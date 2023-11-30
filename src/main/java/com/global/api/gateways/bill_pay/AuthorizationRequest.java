@@ -4,19 +4,18 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.Credentials;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.gateways.bill_pay.requests.GetAchTokenRequest;
-import com.global.api.gateways.bill_pay.requests.GetTokenRequest;
-import com.global.api.gateways.bill_pay.requests.MakeBlindPaymentRequest;
-import com.global.api.gateways.bill_pay.requests.MakeBlindPaymentReturnTokenRequest;
-import com.global.api.gateways.bill_pay.requests.MakePaymentRequest;
-import com.global.api.gateways.bill_pay.requests.MakePaymentReturnTokenRequest;
+import com.global.api.gateways.bill_pay.requests.*;
+import com.global.api.gateways.bill_pay.responses.TokenInformationRequestResponse;
 import com.global.api.gateways.bill_pay.responses.TokenRequestResponse;
 import com.global.api.gateways.bill_pay.responses.TransactionResponse;
+import com.global.api.paymentMethods.ITokenizable;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
+import com.global.api.utils.StringUtils;
 
 public class AuthorizationRequest extends GatewayRequestBase {
     private static final String GENERIC_PAYMENT_EXCEPTION_MESSAGE = "An error occurred attempting to make the payment";
@@ -54,6 +53,8 @@ public class AuthorizationRequest extends GatewayRequestBase {
                 }
 
                 return getToken(builder);
+            case GetTokenInfo:
+                return getTokenInformation(builder);
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -166,5 +167,34 @@ public class AuthorizationRequest extends GatewayRequestBase {
         }
 
         throw new GatewayException("An error occurred attempting to create the token", result.getResponseCode(), result.getResponseMessage());
+    }
+
+    private Transaction getTokenInformation(AuthorizationBuilder builder) throws ApiException {
+        String request;
+        ElementTree et = new ElementTree();
+        Element envelope = createSOAPEnvelope(et,"GetTokenInformation");
+        ITokenizable tokenizablePayment;
+        if (builder.getPaymentMethod() instanceof ITokenizable) {
+            tokenizablePayment = (ITokenizable) builder.getPaymentMethod();
+            if (StringUtils.isNullOrEmpty(tokenizablePayment.getToken())) {
+                throw new BuilderException("Payment method has not been tokenized");
+            }
+            request = new GetTokenInformationRequest(et)
+                    .build(envelope, builder, credentials);
+        }
+        else {
+            throw new BuilderException("Token Information is currently only retrievable for Credit and eCheck payment methods.");
+        }
+
+        String response = doTransaction(request);
+        Transaction result = new TokenInformationRequestResponse()
+                .withResponseTagName("GetTokenInformationResponse")
+                .withResponse(response)
+                .map();
+
+        if(result.getResponseCode().equals("0")) {
+            return result;
+        }
+        throw  new GatewayException("message: " + "An error occurred attempting to retrieve token information. ResponseCode: " + result.getResponseCode() + " responseMessage: " + result.getResponseMessage() );
     }
 }

@@ -1,5 +1,22 @@
 # Changelog
 
+## v11.1.21 (11/30/23)
+### Enhancements
+ [NTS Phase1 Issue]
+
+- rearranged product 6 & 7 when quantity length is more than 1 for WEX (Issue -10233)
+- added new enum named NoPromptMCFleet for MasterCard Fleet when no prompt (Issue -10263)
+
+[GpEcom]
+
+- Update date format for connector.
+
+[GpApi & GpEcom]
+
+- Enhancement on fraud enum.
+- Tests enhancements.
+
+
 ## v11.1.20 (11/16/23)
 ### Enhancements
 [UPA]
@@ -94,7 +111,7 @@
 -NTS Phase1 Issue:
 - Code added for 10213, 10214 & 10243 to handle RTB(16) returned 40/80/90 & DC (12) returned 40/80/90 and RTB(16) returned 01 scenario.
 - MasterCard Purchasing UserData Format (10254)
-- Fixes for debit authorizer (10255)
+- Fixes for debit  (10255)
 - Added Authorizer Codes For ChaseNet & heartland Gift Card (10256)
 - Return batch summary object instead of throwing an exception(10257)
 
