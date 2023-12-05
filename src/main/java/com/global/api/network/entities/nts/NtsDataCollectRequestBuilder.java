@@ -191,7 +191,7 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                     NtsUtils.log("Extended user data flag", "E");
 
                     // User data length
-                    request.addRange(userData.length(), 3);
+                    request.addRange(StringUtils.padLeft( userData.length(), 4,'0'),4);
                     NtsUtils.log("User Data Length", Integer.toString(userData.length()));
                 }
 

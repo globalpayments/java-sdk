@@ -190,9 +190,9 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             // USER DATA
             request.addRange(StringUtils.padLeft(userData, userData.length(), ' '), userData.length());
             NtsUtils.log("User data", userData);
-        } else if (builder.getTagData() != null && transactionType.equals(TransactionType.Reversal)
+        } else if (builder.getTagData() != null || (transactionType.equals(TransactionType.Reversal)
                 && (cardType == NTSCardTypes.WexFleet
-                || cardType == NTSCardTypes.WexProprietaryFleet)) {
+                || cardType == NTSCardTypes.WexProprietaryFleet))) {
             // Extended user data flag
             request.addRange("E", 1);
             NtsUtils.log("EXPANDED USER DATA INDICATOR", "E");

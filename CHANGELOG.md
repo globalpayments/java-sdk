@@ -1,5 +1,13 @@
 # Changelog
 
+## v11.1.22 (12/05/23)
+
+### Enhancements
+ [NTS Phase1 Issue]
+- Fixed WEX Card EMV user data length(Issue- 10267).
+- Updated condition for User data when emv data is not sent in Wex Pre-Auth reversal request(Issue-10268).
+- Added missing required User data for WEX refund reversal request to fix format exception (Issue-10269).
+
 ## v11.1.21 (11/30/23)
 ### Enhancements
  [NTS Phase1 Issue]
