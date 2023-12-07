@@ -1,5 +1,6 @@
 package com.global.api;
 
+import com.global.api.gateways.IFileProcessingService;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
@@ -20,6 +21,7 @@ public class ConfiguredServices implements IDisposable {
     private TableServiceConnector tableServiceConnector;
     private PayrollConnector payrollConnector;
     @Getter @Setter private IFraudCheckService fraudService;
+    @Getter @Setter private IFileProcessingService FileProcessingService;
     private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;

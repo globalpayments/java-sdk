@@ -2,6 +2,7 @@ package com.global.api.gateways;
 
 import com.global.api.builders.*;
 import com.global.api.builders.requestbuilder.gpApi.*;
+import com.global.api.entities.FileProcessor;
 import com.global.api.entities.RiskAssessment;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
@@ -9,7 +10,9 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.entities.gpApi.*;
+import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.entities.gpApi.GpApiSessionInfo;
+import com.global.api.entities.gpApi.GpApiTokenResponse;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.network.NetworkMessageHeader;
@@ -35,7 +38,8 @@ import java.util.HashMap;
 
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
-public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, IPayFacProvider, IFraudCheckService {
+public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider,
+        IPayFacProvider, IFraudCheckService, IFileProcessingService {
 
     public static final SimpleDateFormat DATE_SDF = DateParsingUtils.DATE_SDF;
 
@@ -94,6 +98,20 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         return version;
     }
 
+    public FileProcessor processFileUpload(FileProcessingBuilder builder) throws ApiException {
+        if (isNullOrEmpty(accessToken)) {
+            signIn();
+        }
+        GpApiFileProcessingRequestBuilder gpApiFileProcessingRequestBuilder = new GpApiFileProcessingRequestBuilder();
+        GpApiRequest request = gpApiFileProcessingRequestBuilder.buildRequest(builder, this);
+        if (request != null) {
+            String response = doTransaction(request.getVerb().getValue(), request.getEndpoint(),
+                    request.getRequestBody(), request.getQueryStringParams());
+            return GpApiMapping.MapFileProcessingResponse(response);
+        }
+        return null;
+    }
+
     void signIn() throws GatewayException {
         AccessTokenInfo accessTokenInfo = gpApiConfig.getAccessTokenInfo();
 
@@ -143,6 +161,12 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountID())) {
             accessTokenInfo.setMerchantManagementAccountID(response.getMerchantManagementAccountID());
+        }
+
+        if (isNullOrEmpty(accessTokenInfo.getFileProcessingAccountName()) &&
+                isNullOrEmpty(accessTokenInfo.getFileProcessingAccountID())) {
+
+            accessTokenInfo.setFileProcessingAccountID(response.getFileProcessingAccountID());
         }
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);

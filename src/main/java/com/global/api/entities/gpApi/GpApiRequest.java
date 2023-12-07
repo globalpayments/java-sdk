@@ -1,12 +1,6 @@
 package com.global.api.entities.gpApi;
 
 import com.global.api.entities.Request;
-import com.global.api.utils.StringUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
-import java.util.HashMap;
 
 public class GpApiRequest extends Request {
 
@@ -44,5 +38,7 @@ public class GpApiRequest extends Request {
     public static final String ACCOUNTS_ENDPOINT = "/accounts";
 
     public static final String TRANSFER_ENDPOINT = "/transfers";
+
+    public static final String FILE_PROCESSING = "/files";
 
 }

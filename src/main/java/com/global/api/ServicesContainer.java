@@ -162,6 +162,14 @@ public class ServicesContainer implements IDisposable {
         configurations.put(configName, cs);
     }
 
+    public IFileProcessingService getFileProcessingClient(String configName) throws ApiException {
+        if (configurations.containsKey(configName)) {
+            return configurations.get(configName).getFileProcessingService();
+        }
+
+        throw new ApiException("The specified configuration has not been configured for file processing.");
+    }
+
     private void removeConfiguration(String configName) throws ConfigurationException {
         System.out.println(String.format("[Remove Configuration] - %s", configName));
         if(configurations.containsKey(configName)) {

@@ -333,16 +333,18 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
             ThreeDSecure secureEcom = creditCardData.getThreeDSecure();
             if (secureEcom != null) {
-                ArrayList<HashMap<String, Object>> three_ds = new ArrayList<>();
-                HashMap<String, Object> hashMap = new HashMap<>();
-                hashMap.put("exempt_status", secureEcom.getExemptStatus() != null ? secureEcom.getExemptStatus().getValue() : null);
-                three_ds.add(hashMap);
+                HashMap<String, Object> threeDS = new HashMap<>();
+                threeDS.put("exempt_status", secureEcom.getExemptStatus() != null ? secureEcom.getExemptStatus().getValue() : null);
+                threeDS.put("eci", secureEcom.getEci());
+                threeDS.put("message_version", secureEcom.getMessageVersion());
+                threeDS.put("server_trans_reference", secureEcom.getServerTransactionId());
+                threeDS.put("ds_trans_reference", secureEcom.getDirectoryServerTransactionId());
+                threeDS.put("value", secureEcom.getAuthenticationValue());
 
                 JsonDoc authentication =
                         new JsonDoc()
                                 .set("id", secureEcom.getServerTransactionId())
-                                .set("three_ds", three_ds);
-
+                                .set("three_ds", threeDS);
                 paymentMethod.set("authentication", authentication);
             }
         }

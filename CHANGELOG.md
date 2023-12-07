@@ -1,7 +1,11 @@
 # Changelog
 
-## v11.1.22 (12/05/23)
+## v11.1.23 (12/07/23)
+### Enhancements
+- [GP-API] File Processing
+- [GP-API] Add missing properties to authentication->three_ds (message_version, eci,server_trans_reference, ds_trans_reference,value)
 
+## v11.1.22 (12/05/23)
 ### Enhancements
  [NTS Phase1 Issue]
 - Fixed WEX Card EMV user data length(Issue- 10267).

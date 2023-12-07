@@ -28,6 +28,8 @@ public class GpApiService {
         accessTokenInfo.setTransactionProcessingAccountID(data.getTransactionProcessingAccountID());
         accessTokenInfo.setRiskAssessmentAccountID(data.getRiskAssessmentAccountID());
         accessTokenInfo.setMerchantManagementAccountID(data.getMerchantManagementAccountID());
+        accessTokenInfo.setFileProcessingAccountID(data.getFileProcessingAccountID());
+        accessTokenInfo.setFileProcessingAccountName(data.getFileProcessingAccountName());
 
         return accessTokenInfo;
     }

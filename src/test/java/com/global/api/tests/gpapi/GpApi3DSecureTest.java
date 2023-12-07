@@ -24,10 +24,7 @@ import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static org.junit.Assert.*;
@@ -406,6 +403,29 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         assertNotNull(response2);
         assertEquals(SUCCESS, response2.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response2.getResponseMessage());
+    }
+
+    @Test
+    public void testChargeTransaction_WithRandom3DSValues() throws ApiException {
+        card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
+
+        ThreeDSecure threeDS = new ThreeDSecure();
+        threeDS.setAuthenticationValue(UUID.randomUUID().toString());
+        threeDS.setDirectoryServerTransactionId(UUID.randomUUID().toString());
+        threeDS.setEci(UUID.randomUUID().toString());
+        threeDS.setMessageVersion(UUID.randomUUID().toString());
+
+        card.setThreeDSecure(threeDS);
+
+        Transaction response =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
     @Test

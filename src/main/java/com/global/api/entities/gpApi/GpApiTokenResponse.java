@@ -18,6 +18,7 @@ public class GpApiTokenResponse {
     final static String TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX = "TRA_";
     final static String RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX = "RAA_";
     final static String MERCHANT_MANAGEMENT_ACCOUNT_NAME_PREFIX = "MMA_";
+    final static String FILE_PROCESSING_ACCOUNT_NAME_PREFIX = "FPA_";
 
     private String token;
     private String type;
@@ -55,23 +56,23 @@ public class GpApiTokenResponse {
     }
 
     public String getDataAccountID() {
-            return getAccountID(DATA_ACCOUNT_NAME_PREFIX);
+        return getAccountID(DATA_ACCOUNT_NAME_PREFIX);
     }
 
     public String getDisputeManagementAccountID() {
-            return getAccountID(DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX);
+        return getAccountID(DISPUTE_MANAGEMENT_ACCOUNT_NAME_PREFIX);
     }
 
-    public String getTokenizationAccountID(){
-            return getAccountID(TOKENIZATION_ACCOUNT_NAME_PREFIX);
+    public String getTokenizationAccountID() {
+        return getAccountID(TOKENIZATION_ACCOUNT_NAME_PREFIX);
     }
 
-    public String getTransactionProcessingAccountID(){
-            return getAccountID(TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX);
+    public String getTransactionProcessingAccountID() {
+        return getAccountID(TRANSACTION_PROCESSING_ACCOUNT_NAME_PREFIX);
     }
 
-    public String getRiskAssessmentAccountID(){
-            return getAccountID(RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
+    public String getRiskAssessmentAccountID() {
+        return getAccountID(RIKS_ASSESSMENT_ACCOUNT_NAME_PREFIX);
     }
 
     public String getMerchantManagementAccountID() {
@@ -92,6 +93,14 @@ public class GpApiTokenResponse {
                 return account.getName();
         }
         return null;
+    }
+
+    public String getFileProcessingAccountName() {
+        return getAccountName(FILE_PROCESSING_ACCOUNT_NAME_PREFIX);
+    }
+
+    public String getFileProcessingAccountID() {
+        return getAccountID(FILE_PROCESSING_ACCOUNT_NAME_PREFIX);
     }
 
     public GpApiTokenResponse(String jsonString) {

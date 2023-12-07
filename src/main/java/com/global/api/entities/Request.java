@@ -26,7 +26,8 @@ public abstract class Request {
         Get("GET"),
         Post("POST"),
         Patch("PATCH"),
-        Delete("DELETE");
+        Delete("DELETE"),
+        Put("PUT");
 
         private final String value;
         HttpMethod(String value) { this.value = value; }

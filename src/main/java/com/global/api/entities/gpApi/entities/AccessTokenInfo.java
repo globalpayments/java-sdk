@@ -16,10 +16,12 @@ public class AccessTokenInfo {
     private String transactionProcessingAccountName;
     private String riskAssessmentAccountName;
     private String merchantManagementAccountName;
+    private String fileProcessingAccountName;
     private String dataAccountID;
     private String disputeManagementAccountID;
     private String tokenizationAccountID;
     private String transactionProcessingAccountID;
     private String riskAssessmentAccountID;
     private String merchantManagementAccountID;
+    private String fileProcessingAccountID;
 }

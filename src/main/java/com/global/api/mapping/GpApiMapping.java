@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
+import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiMapping {
 
@@ -45,11 +46,13 @@ public class GpApiMapping {
     private static final String MERCHANT_EDIT_INITIATED = "MERCHANT_EDIT_INITIATED";
     private static final String FUNDS = "FUNDS";
     private static final String DOCUMENT_UPLOAD = "DOCUMENT_UPLOAD";
+    private static final String FILE_CREATE = "FILE_CREATE";
+    private static final String FILE_SINGLE = "FILE_SINGLE";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
 
-        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+        if (!isNullOrEmpty(rawResponse)) {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             transaction.setResponseCode(json.get("action").getString("result_code"));
@@ -58,7 +61,7 @@ public class GpApiMapping {
             transaction.setBalanceAmount(json.getAmount("amount"));
             transaction.setAuthorizedAmount(
                     json.getString("status").toUpperCase(Locale.ENGLISH).equals(TransactionStatus.Preauthorized.getValue().toUpperCase(Locale.ENGLISH)) &&
-                            !StringUtils.isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
+                            !isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
             );
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setReferenceNumber(json.getString("reference"));
@@ -85,7 +88,7 @@ public class GpApiMapping {
                 case PAYMENT_METHOD_EDIT:
                 case PAYMENT_METHOD_DELETE:
                     transaction.setToken(json.getString("id"));
-                    if (!StringUtils.isNullOrEmpty(json.getString("usage_mode"))) {
+                    if (!isNullOrEmpty(json.getString("usage_mode"))) {
                         transaction.setTokenUsageMode(getPaymentMethodUsageMode(json));
                     }
                     transaction.setTimestamp(json.getString("time_created"));
@@ -97,10 +100,10 @@ public class GpApiMapping {
                         transaction.setCardType(card.getString("brand"));
                         transaction.setCardNumber(card.getString("number"));
                         transaction.setCardLast4(card.getString("masked_number_last4"));
-                        if (!StringUtils.isNullOrEmpty(card.getString("expiry_month"))) {
+                        if (!isNullOrEmpty(card.getString("expiry_month"))) {
                             transaction.setCardExpMonth(card.getInt("expiry_month"));
                         }
-                        if (!StringUtils.isNullOrEmpty(card.getString("expiry_year"))) {
+                        if (!isNullOrEmpty(card.getString("expiry_year"))) {
                             transaction.setCardExpYear(card.getInt("expiry_year"));
                         }
                     }
@@ -274,7 +277,7 @@ public class GpApiMapping {
     }
 
     private static Boolean getIsMultiCapture(JsonDoc json) {
-        if (!StringUtils.isNullOrEmpty(json.getString("capture_mode"))) {
+        if (!isNullOrEmpty(json.getString("capture_mode"))) {
             switch (json.getString("capture_mode")) {
                 case "MULTIPLE":
                     return true;
@@ -798,7 +801,7 @@ public class GpApiMapping {
         }
 
         String timeToRespondBy = doc.getString("time_to_respond_by");
-        if (!StringUtils.isNullOrEmpty(timeToRespondBy)) {
+        if (!isNullOrEmpty(timeToRespondBy)) {
             summary.setRespondByDate(parseGpApiDateTime(timeToRespondBy));
         }
 
@@ -859,7 +862,7 @@ public class GpApiMapping {
 
         var riskAssessment = new RiskAssessment();
 
-        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+        if (!isNullOrEmpty(rawResponse)) {
 
             JsonDoc response = JsonDoc.parse(rawResponse);
 
@@ -982,13 +985,13 @@ public class GpApiMapping {
     }
 
     public static Transaction map3DSecureData(String rawResponse) throws ApiException {
-        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+        if (!isNullOrEmpty(rawResponse)) {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
             ThreeDSecure threeDSecure = new ThreeDSecure();
             threeDSecure.setServerTransactionId(json.getString("id"));
             threeDSecure.setProviderServerTransRef(
-                    !StringUtils.isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
+                    !isNullOrEmpty(json.get("three_ds").getString("server_trans_ref")) ?
                             json.get("three_ds").getString("server_trans_ref") :
                             null);
             threeDSecure.setStatus(json.getString("status"));
@@ -1008,20 +1011,20 @@ public class GpApiMapping {
                 // In other SDKs, enrolled is simply a String.
                 // In JAVA, enrolled was used in another connectors as boolean. So enrolledStatus was created as String for that purpose.
                 threeDSecure.setEnrolledStatus(three_ds.getString("enrolled_status"));
-                threeDSecure.setEnrolled(!StringUtils.isNullOrEmpty(three_ds.getString("enrolled_status")) && three_ds.getString("enrolled_status").equals("ENROLLED"));
-                threeDSecure.setEci(!StringUtils.isNullOrEmpty(three_ds.getString("eci")) ? three_ds.getString("eci") : null);
+                threeDSecure.setEnrolled(!isNullOrEmpty(three_ds.getString("enrolled_status")) && three_ds.getString("enrolled_status").equals("ENROLLED"));
+                threeDSecure.setEci(!isNullOrEmpty(three_ds.getString("eci")) ? three_ds.getString("eci") : null);
                 threeDSecure.setAcsInfoIndicator(three_ds.getStringArrayList("acs_info_indicator"));
                 threeDSecure.setChallengeMandated(three_ds.getString("challenge_status").equals("MANDATED"));
                 threeDSecure.setPayerAuthenticationRequest(
-                        !StringUtils.isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
+                        !isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
                                 three_ds.getString("challenge_value") :
                                 three_ds.get("method_data") != null ?
-                                        (!StringUtils.isNullOrEmpty(three_ds.get("method_data").getString("encoded_method_data")) ? three_ds.get("method_data").getString("encoded_method_data") : null) :
+                                        (!isNullOrEmpty(three_ds.get("method_data").getString("encoded_method_data")) ? three_ds.get("method_data").getString("encoded_method_data") : null) :
                                         null
                 );
 
                 // Mobile data
-                if (!StringUtils.isNullOrEmpty(json.getString("source")) && json.getString("source").equals("MOBILE_SDK")) {
+                if (!isNullOrEmpty(json.getString("source")) && json.getString("source").equals("MOBILE_SDK")) {
                     if (three_ds.has("mobile_data")) {
                         JsonDoc mobile_data = three_ds.get("mobile_data");
 
@@ -1036,7 +1039,7 @@ public class GpApiMapping {
                 }
 
                 threeDSecure.setIssuerAcsUrl(
-                        !StringUtils.isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
+                        !isNullOrEmpty(three_ds.getString("acs_challenge_request_url")) && json.getString("status").equals("CHALLENGE_REQUIRED") ?
                                 three_ds.getString("acs_challenge_request_url") :
                                 three_ds.getString("method_url")
                 );
@@ -1294,7 +1297,7 @@ public class GpApiMapping {
 
     @SuppressWarnings("unchecked")
     public static <T> T mapMerchantEndpointResponse(String rawResponse) throws GatewayException, UnsupportedTransactionException {
-        if (!StringUtils.isNullOrEmpty(rawResponse)) {
+        if (!isNullOrEmpty(rawResponse)) {
             JsonDoc json = JsonDoc.parse(rawResponse);
             String actionType = json.get("action").getString("type");
 
@@ -1352,8 +1355,8 @@ public class GpApiMapping {
                     }
 
                     if (json.has("contact_phone")) {
-                        if (!StringUtils.isNullOrEmpty(json.get("contact_phone").getString("country_code")) &&
-                                !StringUtils.isNullOrEmpty(json.get("contact_phone").getString("subscriber_number"))) {
+                        if (!isNullOrEmpty(json.get("contact_phone").getString("country_code")) &&
+                                !isNullOrEmpty(json.get("contact_phone").getString("subscriber_number"))) {
                             PhoneNumber phoneNumber = new PhoneNumber();
                             phoneNumber.setCountryCode(json.get("contact_phone").getString("country_code"));
                             phoneNumber.setNumber(json.get("contact_phone").getString("subscriber_number"));
@@ -1401,6 +1404,62 @@ public class GpApiMapping {
         return null;
     }
 
+    public static FileProcessor MapFileProcessingResponse(String rawResponse) throws UnsupportedTransactionException {
+        FileProcessor fp = new FileProcessor();
+        if (!isNullOrEmpty(rawResponse)) {
+            JsonDoc json = JsonDoc.parse(rawResponse);
+            JsonDoc actionJsonDoc = json.get("action");
+            String actionType = null;
+            if (actionJsonDoc != null) {
+                actionType = actionJsonDoc.getString("type");
+            }
+            switch (actionType) {
+                case FILE_CREATE:
+                    MapGeneralFileProcessingResponse(json, fp);
+                    fp.setCreatedDate(json.getString("time_created"));
+                    fp.setUploadUrl(json.getString("url"));
+                    fp.setExpirationDate(json.getString("expiration_date"));
+                    break;
+                case FILE_SINGLE:
+                    MapGeneralFileProcessingResponse(json, fp);
+                    if (json.has("response_files")) {
+                        fp.setFilesUploaded(new ArrayList<>());
+                        List<JsonDoc> responseFiles = json.getEnumerator("response_files");
+                        if (responseFiles == null) {
+                            responseFiles = new ArrayList<>();
+                        }
+
+                        for (JsonDoc responseFile : responseFiles) {
+                            FileUploaded file = new FileUploaded();
+                            file.setUrl(responseFile.getString("url"));
+                            file.setTimeCreated(responseFile.getString("time_created"));
+                            file.setExpirationDate(responseFile.getString("expiration_date"));
+                            file.setFileName(responseFile.getString("name"));
+                            file.setFileId(responseFile.getString("response_file_id"));
+                            fp.getFilesUploaded().add(file);
+                        }
+                    }
+                    break;
+                default:
+                    throw new UnsupportedTransactionException("Unknown action type " + actionType);
+            }
+        }
+
+        return fp;
+    }
+
+    private static void MapGeneralFileProcessingResponse(JsonDoc json, FileProcessor fp) {
+        fp.setResourceId(json.getString("id"));
+        fp.setStatus(json.getString("status"));
+        fp.setResponseMessage(json.getString("status"));
+        fp.setTotalRecordCount(json.getStringOrNull("total_record_count"));
+
+        JsonDoc actionJsonDoc = json.get("action");
+        if (actionJsonDoc != null) {
+            fp.setResponseCode(actionJsonDoc.getString("result_code"));
+        }
+    }
+
     private static List<PaymentMethodList> mapMerchantPaymentMethod(JsonDoc json) {
         List<PaymentMethodList> merchantPaymentList = new ArrayList<>();
 
@@ -1412,11 +1471,11 @@ public class GpApiMapping {
                 var bankTransfer = payment.get("bank_transfer");
                 var pm = new eCheck();
 
-                if (bankTransfer.has("account_holder_type") && !StringUtils.isNullOrEmpty(bankTransfer.getString("account_holder_type"))) {
+                if (bankTransfer.has("account_holder_type") && !isNullOrEmpty(bankTransfer.getString("account_holder_type"))) {
                     pm.setCheckType(CheckType.valueOf(bankTransfer.getString("account_holder_type")));
                 }
 
-                if (bankTransfer.has("account_type") && !StringUtils.isNullOrEmpty(bankTransfer.getString("account_type"))) {
+                if (bankTransfer.has("account_type") && !isNullOrEmpty(bankTransfer.getString("account_type"))) {
                     pm.setAccountType(AccountType.valueOf(bankTransfer.getString("account_type")));
                 }
 
