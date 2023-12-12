@@ -472,9 +472,9 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
 
         if (builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)
-                && hrc.equals(NtsHostResponseCode.HostSystemFailure)
+                && (hrc.equals(NtsHostResponseCode.HostSystemFailure)
                 || hrc.equals(NtsHostResponseCode.TerminalTimeout)
-                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection)) {
+                || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection))){
             resubmitNonApprovedToken.add(result.getTransactionToken());
             result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
         }else if(builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)

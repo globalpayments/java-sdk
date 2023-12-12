@@ -1,5 +1,11 @@
 # Changelog
 
+## v11.1.24 (12/12/23)
+### Enhancements
+[NTS Phase1 Issue]
+- Fixed issue of getting extra RTB token in the nonApprovedDataCollectToken list(Issue 10275)
+
+
 ## v11.1.23 (12/07/23)
 ### Enhancements
 - [GP-API] File Processing
@@ -10,7 +16,7 @@
  [NTS Phase1 Issue]
 - Fixed WEX Card EMV user data length(Issue- 10267).
 - Updated condition for User data when emv data is not sent in Wex Pre-Auth reversal request(Issue-10268).
-- Added missing required User data for WEX refund reversal request to fix format exception (Issue-10269).
+- Added missing required User data for WEX Sale reversal request to fix format exception (Issue-10269).
 
 ## v11.1.21 (11/30/23)
 ### Enhancements
