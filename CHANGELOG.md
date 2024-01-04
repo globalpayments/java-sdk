@@ -1,5 +1,10 @@
 # Changelog
 
+## v11.1.25 (01/04/24)
+### Fix
+[UPA]
+- Fixed issue with null transactionAmount.
+
 ## v11.1.24 (12/12/23)
 ### Enhancements
 [NTS Phase1 Issue]

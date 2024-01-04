@@ -1,7 +1,5 @@
 package com.global.api.tests.terminals.upa;
 
-import java.math.BigDecimal;
-
 import com.global.api.entities.AutoSubstantiation;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
@@ -14,11 +12,12 @@ import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
-
 import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
@@ -29,7 +28,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.1.130");
+        config.setIpAddress("192.168.1.176");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -74,7 +73,15 @@ public class UpaCreditTests {
         runBasicTests(response);
         assertEquals(new BigDecimal("12.03"), response.getTransactionAmount());
     }
+    @Test
+    public void partialAmountSaleContactless() throws ApiException
+    {
+        TerminalResponse response = device.creditSale(new BigDecimal("85.00"))
+                .execute();
 
+        runBasicTests(response);
+        assertEquals(new BigDecimal("55.00"), response.getAuthorizeAmount());
+    }
     @Test
     public void CardVerify() throws ApiException
     {
@@ -245,6 +252,24 @@ public class UpaCreditTests {
         assertNotNull(captureResponse);
         assertEquals("00", captureResponse.getResponseCode());
 
+    }
+
+    @Test
+    public void preAuthAndCapture() throws ApiException {
+        TerminalResponse response = device.creditAuth(new BigDecimal("10.00"))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+        assertEquals(new BigDecimal("10.00"), response.getTransactionAmount());
+
+        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("15"))
+                .withTerminalRefNumber(response.getTransactionId())
+                .withTransactionId(response.getTransactionId())
+                .execute();
+
+        assertNotNull(captureResponse);
+        assertEquals(new BigDecimal("15.00"), captureResponse.getTransactionAmount());
     }
     @Test
     public void creditSaleSwipe_withoutHSAFSA() throws ApiException

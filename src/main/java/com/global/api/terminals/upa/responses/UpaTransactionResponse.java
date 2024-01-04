@@ -5,6 +5,7 @@ import com.global.api.entities.enums.CardType;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.utils.JsonDoc;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 public class UpaTransactionResponse extends TerminalResponse {
@@ -60,8 +61,14 @@ public class UpaTransactionResponse extends TerminalResponse {
                 terminalRefNumber = host.getString("tranNo");
                 token = host.getString("tokenValue");
                 transactionId = host.getString("referenceNumber");
-                transactionAmount = host.getDecimal("amount");
+                transactionAmount = host.getDecimal("totalAmount");
 
+                if(transactionAmount == null){
+                    BigDecimal amount = host.getDecimal("amount");
+                    if(amount != null){
+                        transactionAmount = amount;
+                    }
+                }
                 if (host.getString(RESPONSE_ID) != null){
                     responsesId = host.getString(RESPONSE_ID);
                 }
@@ -127,10 +134,11 @@ public class UpaTransactionResponse extends TerminalResponse {
 
             if (transaction != null) {
 
-                if (transaction.getDecimal("amount") != null) {
-                    transactionAmount = transaction.getDecimal("amount");
-                }
+                if (transaction.getDecimal("totalAmount") != null) {
 
+                    transactionAmount = transaction.getDecimal("totalAmount");
+
+                }
                 if (transaction.getDecimal("tipAmount") != null) {
                     tipAmount = transaction.getDecimal("tipAmount");
                 }
