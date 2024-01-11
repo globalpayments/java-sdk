@@ -278,4 +278,21 @@ public class NtsVisaReadyLinkTest {
         // check response
         assertEquals("00", response.getResponseCode());
     }
+
+    // used only for code coverage.
+    @Test
+    public void test_loadReversal_CodeCoverageOnly() throws ApiException {
+
+        Transaction response = track.loadReversal(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withCardSequenceNumber("123")
+                .withUniqueDeviceId("  14")
+                .withModifier(TransactionModifier.OfflineDecline)
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
 }

@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsAuthCreditResponseMapper;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
@@ -25,8 +26,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class NtsGiftTests {
     // gateway config
@@ -1508,5 +1508,29 @@ public class NtsGiftTests {
 
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    // manual entry not allowed, used for code coverage scenario only.
+    @Test
+    public void test_SVS_Pre_Authorization_CodeCoverage() {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
+        card = NtsTestCards.GiftCardManual();
+        GatewayException exception = assertThrows(GatewayException.class,
+                () -> card.authorize(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .withSystemTraceAuditNumber(Stan)
+                        .execute());
+        assertEquals("Unexpected response from gateway: 70 FormatError", exception.getMessage());
+    }
+    @Test
+    public void test_SVS_Purchase_withTrack2_codeCoverage() throws ApiException {
+        card = NtsTestCards.svsCard();
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertNotNull(response);
     }
 }

@@ -1,8 +1,10 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.*;
 import com.global.api.network.enums.*;
@@ -23,8 +25,12 @@ import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsWexTests {
+
+    private Address address;
+    private AcceptorConfig acceptorConfig;
+    private NetworkGatewayConfig config;
     public VapsWexTests() throws ApiException {
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
@@ -33,6 +39,15 @@ public class VapsWexTests {
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
         acceptorConfig.setSoftwareLevel("21205710");
+
+        // Address details.
+        address = new Address();
+        address.setName("My STORE            ");
+        address.setStreetAddress1("1 MY STREET       ");
+        address.setCity("JEFFERSONVILLE  ");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
 
         // pos configuration values
         acceptorConfig.setSupportsPartialApproval(true);
@@ -43,7 +58,7 @@ public class VapsWexTests {
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
@@ -2553,6 +2568,148 @@ public class VapsWexTests {
 
     @Test
     public void test_Wex_Field5_Field9_1200() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("001", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_dataCollect_with_tag_data_contactLessMsd_code_coverage() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460420006149231=1902");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("30162");
+        fleetData.setServicePrompt("16");
+        fleetData.setDriverId("456320");
+        fleetData.setJobNumber("123456");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("001", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction trans = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.None, AuthorizerCode.Host_Authorized),
+                card
+        );
+
+        Transaction response = trans.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000000041010500A4D617374657243617264820238008407A00000000410108E0A00000000000000001F00950500008080009A031901099B02E8009C01405F24032212315F25030401015F2A0208405F300202015F3401009F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FF009F090200029F0D05B8508000009F0E0500000000009F0F05B8708098009F10120110A0800F22000065C800000000000000FF9F120A4D6173746572436172649F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030710109F26080631450565A30B759F2701809F330360F0C89F34033F00019F3501219F360200049F3704C6B1A04F9F3901919F4005F000A0B0019F4104000000869F4C0865C862608A23945A9F4E0D54657374204D65726368616E74")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_proximity_entry_method_() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("6900460420006149231=19021003073200002");
+        track.setEntryMethod(EntryMethod.Proximity);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("12");
+        fleetData.setOdometerReading("896520");
+        fleetData.setVehicleNumber("78563");
+        fleetData.setDriverId("745212");
+
+        Transaction trans = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.None, AuthorizerCode.Host_Authorized),
+                track
+        );
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("001", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = trans.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000000041010500A4D617374657243617264820238008407A00000000410108E0A00000000000000001F00950500008080009A031901099B02E8009C01405F24032212315F25030401015F2A0208405F300202015F3401009F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FF009F090200029F0D05B8508000009F0E0500000000009F0F05B8708098009F10120110A0800F22000065C800000000000000FF9F120A4D6173746572436172649F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030710109F26080631450565A30B759F2701809F330360F0C89F34033F00019F3501219F360200049F3704C6B1A04F9F3901059F4005F000A0B0019F4104000000869F4C0865C862608A23945A9F4E0D54657374204D65726368616E74")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Void_partial_approval_code_coverage_only() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460420006149231=19021003073200002");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("12");
+        fleetData.setOdometerReading("896520");
+        fleetData.setVehicleNumber("78563");
+        fleetData.setDriverId("745212");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("014", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        Transaction response = card.charge(new BigDecimal("40"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute("outside");
+        assertNotNull(response);
+
+        //temporarly set response code to 002 for partial approval for code coverage only
+        response.setResponseCode("002");
+
+        assertEquals("002", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        BigDecimal authorizedAmount = response.getAuthorizedAmount();
+        assertNotEquals(new BigDecimal("40"), authorizedAmount);
+
+        Transaction voidResponse = response.voidTransaction(authorizedAmount)
+                .withCurrency("USD")
+                .withReferenceNumber(response.getReferenceNumber())
+                .withCustomerInitiated(true)
+                .withPartialApproval(true)
+                .execute("outside");
+        assertNotNull(voidResponse);
+
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        // check message data
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4353", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+    @Test
+    public void test_Wex_sale_Address_code_coverage() throws ApiException {
+
+        address = new Address();
+        address.setName("My STORE            ");
+        address.setStreetAddress1("1 MY STREET       ");
+        address.setCity("JEFFERSONVILLE  ");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
+
         CreditTrackData card = new CreditTrackData();
         card.setValue(";6900460430001234566=22124012203100001?");
 

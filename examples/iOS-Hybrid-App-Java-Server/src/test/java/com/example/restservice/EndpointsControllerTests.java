@@ -19,12 +19,13 @@ public class EndpointsControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;
+	public static final String ACCESS_TOKEN_ENDPOINT = "/accesstoken";
 
 	@Test
 	public void getAccessToken() throws Exception {
 
 		this.mockMvc
-				.perform(post(GpApiRequest.ACCESS_TOKEN_ENDPOINT)
+				.perform(post(ACCESS_TOKEN_ENDPOINT)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(
 									"{"																			+

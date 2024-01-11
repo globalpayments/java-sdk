@@ -29,14 +29,14 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsEbtTests {
     private EBTTrackData cashCard;
     private EBTTrackData foodCard;
+    private AcceptorConfig acceptorConfig;
+    private NetworkGatewayConfig config;
 
     public VapsEbtTests() throws ApiException {
         Address address = new Address();
@@ -47,7 +47,7 @@ public class VapsEbtTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
@@ -66,7 +66,7 @@ public class VapsEbtTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
@@ -565,5 +565,31 @@ public class VapsEbtTests {
 
         // check result
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_sale_address_null_for_code_coverage_only() throws ApiException {
+
+        acceptorConfig.setAddress(null);
+        config.setAcceptorConfig(acceptorConfig);
+
+        BuilderException builderException = assertThrows(BuilderException.class,()->{
+            cashCard.charge(new BigDecimal(10))
+                    .withCurrency("USD")
+                    .execute();
+        });
+        assertEquals("The address in the acceptor config cannot be null for PIN based transactions.", builderException.getMessage());
+
+    }
+
+    @Test
+    public void test_resubmit_token_null_code_coverage() throws ApiException {
+
+        UnsupportedTransactionException unsupportedTransactionException = assertThrows(UnsupportedTransactionException.class, ()->{
+            Transaction response = cashCard.authorize(new BigDecimal(10))
+                    .withCurrency("USD")
+                    .execute();
+            assertNotNull(response);
+        });
+        assertEquals("Authorizations are not allowed for EBT cards.", unsupportedTransactionException.getMessage());
     }
 }

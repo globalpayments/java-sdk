@@ -2,6 +2,7 @@ package com.global.api.tests.network.nws;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.enums.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
@@ -41,13 +42,13 @@ public class NWSTimeRequestTest {
         acceptorConfig.setSupportsEmvPin(true);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        NetworkGatewayConfig config = new NetworkGatewayConfig(Target.NWS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
-        config.setSecondaryEndpoint("test.txns.secureexchange.net");
+        config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
-        config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setCompanyId("SPSA");
+        config.setTerminalId("NWSJAVA05");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());

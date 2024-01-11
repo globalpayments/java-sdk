@@ -8,6 +8,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.events.IGatewayEvent;
 import com.global.api.gateways.events.IGatewayEventHandler;
 import com.global.api.network.entities.NtsProductData;
@@ -33,8 +34,7 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NtsCreditTest {
@@ -2868,6 +2868,8 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
 
+        System.out.println("token:  "+response.getTransactionToken());
+
         Transaction capture = NetworkService.resubmitDataCollect(response.getTransactionToken())
                 .execute();
         assertNotNull(capture);
@@ -3225,5 +3227,317 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    // throws ApiException,used for code coverage scenario only.
+    @Test
+    public void test_visa_sale_withNoTrackEntryMethod_CodeCoverage() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        productData = getProductDataForNonFleetBankCards(track);
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.ContactEMV);
+        track.setTrackNumber(TrackNumber.Unknown);
+
+        ApiException bookNotFoundException = assertThrows(ApiException.class,
+                () -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(header)
+                        .withUniqueDeviceId("0102")
+                        .withNtsProductData(productData)
+                        .withNtsTag16(tag)
+                        .withCvn("123")
+                        .execute());
+
+        assertEquals("For input string: \"E00\"", bookNotFoundException.getMessage());
+    }
+
+    // throws Gateway Exception , used only for code coverage.
+    @Test
+    public void test_DataCollect_Individual_CodeCoverageOnly() throws ApiException {
+        track.setEntryMethod(null);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+              //  .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        GatewayException formatException = assertThrows(GatewayException.class,
+                () -> transaction.capture(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withNtsRequestMessageHeader(header)
+                        .withNtsTag16(tag)
+                        .execute());
+
+        assertEquals("Unexpected response from gateway: 70 FormatError", formatException.getMessage());
+    }
+
+    // used only for code coverage
+    @Test
+    public void test_RetransmitCreditAdjustment_Individual_CodeCoverageOnly() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.RetransmitCreditAdjustment);
+        Transaction retransmitResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertEquals("00",retransmitResponse.getResponseCode());
+    }
+
+    // throws Gateway Exception , used only for code coverage.
+    @Test
+    public void test_VoidTransactionEcomInfo_Individual_CodeCoverageOnly() throws ApiException {
+        card = TestCards.VisaManual();
+        EcommerceInfo info = new EcommerceInfo();
+        info.setChannel(EcommerceChannel.Ecom);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(card)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("02")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        GatewayException formatException = assertThrows(GatewayException.class,
+                () -> transaction.voidTransaction(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                        .withNtsRequestMessageHeader(header)
+                        .withEcommerceInfo(info)
+                        .withNtsTag16(tag)
+                        .execute());
+
+        assertEquals("Unexpected response from gateway: 50 InvalidCard", formatException.getMessage());
+    }
+
+    // used only for code coverage.
+    @Test
+    public void test_VoidTransaction_withEMVData_CodeCoverageOnly() throws ApiException {
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("02")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withSystemTraceAuditNumber("1234")
+                .withVisaTransactionId("1234")
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+     Transaction response = transaction.voidTransaction(new BigDecimal(10))
+                        .withNtsRequestMessageHeader(header)
+                        .withNtsTag16(tag)
+                        .withTagData(emvTagData)
+                        .execute();
+     assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_authorize_codeCoverageOnly() throws ApiException {
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withModifier(TransactionModifier.ChipDecline)
+                .withTagData(emvTagData)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    // used only for code coverage.
+    @Test
+    public void test_ReverseTransaction_withEMVDataAndTransactionModifier_CodeCoverageOnly() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("03")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction reverseResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        // check response
+        assertEquals("00", reverseResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_authorizeIncorrectFormatException_codeCoverageOnly_01() throws ApiException {
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        GatewayException formatException = assertThrows(GatewayException.class,
+                () -> track.authorize(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(header)
+                        .withUniqueDeviceId("0102")
+                        .withNtsTag16(tag)
+                        .withModifier(TransactionModifier.ChipDecline)
+                        .withTagData(emvTagData)
+                        .execute());
+
+        assertEquals("Unexpected response from gateway: 70 FormatError", formatException.getMessage());
+    }
+
+    @Test
+    public void test_authorizeIncorrectFormatException_withEcomData_codeCoverageOnly_02() throws ApiException {
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        header.setNtsMessageCode(NtsMessageCode.RetransmitCreditAdjustment);
+        GatewayException formatException = assertThrows(GatewayException.class,
+                () -> track.authorize(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(header)
+                        .withUniqueDeviceId("0102")
+                        .withNtsTag16(tag)
+                        .withModifier(TransactionModifier.ChipDecline)
+                        .withTagData(emvTagData)
+                        .withEcommerceData1("12345")
+                        .withEcommerceData2("56789")
+                        .execute());
+
+        assertEquals("Unexpected response from gateway: 70 FormatError", formatException.getMessage());
+    }
+
+    @Test
+    public void test_MasterFleet_sale_OtherNonFuel_codeCoverageOnly() throws ApiException {
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.Other_NonFuel, track);
+        productData.addFuel(NtsProductCode.Cng,UnitOfMeasure.ImperialGallons,1,23,12);
+        productData.addFuel(NtsProductCode.Cng,UnitOfMeasure.Liters,1,20,10);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.Dairy, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.Candy, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    // used only for code coverage
+    @Test
+    public void test_DataCollect_withZipCode_CodeCoverageOnly() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.RetransmitCreditAdjustment);
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .withCardSequenceNumber("12345")
+                .withZipCode("12345")
+                .execute();
+        assertEquals("00",response.getResponseCode());
+    }
+
+    //used only for code coverage scenario.
+    @Test(expected = NullPointerException.class)
+    public void test_DataCollect_withZipCode_CodeCoverage() throws ApiException {
+        track.setPan(null);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+    }
+
+    @Test
+    public void test_001_sales_timeoutValueCheck_codeCoverage() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        productData = getProductDataForNonFleetBankCards(card);
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getNtsResponse().getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getTimeoutValue());
     }
 }

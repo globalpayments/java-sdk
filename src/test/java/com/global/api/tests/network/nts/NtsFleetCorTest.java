@@ -1171,4 +1171,39 @@ public class NtsFleetCorTest {
         assertNotNull(response);
         assertEquals("12", response.getResponseCode());
     }
+    // used only for code coverage
+    @Test
+    public void test_DataCollect_withZipCode_CodeCoverageOnly() throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        productData = new NtsProductData(ServiceLevel.FullServe, card);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .withCardSequenceNumber("12345")
+                .withZipCode("12345")
+                .execute();
+        assertEquals("00",response.getResponseCode());
+    }
 }

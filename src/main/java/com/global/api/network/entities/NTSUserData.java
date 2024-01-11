@@ -1169,6 +1169,19 @@ public class NTSUserData {
                     rearrangeProductQntLen(nonFuel);
                 }
                 nonFuelSize = nonFuel.size();
+                if(nonFuel.size() >= 6 && nonFuel.get(5).getQuantity().intValue() > 9){
+                    double quantity = nonFuel.get(5).getQuantity().intValue() - 9;
+                    double price = nonFuel.get(5).getPrice().doubleValue();
+                    productData.addNonFuel("400",nonFuel.get(5).getUnitOfMeasure(),1,price,quantity * price);
+                    nonFuel.get(5).setQuantity(new BigDecimal(9));
+                    nonFuel.get(5).setAmount(new BigDecimal(9*price));
+                }
+                nonFuel = productData.getNonFuelDataEntries();
+                if(nonFuel.size() >= 7 && nonFuel.get(6).getQuantity().intValue() > 9){
+                    nonFuel.get(6).setCode("400");
+                    nonFuel.get(6).setQuantity(new BigDecimal(1));
+                }
+                nonFuelSize = nonFuel.size();
 
                 int x = productData.getFuelDataEntries().size() >= 2 ? 1 : 0;
                 if (nonFuelSize > rollUpAt) {
@@ -1673,27 +1686,6 @@ public class NTSUserData {
 
     private static void rearrangeProductQntLen(List<DE63_ProductDataEntry> nonFuel) {
         Map<Integer,List<Integer>> indexNumber = findIndex(nonFuel);
-        for(Map.Entry<Integer,List<Integer>> entry: indexNumber.entrySet()) {
-            if (entry.getKey() == 1) {
-                if (!nonFuel.isEmpty() && nonFuel.size() >= 7) {
-                    int qntLenP7 = String.valueOf(nonFuel.get(6).getQuantity().intValue()).length();
-                    if (qntLenP7 != 1) {
-                        for (int k : entry.getValue()) {
-                            Collections.swap(nonFuel, 6, k);
-                        }
-                    }
-                }
-                if (!nonFuel.isEmpty() && nonFuel.size() >= 6) {
-                    int qntLenP6 = String.valueOf(nonFuel.get(5).getQuantity().intValue()).length();
-                    if (qntLenP6 != 1) {
-                        for (int k : entry.getValue()) {
-                            Collections.swap(nonFuel, 5, k);
-                        }
-                    }
-                }
-            }
-        }
-        indexNumber = findIndex(nonFuel);
         for(Map.Entry<Integer,List<Integer>> entry: indexNumber.entrySet()) {
             if (entry.getKey() == 2 && (!nonFuel.isEmpty() && nonFuel.size() >= 5)) {
                 int qntLenP5 = String.valueOf(nonFuel.get(4).getQuantity().intValue()).length();

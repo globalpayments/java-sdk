@@ -30,6 +30,10 @@ public class NWSTokenizationTest {
     private CreditCardData card;
     private CreditTrackData track;
 
+    private NetworkGatewayConfig config;
+
+    private AcceptorConfig acceptorConfig;
+
     public NWSTokenizationTest() throws ApiException {
 
         Address address = new Address();
@@ -40,7 +44,7 @@ public class NWSTokenizationTest {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
@@ -74,7 +78,7 @@ public class NWSTokenizationTest {
         //card num 165473500000000014
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig(Target.NWS);
+        config = new NetworkGatewayConfig(Target.NWS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
@@ -104,6 +108,8 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_file_action() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        ServicesContainer.configureService(config);
         card = TestCards.MasterCardManual();
         card.setTokenizationData("5473500000000014");
         Transaction response = card.fileAction()
@@ -1590,6 +1596,18 @@ public class NWSTokenizationTest {
         Transaction reverseResponse = response.voidTransaction().execute();
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_001_credit_manual_auth_default_codecoverage() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeleteToken);
+        card = TestCards.MasterCardManual();
+        card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
 

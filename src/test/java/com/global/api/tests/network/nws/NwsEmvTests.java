@@ -521,5 +521,122 @@ public class NwsEmvTests {
         assertEquals("000", response.getResponseCode());
     }
 
+    @Test
+    public void test_Authorization_wex_otp_codeCoverage() throws ApiException {
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config);
+
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46561");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014656100000");
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901919F4005F000F0A0019F410400000000")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_discover_auth_reversal_IPT_codeCoverage() throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        track = new CreditTrackData();
+        track = TestCards.DiscoverSwipe();
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData(emvTagData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+//         check response
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+        response.setNtsData(ntsData);
+
+        Transaction reversal = response.reverse(new BigDecimal(1))
+                .withCurrency("USD")
+                .withTagData("4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901919F4005F000F0A0019F410400000000")
+                .execute();
+        assertNotNull(reversal);
+
+        // check message data
+        pmi = reversal.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4021", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_discover_auth_reversal_IPT_codeCoverage01() throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        track = new CreditTrackData();
+        track = TestCards.DiscoverSwipe();
+        track.setEntryMethod(EntryMethod.Proximity);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData(null)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+//         check response
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+        response.setNtsData(ntsData);
+
+        Transaction reversal = response.reverse(new BigDecimal(1))
+                .withCurrency("USD")
+                .withTagData(null)
+                .execute();
+        assertNotNull(reversal);
+
+        // check message data
+        pmi = reversal.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4021", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", reversal.getResponseCode());
+    }
+
 
 }

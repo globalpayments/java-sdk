@@ -258,4 +258,22 @@ public class VapsGiftTests {
         assertNotNull(voidResponse);
         assertEquals("400", voidResponse.getResponseCode());
     }
+
+    @Test
+    public void heartland_giftCard_add_value() throws ApiException {
+
+        giftCard = TestCards.GiftCard2Manual();
+        Transaction trans = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                NtsData.voiceAuthorized(),
+                giftCard
+        );
+
+        Transaction response = trans.capture()
+                .withReferenceNumber("12345")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
 }

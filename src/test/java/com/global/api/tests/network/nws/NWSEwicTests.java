@@ -124,6 +124,13 @@ public class NWSEwicTests {
     }
     @Test
     public void test_001_swipe_sale() throws ApiException {
+        DE117_WIC_Data_Field_EA eaData = new DE117_WIC_Data_Field_EA();
+        eaData.setUpcData("11110583000");
+        eaData.setCategoryCode("2");
+        eaData.setSubCategoryCode("2");
+        eaData.setBenefitQuantity("500");
+        eaData.setItemDescription("desc");
+        ewicData.add(eaData);
         Transaction response = track.charge(new BigDecimal(10))
                 .withEWICData(ewicData)
                 .withCurrency("USD")

@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.network.entities.NtsPDLData;
 import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.nts.NtsPDLResponse;
 import com.global.api.network.entities.nts.NtsPDLResponseData;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.nts.PriorMessageInfo;
@@ -196,5 +197,35 @@ public class NtsPDLTest {
 
         System.out.println(userDataResponse.toString());
 
+    }
+
+    @Test
+    public void test_single_PDL_fetch_tableDataBlockLengthValidation_codeCoverage() throws ApiException {
+       // PDL configurations.
+        NtsPDLData ntsPDLData = new NtsPDLData();
+        ntsPDLData.setParameterType(PDLParameterType.RequestAllParameter);
+        ntsPDLData.setParameterVersion("020");
+        ntsPDLData.setBlockSequenceNumber("00");
+
+        Transaction response = NetworkService.fetchPDL(TransactionType.PDL)
+                .withPDLData(ntsPDLData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+
+        NtsPDLResponseData pdlResponseData = (NtsPDLResponseData) response.getNtsResponse().getNtsResponseMessage();
+        pdlResponseData.getNetworkParameterCode();
+        pdlResponseData.getAccessCode();
+        pdlResponseData.getPrimaryNumber();
+        pdlResponseData.getSecondaryNumber();
+        pdlResponseData.getPollCode();
+        pdlResponseData.getUnitParameterCode();
+        pdlResponseData.getUnitLength();
+        pdlResponseData.getUnitName();
+        pdlResponseData.getUnitAddress();
+        pdlResponseData.getUnitCity();
+        pdlResponseData.getUnitState();
+        pdlResponseData.getUserParameterCode();
+        assertNotNull(pdlResponseData);
     }
 }

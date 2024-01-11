@@ -44,7 +44,9 @@ public class EndpointsController {
 	private static final String GP_API_CONFIG_NAME = "GP_API_CONFIG_FOR_IOS_APP_SERVER_SIDE";
 	private final AtomicLong counter = new AtomicLong();
 
-	@PostMapping(GpApiRequest.ACCESS_TOKEN_ENDPOINT)
+	public static final String ACCESS_TOKEN_ENDPOINT = "/accesstoken";
+
+	@PostMapping(ACCESS_TOKEN_ENDPOINT)
 	@ResponseBody
 	public AccessTokenOutput getAccessToken(@RequestBody AccessTokenInput input) throws GatewayException, ConfigurationException {
 

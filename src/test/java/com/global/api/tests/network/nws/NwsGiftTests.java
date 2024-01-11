@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 
 public class NwsGiftTests {
     private GiftCard giftCard;
+    private NetworkGatewayConfig config;
 
     public NwsGiftTests() throws ApiException {
         Address address = new Address();
@@ -60,7 +61,7 @@ public class NwsGiftTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig(Target.NWS);
+        config = new NetworkGatewayConfig(Target.NWS);
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
@@ -376,4 +377,28 @@ public class NwsGiftTests {
         assertEquals("400", reversal.getResponseCode());
 
     }
+
+    //For code coverage
+    @Test
+    public void giftCard_authorize01() throws ApiException {
+        giftCard = TestCards.GiftCard2Manual();
+        ServicesContainer.configureService(config);
+        Transaction response = giftCard.authorize(new BigDecimal(10.00))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void giftCard_authorize02() throws ApiException {
+       giftCard = TestCards.SvsManual();
+        ServicesContainer.configureService(config);
+        Transaction response = giftCard.authorize(new BigDecimal(10.00))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
 }

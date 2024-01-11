@@ -1,9 +1,11 @@
 package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -110,9 +112,7 @@ public class NtsDebitTest {
         track = new DebitTrackData();
         track.setValue(";720002123456789=2512120000000000001?9  ");
          track.setEntryMethod(EntryMethod.Swipe); //For EMV test cases
-//        track.setEntryMethod(EntryMethod.Magnetic_stripe_track2_data_unattended_AFD);
-        track.setPinBlock("78FBB9DAEEB14E5AA504010005E0003C    ");
-        //track.setEncryptionData(encryptionData);
+        track.setPinBlock("78FBB9DAEEB14E5A504010005E0003C     ");
         track.setCardType("PinDebit");
     }
 
@@ -1393,5 +1393,126 @@ public class NtsDebitTest {
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .execute();
         assertNotNull(dataCollectResponse);
+    }
+
+    // used only for code coverage
+    @Test
+    public void test_DataCollect_IncorrectFormat_CodeCoverageOnly() throws ApiException {
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0713")
+                .withTransactionTime("090530")
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        GatewayException incorrectFormatException = assertThrows(GatewayException.class,
+                () -> transaction.capture(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withTimestamp("230523090550")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .withSettlementAmount(new BigDecimal(5))
+                        .withNtsTag16(getTag16())
+                        .execute());
+    }
+
+    @Test
+    public void test_PinDebit_withdrawalReversal_CodeCoverage() {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0821")
+                .withTransactionTime("090520")
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        TransactionReference reference = new TransactionReference();
+        reference.setOriginalPaymentMethod(track).setOriginalTransactionCode(TransactionCode.Withdrawal);
+        reference.setOriginalPaymentMethod(track).setOriginalAmount(new BigDecimal(10));
+        reference.setOriginalTransactionTime("095550");
+        reference.setOriginalTransactionDate("0729");
+        transaction.setTransactionReference(reference);
+
+        GatewayException incorrectFormat2 = assertThrows(GatewayException.class,
+                () -> transaction.reverse(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withNtsTag16(getTag16())
+                        .withSettlementAmount(new BigDecimal(12))
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .execute());
+        assertNotNull(incorrectFormat2);
+    }
+
+    @Test
+    public void test_PinDebit_purchaseReturnReversal_CodeCoverage() {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0821")
+                .withTransactionTime("090520")
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        TransactionReference reference = new TransactionReference();
+        reference.setOriginalPaymentMethod(track).setOriginalTransactionCode(TransactionCode.PurchaseReturn);
+        reference.setOriginalPaymentMethod(track).setOriginalAmount(new BigDecimal(10));
+        reference.setOriginalTransactionTime("095550");
+        reference.setOriginalTransactionDate("0729");
+        transaction.setTransactionReference(reference);
+
+        GatewayException incorrectFormat2 = assertThrows(GatewayException.class,
+                () -> transaction.reverse(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withNtsTag16(getTag16())
+                        .withSettlementAmount(new BigDecimal(12))
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .execute());
+        assertNotNull(incorrectFormat2);
+    }
+
+    @Test
+    public void test_PreauthCompletion_purchaseReturn_CodeCoverage() {
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0821")
+                .withTransactionTime("090520")
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        transaction.setOrigionalAmount(new BigDecimal(10));
+        TransactionReference reference = new TransactionReference();
+        reference.setOriginalPaymentMethod(track).setOriginalTransactionCode(TransactionCode.PurchaseReturn);
+        reference.setOriginalPaymentMethod(track).setOriginalAmount(new BigDecimal(10));
+        reference.setOriginalTransactionTime("095550");
+        reference.setOriginalTransactionDate("0729");
+        transaction.setTransactionReference(reference);
+
+        GatewayException incorrectFormat2 = assertThrows(GatewayException.class,
+                () -> transaction.preAuthCompletion(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withNtsTag16(getTag16())
+                        .withSettlementAmount(new BigDecimal(12))
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .execute());
+        assertNotNull(incorrectFormat2);
     }
 }

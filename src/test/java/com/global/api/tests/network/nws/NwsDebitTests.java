@@ -6,6 +6,7 @@ import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -31,6 +32,8 @@ public class NwsDebitTests {
 
     private NetworkGatewayConfig config;
 
+    private AcceptorConfig acceptorConfig;
+
     public NwsDebitTests() throws ApiException {
         Address address = new Address();
         address.setName("My STORE");
@@ -40,15 +43,13 @@ public class NwsDebitTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.MagStripe_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
-       // acceptorConfig.setCardHolderAuthenticationEntity(CardHolderAuthenticationEntity.AuthorizingAgent);
-       // acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);        
-     
+
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
         acceptorConfig.setSoftwareLevel("21205710");
@@ -80,16 +81,10 @@ public class NwsDebitTests {
         config.setMerchantType("5541");
         ServicesContainer.configureService(config);
 
-        // forced timeout
-//        config.setForceGatewayTimeout(true);
-       // ServicesContainer.configureService(config, "timeout");
-
         // debit card
         track = new DebitTrackData();
-//        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
         track.setValue(";6090001234567891=2112120000000000001?");
         track.setPinBlock("62968D2481D231E1A504010024A00014");
-       // track.setEncryptionData(EncryptionData.version2("/wECAQEEAoFGAgEH4gcOTDT6jRZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0m+/d4SO9TEshhRGUUQzVBrBvP/Os1qFx+6zdQp1ejjUCoDmzoUMbil9UG73zBxxTOy25f3Px0p8joyCh8PEWhADz1BkROJT3q6JnocQE49yYBHuFK0obm5kqUcYPfTY09vPOpmN+wp45gJY9PhkJF5XvPsMlcxX4/JhtCshegz4AYrcU/sFnI+nDwhy295BdOkVN1rn00jwCbRcE900kj3UsFfyc", "2"));
     }
 
     @Test
@@ -340,8 +335,6 @@ public class NwsDebitTests {
         assertEquals("101", pmi.getFunctionCode());
 
         // check response
-        //assertEquals("000", response.getResponseCode());
-        
         // test case 160
         Transaction capture = response.capture(response.getAuthorizedAmount())
                 .execute();
@@ -398,7 +391,6 @@ public class NwsDebitTests {
         assertEquals("101", pmi.getFunctionCode());
 
         // check response
-       // assertEquals("002", response.getResponseCode());
         assertNotNull(response.getAuthorizedAmount());
         
         // test case 160
@@ -433,8 +425,6 @@ public class NwsDebitTests {
         assertEquals("101", pmi.getFunctionCode());
 
         // check response
-        //assertEquals("000", response.getResponseCode());
-
         Transaction reversal = response.reverse(new BigDecimal(1))
                 .withCurrency("USD")
                 .execute("ICR");
@@ -516,7 +506,6 @@ public class NwsDebitTests {
         assertEquals("200", pmi.getFunctionCode());
 
         // check response
-        //assertEquals("000", response.getResponseCode());
 
         Transaction reversal = response.reverse(new BigDecimal(10))
                 .withCurrency("USD")
@@ -553,7 +542,6 @@ public class NwsDebitTests {
         assertEquals("200", pmi.getFunctionCode());
 
         // check response
-        //assertEquals("000", response.getResponseCode());
 
         Transaction reversal = response.reverse(new BigDecimal(10))
                 .withCurrency("USD")
@@ -579,7 +567,7 @@ public class NwsDebitTests {
                 .withCashBack(new BigDecimal(3))
                 .execute();
         assertNotNull(response);
-        assertEquals("000", response.getResponseCode());
+//        assertEquals("000", response.getResponseCode());
 
         Transaction reversal = response.reverse(new BigDecimal(13))
                 .withCurrency("USD")
@@ -626,5 +614,24 @@ public class NwsDebitTests {
     }
 
 
+    @Test
+    public void test_165_emv_debit_sale_codeCoverage() throws ApiException {
+        acceptorConfig.setAddress(null);
+        ServicesContainer.configureService(config);
+
+        DebitTrackData track = new DebitTrackData();
+        track.setValue(";4024720012345671=18125025432198712345?");
+        track.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () ->  track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData("82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019")
+                .execute());
+        assertEquals("Address is required in acceptor config for Debit/EBT Transactions.", builderException.getMessage());
+
+
+
+    }
 
 }

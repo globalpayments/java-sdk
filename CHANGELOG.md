@@ -1,5 +1,14 @@
 # Changelog
 
+## Latest Version - v11.1.26 (01/11/24)
+### Enhancements
+- [NTS Phase1 Issue]
+  - NTS_Issue_10233_wex_product_roll_up_for_quantity6.
+- [VAPS Issue]
+  - Issue_10277_8583_DUKPT_TDES_Encryption_error_for_Data_collects.
+- Java code coverage enhancement.
+- Microscopic Issue fixes
+
 ## v11.1.25 (01/04/24)
 ### Fix
 [UPA]

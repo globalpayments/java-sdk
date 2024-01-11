@@ -7,6 +7,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
+import com.global.api.network.entities.nts.NtsRequestPendingMessagesResponse;
 import com.global.api.network.entities.nts.PriorMessageInfo;
 import com.global.api.network.enums.CardDataInputCapability;
 import com.global.api.network.enums.CardHolderAuthenticationCapability;
@@ -42,6 +43,7 @@ public class NtsRequestPendingMessagesTest {
 
             ntsRequestMessageHeader.setTerminalDestinationTag("478");
             ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+            ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PendingMessage);
 
             priorMessageInformation =new PriorMessageInformation();
             priorMessageInformation.setResponseTime("999");
@@ -113,6 +115,21 @@ public class NtsRequestPendingMessagesTest {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+    @Test
+    public void RequestPendingMessages_responseParameterChecking_codeCoverage() throws ApiException {
+
+        Transaction response = NetworkService.sendRequestPendingMesssages()
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        NtsRequestPendingMessagesResponse pendingMessagesResponse = (NtsRequestPendingMessagesResponse) response.getNtsResponse().getNtsResponseMessage();
+        assertNotNull(pendingMessagesResponse.getPendingFutureIndicators());
+        assertNotNull(pendingMessagesResponse.getPendingMailIndicator());
+        assertNotNull(pendingMessagesResponse.getPendingParameterIndicator());
     }
 }
 

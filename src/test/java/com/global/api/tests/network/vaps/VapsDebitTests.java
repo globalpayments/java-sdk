@@ -6,10 +6,9 @@ import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.DebitAuthorizerCode;
-import com.global.api.entities.enums.Host;
-import com.global.api.entities.enums.HostError;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.abstractions.IBatchProvider;
@@ -19,6 +18,8 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
+import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
@@ -29,6 +30,7 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
@@ -40,6 +42,8 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapsDebitTests {
     private DebitTrackData track;
+    private AcceptorConfig acceptorConfig;
+    private NetworkGatewayConfig config;
 
     public VapsDebitTests() throws ApiException {
         Address address = new Address();
@@ -50,7 +54,7 @@ public class VapsDebitTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
@@ -70,7 +74,7 @@ public class VapsDebitTests {
         acceptorConfig.setPinlessDebit(true);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
@@ -846,4 +850,231 @@ public class VapsDebitTests {
         assertNotNull(capture);
         assertEquals("000", capture.getResponseCode());
     }
+
+    @Test
+    public void test_reverse_sale_cashBack_code_coverage_only() throws ApiException {
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        //invalid pin block
+        track.setPinBlock("00000000000000000000000000000000");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("126",response.getResponseCode());
+
+        Transaction reversal = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+
+        assertEquals("000", reversal.getResponseCode());
+
+    }
+    @Test
+    public void test_DataCollect_Individual_CodeCoverageOnly() throws ApiException {
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("1"))
+                .withAuthorizedAmount(new BigDecimal(10))
+                .withAuthorizationCode("777666")
+                .withNtsData(new NtsData())
+                .withPaymentMethod(track)
+                .withMessageTypeIndicator("1100")
+                .withSystemTraceAuditNumber("001996")
+                .withTransactionTime("090540")
+                .withProcessingCode("000800")
+                .build();
+
+        GatewayException pinBlockError = assertThrows(GatewayException.class,
+                () -> rebuild.capture(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .execute());
+
+        assertEquals("Unexpected response from gateway: 70 FormatError", pinBlockError.getMessage());
+    }
+    @Test
+    public void test_entry_method_proximity_code_coverage() throws ApiException {
+        track.setEntryMethod(EntryMethod.Proximity);
+        Transaction response = track.authorize(new BigDecimal(1))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_entry_method_address_null_code_coverage() throws ApiException {
+
+        acceptorConfig.setAddress(null);
+        config.setAcceptorConfig(acceptorConfig);
+
+        BuilderException builderException = assertThrows(BuilderException.class, ()->{
+                     track.authorize(new BigDecimal(1))
+                    .withCurrency("USD")
+                    .withFee(FeeType.Surcharge,new BigDecimal(11))
+                    .execute();
+        });
+        assertEquals("Address is required in acceptor config for Debit/EBT Transactions.", builderException.getMessage());
+
+    }
+    @Test
+    public void test_currencyCode_code_coverage() throws ApiException {
+        track.setEntryMethod(EntryMethod.Proximity);
+        Transaction response = track.authorize(new BigDecimal(1))
+                .withCurrency("CAD")
+                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        Transaction capture = response.capture(response.getAuthorizedAmount())
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+    }
+    @Test
+    public void test_reversal_with_additional_amount_coverage_only() throws ApiException {
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(10))
+                .execute();
+        assertNotNull(reversal);
+
+        assertEquals("000", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_resubmit_token_null_code_coverage() throws ApiException {
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        BuilderException builderException = assertThrows(BuilderException.class, ()->{
+            NetworkService.resubmitDataCollect(null)
+                    .withForceToHost(true)
+                    .execute();
+        });
+        assertEquals("The transaction token cannot be null for resubmitted transactions.", builderException.getMessage());
+    }
+
+    @Test
+    public void test_resubmit_dataCollect_code_coverage_only() throws ApiException {
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(capture);
+
+        Transaction resubmitResponse = NetworkService.resubmitDataCollect(capture.getTransactionToken()).
+                execute();
+        assertEquals("000",resubmitResponse.getResponseCode());
+    }
+    @Test
+    public void test_billng_address_dataCollect_code_coverage_only() throws ApiException {
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+        address.setType(AddressType.Billing);
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
+
+
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000",response.getResponseCode());
+    }
+    @Test
+    public void test_shipping_address_dataCollect_code_coverage_only() throws ApiException {
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+        address.setType(AddressType.Shipping);
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
+
+
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000",response.getResponseCode());
+    }
+    @Test
+    public void test_reversal_withCashBack_code_coverage_only() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .execute();
+        assertNotNull(response);
+
+       TransactionReference reference = response.getTransactionReference();
+       reference.setOriginalApprovedAmount(null);
+       response.setTransactionReference(reference);
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
+    }
+
 }

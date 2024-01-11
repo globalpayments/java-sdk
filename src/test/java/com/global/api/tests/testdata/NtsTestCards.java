@@ -197,4 +197,31 @@ public class NtsTestCards {
         return track;
     }
 
+    public static CreditTrackData WexFleetTrack2(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
+
+    public static CreditTrackData MasterFleetTrack2(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
+
+    public static CreditTrackData VoyagerFleetTrack2(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";7088869008250005031=25120000000000000?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
+
+    public static CreditTrackData VisaFleetTrack1(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
 }

@@ -539,20 +539,23 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(encryptionData != null) {
                 DE127_ForwardingData forwardingData = new DE127_ForwardingData();
                 EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
-                EncryptedFieldMatrix encryptedField=getEncryptionField(paymentMethod,encryptionType);
+                EncryptedFieldMatrix encryptedField=getEncryptionField(paymentMethod,encryptionType, transactionType);
                 if(encryptionType.equals(EncryptionType.TDES)){
                     forwardingData.setServiceType(acceptorConfig.getServiceType());
                     forwardingData.setOperationType(acceptorConfig.getOperationType());
                 }
                 forwardingData.setEncryptedField(encryptedField);
-                forwardingData.addEncryptionData(encryptionType, encryptionData);
 
                 // check for encrypted cid
                 if(paymentMethod instanceof ICardData) {
                     String encryptedCvn = ((ICardData) paymentMethod).getCvn();
                     if(!StringUtils.isNullOrEmpty(encryptedCvn)) {
                         forwardingData.addEncryptionData(encryptionType, encryptionData,encryptedCvn);
+                    } else{
+                        forwardingData.addEncryptionData(encryptionType, encryptionData);
                     }
+                }else{
+                    forwardingData.addEncryptionData(encryptionType, encryptionData);
                 }
 
                 request.set(DataElementId.DE_127, forwardingData);
@@ -1049,6 +1052,10 @@ public class VapsConnector extends GatewayConnectorConfig {
 
             if(reference.getOriginalPaymentMethod() != null && reference.getOriginalPaymentMethod() instanceof IEncryptable) {
                 EncryptionData encryptionData = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptionData();
+                if(transactionType.equals(TransactionType.Capture) && reference.getOriginalPaymentMethod() instanceof ITrackData) {
+                    String track = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
+                    encryptionData.setKtb(track);
+                }
 
                 if (encryptionData != null) {
                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
@@ -1057,7 +1064,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                         forwardingData.setServiceType(acceptorConfig.getServiceType());
                         forwardingData.setOperationType(acceptorConfig.getOperationType());
                     }
-                    EncryptedFieldMatrix encryptedField=getEncryptionField(((TransactionReference) paymentMethod).getOriginalPaymentMethod(),encryptionType);
+                    EncryptedFieldMatrix encryptedField=getEncryptionField(((TransactionReference) paymentMethod).getOriginalPaymentMethod(),encryptionType, transactionType);
                     forwardingData.setEncryptedField(encryptedField);
                     forwardingData.addEncryptionData(encryptionType, encryptionData);
 
@@ -1304,6 +1311,26 @@ public class VapsConnector extends GatewayConnectorConfig {
                         impliedCapture.set(DataElementId.DE_011, StringUtils.padLeft(followOnStan, 6, '0'));
                         impliedCapture.set(DataElementId.DE_012, DateTime.now().toString("yyMMddhhmmss"));
                         impliedCapture.set(DataElementId.DE_025, DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement);
+
+
+                            if(originalPaymentMethod != null && originalPaymentMethod instanceof IEncryptable) {
+                                EncryptionData encryptionData = ((IEncryptable) originalPaymentMethod).getEncryptionData();
+                                String track = ((IEncryptable) originalPaymentMethod).getEncryptedPan();
+                                encryptionData.setKtb(track);
+
+                                if (encryptionData != null) {
+                                    DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+                                    EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                                    if(encryptionType.equals(EncryptionType.TDES)){
+                                        forwardingData.setServiceType(acceptorConfig.getServiceType());
+                                        forwardingData.setOperationType(acceptorConfig.getOperationType());
+                                    }
+                                    EncryptedFieldMatrix encryptedField=getEncryptionField(originalPaymentMethod,encryptionType, TransactionType.Capture);
+                                    forwardingData.setEncryptedField(encryptedField);
+                                    forwardingData.addEncryptionData(encryptionType, encryptionData);
+                                    impliedCapture.set(DataElementId.DE_127, forwardingData);
+                                }
+                            }
 
                         Transaction dataCollectResponse = sendRequest(impliedCapture, null, orgCorr1, orgCorr2);
                         response.setPreAuthCompletion(dataCollectResponse);
@@ -2946,18 +2973,20 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
         }
     }
-    private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod,EncryptionType encryptionType){
+    private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod, EncryptionType encryptionType, TransactionType transactionType){
 
         if(encryptionType.equals(EncryptionType.TDES)){
             if(paymentMethod instanceof ICardData){
                 return EncryptedFieldMatrix.Pan;
             }
-            else if(paymentMethod instanceof ITrackData) {
+            else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture)) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;
                 else if (trackType == TrackNumber.TrackTwo)
                     return EncryptedFieldMatrix.Track2;
+            }else{
+                return EncryptedFieldMatrix.Pan;
             }
         }else if (encryptionType.equals(EncryptionType.TEP1)||encryptionType.equals(EncryptionType.TEP2)){
             if(paymentMethod instanceof ICardData) {

@@ -5,6 +5,7 @@ import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.network.entities.*;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
@@ -399,6 +400,97 @@ public class NwsFleetWexTests {
 
         // check response
         assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_003_swipe_refund_codeCoverage() throws ApiException {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46571");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014657100000");
+
+        Transaction response = card.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("200009", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_swipe_refund_codeCoverage_Excp() {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46571");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014657100000");
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () -> card.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute());
+        assertEquals("Transaction mapping data object required for WEX refunds.", builderException.getMessage());
+    }
+
+    @Test
+    public void test_003_swipe_refund02_codeCoverage(){
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46571");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014657100000");
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () -> card.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .withTransactionMatchingData(new TransactionMatchingData(null, null))
+                .execute());
+
+        assertEquals("Transaction Matching Data incomplete. Original batch number and date are required for WEX refunds.", builderException.getMessage());
+    }
+
+    @Test
+    public void test_sales_wex_codeCoverage_Excp() {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46561");
+        fleetData.setServicePrompt("0");
+        fleetData.setPurchaseDeviceSequenceNumber(null);
+
+        CreditCardData card = new CreditCardData();
+        card.setNumber("6900460430001234566");
+        card.setExpMonth(12);
+        card.setExpYear(2024);
+        card.setCvn("101");
+//        card.setValue("6900460430001234566=24121014656100000");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("102", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal(30))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(null)
+                        .execute());
+        assertEquals("The purchase device sequence number cannot be null for WEX transactions.", builderException.getMessage());
     }
 
 }

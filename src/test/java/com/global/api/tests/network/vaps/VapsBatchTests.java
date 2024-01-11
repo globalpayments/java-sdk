@@ -257,6 +257,20 @@ public class VapsBatchTests {
         assertEquals("000", capture.getResponseCode());
         return capture;
     }
+    @Test
+    public void test_currency_code_coverage() throws ApiException {
+        configName = "default";
+
+        creditSale(10);
+        creditAuth(20);
+
+
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(30), new BigDecimal(0))
+                .withCurrency("CAD")
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+    }
     private Transaction creditSale(double amount) throws ApiException {
         CreditTrackData track = TestCards.VisaSwipe();
 

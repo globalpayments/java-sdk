@@ -210,6 +210,29 @@ public class NwsBatchTests {
         assertTrue(response.getBatchSummary().isBalanced());
     }
 
+    @Test
+    public void test_request_to_balance_debit_002() throws ApiException {
+        configName = "default";
+
+        visa_debit_sale(new BigDecimal(20));
+        visa_debit_sale_return(new BigDecimal(20));
+        visa_debit_sale_reversal(new BigDecimal(20));
+        visa_debit_sale_void(new BigDecimal(20));
+
+        DE123_ReconciliationTotals_nws totals = new DE123_ReconciliationTotals_nws();
+
+        totals.setTotalDebits(3,new BigDecimal(60), "VI");
+        totals.setTotalReturns(1, new BigDecimal(20),"DB",PaymentMethodType.Debit);
+        totals.setTotalVoid(1, new BigDecimal(20),"DB",PaymentMethodType.Debit);
+
+        Transaction response = BatchService.closeBatch( BatchCloseType.EndOfShift, batchProvider.getBatchNumber(),
+                        batchProvider.getSequenceNumber(),5, totals)
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+        assertTrue(response.getBatchSummary().isBalanced());
+    }
+
 
     private Transaction creditAuth(double amount) throws ApiException {
         CreditTrackData track = TestCards.VisaSwipe();
@@ -247,7 +270,7 @@ public class NwsBatchTests {
     }
 
     private Transaction debitAuth(double amount) throws ApiException {
-        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "32539F50C245A6A93D123412324000AA");
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
 
         AuthorizationBuilder builder = track.authorize(new BigDecimal(amount))
                 .withCurrency("USD");
@@ -266,7 +289,7 @@ public class NwsBatchTests {
         return capture;
     }
     private Transaction debitSale(double amount) throws ApiException {
-        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "32539F50C245A6A93D123412324000AA");
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
 
         AuthorizationBuilder builder = track.charge(new BigDecimal(amount))
                 .withCurrency("USD");
@@ -387,6 +410,95 @@ public class NwsBatchTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
+    public void visa_debit_sale(BigDecimal amount) throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
+
+
+//        CreditTrackData track = TestCards.VisaSwipe();
+        Transaction response = track.charge(amount)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+
+    }
+
+    public void visa_debit_sale_void(BigDecimal amount) throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(amount)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+
+        Transaction response1 = response.voidTransaction()
+                .execute();
+        assertNotNull(response1);
+
+    }
+
+    public void visa_debit_sale_return(BigDecimal amount) throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(amount)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+
+        Transaction response1 = response.refund(20)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response1);
+
+    }
+
+    public void visa_debit_sale_reversal(BigDecimal amount) throws ApiException {
+        config.setMerchantType("5541");
+        ServicesContainer.configureService(config);
+
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+
+        DebitTrackData track = TestCards.asDebit(TestCards.VisaSwipe(), "62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(amount)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        response.setNtsData(ntsData);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+
+        Transaction reversal = response.reverse(new BigDecimal(20))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+    }
+
+
     public void mastercard_authCapture(BigDecimal amount) throws ApiException {
         config.setMerchantType("5542");
         ServicesContainer.configureService(config);
@@ -424,6 +536,19 @@ public class NwsBatchTests {
         assertEquals("000", captureResponse.getResponseCode());
     }
 
+    @Test
+    public void test_240_batchClose_Forced() throws ApiException {
+        configName = "default";
+        config.setBatchProvider(null);
+        CreditTrackData track = TestCards.VisaSwipe();
+        Transaction resp = creditSale(10);
 
+        Transaction response = BatchService.closeBatch(BatchCloseType.Forced)
+                .withPaymentMethod(track)
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+        assertTrue(response.getBatchSummary().isBalanced());
+    }
 
 }

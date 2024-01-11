@@ -1,8 +1,11 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
@@ -14,6 +17,7 @@ import com.global.api.network.entities.ProductData;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
+import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
@@ -37,6 +41,8 @@ public class VapsFleetTests {
     private CreditTrackData track;
     private ProductData productData;
     private FleetData fleetData;
+    private AcceptorConfig acceptorConfig;
+    NetworkGatewayConfig config;
 
     public VapsFleetTests() throws ApiException {
         AcceptorConfig acceptorConfig = new AcceptorConfig();
@@ -986,5 +992,124 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
+    @Test
+    public void test_proximity_entry_method_code_coverage() throws ApiException {
+
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+
+        track.setEntryMethod(EntryMethod.Proximity);
+
+        Transaction preRresponse = track.authorize(new BigDecimal(30))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .execute("ICR");
+        assertNotNull(preRresponse);
+
+        // check message data
+        PriorMessageInformation pmi = preRresponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+    }
+    @Test
+    public void test_shipping_address_dataCollect_code_coverage_only() throws ApiException {
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+        address.setType(AddressType.Billing);
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000",response.getResponseCode());
+    }
+    @Test
+    public void test_currencyCode_code_coverage() throws ApiException {
+        track.setEntryMethod(EntryMethod.Proximity);
+        Transaction response = track.authorize(new BigDecimal(1))
+                .withCurrency("CAD")
+                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_dataCollect_resubmit() throws ApiException {
+
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+
+        Transaction preRresponse = track.authorize(new BigDecimal(30))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .execute("ICR");
+        assertNotNull(preRresponse);
+
+        // check message data
+        PriorMessageInformation pmi = preRresponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", preRresponse.getResponseCode());
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
+        productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = preRresponse.capture(new BigDecimal(30))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction resubmitResp = NetworkService.resubmitDataCollect(response.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitResp);
+        assertEquals(resubmitResp.getResponseCode(),"000");
+    }
+
+
+
 
 }

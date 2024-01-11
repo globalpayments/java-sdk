@@ -4,9 +4,9 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.BatchCloseType;
-import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
@@ -126,7 +126,7 @@ public class NwsCreditTests {
 //        track = TestCards.JcbSwipe();
 
         //UnionPay
-        track = TestCards.UnionPaySwipe();
+//        track = TestCards.UnionPaySwipe();
     }
 
     @Test
@@ -430,6 +430,7 @@ public class NwsCreditTests {
 
     @Test
     public void test_016_ICR_authorization() throws ApiException {
+        ServicesContainer.configureService(config,"ICR");
         Transaction response = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .execute("ICR");
@@ -466,6 +467,7 @@ public class NwsCreditTests {
 
     @Test
     public void test_018_ICR_partial_authorization() throws ApiException {
+        ServicesContainer.configureService(config,"ICR");
         Transaction response = track.authorize(new BigDecimal(40), true)
                 .withCurrency("USD")
                 .execute("ICR");
@@ -500,6 +502,7 @@ public class NwsCreditTests {
 
     @Test
     public void test_020_ICR_auth_reversal() throws ApiException {
+        ServicesContainer.configureService(config,"ICR");
         Transaction response = track.authorize(new BigDecimal(1), true)
                 .withCurrency("USD")
                 .execute("ICR");
@@ -729,6 +732,7 @@ public class NwsCreditTests {
 
     @Test
     public void test_025_EMV_04() throws ApiException {
+        ServicesContainer.configureService(config,"ICR");
         CreditTrackData track = new CreditTrackData();
         track.setValue("5413330089010434=22122019882803290000");
 
@@ -1120,6 +1124,107 @@ public class NwsCreditTests {
 
         // check response
         assertEquals("400", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_014_swipe_reverse_sale_Codecoverage() throws ApiException {
+        config.setProtocolType(ProtocolType.Async);
+        config.setMessageType(MessageType.NoMessage);
+        ServicesContainer.configureService(config);
+
+        card.charge(0).withCurrency("INR").execute();
+    }
+
+    @Test
+    public void test_014_swipe_authorize_Codecoverage() throws ApiException {
+
+        GatewayTimeoutException formatException = assertThrows(GatewayTimeoutException.class,
+                () -> card.authorize(0)
+            .withCurrency("USD")
+            .withModifier(TransactionModifier.Offline)
+                .withOfflineAuthCode("190")
+            .execute());
+
+        assertEquals("The gateway did not respond within the given timeout.", formatException.getMessage());
+    }
+
+    @Test
+    public void test_014_authCapture_Codecoverage_GatewayTimoutExp() throws ApiException {
+        card.setCardHolderName("ABC XYZ");
+        Transaction response = card.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.reverse(new BigDecimal(12))
+                .withCurrency("USD")
+                .withHostResponseCode("911")
+                .execute();
+        assertNotNull(captureResponse);
+    }
+
+    @Test
+    public void test_014_authCapture_Codecoverage() throws ApiException {
+        card.setCardHolderName("ABC XYZ");
+        Transaction response = card.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(captureResponse);
+
+        // check message data
+        pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
+        assertEquals("202", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_024_EMV_Codecoverage() throws ApiException {
+        //only for code coverage
+        track.setEntryMethod(EntryMethod.Proximity);
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("5413330089099130=221220114835949000");
+
+        Transaction response = track.charge(new BigDecimal(6))
+                .withCurrency("INR")
+                .withTagData("4F07A000000004101050104D415354455243415244204445424954820218008407A00000000410108E120000000000000000420102055E0342031F00950580000080009A031901099B0268009C01405F24032212315F25031711015F2A0208405F300202015F3401119F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FFC09F090200029F0D05B0509C88009F0E0500000000009F0F05B0709C98009F10120110A00003220000000000000000000000FF9F12104D6173746572636172642044656269749F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030647199F26084233C50A9D5D7FA29F2701809F330360F0C89F34035E03009F3501219F360201259F3704FF4CA1CD9F3901059F4005F000A0B0019F4104000000809F4E0D54657374204D65726368616E74")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction voidResponse = response.voidTransaction().execute();
+        assertNotNull(voidResponse);
+        assertEquals(voidResponse.getResponseMessage(), "400", voidResponse.getResponseCode());
     }
 
 }
