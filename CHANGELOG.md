@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - v11.1.26 (01/11/24)
+## Latest Version - v11.1.27 (01/16/24)
+- [NTS Phase1 Issue]
+  - Fixed User Data empty issue for WEX Credit Adjustment Reversal - EMV(Issue 10270)
+  - EMVData is sent empty in bankcard data for P66 Sale WEX issue has been fixed (Issue 10278)
+- [VAPS Issue]
+  - Fixed Null Pointer Exception for Debit completion message (Issue 10277)
+
+##  v11.1.26 (01/11/24)
 ### Enhancements
 - [NTS Phase1 Issue]
   - NTS_Issue_10233_wex_product_roll_up_for_quantity6.

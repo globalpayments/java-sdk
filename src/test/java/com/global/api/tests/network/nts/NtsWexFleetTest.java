@@ -127,7 +127,7 @@ public class NtsWexFleetTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
         config.setTerminalId("21");
-        config.setUnitNumber("00093292399");
+        config.setUnitNumber("00066654534");
         config.setSoftwareVersion("21");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
@@ -172,7 +172,7 @@ public class NtsWexFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = new CreditTrackData();
-        track.setValue(";6900460430001234566=21121012202100000?");
+        track.setValue(";6900460430001234566=25121012202100000?");
         track.setEntryMethod(EntryMethod.Swipe);
 
 
@@ -289,8 +289,8 @@ public class NtsWexFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = new CreditTrackData();
-        track.setValue(";6900460430001234566=21121012202100000?");
-        track.setEntryMethod(EntryMethod.Swipe);
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
 
         acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
 
@@ -386,8 +386,8 @@ public class NtsWexFleetTest {
     public void test_WexFleet_AuthReversal_Emv() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue(";6900460430001234566=21121012202100000?");
-        track.setEntryMethod(EntryMethod.Swipe);
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
 
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe,track);
         productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
@@ -401,6 +401,7 @@ public class NtsWexFleetTest {
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withFleetData(fleetData)
                 .withNtsProductData(productData)
+                .withTagData(emvTagData)
                 .withCvn("123")
                 .execute();
         assertNotNull(response);
@@ -425,7 +426,7 @@ public class NtsWexFleetTest {
 
         track = new CreditTrackData();
         track.setValue(";6900460430001234566=25121012202100000?");
-        track.setEntryMethod(EntryMethod.Swipe);
+        track.setEntryMethod(EntryMethod.ContactEMV);
 
 
         Transaction response = track.charge(new BigDecimal(10))
@@ -1901,6 +1902,42 @@ public class NtsWexFleetTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
+    }
+
+    @Test // Working
+    public void test_WexFleet_Auth_CreditAdjustment_Reversal_EMV_10270() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
+        productData.setSalesTax(new BigDecimal(9));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0112")
+                .withTransactionTime("071423")
+                .withOriginalMessageCode("03")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .build();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = transaction.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertEquals("00", voidResponse.getResponseCode());
     }
 
 }

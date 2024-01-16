@@ -1052,12 +1052,14 @@ public class VapsConnector extends GatewayConnectorConfig {
 
             if(reference.getOriginalPaymentMethod() != null && reference.getOriginalPaymentMethod() instanceof IEncryptable) {
                 EncryptionData encryptionData = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptionData();
+                String encryptedPan = null;
                 if(transactionType.equals(TransactionType.Capture) && reference.getOriginalPaymentMethod() instanceof ITrackData) {
-                    String track = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
-                    encryptionData.setKtb(track);
+                    encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
                 }
-
                 if (encryptionData != null) {
+                    if(encryptedPan != null){
+                        encryptionData.setKtb(encryptedPan);
+                    }
                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
                     EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
                     if(encryptionType.equals(EncryptionType.TDES)){
@@ -1315,10 +1317,12 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                             if(originalPaymentMethod != null && originalPaymentMethod instanceof IEncryptable) {
                                 EncryptionData encryptionData = ((IEncryptable) originalPaymentMethod).getEncryptionData();
-                                String track = ((IEncryptable) originalPaymentMethod).getEncryptedPan();
-                                encryptionData.setKtb(track);
 
                                 if (encryptionData != null) {
+                                    String track = ((IEncryptable) originalPaymentMethod).getEncryptedPan();
+                                    if(track != null) {
+                                        encryptionData.setKtb(track);
+                                    }
                                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
                                     EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
                                     if(encryptionType.equals(EncryptionType.TDES)){

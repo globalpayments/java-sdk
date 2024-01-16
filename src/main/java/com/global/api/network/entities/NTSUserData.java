@@ -946,7 +946,8 @@ public class NTSUserData {
                         sb.append(StringUtils.padLeft(WEX_FALLBACK.length(), 4, '0'));
                         sb.append(WEX_FALLBACK);
                     }
-                } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
+                } else if (messageCode.equals(NtsMessageCode.CreditAdjustment) || (referenceMessageCode != null && referenceMessageCode.equals("03")
+                        && builder.getTransactionType().equals(TransactionType.Reversal))) {
                     sb.append(fleetData != null ?
                             StringUtils.padLeft(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
                             StringUtils.padLeft("", 5, '0'));

@@ -126,7 +126,7 @@ public class VapsEncryption3DESTests {
         cashTrack.setEncryptedPan("4355567063338");
         cashTrack.setTrackNumber(TrackNumber.TrackTwo);
 
-        foodCard = new EBTTrackData(EbtCardType.CashBenefit);
+        foodCard = new EBTTrackData(EbtCardType.FoodStamp);
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
         foodCard.setEncryptedPan("4355567063338");

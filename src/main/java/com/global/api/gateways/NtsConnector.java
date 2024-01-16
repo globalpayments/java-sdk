@@ -108,7 +108,6 @@ public class NtsConnector extends GatewayConnectorConfig {
                             String amount = responseParser.readString(7);
                             userData.put(UserDataTag.ApprovedAmount, amount);
                             reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
-                            userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                             if (builder.getTagData() != null) {
                                 userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
                                 userData.put(UserDataTag.EvmData, responseParser.readRemaining());

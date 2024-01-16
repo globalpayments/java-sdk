@@ -121,7 +121,7 @@ public class NtsCreditTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         config.setTerminalId("21");
-        config.setUnitNumber("00093292399");
+        config.setUnitNumber("00066654534");
         config.setSoftwareVersion("01");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
