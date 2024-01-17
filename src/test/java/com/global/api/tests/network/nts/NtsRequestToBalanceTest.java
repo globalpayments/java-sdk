@@ -650,9 +650,9 @@ public class NtsRequestToBalanceTest {
         assertNotNull(summary);
 
         ArrayList<String> tokens = new ArrayList<>(summary.getFormatErrorDataCollectToken());
+        Transaction dataCollect = null;
         for(String token :tokens){
             for(int i = 0; i <= 1; i++){
-                Transaction dataCollect = null;
                 if(i ==0){
                     dataCollect = NetworkService.resubmitDataCollect(token)
                             .execute();

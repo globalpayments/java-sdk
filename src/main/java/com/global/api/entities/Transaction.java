@@ -68,14 +68,10 @@ public class Transaction {
     @Getter @Setter private boolean multiCapture;
     @Getter @Setter private Integer multiCapturePaymentCount;
     @Getter @Setter private Integer multiCaptureSequence;
-    @Getter @Setter private Set<String> nonApprovedDataCollectToken;
-    @Getter @Setter private Set<String> formatErrorDataCollectToken;
     private HashMap<CardIssuerEntryTag, String> issuerData;
     private PriorMessageInformation messageInformation;
     @Getter @Setter private PayByLinkResponse payByLinkResponse;
     @Getter private List<FundsAccountDetails> transferFundsAccountDetailsList;
-    @Getter @Setter
-    private Set<String> allDataCollectToken;
     @Getter @Setter private CardIssuerResponse cardIssuerResponse;
     private BigDecimal pointsBalanceAmount;
     private Transaction preAuthCompletion;

@@ -467,7 +467,6 @@ public class NtsConnector extends GatewayConnectorConfig {
         if (builder instanceof ResubmitBuilder && hrc.equals(NtsHostResponseCode.Success) &&
                 !builder.getTransactionType().equals(TransactionType.BatchClose)){
             allDataCollectToken.add(result.getTransactionToken());
-            result.setAllDataCollectToken(allDataCollectToken);
         }
 
         if (builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)
@@ -475,11 +474,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                 || hrc.equals(NtsHostResponseCode.TerminalTimeout)
                 || hrc.equals(NtsHostResponseCode.TerminalTimeoutLostConnection))){
             resubmitNonApprovedToken.add(result.getTransactionToken());
-            result.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
         }else if(builder instanceof ResubmitBuilder && !builder.getTransactionType().equals(TransactionType.BatchClose)
                 && hrc.equals(NtsHostResponseCode.FormatError)){
             resubmitFormatErrorToken.add(result.getTransactionToken());
-            result.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
         }
 
         //Batch Summary
@@ -512,6 +509,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                 summary.setDebitAmount(debitAmount);
                 summary.setCreditAmount(creditAmount);
                 summary.setHostTransactionCount(responseMessage.getHostTransactionCount());
+                summary.setFormatErrorDataCollectToken(resubmitFormatErrorToken);
+                summary.setAllDataCollectToken(allDataCollectToken);
+                summary.setNonApprovedDataCollectToken(resubmitNonApprovedToken);
                 if(batchSummaryList.isEmpty()){
                     batchSummaryList.add(summary);
                 }

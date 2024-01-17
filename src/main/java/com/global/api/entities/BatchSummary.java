@@ -238,9 +238,6 @@ public class BatchSummary {
                     .withTransactionToken(token)
                     .execute(configName);
             responses.add(response);
-            this.setNonApprovedDataCollectToken(response.getNonApprovedDataCollectToken());
-            this.setFormatErrorDataCollectToken(response.getFormatErrorDataCollectToken());
-            this.setAllDataCollectToken(response.getAllDataCollectToken());
         }
         this.setResentTransactions(responses);
 
@@ -319,7 +316,6 @@ public class BatchSummary {
                         .withTransactionToken(token)
                         .execute(CONFIG_NAME);
                 responses.add(response);
-                this.setFormatErrorDataCollectToken(response.getFormatErrorDataCollectToken());
             }
             this.setResentTransactions(responses);
         }

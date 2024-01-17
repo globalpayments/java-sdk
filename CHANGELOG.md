@@ -1,5 +1,9 @@
 # Changelog
 
+## Latest Version - v11.1.28 (01/17/24)
+- [NTS Phase1 Issue]
+- 10279: added fix for returning Non Approved and format error tokens together as part of BatchSummary object
+
 ## Latest Version - v11.1.27 (01/16/24)
 - [NTS Phase1 Issue]
   - Fixed User Data empty issue for WEX Credit Adjustment Reversal - EMV(Issue 10270)
