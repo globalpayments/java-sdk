@@ -122,6 +122,7 @@ public class VapsEncryptionTests {
         // DEBIT
         debit = new DebitTrackData();
         debit.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        debit.setEncryptedPan("4355561117063338");
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
         debit.setEncryptionData(EncryptionData.version2("/wECAQEEAoFGAgEH4gcOTDT6jRZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0m+/d4SO9TEshhRGUUQzVBrBvP/Os1qFx+6zdQp1ejjUCoDmzoUMbil9UG73zBxxTOy25f3Px0p8joyCh8PEWhADz1BkROJT3q6JnocQE49yYBHuFK0obm5kqUcYPfTY09vPOpmN+wp45gJY9PhkJF5XvPsMlcxX4/JhtCshegz4AYrcU/sFnI+nDwhy295BdOkVN1rn00jwCbRcE900kj3UsFfyc", "2"));
     }

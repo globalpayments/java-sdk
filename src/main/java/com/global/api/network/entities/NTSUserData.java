@@ -1165,18 +1165,32 @@ public class NTSUserData {
                     }
                 }
             } else {
+                List<DE63_ProductDataEntry> fuelEntriesCount = productData.getFuelDataEntries();
+                addProductDataForSimilarFuelProducts(fuelEntriesCount);
+
                 combineProductDataForSimilarNonFuelProducts(nonFuel);
-                if(transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Sale)) {
-                    rearrangeProductQntLen(nonFuel);
-                }
                 nonFuelSize = nonFuel.size();
-                if(nonFuel.size() >= 6 && nonFuel.get(5).getQuantity().intValue() > 9){
-                    double quantity = nonFuel.get(5).getQuantity().intValue() - 9;
+                if(fuelEntriesCount.size() <= 1 && nonFuel.size() >= 6 && nonFuel.get(5).getQuantity().intValue() > 9){
                     double price = nonFuel.get(5).getPrice().doubleValue();
+                    if(price == 0){
+                        price = nonFuel.get(5).getAmount().doubleValue() / nonFuel.get(5).getQuantity().intValue();
+                    }
+                    double quantity = nonFuel.get(5).getQuantity().intValue() - 9;
                     productData.addNonFuel("400",nonFuel.get(5).getUnitOfMeasure(),1,price,quantity * price);
                     nonFuel.get(5).setQuantity(new BigDecimal(9));
                     nonFuel.get(5).setAmount(new BigDecimal(9*price));
+
+                } else if (fuelEntriesCount.size() >= 2 && nonFuel.size() >= 5 && nonFuel.get(4).getQuantity().intValue() > 9){
+                    double price = nonFuel.get(4).getPrice().doubleValue();
+                    if(price == 0){
+                        price = nonFuel.get(4).getAmount().doubleValue() / nonFuel.get(4).getQuantity().intValue();
+                    }
+                    double quantity = nonFuel.get(4).getQuantity().intValue() - 9;
+                    productData.addNonFuel("400",nonFuel.get(4).getUnitOfMeasure(),1,price,quantity * price);
+                    nonFuel.get(4).setQuantity(new BigDecimal(9));
+                    nonFuel.get(4).setAmount(new BigDecimal(9*price));
                 }
+
                 nonFuel = productData.getNonFuelDataEntries();
                 if(nonFuel.size() >= 7 && nonFuel.get(6).getQuantity().intValue() > 9){
                     nonFuel.get(6).setCode("400");
@@ -1661,70 +1675,4 @@ public class NTSUserData {
         }
     }
 
-    private static Map<Integer, List<Integer>> findIndex(List<DE63_ProductDataEntry> nonFuel) {
-        Map<Integer, List<Integer>> map = new HashMap<>();
-        List<Integer> len1 = new ArrayList<>();
-        List<Integer> len2 = new ArrayList<>();
-        List<Integer> len3 = new ArrayList<>();
-        List<Integer> len6 = new ArrayList<>();
-        for(DE63_ProductDataEntry pde : nonFuel){
-            if(String.valueOf(pde.getQuantity().intValue()).length() == 1){
-                 len1.add(nonFuel.indexOf(pde));
-                 map.put(String.valueOf(pde.getQuantity().intValue()).length(), len1);
-            }else if(String.valueOf(pde.getQuantity().intValue()).length() == 2){
-                len2.add(nonFuel.indexOf(pde));
-                map.put(String.valueOf(pde.getQuantity().intValue()).length(), len2);
-            }else if(String.valueOf(pde.getQuantity().intValue()).length() == 3){
-                len3.add(nonFuel.indexOf(pde));
-                map.put(String.valueOf(pde.getQuantity().intValue()).length(), len3);
-            }else{
-                len6.add(nonFuel.indexOf(pde));
-                map.put(String.valueOf(pde.getQuantity().intValue()).length(), len6);
-            }
-        }
-        return map;
-    }
-
-    private static void rearrangeProductQntLen(List<DE63_ProductDataEntry> nonFuel) {
-        Map<Integer,List<Integer>> indexNumber = findIndex(nonFuel);
-        for(Map.Entry<Integer,List<Integer>> entry: indexNumber.entrySet()) {
-            if (entry.getKey() == 2 && (!nonFuel.isEmpty() && nonFuel.size() >= 5)) {
-                int qntLenP5 = String.valueOf(nonFuel.get(4).getQuantity().intValue()).length();
-                if (qntLenP5 > 2) {
-                    for (int k : entry.getValue()) {
-                        Collections.swap(nonFuel, 4, k);
-                    }
-                }
-            }
-        }
-        indexNumber = findIndex(nonFuel);
-        for(Map.Entry<Integer,List<Integer>> entry: indexNumber.entrySet()) {
-            if (entry.getKey() == 3 && !nonFuel.isEmpty()) {
-                if (nonFuel.size() >= 2) {
-                    int qntLenP2 = String.valueOf(nonFuel.get(1).getQuantity().intValue()).length();
-                    if ((qntLenP2 > 3)) {
-                        for (int k : entry.getValue()) {
-                            Collections.swap(nonFuel, 1, k);
-                        }
-                    }
-                }
-                if (nonFuel.size() >= 3) {
-                    int qntLenP3 = String.valueOf(nonFuel.get(2).getQuantity().intValue()).length();
-                    if ((qntLenP3 > 3)) {
-                        for (int k : entry.getValue()) {
-                            Collections.swap(nonFuel, 2, k);
-                        }
-                    }
-                }
-                if (nonFuel.size() >= 4) {
-                    int qntLenP4 = String.valueOf(nonFuel.get(3).getQuantity().intValue()).length();
-                    if ((qntLenP4 > 3)) {
-                        for (int k : entry.getValue()) {
-                            Collections.swap(nonFuel, 3, k);
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

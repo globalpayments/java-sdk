@@ -1,10 +1,18 @@
 # Changelog
 
-## Latest Version - v11.1.28 (01/17/24)
+## Latest Version - v11.1.29 (01/25/24)
+### Enhancements
+- [NTS Phase1 Issue]
+  - Fixed 10233 issue "Amount 6 field is getting sent with zero value".
+
+- [VAPS Issue]
+  - Fixed 953(Too many queued / no connection)error for Debit datacollect voltage encryption transaction
+
+## v11.1.28 (01/17/24)
 - [NTS Phase1 Issue]
 - 10279: added fix for returning Non Approved and format error tokens together as part of BatchSummary object
 
-## Latest Version - v11.1.27 (01/16/24)
+## v11.1.27 (01/16/24)
 - [NTS Phase1 Issue]
   - Fixed User Data empty issue for WEX Credit Adjustment Reversal - EMV(Issue 10270)
   - EMVData is sent empty in bankcard data for P66 Sale WEX issue has been fixed (Issue 10278)

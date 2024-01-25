@@ -1057,11 +1057,12 @@ public class VapsConnector extends GatewayConnectorConfig {
                     encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
                 }
                 if (encryptionData != null) {
-                    if(encryptedPan != null){
-                        encryptionData.setKtb(encryptedPan);
-                    }
+
                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
                     EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                    if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
+                        encryptionData.setKtb(encryptedPan);
+                    }
                     if(encryptionType.equals(EncryptionType.TDES)){
                         forwardingData.setServiceType(acceptorConfig.getServiceType());
                         forwardingData.setOperationType(acceptorConfig.getOperationType());
@@ -1316,23 +1317,26 @@ public class VapsConnector extends GatewayConnectorConfig {
 
 
                             if(originalPaymentMethod != null && originalPaymentMethod instanceof IEncryptable) {
-                                EncryptionData encryptionData = ((IEncryptable) originalPaymentMethod).getEncryptionData();
 
-                                if (encryptionData != null) {
-                                    String track = ((IEncryptable) originalPaymentMethod).getEncryptedPan();
-                                    if(track != null) {
-                                        encryptionData.setKtb(track);
+                                DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+                                EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+
+                                if(encryptionType.equals(EncryptionType.TDES)) {
+                                    EncryptionData encryptionData = ((IEncryptable) originalPaymentMethod).getEncryptionData();
+                                    if (encryptionData != null) {
+                                        String track = ((IEncryptable) originalPaymentMethod).getEncryptedPan();
+                                        if (track != null) {
+                                            encryptionData.setKtb(track);
+                                        }
+                                        if (encryptionType.equals(EncryptionType.TDES)) {
+                                            forwardingData.setServiceType(acceptorConfig.getServiceType());
+                                            forwardingData.setOperationType(acceptorConfig.getOperationType());
+                                        }
+                                        EncryptedFieldMatrix encryptedField = getEncryptionField(originalPaymentMethod, encryptionType, TransactionType.Capture);
+                                        forwardingData.setEncryptedField(encryptedField);
+                                        forwardingData.addEncryptionData(encryptionType, encryptionData);
+                                        impliedCapture.set(DataElementId.DE_127, forwardingData);
                                     }
-                                    DE127_ForwardingData forwardingData = new DE127_ForwardingData();
-                                    EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
-                                    if(encryptionType.equals(EncryptionType.TDES)){
-                                        forwardingData.setServiceType(acceptorConfig.getServiceType());
-                                        forwardingData.setOperationType(acceptorConfig.getOperationType());
-                                    }
-                                    EncryptedFieldMatrix encryptedField=getEncryptionField(originalPaymentMethod,encryptionType, TransactionType.Capture);
-                                    forwardingData.setEncryptedField(encryptedField);
-                                    forwardingData.addEncryptionData(encryptionType, encryptionData);
-                                    impliedCapture.set(DataElementId.DE_127, forwardingData);
                                 }
                             }
 
