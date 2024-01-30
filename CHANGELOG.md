@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - v11.1.29 (01/25/24)
+## Latest Version - v11.1.30 (01/30/24)
+### Enhancements
+- [VAPS Enhancement]
+  - Added placeholder to set currency field in resubmit builder.
+  
+## v11.1.29 (01/25/24)
 ### Enhancements
 - [NTS Phase1 Issue]
   - Fixed 10233 issue "Amount 6 field is getting sent with zero value".
