@@ -198,14 +198,14 @@ public class VapsCreditTests {
         assertEquals("101", pmi.getFunctionCode());
 
         Transaction recreated = Transaction.fromNetwork(
-            response.getAuthorizedAmount(),
-            response.getAuthorizationCode(),
-            response.getNtsData(),
-            track,
-            response.getMessageTypeIndicator(),
-            response.getSystemTraceAuditNumber(),
-            response.getOriginalTransactionTime(),
-            response.getProcessingCode()
+                response.getAuthorizedAmount(),
+                response.getAuthorizationCode(),
+                response.getNtsData(),
+                track,
+                response.getMessageTypeIndicator(),
+                response.getSystemTraceAuditNumber(),
+                response.getOriginalTransactionTime(),
+                response.getProcessingCode()
         );
 
         // check response
@@ -1026,7 +1026,7 @@ public class VapsCreditTests {
         assertEquals("000", response.getResponseCode());
     }
 
-   //invalid transaction readylink doesn't support data_collect
+    //invalid transaction readylink doesn't support data_collect
     @Ignore
     @Test
     public void test_034_ready_link_data_collect_DE56_1221() throws ApiException {
@@ -1071,11 +1071,11 @@ public class VapsCreditTests {
 
         assertEquals("000", sale.getResponseCode());
 
-       Transaction response= NetworkService.resubmitDataCollect(sale.getTransactionToken())
+        Transaction response= NetworkService.resubmitDataCollect(sale.getTransactionToken())
                 .execute();
 
-       assertNotNull(response);
-       assertEquals(response.getResponseCode(),"000");
+        assertNotNull(response);
+        assertEquals(response.getResponseCode(),"000");
     }
 
     @Test
@@ -1266,6 +1266,35 @@ public class VapsCreditTests {
                     .execute();
         });
         assertEquals("The transaction token cannot be null for resubmitted transactions.", builderException.getMessage());
+    }
+    @Test
+    public void test_resubmit_with_currency() throws ApiException {
+        NtsData ntsData = new NtsData();
+        card = TestCards.VisaManual(true,true);
+
+        Transaction sale = card.charge(new BigDecimal(142))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        sale.setNtsData(ntsData);
+
+        Transaction captureResponse = sale.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals(captureResponse.getResponseCode(),"000");
+
+        captureResponse.setNtsData(ntsData);
+
+        Transaction response= NetworkService.resubmitDataCollect(captureResponse.getTransactionToken())
+                .withForceToHost(true)
+                .withCurrency("CAD")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals(response.getResponseCode(),"000");
     }
 
 }

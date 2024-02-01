@@ -1090,7 +1090,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         if(StringUtils.isNullOrEmpty(builder.getTransactionToken())){
             throw new BuilderException("The transaction token cannot be null for resubmitted transactions.");
         }
-
+        String currency = builder.getCurrency();
         // get the original request/implied capture
         NetworkMessage request = this.decodeRequest(builder.getTransactionToken());
         switch(builder.getTransactionType()) {
@@ -1099,6 +1099,9 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                 if(builder.isForceToHost()) {
                     request.set(DataElementId.DE_025, DE25_MessageReasonCode.Forced_AuthCapture);
+                }
+                if(currency != null) {
+                    request.set(DataElementId.DE_050, currency);
                 }
             } break;
             case DataCollect:
@@ -1162,6 +1165,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if(builder.getNtsData() != null) {
                     issuerData.add(CardIssuerEntryTag.NTS_System, builder.getNtsData().toString());
                     request.set(DataElementId.DE_062, issuerData);
+                }
+                if(currency!=null) {
+                    request.set(DataElementId.DE_050, currency);
                 }
             } break;
             default:

@@ -1,9 +1,13 @@
 # Changelog
 
-## Latest Version - v11.1.30 (01/30/24)
+## Latest Version - v11.1.31 (02/01/24)
 ### Enhancements
 - [VAPS Enhancement]
   - Added placeholder to set currency field in resubmit builder.
+  
+## v11.1.30 (01/30/24)
+### Enhancements
+- updated appsec.properties file
   
 ## v11.1.29 (01/25/24)
 ### Enhancements

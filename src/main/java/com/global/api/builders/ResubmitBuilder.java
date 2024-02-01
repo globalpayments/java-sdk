@@ -12,6 +12,8 @@ import com.global.api.gateways.IPaymentGateway;
 import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.VapsConnector;
 import com.global.api.network.entities.NtsData;
+import lombok.Getter;
+import lombok.Setter;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -23,6 +25,8 @@ public class ResubmitBuilder extends TransactionBuilder<Transaction> {
     private NtsData ntsData;
     private String timestamp;
     private String transactionToken;
+    @Getter @Setter
+    private String currency;
 
     public String getAuthCode() {
         return authCode;
@@ -81,6 +85,10 @@ public class ResubmitBuilder extends TransactionBuilder<Transaction> {
     }
     public ResubmitBuilder withTransactionToken(String token) {
         this.transactionToken = token;
+        return this;
+    }
+    public ResubmitBuilder withCurrency(String currency) {
+        this.currency = currency;
         return this;
     }
 
