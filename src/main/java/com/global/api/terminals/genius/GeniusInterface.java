@@ -7,6 +7,7 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.builders.MitcManageBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
@@ -42,6 +43,11 @@ public class GeniusInterface implements IDeviceInterface {
     @Override
     public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
         throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+        throw  new UnsupportedTransactionException();
     }
 
     public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
@@ -131,6 +137,19 @@ public class GeniusInterface implements IDeviceInterface {
     public IDeviceResponse reset() throws ApiException {
         throw new UnsupportedTransactionException();
     }
+
+
+    @Override
+    public IDeviceResponse deleteImage(String fileName) throws ApiException{
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse updateResource(UpdateResourceFileType fileType, byte[] fileData, boolean isHttpDeviceConnectionMode) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+
     @Override
     public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
         throw new UnsupportedTransactionException();

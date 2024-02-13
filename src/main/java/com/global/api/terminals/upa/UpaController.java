@@ -12,7 +12,9 @@ import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.pax.responses.LocalDetailReportResponse;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
@@ -181,5 +183,10 @@ public class UpaController extends DeviceController {
         requestTransactionFields.setParams(builder);
 
         return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, null,null);
+    }
+
+    @Override
+    public LocalDetailReportResponse processLocalDetailReport(TerminalReportBuilder builder) throws ApiException {
+        throw new UnsupportedTransactionException();
     }
 }

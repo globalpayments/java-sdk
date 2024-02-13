@@ -7,9 +7,8 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.abstractions.IDeviceMessage;
-import com.global.api.terminals.abstractions.IDisposable;
+import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
@@ -18,6 +17,7 @@ import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.hpa.interfaces.HpaTcpInterface;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
 import com.global.api.terminals.hpa.responses.SipDeviceResponse;
+import com.global.api.terminals.pax.responses.LocalDetailReportResponse;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
 import com.global.api.utils.StringUtils;
@@ -143,7 +143,12 @@ public class HpaController extends DeviceController implements IDisposable {
 
         return sendMessage(SipDeviceResponse.class, et.toString(request), transactionType);
     }
-    
+
+    @Override
+    public LocalDetailReportResponse processLocalDetailReport(TerminalReportBuilder builder) throws ApiException {
+        throw  new UnsupportedTransactionException();
+    }
+
     private String mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
         switch (type) {
             case Sale:

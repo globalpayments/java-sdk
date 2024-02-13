@@ -430,6 +430,7 @@ public class PayPlanConnector extends RestGateway implements IRecurringGateway {
                 ((RecurringPaymentMethod)payment).setCommercialIndicator(response.getString("cpcInd"));
                 ((RecurringPaymentMethod)payment).setTaxType(response.getString("cpcTaxType"));
                 ((RecurringPaymentMethod)payment).setExpirationDate(response.getString("expirationDate"));
+                ((RecurringPaymentMethod)payment).setAccountNumberLast4(response.getString("accountNumberLast4"));
                 ((RecurringPaymentMethod)payment).setAddress(address);
                 return payment;
             }

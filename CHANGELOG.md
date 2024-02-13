@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - v11.1.31 (02/01/24)
+## Latest Version - v11.1.32 (02/13/2024)
+### Enhancements
+- [PAX Issue]
+  - PAX_Add/Delete_image
+  - PAX Local Details Report Implementation
+- [VAPS Issue]
+  - Fixed issue 10289 of partial approved amount for retransmit.
+
+## v11.1.31 (02/01/24)
 ### Enhancements
 - [VAPS Enhancement]
   - Added placeholder to set currency field in resubmit builder.

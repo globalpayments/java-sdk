@@ -39,7 +39,9 @@ public enum PaxExtData implements IStringConstant {
     SIGNATURE_STATUS("SIGNSTATUS"),
     TERMINAL_VERIFICATION_RESULTS("TVR"),
     FPS_SIGN("FPSSIGN"),
-    FPS("FPS");
+    FPS("FPS"),
+    MERCHANT_ID( "MerchantId"),
+    MERCHANT_NAME( "MerchantName");
 
     String value;
     PaxExtData(String value) { this.value = value; }

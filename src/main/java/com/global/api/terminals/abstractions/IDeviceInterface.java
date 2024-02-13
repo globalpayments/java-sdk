@@ -2,10 +2,10 @@ package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
@@ -42,6 +42,9 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException;
     TerminalManageBuilder reverse() throws ApiException;
     ISignatureResponse getSignatureFile(SignatureData data) throws ApiException;
+    IDeviceResponse deleteImage(String fileName) throws ApiException;
+    IDeviceResponse updateResource(UpdateResourceFileType fileType, byte[] fileData, boolean isHttpDeviceConnectionMode) throws ApiException;
+
 
     // batch calls
     IBatchCloseResponse batchClose() throws ApiException;
@@ -99,5 +102,5 @@ public interface IDeviceInterface extends IDisposable {
     TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException;
     TerminalManageBuilder refundById(BigDecimal amount) throws ApiException;
     ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException;
-
+    TerminalReportBuilder localDetailReport() throws ApiException;
 }

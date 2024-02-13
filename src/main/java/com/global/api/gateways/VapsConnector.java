@@ -2543,6 +2543,11 @@ public class VapsConnector extends GatewayConnectorConfig {
         successCodes.add("580");
 
         BigDecimal amount = request.getAmount(DataElementId.DE_004);
+        BigDecimal partialAmount = response.getAmount(DataElementId.DE_004);
+        if(responseCode.equals("002")) {
+            amount = partialAmount;
+            request.set(DataElementId.DE_004, StringUtils.toNumeric(amount, 12));
+        }
         TransactionType transactionType = null;
         IPaymentMethod paymentMethod = null;
         PaymentMethodType paymentMethodType = null;

@@ -7,19 +7,16 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
-import com.global.api.terminals.pax.responses.BatchCloseResponse;
-import com.global.api.terminals.pax.responses.InitializeResponse;
-import com.global.api.terminals.pax.responses.PaxDeviceResponse;
-import com.global.api.terminals.pax.responses.SAFDeleteResponse;
-import com.global.api.terminals.pax.responses.SAFSummaryReport;
-import com.global.api.terminals.pax.responses.SAFUploadResponse;
-import com.global.api.terminals.pax.responses.SignatureResponse;
+import com.global.api.terminals.pax.responses.*;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import org.apache.commons.codec.binary.Base64;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -68,6 +65,56 @@ class PaxInterface implements IDeviceInterface {
         return new PaxDeviceResponse(response, PaxMsgId.A17_RSP_RESET);
     }
 
+    // A18 - Update Image
+    public IDeviceResponse updateResource(UpdateResourceFileType fileType, byte[] fileData, boolean isHttpDeviceConnectionMode) throws ApiException {
+        int size = isHttpDeviceConnectionMode ? 3000 : 4000;
+        byte[] response = null;
+        int offset = 0;
+
+        final String LAST_DATA_PACKET_FALSE = "0";
+        final String LAST_DATA_PACKET_TRUE = "1";
+        final String DEVICE_RESPONSE_SUCCESS_CODE = "000000";
+
+
+        while (offset < fileData.length) {
+            int length = Math.min(size, fileData.length - offset);
+            byte[] datapacket = new byte[length];
+            System.arraycopy(fileData, offset, datapacket, 0, length);
+
+            boolean isLastDataPacket = (offset + length) == fileData.length;
+            String base64String = Base64.encodeBase64String(datapacket);
+            response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A18_UPDATE_RESOURCE_FILE,
+                    offset,
+                    ControlCodes.FS,
+                    base64String,
+                    ControlCodes.FS,
+                    isLastDataPacket ? LAST_DATA_PACKET_FALSE : LAST_DATA_PACKET_TRUE,
+                    ControlCodes.FS,
+                    fileType.ordinal(),
+                    ControlCodes.FS, 0
+            ));
+
+            PaxDeviceResponse paxDeviceResponse = new PaxDeviceResponse(response, PaxMsgId.A19_RSP_UPDATE_RESOURCE_FILE);
+
+            if (!paxDeviceResponse.getDeviceResponseCode().equals(DEVICE_RESPONSE_SUCCESS_CODE)) {
+
+                return new PaxDeviceResponse(response, PaxMsgId.A19_RSP_UPDATE_RESOURCE_FILE);
+
+            }
+
+            if (isLastDataPacket) {
+                return new PaxDeviceResponse(response, PaxMsgId.A19_RSP_UPDATE_RESOURCE_FILE);
+
+            }
+
+            offset += length;
+
+        }
+
+        return new PaxDeviceResponse( response, PaxMsgId.A19_RSP_UPDATE_RESOURCE_FILE);
+
+    }
+
     // A20 - DO SIGNATURE
     public ISignatureResponse promptForSignature() throws ApiException {
         return promptForSignature(null);
@@ -83,6 +130,13 @@ class PaxInterface implements IDeviceInterface {
             return getSignatureFile();
         }
         return signatureResponse;
+    }
+
+    // A22 - Delete Image
+    public IDeviceResponse deleteImage(String fileName) throws ApiException {
+        byte[] response = controller.send(TerminalUtilities.buildRequest(PaxMsgId.A22_DELETE_IMAGE,fileName));
+        return new PaxDeviceResponse(response, PaxMsgId.A23_RSP_DELETE_IMAGE);
+
     }
 
     // A26 - REBOOT
@@ -140,7 +194,6 @@ class PaxInterface implements IDeviceInterface {
     public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
-    
     public IEODResponse endOfDay() throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -297,10 +350,10 @@ class PaxInterface implements IDeviceInterface {
                 ControlCodes.FS,
                 ControlCodes.FS,
                 ControlCodes.FS,
-                ControlCodes.FS,           
                 ControlCodes.FS,
                 ControlCodes.FS,
-                ControlCodes.FS,                
+                ControlCodes.FS,
+                ControlCodes.FS,
                 ControlCodes.FS,
                 ControlCodes.FS));
         return new PaxDeviceResponse(response, PaxMsgId.A55_RSP_SET_SAF_PARAMETERS);
@@ -318,6 +371,9 @@ class PaxInterface implements IDeviceInterface {
                 safDeleteIndicator));
         SAFDeleteResponse deleteResponse = new SAFDeleteResponse(response);
         return deleteResponse;
+    }
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+       return new TerminalReportBuilder();
     }
 
     public SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException {

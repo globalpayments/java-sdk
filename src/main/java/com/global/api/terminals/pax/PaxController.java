@@ -13,6 +13,8 @@ import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.builders.TerminalSearchBuilder;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
@@ -20,10 +22,7 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.pax.interfaces.PaxHttpInterface;
 import com.global.api.terminals.pax.interfaces.PaxTcpInterface;
-import com.global.api.terminals.pax.responses.CreditResponse;
-import com.global.api.terminals.pax.responses.DebitResponse;
-import com.global.api.terminals.pax.responses.EbtResponse;
-import com.global.api.terminals.pax.responses.GiftResponse;
+import com.global.api.terminals.pax.responses.*;
 import com.global.api.terminals.pax.subgroups.*;
 import com.global.api.utils.StringUtils;
 
@@ -201,6 +200,45 @@ public class PaxController extends DeviceController {
             default:
                 throw new UnsupportedTransactionException();
         }
+    }
+
+   @Override
+    public  LocalDetailReportResponse processLocalDetailReport(TerminalReportBuilder builder) throws ApiException {
+        byte[] response = send(buildReportTransaction(builder));
+         LocalDetailReportResponse reportResponse = new LocalDetailReportResponse(response);
+         return reportResponse;
+    }
+    public DeviceMessage buildReportTransaction(TerminalReportBuilder builder) throws ApiException {
+        PaxMsgId messageId = PaxMsgId.R02_LOCAL_DETAIL_REPORT;
+        TerminalSearchBuilder criteria = builder.getTerminalSearchBuilder();
+
+        ExtDataSubGroup additionalData = new ExtDataSubGroup();
+        if (criteria.getMerchantId() != null) {
+            additionalData.set(PaxExtData.MERCHANT_ID,(criteria.getMerchantId()));
+        }
+        if (criteria.getMerchantName() != null) {
+            additionalData.set(PaxExtData.MERCHANT_NAME, criteria.getMerchantName());
+        }
+
+        DeviceMessage message = TerminalUtilities.buildRequest(
+                 messageId,
+                "00",  // EDC TYPE SET TO ALL
+                ControlCodes.FS,
+                (criteria.getTransactionType() != null)? criteria.getTransactionType() : "",
+                ControlCodes.FS,
+                (criteria.getCardType() != null) ? criteria.getCardType() : "",
+                ControlCodes.FS,
+                (criteria.getRecordNumber()) != null ? criteria.getRecordNumber() : "",
+                ControlCodes.FS,
+                (criteria.getTerminalReferenceNumber()) != null ? criteria.getEcrReferenceNumber() : "",
+                ControlCodes.FS,
+                (criteria.getAuthNumber()) != null ? criteria.getAuthNumber() : "",
+                ControlCodes.FS,
+                (criteria.getReferenceNumber()) != null ? criteria.getReferenceNumber() : "",
+                ControlCodes.FS,
+                additionalData
+        );
+        return message;
     }
 
     private PaxTxnType mapTransactionType(TransactionType type) throws UnsupportedTransactionException {

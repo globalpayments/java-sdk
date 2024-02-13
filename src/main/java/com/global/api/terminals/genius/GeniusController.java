@@ -8,12 +8,14 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.builders.MitcManageBuilder;
 import com.global.api.terminals.genius.enums.MitcRequestType;
 import com.global.api.terminals.genius.enums.TransactionIdType;
@@ -21,6 +23,7 @@ import com.global.api.terminals.genius.enums.GeniusEndpoints;
 import com.global.api.terminals.genius.interfaces.MitcGateway;
 import com.global.api.terminals.genius.request.GeniusMitcRequest;
 import com.global.api.terminals.genius.responses.MitcResponse;
+import com.global.api.terminals.pax.responses.LocalDetailReportResponse;
 import com.global.api.utils.AmountUtils;
 import com.global.api.utils.JsonDoc;
 import lombok.Getter;
@@ -210,6 +213,12 @@ public class GeniusController extends DeviceController {
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
         return null;
     }
+
+    @Override
+    public LocalDetailReportResponse processLocalDetailReport(TerminalReportBuilder builder) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public TerminalResponse processReport(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
         MitcRequestType requestType;
 

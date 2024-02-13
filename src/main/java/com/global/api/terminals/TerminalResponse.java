@@ -161,6 +161,8 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected BigDecimal markUp;
     @Getter @Setter
     protected String transactionCurrency;
+    @Getter @Setter
+    protected String originalTransactionType;
 
     public String getStatus() {
         return status;

@@ -16,6 +16,7 @@ import java.util.List;
 
 public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMethod> implements  IPaymentMethod, IChargable, IAuthable, IVerifiable, IRefundable, ISecure3d  {
     private Address address;
+    private String accountNumberLast4;
     private String commercialIndicator;
     private String customerKey;
     private String expirationDate;
@@ -96,6 +97,12 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     }
     public void setThreeDSecure(ThreeDSecure threeDSecure) {
         this.threeDSecure = threeDSecure;
+    }
+    public String getAccountNumberLast4() {
+        return accountNumberLast4;
+    }
+    public void setAccountNumberLast4(String accountNumberLast4) {
+        this.accountNumberLast4 = accountNumberLast4;
     }
 
     public RecurringPaymentMethod() {

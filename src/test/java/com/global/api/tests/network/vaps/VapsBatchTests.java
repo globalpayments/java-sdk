@@ -16,6 +16,7 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
+import com.global.api.services.NetworkService;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
@@ -275,6 +276,7 @@ public class VapsBatchTests {
         CreditTrackData track = TestCards.VisaSwipe();
 
         AuthorizationBuilder builder = track.charge(new BigDecimal(amount))
+                .withAllowPartialAuth(true)
                 .withCurrency("USD");
 
         if(configName.equals("NoBatch")) {
@@ -283,7 +285,7 @@ public class VapsBatchTests {
 
         Transaction response = builder.execute(configName);
         assertNotNull(response);
-        assertEquals("000", response.getResponseCode());
+        assertEquals("002", response.getResponseCode());
         return response;
     }
 
@@ -320,5 +322,81 @@ public class VapsBatchTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
         return response;
+    }
+
+    @Test
+    public void test_10289_partialAmount_retransmitDataCollect_withBatchSummary() throws ApiException {
+        configName = "NoBatch";
+
+        Transaction creditSale = creditSale(11.51);
+        assertNotNull(creditSale.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
+
+        Transaction response = BatchService.closeBatch(
+                batchProvider.getBatchNumber(),
+                batchProvider.getSequenceNumber(),
+                new BigDecimal(11.51),
+                BigDecimal.ZERO
+        ).execute(configName);
+        assertNotNull(response);
+
+        BatchSummary summary = response.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+        if(summary.getResponseCode().equals("580")) {
+            LinkedList<String> tokens = new LinkedList<String>();
+            tokens.add(creditSale.getTransactionToken());
+
+            BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
+            assertNotNull(newSummary);
+        }
+        else {
+            assertTrue(summary.getResponseCode().equals("500") || summary.getResponseCode().equals("501"));
+        }
+    }
+
+    @Test
+    public void test10289_044_retransmit_data_collect_partialAmount_withNetworkService() throws ApiException {
+        configName = "NoBatch";
+        CreditTrackData track = TestCards.MasterCardSwipe();
+
+        Transaction dataCollect = track.charge(new BigDecimal(11.51))
+                .withCurrency("USD")
+                .withAllowPartialAuth(true)
+                .execute();
+        assertNotNull(dataCollect);
+        assertEquals(dataCollect.getResponseMessage(), "002", dataCollect.getResponseCode());
+        assertNotNull(dataCollect.getTransactionToken());
+
+
+        Transaction batchClose = BatchService.closeBatch(
+                batchProvider.getBatchNumber(),
+                batchProvider.getSequenceNumber(),
+                new BigDecimal(11.51),
+                BigDecimal.ZERO
+        ).execute(configName);
+        assertNotNull(batchClose);
+
+
+        BatchSummary summary = batchClose.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+        Transaction resubmitDataCollect = NetworkService.resubmitDataCollect(dataCollect.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitDataCollect);
+        assertEquals(resubmitDataCollect.getResponseMessage(), "000", resubmitDataCollect.getResponseCode());
+
+        Transaction resubmitBatch = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitBatch);
+        assertEquals(resubmitBatch.getResponseMessage(), "580", resubmitBatch.getResponseCode());
+
+
     }
 }

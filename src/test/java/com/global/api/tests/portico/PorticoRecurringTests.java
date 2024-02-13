@@ -213,11 +213,13 @@ public class PorticoRecurringTests {
     }
 
     @Test
-    public void Test_002b_FindPaymentMethod() throws ApiException {
+    public void Test_002b_FindPaymentMethod_And_Confirm_AccountNumberLast4() throws ApiException {
         RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
         assertNotNull(paymentMethod);
-    }
 
+        // confirm RecurringPaymentMethod object has card last 4.
+        assertEquals("1111", paymentMethod.getAccountNumberLast4());
+    }
     @Test
     public void Test_002c_FindSchedule() throws ApiException {
         Schedule schedule = Schedule.find(paymentId("Credit"));

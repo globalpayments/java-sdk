@@ -12,6 +12,7 @@ import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
@@ -70,16 +71,16 @@ public class UpaInterface implements IDeviceInterface {
         body.set("params", param);
 
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.LineItemDisplay,
-            controller.getRequestId().toString(),
-            body
+                UpaMessageId.LineItemDisplay,
+                controller.getRequestId().toString(),
+                body
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-            new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(controller.send(message), StandardCharsets.UTF_8)
         );
 
-        return new UpaDeviceResponse(responseObj, UpaMessageId.LineItemDisplay);  
+        return new UpaDeviceResponse(responseObj, UpaMessageId.LineItemDisplay);
     }
 
     public void cancel() throws ApiException {
@@ -94,9 +95,9 @@ public class UpaInterface implements IDeviceInterface {
         body.set("params", param);
 
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.CancelTransaction,
-            controller.getRequestId().toString(),
-            body
+                UpaMessageId.CancelTransaction,
+                controller.getRequestId().toString(),
+                body
         );
 
         controller.send(message);
@@ -126,7 +127,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     public TerminalAuthBuilder creditSale() throws ApiException {
@@ -135,7 +136,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Credit)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     public TerminalAuthBuilder creditVerify() throws ApiException {
@@ -157,7 +158,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     @Override
@@ -171,7 +172,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     public TerminalAuthBuilder ebtBalance() throws ApiException {
@@ -184,7 +185,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder ebtPurchase(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     public TerminalAuthBuilder ebtRefund() throws ApiException {
@@ -193,7 +194,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT)
-            .withAmount(amount);
+                .withAmount(amount);
     }
 
     public IEODResponse endOfDay() throws ApiException {
@@ -259,9 +260,9 @@ public class UpaInterface implements IDeviceInterface {
         body.set("params", param);
 
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.GetBatchDetails,
-            controller.getRequestId().toString(),
-            body
+                UpaMessageId.GetBatchDetails,
+                controller.getRequestId().toString(),
+                body
         );
 
         message.setAwaitResponse(true);
@@ -336,49 +337,50 @@ public class UpaInterface implements IDeviceInterface {
 
     public IDeviceResponse ping() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.Ping,
-            controller.getRequestId().toString(),
-            null // no body for ping
+                UpaMessageId.Ping,
+                controller.getRequestId().toString(),
+                null // no body for ping
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-            new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(controller.send(message), StandardCharsets.UTF_8)
         );
-        
+
         return new UpaDeviceResponse(responseObj, UpaMessageId.Ping);
     }
 
     public IDeviceResponse reboot() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.Reboot,
-            controller.getRequestId().toString(),
-            null // no body for reboot
+                UpaMessageId.Reboot,
+                controller.getRequestId().toString(),
+                null // no body for reboot
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-            new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(controller.send(message), StandardCharsets.UTF_8)
         );
-        
+
         return new UpaDeviceResponse(responseObj, UpaMessageId.Reboot);
     }
 
     public IDeviceResponse reset() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
-            UpaMessageId.Reboot,
-            controller.getRequestId().toString(),
-            null // no body for reboot
+                UpaMessageId.Reboot,
+                controller.getRequestId().toString(),
+                null // no body for reboot
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-            new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(controller.send(message), StandardCharsets.UTF_8)
         );
-        
+
         return new UpaDeviceResponse(responseObj, UpaMessageId.Restart);
     }
 
     public TerminalManageBuilder reverse() throws ApiException {
         return new UpaTerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit);
     }
+
     public ISAFResponse sendStoreAndForward() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.SendSAF,
@@ -395,7 +397,7 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalManageBuilder tipAdjust(BigDecimal amount) {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
-            .withGratuity(amount);
+                .withGratuity(amount);
     }
 
     public IDeviceResponse closeLane() throws ApiException {
@@ -476,8 +478,8 @@ public class UpaInterface implements IDeviceInterface {
 
     public TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Activate, PaymentMethodType.Gift)
-            .withCurrency(CurrencyType.Currency)
-            .withAmount(amount);
+                .withCurrency(CurrencyType.Currency)
+                .withAmount(amount);
     }
 
     public TerminalManageBuilder giftVoid() throws ApiException {
@@ -503,40 +505,46 @@ public class UpaInterface implements IDeviceInterface {
     public IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException {
         throw new UnsupportedTransactionException();
     }
-        @Override
-        public UpaSafResponse safSummaryReport(String printData, String reportData) throws ApiException {
-            JsonDoc body = new JsonDoc();
-            JsonDoc param = new JsonDoc();
-            param.set("reportOutput", "Print");
+
+    @Override
+    public UpaSafResponse safSummaryReport(String printData, String reportData) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc param = new JsonDoc();
+        param.set("reportOutput", "Print");
 
 
-            StringBuilder reportOutput = new StringBuilder("");
-            if (!StringUtils.isNullOrEmpty(printData)) {
-                reportOutput.append(printData);
-                reportOutput.append("|");
-            }
-            if (!StringUtils.isNullOrEmpty(reportData)) {
-                reportOutput.append(reportData);
-            }
-
-            param.set("reportOutput", String.valueOf(reportOutput));
-
-            body.set("params", param);
-
-            DeviceMessage message = TerminalUtilities.buildMessage(
-                    UpaMessageId.GetSAFReport,
-                    controller.getRequestId().toString(),
-                    body
-            );
-
-            message.setAwaitResponse(true);
-
-            JsonDoc responseObj = JsonDoc.parse(
-                    new String(controller.send(message), StandardCharsets.UTF_8)
-            );
-
-            return new UpaSafResponse(responseObj);
+        StringBuilder reportOutput = new StringBuilder("");
+        if (!StringUtils.isNullOrEmpty(printData)) {
+            reportOutput.append(printData);
+            reportOutput.append("|");
         }
+        if (!StringUtils.isNullOrEmpty(reportData)) {
+            reportOutput.append(reportData);
+        }
+
+        param.set("reportOutput", String.valueOf(reportOutput));
+
+        body.set("params", param);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.GetSAFReport,
+                controller.getRequestId().toString(),
+                body
+        );
+
+        message.setAwaitResponse(true);
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+
+        return new UpaSafResponse(responseObj);
+    }
+
+    @Override
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+        throw  new UnsupportedTransactionException();
+    }
 
     @Override
     public ISAFResponse safDelete(String referenceNumber,String transactionNumber) throws ApiException{
@@ -544,10 +552,10 @@ public class UpaInterface implements IDeviceInterface {
         JsonDoc transaction = new JsonDoc();
 
         if (transactionNumber != null) {
-            transaction.set(TRANSACTION_NUMBER,transactionNumber);
+            transaction.set(TRANSACTION_NUMBER, transactionNumber);
         }
         if (referenceNumber != null) {
-            transaction.set(REFERENCE_NUMBER,referenceNumber);
+            transaction.set(REFERENCE_NUMBER, referenceNumber);
         }
         body.set(TRANSACTION, transaction);
 
@@ -559,7 +567,7 @@ public class UpaInterface implements IDeviceInterface {
         );
 
         message.setAwaitResponse(true);
-        byte [] resp;
+        byte[] resp;
         resp = controller.send(message);
         JsonDoc responseObj = JsonDoc.parse(
                 new String(resp, StandardCharsets.UTF_8)
@@ -568,7 +576,7 @@ public class UpaInterface implements IDeviceInterface {
         return new UpaSafResponse(responseObj);
     }
 
-    public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException{
+    public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
         JsonDoc body = new JsonDoc();
         JsonDoc param = new JsonDoc();
 
@@ -578,7 +586,7 @@ public class UpaInterface implements IDeviceInterface {
         if (data.getPrompt2() != null) {
             param.set(PROMPT_TWO, data.getPrompt2());
         }
-        if (data.getDisplayOption() != null){
+        if (data.getDisplayOption() != null) {
             param.set(DISPLAY_OPTION, data.getDisplayOption());
         }
         body.set(PARAMS, param);
@@ -592,5 +600,15 @@ public class UpaInterface implements IDeviceInterface {
                 new String(controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaSignatureResponse(responseObj);
+    }
+
+    @Override
+    public IDeviceResponse deleteImage(String fileName) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
+    @Override
+    public IDeviceResponse updateResource(UpdateResourceFileType fileType, byte[] fileData, boolean isHttpDeviceConnectionMode) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
 }

@@ -1,20 +1,13 @@
 package com.global.api.terminals.hpa;
 
-import com.global.api.entities.enums.CurrencyType;
-import com.global.api.entities.enums.HpaMsgId;
-import com.global.api.entities.enums.SafDelete;
-import com.global.api.entities.enums.SafMode;
-import com.global.api.entities.enums.SafReportSummary;
-import com.global.api.entities.enums.SafUpload;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.SendFileType;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
 import com.global.api.terminals.hpa.responses.SipBaseResponse;
@@ -406,7 +399,23 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     @Override
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public IDeviceResponse deleteImage(String fileName) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
+    @Override
+    public IDeviceResponse updateResource(UpdateResourceFileType fileType, byte[] fileData, boolean isHttpDeviceConnectionMode) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
 }
