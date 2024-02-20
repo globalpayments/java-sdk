@@ -64,4 +64,13 @@ public enum NtsHostResponseCode implements IStringConstant{
     }
     public String getValue() { return this.value; }
     public byte[] getBytes() { return this.value.getBytes(); }
+
+	public static String getValueByString(String value){
+		for(NtsHostResponseCode hrc: NtsHostResponseCode.values()){
+			if(hrc.value.equals(value)){
+				return hrc.name();
+			}
+		}
+		return null;
+	}
 }

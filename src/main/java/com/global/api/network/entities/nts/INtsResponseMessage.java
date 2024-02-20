@@ -1,6 +1,7 @@
 package com.global.api.network.entities.nts;
 
 import com.global.api.entities.enums.*;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.network.enums.CardDataInputCapability;
 import com.global.api.network.enums.nts.PendingRequestIndicator;
 import com.global.api.network.enums.nts.ServicingHostName;
@@ -9,7 +10,7 @@ import com.global.api.utils.StringParser;
 
 public interface INtsResponseMessage {
 
-    static NtsResponseMessageHeader getHeader(byte [] buffer) {
+    static NtsResponseMessageHeader getHeader(byte [] buffer) throws GatewayException {
         NtsNetworkMessageHeader ntsMessageHeader = new NtsNetworkMessageHeader();
         NtsResponseMessageHeader ntsResponseMessageHeader = new NtsResponseMessageHeader();
 

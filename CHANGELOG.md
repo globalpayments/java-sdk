@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - v11.1.32 (02/13/2024)
+## v11.1.33 (02/20/2024)
+-NTS Phase1 Issue:
+ - Fixed API exception issue for 10273 & 10274
+
+## v11.1.32 (02/13/2024)
 ### Enhancements
 - [PAX Issue]
   - PAX_Add/Delete_image

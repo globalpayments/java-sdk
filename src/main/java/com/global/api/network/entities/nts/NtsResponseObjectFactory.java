@@ -6,8 +6,10 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.NtsHostResponseCode;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.Credit;
 import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.MessageReader;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
@@ -17,7 +19,7 @@ public class NtsResponseObjectFactory {
 
     static final Integer RESPONSE_HEADER = 52;
 
-    public static <T extends TransactionBuilder<Transaction>> NtsResponse getNtsResponseObject(byte[] buffer, @NonNull T builder) {
+    public static <T extends TransactionBuilder<Transaction>> NtsResponse getNtsResponseObject(IDeviceMessage request, byte[] buffer, @NonNull T builder) throws GatewayException {
 
         INtsResponseMessage ntsResponseMessage = null;
         MessageReader mr = new MessageReader(buffer);
@@ -41,6 +43,35 @@ public class NtsResponseObjectFactory {
         }
 
         NtsResponse ntsResponse = new NtsResponse();
+        String str = new String(buffer);
+
+        String ntsHostResponseCode = str.substring(6,8);
+
+        if(ntsHostResponseCode.equals(NtsHostResponseCode.TerminalDisabled.getValue())){
+            throw new GatewayException(
+                    String.format("Unexpected response from gateway: %s %s",  NtsHostResponseCode.getValueByString(ntsHostResponseCode),
+                            ntsHostResponseCode),
+                    ntsHostResponseCode,
+                    NtsHostResponseCode.getValueByString(ntsHostResponseCode));
+        }else {
+            MessageReader mr2 = new MessageReader(request.getSendBuffer());
+            mr2.readString(15);
+            String requestStr = new String(mr2.readRemainingBytes());
+            requestStr = requestStr.trim();
+
+            MessageReader mr3 = new MessageReader(buffer);
+            mr3.readString(14);
+            String responseStr = new String(mr3.readRemainingBytes());
+            responseStr = responseStr.trim();
+
+            if (responseStr.contains(requestStr)) {
+                throw new GatewayException(
+                        String.format("Unexpected response from gateway due to request echoed in response : %s %s", NtsHostResponseCode.getValueByString(ntsHostResponseCode),
+                                ntsHostResponseCode),
+                        ntsHostResponseCode,
+                        NtsHostResponseCode.getValueByString(ntsHostResponseCode));
+            }
+        }
 
         // Setting NTS response message header.
         NtsResponseMessageHeader ntsResponseMessageHeader = INtsResponseMessage.getHeader(mr.readBytes(RESPONSE_HEADER));

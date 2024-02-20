@@ -429,7 +429,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             NtsUtils.log("Request", maskRequest.isPresent() && !StringUtils.isNullOrEmpty(String.valueOf(maskRequest.get()))?
                    maskRequest.get().toString():buildMessage.toString());
             byte[] responseBuffer = send(buildMessage);
-            Transaction response = mapResponse(responseBuffer, builder, messageData);
+            Transaction response = mapResponse(buildMessage,responseBuffer, builder, messageData);
 
             return response;
 
@@ -447,7 +447,7 @@ public class NtsConnector extends GatewayConnectorConfig {
 
     }
 
-    private <T extends TransactionBuilder<Transaction>> Transaction mapResponse(byte[] buffer, T builder, MessageWriter messageData) throws ApiException {
+    private <T extends TransactionBuilder<Transaction>> Transaction mapResponse(IDeviceMessage request, byte[] buffer, T builder, MessageWriter messageData) throws ApiException {
         Transaction result = new Transaction();
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
         MessageReader mr = new MessageReader(buffer);
@@ -456,7 +456,7 @@ public class NtsConnector extends GatewayConnectorConfig {
 
         displayMaskedResponse(sp);
 
-        NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(mr.readBytes((int) mr.getLength()), builder);
+        NtsResponse ntsResponse = NtsResponseObjectFactory.getNtsResponseObject(request,mr.readBytes((int) mr.getLength()), builder);
         NtsHostResponseCode hrc = ntsResponse.getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
 
         String transactionToken = checkResponse(hrc.getValue(), messageData, builder);
