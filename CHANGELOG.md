@@ -1,5 +1,11 @@
 # Changelog
 
+## Latest Version v11.2.0 (02/22/2024)
+### Enhancements
+- [VAPS Enhancement]
+ - Vaps Spec Update 23.1
+ - Vaps Spec Update 21.2 with Tokenization, VoyagerEmv and VisaFleet2.0 field update.
+
 ## v11.1.33 (02/20/2024)
 -NTS Phase1 Issue:
  - Fixed API exception issue for 10273 & 10274

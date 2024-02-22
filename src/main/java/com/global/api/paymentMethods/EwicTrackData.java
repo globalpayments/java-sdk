@@ -48,6 +48,16 @@ public class EwicTrackData extends Ewic implements  ITrackData {
     }
 
     @Override
+    public String getTokenizationData() {
+        return null;
+    }
+
+    @Override
+    public void setTokenizationData(String s) {
+
+    }
+
+    @Override
     public String getTruncatedTrackData() {
         return null;
     }

@@ -87,7 +87,7 @@ public enum TerminalType implements IStringConstant{
 	EDH711FOR8583("86"),
 	VerifoneCommander("87"),
 	VerifoneRuby2Ci("88"),
-	VerifoneRuby2("89"),
+    VERFIFONEC18("89"),
 	VerifoneOmni380("90"),
 	IngenicoMove5000("91"),
 	VerifoneRubyDial("92"),

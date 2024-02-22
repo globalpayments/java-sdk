@@ -67,4 +67,9 @@ public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, I
     public AuthorizationBuilder refund(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Refund, this).withAmount(amount);
     }
+
+    public AuthorizationBuilder fileAction() {
+        return new AuthorizationBuilder(TransactionType.FileAction, this);
+    }
+
 }

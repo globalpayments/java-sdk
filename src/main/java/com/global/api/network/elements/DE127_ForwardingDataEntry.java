@@ -28,6 +28,8 @@ public class DE127_ForwardingDataEntry {
     @Getter @Setter
     private String encryptedData;
     @Getter @Setter
+    private boolean isFileAction;
+    @Getter @Setter
     private String tokenizationType;
     @Getter @Setter
     private String tokenizedFieldMatrix;
@@ -39,10 +41,6 @@ public class DE127_ForwardingDataEntry {
     private String tokenOrAcctNum;
     @Getter @Setter
     private String expiryDate;
-    @Getter @Setter
-    private boolean isFileAction;
-
-
 
     public DE127_ForwardingDataTag getTag() {
         return tag;

@@ -33,7 +33,7 @@ public class VapsWexTests {
         acceptorConfig = new AcceptorConfig();
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
 
         // hardware software config values
@@ -56,6 +56,9 @@ public class VapsWexTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
+        acceptorConfig.setSupportsEmvPin(true);
+        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
 
         // gateway config
         config = new NetworkGatewayConfig();
@@ -64,12 +67,13 @@ public class VapsWexTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+//        config.setTerminalId("0000912197711");
+        config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
-        config.setMerchantType("4468");
+        config.setMerchantType("4214");
         ServicesContainer.configureService(config);
 
         ServicesContainer.configureService(config, "outside");
@@ -90,8 +94,9 @@ public class VapsWexTests {
     public void test_001_3000_V202_MA_I_WX2_1200() throws ApiException {
         CreditCardData card = new CreditCardData();
         card.setNumber("6900460430006149231");
-        card.setExpMonth(19);
-        card.setExpYear(2002);
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCardPresent(true);
 
         FleetData fleetData = new FleetData();
         fleetData.setPurchaseDeviceSequenceNumber("30002");

@@ -101,6 +101,10 @@ public class CardUtils {
         visaFleetMap.put("448688", "448699");
         visaFleetMap.put("461400", "461421");
         visaFleetMap.put("461423", "461499");
+        visaFleetMap.put("448616", "448619");
+        visaFleetMap.put("448628", "448629");
+        visaFleetMap.put("448631", "448663");
+        visaFleetMap.put("448665", "448673");
         visaFleetMap.put("480700", "480899");
         fleetBinMap.put("Visa", visaFleetMap);
 

@@ -39,8 +39,6 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
     @Getter @Setter
     private String expiryDate;
 
-
-
     public void addEncryptionData(EncryptionType encryptionType,EncryptionData encryptionData) {
         addEncryptionData(encryptionType,encryptionData,null);
     }
@@ -76,20 +74,21 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
 
         add(entry);
     }
+
     public void addTokenizationData(TokenizationType tokenizationType) {
         DE127_ForwardingDataEntry entry = new DE127_ForwardingDataEntry();
-                entry.setTag(DE127_ForwardingDataTag.Tokenization_TOK) ;
-                entry.setRecordId(RecordId.Tokenization_TD);
-                entry.setRecordType("001");
-                entry.setServiceType(serviceType);
-                entry.setTokenizationType(tokenizationType.getValue());
-                entry.setTokenizedFieldMatrix(tokenizedFieldMatrix.getValue());
-                entry.setTokenizationOperationType(tokenizationOperationType.getValue());
-                entry.setMerchantId(StringUtils.padRight(merchantId,32,' '));
-                entry.setTokenOrAcctNum(StringUtils.padRight(tokenOrAcctNum,128,' '));
-                entry.setExpiryDate(expiryDate!=null?expiryDate:StringUtils.padRight("",4,' '));
+        entry.setTag(DE127_ForwardingDataTag.Tokenization_TOK) ;
+        entry.setRecordId(RecordId.Tokenization_TD);
+        entry.setRecordType("001");
+        entry.setServiceType(serviceType);
+        entry.setTokenizationType(tokenizationType.getValue());
+        entry.setTokenizedFieldMatrix(tokenizedFieldMatrix.getValue());
+        entry.setTokenizationOperationType(tokenizationOperationType.getValue());
+        entry.setMerchantId(StringUtils.padRight(merchantId,32,' '));
+        entry.setTokenOrAcctNum(StringUtils.padRight(tokenOrAcctNum,128,' '));
+        entry.setExpiryDate(expiryDate!=null?expiryDate:StringUtils.padRight("",4,' '));
 
-                add(entry);
+        add(entry);
 
     }
 

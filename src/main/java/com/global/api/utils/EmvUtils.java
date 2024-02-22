@@ -55,6 +55,7 @@ public class EmvUtils {
         knownTags.put("5F34", "Application Primary Account Number (PAN) Sequence Number");
         knownTags.put("5F36", "Transaction Currency Exponent");
 
+        knownTags.put("9F0A", "Application Selection Registered Proprietary Data");
         knownTags.put("9F01", "Unknown");
         knownTags.put("9F02", "Amount, Authorized");
         knownTags.put("9F03", "Amount, Other");
@@ -116,12 +117,23 @@ public class EmvUtils {
         knownTags.put("9F4E", "Unknown");
 
         knownTags.put("9F5B", "Issuer Script Results");
+        knownTags.put("9F58", "Consecutive Transaction Counter Limit (CTCL)");
+        knownTags.put("9F59", "Consecutive Transaction Counter Upper Limit (CTCUL)");
+        knownTags.put("9F68", "Card Additional Processes");
+        knownTags.put("9F6C", "Card Transaction Qualifiers");
+
         knownTags.put("9F6E", "Form Factor Indicator/Third Party Data");
         knownTags.put("9F7C", "Customer Exclusive Data");
-
         knownTags.put("FFC6", "Terminal Action Code (TAC) Default");
         knownTags.put("FFC7", "Terminal Action Code (TAC) Denial");
         knownTags.put("FFC8", "Terminal Action Code (TAC) Online");
+
+        //Adding Visa Fleet EMV
+        knownTags.put("8201", "ICC Key CRT constant q-1 d mod (q-1)");
+        knownTags.put("8202", "ICC Private Key CRT constant d mod (q-1)");
+        knownTags.put("8203", "ICC Private Key CRT constant d mod (p-1)");
+        knownTags.put("8204", "ICC Private Key CRT constant prime factor q");
+        knownTags.put("8205", "ICC Private Key CRT constant prime factor p");
 
         // Adding the WEX EMV
         knownTags.put("42", "Issuer Identification Number (IIN or BIN)");
@@ -182,6 +194,7 @@ public class EmvUtils {
         knownTags.put("DF38", "Loyalty ID*");
         knownTags.put("DF39", "Purchase Device Sequence Number (with the suffix)* ");
         knownTags.put("DF40", "DDOL Related Data Length");
+        knownTags.put("DF41", "CCDOL2 Related Data Length");
         knownTags.put("DF41", "CCDOL2 Related Data Length");
         knownTags.put("DF4D", "Transaction Log Setting parameter31");
 

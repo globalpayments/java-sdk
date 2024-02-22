@@ -51,8 +51,9 @@ public class VapsEbtTests {
         acceptorConfig.setAddress(address);
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
+        acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
 
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
@@ -64,6 +65,9 @@ public class VapsEbtTests {
         acceptorConfig.setSupportsReturnBalance(true);
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
+        acceptorConfig.setSupportsEmvPin(true);
+        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
 
         // gateway config
         config = new NetworkGatewayConfig();
@@ -72,7 +76,8 @@ public class VapsEbtTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+//        config.setTerminalId("0000912197711");
+        config.setTerminalId("0003698521408");
         config.setUniqueDeviceId("0001");
         config.setMerchantType("5541");
         config.setAcceptorConfig(acceptorConfig);
@@ -192,10 +197,10 @@ public class VapsEbtTests {
     }
 
     @Test
-    public void test_218_swipe_sale_surcharge() throws ApiException {
+    public void test_03_swipe_sale_TransactionFee() throws ApiException {
         Transaction response = cashCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
-                .withFee(FeeType.Surcharge, new BigDecimal(1))
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .execute();
         assertNotNull(response);
 
@@ -230,7 +235,7 @@ public class VapsEbtTests {
     }
 
     @Test
-    public void test_219_swipe_sale_capture() throws ApiException {
+    public void test_219_swipe_sale_capture_DE46_56() throws ApiException {
         Transaction response = cashCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withCashBack(new BigDecimal(5))
@@ -254,6 +259,7 @@ public class VapsEbtTests {
 
         // check message data
         pmi = dataCollectResponse.getMessageInformation();
+        assertEquals("000",dataCollectResponse.getResponseMessage());
         assertNotNull(pmi);
 
     }

@@ -566,6 +566,7 @@ public class TestCards {
     public static GiftCard ValueLinkManual() {
         GiftCard rvalue = new GiftCard();
         rvalue.setValue("6010561234567890123");
+        rvalue.setExpiry("2501");
         return rvalue;
     }
     public static GiftCard ValueLinkSwipe() {

@@ -8,7 +8,10 @@ public enum EmvPDLCardType implements IStringConstant {
     Mastercard("02"),
     AmericanExpress("03"),
     Discover("04"),
-    Wex("05");
+    Wex("05"),
+    VOYAGER("06"),
+    JCB("07"),
+    UNIONPAY("08");
 
     final String value;
 

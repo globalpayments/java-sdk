@@ -11,6 +11,7 @@ public enum DE48_CustomerDataType implements IStringConstant {
     DriverLicense_Number("5"),
     DriverLicense_State_Province("6"),
     DriverLicense_Name("7"),
+    WORKORDER_PONUMBER("8"),
     InvoiceNumber("9"),
     TripNumber("A"),
     UnitNumber("B"),
@@ -29,7 +30,10 @@ public enum DE48_CustomerDataType implements IStringConstant {
     MerchantOrderNumber("Z"),
     MaintenanceNumber("a"),
     TrailerNumber("b"),
-    HubometerNumber("c");
+    HubometerNumber("c"),
+    ADDITIONALPROMPTDATA1("d"),
+    ADDITIONALPROMPTDATA2("e"),
+    EMPLOYEENUMBER("f");
 
     private final String value;
     DE48_CustomerDataType(String value) { this.value = value; }

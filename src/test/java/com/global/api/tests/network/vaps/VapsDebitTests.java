@@ -58,8 +58,9 @@ public class VapsDebitTests {
         acceptorConfig.setAddress(address);
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
+        acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
 
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
@@ -71,7 +72,11 @@ public class VapsDebitTests {
         acceptorConfig.setSupportsReturnBalance(true);
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
-        acceptorConfig.setPinlessDebit(true);
+        acceptorConfig.setSupportsEmvPin(true);
+        acceptorConfig.setPinlessDebit(false);
+        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
+
 
         // gateway config
         config = new NetworkGatewayConfig();
@@ -80,7 +85,7 @@ public class VapsDebitTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -107,8 +112,90 @@ public class VapsDebitTests {
     }
 
     @Test
+    public void test_authorization_Debit_withFee_01() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Debit_Auth_Capture_02() throws ApiException {
+
+        Transaction response = track.authorize(new BigDecimal(40))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .execute();
+        assertNotNull(capture);
+
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
+    }
+
+    @Test
+    public void test_05_ready_link_Data_Collect() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("4111111111111111=1225");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTerminalError(true)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("000", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_authorization_withFee() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
     public void test_149_pre_authorization() throws ApiException {
-        Transaction response = track.authorize(new BigDecimal(1))
+        Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -536,7 +623,7 @@ public class VapsDebitTests {
         Transaction completion = capture.getPreAuthCompletion();
         assertNotNull(completion);
 
-        if(!completion.getResponseCode().equals("000")) {
+        if (!completion.getResponseCode().equals("000")) {
             // re-do the data-collect
             completion = response.preAuthCompletion(new BigDecimal(12))
                     .execute("ICR");
@@ -554,7 +641,8 @@ public class VapsDebitTests {
         assertEquals("000", completion.getResponseCode());
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void test_168_debit_sale_failed_data_collect() throws ApiException {
         IStanProvider stan = StanGenerator.getInstance();
         IBatchProvider batch = BatchProvider.getInstance();
@@ -584,7 +672,8 @@ public class VapsDebitTests {
         assertNotNull(completion);
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void test_169_debit_pre_auth_manual() throws ApiException {
         IStanProvider stan = StanGenerator.getInstance();
         IBatchProvider batch = BatchProvider.getInstance();
@@ -610,7 +699,8 @@ public class VapsDebitTests {
         assertEquals("000", completion.getResponseCode());
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void test_169_debit_pre_auth_manual_builder() throws ApiException {
         IStanProvider stan = StanGenerator.getInstance();
         IBatchProvider batch = BatchProvider.getInstance();
@@ -683,8 +773,8 @@ public class VapsDebitTests {
         rlTrack.setValue("354358770862127311=210612100000439000");
 
         Transaction response = rlTrack.addValue(new BigDecimal(10))
-            .withCurrency("USD")
-            .execute();
+                .withCurrency("USD")
+                .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
@@ -756,10 +846,11 @@ public class VapsDebitTests {
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
+
     @Test
     public void test_175_PinDebit_Partial_Amount_Auth_Capture() throws ApiException {
 
-        Transaction response = track.authorize(new BigDecimal(40),true)
+        Transaction response = track.authorize(new BigDecimal(40), true)
                 .withCurrency("USD")
                 .execute("ICR");
         assertNotNull(response);
@@ -775,11 +866,12 @@ public class VapsDebitTests {
         // check response
         assertEquals("000", capture.getResponseCode());
     }
+
     @Test
     public void test_176_pre_authorization_with_fee_amount() throws ApiException {
         Transaction response = track.authorize(new BigDecimal(1))
                 .withCurrency("USD")
-                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .withFee(FeeType.Surcharge, new BigDecimal(11))
                 .execute();
         assertNotNull(response);
 
@@ -793,11 +885,12 @@ public class VapsDebitTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_177_reverse_sale_cashBack_with_fee() throws ApiException {
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
-                .withFee(FeeType.Surcharge,new BigDecimal(5))
+                .withFee(FeeType.Surcharge, new BigDecimal(5))
                 .withCashBack(new BigDecimal(3))
                 .execute();
         assertNotNull(response);
@@ -808,7 +901,7 @@ public class VapsDebitTests {
                 .withCashBackAmount(new BigDecimal(3))
                 .execute();
         assertNotNull(reversal);
-        assertEquals("400",reversal.getResponseCode());
+        assertEquals("400", reversal.getResponseCode());
     }
 
     @Test
@@ -831,6 +924,7 @@ public class VapsDebitTests {
         // check response
         assertEquals("000", capture.getResponseCode());
     }
+
     @Test
     public void test_169_pindebit_1221_datacollect() throws ApiException {
         track = new DebitTrackData();

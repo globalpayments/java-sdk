@@ -64,6 +64,7 @@ public class TransactionReference implements IPaymentMethod {
     private String debitAuthorizer;
     private String visaTransactionId;
     private String discoverNetworkRefId;
+    private String feeAmount;
 
     public void setNtsData(NtsData ntsData) {
         this.ntsData = ntsData;

@@ -54,7 +54,7 @@ public class VapsCreditTests {
         acceptorConfig.setAddress(address);
 
         // data code values
-        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_ContactlessMsd_MagStripe_KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
         acceptorConfig.setCardHolderAuthenticationEntity(CardHolderAuthenticationEntity.ByMerchant);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
@@ -70,6 +70,9 @@ public class VapsCreditTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
+        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
+
 
         // gateway config
         NetworkGatewayConfig config = new NetworkGatewayConfig();
@@ -78,7 +81,7 @@ public class VapsCreditTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -91,8 +94,8 @@ public class VapsCreditTests {
         ServicesContainer.configureService(config, "ICR");
 
         // VISA
-//        card = TestCards.VisaManual(true, true);
-//        cashCard = TestCards.VisaSwipe();
+        card = TestCards.VisaManual(true, true);
+        track = TestCards.VisaSwipe();
 
         // VISA CORPORATE
 //        card = TestCards.VisaCorporateManual(true, true);
@@ -103,8 +106,8 @@ public class VapsCreditTests {
 //        cashCard = TestCards.VisaPurchasingSwipe();
 
         // MASTERCARD
-        card = TestCards.MasterCardManual(true, true);
-        track = TestCards.MasterCardSwipe();
+//        card = TestCards.MasterCardManual(true, true);
+//        track = TestCards.MasterCardSwipe();
 
         // MASTERCARD PURCHASING
 //        card = TestCards.MasterCardPurchasingManual(true, true);
@@ -133,8 +136,9 @@ public class VapsCreditTests {
 
     @Test
     public void test_003_manual_authorization() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(10.456),true)
+        Transaction response = card.authorize(new BigDecimal(10.456))
                 .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal(1))
                 .execute();
         assertNotNull(response);
 
@@ -372,7 +376,7 @@ public class VapsCreditTests {
 
     @Test
     public void test_011_forced_swipe_void_full() throws ApiException {
-        Transaction sale = track.charge(new BigDecimal(12))
+        Transaction sale = track.authorize(new BigDecimal(12))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(sale);
@@ -843,17 +847,10 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
-
-        Transaction transaction = Transaction.fromNetwork(
-                new BigDecimal(10),
-                "TYPE04",
-                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Host_Authorized),
-                track,
-                response.getProcessingCode()
-        );
-        Transaction reversal = transaction.reverse(new BigDecimal(10))
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+        response.setNtsData(ntsData);
+        Transaction reversal = response.reverse(new BigDecimal(10))
                 .withCurrency("USD")
-                .withForceToHost(true)
                 .execute();
         assertNotNull(reversal);
         PriorMessageInformation pmi = reversal.getMessageInformation();
@@ -861,6 +858,7 @@ public class VapsCreditTests {
         assertEquals("600008", pmi.getProcessingCode());
         assertEquals("400", pmi.getFunctionCode());
         assertEquals("4021", pmi.getMessageReasonCode());
+        assertEquals("400", reversal.getResponseCode());
     }
 
     @Test
@@ -888,12 +886,14 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
-        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+        NtsData ntsData = new NtsData(FallbackCode.None,AuthorizerCode.Interchange_Authorized);
+        response.setNtsData(ntsData);
+
+        Transaction dataCollectResponse = response.preAuthCompletion(new BigDecimal(10))
                 .withCurrency("USD")
-//                .withTerminalError(true)
+                .withForceToHost(true)
                 .execute();
         assertNotNull(dataCollectResponse);
-
         // check response
         assertEquals("000", dataCollectResponse.getResponseCode());
     }
@@ -908,6 +908,8 @@ public class VapsCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Host_Authorized);
+        response.setNtsData(ntsData);
 
         Transaction reversal = response.reverse(new BigDecimal(10))
                 .withCurrency("USD")

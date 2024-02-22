@@ -85,6 +85,9 @@ public enum DE44_ActionReasonCode implements IStringConstant {
     TransactionCannotBeVoided("0721"),
     VoidTimeLimitExpired("0722"),
     AdditionalE3ErrorCode("0723"),
+    TOKENADDITIONALRESPONSEDATA("0724"),
+    SERVICEADDITIONALRESPONSEDATA("0725"),
+    P2PEADDITIONALRESPONSEDATA("0726"),
     HostDetectedDuplicate_ReturningOriginalApproval("0941"),
     Approval("1000"),
     DuplicateAcct_CCA("1046");

@@ -135,6 +135,10 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
 
     public String getValueType() { return this.valueType; }
 
+    @Getter
+    @Setter
+    private String tokenizationData;
+
     public AuthorizationBuilder addAlias(String phoneNumber) {
         return new AuthorizationBuilder(TransactionType.Alias, this).withAlias(AliasAction.Add, phoneNumber);
     }
@@ -231,4 +235,9 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     public AuthorizationBuilder issue(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Issue, this).withAmount(amount);
     }
+
+    public AuthorizationBuilder fileAction() {
+        return new AuthorizationBuilder(TransactionType.FileAction, this);
+    }
+
 }

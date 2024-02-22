@@ -1,6 +1,8 @@
 package com.global.api.network.elements;
 
 import com.global.api.network.abstractions.IDataElement;
+import com.global.api.network.enums.PurchaseRestrictionCapability;
+import com.global.api.network.enums.PurchaseType;
 import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
@@ -14,6 +16,12 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
     private Boolean mobileDevice;
     @Getter @Setter
     private Boolean supportWexAdditionalProducts;
+    @Getter @Setter
+    private Boolean supportBankcard;
+    @Getter @Setter
+    private PurchaseType supportVisaFleet2dot0;
+    @Getter @Setter
+    private PurchaseRestrictionCapability supportTerminalPurchaseRestriction;
 
     public String getTimezone() {
         return timezone;
@@ -55,6 +63,8 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         supportsCashOver = sp.readBoolean("2");
         mobileDevice = sp.readBoolean("Y");
         supportWexAdditionalProducts = sp.readBoolean("Y");
+        supportTerminalPurchaseRestriction = sp.readStringConstant(1,PurchaseRestrictionCapability.class);
+        supportVisaFleet2dot0 = sp.readStringConstant(1,PurchaseType.class);
         return this;
     }
 
@@ -65,7 +75,8 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         rvalue = rvalue.concat(supportsCashOver == null ? " " : supportsCashOver ? "0" : "2");
         rvalue = rvalue.concat(mobileDevice == null ? " " : mobileDevice ? "Y" : "N");
         rvalue = rvalue.concat(supportWexAdditionalProducts == null ? " " : supportWexAdditionalProducts ? "Y" : "N");
-
+        rvalue = rvalue.concat(supportTerminalPurchaseRestriction == null ? " " : supportTerminalPurchaseRestriction.getValue());
+        rvalue = rvalue.concat(supportVisaFleet2dot0 == null ? " " : supportVisaFleet2dot0.getValue());
         return StringUtils.trimEnd(rvalue).getBytes();
     }
 

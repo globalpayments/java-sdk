@@ -56,7 +56,7 @@ public class DE54_AmountsAdditional implements IDataElement<DE54_AmountsAddition
         entry.setAmount(amount);
         put(entry);
     }
-    public void put(DE54_AdditionalAmount entry) throws ApiException {
+     public void put(DE54_AdditionalAmount entry) throws ApiException {
         if(amountMap.size() < 6) {
             if(!amountMap.containsKey(entry.getAccountType())) {
                 amountMap.put(entry.getAccountType(), new HashMap<DE54_AmountTypeCode, DE54_AdditionalAmount>());

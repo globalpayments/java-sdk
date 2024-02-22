@@ -3,6 +3,8 @@ package com.global.api.paymentMethods;
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.utils.CardUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DebitTrackData extends Debit implements ITrackData {
     private String discretionaryData;
@@ -13,6 +15,9 @@ public class DebitTrackData extends Debit implements ITrackData {
     private TrackNumber trackNumber;
     private String trackData;
     private String value;
+
+    @Getter@Setter
+    private String tokenizationData;
 
     public String getDiscretionaryData() {
         return discretionaryData;

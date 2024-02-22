@@ -2,8 +2,6 @@ package com.global.api.serviceConfigs;
 
 import com.global.api.entities.Address;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.network.entities.nts.NtsNetworkMessageHeader;
-import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
 import com.global.api.network.enums.gnap.PINCapability;
 import com.global.api.network.enums.nts.AvailableProductsCapability;
@@ -46,6 +44,10 @@ public class AcceptorConfig {
     private Boolean capableVoid;
     @Getter @Setter
     private Boolean supportWexAdditionalProducts;
+    @Getter @Setter
+    private PurchaseType supportVisaFleet2dot0;
+    @Getter @Setter
+    private PurchaseRestrictionCapability supportTerminalPurchaseRestriction;
 
     //NTS Message Header
     private Boolean pinlessDebit;
@@ -64,6 +66,10 @@ public class AcceptorConfig {
     private Boolean echoSettlementData;
     private Boolean includeLoyaltyData;
     private Boolean performDateCheck;
+    @Getter @Setter
+    private String transactionGroupId;
+    @Getter @Setter
+    private Boolean incrementalSupportIndicator;
     @Getter @Setter
     private String merchantId;
 
@@ -287,7 +293,9 @@ public class AcceptorConfig {
     public boolean hasPosConfiguration_MessageData(){
         return performDateCheck != null
                 || echoSettlementData != null
-                || includeLoyaltyData != null;
+                || includeLoyaltyData != null
+                || transactionGroupId !=null
+                || incrementalSupportIndicator !=null;
     }
 
     public boolean hasPosConfiguration_BankcardData() {
@@ -309,7 +317,8 @@ public class AcceptorConfig {
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N")
-                .concat(supportWexAdditionalProducts != null ? supportWexAdditionalProducts ? "Y" : "N" : "N");
+                .concat(supportWexAdditionalProducts != null ? supportWexAdditionalProducts ? "Y" : "N" : "N")
+                .concat(supportVisaFleet2dot0 != null ? "Y" : "N");
         return rvalue;
     }
 

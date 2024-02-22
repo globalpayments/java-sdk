@@ -66,4 +66,9 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     public AuthorizationBuilder reverse(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Reversal, this).withAmount(amount);
     }
+    public AuthorizationBuilder fileAction() {
+        return new AuthorizationBuilder(TransactionType.FileAction, this);
+    }
+
+
 }
