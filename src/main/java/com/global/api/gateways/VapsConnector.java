@@ -456,8 +456,13 @@ public class VapsConnector extends GatewayConnectorConfig {
             request.set(DataElementId.DE_048, messageControl);
         }
         // DE 49: Currency Code, Transaction - n3
-        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && builder.getAmount()!=null)
-        request.set(DataElementId.DE_049,currencyCode.getValue());
+        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && builder.getAmount()!=null) {
+            request.set(DataElementId.DE_049, currencyCode.getValue());
+        }else if (paymentMethod instanceof GiftCard){
+            if(currencyCode!=null && builder.getAmount()!=null) {
+                request.set(DataElementId.DE_049, currencyCode.getValue());
+            }
+        }
         // DE 50: Currency Code, Reconciliation - n3
 
         /* DE 54: Amounts, Additional - LLVAR ans..120
@@ -984,8 +989,14 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // DE 49: Currency Code, Transaction - n3
         //String currencyCode=Iso4217_CurrencyCode.valueOf(builder.getCurrency()).getValue();
-        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && transactionAmount!=null)
+        if(!currencyCode.equals(Iso4217_CurrencyCode.USD) && transactionAmount!=null){
             request.set(DataElementId.DE_049,currencyCode.getValue());
+        }else if (paymentMethod instanceof TransactionReference){
+            IPaymentMethod orignalPaymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
+            if(orignalPaymentMethod instanceof GiftCard && transactionAmount!=null) {
+                request.set(DataElementId.DE_049, currencyCode.getValue());
+            }
+        }
         // DE 50: Currency Code, Reconciliation - n3
         if(transactionType.equals(TransactionType.BatchClose) && !currencyCode.equals(Iso4217_CurrencyCode.USD)) {
             request.set(DataElementId.DE_050,currencyCode.getValue());
@@ -1168,7 +1179,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(reference.getOriginalPaymentMethod() != null && reference.getOriginalPaymentMethod() instanceof IEncryptable) {
                 EncryptionData encryptionData = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptionData();
                 String encryptedPan = null;
-                if(transactionType.equals(TransactionType.Capture) && reference.getOriginalPaymentMethod() instanceof ITrackData) {
+                if(transactionType.equals(TransactionType.Capture) && (reference.getOriginalPaymentMethod() instanceof ITrackData || reference.getOriginalPaymentMethod() instanceof GiftCard)) {
                     encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
                 }
                 if (encryptionData != null) {
@@ -1252,8 +1263,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Refund:
             case Sale: {
                 request.setMessageTypeIndicator("1221");
-                if(request.toString().contains("DE_127") && builder.isForceToHost() && builder.getTransactionType().equals(TransactionType.DataCollect)){
-                    request.setMessageTypeIndicator("1220");
+                if(builder.isForceToHost() && builder.getTransactionType().equals(TransactionType.DataCollect)){
+                    request.set(DataElementId.DE_025,"1381");
                 }
                 // STAN
                 if(builder.getSystemTraceAuditNumber() != 0) {
@@ -2172,6 +2183,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                         }
                     }
                 }
+            }else if (builder.isForceToHost()) {
+                reasonCode = DE25_MessageReasonCode.Forced_AuthCapture;
             }
             else {
                 reasonCode = DE25_MessageReasonCode.AuthCapture;
@@ -2727,10 +2740,12 @@ public class VapsConnector extends GatewayConnectorConfig {
         successCodes.add("580");
 
         BigDecimal amount = request.getAmount(DataElementId.DE_004);
-        BigDecimal partialAmount = response.getAmount(DataElementId.DE_004);
-        if(responseCode.equals("002")) {
-            amount = partialAmount;
-            request.set(DataElementId.DE_004, StringUtils.toNumeric(amount, 12));
+        if(response != null) {
+            BigDecimal partialAmount = response.getAmount(DataElementId.DE_004);
+            if (responseCode.equals("002")) {
+                amount = partialAmount;
+                request.set(DataElementId.DE_004, StringUtils.toNumeric(amount, 12));
+            }
         }
         TransactionType transactionType = null;
         IPaymentMethod paymentMethod = null;
@@ -3184,6 +3199,12 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture)) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
+                if (trackType == TrackNumber.TrackOne)
+                    return EncryptedFieldMatrix.Track1;
+                else if (trackType == TrackNumber.TrackTwo)
+                    return EncryptedFieldMatrix.Track2;
+            }else if(paymentMethod instanceof GiftCard && !transactionType.equals(TransactionType.Capture)) {
+                TrackNumber trackType=((GiftCard)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;
                 else if (trackType == TrackNumber.TrackTwo)

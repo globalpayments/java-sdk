@@ -1,6 +1,7 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable {
+public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable, IEncryptable {
     private String alias;
     private String cardType;
     private String expiry;
@@ -26,6 +27,12 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     private TrackNumber trackNumber;
     private String value;
     private String valueType;
+    @Getter
+    @Setter
+    private EncryptionData encryptionData;
+    @Getter
+    @Setter
+    private String encryptedPan;
     private EntryMethod entryMethod = EntryMethod.Swipe;
     public EntryMethod getEntryMethod() {
         return entryMethod;

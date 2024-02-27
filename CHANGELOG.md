@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version v11.2.0 (02/22/2024)
+## Latest Version v11.2.1 (02/27/2024)
+### Enhancements
+- [VAPS Enhancement]
+  - 8583 VAPS 3DES ValueLink implementation.
+  - Issue 10292- change MTI for resubmit force data collect.
+  - Issue 10293 -Fixed null pointer exception for GatewayTimeoutException.
+
+
+## v11.2.0 (02/22/2024)
 ### Enhancements
 - [VAPS Enhancement]
  - Vaps Spec Update 23.1

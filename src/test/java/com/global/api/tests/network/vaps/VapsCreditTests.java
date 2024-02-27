@@ -1298,5 +1298,86 @@ public class VapsCreditTests {
         assertNotNull(response);
         assertEquals(response.getResponseCode(),"000");
     }
+    @Test
+    public void test_manual_force_capture_issue_10292() throws ApiException {
+        NtsData ntsData = new NtsData();
+        card = TestCards.VisaManual(true,true);
+
+        Transaction auth = card.authorize(new BigDecimal(142))
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(auth);
+        assertEquals("000", auth.getResponseCode());
+
+        auth.setNtsData(ntsData);
+
+        Transaction captureResponse = auth.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals(captureResponse.getResponseCode(),"000");
+
+        captureResponse.setNtsData(ntsData);
+
+    }
+    @Test
+    public void test_manual_authorize_resubmit_issue_10292() throws ApiException {
+        NtsData ntsData = new NtsData();
+        card = TestCards.VisaManual(true,true);
+
+        Transaction auth = card.authorize(new BigDecimal(142))
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(auth);
+        assertEquals("000", auth.getResponseCode());
+
+        auth.setNtsData(ntsData);
+
+        Transaction captureResponse = auth.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals(captureResponse.getResponseCode(),"000");
+
+        captureResponse.setNtsData(ntsData);
+
+        Transaction response= NetworkService.resubmitDataCollect(captureResponse.getTransactionToken())
+                .execute();
+
+        assertNotNull(response);
+        assertEquals(response.getResponseCode(),"000");
+    }
+
+    @Test
+    public void test_manual_authorize_force_resubmit_issue_10292() throws ApiException {
+        NtsData ntsData = new NtsData();
+        card = TestCards.VisaManual(true,true);
+
+        Transaction sale = card.authorize(new BigDecimal(142))
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("002", sale.getResponseCode());
+
+        sale.setNtsData(ntsData);
+
+        Transaction captureResponse = sale.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .withForceToHost(true)
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals(captureResponse.getResponseCode(),"000");
+
+        captureResponse.setNtsData(ntsData);
+
+        Transaction response= NetworkService.resubmitDataCollect(captureResponse.getTransactionToken())
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals(response.getResponseCode(),"000");
+    }
+
 
 }
