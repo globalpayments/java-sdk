@@ -9,6 +9,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
@@ -115,8 +117,10 @@ public class ElementTree {
     public String toString(){
         try {
             TransformerFactory tFact = TransformerFactory.newInstance();
+            // Enable secure processing mode in the TransformerFactory to prevent XML External Entity (XXE) attacks.
+            // This will disable the resolution of external entities in the processed XML documents.
+            tFact.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             Transformer trans = tFact.newTransformer();
-
             StringWriter writer = new StringWriter();
             StreamResult result = new StreamResult(writer);
             DOMSource source = new DOMSource(doc);
@@ -175,21 +179,38 @@ public class ElementTree {
         return parse(xml, new HashMap<String, String>());
     }
 
-    public static ElementTree parse(String xml, HashMap<String, String> namespaces) throws ApiException{
+    /**
+     * Parse an XML string into an ElementTree object.
+     *
+     * @param xml The XML string to parse.
+     * @param namespaces A map of namespace prefixes to namespace URIs.
+     * @return An ElementTree object representing the parsed XML document.
+     * @throws ApiException If an error occurs while parsing the XML.
+     */
+    public static ElementTree parse(String xml, HashMap<String, String> namespaces) throws ApiException {
         try {
             InputSource is = new InputSource(new StringReader(xml));
-
+            // Create a DocumentBuilderFactory and configure it to prevent XXE attacks.
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            //disable DOCTYPE for additional security. This is optional
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             ElementTree rvalue = new ElementTree(namespaces);
-            rvalue.setDocument(DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is));
+            rvalue.setDocument(docBuilder.parse(is));
             return rvalue;
-        } catch(ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
+            // Throw an ApiException with the error message.
             throw new ApiException(e.getMessage());
-        } catch(SAXException e) {
+        } catch (SAXException e) {
+            // Throw an ApiException with the error message.
             throw new ApiException(e.getMessage());
-        } catch(IOException e) {
+        } catch (IOException e) {
+            // Throw an ApiException with the error message.
             throw new ApiException(e.getMessage());
         }
     }
+
 
     private void init(HashMap<String, String> namespaces) {
         try {

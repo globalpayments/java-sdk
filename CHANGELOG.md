@@ -1,6 +1,12 @@
 # Changelog
 
-## Latest Version v11.2.1 (02/27/2024)
+## Latest Version v11.2.2 (03/05/2024)
+### Enhancements
+  - Updated config on FileProcessingTest
+  - Code CleanUp
+
+
+## v11.2.1 (02/27/2024)
 ### Enhancements
 - [VAPS Enhancement]
   - 8583 VAPS 3DES ValueLink implementation.
@@ -19,7 +25,7 @@
  - Fixed API exception issue for 10273 & 10274
 
 ## v11.1.32 (02/13/2024)
-### Enhancements
+### Enhancements/
 - [PAX Issue]
   - PAX_Add/Delete_image
   - PAX Local Details Report Implementation

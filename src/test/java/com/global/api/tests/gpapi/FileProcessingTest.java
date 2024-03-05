@@ -6,8 +6,6 @@ import com.global.api.entities.enums.Channel;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
-import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FileProcessingService;
 import com.global.api.tests.fileprocessing.FileProcessingClient;
@@ -24,26 +22,11 @@ public class FileProcessingTest extends BaseGpApiTest {
     @BeforeClass
     public static void ClassInitialize() throws ConfigurationException {
 
-        GpApiConfig gpApiConfig = new GpApiConfig();
-        gpApiConfig.setAppId("fWkEqBHQNyLrWCAtp1vCWDbo10kf5jr6");
-        gpApiConfig.setAppKey("EkOH93AQKuGlj8Ty");
+        GpApiConfig gpApiConfig = gpApiSetup("fWkEqBHQNyLrWCAtp1vCWDbo10kf5jr6", "EkOH93AQKuGlj8Ty", Channel.CardPresent);
         gpApiConfig.setCountry("US");
-        gpApiConfig.setChannel(Channel.CardPresent);
-        gpApiConfig.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        gpApiConfig.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        gpApiConfig.setMerchantContactUrl("https://enp4qhvjseljg.x.pipedream.net/");
-
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-
-        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
-
         gpApiConfig.setStatusUrl("https://eo9faqlbl8wkwmx.m.pipedream.net/");
-        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
-        gpApiConfig.setEnableLogging(true);
 
         ServicesContainer.configureService(gpApiConfig);
-
     }
 
     @Test

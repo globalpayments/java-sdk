@@ -56,24 +56,23 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
         System.out.println();
         System.out.println(transaction.getBankPaymentResponse().getRedirectUrl());
         System.out.println();
-        Thread.sleep(2000);
+        Thread.sleep(6000);
 
         TransactionSummaryPaged response = ReportingService.bankPaymentDetail(
                         transaction.getBankPaymentResponse().getId(), 1, 10)
                 .execute();
 
+        TransactionSummary transactionSummary = response.getResults().get(0);
+
         assertNotNull(response);
         assertEquals(1, response.getTotalRecordCount());
-        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
-//        assertNotNull(response.getResults().get(0).getOrderId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
-        assertEquals(BankPaymentType.FASTERPAYMENTS, response.getResults().get(0).getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
+        assertEquals(transaction.getBankPaymentResponse().getId(), transactionSummary.getTransactionId());
+        assertNull(transactionSummary.getBankPaymentResponse().getIban());
+        assertNotNull(transactionSummary.getBankPaymentResponse().getTokenRequestId());
+        assertNotNull(transactionSummary.getBankPaymentResponse().getId());
+        assertNotNull(transactionSummary.getOrderId());
+        assertEquals(BankPaymentType.FASTERPAYMENTS, transactionSummary.getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), transactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     /**
@@ -117,18 +116,17 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
                         transaction.getBankPaymentResponse().getId(), 1, 10)
                 .execute();
 
+        TransactionSummary firstTransactionSummary = response.getResults().get(0);
+
         assertNotNull(response);
         assertEquals(1, response.getTotalRecordCount());
-        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
-//        assertNotNull(response.getResults().get(0).getOrderId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
-        assertEquals(BankPaymentType.FASTERPAYMENTS, response.getResults().get(0).getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
+        assertEquals(transaction.getBankPaymentResponse().getId(), firstTransactionSummary.getTransactionId());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getTokenRequestId());
+        assertNotNull(firstTransactionSummary.getOrderId());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getId());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getIban());
+        assertEquals(BankPaymentType.FASTERPAYMENTS, firstTransactionSummary.getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), firstTransactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     @Test
@@ -155,18 +153,17 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
                         .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
                         .execute();
 
+        TransactionSummary firstTransactionSummary = response.getResults().get(0);
+
         assertNotNull(response);
         assertEquals(1, response.getTotalRecordCount());
-        assertEquals(transaction.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getIban());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
-//        assertNotNull(response.getResults().get(0).getOrderId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
-        assertEquals(BankPaymentType.SEPA, response.getResults().get(0).getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
+        assertEquals(transaction.getBankPaymentResponse().getId(), firstTransactionSummary.getTransactionId());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getTokenRequestId());
+        assertNotNull(firstTransactionSummary.getOrderId());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getId());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getIban());
+        assertEquals(BankPaymentType.SEPA, firstTransactionSummary.getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), firstTransactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     /**
@@ -190,7 +187,6 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
             return;
         }
 
-
         System.out.println();
         System.out.println(trn.getBankPaymentResponse().getRedirectUrl());
         System.out.println();
@@ -211,21 +207,20 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
                 .bankPaymentDetail(trn.getBankPaymentResponse().getId(), 1, 1)
                 .execute();
 
+        TransactionSummary firstTransactionSummary = response.getResults().get(0);
+
         assertNotNull(response);
-
         assertEquals(1, response.getTotalRecordCount());
-
-        assertEquals(trn.getBankPaymentResponse().getId(), response.getResults().get(0).getTransactionId());
-
-        assertNull(response.getResults().get(0).getBankPaymentResponse().getIban());
-        assertNull(response.getResults().get(0).getBankPaymentResponse().getSortCode());
-        assertNull(response.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-        assertNull(response.getResults().get(0).getBankPaymentResponse().getAccountName());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getTokenRequestId());
-//        assertNotNull(response.getResults().get(0).getOrderId());
-//        assertNotNull(response.getResults().get(0).getBankPaymentResponse().getId());
-        assertEquals(BankPaymentType.SEPA, response.getResults().get(0).getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), response.getResults().get(0).getBankPaymentResponse().getPaymentStatus());
+        assertEquals(trn.getBankPaymentResponse().getId(), firstTransactionSummary.getTransactionId());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getIban());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getSortCode());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getAccountNumber());
+        assertNull(firstTransactionSummary.getBankPaymentResponse().getAccountName());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getTokenRequestId());
+        assertNotNull(firstTransactionSummary.getOrderId());
+        assertNotNull(firstTransactionSummary.getBankPaymentResponse().getId());
+        assertEquals(BankPaymentType.SEPA, firstTransactionSummary.getBankPaymentResponse().getType());
+        assertEquals(BankPaymentStatus.SUCCESS.name(), firstTransactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     @Test
@@ -290,7 +285,6 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
             config.setMerchantId("openbankingsandbox");
             config.setSharedSecret("sharedsecret");
             config.setAccountId("internet");
-            config.setEnableBankPayment(true);
             config.setShaHashType(shaHashType);
 
             ServicesContainer.configureService(config, shaHashType.toString());
@@ -316,11 +310,13 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
                             .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
                             .execute(shaHashType.toString());
 
+            TransactionSummary firstTransactionSummary = detail.getResults().get(0);
+
             assertNotNull(detail);
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
-            assertNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+            assertNull(firstTransactionSummary.getBankPaymentResponse().getSortCode());
+            assertNull(firstTransactionSummary.getBankPaymentResponse().getAccountNumber());
+            assertNull(firstTransactionSummary.getBankPaymentResponse().getAccountName());
+            assertNull(firstTransactionSummary.getBankPaymentResponse().getIban());
         }
     }
 
