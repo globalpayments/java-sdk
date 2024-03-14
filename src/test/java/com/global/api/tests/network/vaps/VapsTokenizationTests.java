@@ -61,7 +61,8 @@ public class VapsTokenizationTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setVisaFleet2(false);
 
         acceptorConfig.setServiceType(ServiceType.GPN_API);
         acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);

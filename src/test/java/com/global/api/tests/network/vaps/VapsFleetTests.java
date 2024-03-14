@@ -65,9 +65,10 @@ public class VapsFleetTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
-        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.NOTAVISAFLEET2DOT0);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);
+        acceptorConfig.setVisaFleet2(false);
 
         // gateway config
         NetworkGatewayConfig config = new NetworkGatewayConfig();

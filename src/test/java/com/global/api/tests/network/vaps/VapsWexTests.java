@@ -58,7 +58,7 @@ public class VapsWexTests {
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 
         // gateway config
         config = new NetworkGatewayConfig();

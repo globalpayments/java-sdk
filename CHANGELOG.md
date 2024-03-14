@@ -1,6 +1,12 @@
 # Changelog
 
-## Latest Version v11.2.2 (03/05/2024)
+## Latest Version v11.2.3 (03/14/24)
+### Enhancements
+  VAPS
+  - Remove enum validation for VAPS Authorizer Code
+  - Visa Fleet2.0 Field Update
+
+## v11.2.2 (03/05/2024)
 ### Enhancements
   - Updated config on FileProcessingTest
   - Code CleanUp

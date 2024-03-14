@@ -1999,7 +1999,7 @@ public class NwsConnector extends GatewayConnectorConfig {
 
         // set the fallback and authorizer codes
         FallbackCode fallbackCode = null;
-        AuthorizerCode authorizerCode = null;
+        String authorizerCode = null;
         if(ntsData != null) {
             fallbackCode = ntsData.getFallbackCode();
             authorizerCode = ntsData.getAuthorizerCode();
@@ -2007,7 +2007,7 @@ public class NwsConnector extends GatewayConnectorConfig {
 
         DE25_MessageReasonCode reasonCode = null;
         if(transactionType.equals(TransactionType.Capture)) {
-            if(authorizerCode != null && authorizerCode.equals(AuthorizerCode.Voice_Authorized)) {
+            if(authorizerCode != null && authorizerCode.equals(AuthorizerCode.Voice_Authorized.getValue())) {
                 reasonCode = DE25_MessageReasonCode.VoiceCapture;
             }
             else if(fallbackCode != null) {

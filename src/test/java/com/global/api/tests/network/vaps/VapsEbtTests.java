@@ -67,7 +67,6 @@ public class VapsEbtTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
 
         // gateway config
         config = new NetworkGatewayConfig();

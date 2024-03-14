@@ -4,7 +4,6 @@ import com.global.api.entities.enums.IStringConstant;
 
 public enum PurchaseRestrictionCapability implements IStringConstant {
 
-    NOTAVISAFLEET2DOT0(" "),
     NOCHIIPANDHOSTBASEDPRODUCTRESTRICTION("0"),
     CHIPBASEDPRODUCTRESTRICTION("1"),
     HOSTBASEDPRODUCTRESTRICTION("2"),

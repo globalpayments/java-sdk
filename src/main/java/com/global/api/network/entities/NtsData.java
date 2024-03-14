@@ -10,7 +10,7 @@ import com.global.api.utils.ReverseStringEnumMap;
 
 public class NtsData {
     private FallbackCode fallbackCode;
-    private AuthorizerCode authorizerCode;
+    private String authorizerCode;
     private DebitAuthorizerCode debitAuthorizerCode;
 
     public FallbackCode getFallbackCode() {
@@ -19,10 +19,10 @@ public class NtsData {
     private void setFallbackCode(FallbackCode fallbackCode) {
         this.fallbackCode = fallbackCode;
     }
-    public AuthorizerCode getAuthorizerCode() {
+    public String getAuthorizerCode() {
         return authorizerCode;
     }
-    private void setAuthorizerCode(AuthorizerCode authorizerCode) {
+    private void setAuthorizerCode(String authorizerCode) {
         this.authorizerCode = authorizerCode;
     }
     public DebitAuthorizerCode getDebitAuthorizerCode() {
@@ -40,7 +40,7 @@ public class NtsData {
     }
     public NtsData(FallbackCode fallbackCode, AuthorizerCode authorizerCode, String debitAuthorizerCode) {
         this.fallbackCode = fallbackCode;
-        this.authorizerCode = authorizerCode;
+        this.authorizerCode = authorizerCode.getValue();
         this.debitAuthorizerCode = ReverseStringEnumMap.parse(debitAuthorizerCode, DebitAuthorizerCode.class);
         if(this.debitAuthorizerCode == null) {
             this.debitAuthorizerCode = DebitAuthorizerCode.NonPinDebitCard;
@@ -48,13 +48,13 @@ public class NtsData {
     }
     public NtsData(FallbackCode fallbackCode, AuthorizerCode authorizerCode, DebitAuthorizerCode debitAuthorizerCode) {
         this.fallbackCode = fallbackCode;
-        this.authorizerCode = authorizerCode;
+        this.authorizerCode = authorizerCode.getValue();
         this.debitAuthorizerCode = debitAuthorizerCode;
     }
 
     public String toString() {
         return fallbackCode.getValue()
-                .concat(authorizerCode.getValue())
+                .concat(authorizerCode)
                 .concat(debitAuthorizerCode.getValue());
     }
 
@@ -70,7 +70,7 @@ public class NtsData {
         String debitAuthorizorCode = data.substring(3);
 
         rvalue.setFallbackCode(ReverseStringEnumMap.parse(fallbackStr, FallbackCode.class));
-        rvalue.setAuthorizerCode(ReverseStringEnumMap.parse(authorizorCodeStr, AuthorizerCode.class));
+        rvalue.setAuthorizerCode(authorizorCodeStr);
         rvalue.setDebitAuthorizerCode(ReverseStringEnumMap.parse(debitAuthorizorCode, DebitAuthorizerCode.class));
 
         if(rvalue.getDebitAuthorizerCode() == null) {

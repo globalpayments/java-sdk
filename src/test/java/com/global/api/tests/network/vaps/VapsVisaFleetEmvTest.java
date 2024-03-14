@@ -62,6 +62,7 @@ public class VapsVisaFleetEmvTest {
         acceptorConfig.setSupportWexAdditionalProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
+        acceptorConfig.setVisaFleet2(true);
 
         //DE48-34 message configuration values
         acceptorConfig.setPerformDateCheck(true);

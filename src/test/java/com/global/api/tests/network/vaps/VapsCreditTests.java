@@ -71,7 +71,7 @@ public class VapsCreditTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NOVISAFLEET2DOT0);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 
 
         // gateway config
@@ -303,7 +303,6 @@ public class VapsCreditTests {
                 .withTerminalError(true)
                 .execute();
         assertNotNull(response);
-
         // check message data
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
@@ -1377,6 +1376,31 @@ public class VapsCreditTests {
 
         assertNotNull(response);
         assertEquals(response.getResponseCode(),"000");
+    }
+
+    @Test
+    public void test_authorizerCode() throws ApiException {
+
+        NtsData ntsData = new NtsData();
+
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                 .withCurrency("USD")
+                 .execute();
+
+        assertNotNull(response);
+        assertEquals(response.getResponseCode(),"000");
+
+        response.setNtsData(ntsData);
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(capture);
+        assertEquals(capture.getResponseCode(),"000");
+
+
     }
 
 

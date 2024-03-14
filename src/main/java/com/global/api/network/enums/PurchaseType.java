@@ -4,7 +4,6 @@ import com.global.api.entities.enums.IStringConstant;
 
 public enum PurchaseType implements IStringConstant {
 
-    NOVISAFLEET2DOT0(" "),
 	Fuel("1"),
 	NonFuel("2"),
 	FuelAndNonFuel("3");

@@ -48,6 +48,8 @@ public class AcceptorConfig {
     private PurchaseType supportVisaFleet2dot0;
     @Getter @Setter
     private PurchaseRestrictionCapability supportTerminalPurchaseRestriction;
+    @Getter @Setter
+    private Boolean visaFleet2;
 
     //NTS Message Header
     private Boolean pinlessDebit;
