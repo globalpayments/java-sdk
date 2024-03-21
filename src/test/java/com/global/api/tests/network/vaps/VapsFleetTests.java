@@ -65,7 +65,7 @@ public class VapsFleetTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+//        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setVisaFleet2(false);
@@ -77,7 +77,6 @@ public class VapsFleetTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-//        config.setTerminalId("0000912197711");
         config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
@@ -86,8 +85,8 @@ public class VapsFleetTests {
 
         ServicesContainer.configureService(config);
 
-        config.setMerchantType("5542");
-        ServicesContainer.configureService(config, "ICR");
+//        config.setMerchantType("5542");
+//        ServicesContainer.configureService(config, "ICR");
 
         // MASTERCARD FLEET
         card = TestCards.MasterCardFleetManual(true, true);
@@ -119,14 +118,11 @@ public class VapsFleetTests {
 
     @Test
     public void test_001_manual_authorization() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific,ProductDataFormat.HeartlandStandardFormat);
-        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
         Transaction response = card.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
                 .withFee(FeeType.TransactionFee,new BigDecimal(1))
                 .withFleetData(fleetData)
-                .withProductData(productData)
                 .execute();
         assertNotNull(response);
 
@@ -145,14 +141,11 @@ public class VapsFleetTests {
     public void test_001_manual_VisaFleet_authorization() throws ApiException {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific,ProductDataFormat.HeartlandStandardFormat);
-        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
         Transaction response = card.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
                 .withFee(FeeType.TransactionFee,new BigDecimal(1))
                 .withFleetData(fleetData)
-                .withProductData(productData)
                 .execute();
         assertNotNull(response);
 
@@ -172,7 +165,7 @@ public class VapsFleetTests {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
         productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
-        Transaction response = card.authorize(new BigDecimal("111.2"),true)
+        Transaction response = card.charge(new BigDecimal("111.2"))
                 .withCurrency("USD")
                 .withFleetData(fleetData)
                 .withProductData(productData)
@@ -182,9 +175,9 @@ public class VapsFleetTests {
         // check message data
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
-        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
         assertEquals("000900", pmi.getProcessingCode());
-        assertEquals("101", pmi.getFunctionCode());
+        assertEquals("200", pmi.getFunctionCode());
 
         // check response
         assertEquals("000", response.getResponseCode());
@@ -196,9 +189,9 @@ public class VapsFleetTests {
         track = TestCards.VisaFleetSwipe();
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
-        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
-        Transaction response = card.authorize(new BigDecimal("111.2"),true)
+        Transaction response = card.charge(new BigDecimal("111.2"))
                 .withCurrency("USD")
                 .withFleetData(fleetData)
                 .withProductData(productData)
@@ -208,9 +201,9 @@ public class VapsFleetTests {
         // check message data
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
-        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
         assertEquals("000900", pmi.getProcessingCode());
-        assertEquals("101", pmi.getFunctionCode());
+        assertEquals("200", pmi.getFunctionCode());
 
         // check response
         assertEquals("000", response.getResponseCode());
@@ -245,14 +238,11 @@ public class VapsFleetTests {
         track = TestCards.VisaFleetSwipe();
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction preRresponse = track.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
                 .withFleetData(fleetData)
                 .withFee(FeeType.TransactionFee,new BigDecimal(1))
-                .withProductData(productData)
                 .execute();
         assertNotNull(preRresponse);
 
@@ -636,14 +626,14 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
-        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
-        productData.addNonFuel(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
-        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"),new BigDecimal("12.74"));
+        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
+        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
+        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"),new BigDecimal("12.74"));
 
         Transaction response = track.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
@@ -669,11 +659,11 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
-        productData.addNonFuel(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
-        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
+        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
 
         Transaction response = track.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
@@ -698,13 +688,13 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
-        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
-        productData.addNonFuel(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
-        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
+        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("121.65"));
+        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("111.32"));
+        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
 
         Transaction response = track.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
@@ -727,7 +717,7 @@ public class VapsFleetTests {
     @Test
     public void test_011_swipe_sale_mc_product_03() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.add("03", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -937,7 +927,7 @@ public class VapsFleetTests {
     @Test
     public void test_020_swipe_sale_product_39() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1111,7 +1101,7 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction preRresponse = track.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")

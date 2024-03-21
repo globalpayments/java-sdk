@@ -551,12 +551,6 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 63: Product Data - LLLVAR ans…999
         if(builder.getProductData() != null) {
             DE63_ProductData productData = builder.getProductData().toDataElement();
-            if (paymentMethod instanceof Credit) {
-            Credit card = (Credit) paymentMethod;
-            if (card.getCardType()!=null) {
-                productData.setCardType(card.getCardType());
-            }
-          }
             request.set(DataElementId.DE_063, productData);
         }
 
@@ -920,7 +914,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // DE 41: Card Acceptor Terminal Identification Code - ans8
         String companyIdValue = builder.getCompanyId();
-        if (StringUtils.isNullOrEmpty(companyIdValue)) {
+        if(StringUtils.isNullOrEmpty(companyIdValue)) {
             companyIdValue = companyId;
         }
         request.set(DataElementId.DE_041, StringUtils.padRight(companyIdValue, 8, ' '));
@@ -1122,15 +1116,6 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 63: Product Data - LLLVAR ans…999
         if(builder.getProductData() != null) {
             DE63_ProductData productData = builder.getProductData().toDataElement();
-            if (paymentMethod instanceof TransactionReference) {
-                TransactionReference reference = (TransactionReference) paymentMethod;
-                if (reference.getOriginalPaymentMethod() instanceof Credit) {
-                    Credit card = (Credit) reference.getOriginalPaymentMethod();
-                    if (!Objects.isNull(card) && card.getCardType() != null) {
-                        productData.setCardType(card.getCardType());
-                    }
-                }
-            }
                 request.set(DataElementId.DE_063, productData);
             }
 

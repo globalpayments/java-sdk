@@ -252,87 +252,6 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
         switch(productDataFormat) {
             case HeartlandStandardFormat: {
-                if ((cardType != null) && ((cardType).equals("VisaFleet"))) {
-                    if (getFuelProductCount() > 1) {
-                        throw new UnsupportedOperationException("Number of Fuel product should not more than 1");
-                    } else {
-                        int totalProductCount = getFuelProductCount() + getNonFuelProductCount();
-                        if(totalProductCount>6){
-                            rvalue = rvalue.concat(StringUtils.padLeft(6, 3, '0'));
-                        }else{
-                        rvalue = rvalue.concat(StringUtils.padLeft(totalProductCount, 3, '0'));
-                        }
-                        if (getFuelProductCount() != 0) {
-                            for (DE63_ProductDataEntry entry : fuelProductDataEntries.values()) {
-                                rvalue = rvalue.concat(entry.getCode() + "\\");
-
-                                if (entry.getUnitOfMeasure() != null) {
-                                    rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
-                                }
-                                if (entry.getQuantity() != null) {
-                                    rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
-                                }
-                                rvalue = rvalue.concat("\\")
-                                        .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
-                                        .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
-                            }
-                        }
-                        if (getNonFuelProductCount() != 0) {
-                            String rvalue2 = (90 + "\\"); //Misc code for VisaFleet
-                            String unitOfMeasure = "";
-                            BigDecimal quantRollup = new BigDecimal(0);
-                            BigDecimal priceRollup = new BigDecimal(0);
-                            BigDecimal amountRollup = new BigDecimal(0);
-                            int i = 1;
-                            int rollUpCutOff ;
-                            if (getFuelProductCount() == 0) {
-                                rollUpCutOff = 6;
-//                                i=i-1;
-                            } else {
-                                rollUpCutOff = 5;
-                            }
-                            for (DE63_ProductDataEntry entry : nonFuelProductDataEntries.values()) {
-                                if (i < rollUpCutOff) {
-                                    i=i+1;
-                                    rvalue = rvalue.concat(entry.getCode() + "\\");
-
-                                    if (entry.getUnitOfMeasure() != null) {
-                                        rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
-                                    }
-                                    if (entry.getQuantity() != null) {
-                                        rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
-                                    }
-                                    rvalue = rvalue.concat("\\")
-                                            .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
-                                            .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
-                                } else {
-                                    if (entry.getUnitOfMeasure() != null) {
-                                        unitOfMeasure = entry.getUnitOfMeasure().getValue();
-                                    }
-                                    if (entry.getQuantity() != null) {
-                                        quantRollup = quantRollup.add(entry.getQuantity());
-                                    }
-                                    priceRollup = priceRollup.add(entry.getPrice());
-                                    amountRollup = amountRollup.add(entry.getAmount());
-                                    i=i+1;
-                                }
-
-                            }
-                            if (i>rollUpCutOff) {
-                                if (unitOfMeasure != null) {
-                                    rvalue2 = rvalue2.concat(unitOfMeasure);
-                                }
-
-                                rvalue2 = rvalue2.concat(StringUtils.toFractionalNumeric(quantRollup));
-                                rvalue2 = rvalue2.concat("\\")
-                                        .concat(StringUtils.toFractionalNumeric(priceRollup) + "\\")
-                                        .concat(StringUtils.toNumeric(amountRollup) + "\\");
-
-                                rvalue = rvalue.concat(rvalue2);
-                            }
-                        }
-                    }
-                } else {
                     rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 3, '0'));
                     for (DE63_ProductDataEntry entry : productDataEntries.values()) {
                         rvalue = rvalue.concat(entry.getCode() + "\\");
@@ -347,7 +266,6 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                                 .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
                                 .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                     }
-                }
             }break;
             case ANSI_X9_TG23_Format: {
                 rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 2, '0'));

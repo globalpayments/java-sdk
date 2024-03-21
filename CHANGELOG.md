@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version v11.2.3 (03/14/24)
+## Latest Version v11.2.4 (03/21/24)
+### Enhancements
+ VAPS
+ - Issue 10294 - VisaFleet DE63 Format Update
+
+## v11.2.3 (03/14/24)
 ### Enhancements
   VAPS
   - Remove enum validation for VAPS Authorizer Code
