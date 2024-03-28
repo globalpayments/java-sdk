@@ -139,12 +139,14 @@ public class VapsEncryption3DESTests {
         ServicesContainer.configureService(config, "ValueLink");
 
         // VALUE LINK
-        giftCard = TestCards.ValueLinkSwipe();
+        giftCard = new GiftCard();
         giftCard.setEncryptionData(EncryptionData.setKtbAndKsn("D87A55F042D1DA9DAD3959DAAE8C3A423E27412D58669AA86993049F07662E478E75B439D9279790",
                 "F0000100095E6701"));
         giftCard.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
         giftCard.setTrackNumber(TrackNumber.TrackTwo);
         giftCard.setEntryMethod(EntryMethod.Swipe);
+        giftCard.setExpiry("2501");
+        giftCard.setCardType("ValueLink");
 
     }
 

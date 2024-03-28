@@ -164,6 +164,21 @@ public abstract class TerminalResponse implements IDeviceResponse {
     @Getter @Setter
     protected String originalTransactionType;
 
+    @Getter @Setter
+    protected String pinVerified;
+    @Getter @Setter
+    protected String accountType;
+    @Getter @Setter
+    protected String issuerResponseCode;
+    @Getter @Setter
+    protected String isoResponseCode;
+    @Getter @Setter
+    protected String bankResponseCode;
+    @Getter @Setter
+    protected String applicationName;
+    @Getter @Setter
+    protected String cardHolderLanguage;
+
     public String getStatus() {
         return status;
     }

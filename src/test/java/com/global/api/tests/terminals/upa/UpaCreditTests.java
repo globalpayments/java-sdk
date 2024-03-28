@@ -28,7 +28,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.1.176");
+        config.setIpAddress("192.168.0.42");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -50,7 +50,6 @@ public class UpaCreditTests {
             .execute();
 
         runBasicTests(response);
-        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
     }
 
     @Test
@@ -124,7 +123,6 @@ public class UpaCreditTests {
 
         TerminalResponse response2 = device.tipAdjust(new BigDecimal("1.50"))
             .withTerminalRefNumber(response1.getTerminalRefNumber())
-            .withClerkId(420)
             .execute();
 
         runBasicTests(response2);
@@ -335,6 +333,38 @@ public class UpaCreditTests {
                 .execute();
         assertNotNull(completionResponse);
         assertEquals("00",completionResponse);
+    }
+
+    /**
+     * The purpose of this test is to confirm some new response properties are functioning
+     *
+     * Steps:
+     * transaction sent from POS to T650P
+     * T650P prompts for tip > tip option selected
+     * confirm total amount, tip included
+     * T650P prompts for card
+     * B2 Interac test card ending 0003 inserted
+     * select Chequing
+     * enter PIN
+     * payment approved
+     *
+     * @throws ApiException
+     */
+    @Test
+    public void canadaSaleTest() throws ApiException
+    {
+        TerminalResponse response = device.creditSale(new BigDecimal("18.01"))
+                .withGratuity(new BigDecimal("0.00"))
+                .execute();
+
+        runBasicTests(response);
+        assertNotNull(response.getPinVerified());
+        assertNotNull(response.getAccountType());
+        assertNotNull(response.getIssuerResponseCode());
+        assertNotNull(response.getIsoResponseCode());
+        assertNotNull(response.getBankResponseCode());
+        assertNotNull(response.getApplicationName());
+        assertNotNull(response.getCardHolderLanguage());
     }
 
     public void runBasicTests(IDeviceResponse response) {

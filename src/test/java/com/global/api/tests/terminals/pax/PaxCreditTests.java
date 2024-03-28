@@ -28,8 +28,8 @@ public class PaxCreditTests {
     public PaxCreditTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
-        deviceConfig.setConnectionMode(ConnectionModes.HTTP);
-        deviceConfig.setIpAddress("10.12.220.172");
+        deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
+        deviceConfig.setIpAddress("192.168.1.8");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -220,7 +220,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(2025);
         card.setCvn("123");
 
         Address address = new Address();
@@ -257,7 +257,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(2025);
         card.setCvn("123");
 
         TerminalResponse returnResponse = device.creditRefund(new BigDecimal(14))
@@ -368,7 +368,7 @@ public class PaxCreditTests {
         CreditCardData card = new CreditCardData();
         card.setNumber("4005554444444460");
         card.setExpMonth(12);
-        card.setExpYear(17);
+        card.setExpYear(2025);
         card.setCvn("123");
 
         Address address = new Address();
@@ -384,7 +384,6 @@ public class PaxCreditTests {
         assertNotNull(saleResponse);
         assertEquals("00", saleResponse.getResponseCode());
 
-        rec_message = String.format("[STX]T00[FS]1.35[FS]16[FS][FS][FS]2[FS][FS][FS][FS][FS]HREF=%s[ETX]", saleResponse.getTransactionId());
         TerminalResponse returnResponse = device.creditVoid()
                 .withTransactionId(saleResponse.getTransactionId())
                 .execute();
@@ -395,5 +394,43 @@ public class PaxCreditTests {
     @Test(expected = BuilderException.class)
     public void creditVoidNoTransactionId() throws ApiException {
         device.creditVoid().execute();
+    }
+
+    @Test
+    public void creditSale_with_Gratuity() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+            }
+        });
+
+        TerminalResponse response = device.creditSale(new BigDecimal(13.50))
+                .withAllowDuplicates(true)
+                .withGratuity(new BigDecimal(1.50))
+                .execute();
+        assertNotNull(response);
+        assertEquals(new BigDecimal("15"),response.getTransactionAmount());
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_TipAdjust() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+            }
+        });
+
+        TerminalResponse response = device.creditSale(new BigDecimal(13.50))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TerminalResponse tipResponse = device.tipAdjust(new BigDecimal(11.50))
+                .withTransactionId(response.getTransactionId())
+                .execute();
+        assertNotNull(tipResponse);
+        assertEquals("00", tipResponse.getResponseCode());
     }
 }

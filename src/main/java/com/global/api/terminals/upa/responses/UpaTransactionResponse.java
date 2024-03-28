@@ -4,6 +4,8 @@ import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.enums.CardType;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.utils.JsonDoc;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -62,6 +64,10 @@ public class UpaTransactionResponse extends TerminalResponse {
                 token = host.getString("tokenValue");
                 transactionId = host.getString("referenceNumber");
                 transactionAmount = host.getDecimal("totalAmount");
+
+                issuerResponseCode = host.getString("IssuerResp");
+                isoResponseCode = host.getString("IsoRespCode");
+                bankResponseCode = host.getString("BankRespCode");
 
                 if(transactionAmount == null){
                     BigDecimal amount = host.getDecimal("amount");
@@ -128,6 +134,12 @@ public class UpaTransactionResponse extends TerminalResponse {
                 entryMethod = payment.getString("cardAcquisition");
                 maskedCardNumber = payment.getString("maskedPan");
                 paymentType = payment.getString("cardGroup");
+
+                pinVerified = payment.getString("PinVerified");
+                accountType = payment.getString("AccountType");
+                transactionType = payment.getString("transactionType");
+                sequenceNo = payment.getString("PosSequenceNbr");
+                applicationName = payment.getString("appName");
             }
 
             JsonDoc transaction = data.get("transaction");
@@ -172,6 +184,9 @@ public class UpaTransactionResponse extends TerminalResponse {
                 cardHolderName = emv.getString("5F20");
                 if (emv.getString("5F2A") != null) {
                     transactionCurrencyCode = emv.getString("5F2A");
+                }
+                if (emv.getString("5F2D") != null) {
+                    cardHolderLanguage = emv.getString("5F2D");
                 }
                 if (emv.getString("5F34") != null){
                     sequenceNo = emv.getString("5F34");

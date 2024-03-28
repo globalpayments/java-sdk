@@ -1,6 +1,18 @@
 # Changelog
 
-## Latest Version v11.2.4 (03/21/24)
+## Latest Version v11.2.5 (03/28/24)
+### Enhancements
+  UPA Devices
+- Added support for latest transaction response properties 
+
+PAX 
+- TipAdjust and TipRequest Flag Implementation
+
+### Bug Fixes
+VAPS
+- Issue 10290 : Fixed Null Pointer Exception for Vaps 3DES ValueLink
+
+## v11.2.4 (03/21/24)
 ### Enhancements
  VAPS
  - Issue 10294 - VisaFleet DE63 Format Update

@@ -30,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Objects;
 
 public class VapsConnector extends GatewayConnectorConfig {
     private AcceptorConfig acceptorConfig;
@@ -231,7 +230,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(token == null) {
 
                 // put the track data
-                if (giftCard.getValueType().equals("TrackData")) {
+               if (giftCard.getValueType()!=null && giftCard.getValueType().equals("TrackData")) {
                     if (giftCard.getTrackNumber().equals(TrackNumber.TrackTwo)) {
                         // DE 35: Track 2 Data - LLVAR ns.. 37
                         request.set(DataElementId.DE_035, giftCard.getTrackData());
@@ -513,7 +512,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
                         amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
-                    }if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                    }
+                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
@@ -744,7 +744,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     GiftCard gift = (GiftCard)originalPaymentMethod;
 
                     // DE 35 / DE 45
-                    if(gift.getValueType().equals("TrackData")) {
+                    if(gift.getValueType()!=null && gift.getValueType().equals("TrackData")) {
                         if(gift.getTrackNumber().equals(TrackNumber.TrackTwo)) {
                             request.set(DataElementId.DE_035, gift.getTrackData());
                         }
@@ -755,6 +755,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     else {
                         // DE 2: PAN & DE 14 Expiry
                         request.set(DataElementId.DE_002, gift.getNumber());
+                        request.set(DataElementId.DE_014, gift.getExpiry());
                     }
 
                     // set data codes
@@ -862,9 +863,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // DE 25: Message Reason Code - n4 // C 1100, 1120, 1200, 1220, 1300, 1320, 1420, 16XX, 18XX
         DE25_MessageReasonCode reasonCode = mapMessageReasonCode(builder);
-        if(reasonCode != null) {
-            request.set(DataElementId.DE_025, reasonCode);
-        }
+        request.set(DataElementId.DE_025, reasonCode);
 
         /* DE 30: Amounts, Original - n24
             30.1 ORIGINAL AMOUNT, TRANSACTION n12 A copy of amount, transaction (DE 4) from the original transaction.
@@ -947,7 +946,6 @@ public class VapsConnector extends GatewayConnectorConfig {
             46.5 AMOUNT, RECONCILIATION FEE x+n8
             46.6 CURRENCY CODE, RECONCILIATION FEE n3
          */
-//        if (paymentMethod.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT) || paymentMethodType.equals(paymentMethodType.Credit) ) {
         if (paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             if (reference.getFeeAmount() != null) {
@@ -1055,7 +1053,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
                         amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
-                    }if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                    }
+                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
@@ -2138,7 +2137,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // set the fallback and authorizer codes
         FallbackCode fallbackCode = null;
-        String authorizerCode = null;
+        AuthorizerCode authorizerCode = null;
         if(ntsData != null) {
             fallbackCode = ntsData.getFallbackCode();
             authorizerCode = ntsData.getAuthorizerCode();
@@ -2151,9 +2150,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
         }
         else if(transactionType.equals(TransactionType.Capture)) {
-            if(authorizerCode != null && authorizerCode.equals(AuthorizerCode.Voice_Authorized.getValue())) {
+            if(authorizerCode != null && authorizerCode.equals(AuthorizerCode.Voice_Authorized)) {
                 reasonCode = DE25_MessageReasonCode.VoiceCapture;
-            }else if (authorizerCode != null && authorizerCode.equals(AuthorizerCode.Terminal_Authorized.getValue())) {
+            }else if (authorizerCode != null && authorizerCode.equals(AuthorizerCode.Terminal_Authorized)) {
                 reasonCode = DE25_MessageReasonCode.StandInCapture;
             }
             else if(fallbackCode != null) {
@@ -2161,13 +2160,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     case CouldNotCommunicateWithHost:
                     case Received_IssuerTimeout:
                     case Received_IssuerUnavailable:
-                    {
-                        reasonCode = DE25_MessageReasonCode.TimeoutWaitingForResponse;
-                    } break;
                     case Received_SystemMalfunction:
-                    {
-                        reasonCode = DE25_MessageReasonCode.SystemTimeout_Malfunction;
-                    } break;
+                        break;
                     default: {
                         if(builder.isForceToHost()) {
                             reasonCode = DE25_MessageReasonCode.Forced_AuthCapture;
@@ -3072,6 +3066,13 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
 
         TransactionType transactionType = builder.getTransactionType();
+
+        if(paymentMethod instanceof GiftCard) {
+            GiftCard giftCard = (GiftCard) paymentMethod;
+            if (giftCard.getCardType() == null) {
+                throw new BuilderException("The card type must be specified for Gift transactions.");
+            }
+        }
 
         if(paymentMethod instanceof EBT) {
             EBT ebtCard = (EBT)paymentMethod;

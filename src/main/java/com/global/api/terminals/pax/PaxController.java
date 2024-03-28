@@ -172,7 +172,10 @@ public class PaxController extends DeviceController {
         ExtDataSubGroup extData = new ExtDataSubGroup();
 
         // amounts
-        if(builder.getAmount() != null) {
+        if (builder.getTransactionType().equals(TransactionType.Edit) && builder.getGratuity() != null) {
+            amounts.setTransactionAmount(StringUtils.toNumeric(builder.getGratuity()));
+            extData.set(PaxExtData.TIP_REQUEST, "1");
+        } else if (builder.getAmount() != null) {
             amounts.setTransactionAmount(StringUtils.toNumeric(builder.getAmount()));
         }
 
@@ -266,6 +269,8 @@ public class PaxController extends DeviceController {
                 return PaxTxnType.WITHDRAWAL;
             case Reversal:
                 return PaxTxnType.REVERSAL;
+            case Edit:
+                return PaxTxnType.ADJUST;
             default:
                 throw new UnsupportedTransactionException();
         }

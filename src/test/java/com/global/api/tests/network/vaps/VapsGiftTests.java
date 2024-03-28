@@ -204,11 +204,11 @@ public class VapsGiftTests {
     public void giftCard_void() throws ApiException {
         Transaction response = giftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
-                .execute();
+                .execute("ValueLink");
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
-        Transaction voidResponse = response.voidTransaction().execute();
+        Transaction voidResponse = response.voidTransaction().execute("ValueLink");
         assertNotNull(voidResponse);
         assertEquals("000", voidResponse.getResponseCode());
     }
@@ -249,12 +249,12 @@ public class VapsGiftTests {
 
         Transaction response = card.addValue(new BigDecimal(10.00))
                 .withCurrency("USD")
-                .execute();
+                .execute("ValueLink");
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
         Transaction voidResponse = response.voidTransaction()
-                .execute();
+                .execute("ValueLink");
         assertNotNull(voidResponse);
         assertEquals("400", voidResponse.getResponseCode());
     }

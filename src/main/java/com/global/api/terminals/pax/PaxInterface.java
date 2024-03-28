@@ -439,8 +439,9 @@ class PaxInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
-    public TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException {
-        throw new UnsupportedTransactionException();
+    public TerminalManageBuilder tipAdjust(BigDecimal amount) {
+        return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
+                .withGratuity(amount);
     }
 
     public TerminalManageBuilder reverse() throws ApiException {
