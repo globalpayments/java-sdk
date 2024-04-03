@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version v11.2.5 (03/28/24)
+## Latest Version v11.2.6 (04/03/24)
+### Bug Fixes
+VAPS -
+
+Issue 10295 - Fix RC-904 for 3DES encryption Debit and EBT transactions
+Issue 10928 - Added support for EBTCardData 3DES Encryption
+
+## v11.2.5 (03/28/24)
 ### Enhancements
   UPA Devices
 - Added support for latest transaction response properties 

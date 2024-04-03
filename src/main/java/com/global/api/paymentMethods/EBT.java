@@ -1,17 +1,24 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.enums.EbtCardType;
 import com.global.api.entities.enums.InquiryType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, IRefundable, IPinProtected, IAuthable {
+public abstract class EBT implements IPaymentMethod, IBalanceable, IChargable, IRefundable, IPinProtected, IAuthable, IEncryptable {
     protected EbtCardType ebtCardType;
     private String pinBlock;
     public String cardHolderName;
+    @Getter @Setter
+    private EncryptionData encryptionData;
+    @Getter @Setter
+    private String encryptedPan;
 
     public EbtCardType getEbtCardType() {
         return ebtCardType;

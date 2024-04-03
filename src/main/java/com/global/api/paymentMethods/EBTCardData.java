@@ -32,7 +32,10 @@ public class EBTCardData extends EBT implements ICardData {
     }
 
     public String getShortExpiry() {
-        return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+        if(expMonth != null && expYear != null) {
+            return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+        }
+        return null;
     }
 
     public EBTCardData() {}
