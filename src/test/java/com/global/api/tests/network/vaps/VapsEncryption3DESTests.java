@@ -33,6 +33,7 @@ public class VapsEncryption3DESTests {
     private EBTCardData ebtCardData;
     private EBTTrackData foodCard;
     private GiftCard giftCard;
+    private  AcceptorConfig acceptorConfig ;
 
     public VapsEncryption3DESTests() throws ApiException {
         Address address = new Address();
@@ -43,7 +44,7 @@ public class VapsEncryption3DESTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
@@ -74,7 +75,7 @@ public class VapsEncryption3DESTests {
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0007267219911");
+        config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -90,9 +91,8 @@ public class VapsEncryption3DESTests {
         track.setCardType("MC");
         track.setEntryMethod(EntryMethod.Swipe);
         track.setTrackNumber(TrackNumber.TrackOne);
-//        track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
         track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
-        track.setExpiry("2024");
+        track.setExpiry("2412");
 
         // VISA
         card = new CreditCardData();
@@ -101,6 +101,8 @@ public class VapsEncryption3DESTests {
         card.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F",
                 "F000019990E00003"));
         card.setCardType("MC");
+        card.setExpYear(2024);
+        card.setExpMonth(12);
 
         cardWithCvn = new CreditCardData();
         cardWithCvn.setCvn("103");
@@ -371,18 +373,24 @@ public class VapsEncryption3DESTests {
 
     @Test
     public void test_014_visa_encrypted_forceRefund_10297() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response1 = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response1);
 
         Transaction response2 = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
+                .withSystemTraceAuditNumber(Integer.parseInt(response1.getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(response2);
 
         Transaction response3 = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
+                .withSystemTraceAuditNumber(Integer.parseInt(response2.getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(response3);
 
@@ -1721,14 +1729,13 @@ public class VapsEncryption3DESTests {
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
         debit.setTrackNumber(TrackNumber.TrackTwo);
         debit.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
-        debit.setExpiry("2412");
+        debit.setExpiry("2410");
 
         debit.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E3EB2A4334BE31534E",
                 "F000019990E00003"));
 
         Transaction response = debit.charge(new BigDecimal(10))
                 .withCurrency("USD")
-                .withCashBack(new BigDecimal(3))
                 .execute();
         assertNotNull(response);
 
@@ -1736,7 +1743,7 @@ public class VapsEncryption3DESTests {
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
         assertEquals("1200", pmi.getMessageTransactionIndicator());
-        assertEquals("090800", pmi.getProcessingCode());
+        assertEquals("000800", pmi.getProcessingCode());
         assertEquals("200", pmi.getFunctionCode());
 
         // check response
@@ -1761,5 +1768,68 @@ public class VapsEncryption3DESTests {
 
         assertEquals("000", capture.getResponseCode());
 
+    }
+
+    @Test
+    public void test_debit_sale_issue_10300() throws ApiException {
+        debit = new DebitTrackData();
+        debit.setCardType("PINDebitCard");
+        debit.setPinBlock("62968D2481D231E1A504010024A00014");
+        debit.setTrackNumber(TrackNumber.TrackTwo);
+        debit.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
+        debit.setExpiry("2412");
+
+        debit.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E3EB2A4334BE31534E",
+                "F000019990E00003"));
+
+        Transaction response = debit.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+
+    }
+
+    @Test
+    public void test_debit_sale_retry_issue_10300() throws ApiException {
+        debit = new DebitTrackData();
+        debit.setCardType("PINDebitCard");
+        debit.setPinBlock("62968D2481D231E1A504010024A00014");
+        debit.setTrackNumber(TrackNumber.TrackTwo);
+        debit.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
+        debit.setExpiry("2412");
+
+        debit.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E3EB2A4334BE31534E",
+                "F000019990E00003"));
+
+
+        Transaction recreated = Transaction.fromBuilder()
+                .withAmount(new BigDecimal(10))
+                .withAuthorizedAmount(new BigDecimal(10))
+                .withSystemTraceAuditNumber("009357")
+                .withAuthorizationCode("86    ")
+                .withPaymentMethod(debit)
+                .withNtsData(new NtsData(FallbackCode.Received_IssuerTimeout,AuthorizerCode.Terminal_Authorized))
+                .withPosDataCode("V10101B1014C")
+                .withMessageTypeIndicator("1200")
+                .withProcessingCode("000800")
+                .withTransactionTime("240410023005")
+                .build();
+
+        Transaction capture = recreated.preAuthCompletion(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        assertEquals("000", capture.getResponseCode());
     }
 }

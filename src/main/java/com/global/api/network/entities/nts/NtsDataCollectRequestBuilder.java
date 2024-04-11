@@ -191,7 +191,11 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                     NtsUtils.log("Extended user data flag", "E");
 
                     // User data length
-                    request.addRange(StringUtils.padLeft( userData.length(), 4,'0'),4);
+                    if(cardType.equals(NTSCardTypes.WexFleet)) {
+                        request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
+                    } else{
+                        request.addRange(StringUtils.padLeft(userData.length(), 3, '0'), 3);
+                    }
                     NtsUtils.log("User Data Length", Integer.toString(userData.length()));
                 }
 

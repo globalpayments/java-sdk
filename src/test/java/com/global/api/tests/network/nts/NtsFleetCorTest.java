@@ -1206,4 +1206,56 @@ public class NtsFleetCorTest {
                 .execute();
         assertEquals("00",response.getResponseCode());
     }
+    @Test //working
+    public void test_FuelMan_completion_issue_10296() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("11411");
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
 }

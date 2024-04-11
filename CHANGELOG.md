@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version v11.2.6 (04/03/24)
+## Latest Version - v11.2.7 (04/11/2024)
+### Bug Fixes
+NTS :
+ - Resolve incorrect user data length for fuelman fleet card(Issue 10296).
+
+VAPS :
+ - Fixed the missing expiry date and updated the field matrix for force data collect of refund(Issue 10297).
+ - Fixed the missing "NSI value" tag for retry data collect(Issue 10300).
+
+## v11.2.6 (04/03/24)
 ### Bug Fixes
 VAPS -
 

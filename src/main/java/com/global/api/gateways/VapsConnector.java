@@ -575,10 +575,17 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // DE 127: Forwarding Data - LLLVAR ans..999
         DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+        String encryptedPan = null;
         if(paymentMethod instanceof IEncryptable) {
             EncryptionData encryptionData = ((IEncryptable)paymentMethod).getEncryptionData();
+            if(paymentMethod instanceof ITrackData && transactionType.equals(TransactionType.Refund)) {
+                encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
+            }
             if(encryptionData != null) {
                 EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
+                    encryptionData.setKtb(encryptedPan);
+                }
                 EncryptedFieldMatrix encryptedField=getEncryptionField(paymentMethod,encryptionType, transactionType);
                 if(encryptionType.equals(EncryptionType.TDES)){
                     forwardingData.setServiceType(acceptorConfig.getServiceType());
@@ -2560,13 +2567,13 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                 // original payment method
                 if(reference.getOriginalPaymentMethod() != null) {
-                    if(!(reference.getOriginalPaymentMethod() instanceof Debit) && !(reference.getOriginalPaymentMethod() instanceof EBT)){
-                        if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
-                            cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
-                        }
-                        else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
-                            ITrackData track = (ITrackData) reference.getOriginalPaymentMethod();
+                    if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
+                        cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
+                    }
+                    else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
+                        ITrackData track = (ITrackData) reference.getOriginalPaymentMethod();
 
+                        if(track.getTrackNumber() != null) {
                             String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
                             cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
                         }
@@ -2948,7 +2955,14 @@ public class VapsConnector extends GatewayConnectorConfig {
 
             // NSI swipe indicator
             if(StringUtils.isNullOrEmpty(nsi)) {
-                requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, request.has(DataElementId.DE_035) ? "2" : "1");
+                if(acceptorConfig.getSupportedEncryptionType().equals(EncryptionType.TDES)){
+                    if(track.getTrackNumber() != null) {
+                        String nsiValue = track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
+                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                    }
+                }else {
+                    requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, request.has(DataElementId.DE_035) ? "2" : "1");
+                }
             }
         }
         impliedCapture.set(DataElementId.DE_062, requestIssuerData); // DE_042 - ISSUER DATA
@@ -3201,7 +3215,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(paymentMethod instanceof ICardData || paymentMethod instanceof EBTCardData  ){
                 return EncryptedFieldMatrix.Pan;
             }
-            else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.PreAuthCompletion) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)) {
+            else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.PreAuthCompletion) && !transactionType.equals(TransactionType.Refund) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;
