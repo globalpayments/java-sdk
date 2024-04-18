@@ -3,6 +3,7 @@ package com.global.api.gateways.bill_pay;
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.Credentials;
+import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -19,7 +20,11 @@ import com.global.api.utils.StringUtils;
 
 public class AuthorizationRequest extends GatewayRequestBase {
     private static final String GENERIC_PAYMENT_EXCEPTION_MESSAGE = "An error occurred attempting to make the payment";
-
+    private static final String MAKE_QUICK_PAY_BLIND_PAYMENT= "MakeQuickPayBlindPayment";
+    private static final String MAKE_QUICK_PAY_BLIND_PAYMENT_RESPONSE= "MakeQuickPayBlindPaymentResponse";
+    private static final String MAKE_QUICK_PAY_BLIND_PAYMENT_RETURN_TOKEN= "MakeQuickPayBlindPaymentReturnToken";
+    private static final String MAKE_QUICK_PAY_BLIND_PAYMENT_RETURN_TOKEN_RESPONSE= "MakeQuickPayBlindPaymentReturnTokenResponse";
+    private static final String ZERO= "0";
     public AuthorizationRequest(Credentials credentials, String serviceUrl, int timeout) {
         this.credentials = credentials;
         this.serviceUrl = serviceUrl;
@@ -39,10 +44,10 @@ public class AuthorizationRequest extends GatewayRequestBase {
                 }
 
                 if (builder.isRequestMultiUseToken()) {
-                    return makeBlindPaymentReturnToken(builder);
+                    return ((builder.getPaymentMethodUsageMode() != null && builder.getPaymentMethodUsageMode().equals(PaymentMethodUsageMode.SINGLE)) ? makeQuickPayBlindPaymentReturnToken(builder) : makeBlindPaymentReturnToken(builder));
                 }
 
-                return makeBlindPayment(builder);
+                return ((builder.getPaymentMethodUsageMode() != null && builder.getPaymentMethodUsageMode().equals(PaymentMethodUsageMode.SINGLE)) ? makeQuickPayBlindPayment(builder) : makeBlindPayment(builder));
             case Verify:
                 if (!builder.isRequestMultiUseToken()) {
                     throw new UnsupportedTransactionException();
@@ -196,5 +201,39 @@ public class AuthorizationRequest extends GatewayRequestBase {
             return result;
         }
         throw  new GatewayException("message: " + "An error occurred attempting to retrieve token information. ResponseCode: " + result.getResponseCode() + " responseMessage: " + result.getResponseMessage() );
+    }
+
+    private Transaction makeQuickPayBlindPayment(AuthorizationBuilder builder) throws ApiException {
+        ElementTree et = new ElementTree();
+        Element envelope = createSOAPEnvelope(et, MAKE_QUICK_PAY_BLIND_PAYMENT);
+        String request = new MakeQuickPayBlindPaymentRequest(et)
+                .build(envelope, builder, credentials);
+        String response = doTransaction(request);
+        Transaction result = new TransactionResponse()
+                .withResponseTagName(MAKE_QUICK_PAY_BLIND_PAYMENT_RESPONSE)
+                .withResponse(response)
+                .map();
+
+        if (result.getResponseCode().equals(ZERO)) {
+            return result;
+        }
+        throw new GatewayException(GENERIC_PAYMENT_EXCEPTION_MESSAGE, result.getResponseCode(), result.getResponseMessage());
+    }
+
+    private Transaction makeQuickPayBlindPaymentReturnToken(AuthorizationBuilder builder) throws ApiException {
+        ElementTree et = new ElementTree();
+        Element envelope = createSOAPEnvelope(et, MAKE_QUICK_PAY_BLIND_PAYMENT_RETURN_TOKEN);
+        String request = new MakeQuickPayBlindPaymentReturnTokenRequest(et)
+                .build(envelope, builder, credentials);
+        String response = doTransaction(request);
+        Transaction result = new TransactionResponse()
+                .withResponseTagName(MAKE_QUICK_PAY_BLIND_PAYMENT_RETURN_TOKEN_RESPONSE)
+                .withResponse(response)
+                .map();
+
+        if (result.getResponseCode().equals(ZERO)) {
+            return result;
+        }
+        throw new GatewayException(GENERIC_PAYMENT_EXCEPTION_MESSAGE, result.getResponseCode(), result.getResponseMessage());
     }
 }

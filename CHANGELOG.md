@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - v11.2.7 (04/11/2024)
+## Latest Version - v11.2.8 (04/18/2024)
+### Enhancements
+Bill Pay :
+- Added support for MakeQuickPayBlindPayment & MakeQuickPayBlindPaymentReturnToken transaction.
+
+## v11.2.7 (04/11/2024)
 ### Bug Fixes
 NTS :
  - Resolve incorrect user data length for fuelman fleet card(Issue 10296).

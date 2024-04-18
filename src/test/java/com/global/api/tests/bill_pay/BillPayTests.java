@@ -13,6 +13,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
@@ -39,6 +40,7 @@ public class BillPayTests {
     List<Bill> bills;
     Bill billLoad;
     Bill blindBill;
+    private static final String QUICK_PAY_TOKEN_EXCEPTION = "Quick Pay token must be provided for this transaction";
 
     public BillPayTests() throws ConfigurationException {
 
@@ -841,6 +843,231 @@ public class BillPayTests {
         customer.setId("DoesntExist");
         customer.delete();
     }
+
+    @Test
+    public void Charge_MakeQuickPayBlindPayment_ACH() throws ApiException {
+        getQuickPayConfig();
+
+        Address address = new Address();
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setAddress(address);
+
+        Bill bill = new Bill();
+        bill.setAmount(new BigDecimal(350));
+        bill.setIdentifier1("12345");
+        bill.setBillType("Tax Payments");
+
+        eCheck ach = new eCheck();
+        ach.setAccountNumber("987987987");
+        ach.setRoutingNumber("062000080");
+        ach.setAccountType(AccountType.Checking);
+        ach.setCheckType(CheckType.Personal);
+        ach.setSecCode(SecCode.Web);
+        ach.setCheckHolderName("Hank Hill");
+        ach.setBankName("Regions");
+        // need to use diff token everytime
+        ach.setToken("01094ED0-C1F6-4260-B9FE-3182A1B53495");
+
+        Transaction result = ach.charge(bill.getAmount())
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(BigDecimal.valueOf(2.65))
+                .withCurrency("USD")
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute();
+
+        validateSuccesfulTransaction(result);
+    }
+    @Test
+    public void Charge_MakeQuickPayBlindPayment_Credit() throws ApiException {
+        getQuickPayConfig();
+
+        Address address = new Address();
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setAddress(address);
+
+        Bill bill = new Bill();
+        bill.setAmount(new BigDecimal(350));
+        bill.setIdentifier1("12345");
+        bill.setBillType("Tax Payments");
+
+        CreditCardData cardData = new CreditCardData();
+        cardData.setNumber("5454545454545454");
+        cardData.setExpMonth(12);
+        cardData.setExpYear(2025);
+        cardData.setCvn("123");
+        cardData.setCardHolderName("Hank Hill");
+        // need to use diff token everytime
+        cardData.setToken("3EACE97E-5166-4F3C-942D-888DFB0DB95C");
+
+        BillPayService service = new BillPayService();
+        BigDecimal fee = service.calculateConvenienceAmount(cardData, bill.getAmount());
+
+        Transaction result = cardData.charge(bill.getAmount())
+                .withAddress(address)
+                .withBills(bill)
+                .withCustomer(customer)
+                .withConvenienceAmt(fee)
+                .withCurrency("USD")
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute();
+
+        validateSuccesfulTransaction(result);
+    }
+
+    @Test
+    public void Charge_MakeQuickPayBlindPaymentReturnToken_Credit() throws ApiException {
+        getQuickPayConfig();
+
+        Address address = new Address();
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setAddress(address);
+
+        Bill bill = new Bill();
+        bill.setAmount(new BigDecimal(350));
+        bill.setIdentifier1("12345");
+        bill.setBillType("Tax Payments");
+
+        CreditCardData cardData = new CreditCardData();
+        cardData.setNumber("5454545454545454");
+        cardData.setExpMonth(12);
+        cardData.setExpYear(2025);
+        cardData.setCvn("123");
+        cardData.setCardHolderName("Hank Hill");
+        // need to use diff token everytime
+        cardData.setToken("1AA43CEB-76CA-4254-B640-F46F787677C4" );
+
+        BillPayService service = new BillPayService();
+        BigDecimal fee = service.calculateConvenienceAmount(cardData, bill.getAmount());
+
+        Transaction result = cardData.charge(bill.getAmount())
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(fee)
+                .withRequestMultiUseToken(true)
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute();
+
+        validateSuccesfulTransaction(result);
+    }
+
+    @Test
+    public void Charge_MakeQuickPayBlindPaymentReturnToken_ACH() throws ApiException {
+        getQuickPayConfig();
+
+        Address address = new Address();
+        address.setPostalCode("12345");
+
+        Customer customer = new Customer();
+        customer.setAddress(address);
+
+        Bill bill = new Bill();
+        bill.setAmount(new BigDecimal(350));
+        bill.setIdentifier1("12345");
+        bill.setBillType("Tax Payments");
+
+        eCheck ach = new eCheck();
+        ach.setAccountNumber("987987987");
+        ach.setRoutingNumber("062000080");
+        ach.setAccountType(AccountType.Checking);
+        ach.setCheckType(CheckType.Personal);
+        ach.setSecCode(SecCode.Web);
+        ach.setCheckHolderName("Hank Hill");
+        ach.setBankName("Regions");
+        // need to use diff token everytime
+        ach.setToken("5CBC5301-D8AB-4212-855D-DB1704C65802");
+
+        Transaction result = ach.charge(bill.getAmount())
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(BigDecimal.valueOf(2.65))
+                .withRequestMultiUseToken(true)
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute();
+
+        validateSuccesfulTransaction(result);
+    }
+    @Test
+    public void Charge_MakeQuickPayBlindPayment_ACH_tokenNotPassed_exceptionCase() throws ApiException {
+        getQuickPayConfig();
+
+        UnsupportedTransactionException tokenException = assertThrows(UnsupportedTransactionException.class,
+                () -> ach.charge(bill.getAmount())
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(BigDecimal.valueOf(2.65))
+                .withCurrency("USD")
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute());
+        assertEquals(QUICK_PAY_TOKEN_EXCEPTION,tokenException.getMessage());
+    }
+    @Test
+    public void Charge_MakeQuickPayBlindPayment_Credit_tokenNotPassed_exceptionCase() throws ApiException {
+        getQuickPayConfig();
+
+        BillPayService service = new BillPayService();
+        BigDecimal fee = service.calculateConvenienceAmount(clearTextCredit, bill.getAmount());
+
+        UnsupportedTransactionException tokenException = assertThrows(UnsupportedTransactionException.class,
+                () -> clearTextCredit.charge(bill.getAmount())
+                .withAddress(address)
+                .withBills(bill)
+                .withCustomer(customer)
+                .withConvenienceAmt(fee)
+                .withCurrency("USD")
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute());
+        assertEquals(QUICK_PAY_TOKEN_EXCEPTION,tokenException.getMessage());
+    }
+
+    @Test
+    public void Charge_MakeQuickPayBlindPaymentReturnToken_Credit_tokenNotPassed_exceptionCase() throws ApiException {
+        getQuickPayConfig();
+
+        BillPayService service = new BillPayService();
+        BigDecimal fee = service.calculateConvenienceAmount(clearTextCredit, bill.getAmount());
+
+        UnsupportedTransactionException tokenException = assertThrows(UnsupportedTransactionException.class,
+                () -> clearTextCredit.charge(bill.getAmount())
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(fee)
+                .withRequestMultiUseToken(true)
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute());
+        assertEquals(QUICK_PAY_TOKEN_EXCEPTION,tokenException.getMessage());
+    }
+
+    @Test
+    public void Charge_MakeQuickPayBlindPaymentReturnToken_ACH_tokenNotPassed_exceptionCase() throws ApiException {
+        getQuickPayConfig();
+
+        UnsupportedTransactionException tokenException = assertThrows(UnsupportedTransactionException.class,
+                () -> ach.charge(bill.getAmount())
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCustomer(customer)
+                .withBills(bill)
+                .withConvenienceAmt(BigDecimal.valueOf(2.65))
+                .withRequestMultiUseToken(true)
+                .withPaymentMethodUsageMode(PaymentMethodUsageMode.SINGLE)
+                .execute());
+        assertEquals(QUICK_PAY_TOKEN_EXCEPTION,tokenException.getMessage());
+    }
     // #endregion
 
     // #region Helpers
@@ -867,4 +1094,13 @@ public class BillPayTests {
         return bills;
     }
     // #endregion
+    private static void getQuickPayConfig() throws ConfigurationException {
+        BillPayConfig config = new BillPayConfig();
+        config.setMerchantName("LeeCo");
+        config.setUsername("sdktest");
+        config.setPassword("$Test1234");
+        config.setServiceUrl(ServiceEndpoints.BILLPAY_CERTIFICATION.getValue());
+        config.setEnableLogging(true);
+        ServicesContainer.configureService(config);
+    }
 }

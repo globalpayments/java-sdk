@@ -451,4 +451,32 @@ public abstract class BillPayRequestBase {
 
         throw new BuilderException(messageBuilder.toString().trim());
     }
+
+    protected void buildQuickPayCardToCharge(Element parent, CreditCardData card, BigDecimal amountToCharge, BigDecimal feeAmount, Address address) {
+        Element cardToCharge = et.subElement(parent, "bdms:QuickPayCardToCharge");
+        et.subElement(cardToCharge, "bdms:Amount", amountToCharge);
+        et.subElement(cardToCharge, "bdms:CardProcessingMethod", "Credit");
+        et.subElement(cardToCharge, "bdms:ExpectedFeeAmount", feeAmount);
+
+        Element cardHolder = et.subElement(cardToCharge, "pos:CardHolderData");
+        buildAccountHolderData(cardHolder,
+                address,
+                card.getCardHolderName());
+
+        et.subElement(cardToCharge, "bdms:ExpirationMonth", card.getExpMonth());
+        et.subElement(cardToCharge, "bdms:ExpirationYear", card.getExpYear());
+        et.subElement(cardToCharge, "bdms:QuickPayToken", card.getToken());
+        et.subElement(cardToCharge, "bdms:VerificationCode", card.getCvn());
+    }
+
+    protected void buildQuickPayACHAccountToCharge(Element parent, eCheck eCheck, BigDecimal amountToCharge, BigDecimal feeAmount) throws UnsupportedTransactionException {
+        Element achAccount = et.subElement(parent, "bdms:QuickPayACHAccountToCharge");
+        et.subElement(achAccount, "bdms:ACHStandardEntryClass", eCheck.getSecCode());
+        et.subElement(achAccount, "bdms:AccountType",getDepositType(eCheck.getCheckType()));
+        et.subElement(achAccount, "bdms:Amount", amountToCharge);
+        et.subElement(achAccount, "bdms:DepositType", getACHAccountType(eCheck.getAccountType()));
+        et.subElement(achAccount, "bdms:ExpectedFeeAmount", feeAmount);
+        et.subElement(achAccount, "bdms:PayorName", eCheck.getCheckHolderName());
+        et.subElement(achAccount, "bdms:QuickPayToken", eCheck.getToken());
+    }
 }
