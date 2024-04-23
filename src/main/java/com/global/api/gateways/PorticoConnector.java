@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
+import com.global.api.entities.reporting.SurchargeLookup;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
@@ -706,6 +707,50 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         return mapReportResponse(response, builder.getReportType(), clazz);
     }
 
+    @SuppressWarnings("unchecked")
+    public <TResult> TResult surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz)
+            throws ApiException{
+
+        ElementTree et = new ElementTree();
+        TransactionType type = builder.getTransType();
+        Element transaction = et.element(builder.getTransType().name());
+        Element block1 = et.subElement(transaction, "Block1");
+        Element cardData = et.element("CardData");
+
+        if(builder.getPaymentMethod() instanceof ICardData){
+            ICardData card = (ICardData) builder.getPaymentMethod();
+            Element manualEntry = et.subElement(cardData, "ManualEntry");
+            et.subElement(manualEntry, "CardNbr", card.getNumber() != null ?
+                    card.getNumber() : null);
+            et.subElement(manualEntry, "ExpMonth", card.getExpMonth() != null ?
+                    card.getExpMonth().toString(): null);
+            et.subElement(manualEntry, "ExpYear", card.getExpYear() != null ?
+                    card.getExpYear() : null);
+            block1.append(cardData);
+
+        } else if(builder.getPaymentMethod() instanceof  ITrackData){
+            ITrackData track = (ITrackData) builder.getPaymentMethod();
+            Element trackData = et.subElement(cardData, "TrackData");
+            trackData.text(track.getValue());
+            trackData.set("method", track.getEntryMethod());
+            block1.append(cardData);
+        }
+
+        if(builder.getPaymentMethod() instanceof IEncryptable){
+            EncryptionData encryptionData = ((IEncryptable) builder.getPaymentMethod()).getEncryptionData();
+            if (encryptionData != null) {
+                Element enc = et.subElement(cardData, "EncryptionData");
+                et.subElement(enc, "Version").text(encryptionData.getVersion());
+                et.subElement(enc, "EncryptedTrackNumber", encryptionData.getTrackNumber());
+                et.subElement(enc, "KTB", encryptionData.getKtb());
+                et.subElement(enc, "KSN", encryptionData.getKsn());
+                et.subElement(enc, "DataFormat", "1");
+            }
+        }
+        String response = doTransaction(buildEnvelope(et, transaction));
+        return (TResult)mapSurchargeLookupResponse(response, clazz);
+    }
+
     private String buildEnvelope(ElementTree et, Element transaction) {
         return buildEnvelope(et, transaction, null, null);
     }
@@ -750,6 +795,34 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         Element trans = et.subElement(version1, "Transaction");
         trans.append(transaction);
         return et.toString(envelope);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <TResult> TResult mapSurchargeLookupResponse(String rawResponse, Class<TResult> clazz) throws ApiException {
+        Element response = ElementTree.parse(rawResponse).get("PosResponse");
+        Element doc = ElementTree.parse(rawResponse).get("SurchargeEligibilityLookup");
+
+        try {
+            TResult rvalue = clazz.newInstance();
+            if(rvalue instanceof SurchargeLookup){
+                SurchargeLookup lookupResponse = new SurchargeLookup();
+                if(doc != null) {
+                    lookupResponse.setIsSurchargeable(doc.getString("IsSurchargeable"));
+                } else {
+                    lookupResponse.setIsSurchargeable("N");
+                }
+
+                if(response != null) {
+                    lookupResponse.setGatewayRspCode(normalizeResponse(response.getString("GatewayRspCode")));
+                    lookupResponse.setGatewayRspMsg(response.getString("GatewayRspMsg"));
+                    lookupResponse.setGatewayTxnId(response.getString("GatewayTxnId"));
+                }
+                rvalue = (TResult) lookupResponse;
+            }
+            return rvalue;
+        } catch (Exception e){
+            throw new ApiException(e.getMessage(), e);
+        }
     }
 
     private Transaction mapResponse(String rawResponse, IPaymentMethod paymentMethod) throws ApiException {
@@ -1083,6 +1156,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             case TokenUpdate:
             case TokenDelete:
                 return "ManageTokens";
+            case SurchargeEligibilityLookup:
+                return "SurchargeEligibilityLookup";
             default:
                 throw new UnsupportedTransactionException();
         }

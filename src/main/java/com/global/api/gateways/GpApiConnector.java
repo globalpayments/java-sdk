@@ -312,6 +312,11 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         return null;
     }
 
+    @Override
+    public <T> T surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public Secure3dVersion getVersion() {
         return Secure3dVersion.ANY;
     }

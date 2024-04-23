@@ -86,6 +86,9 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String transactionStatusInfo;
     @Getter @Setter
     protected String emvTransactionType;
+    /**
+     * This method does not work with PAX S300 device
+     */
     @Getter @Setter
     protected String amountAuthorized;
     @Getter @Setter

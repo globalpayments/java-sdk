@@ -42,6 +42,10 @@ public class PaxDeviceResponse extends PaxBaseResponse {
         // amount
         if(amountResponse != null) {
             setTransactionAmount(amountResponse.getApprovedAmount());
+            if (deviceResponseCode.equals("000002")) {
+                setAuthorizeAmount(amountResponse.getApprovedAmount());
+                setAmountAuthorized(String.valueOf(amountResponse.getApprovedAmount()));
+            }
             setAmountDue(amountResponse.getAmountDue());
             setTipAmount(amountResponse.getTipAmount());
             setCashBackAmount(amountResponse.getCashBackAmount());

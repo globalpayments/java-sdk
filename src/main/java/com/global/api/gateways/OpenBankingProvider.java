@@ -201,6 +201,11 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
         }
     }
 
+    @Override
+    public <T> T surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     private void setAuthorizationHeader(String value) {
         headers.put("Authorization", this.shaHashType + " " + value);
     }

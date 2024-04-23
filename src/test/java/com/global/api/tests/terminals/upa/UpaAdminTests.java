@@ -9,17 +9,19 @@ import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ISAFResponse;
 import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.upa.responses.UpaSafResponse;
+import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +32,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.1.130");
+        config.setIpAddress("192.168.2.96");
         config.setTimeout(450000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -151,6 +153,32 @@ public class UpaAdminTests {
         data.setRemove(true);
         IDeviceResponse response = device.registerPOS(data);
         runBasicTests(response);
+    }
+
+    @Test
+    public void test_receipt() throws ApiException, IOException {
+        Path resourcesDir = Paths.get("src", "test", "resources", "images");
+        String filePath = resourcesDir.toFile().getAbsolutePath() + "\\verifoneTest.jpg";
+        FileInputStream fis = null;
+        try {
+            File file = new File(filePath);
+            fis = new FileInputStream(file);
+
+            byte[] bytes = new byte[(int) file.length()];
+            int content = fis.read(bytes);
+            String base64Image = new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
+
+            PrintData data = new PrintData();
+            data.setContent(base64Image);
+            data.setLine1("Printing");
+            data.setLine2("Please Wait...");
+            IDeviceResponse response = device.printReceipt(data);
+            runBasicTests(response);
+        } finally {
+            if(fis != null){
+                fis.close();
+            }
+        }
     }
 
     @Test

@@ -15,7 +15,7 @@ public class CreditResponse extends PaxDeviceResponse {
     protected void parseResponse(MessageReader br) throws MessageException {
         super.parseResponse(br);
 
-        if (deviceResponseCode.equals("000000")) {
+        if (deviceResponseCode.equals("000000") || deviceResponseCode.equals("000002")) {
             hostResponse = new HostResponse(br);
             transactionType = br.readToCode(ControlCodes.FS);
             amountResponse = new AmountResponse(br);

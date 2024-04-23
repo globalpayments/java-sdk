@@ -12,14 +12,12 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
-
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class PaxCreditTests {
     private IDeviceInterface device;
@@ -29,7 +27,7 @@ public class PaxCreditTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.1.8");
+        deviceConfig.setIpAddress("192.168.1.197");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -432,5 +430,31 @@ public class PaxCreditTests {
                 .execute();
         assertNotNull(tipResponse);
         assertEquals("00", tipResponse.getResponseCode());
+    }
+
+    /**
+     * NOTE: This test does not function with PAX S300
+     * @throws ApiException
+     */
+    @Test
+    public void creditSaleWithAllowPartialAuth() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+
+            }
+        });
+        TerminalResponse response = device.creditSale(new BigDecimal(155))
+                .withAllowPartialAuth(true)
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(response);
+
+        assertEquals("10", response.getResponseCode());
+        assertEquals("100", response.getAmountAuthorized());
+        assertEquals(new BigDecimal("100"), response.getTransactionAmount());
+        assertEquals(new BigDecimal("55"), response.getAmountDue());
+        assertEquals(new BigDecimal(100), response.getAuthorizeAmount());
     }
 }

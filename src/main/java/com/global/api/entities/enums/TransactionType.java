@@ -84,7 +84,8 @@ public enum TransactionType implements IFlag {
     GetAccountDetails,
     GetAccountBalance,
     GetTokenInfo,
-    OrderDevice;
+    OrderDevice,
+    SurchargeEligibilityLookup;
 
     public long getLongValue() {
         return 1L << this.ordinal();

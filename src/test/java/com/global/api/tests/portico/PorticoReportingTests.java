@@ -2,12 +2,16 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
+import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.TimeZoneConversion;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.SearchCriteria;
+import com.global.api.entities.reporting.SurchargeLookup;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
+import com.global.api.services.SurchargeEligibilityService;
 import com.global.api.utils.DateUtils;
 import org.junit.Test;
 
@@ -23,7 +27,6 @@ public class PorticoReportingTests {
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
         config.setEnableLogging(true);
-        
         ServicesContainer.configureService(config);
     }
 
@@ -69,6 +72,30 @@ public class PorticoReportingTests {
         TransactionSummary response = ReportingService.transactionDetail("1038021900")
                 .execute();
         assertNotNull(response);
+    }
+
+    @Test
+    public void CheckSurchargeEligibility() throws ApiException{
+        CreditCardData card = new CreditCardData();
+        card.setNumber("2223000010005780");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCardPresent(true);
+
+        EncryptionData enc = new EncryptionData();
+        enc.setVersion("05");
+        enc.setTrackNumber("2");
+        enc.setKsn("//89P4EAEkAACg==");
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("Cm2HEnFWHPQnW+96DaaAHRz/+LMKe2lo");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setEncryptionData(enc);
+        SurchargeLookup manual = SurchargeEligibilityService.eligibilityLookup().withPaymentMethod(card)
+                .execute();
+        SurchargeLookup withTrack = SurchargeEligibilityService.eligibilityLookup().withPaymentMethod(track)
+                .execute();
+        assertNotNull(manual);
+        assertNotNull(withTrack);
     }
 
     @Test

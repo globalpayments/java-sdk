@@ -1,8 +1,5 @@
 package com.global.api.terminals.upa;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -26,10 +23,14 @@ import com.global.api.terminals.upa.responses.UpaEODResponse;
 import com.global.api.terminals.upa.responses.UpaReportResponse;
 import com.global.api.terminals.upa.responses.UpaSafResponse;
 import com.global.api.terminals.upa.responses.UpaSignatureResponse;
-import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
+import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 
 public class UpaInterface implements IDeviceInterface {
     private final UpaController controller;
@@ -311,6 +312,10 @@ public class UpaInterface implements IDeviceInterface {
         JsonDoc body = new JsonDoc();
         JsonDoc param = new JsonDoc();
 
+        if(data == null){
+            return new UpaDeviceResponse(null, UpaMessageId.RegisterPOS);
+        }
+
         if (data.getAppName() != null) {
             param.set("appName", data.getAppName());
         } else {
@@ -333,6 +338,47 @@ public class UpaInterface implements IDeviceInterface {
                 new String(controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaDeviceResponse(responseObj, UpaMessageId.RegisterPOS);
+    }
+
+    @Override
+    public IDeviceResponse printReceipt(PrintData data) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc param = new JsonDoc();
+
+        if(data == null){
+            throw new ApiException("Print data cannot be null!");
+        }
+
+        if(StringUtils.isNullOrEmpty(data.getContent())){
+            throw new ApiException("The image data cannot be null or empty.");
+        }
+
+        param.set("content", "data:image/jpeg;base64," + data.getContent());
+
+        if (!StringUtils.isNullOrEmpty(data.getLine1())) {
+            param.set("line1", data.getLine1());
+        }
+
+        if(!StringUtils.isNullOrEmpty(data.getLine2())){
+            param.set("line2", data.getLine2());
+        }
+
+        if(!StringUtils.isNullOrEmpty(data.getDisplayOption())){
+            param.set("displayOption", data.getDisplayOption());
+        }
+
+        body.set("params", param);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.PrintData,
+                controller.getRequestId().toString(),
+                body
+        );
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+        return new UpaDeviceResponse(responseObj, UpaMessageId.PrintData);
     }
 
     public IDeviceResponse ping() throws ApiException {

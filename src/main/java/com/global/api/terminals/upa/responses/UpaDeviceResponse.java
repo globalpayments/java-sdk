@@ -9,6 +9,11 @@ public class UpaDeviceResponse extends TerminalResponse {
 
     public UpaDeviceResponse(JsonDoc responseObj, UpaMessageId messageId) {
         this.messageId = messageId;
+
+        if(responseObj == null){
+            status = "Failed";
+            return;
+        }
         JsonDoc data = responseObj.get("data");
 
         if (data != null) {

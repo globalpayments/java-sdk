@@ -863,6 +863,11 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         return mapReportResponse(response, builder.getReportType(), clazz);
     }
 
+    @Override
+    public <T> T surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public <TResult> TResult processRecurring(RecurringBuilder<TResult> builder, Class<TResult> clazz) throws ApiException {
         ElementTree et = new ElementTree();
         String timestamp = GenerationUtils.generateTimestamp();

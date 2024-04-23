@@ -21,6 +21,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.utils.StringUtils;
@@ -370,6 +371,11 @@ public class HpaInterface implements IDeviceInterface {
 
     @Override
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse printReceipt(PrintData data) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 

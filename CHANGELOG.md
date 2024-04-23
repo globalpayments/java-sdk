@@ -1,6 +1,17 @@
 # Changelog
 
-## Latest Version - v11.2.8 (04/18/2024)
+## Latest Version - v11.2.9 (04/23/2024)
+### Enhancements
+PAX
+- Add Receipt & Surcharge.
+
+NTS
+- Fixed User Data Length for WEX EMV issue 10304.
+
+### Bug Fixes
+- Fixed partial auth response returning null properties (esp. authorizedAmount).
+
+## v11.2.8 (04/18/2024)
 ### Enhancements
 Bill Pay :
 - Added support for MakeQuickPayBlindPayment & MakeQuickPayBlindPaymentReturnToken transaction.

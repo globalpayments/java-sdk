@@ -13,6 +13,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.pax.responses.*;
+import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import org.apache.commons.codec.binary.Base64;
@@ -428,6 +429,11 @@ class PaxInterface implements IDeviceInterface {
 
     @Override
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse printReceipt(PrintData data) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 

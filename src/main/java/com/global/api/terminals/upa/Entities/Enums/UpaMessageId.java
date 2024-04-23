@@ -24,5 +24,7 @@ public enum UpaMessageId {
     StartCardTransaction,
     GetSignature,
     DeleteSAF,
-    RegisterPOS
+    RegisterPOS,
+
+    PrintData
 }
