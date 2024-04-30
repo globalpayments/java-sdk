@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - v11.2.9 (04/23/2024)
+## Latest Version - v11.2.10 (04/30/2024)
+### Enhancements
+Portico
+- Expand the CountryUtils classes to include ISO 3166 values.
+
+## v11.2.9 (04/23/2024)
 ### Enhancements
 PAX
 - Add Receipt & Surcharge.

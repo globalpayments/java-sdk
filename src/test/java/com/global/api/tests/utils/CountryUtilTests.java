@@ -1,6 +1,7 @@
 package com.global.api.tests.utils;
 
 import com.global.api.entities.Address;
+import com.global.api.entities.enums.CountryCodeFormat;
 import com.global.api.utils.CountryUtils;
 import com.global.api.utils.StringUtils;
 import org.junit.Test;
@@ -219,4 +220,24 @@ public class CountryUtilTests {
         address.setCountry("Afganistan");
         assertFalse(address.isCountry("GB"));
     }
+    @Test
+    public void getCountryByAlpha2Format(){
+        String result = CountryUtils.getCountryCodeByCountry("AF", CountryCodeFormat.Alpha2);
+        assertNotNull(result);
+        assertEquals("AF", result);
+    }
+    @Test
+    public void getCountryCodeByExactNumericValue() {
+        String result = CountryUtils.getCountryCodeByCountry("840",CountryCodeFormat.Numeric);
+        assertNotNull(result);
+        assertEquals("840", result);
+    }
+    //negative scenario
+    @Test
+    public void getCountryCodeByMismatchCountryFormat() {
+        String result = CountryUtils.getCountryCodeByCountry("840",CountryCodeFormat.Numeric);
+        assertNotNull(result);
+        assertEquals("US", result);
+    }
+
 }

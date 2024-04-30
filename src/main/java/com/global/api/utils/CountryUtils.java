@@ -56,6 +56,33 @@ public class CountryUtils {
             return fuzzyMatch(CountryData.getCountryByAlpha2Code(), countryCode, significantCodeMatch);
         }
     }
+    public static  String getCountryByCode( String countryCode,CountryCodeFormat countryCodeFormat){
+        if (countryCode == null)
+            return null;
+        String output = "";
+
+        switch (countryCodeFormat){
+            case Alpha2: {
+                output = convertFromAlpha2(countryCode, CountryCodeFormat.Name);
+            }break;
+            case Numeric: {
+                output = ConvertFromAlpha3(countryCode, CountryCodeFormat.Name);
+            }break;
+            case Alpha3: {
+                output = ConvertFromNumeric(countryCode, CountryCodeFormat.Name);
+            }break;
+        }
+        if (! StringUtils.isNullOrEmpty(output))
+        {
+            return output;
+        }
+        else
+        {
+            if (countryCode.length() > 3)
+                return null;
+            return fuzzyMatch(CountryData.getCountryByAlpha2Code(), countryCode, significantCodeMatch);
+        }
+    }
 
     // Returns Country Code
     public static String getCountryCodeByCountry(String country) {

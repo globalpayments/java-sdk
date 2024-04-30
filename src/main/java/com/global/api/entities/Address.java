@@ -1,6 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.CountryCodeFormat;
 import com.global.api.utils.CountryUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,10 +30,10 @@ public class Address {
         return this;
     }
 
-    public Address setCountryCode(String countryCode) {
+    public Address setCountryCode(String countryCode, CountryCodeFormat countryCodeFormat) {
         this.countryCode = countryCode;
         if(this.country == null)
-            this.country = CountryUtils.getCountryByCode(countryCode);
+            this.country = CountryUtils.getCountryByCode(countryCode,countryCodeFormat);
 
         return this;
     }
