@@ -6,6 +6,7 @@ import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
 import com.global.api.network.elements.DE63_ProductDataEntry;
 import com.global.api.network.enums.*;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 
 public class NTSUserData {
     private static final String WEX_FALLBACK="FALLBACK";
+    private static final String PRODUCT_DATA_REQUIRED = "Product Data is required for this transaction.";
+
     private NTSUserData() {
         throw new IllegalStateException("NTSUserData.class");
     }
@@ -788,7 +791,9 @@ public class NTSUserData {
         int serviceLevel = 0;
         String referenceMessageCode = null;
         FleetData fleetData = builder.getFleetData();
-        if (productData != null) {
+        if(productData == null){
+            throw new MessageException(PRODUCT_DATA_REQUIRED);
+        }else if (productData != null) {
             serviceLevel = mapServiceByCardType(productData.getServiceLevel(), cardType);
             if (productData.getSalesTax() != null)
                 salesTax = productData.getSalesTax();

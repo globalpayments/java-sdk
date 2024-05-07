@@ -19,12 +19,15 @@ public class NtsResponseObjectFactory {
 
     static final Integer RESPONSE_HEADER = 52;
 
+    private static final String WEX_FALLBACK="FALLBACK";
+    private static final String FALLBACK_99="\\99\\FALLBACK2";
+
     public static <T extends TransactionBuilder<Transaction>> NtsResponse getNtsResponseObject(IDeviceMessage request, byte[] buffer, @NonNull T builder) throws GatewayException {
 
         INtsResponseMessage ntsResponseMessage = null;
         MessageReader mr = new MessageReader(buffer);
         // EMV flag requirements.
-        boolean emvFlag = (!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains("\\99\\FALLBACK")));
+        boolean emvFlag = (!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains(FALLBACK_99) && (!builder.getTagData().contains(WEX_FALLBACK))));
 
         PaymentMethodType paymentMethodType = (builder.getPaymentMethod() != null)
                 ? builder.getPaymentMethod().getPaymentMethodType() : null;

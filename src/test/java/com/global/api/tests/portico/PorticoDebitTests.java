@@ -3,6 +3,7 @@ package com.global.api.tests.portico;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.AccountType;
 import com.global.api.entities.enums.EmvChipCondition;
 import com.global.api.entities.enums.PaymentMethodType;
@@ -11,12 +12,14 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
+import com.global.api.services.ReportingService;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PorticoDebitTests {
     private DebitTrackData track;
@@ -89,6 +92,28 @@ public class PorticoDebitTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitReversalUsingFromId() throws ApiException {
+        Transaction response = track.charge(new BigDecimal("17.01"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction reversalResponse = Transaction.fromId(response.getTransactionId(), PaymentMethodType.Debit)
+                .reverse(new BigDecimal("17.01"))
+                .execute();
+
+        TransactionSummary reversalDetails = ReportingService.transactionDetail(reversalResponse.getTransactionId()).execute();
+
+        assertNotNull(reversalResponse);
+        assertNotNull(reversalDetails);
+        assertEquals("00", reversalResponse.getResponseCode());
+        assertEquals("DebitReversal", reversalDetails.getServiceName());
     }
 
     @Test(expected = UnsupportedTransactionException.class)

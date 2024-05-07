@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.FleetData;
@@ -26,8 +27,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import java.math.BigDecimal;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NtsWexFleetTest {
@@ -41,6 +42,9 @@ public class NtsWexFleetTest {
     private NtsProductData productData;
     private FleetData fleetData;
     private PriorMessageInformation priorMessageInformation;
+
+    private static final String PRODUCT_DATA_REQUIRED = "Product Data is required for this transaction.";
+    private static final String TAG_DATA_INVALID = "Please ensure that the Tag data is not empty or composed only of spaces.";
 
     public NtsWexFleetTest() throws ConfigurationException {
 
@@ -2122,5 +2126,152 @@ public class NtsWexFleetTest {
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsNotAvailableProductsCapable);
+
+        Transaction response = track.charge(new BigDecimal(7))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withTagData("FALLBACK")
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301_1() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("FallBack")
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+    //Negative scenario
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301_Neg1() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+
+
+        MessageException messageException = assertThrows(MessageException.class,
+                ()  -> track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("")
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute());
+
+        assertEquals(TAG_DATA_INVALID,messageException.getMessage());
+
+    }
+
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301_Neg2() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+
+
+        MessageException messageException = assertThrows(MessageException.class,
+                ()  -> track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("    ")
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute());
+
+        assertEquals(TAG_DATA_INVALID,messageException.getMessage());
+    }
+
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301_Neg3() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        MessageException messageException = assertThrows(MessageException.class,
+                ()  -> track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withTagData("Fallback")
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute());
+
+        assertEquals(PRODUCT_DATA_REQUIRED,messageException.getMessage());
+
+    }
+
+    @Test
+    public void test_WexFleet_With_Sale_Emv_Fallback_10301_Neg4() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsNotAvailableProductsCapable);
+
+        Transaction response = track.charge(new BigDecimal(7))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withTagData(null)
+                .withCardSequenceNumber("101")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
 
 }

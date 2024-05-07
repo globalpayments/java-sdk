@@ -24,6 +24,9 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
     @Getter @Setter
     String trackData;
 
+    private static final String WEX_FALLBACK="FALLBACK";
+    private static final String FALLBACK_99="\\99\\FALLBACK2";
+
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
 
@@ -202,7 +205,7 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
         if (paymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) builder.getPaymentMethod();
             NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), operatingEnvironment);
-            if ((!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains("\\99\\FALLBACK2")))
+            if ((!StringUtils.isNullOrEmpty(builder.getTagData()) && (!builder.getTagData().contains(FALLBACK_99)&& (!builder.getTagData().contains(WEX_FALLBACK))))
                     || NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
                 request.addRange("E", 1);
                 isExtendedUserData = true;

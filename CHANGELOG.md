@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - v11.2.10 (04/30/2024)
+## Latest Version - v11.2.11 (06/06/2024)
+### Enhancements
+NTS :
+- Fixed userdata length of WEX EMV FALLBACK (10301)
+- User Data Length Fixed for WEX NonEmv Datacollect
+
+Portico Enhancement
+- Added DebitReversal support using fromId.
+
+## v11.2.10 (04/30/2024)
 ### Enhancements
 Portico
 - Expand the CountryUtils classes to include ISO 3166 values.

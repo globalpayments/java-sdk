@@ -1093,9 +1093,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     if (paymentMethodType.equals(PaymentMethodType.Credit))
                         return "CreditReversal";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit)) {
-//                    I don't know why this is here, but it doesn't seem to be valid removing for now
-//                    if(builder.getPaymentMethod() instanceof TransactionReference)
-//                        throw new UnsupportedTransactionException();
                         return "DebitReversal";
                     } else if (paymentMethodType.equals(PaymentMethodType.Gift))
                         return "GiftCardReversal";

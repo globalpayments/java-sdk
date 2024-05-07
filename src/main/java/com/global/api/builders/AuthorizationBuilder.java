@@ -6,6 +6,7 @@ import com.global.api.entities.billing.Bill;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.gateways.IPaymentGateway;
@@ -25,6 +26,9 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
+    private static final String TAG_DATA_INVALID = "Please ensure that the Tag data is not empty or composed only of spaces.";
+    private static final String EMPTY_MESSAGE = "";
+    private static final String WEX_FALLBACK="FALLBACK";
     private AccountType accountType;
     private String alias;
     private AliasAction aliasAction;
@@ -780,8 +784,16 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.followOnTimestamp = followOn;
         return this;
     }
-    public AuthorizationBuilder withTagData(String value) {
-        this.tagData = value;
+    public AuthorizationBuilder withTagData(String value) throws ApiException {
+        if(value != null){
+            value = value.trim();
+            if(value.equalsIgnoreCase(WEX_FALLBACK)){
+                value = value.toUpperCase();
+            }else if(value.equals(EMPTY_MESSAGE)){
+                throw new MessageException(TAG_DATA_INVALID);
+            }
+            this.tagData = value;
+        }
         return this;
     }
 
