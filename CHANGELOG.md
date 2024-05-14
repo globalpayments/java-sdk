@@ -1,6 +1,20 @@
 # Changelog
 
-## Latest Version - v11.2.11 (06/06/2024)
+## Latest Version - v11.2.12 (5/14/2024)
+### Enhancements
+Portico
+- Wrap the 'CheckQuery' request and response
+
+[GP-API]
+- Access token update
+  -Fix mapping for "authCode"
+
+### Bug Fixes
+Vaps
+- Updated debit refund DE 127 tag field matric for 3DES - 10308
+
+
+## v11.2.11 (05/06/2024)
 ### Enhancements
 NTS :
 - Fixed userdata length of WEX EMV FALLBACK (10301)

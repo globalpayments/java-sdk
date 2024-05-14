@@ -371,7 +371,7 @@ public class GpApiMappingTest extends BaseGpApiTest {
         if (doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
             assertEquals(paymentMethod.getString("id"), transaction.getToken());
-            assertEquals(paymentMethod.getString("result"), transaction.getAuthorizationCode());
+            assertEquals(paymentMethod.getString("result"), transaction.getCardIssuerResponse().getResult());
             if (paymentMethod.has("card")) {
                 JsonDoc card = paymentMethod.get("card");
                 assertEquals(card.getString("brand"), transaction.getCardType());
@@ -403,7 +403,7 @@ public class GpApiMappingTest extends BaseGpApiTest {
         var payment_method = doc.get("payment_method");
         if (payment_method != null) {
             assertEquals(payment_method.getString("id"), transaction.getToken());
-            assertEquals(payment_method.getString("result"), transaction.getAuthorizationCode());
+            assertEquals(payment_method.getString("result"), transaction.getCardIssuerResponse().getResult());
 
             var card = payment_method.get("card");
             if (card != null) {

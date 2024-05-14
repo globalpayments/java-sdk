@@ -42,7 +42,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         IPayFacProvider, IFraudCheckService, IFileProcessingService {
 
     public static final SimpleDateFormat DATE_SDF = DateParsingUtils.DATE_SDF;
-
     public static final DateTimeFormatter DATE_TIME_DTF = DateParsingUtils.DATE_TIME_DTF;
     private static final String GP_API_VERSION = "2021-03-22";
     private static final String IDEMPOTENCY_HEADER = "x-gp-idempotency";
@@ -172,12 +171,12 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
     }
 
-    public GpApiRequest signOut() throws UnsupportedTransactionException {
-        return GpApiSessionInfo.signOut();
+    public GpApiRequest signOut() throws GatewayException {
+        return gpApiConfig.getAccessTokenProvider().signOut();
     }
 
     public GpApiTokenResponse getAccessToken() throws GatewayException {
-        GpApiRequest request = GpApiSessionInfo.signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions());
+        GpApiRequest request = gpApiConfig.getAccessTokenProvider().signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions());
 
         String rawResponse = null;
 

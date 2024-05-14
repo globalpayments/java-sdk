@@ -21,8 +21,9 @@ import static org.junit.Assert.*;
 public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
     private final String currency = "USD";
-    private final String successAuthCode = "00";
-    private final String successResponseCode = "SUCCESS";
+    private final String successAuthCode = "123456";
+    private final String successResultCode = "00";
+    private final String SUCCESS = "SUCCESS";
 
     @Before
     public void setupGpApi() throws ApiException {
@@ -66,7 +67,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("VISA", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -84,7 +86,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("MASTERCARD", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -102,7 +105,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("AMEX", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -120,7 +124,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("DINERS", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -138,7 +143,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("DISCOVER", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -156,7 +162,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals("JCB", response.getCardType());
         assertEquals(successAuthCode, response.getAuthorizationCode());
-        assertEquals(successResponseCode, response.getResponseCode());
+        assertEquals(successResultCode, response.getCardIssuerResponse().getResult());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -176,7 +183,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("VISA", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -193,7 +201,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("VISA", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -210,7 +219,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("VISA", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -227,7 +237,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("VISA", response.getCardType());
-        assertEquals("111", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("111", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -247,7 +258,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("MASTERCARD", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -264,7 +276,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("MASTERCARD", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -282,7 +295,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("MASTERCARD", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -299,7 +313,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("MASTERCARD", response.getCardType());
-        assertEquals("111", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("111", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -319,7 +334,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("AMEX", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -336,7 +352,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("AMEX", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -353,7 +370,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("AMEX", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -370,7 +388,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("AMEX", response.getCardType());
-        assertEquals("111", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("111", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -390,7 +409,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DINERS", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -407,7 +427,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DINERS", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -424,7 +445,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DINERS", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -444,7 +466,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DISCOVER", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -461,7 +484,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DISCOVER", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -478,7 +502,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("DISCOVER", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -498,7 +523,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("JCB", response.getCardType());
-        assertEquals("101", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("101", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -515,7 +541,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("JCB", response.getCardType());
-        assertEquals("102", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("102", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 
@@ -532,7 +559,8 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("JCB", response.getCardType());
-        assertEquals("103", response.getAuthorizationCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("103", response.getCardIssuerResponse().getResult());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseCode());
     }
 

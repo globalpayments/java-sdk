@@ -3,8 +3,10 @@ package com.global.api.serviceConfigs;
 import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.gpApi.GpApiSessionInfo;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.gateways.GpApiConnector;
+import com.global.api.gateways.IAccessTokenProvider;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,6 +51,9 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     private AccessTokenInfo accessTokenInfo;
 
+    @Accessors(chain = true)
+    private IAccessTokenProvider accessTokenProvider;
+
     // 3DSecure challenge return url
     private String challengeNotificationUrl;
 
@@ -79,6 +84,10 @@ public class GpApiConfig extends GatewayConfig {
                     environment.equals(Environment.TEST) ?
                             ServiceEndpoints.GP_API_TEST.getValue() :
                             ServiceEndpoints.GP_API_PRODUCTION.getValue();
+        }
+
+        if(accessTokenProvider == null) {
+            accessTokenProvider = new GpApiSessionInfo();
         }
 
         GpApiConnector gpApiConnector = new GpApiConnector(this);

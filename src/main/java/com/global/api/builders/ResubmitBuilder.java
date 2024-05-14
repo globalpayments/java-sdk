@@ -12,9 +12,9 @@ import com.global.api.gateways.IPaymentGateway;
 import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.VapsConnector;
 import com.global.api.network.entities.NtsData;
+import com.global.api.paymentMethods.IPaymentMethod;
 import lombok.Getter;
 import lombok.Setter;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,6 +94,11 @@ public class ResubmitBuilder extends TransactionBuilder<Transaction> {
 
     public ResubmitBuilder(TransactionType type) {
         super(type, null);
+    }
+
+    public ResubmitBuilder withPaymentMethod (IPaymentMethod value){
+        this.paymentMethod = value;
+        return this;
     }
 
     public Transaction execute(String configName) throws ApiException {

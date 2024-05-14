@@ -92,7 +92,7 @@ public class VapsEncryption3DESTests {
         track.setEntryMethod(EntryMethod.Swipe);
         track.setTrackNumber(TrackNumber.TrackOne);
         track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
-        track.setExpiry("2412");
+        track.setExpiry("2510");
 
         // VISA
         card = new CreditCardData();
@@ -106,11 +106,13 @@ public class VapsEncryption3DESTests {
 
         cardWithCvn = new CreditCardData();
         cardWithCvn.setCvn("103");
-        cardWithCvn.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E2C4A716EBE88B483F6A6117031AC93A",
+        cardWithCvn.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F",
                 "F000019990E00003"));
         cardWithCvn.setCardType("MC");
         cardWithCvn.setCardPresent(false);
         cardWithCvn.setReaderPresent(false);
+        cardWithCvn.setExpMonth(10);
+        cardWithCvn.setExpYear(2025);
 
 
         // DEBIT
@@ -152,7 +154,7 @@ public class VapsEncryption3DESTests {
         giftCard.setCardType("ValueLink");
 
         ebtCardData = new EBTCardData();
-        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F","F00001658F1C4789"));
+        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F","F00001658F1C4789"));
         ebtCardData.setPinBlock("62968D2481D231E1A504010000600004");
         ebtCardData.setEncryptedPan("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F");
         ebtCardData.setEbtCardType(EbtCardType.CashBenefit);
@@ -239,11 +241,29 @@ public class VapsEncryption3DESTests {
 
     @Test
     public void test_credit_swipe_sale() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_credit_swipe_forceSale() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction forceSale = NetworkService.forcedSale(response.getTransactionToken())
+                .withForceToHost(true)
+                .withPaymentMethod(track)
+                .execute();
+        assertNotNull(forceSale);
+        assertEquals("000", forceSale.getResponseCode());
     }
 
     @Test
@@ -280,11 +300,13 @@ public class VapsEncryption3DESTests {
 
     @Test
     public void test_007_credit_swipe_auth() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
         CreditTrackData track=new CreditTrackData();
         track.setCardType("MC");
-        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("E6699A44C3EE9E3AA75F9DF958C27469730C10D2929869F3704CC790CCB0AFDCDDE47F392E0D50E7",
-                "3D3F820E00003"));
-        track.setTrackNumber(TrackNumber.TrackTwo);
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("29086EC77231A1435ECAF4E5EA9BEC8CC8446DC92D5A99DDD9F1CE1BAC79D7115C1224B380C05DCBBA2FD0D7F18074392EC8D800863BD43EC0FDA7E43FA1C303C6C540F6297C76A4",
+                "F000019990E00003"));
+        track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
+        track.setTrackNumber(TrackNumber.TrackOne);
         track.setEntryMethod(EntryMethod.Swipe);
 
         Transaction response = track.authorize(new BigDecimal(10))
@@ -373,7 +395,6 @@ public class VapsEncryption3DESTests {
 
     @Test
     public void test_014_visa_encrypted_forceRefund_10297() throws ApiException {
-        acceptorConfig.setHardwareLevel("S3");
         Transaction response1 = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .withOfflineAuthCode("105683")
@@ -396,6 +417,7 @@ public class VapsEncryption3DESTests {
 
         Transaction response = NetworkService.forcedRefund(response3.getTransactionToken())
                 .withCurrency("USD")
+                .withPaymentMethod(track)
                 .withForceToHost(true)
                 .execute();
         assertNotNull(response);
@@ -412,7 +434,7 @@ public class VapsEncryption3DESTests {
 
         // reverse the transaction test case #40
         Transaction voidResponse = response.voidTransaction()
-                .withCustomerInitiated(true)
+                .withCustomerInitiated(false)
                 .execute();
         assertNotNull(voidResponse);
         assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
@@ -511,6 +533,22 @@ public class VapsEncryption3DESTests {
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
+        }
+
+    @Test
+    public void test_014_debit_encrypted_forceRefund() throws ApiException {
+        Transaction response = debit.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction resubmit = NetworkService.forcedRefund(response.getTransactionToken())
+                .withForceToHost(true)
+                .withPaymentMethod(debit)
+                .execute();
+        assertNotNull(resubmit);
+        assertEquals("000", resubmit.getResponseCode());
     }
 
     @Test
@@ -596,7 +634,7 @@ public class VapsEncryption3DESTests {
         assertNotNull(captureResponse);
 
         assertNotNull(captureResponse);
-//        assertEquals("000", captureResponse.getResponseCode());
+        assertEquals("000", captureResponse.getResponseCode());
 
         Transaction resubmit = NetworkService.resubmitDataCollect(captureResponse.getTransactionToken())
                 .withForceToHost(true)
@@ -1096,6 +1134,15 @@ public class VapsEncryption3DESTests {
     }
 
     @Test
+    public void test_014_ebt_encrypted_refund_ebtTrackData() throws ApiException {
+        Transaction response = foodCard.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
     public void test_ebt_balance_inquiry_ebtTrackData() throws ApiException {
 
         Transaction response = cashTrack.balanceInquiry(InquiryType.Cash)
@@ -1185,8 +1232,10 @@ public class VapsEncryption3DESTests {
                 .withCashBack(new BigDecimal(3))
                 .execute();
         assertNotNull(response);
-//        assertEquals("000", response.getResponseCode());
+        assertEquals("000", response.getResponseCode());
 
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerTimeout,AuthorizerCode.Terminal_Authorized);
+        response.setNtsData(ntsData);
         Transaction reversal = response.reverse(new BigDecimal(13))
                 .withCurrency("USD")
                 .withCashBackAmount(new BigDecimal(3))

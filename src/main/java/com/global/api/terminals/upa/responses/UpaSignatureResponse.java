@@ -4,7 +4,9 @@ import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.utils.JsonDoc;
 import lombok.Getter;
 
-import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
+
+//import javax.xml.bind.DatatypeConverter;
 
 public class UpaSignatureResponse implements ISignatureResponse {
     private String status;
@@ -97,6 +99,7 @@ public class UpaSignatureResponse implements ISignatureResponse {
 
     @Override
     public byte[] getSignatureData() {
-        return DatatypeConverter.parseBase64Binary(signatureData);
+        return Base64.getDecoder().decode(signatureData);
+        //return DatatypeConverter.parseBase64Binary(signatureData);
     }
 }

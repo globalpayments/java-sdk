@@ -67,7 +67,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private FraudRuleCollection fraudRules;
     private BigDecimal gratuity;
     private HostedPaymentData hostedPaymentData;
-
+    @Getter@Setter private String gatewayTxnId;
+    @Getter @Setter private String clientTxnId;
 
     @Getter @Setter private String idempotencyKey;
     private String invoiceNumber;
@@ -497,6 +498,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withCommercialRequest(boolean value) {
         this.level2Request = value;
+        return this;
+    }
+    public AuthorizationBuilder withGatewayTxnId(String id){
+        this.gatewayTxnId = id;
+        return this;
+    }
+    public AuthorizationBuilder withClientTxnId(String clientTxnId) {
+        this.clientTxnId = clientTxnId;
         return this;
     }
     public AuthorizationBuilder withConvenienceAmt(BigDecimal value) {
@@ -988,8 +997,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
         this.validations.of(TransactionType.Replace).check("replacementCard").isNotNull();
 
+        if((transactionType != TransactionType.CheckQueryInfo
+                && paymentMethod != null
+                && paymentMethod.getPaymentMethodType() == PaymentMethodType.ACH)){
         this.validations.of(PaymentMethodType.ACH).check("billingAddress").isNotNull();
-
+        }
         this.validations.of(PaymentMethodType.Debit)
                 .when("reversalReasonCode").isNotNull()
                 .check("transactionType").isEqualTo(TransactionType.Reversal);

@@ -92,7 +92,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
-        assertEquals("55", response.getTransactionReference().getAuthCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("55", response.getCardIssuerResponse().getResult());
     }
 
     @Test
@@ -148,7 +149,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
-        assertEquals("14", response.getTransactionReference().getAuthCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("14", response.getCardIssuerResponse().getResult());
     }
 
     @Test
@@ -169,7 +171,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
-        assertEquals("54", response.getTransactionReference().getAuthCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("54", response.getCardIssuerResponse().getResult());
     }
 
     @Test
@@ -215,7 +218,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(DECLINED, response.getResponseCode());
         assertEquals(TransactionStatus.Declined.getValue(), response.getResponseMessage());
-        assertEquals("55", response.getTransactionReference().getAuthCode());
+        assertEquals("", response.getAuthorizationCode());
+        assertEquals("55", response.getCardIssuerResponse().getResult());
     }
 
     @Test
@@ -660,7 +664,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .reauthorize()
                         .execute();
         assertTransactionResponse(reAuthTransaction, TransactionStatus.Captured);
-        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+        assertEquals("00", reAuthTransaction.getCardIssuerResponse().getResult());
+        assertEquals("VI1202", reAuthTransaction.getAuthorizationCode());
     }
 
     @Test
@@ -725,7 +730,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .reauthorize()
                         .execute();
         assertTransactionResponse(reAuthTransaction, TransactionStatus.Preauthorized);
-        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+        assertEquals("00", reAuthTransaction.getCardIssuerResponse().getResult());
         assertNotEquals(reverseTransaction.getTransactionId(), reAuthTransaction.getTransactionId());
     }
 
@@ -751,7 +756,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .withIdempotencyKey(idempotencyKey)
                         .execute();
         assertTransactionResponse(reAuthTransaction, TransactionStatus.Captured);
-        assertEquals("00", reAuthTransaction.getAuthorizationCode());
+        assertEquals("00", reAuthTransaction.getCardIssuerResponse().getResult());
 
         boolean exceptionCaught = false;
         try {

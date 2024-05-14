@@ -72,7 +72,7 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
         assertNotNull(transactionSummary.getBankPaymentResponse().getId());
         assertNotNull(transactionSummary.getOrderId());
         assertEquals(BankPaymentType.FASTERPAYMENTS, transactionSummary.getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), transactionSummary.getBankPaymentResponse().getPaymentStatus());
+        assertEquals(PAYMENT_INITIATED.name(), transactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     /**
@@ -163,7 +163,7 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
         assertNotNull(firstTransactionSummary.getBankPaymentResponse().getId());
         assertNull(firstTransactionSummary.getBankPaymentResponse().getIban());
         assertEquals(BankPaymentType.SEPA, firstTransactionSummary.getBankPaymentResponse().getType());
-        assertEquals(BankPaymentStatus.SUCCESS.name(), firstTransactionSummary.getBankPaymentResponse().getPaymentStatus());
+        assertEquals(PAYMENT_INITIATED.name(), firstTransactionSummary.getBankPaymentResponse().getPaymentStatus());
     }
 
     /**

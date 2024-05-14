@@ -43,6 +43,8 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthab
     private String birthDate;
     private String transitNumber;
     private String financialInstituteNumber;
+    private String clientTxnId;
+    private String gatewayTxnId;
 
     @Override
     public AuthorizationBuilder authorize() {
@@ -72,7 +74,12 @@ public class eCheck implements IPaymentMethod, IChargable, ITokenizable, IAuthab
                 new AuthorizationBuilder(TransactionType.Sale, this)
                         .withAmount(amount);
     }
-
+    public AuthorizationBuilder checkQuery(){
+        return
+                new AuthorizationBuilder(TransactionType.CheckQueryInfo, this)
+                        .withClientTxnId(clientTxnId)
+                        .withGatewayTxnId(gatewayTxnId);
+    }
     @Override
     public AuthorizationBuilder verify() {
         return

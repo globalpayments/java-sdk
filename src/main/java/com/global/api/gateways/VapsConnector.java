@@ -578,9 +578,6 @@ public class VapsConnector extends GatewayConnectorConfig {
         String encryptedPan = null;
         if(paymentMethod instanceof IEncryptable) {
             EncryptionData encryptionData = ((IEncryptable)paymentMethod).getEncryptionData();
-            if(paymentMethod instanceof ITrackData && transactionType.equals(TransactionType.Refund)) {
-                encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
-            }
             if(encryptionData != null) {
                 EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
                 if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
@@ -1264,7 +1261,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Refund:
             case Sale: {
                 request.setMessageTypeIndicator("1221");
-                if(builder.isForceToHost() && builder.getTransactionType().equals(TransactionType.DataCollect)){
+
+                    if(builder.isForceToHost() && builder.getTransactionType().equals(TransactionType.DataCollect)){
                     request.set(DataElementId.DE_025,"1381");
                 }
                 // STAN
@@ -1325,7 +1323,32 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if(currency!=null) {
                     request.set(DataElementId.DE_050, currency);
                 }
-            } break;
+                //DE 127
+                if (builder != null) {
+                    DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+
+                    IPaymentMethod paymentMethod = builder.getPaymentMethod();
+                    if (paymentMethod instanceof IEncryptable) {
+                        String encryptedPan = null;
+                        EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+                        encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
+                        if (encryptionData != null) {
+                            EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();
+                            if (encryptedPan != null && encryptionType.equals(EncryptionType.TDES)) {
+                                encryptionData.setKtb(encryptedPan);
+                            }
+                            if (encryptionType.equals(EncryptionType.TDES)) {
+                                forwardingData.setServiceType(acceptorConfig.getServiceType());
+                                forwardingData.setOperationType(acceptorConfig.getOperationType());
+                            }
+                            forwardingData.setEncryptedField(EncryptedFieldMatrix.Pan);
+                            forwardingData.addEncryptionData(encryptionType, encryptionData);
+                            request.set(DataElementId.DE_127, forwardingData);
+                        }
+                    }
+                }
+            }
+            break;
             default:
                 throw new UnsupportedTransactionException("Only data collect or batch close transactions can be resubmitted");
         }
@@ -3215,7 +3238,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(paymentMethod instanceof ICardData || paymentMethod instanceof EBTCardData  ){
                 return EncryptedFieldMatrix.Pan;
             }
-            else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.PreAuthCompletion) && !transactionType.equals(TransactionType.Refund) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)) {
+            else if(paymentMethod instanceof ITrackData && !transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.PreAuthCompletion) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;

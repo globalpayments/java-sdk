@@ -265,6 +265,31 @@ public class VapsCreditTests {
     }
 
     @Test
+    public void test_008_swipe_forceRefund_10297() throws ApiException {
+        Transaction response = track.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("200030", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction res = NetworkService.forcedRefund(response.getTransactionToken())
+                .withCurrency("USD")
+                .execute();
+        // check response
+        assertEquals("000", res.getResponseCode());
+
+    }
+
+    @Test
     public void test_009_swipe_stand_in_capture() throws ApiException {
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),

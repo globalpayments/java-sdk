@@ -53,6 +53,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
+        assertEquals("123456", transaction.getAuthorizationCode());
     }
 
     @Test
@@ -81,6 +82,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         assertNotNull(response.getFingerPrint());
         assertNotNull(response.getFingerPrintIndicator());
         assertEquals("EXISTS", response.getFingerPrintIndicator());
+        assertEquals("123456", response.getAuthorizationCode());
     }
 
     @Test

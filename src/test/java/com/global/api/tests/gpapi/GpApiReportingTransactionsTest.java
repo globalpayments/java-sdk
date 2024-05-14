@@ -386,7 +386,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     @Test
     public void ReportFindTransactionsPaged_By_CardBrand_And_AuthCode() throws ApiException {
         String cardBrand = "VISA";
-        String authCode = "12345";
+        String authCode = "123456";
 
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -398,7 +398,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
         assertNotNull(transactions);
         for (TransactionSummary transactionSummary : transactions.getResults()) {
             assertEquals(cardBrand, transactionSummary.getCardType());
-            assertEquals(authCode, transactionSummary.getAuthCode());
+            assertTrue(transactionSummary.getAuthCode().contains(authCode));
         }
     }
 

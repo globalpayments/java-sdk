@@ -1,6 +1,7 @@
 package com.global.api.services;
 
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.GpApiSessionInfo;
 import com.global.api.entities.gpApi.GpApiTokenResponse;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.gateways.GpApiConnector;
@@ -9,6 +10,10 @@ import com.global.api.serviceConfigs.GpApiConfig;
 public class GpApiService {
 
     public static AccessTokenInfo generateTransactionKey(GpApiConfig gpApiConfig) throws GatewayException {
+        if(gpApiConfig.getAccessTokenProvider() == null) {
+            gpApiConfig.setAccessTokenProvider(new GpApiSessionInfo());
+        }
+
         GpApiConnector connector = new GpApiConnector(gpApiConfig);
 
         GpApiTokenResponse data = connector.getAccessToken();

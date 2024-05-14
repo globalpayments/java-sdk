@@ -38,6 +38,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String secretApiKey;
     private String sdkNameVersion;
     private String cardType;
+    private static final String TRANSACTION_EXCEPTION = "Either ClientTxnId or GatewayTxnId must be provided for this payment type.";
+    private static final String CHECK_QUERY = "CheckQuery";
 
     @Override
     public boolean supportsHostedPayments() {
@@ -87,7 +89,18 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             et.subElement(block1, "Alias").text(builder.getAlias());
         }
 
-        boolean isCheck = (paymentType.equals(PaymentMethodType.ACH));
+        // Check Query
+        if (paymentType.equals(PaymentMethodType.ACH) && (type.equals(TransactionType.CheckQueryInfo))) {
+            if (builder.getClientTxnId() != null) {
+                et.subElement(block1, "ClientTxnId", builder.getClientTxnId());
+            } else if (builder.getGatewayTxnId() != null) {
+                et.subElement(block1, "GatewayTxnId", builder.getGatewayTxnId());
+            } else {
+                throw new UnsupportedTransactionException(TRANSACTION_EXCEPTION);
+            }
+        }
+
+       boolean isCheck = (paymentType.equals(PaymentMethodType.ACH) && (!type.equals(TransactionType.CheckQueryInfo)));
         if (
                 isCheck
                 || builder.getBillingAddress() != null
@@ -291,7 +304,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
             if (builder.getAliasAction() != AliasAction.Create)
                 block1.append(cardData);
-        } else if (builder.getPaymentMethod() instanceof eCheck) {
+        } else if ((builder.getPaymentMethod() instanceof eCheck) && (!type.equals(TransactionType.CheckQueryInfo))) {
             eCheck check = (eCheck) builder.getPaymentMethod();
 
             // check action
@@ -1069,6 +1082,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         else return "EBTFSPurchase";
                     } else if (paymentMethodType.equals(PaymentMethodType.Gift))
                         return "GiftCardSale";
+                    throw new UnsupportedTransactionException();
+                }
+            case CheckQueryInfo:
+                if (paymentMethodType != null){
+                    if(paymentMethodType.equals(PaymentMethodType.ACH))
+                        return CHECK_QUERY;
                     throw new UnsupportedTransactionException();
                 }
             case Refund:

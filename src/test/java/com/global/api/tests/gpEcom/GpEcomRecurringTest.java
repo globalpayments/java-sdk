@@ -11,6 +11,7 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.RecurringService;
+import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
 import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
@@ -30,11 +31,11 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     private CreditCardData card;
 
     private String customerId() {
-        return String.format("%s-GlobalApi", new SimpleDateFormat("yyyyMMddhhmm").format(new Date()));
+        return String.format("%s-GlobalApi", new SimpleDateFormat("yyyyMMddHH").format(new Date()));
     }
 
     private String paymentId(String type) {
-        return String.format("%s-GlobalApi-%s", new SimpleDateFormat("yyyyMMdd").format(new Date()), type);
+        return String.format("%s-GlobalApi-%s", new SimpleDateFormat("yyyyMMddHH").format(new Date()), type);
     }
 
     public GpEcomRecurringTest() throws ApiException {
@@ -116,6 +117,24 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
             if (!exc.getResponseCode().equals("520"))
                 throw exc;
         }
+    }
+
+    @Test
+    public void Test_001d_CardStorage3DSFlow() throws ApiException {
+        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+
+        // Check enrollment
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(paymentMethod)
+                        .withCurrency("USD")
+                        .withAmount(new BigDecimal(10))
+                        .execute();
+
+        assertNotNull(secureEcom);
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertNull(secureEcom.getEci());
+        assertTrue(secureEcom.isEnrolled());
     }
 
     @Test

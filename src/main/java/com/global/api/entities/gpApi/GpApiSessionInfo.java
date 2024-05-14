@@ -1,9 +1,11 @@
 package com.global.api.entities.gpApi;
 
 import com.global.api.entities.enums.IntervalToExpire;
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.GpApiConnector;
+import com.global.api.gateways.IAccessTokenProvider;
 import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
 
@@ -11,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class GpApiSessionInfo {
+public class GpApiSessionInfo implements IAccessTokenProvider {
 
     /**
      * A unique string created using the nonce and app-key.
@@ -35,7 +37,7 @@ public class GpApiSessionInfo {
         return generatedPassword;
     }
 
-    public static GpApiRequest signIn(String appId, String appKey, int secondsToExpire, IntervalToExpire intervalToExpire, String[] permissions) throws GatewayException {
+    public GpApiRequest signIn(String appId, String appKey, int secondsToExpire, IntervalToExpire intervalToExpire, String[] permissions) throws GatewayException {
         String nonce = DateTime.now().toString(GpApiConnector.DATE_TIME_DTF);
 
         JsonDoc request =
@@ -61,13 +63,7 @@ public class GpApiSessionInfo {
                         .setRequestBody(request.toString());
     }
 
-    public static GpApiRequest signOut() throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException("SignOut not implemented");
-
-        //return new PayrollRequest
-        //{
-        //    Endpoint = "/api/pos/session/signout"
-        //};
+    public GpApiRequest signOut() throws GatewayException {
+        return null;
     }
-
 }

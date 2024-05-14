@@ -145,10 +145,10 @@ public class GpApiMapping {
                 }
 
                 transaction.setToken(paymentMethod.getString("id"));
-                transaction.setAuthorizationCode(paymentMethod.getString("result"));
 
                 if (paymentMethod.has("card")) {
                     JsonDoc card = paymentMethod.get("card");
+                    transaction.setAuthorizationCode(paymentMethod.get("card").getString("authcode"));
 
                     var cardDetails = new Card();
                     cardDetails.setMaskedNumberLast4(card.getString("masked_number_last4"));
@@ -166,7 +166,13 @@ public class GpApiMapping {
                     transaction.setPaymentMethodType(!paymentMethod.has("bank_transfer") ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
                     if (card.has("provider")) {
                         transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
+                    }else{
+                        transaction.setCardIssuerResponse(new CardIssuerResponse(paymentMethod.getString("result")));
                     }
+                }
+                if (paymentMethod.has("digital_wallet")){
+                    JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
+                    transaction.setAuthorizationCode(digitalWallet.getString("authcode"));
                 }
                 if (paymentMethod.has("apm") &&
                         paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
