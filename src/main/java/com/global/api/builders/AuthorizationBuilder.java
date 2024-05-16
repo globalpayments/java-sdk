@@ -799,7 +799,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
             if(value.equalsIgnoreCase(WEX_FALLBACK)){
                 value = value.toUpperCase();
             }else if(value.equals(EMPTY_MESSAGE)){
-                throw new MessageException(TAG_DATA_INVALID);
+                throw new ApiException(TAG_DATA_INVALID);
             }
             this.tagData = value;
         }

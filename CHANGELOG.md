@@ -1,6 +1,12 @@
 # Changelog
 
-## Latest Version - v11.2.12 (5/14/2024)
+## Latest Version - v11.2.13 (5/16/2024)
+### Bug Fixes
+NTS
+- Updated MessageException to ApiException (10301)
+
+
+## v11.2.12 (5/14/2024)
 ### Enhancements
 Portico
 - Wrap the 'CheckQuery' request and response

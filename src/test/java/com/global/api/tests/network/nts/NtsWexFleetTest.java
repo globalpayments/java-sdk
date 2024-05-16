@@ -2188,7 +2188,7 @@ public class NtsWexFleetTest {
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
 
 
-        MessageException messageException = assertThrows(MessageException.class,
+        ApiException apiException = assertThrows(ApiException.class,
                 ()  -> track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -2199,7 +2199,7 @@ public class NtsWexFleetTest {
                 .withModifier(TransactionModifier.Fallback)
                 .execute());
 
-        assertEquals(TAG_DATA_INVALID,messageException.getMessage());
+        assertEquals(TAG_DATA_INVALID,apiException.getMessage());
 
     }
 
@@ -2215,7 +2215,7 @@ public class NtsWexFleetTest {
         NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
 
 
-        MessageException messageException = assertThrows(MessageException.class,
+        ApiException apiException = assertThrows(ApiException.class,
                 ()  -> track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -2226,7 +2226,7 @@ public class NtsWexFleetTest {
                 .withModifier(TransactionModifier.Fallback)
                 .execute());
 
-        assertEquals(TAG_DATA_INVALID,messageException.getMessage());
+        assertEquals(TAG_DATA_INVALID,apiException.getMessage());
     }
 
     @Test
@@ -2238,7 +2238,7 @@ public class NtsWexFleetTest {
         track.setValue(";6900460430001234566=25121012202100000?");
         track.setEntryMethod(EntryMethod.Swipe);
 
-        MessageException messageException = assertThrows(MessageException.class,
+        ApiException apiException = assertThrows(ApiException.class,
                 ()  -> track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
@@ -2248,8 +2248,7 @@ public class NtsWexFleetTest {
                 .withModifier(TransactionModifier.Fallback)
                 .execute());
 
-        assertEquals(PRODUCT_DATA_REQUIRED,messageException.getMessage());
-
+        assertEquals(PRODUCT_DATA_REQUIRED,apiException.getMessage());
     }
 
     @Test
