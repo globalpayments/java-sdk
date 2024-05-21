@@ -36,7 +36,7 @@ public class ElementTree {
         init(new HashMap<String, String>());
     }
     public ElementTree(HashMap<String, String> namespaces) {
-        init(namespaces); 
+        init(namespaces);
     }
 
     public Element element(String tagName) {
@@ -192,9 +192,6 @@ public class ElementTree {
             InputSource is = new InputSource(new StringReader(xml));
             // Create a DocumentBuilderFactory and configure it to prevent XXE attacks.
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            //disable DOCTYPE for additional security. This is optional
-            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             ElementTree rvalue = new ElementTree(namespaces);
             rvalue.setDocument(docBuilder.parse(is));

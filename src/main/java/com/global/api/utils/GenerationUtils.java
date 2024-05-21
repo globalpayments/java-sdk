@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.global.api.entities.enums.ShaHashType;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -24,8 +25,7 @@ public class GenerationUtils {
     static public String generateHash(String toHash) {
         if(toHash == null)
             return null;
-
-        return DigestUtils.sha1Hex(toHash);
+        return new String(Hex.encodeHex(DigestUtils.sha1(toHash)));
     }
 
     /**
@@ -111,11 +111,11 @@ public class GenerationUtils {
 
         switch (shaType) {
             case SHA256:
-                return DigestUtils.sha256Hex(toHash);
+                return new String(Hex.encodeHex(DigestUtils.sha256(toHash)));
             case SHA512:
-                return DigestUtils.sha512Hex(toHash);
+                return new String(Hex.encodeHex(DigestUtils.sha512(toHash)));
             default:
-                return DigestUtils.sha1Hex(toHash);
+                return new String(Hex.encodeHex(DigestUtils.sha1(toHash)));
         }
     }
 

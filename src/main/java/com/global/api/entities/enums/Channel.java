@@ -1,6 +1,7 @@
 package com.global.api.entities.enums;
 
 public enum Channel implements IStringConstant {
+    Ecom("ECOM"),
     CardPresent("CP"),
     CardNotPresent("CNP");
 

@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - v11.2.13 (5/16/2024)
+##  Latest Version - V11.2.14 (05/21/2024)
+### Bug Fixes
+- Android Compatibility bug fix
+- Code clean up
+
+## v11.2.13 (5/16/2024)
 ### Bug Fixes
 NTS
 - Updated MessageException to ApiException (10301)
