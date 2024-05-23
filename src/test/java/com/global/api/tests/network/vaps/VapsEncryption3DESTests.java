@@ -121,7 +121,7 @@ public class VapsEncryption3DESTests {
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
         debit.setTrackNumber(TrackNumber.TrackTwo);
         debit.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
-        debit.setExpiry("2024");
+        debit.setExpiry("2510");
 
         debit.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E3EB2A4334BE31534E",
                 "F000019990E00003"));
@@ -131,7 +131,7 @@ public class VapsEncryption3DESTests {
         cashTrack.setPinBlock("62968D2481D231E1A504010024A00014");
         cashTrack.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
         cashTrack.setTrackNumber(TrackNumber.TrackTwo);
-        cashTrack.setExpiry("2024");
+        cashTrack.setExpiry("2512");
 
         foodCard = new EBTTrackData(EbtCardType.FoodStamp);
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
@@ -394,33 +394,44 @@ public class VapsEncryption3DESTests {
     }
 
     @Test
+    public void test_014_visa_encrypted_Refund_cardData() throws ApiException {
+        Transaction response = card.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+    }
+
+    @Test
     public void test_014_visa_encrypted_forceRefund_10297() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response1 = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response1);
 
-        Transaction response2 = track.refund(new BigDecimal(10))
+        Transaction response2 = response1.refund(new BigDecimal(10))
                 .withCurrency("USD")
-                .withOfflineAuthCode("105683")
                 .withSystemTraceAuditNumber(Integer.parseInt(response1.getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(response2);
 
-        Transaction response3 = track.refund(new BigDecimal(10))
+        NtsData ntsData = new NtsData();
+        response2.setNtsData(ntsData);
+        Transaction response3 = response2.refund(new BigDecimal(10))
                 .withCurrency("USD")
-                .withOfflineAuthCode("105683")
                 .withSystemTraceAuditNumber(Integer.parseInt(response2.getSystemTraceAuditNumber()))
                 .execute();
         assertNotNull(response3);
 
         Transaction response = NetworkService.forcedRefund(response3.getTransactionToken())
                 .withCurrency("USD")
-                .withPaymentMethod(track)
                 .withForceToHost(true)
                 .execute();
         assertNotNull(response);
+
         assertEquals("000", response.getResponseCode());
     }
 
@@ -1444,7 +1455,7 @@ public class VapsEncryption3DESTests {
         cashTrack.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         cashTrack.setPinBlock("62968D2481D231E1A504010024A00014");
         cashTrack.setEncryptedPan("4355567063338");
-        cashTrack.setExpiry("2024");
+        cashTrack.setExpiry("2412");
         cashTrack.setTrackNumber(TrackNumber.TrackTwo);
 
         Transaction response = cashTrack.charge(new BigDecimal(10))
@@ -1543,7 +1554,7 @@ public class VapsEncryption3DESTests {
         cashTrack.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90", "F000014151181825"));
         cashTrack.setPinBlock("62968D2481D231E1A504010024A00014");
         cashTrack.setEncryptedPan("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F");
-        cashTrack.setExpiry("2024");
+        cashTrack.setExpiry("2412");
         cashTrack.setTrackNumber(TrackNumber.TrackTwo);
 
         Transaction response = cashTrack.charge(new BigDecimal(10))
@@ -1563,7 +1574,7 @@ public class VapsEncryption3DESTests {
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
         foodCard.setEncryptedPan("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F");
-        foodCard.setExpiry("2024");
+        foodCard.setExpiry("2412");
 
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
@@ -1599,7 +1610,7 @@ public class VapsEncryption3DESTests {
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
         foodCard.setEncryptedPan("4355567063338");
-        foodCard.setExpiry("2024");
+        foodCard.setExpiry("2412");
         foodCard.setTrackNumber(TrackNumber.TrackTwo);
 
         Transaction response = foodCard.charge(new BigDecimal(10))

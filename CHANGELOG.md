@@ -1,6 +1,11 @@
 # Changelog
 
-##  Latest Version - V11.2.14 (05/21/2024)
+##  Latest Version - V11.2.15 (05/23/2024)
+### Bug Fixes
+VAPS
+- Fixed expiry date for force refund transactions(10309)
+
+### V11.2.14 (05/21/2024)
 ### Bug Fixes
 - Android Compatibility bug fix
 - Code clean up
