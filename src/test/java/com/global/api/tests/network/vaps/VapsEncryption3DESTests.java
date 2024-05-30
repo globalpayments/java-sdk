@@ -2,6 +2,7 @@ package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
@@ -12,15 +13,18 @@ import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
+import com.global.api.services.BatchService;
 import com.global.api.services.NetworkService;
+import com.global.api.terminals.TerminalUtilities;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
-import com.global.api.tests.testdata.TestCards;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
+
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -794,7 +798,7 @@ public class VapsEncryption3DESTests {
     }
     @Test
     public void test_001_resubmitDataCollect_issue_10292() throws ApiException {
-
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -816,7 +820,7 @@ public class VapsEncryption3DESTests {
     }
     @Test
     public void test_001_resubmitDataCollectForce_issue_10292() throws ApiException {
-
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -1892,4 +1896,40 @@ public class VapsEncryption3DESTests {
 
         assertEquals("000", capture.getResponseCode());
     }
+
+    @Test
+    public void test_10315_batchClose_retransmitDataCollect_withBatchSummary() throws ApiException {
+        BatchProvider batchProvider = BatchProvider.getInstance();
+        String configName = "default";
+        acceptorConfig.setHardwareLevel("S3");
+
+        Transaction creditSale = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(creditSale);
+        assertEquals("000", creditSale.getResponseCode());
+        assertNotNull(creditSale.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
+
+
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(10), null)
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+
+        BatchSummary summary = response.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+
+        LinkedList<String> tokens = new LinkedList<>();
+        tokens.add(creditSale.getTransactionToken());
+
+        BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
+        assertNotNull(newSummary);
+
+        assertTrue(newSummary.getResponseCode().equals("500") || newSummary.getResponseCode().equals("501"));
+
+    }
+
 }

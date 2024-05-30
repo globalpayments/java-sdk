@@ -4,7 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GpEcomCreditTest extends BaseGpEComTest {
@@ -825,4 +826,50 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertNotNull(refundResponse);
         assertEquals("00", refundResponse.getResponseCode());
     }
+
+    @Test
+    public void creditChargeWithSurchargeAmount() throws ApiException {
+        Transaction authorize = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withSurchargeAmount(new BigDecimal("0.4"), CreditDebitIndicator.Debit)
+                .execute();
+
+        assertNotNull(authorize);
+        assertEquals("00", authorize.getResponseCode());
+    }
+
+    @Test
+    public void creditCaptureWithSurchargeAmount() throws ApiException {
+        Transaction authorize = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(authorize);
+        assertEquals("00", authorize.getResponseCode());
+        Transaction capture = authorize.capture(new BigDecimal(4))
+                .withSurchargeAmount(new BigDecimal(0.16), CreditDebitIndicator.Debit)
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+
+    @Test
+    public void creditChargeWithExceededSurchargeAmount() throws ApiException {
+        boolean exceptionCaught = false;
+
+        try {
+            card.charge(new BigDecimal(10))
+                    .withCurrency("USD")
+                    .withSurchargeAmount(new BigDecimal(5), CreditDebitIndicator.Debit)
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("Unexpected Gateway Response: 508 - The surcharge amount is greater than 5% of the transaction amount", e.getMessage());
+            assertEquals("508", e.getResponseCode());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
 }

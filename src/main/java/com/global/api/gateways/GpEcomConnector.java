@@ -113,6 +113,12 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
+        String surcharge = "";
+        if (builder.getSurchargeAmount() != null && !builder.getSurchargeAmount().equals("")) {
+            surcharge = StringUtils.toNumeric(builder.getSurchargeAmount());
+            et.subElement(request, "surchargeamount", surcharge)
+                    .set("type", builder.getCreditDebitIndicator().toString().toLowerCase());
+        }
 
         // Hydrate the payment data fields
         //<editor-fold desc="CREDIT CARD DATA">
@@ -743,7 +749,11 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(request, "channel", channel);
         et.subElement(request, "orderid", orderId);
         et.subElement(request, "pasref", builder.getTransactionId());
-
+        String surcharge = "";
+        if (builder.getSurchargeAmount()!=null && !builder.getSurchargeAmount().equals("")) {
+            et.subElement(request, "surchargeamount", StringUtils.toNumeric(builder.getSurchargeAmount()))
+                    .set("type", builder.getCreditDebitIndicator().toString().toLowerCase());
+        }
         //<editor-fold desc="DCC">
         if (builder.getDccRateData() != null) {
             DccRateData dccRateData = builder.getDccRateData();

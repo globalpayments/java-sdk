@@ -1,6 +1,14 @@
 # Changelog
 
-##  Latest Version - V11.2.15 (05/23/2024)
+##  Latest Version - V11.2.16 (05/30/2024)
+### Enhancement
+- [GP-ECOM] Added additional fee to a card transaction (surchargeamount).
+- [GP-API] Add "payer->email" property on 3DS "/initiate" request
+- [GPAPI] Code clean up
+### Bug Fixes
+- [Vaps] Retransmit Batch Close - 10315
+
+##  V11.2.15 (05/23/2024)
 ### Bug Fixes
 VAPS
 - Fixed expiry date for force refund transactions(10309)

@@ -33,6 +33,7 @@ public class SecureBuilder<TResult> extends BaseBuilder<TResult> {
     protected BigDecimal giftCardAmount;
     protected Integer giftCardCount;
     protected String giftCardCurrency;
+    protected String customerEmail;
     protected String deliveryEmail;
     protected DeliveryTimeFrame deliveryTimeframe;
     protected DateTime preOrderAvailabilityDate;
@@ -55,6 +56,7 @@ public class SecureBuilder<TResult> extends BaseBuilder<TResult> {
     protected DateTime paymentAccountCreateDate;
     protected AgeIndicator paymentAgeIndicator;
     protected Boolean previousSuspiciousActivity;
+    protected SuspiciousAccountActivity suspiciousAccountActivity;
     protected Integer numberOfPurchasesInLastSixMonths;
     protected Integer numberOfTransactionsInLast24Hours;
     protected Integer numberOfAddCardAttemptsInLast24Hours;

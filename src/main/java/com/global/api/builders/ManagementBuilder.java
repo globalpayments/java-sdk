@@ -109,6 +109,7 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private CommercialData commercialData;
 
     @Getter @Setter private DE123_ReconciliationTotals_nws reconciliationTotals;
+    @Getter @Setter private CreditDebitIndicator creditDebitIndicator;
 
     public ManagementBuilder withMiscProductData(ArrayList<Product> values) {
         this.miscProductData = values;
@@ -616,8 +617,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         supplementaryData.get(type).add(values);
         return this;
     }
-    public ManagementBuilder withSurchargeAmount(BigDecimal value) {
-        surchargeAmount = value;
+    public ManagementBuilder withSurchargeAmount(BigDecimal value, CreditDebitIndicator creditDebitIndicator) {
+        this.surchargeAmount = value;
+        this.creditDebitIndicator = creditDebitIndicator;
         return this;
     }
     public ManagementBuilder withTagData(String value) {

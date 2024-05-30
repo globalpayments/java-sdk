@@ -26,7 +26,7 @@ public class GpEcomReportingTest extends BaseGpEComTest {
 
     @Test
     public void GetTransactionDetail() throws ApiException {
-        String orderId = "M59u9iEDRyCHPbaj09scsg";
+        String orderId = "Bu6PN-F1Tt2VqMTP0Mvtwg";
 
         TransactionSummary response =
                 ReportingService
@@ -35,8 +35,8 @@ public class GpEcomReportingTest extends BaseGpEComTest {
 
         assertNotNull(response);
         assertEquals(orderId, response.getOrderId());
-        assertEquals("wliynvnlLYmjo0K6", response.getSchemeReferenceData());
-        assertEquals("16981502011346656", response.getTransactionId());
+        assertEquals("Xji7HzKcq79s7hmH", response.getSchemeReferenceData());
+        assertEquals("17162823836225728", response.getTransactionId());
         assertEquals("U", response.getAvsResponseCode());
         assertEquals("M", response.getCvnResponseCode());
         assertEquals("00", response.getGatewayResponseCode());

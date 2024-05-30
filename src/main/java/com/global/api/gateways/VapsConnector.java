@@ -1326,30 +1326,6 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if(currency!=null) {
                     request.set(DataElementId.DE_050, currency);
                 }
-                //DE 127
-                if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) {
-                    DE127_ForwardingData forwardingData = new DE127_ForwardingData();
-
-                    IPaymentMethod paymentMethod = builder.getPaymentMethod();
-                    if (paymentMethod instanceof IEncryptable) {
-                        String encryptedPan = null;
-                        EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
-                        encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
-                        if (encryptionData != null) {
-                            EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();
-                            if (encryptedPan != null && encryptionType.equals(EncryptionType.TDES)) {
-                                encryptionData.setKtb(encryptedPan);
-                            }
-                            if (encryptionType.equals(EncryptionType.TDES)) {
-                                forwardingData.setServiceType(acceptorConfig.getServiceType());
-                                forwardingData.setOperationType(acceptorConfig.getOperationType());
-                            }
-                            forwardingData.setEncryptedField(EncryptedFieldMatrix.Pan);
-                            forwardingData.addEncryptionData(encryptionType, encryptionData);
-                            request.set(DataElementId.DE_127, forwardingData);
-                        }
-                    }
-                }
             }
             break;
             default:
@@ -2900,15 +2876,6 @@ public class VapsConnector extends GatewayConnectorConfig {
         impliedCapture.set(DataElementId.DE_007, request.getString(DataElementId.DE_007));
         impliedCapture.set(DataElementId.DE_011, request.getString(DataElementId.DE_011));
         impliedCapture.set(DataElementId.DE_012, request.getString(DataElementId.DE_012));
-        if (paymentMethodType != null) {
-            if (paymentMethodType.equals(PaymentMethodType.EBT)) {
-                impliedCapture.set(DataElementId.DE_017, request.getString(DataElementId.DE_012).substring(2, 6));
-            }
-            if (acceptorConfig.getSupportedEncryptionType().equals(EncryptionType.TDES) && (paymentMethodType.equals(PaymentMethodType.EBT) ||
-                        paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.Credit))) {
-                    impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
-            }
-        }
         impliedCapture.set(DataElementId.DE_018, request.getString(DataElementId.DE_018));
         impliedCapture.set(DataElementId.DE_022, request.getDataElement(DataElementId.DE_022, DE22_PosDataCode.class));
         impliedCapture.set(DataElementId.DE_024, isPartial ? "202" : "201");
@@ -2920,6 +2887,39 @@ public class VapsConnector extends GatewayConnectorConfig {
         impliedCapture.set(DataElementId.DE_054, request.getString(DataElementId.DE_054));
         impliedCapture.set(DataElementId.DE_063, request.getDataElement(DataElementId.DE_063, DE63_ProductData.class));
         impliedCapture.set(DataElementId.DE_127, request.getString(DataElementId.DE_127));
+
+        if (paymentMethodType != null) {
+            if (paymentMethodType.equals(PaymentMethodType.EBT)) {
+                impliedCapture.set(DataElementId.DE_017, request.getString(DataElementId.DE_012).substring(2, 6));
+            }
+
+            if (acceptorConfig.getSupportedEncryptionType().equals(EncryptionType.TDES) && (paymentMethodType.equals(PaymentMethodType.EBT) ||
+                    paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.Credit))) {
+                impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
+
+                //DE127 changing field matrix and encrypted data as encrypted pan.
+                DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+                if (paymentMethod instanceof IEncryptable) {
+                    String encryptedPan = null;
+                    EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+                    encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
+                    if (encryptionData != null) {
+                        EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();
+                        if (encryptedPan != null && encryptionType.equals(EncryptionType.TDES)) {
+                            encryptionData.setKtb(encryptedPan);
+                        }
+                        if (encryptionType.equals(EncryptionType.TDES)) {
+                            forwardingData.setServiceType(acceptorConfig.getServiceType());
+                            forwardingData.setOperationType(acceptorConfig.getOperationType());
+                        }
+                        forwardingData.setEncryptedField(EncryptedFieldMatrix.Pan);
+                        forwardingData.addEncryptionData(encryptionType, encryptionData);
+                        impliedCapture.set(DataElementId.DE_127, forwardingData);
+                    }
+                }
+
+            }
+        }
 
         // DE_048 Message Control
         DE48_MessageControl messageControl = request.getDataElement(DataElementId.DE_048, DE48_MessageControl.class);

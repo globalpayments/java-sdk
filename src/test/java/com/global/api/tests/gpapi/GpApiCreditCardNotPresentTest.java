@@ -1,10 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.Customer;
-import com.global.api.entities.StoredCredential;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
@@ -160,6 +157,40 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
             assertEquals("Status Code: 400 - fingerprint_mode contains unexpected data", ex.getMessage());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40213", ex.getResponseText());
+        } finally {
+            assertTrue(exceptionCaught);
+        }
+    }
+
+    @Test
+    public void CreditSaleWithSurcharge() throws ApiException {
+        Transaction response =
+                card
+                        .charge(69)
+                        .withCurrency("GBP")
+                        .withSurchargeAmount(new BigDecimal("3"), CreditDebitIndicator.Credit)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+        assertEquals("123456", response.getAuthorizationCode());
+    }
+
+    @Test
+    public void CreditSaleWithExceededSurcharge() throws ApiException {
+        boolean exceptionCaught = false;
+
+        try {
+            card
+                    .charge(69)
+                    .withCurrency("GBP")
+                    .withSurchargeAmount(new BigDecimal("4"), CreditDebitIndicator.Credit)
+                    .execute();
+        } catch (GatewayException e) {
+            exceptionCaught = true;
+            assertEquals("Status Code: 400 - The surcharge amount is greater than 5% of the transaction amount", e.getMessage());
+            assertEquals("50020", e.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
         }

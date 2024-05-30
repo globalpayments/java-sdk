@@ -25,7 +25,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     private AuthenticationRequestType authenticationRequestType = AuthenticationRequestType.PaymentTransaction;
     @Getter @Setter private MobileData mobileData;
     private ChallengeRequestIndicator challengeRequestIndicator;
-    private String customerEmail;
     private Boolean decoupledFlowRequest;
     private Integer decoupledFlowTimeout;
     private String decoupledNotificationUrl;
@@ -347,6 +346,11 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
         }
         return this;
     }
+    public Secure3dBuilder withSuspiciousAccountActivity(SuspiciousAccountActivity value) {
+        suspiciousAccountActivity = value;
+        return this;
+    }
+
     public Secure3dBuilder withAccountAgeIndicator(AgeIndicator ageIndicator) {
         this.accountAgeIndicator = ageIndicator;
         return this;

@@ -140,9 +140,8 @@ public abstract class Gateway {
                 logEntry.append("Request Params: ").append(queryString).append(lSChar);
             }
 
-            InputStream responseStream = conn.getInputStream();
-            String rawResponse = getRawResponse(responseStream);
-            responseStream.close();
+            try(InputStream responseStream = conn.getInputStream()) {
+                String rawResponse = getRawResponse(responseStream);
 
             if (this.enableLogging || this.requestLogger != null) {
                 if (acceptJson()) {
@@ -160,6 +159,7 @@ public abstract class Gateway {
             response.setStatusCode(conn.getResponseCode());
             response.setRawResponse(rawResponse);
             return response;
+            }
         } catch (Exception exc) {
             if (this.enableLogging || this.requestLogger != null) {
                 logEntry.append("Exception:").append(lSChar).append(exc.getMessage());

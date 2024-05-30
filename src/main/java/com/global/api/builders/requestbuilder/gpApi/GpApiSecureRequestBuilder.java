@@ -127,6 +127,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
     private static JsonDoc SetPayerParam(SecureBuilder builder) {
 
+        String format = builder.getTransactionType().equals(TransactionType.RiskAssess)  ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd";
+
         var homePhone =
                 new JsonDoc()
                         .set("country_code", builder.getHomeCountryCode())
@@ -156,12 +158,13 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("mobile_phone", mobilePhone.getKeys() != null ? mobilePhone : null)
                         .set("payment_account_creation_date", builder.getPaymentAccountCreateDate() != null ? builder.getPaymentAccountCreateDate().toString("yyyy-MM-dd") : null)
                         .set("payment_account_age_indicator", getValueIfNotNull(builder.getPaymentAgeIndicator()))
-                        .set("suspicious_account_activity", builder.getPreviousSuspiciousActivity())
+                        .set("suspicious_account_activity", builder.getSuspiciousAccountActivity() != null ? builder.getSuspiciousAccountActivity().toString() : "")
                         .set("purchases_last_6months_count", builder.getNumberOfPurchasesInLastSixMonths())
                         .set("transactions_last_24hours_count", builder.getNumberOfTransactionsInLast24Hours())
                         .set("transaction_last_year_count", builder.getNumberOfTransactionsInLastYear())
                         .set("provision_attempt_last_24hours_count", builder.getNumberOfAddCardAttemptsInLast24Hours())
-                        .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString("yyyy-MM-dd'T'HH:mm:ss") : null)
+                        .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString(format) : null)
+                        .set("email", builder.getCustomerEmail())
                         .set("shipping_address_creation_indicator", getValueIfNotNull(builder.getShippingAddressUsageIndicator()));
 
         if (builder.getBillingAddress() != null) {
@@ -245,6 +248,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
     @Override
     public GpApiRequest buildRequest(Secure3dBuilder builder, GpApiConnector gateway) throws ApiException {
+        String format = builder.getTransactionType().equals(TransactionType.RiskAssess) ? "yyyy-MM-ddThh:mm:ss" : "yyyy-MM-dd";
         String merchantUrl = gateway.getMerchantUrl();
         TransactionType builderTransactionType = builder.getTransactionType();
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();
@@ -333,14 +337,14 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                                 .set("work_phone", !workPhone.getKeys().isEmpty() ? workPhone : null)
                                 .set("payment_account_creation_date", GpApiConnector.getDateIfNotNull(builder.getPaymentAccountCreateDate()))
                                 .set("payment_account_age_indicator", getValueIfNotNull(builder.getPaymentAgeIndicator()))
-                                .set("suspicious_account_activity", builder.getPreviousSuspiciousActivity())
+                                .set("suspicious_account_activity", builder.getSuspiciousAccountActivity() != null ? builder.getSuspiciousAccountActivity().toString() : "")
                                 .set("purchases_last_6months_count", builder.getNumberOfPurchasesInLastSixMonths())
                                 .set("transactions_last_24hours_count", builder.getNumberOfTransactionsInLast24Hours())
+                                .set("email", builder.getCustomerEmail())
                                 .set("transaction_last_year_count", builder.getNumberOfTransactionsInLastYear())
                                 .set("provision_attempt_last_24hours_count", builder.getNumberOfAddCardAttemptsInLast24Hours())
-                                .set("shipping_address_time_created_reference", GpApiConnector.getDateIfNotNull(builder.getShippingAddressCreateDate()))
+                                .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString(format) : null)
                                 .set("shipping_address_creation_indicator", getValueIfNotNull(builder.getShippingAddressUsageIndicator()));
-
                 JsonDoc payerPrior3DSAuthenticationData =
                         new JsonDoc()
                                 .set("authentication_method", getValueIfNotNull(builder.getPriorAuthenticationMethod()))

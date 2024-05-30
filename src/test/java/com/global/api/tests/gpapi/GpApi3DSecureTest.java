@@ -227,6 +227,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withAddress(billingAddress, AddressType.Billing)
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
+                        .withCustomerEmail("jason@globalpay.com")
                         .execute();
 
         assertNotNull(initAuth);
@@ -322,6 +323,71 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
+    }
+
+    @Test
+    public void FullCycle_WithPayerInformation() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
+        CreditCardData tokenizedCard = new CreditCardData();
+        tokenizedCard.setToken(card.tokenize());
+
+        assertNotNull(tokenizedCard.getToken());
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .execute();
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertNull(secureEcom.getEci());
+        assertTrue(secureEcom.isEnrolled());
+
+        ThreeDSecure initAuth = Secure3dService
+                        .initiateAuthentication(tokenizedCard, secureEcom)
+                        .withAmount(amount)
+                        .withCurrency(currency)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .withCustomerAccountId("6dcb24f5-74a0-4da3-98da-4f0aa0e88db3")
+                        .withAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
+                        .withAccountCreateDate(DateTime.now().plusYears(-2))
+                        .withAccountChangeDate(DateTime.now().plusYears(-2))
+                        .withAccountChangeIndicator(AgeIndicator.LessThanThirtyDays)
+                        .withPasswordChangeDate(DateTime.now())
+                        .withPasswordChangeIndicator(AgeIndicator.LessThanThirtyDays)
+                        .withHomeNumber("44", "123456798")
+                        .withWorkNumber("44", "1801555888")
+                        .withMobileNumber("44", "7975556677")
+                        .withPaymentAccountCreateDate(DateTime.now())
+                        .withPaymentAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
+                        .withSuspiciousAccountActivity(SuspiciousAccountActivity.SUSPICIOUS_ACTIVITY)
+                        .withNumberOfPurchasesInLastSixMonths(3)
+                        .withNumberOfTransactionsInLast24Hours(1)
+                        .withNumberOfTransactionsInLastYear(5)
+                        .withNumberOfAddCardAttemptsInLast24Hours(1)
+                        .withShippingAddressCreateDate(DateTime.now().plusYears(-2))
+                        .withShippingAddressUsageIndicator(AgeIndicator.ThisTransaction)
+                        .withCustomerEmail("james@globalpay.com")
+                        .execute();
+
+        assertNotNull(initAuth);
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());
+        assertEquals("YES", secureEcom.getLiabilityShift());
+
+        ThreeDSecure secureEcom2 = Secure3dService.getAuthenticationData()
+                .withServerTransactionId(secureEcom.getServerTransactionId())
+                .execute();
+        assertEquals(SUCCESS_AUTHENTICATED, secureEcom2.getStatus());
+        assertEquals("YES", secureEcom2.getLiabilityShift());
     }
 
     @Test

@@ -105,6 +105,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter private Boolean maskedDataResponse;
     @Getter
     private MerchantCategory merchantCategory;
+    @Getter @Setter
+    private CreditDebitIndicator creditDebitIndicator;
     private boolean hasEmvFallbackData;
 
     private String tagData;
@@ -782,9 +784,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
     public AuthorizationBuilder withSurchargeAmount(BigDecimal value) {
+        return withSurchargeAmount(value, null);
+    }
+    public AuthorizationBuilder withSurchargeAmount(BigDecimal value, CreditDebitIndicator creditDebitIndicator) {
         this.surchargeAmount = value;
+        this.creditDebitIndicator = creditDebitIndicator;
         return this;
     }
+
     public AuthorizationBuilder withTimestamp(String value) {
         return withTimestamp(value, null);
     }
