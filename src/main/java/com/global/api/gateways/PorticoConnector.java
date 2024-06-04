@@ -3,10 +3,7 @@ package com.global.api.gateways;
 import com.global.api.builders.*;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
-import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.exceptions.*;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
 import com.global.api.entities.reporting.SurchargeLookup;
@@ -855,6 +852,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         String gatewayRspText = root.getString("GatewayRspMsg");
         cardType = root.getString("CardType");
 
+        if(gatewayRspCode=="30"){
+            String gatewayTxnId = root.getString("GatewayTxnId");
+            throw new GatewayTimeoutException(String.format("Unexpected Gateway Response: %s - %s", gatewayRspCode, gatewayRspText), gatewayRspText, gatewayRspCode, gatewayTxnId);
+        }
         if (!acceptedCodes.contains(gatewayRspCode)) {
             throw new GatewayException(
                     String.format("Unexpected Gateway Response: %s - %s", gatewayRspCode, gatewayRspText),

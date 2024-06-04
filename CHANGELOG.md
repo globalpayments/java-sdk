@@ -1,6 +1,10 @@
 # Changelog
 
-##  Latest Version - V11.2.16 (05/30/2024)
+##  Latest Version - V11.2.17 (06/03/2024)
+### Enhancement
+- [Portico] Added GatewayTxn Id to GatewayException Object when Response Code is 30
+
+##  V11.2.16 (05/30/2024)
 ### Enhancement
 - [GP-ECOM] Added additional fee to a card transaction (surchargeamount).
 - [GP-API] Add "payer->email" property on 3DS "/initiate" request
