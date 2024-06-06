@@ -1013,8 +1013,13 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 52: Personal Identification Number (PIN)
         if(paymentMethod instanceof TransactionReference) {
             IPaymentMethod originalPaymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
-            if(originalPaymentMethod instanceof EBT && transactionType.equals(TransactionType.Refund)) {
-                String pinBlock = ((EBT)originalPaymentMethod).getPinBlock();
+            if(transactionType.equals(TransactionType.Refund)) {
+                String pinBlock = null;
+                if(originalPaymentMethod instanceof EBT){
+                 pinBlock = ((EBT)originalPaymentMethod).getPinBlock();
+                } else if(originalPaymentMethod instanceof Debit){
+                 pinBlock = ((Debit)originalPaymentMethod).getPinBlock();
+                }
                 if(!StringUtils.isNullOrEmpty(pinBlock)) {
                     // DE 52: Personal Identification Number (PIN) Data - b8
                     request.set(DataElementId.DE_052, StringUtils.bytesFromHex(pinBlock.substring(0, 16)));
@@ -1179,14 +1184,27 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(reference.getOriginalPaymentMethod() != null && reference.getOriginalPaymentMethod() instanceof IEncryptable) {
                 EncryptionData encryptionData = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptionData();
                 String encryptedPan = null;
-                boolean nonOriginalTransactions = transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion)|| transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void);
-                if(nonOriginalTransactions && (reference.getOriginalPaymentMethod() instanceof ITrackData || reference.getOriginalPaymentMethod() instanceof GiftCard || reference.getOriginalPaymentMethod() instanceof  EBTCardData)) {
-                    encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
+                String encryptedKTB = null;
+                if (encryptionData != null && encryptionData.getEncryptedKTB() != null) {
+                    encryptedKTB = encryptionData.getEncryptedKTB();
+                }
+                boolean nonOriginalTransactions = transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion) || transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)
+                        || transactionType.equals(TransactionType.Refund);
+
+                if (nonOriginalTransactions) {
+                    if ((reference.getOriginalPaymentMethod() instanceof Credit || ((reference.getOriginalPaymentMethod() instanceof Debit
+                            || reference.getOriginalPaymentMethod() instanceof EBTTrackData) && !(transactionType.equals(TransactionType.Refund))) ||
+                            reference.getOriginalPaymentMethod() instanceof GiftCard || reference.getOriginalPaymentMethod() instanceof EBTCardData)) {
+                        encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
+                    }
                 }
                 if (encryptionData != null) {
 
                     EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
-                    if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
+                    if(encryptedKTB!=null && ((reference.getOriginalPaymentMethod() instanceof Debit || reference.getOriginalPaymentMethod() instanceof EBTTrackData) && transactionType.equals(TransactionType.Refund))){
+                        encryptionData.setKtb(encryptedKTB);
+                    }
+                    else if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
                         encryptionData.setKtb(encryptedPan);
                     }
                     if(encryptionType.equals(EncryptionType.TDES)){
@@ -1309,7 +1327,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
 
                 // DE 56
-                if(builder.getTransactionType().equals(TransactionType.Refund)) {
+                if(!(builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) && builder.getTransactionType().equals(TransactionType.Refund)) {
                     request.remove(DataElementId.DE_056);
                 }
 
@@ -1325,6 +1343,30 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
                 if(currency!=null) {
                     request.set(DataElementId.DE_050, currency);
+                }
+//                DE 127
+                if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) {
+                    DE127_ForwardingData forwardingData = new DE127_ForwardingData();
+
+                    IPaymentMethod paymentMethod = builder.getPaymentMethod();
+                    if (paymentMethod instanceof IEncryptable) {
+                        String encryptedPan = null;
+                        EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+                        encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
+                        if (encryptionData != null) {
+                            EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();
+                            if (encryptedPan != null && encryptionType.equals(EncryptionType.TDES)) {
+                                encryptionData.setKtb(encryptedPan);
+                            }
+                            if (encryptionType.equals(EncryptionType.TDES)) {
+                                forwardingData.setServiceType(acceptorConfig.getServiceType());
+                                forwardingData.setOperationType(acceptorConfig.getOperationType());
+                            }
+                            forwardingData.setEncryptedField(EncryptedFieldMatrix.Pan);
+                            forwardingData.addEncryptionData(encryptionType, encryptionData);
+                            request.set(DataElementId.DE_127, forwardingData);
+                        }
+                    }
                 }
             }
             break;
@@ -2902,6 +2944,10 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if (paymentMethod instanceof IEncryptable) {
                     String encryptedPan = null;
                     EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+//                    For setting KTB value as encrypted data in manage Transaction
+                    if(!paymentMethodType.equals(PaymentMethodType.Credit)){
+                    encryptionData.setEncryptedKTB(encryptionData.getKtb());
+                    }
                     encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
                     if (encryptionData != null) {
                         EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();

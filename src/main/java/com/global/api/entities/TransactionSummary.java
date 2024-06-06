@@ -1,5 +1,7 @@
 package com.global.api.entities;
 
+import com.global.api.entities.billing.AuthorizationRecord;
+import com.global.api.entities.billing.Bill;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
 import lombok.Getter;
@@ -8,6 +10,7 @@ import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -140,4 +143,11 @@ public class TransactionSummary {
     private String cardAcquisition;
     private String transactionTime;
     private String hasLevelIII;
+    private BigDecimal feeAmount;
+    private Customer payOrData;
+    private List<Bill> billTransactions;
+    private List<AuthorizationRecord> authorizationRecord;
+    private BigDecimal netAmount;
+    private BigDecimal netFeeAmount;
+
 }

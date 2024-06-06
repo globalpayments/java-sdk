@@ -1,10 +1,16 @@
 package com.global.api.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class EncryptionData {
     private String version;
     private String trackNumber;
     private String ksn;
     private String ktb;
+    @Getter
+    @Setter
+    private String encryptedKTB;
 
     public String getVersion() {
         return version;

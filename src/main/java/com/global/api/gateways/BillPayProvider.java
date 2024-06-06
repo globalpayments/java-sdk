@@ -5,6 +5,7 @@ import com.global.api.builders.BillingBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.RecurringBuilder;
 import com.global.api.builders.ReportBuilder;
+import com.global.api.builders.SurchargeEligibilityBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.BillingResponse;
 import com.global.api.entities.billing.Credentials;
@@ -15,8 +16,9 @@ import com.global.api.gateways.bill_pay.BillingRequest;
 import com.global.api.gateways.bill_pay.ManagementRequest;
 import com.global.api.gateways.bill_pay.RecurringRequest;
 import com.global.api.network.NetworkMessageHeader;
+import com.global.api.gateways.bill_pay.ReportRequest;
 
-public class BillPayProvider implements IBillingProvider, IPaymentGateway, IRecurringGateway {
+public class BillPayProvider implements IBillingProvider, IPaymentGateway, IRecurringGateway ,IReportingService{
     private Credentials credentials;
     private boolean isBillDataHosted;
     private int timeout;
@@ -89,6 +91,12 @@ public class BillPayProvider implements IBillingProvider, IPaymentGateway, IRecu
     }
 
     public <T> T processReport(ReportBuilder<T> builder, Class<T> clazz) throws ApiException {
+        return new ReportRequest<T>(credentials,serviceUrl,timeout)
+                .execute(builder);
+    }
+
+    @Override
+    public <T> T surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 

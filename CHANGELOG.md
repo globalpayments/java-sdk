@@ -1,6 +1,18 @@
 # Changelog
 
-##  Latest Version - V11.2.17 (06/03/2024)
+##  Latest Version - V11.2.18 (06/06/2024)
+### Enhancement -
+- Bill Pay :
+  Added Create Recurring Payment Request & Get Transaction By Order ID transaction.
+
+### Bug Fixes
+- NTS:
+  Fixed issue 10316 - Removed Exception condition for Product Data Required.
+
+- VAPS :
+  Fixed field matrix value from 2 to 3 for debit force refund transaction for Tag DE 127.
+
+## V11.2.17 (06/03/2024)
 ### Enhancement
 - [Portico] Added GatewayTxn Id to GatewayException Object when Response Code is 30
 

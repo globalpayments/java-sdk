@@ -140,7 +140,7 @@ public class VapsEncryption3DESTests {
         foodCard = new EBTTrackData(EbtCardType.FoodStamp);
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
-        foodCard.setEncryptedPan("4355567063338");
+        foodCard.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
         foodCard.setTrackNumber(TrackNumber.TrackTwo);
 
         //Gift card
@@ -158,9 +158,8 @@ public class VapsEncryption3DESTests {
         giftCard.setCardType("ValueLink");
 
         ebtCardData = new EBTCardData();
-        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F","F00001658F1C4789"));
+        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E","F00001658F1C4789"));
         ebtCardData.setPinBlock("62968D2481D231E1A504010000600004");
-        ebtCardData.setEncryptedPan("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F");
         ebtCardData.setEbtCardType(EbtCardType.CashBenefit);
         ebtCardData.setExpYear(2024);
         ebtCardData.setExpMonth(10);
@@ -440,6 +439,37 @@ public class VapsEncryption3DESTests {
     }
 
     @Test
+    public void test_014_visa_encrypted_forceRefund_debit_10297() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
+        Transaction response1 = debit.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withOfflineAuthCode("105683")
+                .execute();
+        assertNotNull(response1);
+
+        Transaction response2 = response1.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(Integer.parseInt(response1.getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(response2);
+
+        Transaction response3 = response2.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(Integer.parseInt(response2.getSystemTraceAuditNumber()))
+                .execute();
+        assertNotNull(response3);
+
+        Transaction response = NetworkService.forcedRefund(response3.getTransactionToken())
+                .withCurrency("USD")
+                .withForceToHost(true)
+                .withPaymentMethod(debit)
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
     public void test_015_credit_swipe_void() throws ApiException {
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -484,7 +514,7 @@ public class VapsEncryption3DESTests {
                 .execute();
         assertNotNull(captureResponse);
 
-        // check response
+//         check response
         assertEquals("000", captureResponse.getResponseCode());
     }
 
@@ -552,6 +582,7 @@ public class VapsEncryption3DESTests {
 
     @Test
     public void test_014_debit_encrypted_forceRefund() throws ApiException {
+        acceptorConfig.setHardwareLevel("S3");
         Transaction response = debit.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -656,6 +687,20 @@ public class VapsEncryption3DESTests {
                 .execute();
         assertNotNull(resubmit);
         assertEquals("000", resubmit.getResponseCode());
+    }
+
+    @Test
+    public void test_001_sale_refund() throws ApiException {
+        Transaction response = debit.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction response1 = response.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response1);
     }
 
     @Test
@@ -1458,7 +1503,7 @@ public class VapsEncryption3DESTests {
         cashTrack = new EBTTrackData(EbtCardType.CashBenefit);
         cashTrack.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         cashTrack.setPinBlock("62968D2481D231E1A504010024A00014");
-        cashTrack.setEncryptedPan("4355567063338");
+        cashTrack.setEncryptedPan("657DB3B704EB5E19C0D3BB31BC0F0964346EF3C8C55C021F");
         cashTrack.setExpiry("2412");
         cashTrack.setTrackNumber(TrackNumber.TrackTwo);
 
@@ -1908,6 +1953,75 @@ public class VapsEncryption3DESTests {
                 .execute();
         assertNotNull(creditSale);
         assertEquals("000", creditSale.getResponseCode());
+        assertNotNull(creditSale.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
+
+
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(10), null)
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+
+        BatchSummary summary = response.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+
+        LinkedList<String> tokens = new LinkedList<>();
+        tokens.add(creditSale.getTransactionToken());
+
+        BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
+        assertNotNull(newSummary);
+
+        assertTrue(newSummary.getResponseCode().equals("500") || newSummary.getResponseCode().equals("501"));
+
+    }
+    @Test
+    public void test_10315_batchClose_retransmitDataCollect_withBatchSummary_debit() throws ApiException {
+        BatchProvider batchProvider = BatchProvider.getInstance();
+        String configName = "default";
+        acceptorConfig.setHardwareLevel("S3");
+
+        Transaction creditSale = debit.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(creditSale);
+        assertEquals("000", creditSale.getResponseCode());
+        assertNotNull(creditSale.getTransactionToken());
+        assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
+
+
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(10), null)
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+
+        BatchSummary summary = response.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+
+        LinkedList<String> tokens = new LinkedList<>();
+        tokens.add(creditSale.getTransactionToken());
+
+        BatchSummary newSummary = summary.resubmitTransactions(tokens, configName);
+        assertNotNull(newSummary);
+
+        assertTrue(newSummary.getResponseCode().equals("500") || newSummary.getResponseCode().equals("501"));
+
+    }
+
+    @Test
+    public void test_10315_batchClose_retransmitDataCollect_withBatchSummary_EBT() throws ApiException {
+        BatchProvider batchProvider = BatchProvider.getInstance();
+        String configName = "default";
+        acceptorConfig.setHardwareLevel("S3");
+
+        Transaction creditSale = ebtCardData.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(creditSale);
+//        assertEquals("000", creditSale.getResponseCode());
         assertNotNull(creditSale.getTransactionToken());
         assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
 

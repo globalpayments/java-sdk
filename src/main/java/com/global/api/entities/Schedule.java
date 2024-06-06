@@ -1,5 +1,8 @@
 package com.global.api.entities;
 
+import com.global.api.entities.billing.Bill;
+import com.global.api.entities.billing.enums.InitialPaymentMethod;
+import com.global.api.entities.billing.enums.RecurringAuthorizationType;
 import com.global.api.entities.enums.EmailReceipt;
 import com.global.api.entities.enums.PaymentSchedule;
 import com.global.api.entities.enums.ScheduleFrequency;
@@ -9,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -38,6 +42,17 @@ public class Schedule extends RecurringEntity<Schedule> {
     private BigDecimal taxAmount;
     @Getter @Setter private String productId;
     @Getter @Setter private String customerNumber;
+    @Getter @Setter private List<Bill> bills;
+    @Getter @Setter private String orderId;
+    @Getter @Setter private Date secondInstanceDate;
+    @Getter @Setter private String token;
+    @Getter @Setter private String secondaryToken;
+    @Getter @Setter private String signatureImageInBase64;
+    @Getter @Setter private BigDecimal lastPrimaryConvenienceAmount;
+    @Getter @Setter private BigDecimal primaryConvenienceAmount;
+    @Getter @Setter private InitialPaymentMethod initialPaymentMethod;
+    @Getter @Setter private RecurringAuthorizationType recurringAuthorizationType;
+    @Getter @Setter private Customer customer;
 
     public BigDecimal getAmount() {
         return amount;
@@ -273,7 +288,52 @@ public class Schedule extends RecurringEntity<Schedule> {
         taxAmount = value;
         return this;
     }
+    public Schedule withBills(Bill ... bills) {
+        this.bills = Arrays.asList(bills);
+        return this;
+    }
+    public Schedule withBills(List<Bill> bills) {
+        this.bills = bills;
+        return this;
+    }
+    public Schedule withSecondInstanceDate(Date secondInstanceDate) {
+        this.secondInstanceDate = secondInstanceDate;
+        return this;
+    }
+    public Schedule withToken(String token) {
+        this.token = token;
+        return this;
+    }
+    public Schedule withSecondaryToken(String secondaryToken) {
+        this.secondaryToken = secondaryToken;
+        return this;
+    }
+    public Schedule withSignatureImageInBase64(String signatureImageInBase64) {
+        this.signatureImageInBase64 = signatureImageInBase64;
+        return this;
+    }
 
+    public Schedule withLastPrimaryConvenienceAmount(BigDecimal lastPrimaryConvenienceAmount) {
+        this.lastPrimaryConvenienceAmount = lastPrimaryConvenienceAmount;
+        return this;
+    }
+
+    public Schedule withPrimaryConvenienceAmount(BigDecimal primaryConvenienceAmount) {
+        this.primaryConvenienceAmount = primaryConvenienceAmount;
+        return this;
+    }
+    public Schedule withInitialPaymentMethod(InitialPaymentMethod initialPaymentMethod) {
+        this.initialPaymentMethod = initialPaymentMethod;
+        return this;
+    }
+    public Schedule withRecurringAuthorizationType(RecurringAuthorizationType recurringAuthorizationType) {
+        this.recurringAuthorizationType = recurringAuthorizationType;
+        return this;
+    }
+    public Schedule withCustomer(Customer customer) {
+        this.customer = customer;
+        return this;
+    }
     public Schedule() {}
     public Schedule(String customerKey, String paymentKey) {
         this.customerKey = customerKey;

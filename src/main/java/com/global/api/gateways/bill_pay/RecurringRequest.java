@@ -2,6 +2,7 @@ package com.global.api.gateways.bill_pay;
 
 import com.global.api.builders.RecurringBuilder;
 import com.global.api.entities.Customer;
+import com.global.api.entities.Schedule;
 import com.global.api.entities.billing.BillingResponse;
 import com.global.api.entities.billing.Credentials;
 import com.global.api.entities.billing.TokenResponse;
@@ -15,6 +16,8 @@ import com.global.api.gateways.bill_pay.requests.DeleteCustomerAccountRequest;
 import com.global.api.gateways.bill_pay.requests.DeleteSingleSignOnAccountRequest;
 import com.global.api.gateways.bill_pay.requests.UpdateCustomerAccountRequest;
 import com.global.api.gateways.bill_pay.requests.UpdateSingleSignOnAccountRequest;
+import com.global.api.gateways.bill_pay.requests.CreateRecurringPaymentRequest;
+import com.global.api.gateways.bill_pay.responses.BillingRequestResponse;
 import com.global.api.gateways.bill_pay.responses.CreateCustomerAccountResponse;
 import com.global.api.gateways.bill_pay.responses.CustomerAccountResponse;
 import com.global.api.gateways.bill_pay.responses.SingleSignOnAccountResponse;
@@ -23,6 +26,9 @@ import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
 
 public class RecurringRequest<T> extends GatewayRequestBase {
+    protected static final String CREATE_RECURRING_PAYMENT = "CreateRecurringPayment";
+    protected static final String CREATE_RECURRING_PAYMENT_RESPONSE = "CreateRecurringPaymentResponse";
+    protected static final String CREATE_RECURRING_PAYMENT_EXCEPTION = "An error occurred while creating the recurring payment";
     public RecurringRequest(Credentials credentials, String serviceUrl, int timeout) {
         this.credentials = credentials;
         this.serviceUrl = serviceUrl;
@@ -36,6 +42,10 @@ public class RecurringRequest<T> extends GatewayRequestBase {
 
         if (builder.getEntity() instanceof RecurringPaymentMethod) {
             return customerAccountRequest((RecurringPaymentMethod) builder.getEntity(), builder.getTransactionType());
+        }
+
+        if (builder.getEntity() instanceof Schedule){
+            return createRecurringPayment((Schedule) builder.getEntity());
         }
 
         throw new UnsupportedTransactionException();
@@ -147,6 +157,7 @@ public class RecurringRequest<T> extends GatewayRequestBase {
 
         if (result.isSuccessful()) {
             paymentMethod.setKey(paymentMethod.getId());
+            paymentMethod.setToken(result.getToken());
             return (T) paymentMethod;
         }
 
@@ -193,5 +204,26 @@ public class RecurringRequest<T> extends GatewayRequestBase {
         }
 
         throw new GatewayException("An error occurred while deleting the customer account", result.getResponseMessage(), result.getResponseMessage());
+    }
+
+    private T createRecurringPayment(Schedule schedule) throws ApiException
+    {
+        ElementTree et = new ElementTree();
+        Element envelope = createSOAPEnvelope(et, CREATE_RECURRING_PAYMENT);
+        String request = new CreateRecurringPaymentRequest(et)
+                .build(envelope, credentials, schedule);
+
+        String response = doTransaction(request);
+
+        BillingResponse result = new BillingRequestResponse()
+                .withResponseTagName(CREATE_RECURRING_PAYMENT_RESPONSE)
+                .withResponse(response)
+                .map();
+
+        if (result.isSuccessful()) {
+            return (T) schedule;
+        }
+
+        throw new GatewayException(CREATE_RECURRING_PAYMENT_EXCEPTION, result.getResponseMessage(), result.getResponseMessage());
     }
 }

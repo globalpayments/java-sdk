@@ -8,6 +8,9 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.billing.LoadHostedPaymentResponse;
 import com.global.api.entities.billing.LoadSecurePayResponse;
+import com.global.api.entities.Schedule;
+import com.global.api.entities.billing.enums.InitialPaymentMethod;
+import com.global.api.entities.billing.enums.RecurringAuthorizationType;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -19,8 +22,11 @@ import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.BillPayConfig;
 import com.global.api.services.BillPayService;
+import com.global.api.services.ReportingService;
+import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
+import com.global.api.entities.TransactionSummary;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -40,7 +46,14 @@ public class BillPayTests {
     List<Bill> bills;
     Bill billLoad;
     Bill blindBill;
+    private static final String SECOND_INSTANCE_DATE_EXCEPTION = "Second Instance Date is required for the semi-monthly schedule.";
+    private static final String PRIMARY_ACCOUNT_TOKEN_REQUIRED_EXCEPTION = "Primary token is required to perform recurring transaction.";
+    private static final String SCHEDULE_TYPE_REQUIRED_EXCEPTION = "Schedule Type is required to perform recurring transaction.";
     private static final String QUICK_PAY_TOKEN_EXCEPTION = "Quick Pay token must be provided for this transaction";
+    private static final String ORDER_ID_EXCEPTION = "The search criteria resulted in no transactions found. Please verify search criteria.";
+    private static final String FIRST_NAME = "Account";
+    private static final String LAST_NAME = "Update";
+    private static final String EMAIL_ID = "account.update@test.com";
 
     public BillPayTests() throws ConfigurationException {
 
@@ -845,6 +858,127 @@ public class BillPayTests {
     }
 
     @Test
+    public void test_Create_RecurringPayment_Monthly_Positive() throws ApiException {
+        try {
+            customer = new Customer();
+            customer.setFirstName(FIRST_NAME);
+            customer.setLastName(LAST_NAME);
+            customer.setEmail(EMAIL_ID);
+            customer.setId(UUID.randomUUID().toString());
+            customer = customer.create();
+
+            RecurringPaymentMethod paymentMethod = customer.addPaymentMethod(UUID.randomUUID().toString(), clearTextCredit).create();
+
+            customer.setAddress(address);
+            Schedule recur = paymentMethod.addSchedule(UUID.randomUUID().toString())
+                    .withAmount(new BigDecimal(50))
+                    .withBills(blindBill)
+                    .withCustomer(customer)
+                    .withStartDate(DateTime.now().toDate())
+                    .withEndDate(DateUtils.parse("12/21/2026"))
+                    .withNumberOfPayments(27)
+                    .withFrequency(ScheduleFrequency.Monthly)
+                    .withToken(paymentMethod.getToken())
+                    .withPrimaryConvenienceAmount(new BigDecimal(5))
+                    .withLastPrimaryConvenienceAmount(new BigDecimal(4))
+                    .withRecurringAuthorizationType(RecurringAuthorizationType.UNASSIGNED)
+                    .withInitialPaymentMethod(InitialPaymentMethod.CARD)
+                            .create();
+            assertNotNull(recur);
+            assertFalse(StringUtils.isNullOrEmpty(paymentMethod.getKey()));
+        } catch (Exception ex) {
+            fail((ex.getCause() != null ? ex.getCause() : ex).getMessage());
+        }
+    }
+    @Test
+    public void test_CreateRecurringSchedule_SemiMonthly_SecondInstanceDateRequired_Negative() throws UnsupportedOperationException, ApiException {
+        customer = new Customer();
+        customer.setFirstName(FIRST_NAME);
+        customer.setLastName(LAST_NAME);
+        customer.setEmail(EMAIL_ID);
+        customer.setId(UUID.randomUUID().toString());
+        customer = customer.create();
+
+        RecurringPaymentMethod paymentMethod = customer.addPaymentMethod(UUID.randomUUID().toString(), clearTextCredit).create();
+
+        customer.setAddress(address);
+        bill.setBillType("Tax Payments");
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+                () -> paymentMethod.addSchedule(UUID.randomUUID().toString())
+                    .withAmount(new BigDecimal(50))
+                    .withBills(bill)
+                    .withCustomer(customer)
+                    .withStartDate(DateTime.now().toDate())
+                    .withEndDate(DateUtils.parse("12/21/2026"))
+                    .withNumberOfPayments(27)
+                    .withFrequency(ScheduleFrequency.SemiMonthly)
+                    .withToken(paymentMethod.getToken())
+                    .withPrimaryConvenienceAmount(new BigDecimal(5))
+                    .withLastPrimaryConvenienceAmount(new BigDecimal(4))
+                    .withRecurringAuthorizationType(RecurringAuthorizationType.UNASSIGNED)
+                    .withInitialPaymentMethod(InitialPaymentMethod.CARD)
+                    .create());
+        assertEquals(SECOND_INSTANCE_DATE_EXCEPTION,exception.getMessage());
+    }
+    @Test
+    public void test_CreateRecurringSchedule_Monthly_PrimaryAccountTokenRequired_Negative() throws UnsupportedOperationException, ApiException {
+        customer = new Customer();
+        customer.setFirstName(FIRST_NAME);
+        customer.setLastName(LAST_NAME);
+        customer.setEmail(EMAIL_ID);
+        customer.setId(UUID.randomUUID().toString());
+        customer = customer.create();
+
+        RecurringPaymentMethod paymentMethod = customer.addPaymentMethod(UUID.randomUUID().toString(), clearTextCredit).create();
+
+        customer.setAddress(address);
+        bill.setBillType("Tax Payments");
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+                () -> paymentMethod.addSchedule(UUID.randomUUID().toString())
+                        .withAmount(new BigDecimal(50))
+                        .withBills(bill)
+                        .withCustomer(customer)
+                        .withStartDate(DateTime.now().toDate())
+                        .withEndDate(DateUtils.parse("12/21/2026"))
+                        .withNumberOfPayments(27)
+                        .withFrequency(ScheduleFrequency.Monthly)
+                        .withPrimaryConvenienceAmount(new BigDecimal(5))
+                        .withLastPrimaryConvenienceAmount(new BigDecimal(4))
+                        .withRecurringAuthorizationType(RecurringAuthorizationType.UNASSIGNED)
+                        .withInitialPaymentMethod(InitialPaymentMethod.CARD)
+                        .create());
+        assertEquals(PRIMARY_ACCOUNT_TOKEN_REQUIRED_EXCEPTION,exception.getMessage());
+    }
+    @Test
+    public void test_CreateRecurringSchedule_Monthly_ScheduleTypeRequired_Negative() throws UnsupportedOperationException, ApiException {
+        customer = new Customer();
+        customer.setFirstName(FIRST_NAME);
+        customer.setLastName(LAST_NAME);
+        customer.setEmail(EMAIL_ID);
+        customer.setId(UUID.randomUUID().toString());
+        customer = customer.create();
+
+        RecurringPaymentMethod paymentMethod = customer.addPaymentMethod(UUID.randomUUID().toString(), clearTextCredit).create();
+
+        customer.setAddress(address);
+        bill.setBillType("Tax Payments");
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+                () -> paymentMethod.addSchedule(UUID.randomUUID().toString())
+                        .withAmount(new BigDecimal(50))
+                        .withBills(bill)
+                        .withCustomer(customer)
+                        .withStartDate(DateTime.now().toDate())
+                        .withEndDate(DateUtils.parse("12/21/2026"))
+                        .withNumberOfPayments(27)
+                        .withToken(paymentMethod.getToken())
+                        .withPrimaryConvenienceAmount(new BigDecimal(5))
+                        .withLastPrimaryConvenienceAmount(new BigDecimal(4))
+                        .withRecurringAuthorizationType(RecurringAuthorizationType.UNASSIGNED)
+                        .withInitialPaymentMethod(InitialPaymentMethod.CARD)
+                        .create());
+        assertEquals(SCHEDULE_TYPE_REQUIRED_EXCEPTION,exception.getMessage());
+    }
+    @Test
     public void Charge_MakeQuickPayBlindPayment_ACH() throws ApiException {
         getQuickPayConfig();
 
@@ -1069,6 +1203,88 @@ public class BillPayTests {
         assertEquals(QUICK_PAY_TOKEN_EXCEPTION,tokenException.getMessage());
     }
     // #endregion
+
+
+    @Test
+    public void test_GetTransactionByOrderId_Validation_Positive() throws ApiException {
+
+        try {
+            Transaction response = clearTextCredit.verify()
+                    .withAddress(address)
+                    .withRequestMultiUseToken(true)
+                    .execute();
+
+            String token = response.getToken();
+            BillPayService service = new BillPayService();
+            BigDecimal fee = service.calculateConvenienceAmount(clearTextCredit, bill.getAmount());
+
+            CreditCardData paymentMethod = new CreditCardData();
+            paymentMethod.setToken(token);
+            paymentMethod.setExpMonth(clearTextCredit.getExpMonth());
+            paymentMethod.setExpYear(clearTextCredit.getExpYear());
+
+            UUID uuid = UUID. randomUUID();
+            String orderID = uuid.toString();
+
+            Transaction transactionResponse = paymentMethod.charge(bill.getAmount())
+                    .withCurrency("USD")
+                    .withAddress(address)
+                    .withBills(bill)
+                    .withConvenienceAmt(fee)
+                    .withOrderId(orderID)
+                    .execute();
+            assertNotNull(transactionResponse);
+
+            TransactionSummary summary = ReportingService.transactionDetail(orderID)
+                    .execute();
+           assertNotNull(summary);
+           assertNotNull(summary.getBillTransactions());
+           assertEquals("0",summary.getGatewayResponseCode());
+           assertEquals(transactionResponse.getTransactionId(),summary.getTransactionId());
+           assertNotNull(summary.getAmount());
+
+        } catch(ApiException exc) {
+            throw new ApiException(exc.getMessage(), exc);
+        }
+    }
+    @Test
+    public void test_GetTransactionByOrderId_twoDiffOrderId_exception_Negative() throws ApiException {
+
+            Transaction response = clearTextCredit.verify()
+                    .withAddress(address)
+                    .withRequestMultiUseToken(true)
+                    .execute();
+
+            String token = response.getToken();
+            BillPayService service = new BillPayService();
+            BigDecimal fee = service.calculateConvenienceAmount(clearTextCredit, bill.getAmount());
+
+            CreditCardData paymentMethod = new CreditCardData();
+            paymentMethod.setToken(token);
+            paymentMethod.setExpMonth(clearTextCredit.getExpMonth());
+            paymentMethod.setExpYear(clearTextCredit.getExpYear());
+
+            UUID uuid = UUID. randomUUID();
+            String orderID = uuid.toString();
+
+            Transaction transactionResponse = paymentMethod.charge(bill.getAmount())
+                    .withCurrency("USD")
+                    .withAddress(address)
+                    .withBills(bill)
+                    .withConvenienceAmt(fee)
+                    .withOrderId(orderID)
+                    .execute();
+            assertNotNull(transactionResponse);
+
+            UUID uuid1 = UUID. randomUUID();
+            String orderID1 = uuid1.toString();
+
+        GatewayException tokenException = assertThrows(GatewayException.class,
+                () -> ReportingService.transactionDetail(orderID1)
+                    .execute());
+            assertEquals(ORDER_ID_EXCEPTION,tokenException.getResponseText());
+
+    }
 
     // #region Helpers
     private void validateSuccesfulTransaction(Transaction transaction) {
