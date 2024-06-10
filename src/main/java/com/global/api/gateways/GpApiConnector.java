@@ -11,7 +11,6 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
-import com.global.api.entities.gpApi.GpApiSessionInfo;
 import com.global.api.entities.gpApi.GpApiTokenResponse;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.mapping.GpApiMapping;
@@ -120,6 +119,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             return;
         }
 
+        headers.remove("Authorization");
         GpApiTokenResponse response = getAccessToken();
 
         accessToken = response.getToken();
@@ -211,10 +211,14 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
             return doTransactionWithIdempotencyKey(verb, endpoint, data, queryStringParams, idempotencyKey);
         } catch (GatewayException ex) {
             if (
-                    "NOT_AUTHENTICATED".equals(ex.getResponseCode())    &&
-                    !isNullOrEmpty(gpApiConfig.getAppId())              &&
-                    !isNullOrEmpty(gpApiConfig.getAppKey())
+                    ("NOT_AUTHENTICATED".equals(ex.getResponseCode()) ||
+                            "401".equals(ex.getResponseCode())) &&
+                            !isNullOrEmpty(gpApiConfig.getAppId()) &&
+                            !isNullOrEmpty(gpApiConfig.getAppKey())
             ) {
+                if (this.gpApiConfig != null && this.gpApiConfig.getAccessTokenInfo() != null) {
+                    this.gpApiConfig.getAccessTokenInfo().setAccessToken(null);
+                }
                 signIn();
 
                 return doTransactionWithIdempotencyKey(verb, endpoint, data, queryStringParams, idempotencyKey);
