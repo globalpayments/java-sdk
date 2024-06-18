@@ -25,7 +25,7 @@ public class UpaVerificationTests {
     public UpaVerificationTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.198");
+        config.setIpAddress("10.253.146.225");
         config.setTimeout(100000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -43,6 +43,8 @@ public class UpaVerificationTests {
         receipt += "Application Identifier (AID) = " + response.getApplicationId() + "\r\n";
         receipt += "Application Cryptogram type (ARQC or TC, as applicable)* = " + response.getApplicationCryptogramType().toString() + "\r\n";
         receipt += "Application Cryptogram = " + response.getApplicationCryptogram() + "\r\n";
+        receipt += "Terminal Status Indicator = " + response.getTerminalStatusIndicator() + "\r\n";
+        receipt += "Terminal verification Result = " + response.getTerminalVerificationResult() + "\r\n";
         receipt += "Entry method = " + response.getEntryMethod() + "\r\n";
         receipt += "Approval code = " + response.getApprovalCode() + "\r\n";
         receipt += "Transaction amount = " + response.getTransactionAmount() + "\r\n";
@@ -680,4 +682,61 @@ public class UpaVerificationTests {
         assertNotNull(response);
         assertFalse(StringUtils.isNullOrEmpty(response.getBatchId()));
     }
+    // emv TSI
+    // cover negative scenario as well. if TSI is not present in the response test case will fail in assert statement
+    @Test
+    public void test001EMVContactSale_TSI() throws ApiException
+    {
+        device.ping();
+        TerminalResponse response = device.creditSale(new BigDecimal("4.00"))
+                .withGratuity(new BigDecimal("0.00"))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // emv receipt requirements
+        assertEquals(new BigDecimal("4.00"), response.getTransactionAmount());
+        assertFalse(StringUtils.isNullOrEmpty(response.getMaskedCardNumber()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationPreferredName() + response.getApplicationLabel()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationId()));
+        assertNotNull(response.getApplicationCryptogramType());
+        assertNotNull(response.getTerminalStatusIndicator());
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationCryptogramType().toString()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationCryptogram()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getEntryMethod()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApprovalCode()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getCardHolderName()));
+
+        PrintReceiptEmv(response);
+    }
+    // emv TVR
+    // cover negative scenario as well. if TSI is not present in the response test case will fail in assert statement
+    @Test
+    public void test001EMVContactSale_TVR() throws ApiException {
+        device.ping();
+        TerminalResponse response = device.creditSale(new BigDecimal("4.00"))
+                .withGratuity(new BigDecimal("0.00"))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // emv receipt requirements
+        assertEquals(new BigDecimal("4.00"), response.getTransactionAmount());
+        assertFalse(StringUtils.isNullOrEmpty(response.getMaskedCardNumber()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationPreferredName() + response.getApplicationLabel()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationId()));
+        assertNotNull(response.getApplicationCryptogramType());
+        assertNotNull(response.getTerminalStatusIndicator());
+        assertNotNull(response.getTerminalVerificationResult());
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationCryptogramType().toString()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApplicationCryptogram()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getEntryMethod()));
+        assertFalse(StringUtils.isNullOrEmpty(response.getApprovalCode()));
+
+        PrintReceiptEmv(response);
+    }
+
+
 }

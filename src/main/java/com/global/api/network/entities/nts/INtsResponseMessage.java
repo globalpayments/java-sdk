@@ -29,7 +29,7 @@ public interface INtsResponseMessage {
         NtsUtils.log("binary terminal type", ntsMessageHeader.getBinTerminalType());
 
         ntsMessageHeader.setResponseCode(sp.readStringConstant(2, NtsHostResponseCode.class));
-        NtsUtils.log("Host Response Code", ntsMessageHeader.getResponseCode());
+        NtsUtils.log("Host Response Code", ntsMessageHeader.getResponseCode().getName() + "-" + ntsMessageHeader.getResponseCode().getValue());
 
         ntsMessageHeader.setTimeoutValue(sp.readInt(3));
         sp.readString(1); // Filter

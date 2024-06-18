@@ -25,10 +25,13 @@ import static org.junit.Assert.*;
 public class UpaCreditTests {
     IDeviceInterface device;
 
+    private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
+    private static final String SUCCESS_STATUS = "Success";
+
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.42");
+        config.setIpAddress("10.253.146.155");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -333,6 +336,53 @@ public class UpaCreditTests {
                 .execute();
         assertNotNull(completionResponse);
         assertEquals("00",completionResponse);
+    }
+    @Test
+    public void deletePreAuth_PreAuthAmount() throws ApiException {
+        TerminalResponse response1 = device.creditAuth(new BigDecimal("10.00"))
+                .execute();
+
+        assertNotNull(response1);
+        assertEquals("00", response1.getResponseCode());
+        assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+
+        TerminalResponse response2 = device.deletePreAuth()
+                .withTerminalRefNumber(response1.getTransactionId())
+                .withPreAuthAmount(response1.getTransactionAmount())
+                .execute();
+        assertNotNull(response2);
+        assertEquals("00", response2.getResponseCode());
+    }
+    @Test
+    public void deletePreAuth() throws ApiException {
+        TerminalResponse response1 = device.creditAuth(new BigDecimal("10.00"))
+                .execute();
+
+        assertNotNull(response1);
+        assertEquals("00", response1.getResponseCode());
+        assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+
+        TerminalResponse response2 = device.deletePreAuth()
+                .withTerminalRefNumber(response1.getTransactionId())
+                .execute();
+        assertNotNull(response2);
+        assertEquals("00", response2.getResponseCode());
+    }
+    @Test // Without Terminal Reference Number
+    public void deletePreAuth_Negative() throws ApiException {
+            TerminalResponse response1 = device.creditAuth(new BigDecimal("10.00"))
+                    .execute();
+
+            assertNotNull(response1);
+            assertEquals("00", response1.getResponseCode());
+            assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+
+           IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,()->{
+               device.deletePreAuth()
+                    .withPreAuthAmount(new BigDecimal(12))
+                    .execute();
+        });
+        assertEquals(TERMINAL_REF_REQUIRED,exception.getMessage());
     }
 
     /**

@@ -51,6 +51,10 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String paymentType;
     protected BigDecimal merchantFee;
     protected String cardBrandTransactionId;
+    @Getter @Setter
+    protected String expiryDate;
+    @Getter @Setter
+    protected BigDecimal serviceCode;
 
     // EMV
     protected String applicationPreferredName;
@@ -167,6 +171,10 @@ public abstract class TerminalResponse implements IDeviceResponse {
     @Getter @Setter
     protected String originalTransactionType;
 
+    //fallback
+    @Getter @Setter
+    protected Integer fallback;
+
     @Getter @Setter
     protected String pinVerified;
     @Getter @Setter
@@ -181,6 +189,8 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationName;
     @Getter @Setter
     protected String cardHolderLanguage;
+    @Getter @Setter
+    protected String terminalStatusIndicator;
 
     public String getStatus() {
         return status;
@@ -531,4 +541,5 @@ public abstract class TerminalResponse implements IDeviceResponse {
     public void setCardBrandTransactionId(String value) { this.cardBrandTransactionId = value; }
 
     public String getUnmaskedCardNumber() { return unmaskedCardNumber; }
+
 }

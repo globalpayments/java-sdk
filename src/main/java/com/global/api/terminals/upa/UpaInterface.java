@@ -445,6 +445,9 @@ public class UpaInterface implements IDeviceInterface {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
                 .withGratuity(amount);
     }
+    public TerminalManageBuilder deletePreAuth(){
+        return new TerminalManageBuilder(TransactionType.DeleteOpenTab, PaymentMethodType.Credit);
+    }
 
     public IDeviceResponse closeLane() throws ApiException {
         throw new UnsupportedTransactionException();

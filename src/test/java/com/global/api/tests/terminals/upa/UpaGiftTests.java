@@ -27,8 +27,8 @@ public class UpaGiftTests {
 
     public UpaGiftTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
-        config.setPort(8081);
-        config.setIpAddress("192.168.0.105");
+        config.setPort(8080);
+        config.setIpAddress("10.253.146.155");
         config.setTimeout(15000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -49,7 +49,6 @@ public class UpaGiftTests {
             .execute();
 
         runBasicTests(response);
-        
         assertEquals("5022440000000000007", response.getUnmaskedCardNumber());
     }
 
@@ -74,6 +73,36 @@ public class UpaGiftTests {
 
         runBasicTests(response);
 
+    }
+
+    @Test
+    public void startCard_FallBack() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("1.01"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .execute();
+
+        runBasicTests(response);
+        assertNotNull(response.getFallback());
+    }
+
+    @Test
+    public void startCard_serviceCode() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("10.01"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .execute();
+
+        runBasicTests(response);
+        assertNotNull(response.getServiceCode());
+    }
+
+    @Test
+    public void startCard_expiryDate() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("5.10"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .execute();
+
+        runBasicTests(response);
+        assertNotNull(response.getExpiryDate());
     }
 
     public void runBasicTests(IDeviceResponse response) {

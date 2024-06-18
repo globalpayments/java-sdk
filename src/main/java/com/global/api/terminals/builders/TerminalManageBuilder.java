@@ -39,7 +39,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     private Lodging lodging;
     @Getter
     private BigDecimal preAuthAmount;
-
     public BigDecimal getAmount() {
         return amount;
     }
@@ -146,7 +145,6 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.preAuthAmount = preAuthAmount;
         return this;
     }
-
     public TerminalManageBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }

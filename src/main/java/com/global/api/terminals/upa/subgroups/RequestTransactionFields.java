@@ -26,8 +26,13 @@ public class RequestTransactionFields {
     private String preAuthAmount;
 
     private static final String PREAUTH_AMOUNT = "preAuthAmount";
+    private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
 
     public void setParams(TerminalManageBuilder builder) {
+        if(builder.getTransactionType().equals(TransactionType.DeleteOpenTab)){
+            getDeletePreAuthRequestParam(builder);
+            return;
+        }
         if (builder.getTerminalRefNumber() != null) {
             this.terminalRefNumber = builder.getTerminalRefNumber();
         }
@@ -188,5 +193,15 @@ public class RequestTransactionFields {
         }
 
         return hasContents ? params : null;
+    }
+    public void getDeletePreAuthRequestParam(TerminalManageBuilder builder){
+        if (builder.getTerminalRefNumber() == null) {
+            throw new IllegalArgumentException(TERMINAL_REF_REQUIRED);
+        }
+            this.terminalRefNumber = builder.getTerminalRefNumber();
+
+            if (builder.getPreAuthAmount() != null) {
+                this.preAuthAmount = builder.getPreAuthAmount().toString();
+        }
     }
 }

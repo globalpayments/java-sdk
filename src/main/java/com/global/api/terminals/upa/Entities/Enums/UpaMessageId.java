@@ -25,6 +25,6 @@ public enum UpaMessageId {
     GetSignature,
     DeleteSAF,
     RegisterPOS,
-
+    DeletePreAuth,
     PrintData
 }

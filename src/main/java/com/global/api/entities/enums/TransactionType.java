@@ -84,6 +84,7 @@ public enum TransactionType implements IFlag {
     GetAccountDetails,
     GetAccountBalance,
     GetTokenInfo,
+    DeleteOpenTab,
     CheckQueryInfo,
     OrderDevice,
     SurchargeEligibilityLookup;

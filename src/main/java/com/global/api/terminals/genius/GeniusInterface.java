@@ -51,6 +51,11 @@ public class GeniusInterface implements IDeviceInterface {
         throw  new UnsupportedTransactionException();
     }
 
+    @Override
+    public TerminalManageBuilder deletePreAuth() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
         return this.controller.processReport(transactionType, transactionId, transactionIdType);
     }

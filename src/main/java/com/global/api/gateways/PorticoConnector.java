@@ -37,6 +37,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String cardType;
     private static final String TRANSACTION_EXCEPTION = "Either ClientTxnId or GatewayTxnId must be provided for this payment type.";
     private static final String CHECK_QUERY = "CheckQuery";
+    private static final String CLERK_ID = "ClerkID";
 
     @Override
     public boolean supportsHostedPayments() {
@@ -789,6 +790,17 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "ClientTxnId", clientTransactionId);
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
+
+        if(builder instanceof AuthorizationBuilder) {
+            AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
+            et.subElement(header,CLERK_ID,authBuilder.getClerkId());
+        } else {
+            if (builder instanceof ManagementBuilder) {
+                ManagementBuilder manageBuilder = (ManagementBuilder) builder;
+                et.subElement(header, CLERK_ID, manageBuilder.getClerkId());
+            }
+            throw new IllegalArgumentException("length should not be more than 50 digits");
+        }
 
         if(builder != null && builder.getIsSAFIndicator() != null) {
             Element safData = et.subElement(header, "SAFData");

@@ -408,6 +408,10 @@ public class HpaInterface implements IDeviceInterface {
     public TerminalReportBuilder localDetailReport() throws ApiException {
         throw new UnsupportedTransactionException();
     }
+    @Override
+    public TerminalManageBuilder deletePreAuth() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
 
     @Override
     public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {

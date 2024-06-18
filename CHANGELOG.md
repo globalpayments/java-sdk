@@ -1,6 +1,20 @@
 # Changelog
 
-##  Latest Version - V11.2.18 (06/06/2024)
+## Latest Version - V11.2.19 (06/18/2024)
+### Enhancement
+- UPA:
+  Mapped service code,fallback & expiry date parameter to the startCard transaction response.
+  Added support for Delete Preauth transaction.
+  Added Cryptogram type to the transaction receipt.
+
+- Portico:
+  ClerkID parameter addition to the Portico transaction.
+
+### Bug Fixes
+- NTS:
+  Java Nts 10318 updated response message "Denial Mastercard" to "Denial" for RC 10.
+
+## V11.2.18 (06/06/2024)
 ### Enhancement -
 - Bill Pay :
   Added Create Recurring Payment Request & Get Transaction By Order ID transaction.

@@ -20,14 +20,14 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class PorticoCreditTests {
 	private CreditCardData card;
 	private CreditTrackData track;
     private String clientTxnID;
     private CommercialData commercialData;
+    private static final String ILLEGAL_ARGUMENT_EXCEPTION = "length should not be more than 50 digits";
 
 	public PorticoCreditTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -795,5 +795,47 @@ public class PorticoCreditTests {
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
-  
+    @Test
+    public void creditSale_ClerkId() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withClientTransactionId(clientTxnID)
+                .withAllowDuplicates(true)
+                .withClerkId("CL_1001")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test
+    public void CreditCapture_ClerkId() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+                .withClerkId("0998_ID")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .withClerkId("C3008_ID")
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
+    @Test
+    public void ClerkId_Negative() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        IllegalArgumentException exc = assertThrows(IllegalArgumentException.class,()-> {
+        Transaction capture = response.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .withClerkId("C3008_ID0983634567ndhgfds45678908765432wqsdcvn 87723")
+                .execute();
+        assertNotNull(response);
+    });
+        assertEquals(ILLEGAL_ARGUMENT_EXCEPTION,exc.getMessage());
+  }
 }
+

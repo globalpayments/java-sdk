@@ -33,6 +33,9 @@ public class UpaTransactionResponse extends TerminalResponse {
     public static final String MARK_UP = "markUp";
     public static final String TRANSACTION_CURRENCY = "transactionCurrency";
     public static final String TRANSACTION_AMOUNT = "transactionAmount";
+    public static final String FALLBACK = "fallback";
+    public static final String EXPIRY_DATE = "expiryDate";
+    public static final String SERVICE_CODE = "serviceCode";
 
     public UpaTransactionResponse(JsonDoc responseData) {
         JsonDoc cmdResult = responseData.get("cmdResult");
@@ -176,7 +179,7 @@ public class UpaTransactionResponse extends TerminalResponse {
                             break;
                     }
                 }
-
+                terminalStatusIndicator = emv.getString("9B");
                 applicationId = emv.getString("9F06");
                 applicationLabel = emv.getString("50");
                 applicationPreferredName = emv.getString("9F12");
@@ -265,6 +268,20 @@ public class UpaTransactionResponse extends TerminalResponse {
                 if (dcc.getDecimal(TRANSACTION_AMOUNT) != null) {
                     transactionAmount = dcc.getDecimal(TRANSACTION_AMOUNT);
                 }
+            }
+
+            //Added Fallback for startCardTransaction
+            if (data.getInt(FALLBACK) != null) {
+                fallback = data.getInt(FALLBACK);
+            }
+
+            //Added Expiry for startCardTransaction
+            if (data.getString(EXPIRY_DATE) != null) {
+                expiryDate = data.getString(EXPIRY_DATE);
+            }
+
+            if (data.getDecimal(SERVICE_CODE) != null) {
+                serviceCode = data.getDecimal(SERVICE_CODE);
             }
         }
     }

@@ -105,4 +105,5 @@ public interface IDeviceInterface extends IDisposable {
     TerminalManageBuilder refundById(BigDecimal amount) throws ApiException;
     ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException;
     TerminalReportBuilder localDetailReport() throws ApiException;
+    TerminalManageBuilder deletePreAuth() throws ApiException;
 }

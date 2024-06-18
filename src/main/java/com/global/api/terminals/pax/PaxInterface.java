@@ -467,4 +467,9 @@ class PaxInterface implements IDeviceInterface {
     public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public TerminalManageBuilder deletePreAuth() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
 }

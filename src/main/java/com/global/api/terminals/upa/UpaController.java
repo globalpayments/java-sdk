@@ -165,6 +165,8 @@ public class UpaController extends DeviceController {
                 return UpaMessageId.AuthCompletion;
             case Activate:
                 return UpaMessageId.StartCardTransaction;
+            case DeleteOpenTab:
+                return UpaMessageId.DeletePreAuth;
             default:
                 throw new UnsupportedTransactionException("Selected gateway does not support this transaction type");            
         }
