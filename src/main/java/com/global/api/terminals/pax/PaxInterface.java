@@ -30,6 +30,11 @@ class PaxInterface implements IDeviceInterface {
         this.onMessageSent = onMessageSent;
     }
 
+    @Override
+    public void setOnMessageReceived(IMessageSentInterface onMessageReceived) {
+        //Intentional left blank
+    }
+
     PaxInterface(PaxController controller) {
         this.controller = controller;
         this.controller.setOnMessageSent(new IMessageSentInterface() {

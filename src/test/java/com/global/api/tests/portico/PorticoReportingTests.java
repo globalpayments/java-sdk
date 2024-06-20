@@ -77,9 +77,9 @@ public class PorticoReportingTests {
     @Test
     public void CheckSurchargeEligibility() throws ApiException{
         CreditCardData card = new CreditCardData();
-        card.setNumber("2223000010005780");
+        card.setNumber("374245001751006");
         card.setExpMonth(12);
-        card.setExpYear(2025);
+        card.setExpYear(2024);
         card.setCardPresent(true);
 
         EncryptionData enc = new EncryptionData();

@@ -10,9 +10,11 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.*;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.terminals.abstractions.IUPAMessage;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.LocalDetailReportResponse;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
@@ -26,12 +28,19 @@ import com.global.api.utils.JsonDoc;
 
 public class UpaController extends DeviceController {
     private IDeviceInterface _device;
+    private IUPAMessage _upaInterface;
     private IMessageSentInterface onMessageSent;
+    private IMessageSentInterface onMessageReceived;
+
+    private IDeviceMessage paramMsg;
 
     void setMessageSentHandler(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
     }
 
+    void setOnMessageReceivedHandler(IMessageSentInterface onMessageReceived){
+        this.onMessageReceived = onMessageReceived;
+    }
     public UpaController(ConnectionConfig settings) throws ConfigurationException {
         super(settings);
 
@@ -43,6 +52,7 @@ public class UpaController extends DeviceController {
 
         if (settings.getConnectionMode() == ConnectionModes.TCP_IP) {
             _interface = new UpaTcpInterface(settings);
+            _upaInterface = (IUPAMessage) _interface;
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
@@ -51,6 +61,15 @@ public class UpaController extends DeviceController {
             public void messageSent(String message) {
                 if(onMessageSent != null)
                     onMessageSent.messageSent(message);
+            }
+        });
+
+        _upaInterface.setMessageReceivedHandler(new IMessageReceivedInterface() {
+            @Override
+            public void messageReceived(byte[] message) {
+                if(onMessageReceived != null){
+                    onMessageReceived.messageSent(new String(message, StandardCharsets.UTF_8));
+                }
             }
         });
     }

@@ -465,6 +465,10 @@ public class UpaInterface implements IDeviceInterface {
         controller.setMessageSentHandler(onMessageSent);
     }
 
+    public void setOnMessageReceived(IMessageSentInterface onMessageReceived){
+        controller.setOnMessageReceivedHandler(onMessageReceived);
+    }
+
     public IDeviceResponse disableHostResponseBeep() throws ApiException {
         throw new UnsupportedTransactionException();
     }

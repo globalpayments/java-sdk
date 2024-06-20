@@ -173,6 +173,12 @@ public class GeniusInterface implements IDeviceInterface {
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
 
     }
+
+    @Override
+    public void setOnMessageReceived(IMessageSentInterface onMessageReceived) {
+        //Intentional left blank
+    }
+
     @Override
     public IBatchCloseResponse batchClose() throws ApiException {
         throw new UnsupportedTransactionException();

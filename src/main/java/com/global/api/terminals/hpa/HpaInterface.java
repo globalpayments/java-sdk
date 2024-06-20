@@ -36,6 +36,11 @@ public class HpaInterface implements IDeviceInterface {
         this.onMessageSent = onMessageSent;
     }
 
+    @Override
+    public void setOnMessageReceived(IMessageSentInterface onMessageReceived) {
+        //Intentional left blank
+    }
+
     HpaInterface(HpaController controller) {
         _controller = controller;
         _controller.setMessageSentHandler(new IMessageSentInterface() {

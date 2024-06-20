@@ -7,8 +7,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.global.api.entities.enums.ControlCodes;
@@ -17,18 +17,22 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
+import com.global.api.terminals.abstractions.IUPAMessage;
+import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.StringUtils;
+import org.joda.time.LocalTime;
 
-public class UpaTcpInterface implements IDeviceCommInterface {
+public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
     private Socket client;
     private DataOutputStream out;
     private DataInputStream in;
     private final ConnectionConfig settings;
     private IMessageSentInterface onMessageSent;
+    private IMessageReceivedInterface onMessageReceived;
     private MessageWriter data;
     private String responseMessageString;
     private boolean readyReceived;
@@ -37,15 +41,19 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         this.onMessageSent = onMessageSent;
     }
 
+    public void setMessageReceivedHandler(IMessageReceivedInterface onMessageReceived) {
+        this.onMessageReceived = onMessageReceived;
+    }
+
     public UpaTcpInterface(ConnectionConfig settings) {
         this.settings = settings;
     }
 
     public void connect() {
-        if(client == null) {
+        if (client == null) {
             try {
                 client = new Socket(settings.getIpAddress(), settings.getPort());
-                if(client.isConnected()) {
+                if (client.isConnected()) {
                     out = new DataOutputStream(client.getOutputStream());
                     in = new DataInputStream(client.getInputStream());
                     client.setKeepAlive(true);
@@ -59,6 +67,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         }
     }
 
+
     public void disconnect() {
         try {
             if (!client.isClosed()) {
@@ -67,8 +76,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                 client.close();
             }
             client = null;
-
-        } catch(IOException e) {
+        } catch (IOException e) {
             // Eating the close exception
         }
     }
@@ -84,13 +92,13 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         byte[] sendBuffer = message.getSendBuffer();
 
         try {
-            if(onMessageSent != null) {
+            if (onMessageSent != null) {
                 long currentMillis = System.currentTimeMillis();
                 Timestamp t = new Timestamp(currentMillis);
                 onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
             }
 
-            if(settings.getRequestLogger() != null) {
+            if (settings.getRequestLogger() != null) {
                 String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
                 settings.getRequestLogger().RequestSent(formMsg);
             }
@@ -110,15 +118,16 @@ public class UpaTcpInterface implements IDeviceCommInterface {
             } while (!readyReceived);
 
             //This check is put in place for UPA message "READY".
-            if(getMessageType(message).equalsIgnoreCase(Constants.READY_MESSAGE) &&
-                    StringUtils.isNullOrEmpty(responseMessageString))
-            {
+            if (getMessageType(message).equalsIgnoreCase(Constants.READY_MESSAGE) &&
+                    StringUtils.isNullOrEmpty(responseMessageString)) {
                 return readyMessageSent();
             } else {
+                if(onMessageReceived != null){
+                    onMessageReceived.messageReceived(responseMessageString.getBytes());
+                }
                 return responseMessageString.getBytes();
             }
-        }
-        catch(Exception exc) {
+        } catch (Exception exc) {
             throw new MessageException(exc.getMessage(), exc);
         }
         finally {
@@ -132,7 +141,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         }
     }
 
-    private String getMessageType(IDeviceMessage message){
+    private String getMessageType(IDeviceMessage message) {
         String messageType = "NONE";
         try {
             if (message != null) {
@@ -143,11 +152,11 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                 );
                 messageType = responseObj.getString("message");
                 String data = responseObj.getString("data");
-                if(StringUtils.isNullOrEmpty(data)){
+                if (StringUtils.isNullOrEmpty(data)) {
                     responseMessageString = "";
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return messageType;
         }
         return messageType;
@@ -158,14 +167,14 @@ public class UpaTcpInterface implements IDeviceCommInterface {
             validateResponsePacket();
             byte[] buffer = data.toArray();
 
-            if(buffer.length > 0) {
+            if (buffer.length > 0) {
                 JsonDoc responseObj = JsonDoc.parse(
-                    new String(data.toArray(), StandardCharsets.UTF_8)
+                        new String(data.toArray(), StandardCharsets.UTF_8)
                 );
 
                 String message = responseObj.getString("message");
 
-                if(settings.getRequestLogger() != null) {
+                if (settings.getRequestLogger() != null) {
                     String formMsg = new String(buffer, StandardCharsets.UTF_8);
                     settings.getRequestLogger().ResponseReceived(formMsg);
                 }
@@ -192,8 +201,7 @@ public class UpaTcpInterface implements IDeviceCommInterface {
                         throw new Exception("Message field value is unknown in API Response.");
                 }
             }
-        }
-        catch(IOException exc) {
+        } catch (IOException exc) {
             throw new IOException(exc.getMessage(), exc);
         }
     }
@@ -251,13 +259,13 @@ public class UpaTcpInterface implements IDeviceCommInterface {
         IDeviceMessage message = TerminalUtilities.compileMessage(body);
         byte[] sendBuffer = message.getSendBuffer();
 
-        if(settings.getRequestLogger() != null) {
+        if (settings.getRequestLogger() != null) {
             String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
             settings.getRequestLogger().RequestSent(formMsg);
         }
 
         try {
-            if(onMessageSent != null) {
+            if (onMessageSent != null) {
                 long currentMillis = System.currentTimeMillis();
                 Timestamp t = new Timestamp(currentMillis);
                 onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
@@ -265,13 +273,13 @@ public class UpaTcpInterface implements IDeviceCommInterface {
 
             out.write(sendBuffer);
             out.flush();
-        } catch(IOException exc) {
+        } catch (IOException exc) {
             throw new IOException(exc.getMessage(), exc);
         }
     }
 
-    private byte[] readyMessageSent(){
-        if(onMessageSent != null) {
+    private byte[] readyMessageSent() {
+        if (onMessageSent != null) {
             JsonDoc jsonMsg = new JsonDoc();
             jsonMsg.set("message", "READY");
             long currentMillis = System.currentTimeMillis();

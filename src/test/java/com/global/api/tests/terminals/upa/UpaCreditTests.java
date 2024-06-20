@@ -43,6 +43,7 @@ public class UpaCreditTests {
         assertNotNull(device);
 
         device.setOnMessageSent(System.out::println);
+        device.setOnMessageReceived(System.out::println);
     }
 
     @Test

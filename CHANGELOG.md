@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V11.2.19 (06/18/2024)
+## Latest Version - V11.2.20 (06/20/2024)
+### Enhancement
+- UPA:
+ Added support for message received logging.
+
+## Version - V11.2.19 (06/18/2024)
 ### Enhancement
 - UPA:
   Mapped service code,fallback & expiry date parameter to the startCard transaction response.

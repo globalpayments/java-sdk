@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 
 public interface IDeviceInterface extends IDisposable {
     void setOnMessageSent(IMessageSentInterface onMessageSent);
-
+    void setOnMessageReceived(IMessageSentInterface onMessageReceived);
     // admin calls
     IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException; // UPA
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
