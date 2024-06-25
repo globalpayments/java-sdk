@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-
 import com.global.api.builders.*;
 import com.global.api.entities.enums.*;
 import com.global.api.network.elements.*;
+import com.global.api.network.entities.*;
 import com.global.api.paymentMethods.*;
 import com.global.api.network.enums.*;
 import com.global.api.serviceConfigs.GatewayConnectorConfig;
@@ -17,7 +17,6 @@ import com.global.api.utils.*;
 import org.apache.commons.codec.binary.Base64;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.EncryptionData;
@@ -31,10 +30,6 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessage;
 import com.global.api.network.NetworkMessageHeader;
-import com.global.api.network.entities.FleetData;
-import com.global.api.network.entities.NtsData;
-import com.global.api.network.entities.PriorMessageInformation;
-import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.paymentMethods.Credit;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.network.enums.AuthorizerCode;
@@ -80,20 +75,26 @@ public class NwsConnector extends GatewayConnectorConfig {
             byte[] orgCorr1 = new byte[2];
             byte[] orgCorr2 = new byte[8];
 
-            NetworkMessage request = new NetworkMessage();
-            IPaymentMethod paymentMethod = builder.getPaymentMethod();
-            PaymentMethodType paymentMethodType  = getPaymentMethodType(builder, paymentMethod);
-            TransactionType transactionType = builder.getTransactionType();
-            boolean isPosSiteConfiguration = transactionType.equals(TransactionType.PosSiteConfiguration);
-            EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging());
-
-            Iso4217_CurrencyCode currencyCode = Iso4217_CurrencyCode.USD;
-            String currency = builder.getCurrency();
-            currencyCode = getCurrencyCode(currencyCode, currency);
-
-            // MTI
-            String mti = mapMTI(builder);
-            request.setMessageTypeIndicator(mti);
+        NetworkMessage request = new NetworkMessage();
+        IPaymentMethod paymentMethod = null;
+        paymentMethod = builder.getPaymentMethod();
+        PaymentMethodType paymentMethodType = null;
+        if (paymentMethod != null)
+            paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
+        TransactionType transactionType = builder.getTransactionType();
+        boolean isPosSiteConfiguration = transactionType.equals(TransactionType.PosSiteConfiguration);
+        boolean isVisaFleet2 = acceptorConfig.getSupportVisaFleet2dot0() != null && acceptorConfig.getSupportVisaFleet2dot0().getValue() != " ";
+        Iso4217_CurrencyCode currencyCode = null;
+        EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging());
+            if (!StringUtils.isNullOrEmpty(builder.getCurrency())) {
+            currencyCode = builder.getCurrency().equalsIgnoreCase("USD") ? Iso4217_CurrencyCode.USD : Iso4217_CurrencyCode.CAD;
+        }
+        // MTI
+        String mti = mapMTI(builder);
+        if(isVisaFleet2 && mti.equals("1200")){
+            throw new UnsupportedTransactionException("Visa Fleet 2.0 does not support sale transaction");
+        }
+        request.setMessageTypeIndicator(mti);
 
             // pos data code
             DE22_PosDataCode dataCode = new DE22_PosDataCode();
@@ -121,6 +122,8 @@ public class NwsConnector extends GatewayConnectorConfig {
             } else if (paymentMethod instanceof ITrackData) {
                 ITrackData card = (ITrackData) builder.getPaymentMethod();
                 if (card != null) {
+                    String token = card.getTokenizationData();
+                    if(token == null){
                     // put the track data
                     if (transactionType.equals(TransactionType.Refund) && (!paymentMethodType.equals(PaymentMethodType.Debit) && !paymentMethodType.equals(PaymentMethodType.EBT))) {
                         if (paymentMethod instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
@@ -147,6 +150,7 @@ public class NwsConnector extends GatewayConnectorConfig {
                             }
                         }
                     }
+                }
                     // set data codes
                     if (paymentMethodType.equals(PaymentMethodType.Credit) || paymentMethodType.equals(PaymentMethodType.Debit)) {
                         dataCode.setCardHolderPresence(DE22_CardHolderPresence.CardHolder_Present);
@@ -166,7 +170,7 @@ public class NwsConnector extends GatewayConnectorConfig {
                 GiftCard giftCard = (GiftCard) paymentMethod;
                 if (giftCard != null) {
                     // put the track data
-                    if (giftCard.getValueType().equals("TrackData")) {
+                    if (giftCard.getValueType()!=null && giftCard.getValueType().equals("TrackData")) {
                         if (giftCard.getTrackNumber().equals(TrackNumber.TrackTwo)) {
                             // DE 35: Track 2 Data - LLVAR ns.. 37
                             request.set(DataElementId.DE_035, giftCard.getTrackData());
@@ -304,6 +308,68 @@ public class NwsConnector extends GatewayConnectorConfig {
                 request.set(DataElementId.DE_043, cardAcceptorData);
             }
 
+        /* DE 44: Additional Response Data - LLVAR ans.. 99
+            44.1 ACTION REASON CODE n4 Contains the reason code for the action. A value of zeros indicates there is no action reason code.
+            44.2 TEXT MESSAGE ans..95 Contains the text describing the action.
+         */
+        // DE 45: Track 1 Data - LLVAR ans.. 76
+        /* DE 46: Amounts, Fees - LLLVAR ans..204
+            46.1 FEE TYPE CODE n2
+            46.2 CURRENCY CODE, FEE n3
+            46.3 AMOUNT, FEE x+n8
+            46.4 CONVERSION RATE, FEE n8
+            46.5 AMOUNT, RECONCILIATION FEE x+n8
+            46.6 CURRENCY CODE, RECONCILIATION FEE n3
+         */
+
+        if (!isPosSiteConfiguration && (paymentMethodType.equals(paymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT))) {
+            if (builder.getFeeAmount() != null) {
+                DE46_FeeAmounts feeAmounts = new DE46_FeeAmounts();
+                feeAmounts.setFeeTypeCode(builder.getFeeType());
+                feeAmounts.setCurrencyCode(currencyCode);
+                feeAmounts.setAmount(builder.getFeeAmount());
+                feeAmounts.setReconciliationCurrencyCode(currencyCode);
+                request.set(DataElementId.DE_046, feeAmounts);
+                if (feeAmounts.getFeeTypeCode() == FeeType.Surcharge) {
+                    request.set(DataElementId.DE_004, StringUtils.toNumeric(builder.getAmount().add(feeAmounts.getAmount()), 12));
+                }
+            }
+        }
+        /* DE 48: Message Control - LLLVAR ans..999
+            48-0 BIT MAP b8 C Specifies which data elements are present.
+            48-1 COMMUNICATION DIAGNOSTICS n4 C Data on communication connection.
+            48-2 HARDWARE & SOFTWARE CONFIGURATION ans20 C Version information from POS application.
+            48-3 LANGUAGE CODE a2 F Language used for display or print.
+            48-4 BATCH NUMBER n10 C Current batch.
+            48-5 SHIFT NUMBER n3 C Identifies shift for reconciliation and tracking.
+            48-6 CLERK ID LVAR an..9 C Identification of clerk operating the terminal.
+            48-7 MULTIPLE TRANSACTION CONTROL n9 F Parameters to control multiple related messages.
+            48-8 CUSTOMER DATA LLLVAR ns..250 C Data entered by customer or clerk.
+            48-9 TRACK 2 FOR SECOND CARD LLVAR ns..37 C Used to specify the second card in a transaction by the Track 2 format.
+            48-10 TRACK 1 FOR SECOND CARD LLVAR ans..76 C Used to specify the second card in a transaction by the Track 1 format.
+            48-11 CARD TYPE anp4 C Card type.
+            48-12 ADMINISTRATIVELY DIRECTED TASK b1 C Notice to or direction for action to be taken by POS application.
+            48-13 RFID DATA LLVAR ans..99 C Data received from RFID transponder.
+            48-14 PIN ENCRYPTION METHODOLOGY ans2 C Used to identify the type of encryption methodology.
+            48-15, 48-32 RESERVED FOR ANSI USE LLVAR ans..99 These are reserved for future use.
+            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the Heartland system capabilities and configuration of the POS application.
+            48-34 MESSAGE CONFIGURATION LLVAR ans..99 C Information regarding the POS originating message and the host generated response message.
+            48-35 NAME 1 LLVAR ans..99 D
+            48-36 NAME 2 LLVAR ans..99 D
+            48-37 SECONDARY ACCOUNT NUMBER LLVAR ans..28 C Second Account Number for manually entered transactions requiring 2 account numbers.
+            48-38 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-39 PRIOR MESSAGE INFORMATION LLVAR ans..99 C Information regarding the status of the prior message sent by the POS.
+            48-40, 48-49 ADDRESS 1 THROUGH ADDRESS 10 LLVAR ans..99 D One or more types of addresses.
+            48-50, 48-64 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+         */
+        // DE48-5
+//        messageControl.setShiftNumber(builder.getShiftNumber());
+        if (!isPosSiteConfiguration) {
+            DE48_MessageControl messageControl = mapMessageControl(builder);
+            request.set(DataElementId.DE_048, messageControl);
+        }
+        // DE 49: Currency Code, Transaction - n3
+        // DE 50: Currency Code, Reconciliation - n3
             /* DE 44: Additional Response Data - LLVAR ans.. 99
                 44.1 ACTION REASON CODE n4 Contains the reason code for the action. A value of zeros indicates there is no action reason code.
                 44.2 TEXT MESSAGE ans..95 Contains the text describing the action.
@@ -388,7 +454,38 @@ public class NwsConnector extends GatewayConnectorConfig {
                     request.set(DataElementId.DE_054, amountsAdditional);
                 }
             }
-
+            else if (paymentMethod instanceof Credit && isVisaFleet2) {
+                Credit card = (Credit) paymentMethod;
+                DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
+                if (builder.getProductData() != null) {
+                    DE63_ProductData productData = builder.getProductData().toDataElement();
+                    if (card.getCardType().equals("VisaFleet") && (isVisaFleet2)) {
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        }
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelWithTax());
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelAmount());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        }
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        }
+                        request.set(DataElementId.DE_054, amountsAdditional);
+                    }
+                }
+            }
+            else if (paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals(cardTypeWexFleet) && builder.getSalesTaxAdditionAmount()!=null) {
+                DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
+                amountsAdditional.put(DE54_AmountTypeCode.AmountCash, DE3_AccountType.Unspecified, currencyCode, builder.getSalesTaxAdditionAmount());
+                request.set(DataElementId.DE_054, amountsAdditional);
+            }
             // DE 55: Integrated Circuit Card (ICC) Data - LLLVAR b..512
             if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                 if(tagData.getCardSequenceNumber() != null) { request.set(DataElementId.DE_023, StringUtils.padLeft(tagData.getCardSequenceNumber(), 3, '0'));}
@@ -450,9 +547,9 @@ public class NwsConnector extends GatewayConnectorConfig {
 
             // DE 127: Forwarding Data - LLLVAR ans..999
             DE127_ForwardingData forwardingData = new DE127_ForwardingData();
-
+            EncryptionData encryptionData = null;
             if (paymentMethod instanceof IEncryptable) {
-                EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+                encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
                 if(encryptionData != null){
                     forwardingData = set3DSEncryptedData(encryptionData, forwardingData, paymentMethod);
                     request.set(DataElementId.DE_127, forwardingData);
@@ -462,8 +559,23 @@ public class NwsConnector extends GatewayConnectorConfig {
                 ICardData cardData = (ICardData) paymentMethod;
                 if (cardData != null) {
                     String tokenizationData = cardData.getTokenizationData();
+                    encryptionData = ((IEncryptable) cardData).getEncryptionData();
+                    boolean combinedMessage = false;
+                    if(tokenizationData != null && encryptionData != null){
+                        combinedMessage = true;
+                    }
                     if (tokenizationData != null) {
-                        setTokenizationData(forwardingData, cardData, tokenizationData);
+                        setTokenizationData(forwardingData,paymentMethod,tokenizationData,combinedMessage);
+                        request.set(DataElementId.DE_127, forwardingData);
+                    }
+                }
+            } else if (paymentMethod instanceof ITrackData) {
+                ITrackData trackData = (ITrackData) paymentMethod;
+                if (trackData != null) {
+                    String tokenizationData = trackData.getTokenizationData();
+                    boolean combinedMessage = tokenizationData!=null && encryptionData!=null;
+                    if (tokenizationData != null) {
+                        setTokenizationData(forwardingData,paymentMethod,tokenizationData,combinedMessage);
                         request.set(DataElementId.DE_127, forwardingData);
                     }
                 }
@@ -611,6 +723,7 @@ public class NwsConnector extends GatewayConnectorConfig {
             String currency = builder.getCurrency();
             currencyCode = getCurrencyCode(currencyCode, currency);
             BigDecimal transactionAmount = builder.getAmount();
+            boolean isVisaFleet2 = acceptorConfig.getSupportVisaFleet2dot0() != null && acceptorConfig.getVisaFleet2()!=null && acceptorConfig.getVisaFleet2();
             if (transactionAmount == null && paymentMethod instanceof TransactionReference) {
                 TransactionReference transactionReference = (TransactionReference) paymentMethod;
                 transactionAmount = transactionReference.getOriginalApprovedAmount();
@@ -693,7 +806,7 @@ public class NwsConnector extends GatewayConnectorConfig {
                         GiftCard gift = (GiftCard) originalPaymentMethod;
 
                         // DE 35 / DE 45
-                        if (gift.getValueType().equals("TrackData")) {
+                        if (gift.getValueType()!= null && gift.getValueType().equals("TrackData")) {
                             if (gift.getTrackNumber().equals(TrackNumber.TrackTwo)) {
                                 request.set(DataElementId.DE_035, gift.getTrackData());
                             } else {
@@ -911,7 +1024,7 @@ public class NwsConnector extends GatewayConnectorConfig {
             48-40, 48-49 ADDRESS 1 THROUGH ADDRESS 10 LLVAR ans..99 D One or more types of addresses.
             48-50, 48-64 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
          */
-            if (mti.equals("1100") || mti.equals("1200") || mti.equals("1220") || mti.equals("1520")) {
+            if (mti.equals("1100") || mti.equals("1200") || mti.equals("1220") || mti.equals("1520") || mti.equals("1420")) {
                 DE48_MessageControl messageControl = mapMessageControl(builder);
                 request.set(DataElementId.DE_048, messageControl);
             }
@@ -944,10 +1057,38 @@ public class NwsConnector extends GatewayConnectorConfig {
             54.3 CURRENCY CODE, ADDITIONAL AMOUNTS n3 Use DE 49 codes.
             54.4 AMOUNT, ADDITIONAL AMOUNTS x + n12 See Use of the Terms Credit and Debit under Table 1-2 Transaction Processing, p. 61.
          */
-            if (builder.getCashBackAmount() != null && transactionType.equals(TransactionType.Reversal)) {
+        if (builder.getCashBackAmount() != null && transactionType.equals(TransactionType.Reversal)) {
+            DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
+            setAdditionalAmount(builder, paymentMethod, currencyCode, amountsAdditional);
+            request.set(DataElementId.DE_054, amountsAdditional);
+        }
+        else if (paymentMethod instanceof Credit) {
+                Credit card = (Credit) paymentMethod;
                 DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
-                setAdditionalAmount(builder, paymentMethod, currencyCode, amountsAdditional);
-                request.set(DataElementId.DE_054, amountsAdditional);
+            if (builder.getProductData() != null) {
+                DE63_ProductData productData = builder.getProductData().toDataElement();
+
+                    if (!StringUtils.isNullOrEmpty(card.getCardType()) && card.getCardType().equals("VisaFleet") && (isVisaFleet2)) {
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                        }
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelWithTax());
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelAmount());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        }
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                        }
+                        request.set(DataElementId.DE_054, amountsAdditional);
+                    }
+                }
             }
 
             // DE 55: Integrated Circuit Card (ICC) Data - LLLVAR b..512
@@ -1080,8 +1221,22 @@ public class NwsConnector extends GatewayConnectorConfig {
                     ICardData cardData = (ICardData) reference.getOriginalPaymentMethod();
                     if (cardData != null) {
                         String tokenizationData = cardData.getTokenizationData();
+                        EncryptionData encryptionData = ((IEncryptable) cardData).getEncryptionData();
+                        boolean combinedMessage = false;
+                        if(tokenizationData != null && encryptionData != null){
+                            combinedMessage = true;
+                        }
                         if (tokenizationData != null) {
-                            setTokenizationData(forwardingData, cardData, tokenizationData);
+                            setTokenizationData(forwardingData,paymentMethod, tokenizationData,combinedMessage);
+                            request.set(DataElementId.DE_127, forwardingData);
+                        }
+                    }
+                } else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
+                    ITrackData trackData = (ITrackData) reference.getOriginalPaymentMethod();
+                    if (trackData != null) {
+                        String tokenizationData = trackData.getTokenizationData();
+                        if (tokenizationData != null) {
+                            setTokenizationData(forwardingData,paymentMethod, tokenizationData,false);
                             request.set(DataElementId.DE_127, forwardingData);
                         }
                     }
@@ -1093,13 +1248,47 @@ public class NwsConnector extends GatewayConnectorConfig {
         throw new BuilderException("Builder can't be Null");
     }
 
-    private void setTokenizationData(DE127_ForwardingData forwardingData, ICardData cardData, String tokenizationData) {
+    private void setTokenizationData(DE127_ForwardingData forwardingData,IPaymentMethod paymentMethod, String tokenizationData, boolean isCombinedMessage) {
+
+        ICardData cardData = null;
+        ITrackData trackData = null;
+        if(paymentMethod instanceof ICardData){
+            cardData = (ICardData) paymentMethod;
+        }
+        else if(paymentMethod instanceof ITrackData){
+            trackData = (ITrackData) paymentMethod;
+        }
+        //Tokenization Operation type
+        TokenizationOperationType tokenOperationType = acceptorConfig.getTokenizationOperationType();
 
         //Token data AccountNumber/Token
         forwardingData.setTokenOrAcctNum(tokenizationData);
 
-        // Card Expiry
-        forwardingData.setExpiryDate(formatExpiry(cardData.getShortExpiry()));
+        if(isCombinedMessage){
+            EncryptionType encryptionType = acceptorConfig.getSupportedEncryptionType();
+            EncryptedFieldMatrix  encryptedField = getEncryptionField(paymentMethod, encryptionType);
+
+            forwardingData.setTokenOrAcctNum("");
+            if(encryptedField.equals(EncryptedFieldMatrix.Pan)) {
+                if(cardData!=null){
+                    forwardingData.setExpiryDate(formatExpiry(cardData.getShortExpiry()));
+                }
+            }else if(encryptedField.equals(EncryptedFieldMatrix.Track1) || encryptedField.equals(EncryptedFieldMatrix.Track2)){
+                forwardingData.setExpiryDate("");
+            }
+        }
+        else {
+            // Card Expiry
+            if(cardData != null) {
+                forwardingData.setExpiryDate(formatExpiry(cardData.getShortExpiry()));
+            }
+            if(trackData != null){
+                forwardingData.setExpiryDate(trackData.getExpiry());
+                if(tokenOperationType.equals(TokenizationOperationType.Tokenize)) {
+                    forwardingData.setTokenOrAcctNum(trackData.getTokenizationData());
+                }
+            }
+        }
 
         //Merchant Id
         String merchantId = acceptorConfig.getMerchantId();
@@ -1120,7 +1309,6 @@ public class NwsConnector extends GatewayConnectorConfig {
         }
 
         //Tokenization Operation type
-        TokenizationOperationType tokenOperationType = acceptorConfig.getTokenizationOperationType();
         setTokenizationOperationType(forwardingData, tokenOperationType);
         forwardingData.addTokenizationData(tokenizationType);
 
@@ -1425,7 +1613,7 @@ public class NwsConnector extends GatewayConnectorConfig {
                 message.setMessageTypeIndicator(messageTransactionIndicator);
 
                 // log out the breakdown
-                printResponseData(message); 
+                printResponseData(message);
                 DE3_ProcessingCode processingCode = message.getDataElement(DataElementId.DE_003, DE3_ProcessingCode.class);
                 DE44_AdditionalResponseData additionalResponseData = message.getDataElement(DataElementId.DE_044, DE44_AdditionalResponseData.class);
                 DE48_MessageControl messageControl = message.getDataElement(DataElementId.DE_048, DE48_MessageControl.class);
@@ -1696,7 +1884,8 @@ public class NwsConnector extends GatewayConnectorConfig {
                 }
                 break;
                 case Refund: {
-                    if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) {
+                    if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT ||
+                            builder.getPaymentMethod() instanceof GiftCard) {
                         mtiValue += "0";
                     } else mtiValue += "2";
                 }
@@ -2168,17 +2357,27 @@ public class NwsConnector extends GatewayConnectorConfig {
         // fleet data
         if(builder.getFleetData() != null) {
             FleetData fleetData = builder.getFleetData();
+            if(builder instanceof AuthorizationBuilder) {
+                AuthorizationBuilder authBuilder = (AuthorizationBuilder) builder;
+                if (!StringUtils.isNullOrEmpty(authBuilder.getTagData())) {
+                    customerData.setEmvFlag(true);
+                }
+            }
 
             customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
-            customerData.set(DE48_CustomerDataType.Vehicle_Number, StringUtils.padLeft(fleetData.getVehicleNumber(), 6, '0'));
+            customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
             customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
-            customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, StringUtils.padLeft(fleetData.getDriverId(), 6, '0'));
-            customerData.set(DE48_CustomerDataType.Odometer_Reading, StringUtils.padLeft(fleetData.getOdometerReading(), 6, '0'));
+            customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
+            customerData.set(DE48_CustomerDataType.Odometer_Reading,fleetData.getOdometerReading());
             customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
+            customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, fleetData.getWorkOrderPoNumber());
             customerData.set(DE48_CustomerDataType.EnteredData_Numeric, fleetData.getEnteredData());
             customerData.set(DE48_CustomerDataType.ServicePrompt, fleetData.getServicePrompt());
             customerData.set(DE48_CustomerDataType.JobNumber, fleetData.getJobNumber());
             customerData.set(DE48_CustomerDataType.Department, fleetData.getDepartment());
+            customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA1,fleetData.getAdditionalPromptData1());
+            customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA2,fleetData.getAdditionalPromptData2());
+            customerData.set(DE48_CustomerDataType.EMPLOYEENUMBER,fleetData.getEmployeeNumber());
         }
 
         // cvn number
@@ -2214,26 +2413,34 @@ public class NwsConnector extends GatewayConnectorConfig {
         messageControl.setCardType(mapCardType(builder.getPaymentMethod()));
 
         // DE48-14
-        if(builder.getPaymentMethod() instanceof IPinProtected) {
+        if(builder.getPaymentMethod() instanceof IPinProtected && builder instanceof AuthorizationBuilder) {
+            IPinProtected pinProtected = (IPinProtected)builder.getPaymentMethod();
+            if(pinProtected.getPinBlock() != null) {
             DE48_14_PinEncryptionMethodology pinEncryptionMethodology = new DE48_14_PinEncryptionMethodology();
             pinEncryptionMethodology.setKeyManagementDataCode(DE48_KeyManagementDataCode.DerivedUniqueKeyPerTransaction_DUKPT);
             pinEncryptionMethodology.setEncryptionAlgorithmDataCode(DE48_EncryptionAlgorithmDataCode.TripleDES_3Keys);
             messageControl.setPinEncryptionMethodology(pinEncryptionMethodology);
         }
+    }
 
         // DE48-33
-        if(!(builder.getPaymentMethod() instanceof eCheck) && acceptorConfig.hasPosConfiguration_MessageControl()) {
-            DE48_33_PosConfiguration posConfiguration = new DE48_33_PosConfiguration();
-            posConfiguration.setTimezone(posConfiguration.getTimezone());
-            posConfiguration.setSupportsPartialApproval(acceptorConfig.getSupportsPartialApproval());
-            posConfiguration.setSupportsReturnBalance(acceptorConfig.getSupportsReturnBalance());
-            posConfiguration.setSupportsCashOver(acceptorConfig.getSupportsCashOver());
-            posConfiguration.setMobileDevice(acceptorConfig.getMobileDevice());
-            messageControl.setPosConfiguration(posConfiguration);
-
+        if(!(builder.getPaymentMethod() instanceof eCheck)) {
+            if(acceptorConfig.hasPosConfiguration_MessageControl()) {
+                DE48_33_PosConfiguration posConfiguration = new DE48_33_PosConfiguration();
+                posConfiguration.setTimezone(posConfiguration.getTimezone());
+                posConfiguration.setSupportsPartialApproval(acceptorConfig.getSupportsPartialApproval());
+                posConfiguration.setSupportsReturnBalance(acceptorConfig.getSupportsReturnBalance());
+                posConfiguration.setSupportsCashOver(acceptorConfig.getSupportsCashOver());
+                posConfiguration.setMobileDevice(acceptorConfig.getMobileDevice());
+                posConfiguration.setSupportWexAdditionalProducts(acceptorConfig.getSupportWexAdditionalProducts());
+                posConfiguration.setSupportTerminalPurchaseRestriction(acceptorConfig.getSupportTerminalPurchaseRestriction());
+                posConfiguration.setSupportVisaFleet2dot0(acceptorConfig.getSupportVisaFleet2dot0());
+                messageControl.setPosConfiguration(posConfiguration);
+            }
         }
 
         // DE48-34 // Message Configuration Fields
+        // TODO: This needs to be pulled in from the config
         if(acceptorConfig.hasPosConfiguration_MessageData() && !isTimeRequest) {
             DE48_34_MessageConfiguration messageConfigData = new DE48_34_MessageConfiguration();
             messageConfigData.setPerformDateCheck(acceptorConfig.getPerformDateCheck());
@@ -2321,6 +2528,19 @@ public class NwsConnector extends GatewayConnectorConfig {
     private <T extends TransactionBuilder<Transaction>> DE62_CardIssuerData mapCardIssuerData(T builder) {
         // DE 62: Card Issuer Data - LLLVAR ans..999
         DE62_CardIssuerData cardIssuerData = new DE62_CardIssuerData();
+        boolean isVisaFleet2 = acceptorConfig.getSupportVisaFleet2dot0() != null && acceptorConfig.getVisaFleet2()!=null && acceptorConfig.getVisaFleet2();
+
+        //F03
+        if(builder.getPaymentMethod() != null) {
+            IPaymentMethod paymentMethod = builder.getPaymentMethod();
+            if(paymentMethod instanceof TransactionReference) {
+                paymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
+            }
+            if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("VisaFleet") && isVisaFleet2) {
+                cardIssuerData.add(CardIssuerEntryTag.VISAFLEET2DOT0CARDPRESENTBYCARDHOLDER, acceptorConfig.getSupportVisaFleet2dot0().getValue());
+            }
+        }
+
 
         if(builder.getTransactionType().equals(TransactionType.StoreAndForward)) {
             String storeAndForwardFlag = "1";
@@ -2384,6 +2604,15 @@ public class NwsConnector extends GatewayConnectorConfig {
                 }
             }
         }
+        if(builder.getPaymentMethod() != null) {
+            IPaymentMethod paymentMethod = builder.getPaymentMethod();
+            if(paymentMethod instanceof TransactionReference) {
+                paymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
+            }
+            if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("MC")) {
+                cardIssuerData.add(CardIssuerEntryTag.MASTERCARD_CIT_MIT_INDICATOR,"M207");
+            }
+        }
 
         // management builder related
         if(builder instanceof ManagementBuilder) {
@@ -2426,7 +2655,7 @@ public class NwsConnector extends GatewayConnectorConfig {
     }
     private DE48_CardType mapCardType(IPaymentMethod paymentMethod) {
         // check to see if the original payment method is set
-        getPaymentMethodFromTransactionReference(paymentMethod);
+        paymentMethod = getPaymentMethodFromTransactionReference(paymentMethod);
 
         // evaluate and return
         if(paymentMethod instanceof DebitTrackData) {
@@ -2584,19 +2813,16 @@ public class NwsConnector extends GatewayConnectorConfig {
                     if(request.has(DataElementId.DE_002)) {
                         impliedCapture.set(DataElementId.DE_002, request.getString(DataElementId.DE_002));
                         impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
-                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "0");
                     }
                     else if(request.has(DataElementId.DE_035)) {
                         CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_035));
                         impliedCapture.set(DataElementId.DE_002, track.getPan());
                         impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "2");
                     }
                     else {
                         CreditTrackData track = new CreditTrackData(request.getString(DataElementId.DE_045));
                         impliedCapture.set(DataElementId.DE_002, track.getPan());
                         impliedCapture.set(DataElementId.DE_014, track.getExpiry());
-                        requestIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "NSI", "1");
                     }
                     impliedCapture.set(DataElementId.DE_062, requestIssuerData);
 
@@ -2788,24 +3014,29 @@ public class NwsConnector extends GatewayConnectorConfig {
         }
     }
 
-    private static void getPaymentMethodFromTransactionReference(IPaymentMethod paymentMethod) {
+    private static IPaymentMethod getPaymentMethodFromTransactionReference(IPaymentMethod paymentMethod) {
         if(paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
             if(reference.getOriginalPaymentMethod() != null) {
                 paymentMethod = reference.getOriginalPaymentMethod();
             }
         }
-       // return paymentMethod;
+         return paymentMethod;
     }
 
-    private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod, EncryptionType encryptionType){
-
+        private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod, EncryptionType encryptionType){
         if(encryptionType.equals(EncryptionType.TDES)){
             if(paymentMethod instanceof ICardData){
                 return EncryptedFieldMatrix.Pan;
             }
             else if(paymentMethod instanceof ITrackData) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
+                if (trackType == TrackNumber.TrackOne)
+                    return EncryptedFieldMatrix.Track1;
+                else if (trackType == TrackNumber.TrackTwo)
+                    return EncryptedFieldMatrix.Track2;
+            }else if(paymentMethod instanceof GiftCard) {
+                TrackNumber trackType=((GiftCard)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;
                 else if (trackType == TrackNumber.TrackTwo)

@@ -154,6 +154,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     @Getter
     private String paymentPurposeCode;
+    @Getter
+    private BigDecimal salesTaxAdditionAmount;
+
+    @Getter @Setter
+    private String categoryIndicator;
 
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
@@ -465,6 +470,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.transactionModifier = TransactionModifier.CashBack;
         return this;
     }
+    public AuthorizationBuilder withSalesTaxAdditionAmount(BigDecimal value) {
+        this.salesTaxAdditionAmount = value;
+        return this;
+    }
+
     public AuthorizationBuilder withChipCondition(EmvChipCondition value) {
         this.emvChipCondition = value;
         return this;
@@ -826,8 +836,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return withCardBrandStorage(transactionInitiator, null);
     }
     public AuthorizationBuilder withCardBrandStorage(StoredCredentialInitiator transactionInitiator, String value) {
+        return withCardBrandStorage(transactionInitiator,value,null);
+    }
+    public AuthorizationBuilder withCardBrandStorage(StoredCredentialInitiator transactionInitiator, String cardBrandTransactionId, String categoryIndicator) {
         this.transactionInitiator = transactionInitiator;
-        this.cardBrandTransactionId = value;
+        this.cardBrandTransactionId = cardBrandTransactionId;
+        this.categoryIndicator = categoryIndicator;
         return this;
     }
     public AuthorizationBuilder withCompanyId(String companyId) {

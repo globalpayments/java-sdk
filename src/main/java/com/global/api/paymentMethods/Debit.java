@@ -2,6 +2,7 @@ package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.EncryptionData;
+import com.global.api.entities.enums.InquiryType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
 import lombok.Getter;
@@ -66,9 +67,16 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     public AuthorizationBuilder reverse(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Reversal, this).withAmount(amount);
     }
+
     public AuthorizationBuilder fileAction() {
         return new AuthorizationBuilder(TransactionType.FileAction, this);
     }
 
+    public AuthorizationBuilder balanceInquiry() {
+        return balanceInquiry(null);
+    }
+    public AuthorizationBuilder balanceInquiry(InquiryType inquiry) {
+        return new AuthorizationBuilder(TransactionType.Balance, this).withBalanceInquiryType(inquiry);
+    }
 
 }

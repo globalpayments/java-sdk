@@ -2,9 +2,10 @@ package com.global.api.tests.network.nws;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.TrackNumber;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -29,10 +30,8 @@ import static org.junit.Assert.assertNotNull;
 public class NWSTokenizationTest {
     private CreditCardData card;
     private CreditTrackData track;
-
-    private NetworkGatewayConfig config;
-
     private AcceptorConfig acceptorConfig;
+    private NetworkGatewayConfig config;
 
     public NWSTokenizationTest() throws ApiException {
 
@@ -74,7 +73,6 @@ public class NWSTokenizationTest {
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
         acceptorConfig.setServiceType(ServiceType.GPN_API);
         acceptorConfig.setOperationType(OperationType.Decrypt);
-
         //card num 165473500000000014
 
         // gateway config
@@ -107,10 +105,12 @@ public class NWSTokenizationTest {
     }
 
     @Test
-    public void test_file_action() throws ApiException {
+    public void test_file_action_Mc() throws ApiException {
         acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
-        ServicesContainer.configureService(config);
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("5473500000000014");
         Transaction response = card.fileAction()
                 .execute();
@@ -120,7 +120,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -130,7 +133,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -142,7 +148,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -177,7 +186,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -188,7 +200,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -203,7 +218,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -241,7 +259,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void() throws ApiException {
-        card = TestCards.MasterCardManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MC");
         card.setTokenizationData("8E4BDE85FCF1FD72A6CC9A8AC0EB740A");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -260,6 +281,7 @@ public class NWSTokenizationTest {
     @Test
     public void test_file_action_mastercard_purchasing() throws ApiException {
         card = TestCards.MasterCardPurchasingManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
         card.setTokenizationData("5302490000004066");
         Transaction response = card.fileAction()
                 .execute();
@@ -269,7 +291,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -279,7 +304,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -291,7 +319,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -326,7 +357,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -337,7 +371,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -352,7 +389,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -390,7 +430,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_mastercard_purchasing() throws ApiException {
-        card = TestCards.MasterCardPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("MastercardPurchasing");
         card.setTokenizationData("4B76646C9A22E481DFB94CF1314E9301");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -409,7 +452,12 @@ public class NWSTokenizationTest {
     //Visa Manual
     @Test
     public void test_file_action_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("4012002000060016");
         Transaction response = card.fileAction()
                 .execute();
@@ -419,7 +467,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -429,7 +480,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -441,7 +495,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -476,7 +533,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -487,7 +547,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -502,7 +565,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -540,7 +606,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_visa() throws ApiException {
-        card = TestCards.VisaManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Visa");
         card.setTokenizationData("FBFE7A3F3AD34F8211E556327CA5E379");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -558,7 +627,12 @@ public class NWSTokenizationTest {
     //Visa Manual
     @Test
     public void test_file_action_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("4012002000060016");
         Transaction response = card.fileAction()
                 .execute();
@@ -568,7 +642,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -578,7 +655,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -590,7 +670,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -625,7 +708,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -636,7 +722,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -651,7 +740,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -689,7 +781,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_visa_purchasing() throws ApiException {
-        card = TestCards.VisaPurchasingManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaPurchasing");
         card.setTokenizationData("E099BF9FBFEA0A06FF7B7779241CAFDB");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -707,7 +802,12 @@ public class NWSTokenizationTest {
     //visa corporate
     @Test
     public void test_file_action_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("4013872718148777");
         Transaction response = card.fileAction()
                 .execute();
@@ -717,7 +817,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -727,8 +830,12 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
+
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -739,8 +846,12 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
+
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .execute();
@@ -774,8 +885,12 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
+
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -785,7 +900,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -800,7 +918,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -838,7 +959,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_visa_corporate() throws ApiException {
-        card = TestCards.VisaCorporateManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("VisaCorporate");
         card.setTokenizationData("5F052EB94571A12965D2D6343525E9CA");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -857,7 +981,12 @@ public class NWSTokenizationTest {
     //discover
     @Test
     public void test_file_action_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("6550006599174230");
         Transaction response = card.fileAction()
                 .execute();
@@ -867,7 +996,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -877,7 +1009,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        //card.setCardType("DiscoverCard");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -889,7 +1024,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -925,7 +1063,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -936,7 +1077,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        //card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -951,7 +1095,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -989,7 +1136,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_discover() throws ApiException {
-        card = TestCards.DiscoverManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Discover");
         card.setTokenizationData("4D6B025705ADA3BC92392CB12D4C5A9E");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -1007,7 +1157,12 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_file_action_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("372700699251018");
         Transaction response = card.fileAction()
                 .execute();
@@ -1017,7 +1172,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1027,7 +1185,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1039,7 +1200,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -1074,7 +1238,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1085,7 +1252,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -1100,7 +1270,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -1138,7 +1311,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_amex() throws ApiException {
-        card = TestCards.AmexManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Amex");
         card.setTokenizationData("4CCD57AAFF5477B986563BE1E70690B3");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -1155,8 +1331,14 @@ public class NWSTokenizationTest {
     //JCB
     @Test
     public void test_file_action_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("3566007770007321");
+
         Transaction response = card.fileAction()
                 .execute();
         assertNotNull(response);
@@ -1165,7 +1347,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1175,7 +1360,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1187,7 +1375,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -1222,7 +1413,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1233,7 +1427,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -1248,7 +1445,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -1286,7 +1486,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_jcb() throws ApiException {
-        card = TestCards.JcbManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("Jcb");
         card.setTokenizationData("1DD5C11868C9717809EDD0BB12ACF61C");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -1303,7 +1506,12 @@ public class NWSTokenizationTest {
     //Union Pay
     @Test
     public void test_file_action_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("6221260012345674");
         Transaction response = card.fileAction()
                 .execute();
@@ -1313,7 +1521,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1323,7 +1534,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1335,7 +1549,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -1370,7 +1587,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1381,7 +1601,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -1396,7 +1619,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -1434,7 +1660,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_union_pay() throws ApiException {
-        card = TestCards.UnionPayManual();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("UnionPay");
         card.setTokenizationData("F1C96E421546E54F77CB74EDFCDDCE65");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -1452,7 +1681,12 @@ public class NWSTokenizationTest {
     //Paypal
     @Test
     public void test_file_action_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("6506001000010029");
         Transaction response = card.fileAction()
                 .execute();
@@ -1462,7 +1696,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_001_credit_manual_auth_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1472,7 +1709,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_002_credit_manual_sale_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1484,7 +1724,10 @@ public class NWSTokenizationTest {
     //force draft capture
     @Test
     public void test_016_authCapture_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
         Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
@@ -1519,7 +1762,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_004_credit_refund_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
@@ -1530,7 +1776,10 @@ public class NWSTokenizationTest {
 
     @Test
     public void test_005_credit_balance_inquiry_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
         Transaction response = card.balanceInquiry()
                 .execute();
@@ -1545,7 +1794,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_sale_reversal_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
 
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
@@ -1583,7 +1835,10 @@ public class NWSTokenizationTest {
     }
     @Test
     public void test_015_credit_void_paypal() throws ApiException {
-        card = TestCards.Paypal();
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setCardType("PayPal");
         card.setTokenizationData("77D2FFAEE984E740AC487E1E5A8E6726");
 
         Transaction response = card.charge(new BigDecimal(10))
@@ -1597,7 +1852,6 @@ public class NWSTokenizationTest {
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
     }
-
     @Test
     public void test_001_credit_manual_auth_default_codecoverage() throws ApiException {
         acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeleteToken);
@@ -1611,11 +1865,143 @@ public class NWSTokenizationTest {
     }
 
 
+    //*********************** combined 3des/tokenization ****************************
 
+    @Test
+    public void test_file_action_combined_MC() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
 
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setTokenizationData("5506740000004316");
+        card.setCardType("MC");
+        card.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F",
+                "F000019990E00003"));
+        Transaction response = card.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
+    }
+    @Test
+    public void test_Visa_file_action_Combined() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
 
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setTokenizationData("4012002000060016");
+        card.setEncryptionData(EncryptionData.setKSNAndEncryptedData("49AB0D7DF39F4EAA3ADEB107CCCC03D0",
+                "F000019990E00003"));
+        Transaction response = card.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
 
+    @Test
+    public void test_Discover_file_action_combined() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
+
+        card = new CreditCardData();
+        card.setExpMonth(10);
+        card.setExpYear(2025);
+        card.setTokenizationData("6011000990156527");
+        //mc data
+        card.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F",
+                "F000019990E00003"));
+        Transaction response = card.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_file_action_combined_MC_swipe() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
+
+        track = new CreditTrackData();
+        track.setExpiry("2512");
+        track.setTrackNumber(TrackNumber.TrackOne);
+        track.setTokenizationData("5473500000000014");
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A15B6FB3D21191BA5",
+                "F000019990E00003"));
+
+        Transaction response = track.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+    }
+
+    @Test
+    public void test_file_action_combined_MC_trackTwo() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
+
+        track = new CreditTrackData();
+        track.setExpiry("2512");
+        track.setTrackNumber(TrackNumber.TrackTwo);
+        track.setTokenizationData("5473500000000014");
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        Transaction response = track.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+    }
+    //negative scenarios
+    //incorrect operation type
+    @Test
+    public void test_file_action_combined_MC_incorrect_operation_type() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
+
+        track = new CreditTrackData();
+        track.setExpiry("2512");
+        track.setTrackNumber(TrackNumber.TrackTwo);
+        track.setTokenizationData("5473500000000014");
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        Transaction response = track.fileAction()
+                .execute();
+        assertNotNull(response);
+        //encryption error
+        assertEquals(response.getResponseMessage(), "952", response.getResponseCode());
+
+    }
+
+    //negative scenario missing tokenization data
+    @Test
+    public void test_file_action_combined_MC_() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
+
+        track = new CreditTrackData();
+        track.setExpiry("2512");
+        track.setTrackNumber(TrackNumber.TrackTwo);
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        Transaction response = track.fileAction()
+                .execute();
+        assertNotNull(response);
+        //entryption error
+        assertEquals(response.getResponseMessage(), "952", response.getResponseCode());
+
+    }
 
 
 

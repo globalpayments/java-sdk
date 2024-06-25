@@ -44,6 +44,8 @@ public class AcceptorConfig {
     private Boolean capableVoid;
     @Getter @Setter
     private Boolean supportWexAdditionalProducts;
+//    @Getter @Setter
+//    private Boolean supportBankcard;
     @Getter @Setter
     private PurchaseType supportVisaFleet2dot0;
     @Getter @Setter

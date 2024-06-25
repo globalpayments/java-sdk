@@ -76,6 +76,22 @@ public class UpaCreditTests {
         runBasicTests(response);
         assertEquals(new BigDecimal("12.03"), response.getTransactionAmount());
     }
+
+    @Test
+    public void creditSaleSwipe_withoutHSAFSA() throws ApiException
+    {
+        AutoSubstantiation substantiation = new AutoSubstantiation();
+        substantiation.setPrescriptionSubTotal(new BigDecimal(10));
+        substantiation.setVisionSubTotal(new BigDecimal(10));
+        TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
+                .withGratuity(new BigDecimal("0.00"))
+                .withAutoSubstantiation(substantiation)
+                .execute();
+
+        runBasicTests(response);
+        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
+    }
+
     @Test
     public void partialAmountSaleContactless() throws ApiException
     {
@@ -132,6 +148,23 @@ public class UpaCreditTests {
         runBasicTests(response2);
         assertEquals(new BigDecimal("1.50"), response2.getTipAmount());
         assertEquals(new BigDecimal("13.84"), response2.getTransactionAmount());
+    }
+
+    @Test
+    public void TipAdjust_AddReferenceNo() throws ApiException
+    {
+        TerminalResponse saleResponse = device.creditSale(new BigDecimal("10.50"))
+                .execute();
+
+        runBasicTests(saleResponse);
+
+        TerminalResponse tipAdjustResponse = device.tipAdjust(new BigDecimal("1.50"))
+                .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
+                .execute();
+
+        runBasicTests(tipAdjustResponse);
+        assertEquals(new BigDecimal("1.50"), tipAdjustResponse.getTipAmount());
+        assertEquals(new BigDecimal("12.00"), tipAdjustResponse.getTransactionAmount());
     }
 
     @Test
@@ -272,37 +305,6 @@ public class UpaCreditTests {
 
         assertNotNull(captureResponse);
         assertEquals(new BigDecimal("15.00"), captureResponse.getTransactionAmount());
-    }
-    @Test
-    public void creditSaleSwipe_withoutHSAFSA() throws ApiException
-    {
-        AutoSubstantiation substantiation = new AutoSubstantiation();
-        substantiation.setPrescriptionSubTotal(new BigDecimal(10));
-        substantiation.setVisionSubTotal(new BigDecimal(10));
-        TerminalResponse response = device.creditSale(new BigDecimal("12.01"))
-                .withGratuity(new BigDecimal("0.00"))
-                .withAutoSubstantiation(substantiation)
-                .execute();
-
-        runBasicTests(response);
-        assertEquals(new BigDecimal("12.01"), response.getTransactionAmount());
-    }
-
-    @Test
-    public void TipAdjust_AddReferenceNo() throws ApiException
-    {
-        TerminalResponse saleResponse = device.creditSale(new BigDecimal("10.50"))
-                .execute();
-
-        runBasicTests(saleResponse);
-
-        TerminalResponse tipAdjustResponse = device.tipAdjust(new BigDecimal("1.50"))
-                .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
-                .execute();
-
-        runBasicTests(tipAdjustResponse);
-        assertEquals(new BigDecimal("1.50"), tipAdjustResponse.getTipAmount());
-        assertEquals(new BigDecimal("12.00"), tipAdjustResponse.getTransactionAmount());
     }
 
     @Test

@@ -1,23 +1,16 @@
 package com.global.api.network.elements;
 
-import com.global.api.builders.TransactionBuilder;
-import com.global.api.entities.enums.CardType;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TransactionType;
-import com.global.api.network.NetworkMessage;
 import com.global.api.network.abstractions.IDataElement;
-import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.enums.*;
-import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringParser;
 import com.global.api.utils.StringUtils;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.math.RoundingMode;
 import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     private ProductDataFormat productDataFormat = ProductDataFormat.HeartlandStandardFormat;
@@ -35,6 +28,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     private LinkedHashMap<String, DE63_ProductDataEntry> fuelProductDataEntries;
     @Getter@Setter
     private LinkedHashMap<String, DE63_ProductDataEntry> nonFuelProductDataEntries;
+    private String EMPTY_STRING ="  ";
 
     public ProductDataFormat getProductDataFormat() {
         return productDataFormat;
@@ -59,7 +53,6 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     }
     public int getFuelProductCount() {
         return fuelProductDataEntries.size();
-
     }
     public int getNonFuelProductCount() {
         return nonFuelProductDataEntries.size();
@@ -316,7 +309,8 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
                     if (getFuelProductCount() == 1) {
                         for (DE63_ProductDataEntry entry : fuelProductDataEntries.values()) {
-                            rvalue = rvalue.concat(entry.getCode() + "\\");
+                            rvalue = rvalue.concat(StringUtils.padRight(entry.getCode(),4,' '));
+                            rvalue = rvalue.concat("\\");
 
                             if (entry.getUnitOfMeasure() != null) {
                                 rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());

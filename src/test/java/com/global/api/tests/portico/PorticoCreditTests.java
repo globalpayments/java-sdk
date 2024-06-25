@@ -2,10 +2,7 @@ package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
-import com.global.api.entities.enums.EmvChipCondition;
-import com.global.api.entities.enums.StoredCredentialInitiator;
-import com.global.api.entities.enums.TaxType;
-import com.global.api.entities.enums.TransactionModifier;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
@@ -627,6 +624,7 @@ public class PorticoCreditTests {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
                 .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .withRequestMultiUseToken(true)
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -646,6 +644,7 @@ public class PorticoCreditTests {
     public void creditVerifyWithCOF() throws ApiException {
         Transaction response = card.verify()
                 .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
                 .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
                 .execute();
         assertNotNull(response);
@@ -665,6 +664,7 @@ public class PorticoCreditTests {
         Transaction response = card.authorize(new BigDecimal(14))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
                 .withCardBrandStorage(StoredCredentialInitiator.Merchant)
                 .execute();
         assertNotNull(response);
@@ -690,6 +690,7 @@ public class PorticoCreditTests {
         Transaction response = card.charge(new BigDecimal(14))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
                 .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
                 .execute();
         assertNotNull(response);
@@ -698,7 +699,7 @@ public class PorticoCreditTests {
         Transaction nextResponse = card.charge(new BigDecimal(14))
                 .withCurrency("USD")
                 .withAllowDuplicates(false)
-                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder,response.getCardBrandTransactionId())
                 .execute();
         assertNotNull(nextResponse);
         assertNotNull(nextResponse.getAdditionalDuplicateData());
@@ -786,7 +787,9 @@ public class PorticoCreditTests {
 
     @Test
     public void creditAuthorization_withoutSAFIndicator03() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
@@ -795,6 +798,7 @@ public class PorticoCreditTests {
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
+
     @Test
     public void creditSale_ClerkId() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
@@ -837,5 +841,29 @@ public class PorticoCreditTests {
     });
         assertEquals(ILLEGAL_ARGUMENT_EXCEPTION,exc.getMessage());
   }
+    @Test
+    public void creditAuthorizationWithCOF_categoryIndicator() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder, response.getCardBrandTransactionId(),"07")
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+
+        Transaction capture = nextResponse.capture(new BigDecimal(16))
+                .withGratuity(new BigDecimal(2))
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+    }
 }
 

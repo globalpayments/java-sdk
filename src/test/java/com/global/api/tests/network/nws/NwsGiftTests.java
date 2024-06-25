@@ -11,6 +11,7 @@ import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
+import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
@@ -26,6 +27,7 @@ import static org.junit.Assert.*;
 
 public class NwsGiftTests {
     private GiftCard giftCard;
+    private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
 
     public NwsGiftTests() throws ApiException {
@@ -37,7 +39,7 @@ public class NwsGiftTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
 
         acceptorConfig.setAddress(address);
 
@@ -59,6 +61,17 @@ public class NwsGiftTests {
         acceptorConfig.setSupportsReturnBalance(true);
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
+
+        //DE 127
+        acceptorConfig.setServiceType(ServiceType.GPN_API);
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        acceptorConfig.setTokenizationType(TokenizationType.MerchantTokenization);
+        acceptorConfig.setMerchantId("650000011573667");
+
+        //DE 127
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TDES);
+        acceptorConfig.setServiceType(ServiceType.GPN_API);
+        acceptorConfig.setOperationType(OperationType.Decrypt);
 
         // gateway config
         config = new NetworkGatewayConfig(Target.NWS);
@@ -124,8 +137,9 @@ public class NwsGiftTests {
 
     @Test
     public void giftCard_activate() throws ApiException {
-        Transaction response = giftCard.activate(new BigDecimal(100))
+        Transaction response = giftCard.activate(new BigDecimal(10))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -135,6 +149,7 @@ public class NwsGiftTests {
     public void giftCard_add_value() throws ApiException {
         Transaction response = giftCard.addValue(new BigDecimal(25))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -143,6 +158,7 @@ public class NwsGiftTests {
     public void giftCard_authorize() throws ApiException {
         Transaction response = giftCard.authorize(new BigDecimal(10.00))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -150,6 +166,7 @@ public class NwsGiftTests {
     @Test
     public void giftCard_balance_inquiry() throws ApiException {
         Transaction response = giftCard.balanceInquiry()
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -167,7 +184,8 @@ public class NwsGiftTests {
     public void giftCard_auth_capture() throws ApiException {
         Transaction response = giftCard.authorize(new BigDecimal(50), true)
                 .withCurrency("USD")
-                .execute("ICR");
+                .withClerkId("41256")
+                .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
 
@@ -183,6 +201,7 @@ public class NwsGiftTests {
 
         Transaction captureResponse = transaction.capture(new BigDecimal(35.24))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(captureResponse);
         assertEquals("000", captureResponse.getResponseCode());
@@ -207,6 +226,7 @@ public class NwsGiftTests {
     public void giftCard_sale() throws ApiException {
         Transaction response = giftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -225,7 +245,7 @@ public class NwsGiftTests {
     public void giftCard_return() throws ApiException {
         Transaction response = giftCard.refund(new BigDecimal(12))
                 .withCurrency("USD")
-                //.withClerkId("41256")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -235,6 +255,7 @@ public class NwsGiftTests {
     public void giftCard_void() throws ApiException {
         Transaction response = giftCard.charge(new BigDecimal(25.00))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -320,7 +341,8 @@ public class NwsGiftTests {
                 response.getOriginalTransactionTime()
         );
 
-        Transaction voidResponse = transaction
+
+        Transaction voidResponse = response
                 .voidTransaction()
                 .execute();
         assertNotNull(voidResponse);
@@ -330,31 +352,13 @@ public class NwsGiftTests {
     public void test001_giftCard_reversal() throws ApiException {
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
 
-//        Transaction response = giftCard.charge(new BigDecimal(10))
-//                .withCurrency("USD")
-//                .withClerkId("41256")
-//                .execute();
-//        assertNotNull(response);
-        Transaction response = giftCard.addValue(new BigDecimal(10.00))
+        Transaction response = giftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
+                .withClerkId("41256")
                 .execute();
         assertNotNull(response);
-//        assertEquals("000", response.getResponseCode());
-
-//        Transaction response = giftCard.activate(new BigDecimal(100))
-//                .withCurrency("USD")
-//                .execute();
-//        assertNotNull(response);
-//        assertEquals("000", response.getResponseCode());
 
         response.setNtsData(ntsData);
-        // check message data
-//        PriorMessageInformation pmi = response.getMessageInformation();
-//        assertNotNull(pmi);
-//        assertEquals("1200", pmi.getMessageTransactionIndicator());
-//        assertEquals("006000", pmi.getProcessingCode());
-//        assertEquals("200", pmi.getFunctionCode());
-
         // check response
         //assertEquals("000", response.getResponseCode());
 
@@ -367,13 +371,6 @@ public class NwsGiftTests {
         // check message data
         PriorMessageInformation pmi = reversal.getMessageInformation();
         assertNotNull(pmi);
-//        assertEquals("1420", pmi.getMessageTransactionIndicator());
-//        assertEquals("900060", pmi.getProcessingCode());
-//        assertEquals("400", pmi.getFunctionCode());
-//        assertEquals("4021", pmi.getMessageReasonCode());
-
-        // check response
-
         assertEquals("400", reversal.getResponseCode());
 
     }

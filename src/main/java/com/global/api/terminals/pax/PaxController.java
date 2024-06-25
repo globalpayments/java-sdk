@@ -128,6 +128,7 @@ public class PaxController extends DeviceController {
 
         // Trace Sub Group
         trace.setInvoiceNumber(builder.getInvoiceNumber());
+        trace.setCardBrandTransactionId(builder.getCardBrandTransactionId());
 
         // Commercial Group
         commercial.setCustomerCode(builder.getCustomerCode());

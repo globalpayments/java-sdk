@@ -2,15 +2,14 @@ package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.network.elements.DE63_ProductData;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.entities.ProductData;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
@@ -106,6 +105,25 @@ public class VapsVisaFleetEmvTest {
                 .withProductData(productData)
                 .withFleetData(fleetData)
                 .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_VisaFleet_emv_Auth_1200_1() throws ApiException {
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe,ProductCodeSet.IssuerSpecific,ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+
+        Transaction response = card.authorize(new BigDecimal(31.75),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000000031010820239008407A00000000310107005123456789057124485580000080017D311220115886224023F5F201A546573742F4361726420313020202020202020202020202020205A0844855800000800175F24032212315F280208405F3401008C0F1234567890123451234567890123458D13123745524364726335524364726325374552438E0C00000000000000001F0000009F0702FF009F080200019F0D05F470C498009F0E0500000000009F0F05F470C498008F01019001119F4604123456789F4701239F5801129F5901019F6804123456789F6C0212349F6E04D8E0000082010112820201128203013482040112")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -456,6 +474,13 @@ public class VapsVisaFleetEmvTest {
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
+        response.setNtsData(new NtsData());
+        TransactionReference transactionReference = response.getTransactionReference();
+        transactionReference.setNtsData(new NtsData());
+        transactionReference.setAuthCode(response.getAuthorizationCode());
+        response.setTransactionReference(transactionReference);
+
+
         Transaction captureResponse = response.capture(new BigDecimal(23.56))
                 .withCurrency("USD")
                 .withProductData(productData)
@@ -463,6 +488,51 @@ public class VapsVisaFleetEmvTest {
                 .withTagData(visaTagData)
                 .execute();
         assertNotNull(captureResponse);
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_voice_capture() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe,ProductCodeSet.IssuerSpecific,ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.9999"), new BigDecimal("21.9999"));
+        productData.addNonFuel("79", UnitOfMeasure.Units, new BigDecimal("100"), new BigDecimal("30"), new BigDecimal("30"));
+        productData.addNonFuel("01", UnitOfMeasure.Units, new BigDecimal("145.67"), new BigDecimal("67.009"), new BigDecimal("30"));
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000000031010820239008407A00000000310107005123456789057124485580000080017D311220115886224023F5F201A546573742F4361726420313020202020202020202020202020205A0844855800000800175F24032212315F280208405F3401008C0F1234567890123451234567890123458D13123745524364726335524364726325374552438E0C00000000000000001F0000009F0702FF009F080200019F0D05F470C498009F0E0500000000009F0F05F470C498008F01019001119F4604123456789F4701239F5801129F5901019F6804123456789F6C0212349F6E04D8E0000082010112820201128203013482040112")
+                .execute();
+        assertNotNull(response);
+        // assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10),
+                response.getAuthorizationCode(),
+                new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
+                card
+        );
+
+        Transaction captureResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(captureResponse);
+        // check message data
+        PriorMessageInformation pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
         // check response
         assertEquals("000", captureResponse.getResponseCode());
     }

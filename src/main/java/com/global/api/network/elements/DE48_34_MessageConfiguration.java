@@ -50,7 +50,7 @@ public class DE48_34_MessageConfiguration implements IDataElement<DE48_34_Messag
     }
 
     public byte[] toByteArray() {
-        String rvalue = (performDateCheck ? "1" : "0").concat(echoSettlementData ? "1" : "0").concat(includeLoyaltyData ? "1" : "0");
+        String rvalue = (performDateCheck ? "1" : "0").concat(echoSettlementData ? "1" : "0").concat(includeLoyaltyData ? "1" : "0").concat(incrementalSupportIndicator != null ? incrementalSupportIndicator ? "Y" : "N" : "N" );
         if(!StringUtils.isNullOrEmpty(transactionGroupId)) {
             rvalue = rvalue.concat(transactionGroupId);
         }

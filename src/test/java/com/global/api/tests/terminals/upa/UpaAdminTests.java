@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.upa;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
@@ -59,6 +60,9 @@ public class UpaAdminTests {
         }
     }
 
+    /**
+     -----------------------------Line Items Test case start ----------------------------------------------------------------------
+     */
     @Test
     public void test03_lineItems() throws ApiException {
         runBasicTests(device.addLineItem("Line Item 1", "111.11"));
@@ -72,6 +76,30 @@ public class UpaAdminTests {
         }
     }
 
+    /**
+     * For line item display left side text is mandatory & should not be null.
+     * @throws ApiException
+     */
+    @Test
+    public void test03_lineItems_leftSideTextMandatory() throws ApiException {
+        ApiException leftSideTextMandatory = assertThrows(ApiException.class,() -> device.addLineItem(null,"null"));
+        assertEquals("Left-side text is required.",leftSideTextMandatory.getMessage());
+    }
+
+    /**
+     * For line item display right side text character should not exceed 10 length.
+     * @throws ApiException
+     */
+    @Test
+    public void test03_lineItems_rightSideTextLimit() throws ApiException {
+        ApiException rightSideTextLimit = assertThrows(ApiException.class,() -> device.addLineItem("Line Item ","1111.1111111111"));
+        assertEquals("Right-side text has 10 char limit.",rightSideTextLimit.getMessage());
+    }
+
+    /**
+     -------------------------------Line Items Test case end ----------------------------------------------------------------------
+     */
+
     @Test
     public void test04_reboot() throws ApiException {
         runBasicTests(device.reboot());
@@ -82,8 +110,19 @@ public class UpaAdminTests {
         device.sendReady();
     }
 
+    /**
+     ---------------------------------SAF test case start------------------------------------------------------------------
+     */
     @Test
     public void test_sendSAF() throws ApiException {
+        ISAFResponse response = device.sendStoreAndForward();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+    }
+
+    @Test
+    public void test_sendSAF_safReferenceNumber() throws ApiException {
         ISAFResponse response = device.sendStoreAndForward();
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
@@ -107,6 +146,33 @@ public class UpaAdminTests {
     }
 
     @Test
+    public void test_getSafReport_safReferenceNumber_PrintAndReturnData() throws ApiException {
+        ISAFResponse response = device.safSummaryReport("Print", "ReturnData");
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+    }
+
+    @Test
+    public void test_deleteSaf_withReferenceNo() throws ApiException {
+        ISAFResponse response = device.safDelete("P0000022", "");
+        runBasicTests(response);
+    }
+
+    @Test
+    public void test_deleteSaf_withReferenceNo_And_TransactionNo() throws ApiException {
+        ISAFResponse response = device.safDelete("P0000013", "0080");
+        runBasicTests(response);
+    }
+
+    /**
+     ----------------------------------SAF test case end-----------------------------------------------------------------------
+     */
+
+    /**
+     ----------------------------------Get Signature test case start-----------------------------------------------------------------------
+     */
+    @Test
     public void test_getSignature() throws ApiException {
         SignatureData data = new SignatureData();
         data.setPrompt1("Please sign");
@@ -124,17 +190,30 @@ public class UpaAdminTests {
     }
 
     @Test
-    public void test_deleteSaf_withReferenceNo() throws ApiException {
-        ISAFResponse response = device.safDelete("P0000022", "");
+    public void test_getSignature_withPrompt2() throws ApiException {
+        SignatureData data = new SignatureData();
+        data.setPrompt1("Please sign");
+        data.setPrompt2("and confirm");
+        data.setDisplayOption(1);
+
+        ISignatureResponse response = device.getSignatureFile(data);
+        assertNotNull(response.getSignatureData());
         runBasicTests(response);
+
+        try {
+            saveSignatureImage(response.getSignatureData(), "C:\\Temp\\image18.png");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Test
-    public void test_deleteSaf_withReferenceNo_And_TransactionNo() throws ApiException {
-        ISAFResponse response = device.safDelete("P0000013", "0080");
-        runBasicTests(response);
-    }
+    /**
+     ----------------------------------Get Signature test case end-----------------------------------------------------------------------
+     */
 
+    /**
+     ----------------------------------Register POS test case start-----------------------------------------------------------------------
+     */
     @Test
     public void test_registerPOS() throws ApiException {
         RegisterPOS data = new RegisterPOS();
@@ -155,6 +234,26 @@ public class UpaAdminTests {
         runBasicTests(response);
     }
 
+    /**
+     * Package Name of Application is required for Register POS command.
+     * @throws ApiException
+     */
+    @Test
+    public void test_registerPOS_packageNameRequired_Exception() throws ApiException {
+        RegisterPOS data = new RegisterPOS();
+        data.setLaunchOrder(1);
+        data.setRemove(true);
+        ApiException packageNameRequiredException = assertThrows(ApiException.class,() -> device.registerPOS(data));
+        assertEquals("The package name of the application is required.",packageNameRequiredException.getMessage());
+    }
+
+    /**
+     ----------------------------------Register POS test case end-----------------------------------------------------------------------
+     */
+
+    /**
+     ----------------------------------Print Data test case start-----------------------------------------------------------------------
+     */
     @Test
     public void test_receipt() throws ApiException, IOException {
         Path resourcesDir = Paths.get("src", "test", "resources", "images");
@@ -181,22 +280,43 @@ public class UpaAdminTests {
         }
     }
 
+    /**
+     * Image content for PrintData command is mandatory.
+     * @throws ApiException
+     */
     @Test
-    public void test_getSafReport_safReferenceNumber_PrintAndReturnData() throws ApiException {
-        ISAFResponse response = device.safSummaryReport("Print", "ReturnData");
-        assertNotNull(response);
-        assertEquals("00", response.getDeviceResponseCode());
-        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+    public void test_receipt_ImageDataShouldNotBeNull() throws ApiException{
+        PrintData data = new PrintData();
+        data.setLine1("Printing");
+        data.setLine2("Please Wait...");
+        ApiException imageDataNotNullException = assertThrows(ApiException.class,() ->
+                 device.printReceipt(data));
+        assertEquals("The image data cannot be null or empty.",imageDataNotNullException.getMessage());
+
     }
 
-    @Test
-    public void test_sendSAF_safReferenceNumber() throws ApiException {
-        ISAFResponse response = device.sendStoreAndForward();
-        assertNotNull(response);
-        assertEquals("00", response.getDeviceResponseCode());
-        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
-    }
+    /**
+     ----------------------------------Print Data test case end-----------------------------------------------------------------------
+     */
 
+
+    /**
+     * Only TCP_IP mode supported for UPA.
+     * @throws ConfigurationException
+     */
+    @Test
+    public void test_unsupportedConnectionMode() throws ConfigurationException {
+        ConnectionConfig config = new ConnectionConfig();
+        config.setPort(8081);
+        config.setIpAddress("192.168.2.96");
+        config.setTimeout(450000);
+        config.setRequestIdProvider(new RandomIdProvider());
+        config.setDeviceType(DeviceType.UPA_DEVICE);
+        config.setConnectionMode(ConnectionModes.HTTP);
+
+       ConfigurationException configurationException = assertThrows(ConfigurationException.class,() -> device = DeviceService.create(config));
+        assertEquals("Unsupported connection mode.",configurationException.getMessage());
+    }
 
     public void runBasicTests(IDeviceResponse response) {
         assertNotNull(response);

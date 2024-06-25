@@ -14,12 +14,11 @@ import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
+import com.global.api.paymentMethods.GiftCard;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
-import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
-import com.global.api.tests.testdata.TestCards;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -33,6 +32,9 @@ public class NWSEncryption3DESTests {
     private CreditCardData cardWithCvn;
     private CreditTrackData track;
     private DebitTrackData debit;
+    private GiftCard giftCard;
+    private CreditCardData visaCard;
+
 
     private NetworkGatewayConfig config;
 
@@ -87,11 +89,18 @@ public class NWSEncryption3DESTests {
 
         track = new CreditTrackData();
         track.setEntryMethod(EntryMethod.Swipe);
-        track.setEncryptionData(EncryptionData.setKtbAndKsn("6CF446D5E9D154DA766C2F27541AA3462D4AD37C0C01AAAB18A2B5EBAA881F65B0AB8DFC41ACB71B9EA8327EB430315CD781607208DEBC9AF834D26BDF66607F35B411488AACB8E2",
-                "3D3F820E00003"));
+        track.setEncryptionData(EncryptionData.setKtbAndKsn("29086EC77231A1435ECAF4E5EA9BEC8CC8446DC92D5A99DDD9F1CE1BAC79D7115C1224B380C05DCBBA2FD0D7F18074392EC8D800863BD43EC0FDA7E43FA1C303C6C540F6297C76A4",
+                "F000019990E00003"));
         track.setCardType("MC");
         track.setEntryMethod(EntryMethod.Swipe);
         track.setTrackNumber(TrackNumber.TrackOne);
+
+        visaCard = new CreditCardData();
+        visaCard.setEncryptionData(EncryptionData.setKtbAndKsn("49AB0D7DF39F4EAA3ADEB107CCCC03D0",
+                "F000019990E00003"));
+        visaCard.setCardPresent(true);
+        visaCard.setReaderPresent(true);
+        visaCard.setCardType("Visa");
 
         // VISA
         card = new CreditCardData();
@@ -116,10 +125,15 @@ public class NWSEncryption3DESTests {
         debit.setEncryptionData(EncryptionData.setKtbAndKsn("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E3EB2A4334BE31534E",
                 "F000019990E00003"));
         debit.setCardType("PINDebitCard");
-        debit.setPinBlock("62968D2481D231E1A504010024A00014");
         debit.setTrackNumber(TrackNumber.TrackTwo);
-        debit.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
 
+        //Gift Card
+        giftCard = new GiftCard();
+        giftCard.setEncryptionData(EncryptionData.setKtbAndKsn("14FBB3A14C4D744F044CE5E56EAFEB19D747F9E56F8D1A40CE7A0CA6C197608BC9DE3354F13943B3",
+                    "F000019990E00003"));
+        giftCard.setTrackNumber(TrackNumber.TrackTwo);
+        giftCard.setEntryMethod(EntryMethod.Swipe);
+        giftCard.setCardType("SV");
     }
 
     //-----------------------------------------------Credit-------------------------------------------
@@ -134,7 +148,7 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_credit_manual_auth() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(10))
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -239,11 +253,17 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_credit_swipe_voice_capture() throws ApiException {
+        Transaction auth = visaCard.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(auth);
+        assertEquals(auth.getResponseMessage(), "000", auth.getResponseCode());
+
         Transaction transaction = Transaction.fromNetwork(
-                new BigDecimal(10),
-                "TYPE04",
+                auth.getAuthorizedAmount(),
+                auth.getAuthorizationCode(),
                 new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
-                track
+                visaCard
         );
 
         Transaction response = transaction.capture(new BigDecimal(10))
@@ -1539,7 +1559,7 @@ public class NWSEncryption3DESTests {
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
-//        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
         // reverse the transaction test case #40
         Transaction voidResponse = response.voidTransaction()
@@ -1611,6 +1631,169 @@ public class NWSEncryption3DESTests {
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
     }
+
+    //-----------------------------------------------GiftCard----------------------------------------
+    @Test
+    public void giftCard_activate() throws ApiException {
+        Transaction response = giftCard.activate(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void giftCard_add_value() throws ApiException {
+        Transaction response = giftCard.addValue(new BigDecimal(25.00))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_001_GiftCard_auth() throws ApiException {
+        Transaction response = giftCard.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_giftCard_sale() throws ApiException {
+        Transaction response = giftCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_003_giftCard_sale_cashback() throws ApiException {
+        Transaction response = giftCard.charge(new BigDecimal(41.00))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(40.00))
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_giftCard_sale_void() throws ApiException {
+        Transaction response = giftCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // void the transaction test case #7
+        Transaction voidResponse = response.voidTransaction().execute();
+        assertNotNull(voidResponse);
+        assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_004_giftCard_sale_reversal() throws ApiException {
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+
+        Transaction response = giftCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        response.setNtsData(ntsData);
+
+        // void the transaction test case #8
+        Transaction reverseResponse = response.reverse().execute();
+        assertNotNull(reverseResponse);
+        assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
+    }
+    @Test
+    public void test_GiftCard_auth_capture() throws ApiException {
+        Transaction response = giftCard.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // test_019
+        Transaction captureResponse = response.capture()
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(captureResponse);
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_GiftCard_swipe_voice_capture() throws ApiException {
+        Transaction auth = giftCard.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(auth);
+
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10),
+                auth.getAuthorizationCode(),
+                new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
+                giftCard
+        );
+
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("006000", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_005_GiftCard_refund() throws ApiException {
+        Transaction response = giftCard.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_GiftCard_balance_inquiry() throws ApiException {
+        Transaction response = giftCard.balanceInquiry()
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("316000", pmi.getProcessingCode());
+        assertEquals("108", pmi.getFunctionCode());
+
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_007_giftCard_swipe_auth() throws ApiException {
+
+        Transaction response = giftCard.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(capture);
+        assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
 
 
 

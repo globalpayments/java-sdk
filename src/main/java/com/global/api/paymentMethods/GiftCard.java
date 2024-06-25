@@ -12,8 +12,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable, IEncryptable {
     private String alias;
@@ -33,6 +31,8 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     @Getter
     @Setter
     private String encryptedPan;
+    @Getter @Setter
+    private String tokenizationData;
     private EntryMethod entryMethod = EntryMethod.Swipe;
     public EntryMethod getEntryMethod() {
         return entryMethod;
@@ -142,10 +142,6 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
 
     public String getValueType() { return this.valueType; }
 
-    @Getter
-    @Setter
-    private String tokenizationData;
-
     public AuthorizationBuilder addAlias(String phoneNumber) {
         return new AuthorizationBuilder(TransactionType.Alias, this).withAlias(AliasAction.Add, phoneNumber);
     }
@@ -242,7 +238,7 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     public AuthorizationBuilder issue(BigDecimal amount) {
         return new AuthorizationBuilder(TransactionType.Issue, this).withAmount(amount);
     }
-
+    
     public AuthorizationBuilder fileAction() {
         return new AuthorizationBuilder(TransactionType.FileAction, this);
     }

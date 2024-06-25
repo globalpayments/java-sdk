@@ -3,6 +3,8 @@ package com.global.api.terminals.pax.subgroups;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 public class TraceRequest implements IRequestSubGroup {
     private String referenceNumber;
@@ -10,6 +12,18 @@ public class TraceRequest implements IRequestSubGroup {
     private String authCode;
     private String transactionNumber;
     private String timeStamp;
+    @Setter @Getter
+    private String ecrTransactionID;
+    @Setter @Getter
+    private String clientTransactionId;
+    @Setter @Getter
+    private String ps2000;
+    @Setter @Getter
+    private String originalAuthResponse;
+    @Setter @Getter
+    private String originalTraceNumber;
+    @Setter @Getter
+    private String cardBrandTransactionId;
 
     public String getReferenceNumber() {
         return referenceNumber;
@@ -53,6 +67,18 @@ public class TraceRequest implements IRequestSubGroup {
         sb.append(transactionNumber);
         sb.append((char)ControlCodes.US.getByte());
         sb.append(timeStamp);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(ecrTransactionID);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(clientTransactionId);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(ps2000);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(originalAuthResponse);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(originalTraceNumber);
+        sb.append((char)ControlCodes.US.getByte());
+        sb.append(cardBrandTransactionId);
 
         return StringUtils.trimEnd(sb.toString(), ControlCodes.US);
     }

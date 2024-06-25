@@ -38,6 +38,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private static final String TRANSACTION_EXCEPTION = "Either ClientTxnId or GatewayTxnId must be provided for this payment type.";
     private static final String CHECK_QUERY = "CheckQuery";
     private static final String CLERK_ID = "ClerkID";
+    private static final String CATEGORY_INDICATOR = "CategoryInd";
 
     @Override
     public boolean supportsHostedPayments() {
@@ -167,7 +168,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             ICardData card = (ICardData) builder.getPaymentMethod();
 
             // card on File
-            if (builder.getTransactionInitiator() != null || !StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId())) {
+            if (builder.getTransactionInitiator() != null || !StringUtils.isNullOrEmpty(builder.getCardBrandTransactionId()) || builder.getCategoryIndicator() != null) {
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
                 if (builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
@@ -175,6 +176,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
+                et.subElement(cardOnFileData, CATEGORY_INDICATOR, builder.getCategoryIndicator());
             }
 
             Element manualEntry = et.subElement(cardData, hasToken ? "TokenData" : "ManualEntry");
@@ -765,7 +767,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String buildEnvelope(ElementTree et, Element transaction) {
         return buildEnvelope(et, transaction, null, null);
     }
-  
+
     private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, TransactionBuilder builder) {
         et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");

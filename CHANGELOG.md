@@ -1,6 +1,24 @@
 # Changelog
 
-## Latest Version - V11.2.20 (06/20/2024)
+## Latest Version - V11.2.21 (06/25/2024)
+### Enhancement
+NWS:
+- NWS Spec Update 23.1 with Combined Tokenization and VisaFleet2.0 field update.
+
+Portico:
+- Category Indicator parameter addition to the Portico transaction.
+
+PAX:
+- Credential on File Datablock in Request/Response.
+
+UPA:
+- Added exception test cases for code coverage.
+
+### Bug Fixes
+NTS :
+- Issue 10317 fixed - Track data is not being masked and it is in clear text.
+
+## Version - V11.2.20 (06/20/2024)
 ### Enhancement
 - UPA:
  Added support for message received logging.

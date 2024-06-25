@@ -18,8 +18,8 @@ public class EBTTrackData extends EBT implements ITrackData, IEncryptable {
     private TrackNumber trackNumber;
     private String trackData;
     private String value;
-
-    @Getter @Setter
+    @Getter
+    @Setter
     private String tokenizationData;
 
     public String getDiscretionaryData() {

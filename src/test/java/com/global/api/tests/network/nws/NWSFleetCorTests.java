@@ -76,7 +76,7 @@ public class NWSFleetCorTests {
         fleetData.setDriverId("11411");
 
         productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
-        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
+        productData.add(ProductCode.PREMIUM_DIESEL_BLEND, UnitOfMeasure.Gallons, 1, 10);
 
         //FleetWide
         card = TestCards.FleetWideManual(true,true);

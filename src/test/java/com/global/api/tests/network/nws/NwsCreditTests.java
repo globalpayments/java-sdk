@@ -1226,5 +1226,25 @@ public class NwsCreditTests {
         assertNotNull(voidResponse);
         assertEquals(voidResponse.getResponseMessage(), "400", voidResponse.getResponseCode());
     }
+    @Test
+    public void test_006_authorization_with_fee_type_22() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(5))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+    }
+
 
 }

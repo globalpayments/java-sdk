@@ -124,6 +124,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
                 request.addRange(trackData.getValue(), 40);
                 this.setTrackData(trackData.getValue());
+                StringUtils.setTrackData(trackData.getValue());
             } else {
                 ITrackData trackData = (ITrackData) paymentMethod;  //Without Track Data
                 String accNumber = trackData.getPan();

@@ -1,6 +1,5 @@
 package com.global.api.network.entities;
 
-import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.elements.DE63_ProductData;
 import com.global.api.network.elements.DE63_ProductDataEntry;
 import com.global.api.network.enums.*;
@@ -31,19 +30,20 @@ public class ProductData {
     public void addSaleTax(BigDecimal sale) {
         productData.add(sale);
     }
+    public void add(BigDecimal salesTax) {
+        productData.setSalesTax(salesTax);
+    }
+
 
     public void add(ProductCode productCode, UnitOfMeasure unitOfMeasure, double quantity, double price) {
         add(productCode, unitOfMeasure, new BigDecimal(quantity), new BigDecimal(price), new BigDecimal(quantity * price));
     }
-
     public void add(ProductCode productCode, UnitOfMeasure unitOfMeasure, BigDecimal quantity, BigDecimal price, BigDecimal amount) {
         add(productCode.getValue(), unitOfMeasure, quantity, price, amount);
     }
-
     public void add(String productCode, UnitOfMeasure unitOfMeasure, double quantity, double price) {
         add(productCode, unitOfMeasure, new BigDecimal(quantity), new BigDecimal(price), new BigDecimal(quantity * price));
     }
-
     public void add(String productCode, UnitOfMeasure unitOfMeasure, BigDecimal quantity, BigDecimal price, BigDecimal amount) {
         DE63_ProductDataEntry entry = new DE63_ProductDataEntry();
         entry.setCode(productCode);
@@ -51,6 +51,7 @@ public class ProductData {
         entry.setQuantity(quantity);
         entry.setPrice(price);
         entry.setAmount(amount);
+
         productData.add(entry);
     }
 

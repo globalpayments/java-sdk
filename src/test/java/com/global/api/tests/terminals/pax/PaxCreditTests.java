@@ -3,6 +3,7 @@ package com.global.api.tests.terminals.pax;
 import com.global.api.entities.Address;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.StoredCredentialInitiator;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.CreditCardData;
@@ -12,12 +13,14 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
+
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PaxCreditTests {
     private IDeviceInterface device;
@@ -27,7 +30,7 @@ public class PaxCreditTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.1.197");
+        deviceConfig.setIpAddress("192.168.29.250");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -135,7 +138,7 @@ public class PaxCreditTests {
         device.setOnMessageSent(new IMessageSentInterface() {
             public void messageSent(String message) {
                 assertNotNull(message);
-                //assertTrue(message.startsWith(rec_message));
+                assertTrue(message.startsWith(rec_message));
             }
         });
 
@@ -430,6 +433,76 @@ public class PaxCreditTests {
                 .execute();
         assertNotNull(tipResponse);
         assertEquals("00", tipResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditAuth_With_TransactionIdentifier() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+            }
+        });
+
+        TerminalResponse preResponse = device.creditAuth(new BigDecimal("12"))
+                .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
+                .execute();
+        assertNotNull(preResponse);
+        assertEquals("00", preResponse.getResponseCode());
+
+        TerminalResponse response = device.creditAuth(new BigDecimal("12"))
+                .withAllowDuplicates(true)
+                .withToken(preResponse.getToken())
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder,preResponse.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditVerify_With_TransactionIdentifier() throws ApiException {
+        device.setOnMessageSent(new IMessageSentInterface() {
+            public void messageSent(String message) {
+                assertNotNull(message);
+            }
+        });
+        TerminalResponse preResponse = device.creditVerify()
+                .withRequestMultiUseToken(true)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(preResponse);
+        assertNotNull(preResponse.getCardBrandTransactionId());
+        assertEquals("00", preResponse.getResponseCode());
+
+        TerminalResponse response = device.creditVerify()
+                .withToken(preResponse.getToken())
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder,preResponse.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+    @Test
+    public void creditSaleWithCardBrandInfo() throws ApiException {
+        TerminalResponse response = device.creditSale(new BigDecimal("12"))
+                .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getCardBrandTransactionId());
+        assertNotNull(response.getToken());
+
+        TerminalResponse mutSaleResponse = device.creditSale(new BigDecimal("12"))
+                .withToken(response.getToken())
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(mutSaleResponse);
+        assertEquals("00", mutSaleResponse.getResponseCode());
+
     }
 
     /**

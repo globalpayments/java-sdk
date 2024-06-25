@@ -227,22 +227,19 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
         else if(paymentMethod instanceof GiftCard) {
             GiftCard giftCard = (GiftCard)paymentMethod;
-            String token = giftCard.getTokenizationData();
-            if(token == null) {
 
-                // put the track data
-               if (giftCard.getValueType()!=null && giftCard.getValueType().equals("TrackData")) {
-                    if (giftCard.getTrackNumber().equals(TrackNumber.TrackTwo)) {
-                        // DE 35: Track 2 Data - LLVAR ns.. 37
-                        request.set(DataElementId.DE_035, giftCard.getTrackData());
-                    } else if (giftCard.getTrackNumber().equals(TrackNumber.TrackOne)) {
-                        // DE 45: Track 1 Data - LLVAR ans.. 76
-                        request.set(DataElementId.DE_045, giftCard.getTrackData());
-                    }
-                } else {
-                    request.set(DataElementId.DE_002, giftCard.getNumber());
-                    //request.set(DataElementId.DE_014, giftCard.getExpiry());
+            // put the track data
+           if (giftCard.getValueType()!=null && giftCard.getValueType().equals("TrackData")) {
+                if (giftCard.getTrackNumber().equals(TrackNumber.TrackTwo)) {
+                    // DE 35: Track 2 Data - LLVAR ns.. 37
+                    request.set(DataElementId.DE_035, giftCard.getTrackData());
+                } else if (giftCard.getTrackNumber().equals(TrackNumber.TrackOne)) {
+                    // DE 45: Track 1 Data - LLVAR ans.. 76
+                    request.set(DataElementId.DE_045, giftCard.getTrackData());
                 }
+            } else {
+                request.set(DataElementId.DE_002, giftCard.getNumber());
+                //request.set(DataElementId.DE_014, giftCard.getExpiry());
             }
 
             // set data codes
@@ -628,17 +625,6 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
             }
         }
-        if (paymentMethod instanceof GiftCard){
-            GiftCard giftCard = (GiftCard)paymentMethod;
-            if (giftCard != null) {
-                String tokenizationData = giftCard.getTokenizationData();
-                if (tokenizationData != null) {
-                    setTokenizationData(forwardingData,null, null, giftCard, tokenizationData);
-                    request.set(DataElementId.DE_127, forwardingData);
-                }
-            }
-        }
-
         return sendRequest(request, builder, orgCorr1, orgCorr2);
     }
     public Transaction manageTransaction(ManagementBuilder builder) throws ApiException {
@@ -1242,16 +1228,6 @@ public class VapsConnector extends GatewayConnectorConfig {
                         String tokenizationData = trackData.getTokenizationData();
                         if (tokenizationData != null) {
                             setTokenizationData(forwardingData, null, trackData, null, tokenizationData);
-                            request.set(DataElementId.DE_127, forwardingData);
-                        }
-                    }
-                }
-                if (reference.getOriginalPaymentMethod() instanceof GiftCard) {
-                    GiftCard giftCard = (GiftCard) reference.getOriginalPaymentMethod();
-                    if (giftCard != null) {
-                        String tokenizationData = giftCard.getTokenizationData();
-                        if (tokenizationData != null) {
-                            setTokenizationData(forwardingData, null, null, giftCard, tokenizationData);
                             request.set(DataElementId.DE_127, forwardingData);
                         }
                     }

@@ -3,6 +3,8 @@ package com.global.api.terminals.pax.subgroups;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.terminals.abstractions.IResponseSubGroup;
 import com.global.api.utils.MessageReader;
+import lombok.Getter;
+import lombok.Setter;
 
 public class HostResponse implements IResponseSubGroup {
     private String hostResponseCode;
@@ -11,6 +13,8 @@ public class HostResponse implements IResponseSubGroup {
     private String hostReferenceNumber;
     private String traceNumber;
     private String batchNumber;
+    @Getter @Setter
+    private String cardBrandTransactionId;
 
     public String getHostResponseCode() {
         return hostResponseCode;
@@ -44,6 +48,7 @@ public class HostResponse implements IResponseSubGroup {
             hostReferenceNumber = data[3];
             traceNumber = data[4];
             batchNumber = data[5];
+            cardBrandTransactionId = data[6];
         }
         catch(ArrayIndexOutOfBoundsException e) {
             // Eating this

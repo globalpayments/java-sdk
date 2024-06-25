@@ -35,7 +35,7 @@ public class PorticoRecurringTests {
     private String paymentId(String type) {
         return String.format("%s-GlobalApi-%s", new SimpleDateFormat("yyyyMMdd").format(new Date()), type);
     }
-    
+
     public PorticoRecurringTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A");
@@ -123,9 +123,10 @@ public class PorticoRecurringTests {
 
     @Test
     public void Test_001b_CreatePaymentMethod_Credit() throws ApiException {
+
         Customer customer = Customer.find(customerId());
         assertNotNull(customer);
-        
+
         CreditCardData card = new CreditCardData();
         card.setNumber("4111111111111111");
         card.setExpMonth(12);
@@ -508,4 +509,61 @@ public class PorticoRecurringTests {
             }
         }
     }
+
+    @Test
+    public void Test_007b_RecurringBilling_dWithCOF() throws ApiException {
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+          assertNotNull(paymentMethod);
+
+        Schedule schedule = Schedule.find(paymentId("Credit"));
+           assertNotNull(schedule);
+
+        Transaction response = paymentMethod.charge(new BigDecimal("19"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withOneTimePayment(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = paymentMethod.charge(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+    }
+
+    @Test
+    public void Test_007b_RecurringBillingAuth_WithCOF() throws ApiException {
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Schedule schedule = Schedule.find(paymentId("Credit"));
+        assertNotNull(schedule);
+
+        Transaction response = paymentMethod.authorize(new BigDecimal("19"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withOneTimePayment(true)
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction nextResponse = paymentMethod.authorize(new BigDecimal("15"))
+                .withCurrency("USD")
+                .withScheduleId(schedule.getKey())
+                .withAllowDuplicates(true)
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .execute();
+        assertNotNull(nextResponse);
+        assertEquals("00", nextResponse.getResponseCode());
+    }
+
 }

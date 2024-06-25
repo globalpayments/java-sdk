@@ -26,6 +26,9 @@ public class EwicTrackData extends Ewic implements  ITrackData {
     private TrackNumber trackNumber = TrackNumber.Unknown;
     private String trackData;
     private String value;
+    @Getter
+    @Setter
+    private String tokenizationData;
     public String getTrackData() {
         return trackData;
     }

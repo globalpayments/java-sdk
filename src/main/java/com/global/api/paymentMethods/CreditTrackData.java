@@ -17,7 +17,7 @@ public class CreditTrackData extends Credit implements ITrackData, IPinProtected
     private TrackNumber trackNumber = TrackNumber.Unknown;
     private String trackData;
     private String value;
-
+    
     @Getter
     @Setter
     private String tokenizationData;

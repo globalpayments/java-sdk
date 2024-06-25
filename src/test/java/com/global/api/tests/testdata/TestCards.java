@@ -595,14 +595,14 @@ public class TestCards {
     */
     public static GiftCard SvsManual() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue("B6006491260550251182^SVSMC^711211006H");
-        rvalue.setPin("1422");
+        rvalue.setValue("B6006491260550227398^SVSMC^49121106DW");
+        rvalue.setPin("3297");
         return rvalue;
     }
 
     public static GiftCard SvsSwipe() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue("6006491260550251158=711211030308484");
+        rvalue.setValue(";6006491260550227406=491211079130136?");
         return rvalue;
     }
 

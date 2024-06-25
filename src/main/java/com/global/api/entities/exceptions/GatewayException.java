@@ -63,12 +63,17 @@ public class GatewayException extends ApiException {
         this.reversalCount = reversalCount;
     }
     public String getReversalResponseCode(){return reversalResponseCode;}
+    public String getGatewayTransactionID(){return gatewayTransactionID;}
+
     public void setReversalResponseCode(String reversalResponseCode) {
         this.reversalResponseCode = reversalResponseCode;
     }
 
     public void setReversalResponseText(String reversalResponseText) {
         this.reversalResponseText = reversalResponseText;
+    }
+    public void setGatewayTransactionID(String gatewayTransactionID) {
+        this.gatewayTransactionID = gatewayTransactionID;
     }
 
     public GatewayException(String message) {

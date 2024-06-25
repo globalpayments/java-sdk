@@ -59,7 +59,7 @@ public class NwsFleetWexTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("SPSA");
-        config.setTerminalId("GRMKCONA02");
+        config.setTerminalId("NWSJAVA05");
         config.setUniqueDeviceId("0001");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
@@ -179,6 +179,27 @@ public class NwsFleetWexTests {
 
         Transaction response = card.charge(new BigDecimal(30))
                 .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_sales_wex_amount_40() throws ApiException {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46561");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014656100000");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("102", UnitOfMeasure.Units, new BigDecimal(20), new BigDecimal(30), new BigDecimal(100));
+
+        Transaction response = card.charge(new BigDecimal(30))
+                .withCurrency("USD")
+                .withSalesTaxAdditionAmount(new BigDecimal(10))
                 .withProductData(productData)
                 .withFleetData(fleetData)
                 .execute();
@@ -492,5 +513,27 @@ public class NwsFleetWexTests {
                         .execute());
         assertEquals("The purchase device sequence number cannot be null for WEX transactions.", builderException.getMessage());
     }
+    @Test
+    public void test_sales_wex_with_de_40_amount() throws ApiException {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46561");
+        fleetData.setServicePrompt("0");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014656100000");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("102", UnitOfMeasure.Units, new BigDecimal(20), new BigDecimal(30), new BigDecimal(100));
+
+        Transaction response = card.charge(new BigDecimal(30))
+                .withCurrency("USD")
+                .withSalesTaxAdditionAmount(new BigDecimal(10))
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
 
 }
