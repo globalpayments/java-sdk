@@ -114,6 +114,40 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
     }
 
     @Test
+    public void shouldReSignInAfterTokenExpiration() throws ApiException, InterruptedException {
+        GpApiConfig gpApiConfig = configAccessTokenCall()
+                .setSecondsToExpire(60);
+
+        AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(gpApiConfig);
+
+        assertAccessTokenResponse(accessTokenInfo);
+
+        ServicesContainer.configureService(gpApiConfig, GP_API_CONFIG_NAME);
+
+        Transaction response =
+                card
+                        .verify()
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(VERIFIED, response.getResponseMessage());
+
+        Thread.sleep(61_000L);
+
+        response =
+                card
+                        .verify()
+                        .withCurrency("USD")
+                        .execute(GP_API_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(VERIFIED, response.getResponseMessage());
+    }
+
+    @Test
     public void GenerateAccessTokenManualWithMaximumSecondsToExpire() {
         GpApiConfig gpApiConfig = configAccessTokenCall()
                 .setSecondsToExpire(604801);
