@@ -354,6 +354,10 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 25: Message Reason Code - n4 // C 1100, 1120, 1200, 1220, 1300, 1320, 1420, 16XX, 18XX
 
         // DE 28: Date, Reconciliation - n6 (YYMMDD)
+        if(transactionType.equals(TransactionType.BatchClose)){
+            String date =  DateTime.now().toString("yyMMdd");
+            request.set(DataElementId.DE_028,date);
+        }
         /* DE 30: Amounts, Original - n24
             30.1 ORIGINAL AMOUNT, TRANSACTION n12 A copy of amount, transaction (DE 4) from the original transaction.
             30.2 ORIGINAL AMOUNT, RECONCILIATION n12 A copy of amount, reconciliation (DE 5) from the original transaction. Since DE 5 is not used, this element will contain all zeros.
@@ -863,6 +867,12 @@ public class VapsConnector extends GatewayConnectorConfig {
         DE25_MessageReasonCode reasonCode = mapMessageReasonCode(builder);
         request.set(DataElementId.DE_025, reasonCode);
 
+        // DE 28: Date, Reconciliation - n6 (YYMMDD)
+        if(transactionType.equals(TransactionType.BatchClose)){
+            String date = DateTime.now().toString("yyMMdd");
+            request.set(DataElementId.DE_028, date);
+        }
+
         /* DE 30: Amounts, Original - n24
             30.1 ORIGINAL AMOUNT, TRANSACTION n12 A copy of amount, transaction (DE 4) from the original transaction.
             30.2 ORIGINAL AMOUNT, RECONCILIATION n12 A copy of amount, reconciliation (DE 5) from the original transaction. Since DE 5 is not used, this element will contain all zeros.
@@ -1253,6 +1263,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if(currency != null) {
                     request.set(DataElementId.DE_050, currency);
                 }
+                //DE 28
+                request.set(DataElementId.DE_028,DateTime.now().toString("yyMMdd"));
             } break;
             case DataCollect:
             case Refund:
@@ -2551,7 +2563,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                 paymentMethod = ((TransactionReference) paymentMethod).getOriginalPaymentMethod();
             }
             if(paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals("MC")) {
-                cardIssuerData.add(CardIssuerEntryTag.MASTERCARD_CIT_MIT_INDICATOR,"M207");
+                if(builder.getCitMitIndicator()!=null) {
+                    cardIssuerData.add(CardIssuerEntryTag.MASTERCARD_CIT_MIT_INDICATOR, builder.getCitMitIndicator().getValue());
+                }
             }
         }
 

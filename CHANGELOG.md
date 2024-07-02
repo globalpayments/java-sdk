@@ -1,6 +1,17 @@
 # Changelog
 
-## Latest Version - V11.2.21 (06/25/2024)
+## Latest Version - V11.2.22 (07/02/2024)
+  ### Fixes
+  VAPS:
+ - Added Tag DE_28 Date, Reconciliation to the Batch Close transaction Request.
+ - Updated DE_62 tag IMC - Mastercard cit/mit Indicator value from hardCode Value to enums
+ - Updated DE 62 tag NPC.11 value mapped from visaFleetCapable to TerminalPurchaseRestriction
+		
+  ### Enhancement
+  Portico:
+ - Updated Token Parameters element
+
+### V11.2.21 (06/25/2024)
 ### Enhancement
 NWS:
 - NWS Spec Update 23.1 with Combined Tokenization and VisaFleet2.0 field update.

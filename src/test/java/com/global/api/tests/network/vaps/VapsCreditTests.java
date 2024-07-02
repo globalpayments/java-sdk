@@ -81,7 +81,7 @@ public class VapsCreditTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0007999999911");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -136,9 +136,10 @@ public class VapsCreditTests {
 
     @Test
     public void test_003_manual_authorization() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(10.456))
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
                 .withCurrency("USD")
                 .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withMasterCardIndicator(MasterCardCITMITIndicator.CARDHOLDER_INITIATED_CREDENTIAL_ON_FILE)
                 .execute();
         assertNotNull(response);
 
@@ -240,6 +241,44 @@ public class VapsCreditTests {
         assertNotNull(pmi);
         assertEquals("1200", pmi.getMessageTransactionIndicator());
         assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_007_swipe_sale_mc_Indicator() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withMasterCardIndicator(MasterCardCITMITIndicator.CARDHOLDER_INITIATED_SUBSCRIPTION)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_008_swipe_refund_mc_Indicator() throws ApiException {
+        Transaction response = track.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withMasterCardIndicator(MasterCardCITMITIndicator.MERCHANT_INITIATED_DELAYED_CHARGE)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("200030", pmi.getProcessingCode());
         assertEquals("200", pmi.getFunctionCode());
 
         // check response
@@ -349,6 +388,32 @@ public class VapsCreditTests {
         assertEquals("000", sale.getResponseCode());
 
         Transaction response = sale.voidTransaction()
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_011_swipe_void_mc_Indicator() throws ApiException {
+        Transaction sale = track.charge(new BigDecimal(12))
+                .withCurrency("USD")
+                .withMasterCardIndicator(MasterCardCITMITIndicator.MERCHANT_INITIATED_DELAYED_CHARGE)
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        Transaction response = sale.voidTransaction()
+                .withMasterCardIndicator(MasterCardCITMITIndicator.MERCHANT_INITIATED_DELAYED_CHARGE)
                 .execute();
         assertNotNull(response);
 

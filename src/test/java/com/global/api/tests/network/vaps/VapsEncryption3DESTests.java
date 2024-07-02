@@ -79,7 +79,7 @@ public class VapsEncryption3DESTests {
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -158,7 +158,7 @@ public class VapsEncryption3DESTests {
         giftCard.setCardType("ValueLink");
 
         ebtCardData = new EBTCardData();
-        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E","F00001658F1C4789"));
+        ebtCardData.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F","F000019990E00003"));
         ebtCardData.setPinBlock("62968D2481D231E1A504010000600004");
         ebtCardData.setEbtCardType(EbtCardType.CashBenefit);
         ebtCardData.setExpYear(2024);
@@ -182,6 +182,16 @@ public class VapsEncryption3DESTests {
     public void test_002_credit_manual_auth() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_002_credit_manual_auth_mc_indicator() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withMasterCardIndicator(MasterCardCITMITIndicator.CARDHOLDER_INITIATED_SUBSCRIPTION)
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -2021,7 +2031,7 @@ public class VapsEncryption3DESTests {
                 .withCurrency("USD")
                 .execute();
         assertNotNull(creditSale);
-//        assertEquals("000", creditSale.getResponseCode());
+        assertEquals("000", creditSale.getResponseCode());
         assertNotNull(creditSale.getTransactionToken());
         assertTrue(TerminalUtilities.checkLRC(creditSale.getTransactionToken()));
 

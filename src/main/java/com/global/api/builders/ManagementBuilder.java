@@ -787,4 +787,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         eWICIssuingEntity = value;
         return this;
     }
+
+    public ManagementBuilder withMasterCardIndicator(MasterCardCITMITIndicator citMitIndicator) {
+        this.citMitIndicator = citMitIndicator;
+        return this;
+    }
 }

@@ -160,6 +160,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter @Setter
     private String categoryIndicator;
 
+    public boolean requestUniqueToken;
+
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
         return this;
@@ -718,6 +720,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.requestMultiUseToken = value;
         return this;
     }
+    public AuthorizationBuilder withRequestMultiUseToken(boolean requestMultiUseToken, boolean requestUniqueToken) {
+        this.requestMultiUseToken = requestMultiUseToken;
+        this.requestUniqueToken = requestUniqueToken;
+        return this;
+    }
     public AuthorizationBuilder withReplacementCard(GiftCard value) {
         this.replacementCard = value;
         return this;
@@ -1115,6 +1122,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withMerchantCategory(MerchantCategory merchantCategory) {
         this.merchantCategory = merchantCategory;
+        return this;
+    }
+
+    public AuthorizationBuilder withMasterCardIndicator(MasterCardCITMITIndicator citMitIndicator) {
+        this.citMitIndicator = citMitIndicator;
         return this;
     }
 }

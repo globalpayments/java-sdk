@@ -36,7 +36,7 @@ class Iso8583ElementFactory {
             factory.addElementMapping(DataElementId.DE_023, DataElementType.NUMERIC, "Card Sequence Number", 3);
             factory.addElementMapping(DataElementId.DE_024, DataElementType.NUMERIC, "Function Code", 3);
             factory.addElementMapping(DataElementId.DE_025, DataElementType.NUMERIC, "Message Reason Code", 4);
-            factory.addElementMapping(DataElementId.DE_028, DataElementType.NUMERIC, "Date, Reconciliation", 4);
+            factory.addElementMapping(DataElementId.DE_028, DataElementType.NUMERIC, "Date, Reconciliation", 6);
             factory.addElementMapping(DataElementId.DE_030, DataElementType.NUMERIC, "Amounts, Original", 24);
             factory.addElementMapping(DataElementId.DE_032, DataElementType.LLVAR, "Acquiring Institution Identification Code", 11);
             factory.addElementMapping(DataElementId.DE_034, DataElementType.LLVAR, "Primary Account Number, Extended", 28);

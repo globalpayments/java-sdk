@@ -392,6 +392,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             et.subElement(cardData, "TokenRequest").text(builder.isRequestMultiUseToken() ? "Y" : "N");
         }
 
+        // Token Parameters
+        if(builder.requestUniqueToken){
+            Element tokenParametersBlock = et.subElement(cardData,"TokenParameters");
+          et.subElement(tokenParametersBlock, "Mapping").text("UNIQUE");
+        }
+
         // balance inquiry type
         if (builder.getPaymentMethod() instanceof IBalanceable)
             et.subElement(block1, "BalanceInquiryType", builder.getBalanceInquiryType());

@@ -213,4 +213,31 @@ public class PorticoEcommerceTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+    @Test
+    public void UniqueTokenRequest() throws ApiException {
+        card = TestCards.VisaManual();
+
+        Transaction response1 = card.verify()
+                .withRequestMultiUseToken(true, false)
+                .execute();
+
+        assertNotNull(response1);
+        assertNotNull(response1.getToken());
+
+        Transaction response2 = card.verify()
+                .withRequestMultiUseToken(true,false)
+                .execute();
+
+        assertNotNull(response2);
+        assertNotNull(response2.getToken());
+        assertEquals(response1.getToken(), response2.getToken());
+
+        Transaction response3 = card.verify()
+                .withRequestMultiUseToken(true, true)
+                .execute();
+
+        assertNotNull(response3);
+        assertNotNull(response2.getToken());
+        assertNotEquals(response1.getToken(),response3.getToken());
+    }
 }

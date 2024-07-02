@@ -322,7 +322,7 @@ public class AcceptorConfig {
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N")
                 .concat(supportWexAdditionalProducts != null ? supportWexAdditionalProducts ? "Y" : "N" : "N")
-                .concat(supportVisaFleet2dot0 != null ? "Y" : "N");
+                .concat(supportTerminalPurchaseRestriction != null ? "Y" : "N");
         return rvalue;
     }
 
