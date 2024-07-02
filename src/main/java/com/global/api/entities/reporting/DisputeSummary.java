@@ -27,6 +27,7 @@ public class DisputeSummary {
     private BigDecimal caseAmount;
     private String caseCurrency;
     private String caseStage;
+    private DateTime caseStageTime;
     private String caseStatus;
     private String caseDescription;
     private String transactionOrderId;

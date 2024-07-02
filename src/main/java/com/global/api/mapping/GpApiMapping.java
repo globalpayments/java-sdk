@@ -773,6 +773,7 @@ public class GpApiMapping {
         summary.setCaseIdTime(parseGpApiDateTime(doc.getString("time_created")));
         summary.setCaseStatus(doc.getString("status"));
         summary.setCaseStage(doc.getString("stage"));
+        summary.setCaseStageTime(parseGpApiDateTime(doc.getString("stage_time_created")));
         summary.setCaseAmount(doc.getAmount("amount"));
         summary.setCaseCurrency(doc.getString("currency"));
 
