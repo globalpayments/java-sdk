@@ -1006,4 +1006,18 @@ public class GpApiReportingDisputesTest extends BaseGpApiReportingTest {
         }
     }
 
+    @Test
+    public void ReportDisputeDetail_brandReference() throws ApiException {
+        String disputeId = "DIS_SAND_abcd1234";
+
+        DisputeSummary response =
+                ReportingService
+                        .disputeDetail(disputeId)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals(disputeId, response.getCaseId());
+        assertEquals("23423421342323A", response.getTransactionBrandReference());
+    }
+
 }
