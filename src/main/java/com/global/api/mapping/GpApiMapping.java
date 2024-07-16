@@ -773,6 +773,7 @@ public class GpApiMapping {
         summary.setCaseIdTime(parseGpApiDateTime(doc.getString("time_created")));
         summary.setCaseStatus(doc.getString("status"));
         summary.setCaseStage(doc.getString("stage"));
+        summary.setCaseStageTime(parseGpApiDateTime(doc.getString("stage_time_created")));
         summary.setCaseAmount(doc.getAmount("amount"));
         summary.setCaseCurrency(doc.getString("currency"));
 
@@ -804,8 +805,23 @@ public class GpApiMapping {
                 summary.setTransactionARN(card.getString("arn"));
                 summary.setTransactionCardType(card.getString("brand"));
             }
-        }
 
+        }
+        if (doc.has("transaction")) {
+            JsonDoc transaction = doc.get("transaction");
+            if (transaction.has("payment_method")) {
+                JsonDoc paymentMethod = transaction.get("payment_method");
+
+                if (paymentMethod.has("card")) {
+                    JsonDoc card = paymentMethod.get("card");
+
+                    summary.setTransactionMaskedCardNumber(card.getString("number"));
+                    summary.setTransactionARN(card.getString("arn"));
+                    summary.setTransactionCardType(card.getString("brand"));
+                    summary.setTransactionBrandReference(card.getString("brand_reference"));
+                }
+            }
+        }
         String timeToRespondBy = doc.getString("time_to_respond_by");
         if (!isNullOrEmpty(timeToRespondBy)) {
             summary.setRespondByDate(parseGpApiDateTime(timeToRespondBy));

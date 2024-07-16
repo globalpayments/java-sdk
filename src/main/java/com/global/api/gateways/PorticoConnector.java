@@ -770,11 +770,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         return (TResult)mapSurchargeLookupResponse(response, clazz);
     }
 
-    private String buildEnvelope(ElementTree et, Element transaction) {
+    private String buildEnvelope(ElementTree et, Element transaction) throws BuilderException {
         return buildEnvelope(et, transaction, null, null);
     }
 
-    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, TransactionBuilder builder) {
+    private String buildEnvelope(ElementTree et, Element transaction, String clientTransactionId, TransactionBuilder builder) throws BuilderException {
         et.addNamespace("soap", "http://schemas.xmlsoap.org/soap/envelope/");
         et.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         et.addNamespace("xsd", "http://www.w3.org/2001/XMLSchema");
@@ -798,16 +798,22 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "ClientTxnId", clientTransactionId);
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
+        if (builder.getUniqueDeviceId() != null)
+            et.subElement(header, "UniqueDeviceId", builder.getUniqueDeviceId());
 
         if(builder instanceof AuthorizationBuilder) {
             AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
             et.subElement(header,CLERK_ID,authBuilder.getClerkId());
-        } else {
-            if (builder instanceof ManagementBuilder) {
+        } else{
+            if (builder instanceof ManagementBuilder){
                 ManagementBuilder manageBuilder = (ManagementBuilder) builder;
-                et.subElement(header, CLERK_ID, manageBuilder.getClerkId());
+                if(manageBuilder.getClerkId() != null && manageBuilder.getClerkId().length() > 50){
+                    throw new BuilderException("length should not be more than 50 digits");
+                }
+                else {
+                    et.subElement(header, CLERK_ID, manageBuilder.getClerkId());
+                }
             }
-            throw new IllegalArgumentException("length should not be more than 50 digits");
         }
 
         if(builder != null && builder.getIsSAFIndicator() != null) {

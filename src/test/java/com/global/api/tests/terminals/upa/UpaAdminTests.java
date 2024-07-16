@@ -33,7 +33,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.2.96");
+        config.setIpAddress("192.168.0.199");
         config.setTimeout(450000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -131,10 +131,13 @@ public class UpaAdminTests {
 
     @Test
     public void test_getSafReport() throws ApiException {
-        UpaSafResponse response = (UpaSafResponse) device.safSummaryReport("", "ReturnData");
+        ISAFResponse response = device.safSummaryReport("", "ReturnData");
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+        assertNotNull(response.getApproved());
+        assertNotNull(response.getDeclined());
+        assertNotNull(response.getPending());
     }
 
     @Test

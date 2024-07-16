@@ -7,13 +7,13 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.utils.masking.ElementToMask;
-import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.HostedPaymentConfig;
 import com.global.api.utils.*;
+import com.global.api.utils.masking.ElementToMask;
+import com.global.api.utils.masking.MaskValueUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -30,11 +30,10 @@ import static com.global.api.utils.StringUtils.extractDigits;
 @Accessors(chain = true)
 @Setter
 public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRecurringGateway, IReportingService {
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMdd");
     private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
         put("DinersClub", "Diners");
     }};
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMdd");
-
     private String merchantId;
     private String accountId;
     private String rebatePassword;
@@ -108,6 +107,12 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         if (builder.getTransactionType() == TransactionType.Sale || builder.getTransactionType() == TransactionType.Auth) {
             String autoSettle = builder.getTransactionType() == TransactionType.Sale ? "1" : builder.isMultiCapture() ? "MULTI" : "0";
             et.subElement(request, "autosettle").set("flag", autoSettle);
+            Integer estimatedNumberTransactions = builder.getEstimatedNumberTransactions();
+            if (estimatedNumberTransactions != null) {
+                if (builder.getTransactionType() == TransactionType.Auth && estimatedNumberTransactions > 0) {
+                    et.subElement(request, "estnumtxn", estimatedNumberTransactions);
+                }
+            }
         }
         //</editor-fold>
 
@@ -471,7 +476,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             HostedPaymentData paymentData = builder.getHostedPaymentData();
 
             BlockCardType[] blockCardTypes = paymentData.getBlockCardTypes();
-            if(blockCardTypes != null && blockCardTypes.length > 0) {
+            if (blockCardTypes != null && blockCardTypes.length > 0) {
                 StringBuilder blockCardTypesStringBuilder = new StringBuilder();
                 for (BlockCardType blockCardType : blockCardTypes) {
                     blockCardTypesStringBuilder.append(blockCardType.getValue());
@@ -703,7 +708,7 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         return hostedPaymentMethodsList.toString();
     }
 
-    private String getAlternativePaymentTypeList(AlternativePaymentType paymentTypesKey[]) {
+    private String getAlternativePaymentTypeList(AlternativePaymentType[] paymentTypesKey) {
         if (paymentTypesKey == null || paymentTypesKey.length == 0) {
             return "";
         }
@@ -744,13 +749,18 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
         et.subElement(request, "merchantid").text(merchantId);
         et.subElement(request, "account", accountId);
         if (builder.getAmount() != null) {
-            et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount())).set("currency", builder.getCurrency());
+            Element amtElement = et.subElement(request, "amount", StringUtils.toNumeric(builder.getAmount()));
+            if (!builder.isMultiCapture()) {
+                amtElement.set("currency", builder.getCurrency());
+            }
         }
-        et.subElement(request, "channel", channel);
+        if (!(builder.getPaymentMethod() instanceof AlternativePaymentMethod)) {
+            et.subElement(request, "channel", channel);
+        }
         et.subElement(request, "orderid", orderId);
         et.subElement(request, "pasref", builder.getTransactionId());
         String surcharge = "";
-        if (builder.getSurchargeAmount()!=null && !builder.getSurchargeAmount().equals("")) {
+        if (builder.getSurchargeAmount() != null && !builder.getSurchargeAmount().equals("")) {
             et.subElement(request, "surchargeamount", StringUtils.toNumeric(builder.getSurchargeAmount()))
                     .set("type", builder.getCreditDebitIndicator().toString().toLowerCase());
         }
@@ -771,6 +781,11 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             }
         }
         //</editor-fold>
+
+        // Capture Authcode
+        if (builder.getTransactionType() == TransactionType.Capture && builder.isMultiCapture()){
+            et.subElement(request, "authcode").text(builder.getAuthorizationCode());
+        }
 
         // payer authentication response
         if (builder.getTransactionType().equals(TransactionType.VerifySignature)) {
@@ -1376,7 +1391,10 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
 
         switch (trans) {
             case Capture:
-                return "settle";
+                if (builder.isMultiCapture())
+                    return "multisettle";
+                else
+                    return "settle";
             case Hold:
                 return "hold";
             case Refund:

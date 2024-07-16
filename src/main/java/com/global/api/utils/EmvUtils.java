@@ -290,7 +290,15 @@ public class EmvUtils {
             for(String tagName: rvalue.getRemovedTags().keySet()) {
                 TlvData tag = rvalue.getRemovedTags().get(tagName);
                 System.out.println(String.format("TAG: %s - %s", tagName, tag.getDescription()));
-                System.out.println(String.format("%s: %s\r\n",tag.getLength(), tag.getValue()));
+                if("57".equals(tagName)){
+                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), StringUtils.maskTrackData(tag.getValue())));
+                } else if ("5A".equals(tagName)) {
+                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), StringUtils.maskAccountNumber(tag.getValue())));
+                } else if ("5F24".equals(tagName)) {
+                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), tag.getValue().replace(tag.getValue(),"******")));
+                }else {
+                    System.out.println(String.format("%s: %s\r\n", tag.getLength(), tag.getValue()));
+                }
             }
         }
 

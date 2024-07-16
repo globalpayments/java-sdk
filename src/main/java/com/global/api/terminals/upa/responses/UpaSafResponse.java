@@ -10,17 +10,18 @@ import com.global.api.utils.JsonDoc;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class UpaSafResponse implements ISAFResponse {
-    private SummaryResponse approved;
+
+    private Map<SummaryType, SummaryResponse> approved;
+    private Map<SummaryType, SummaryResponse> pending;
+    private Map<SummaryType, SummaryResponse> declined;
     private String command;
-    private SummaryResponse declined;
     private String deviceResponseCode;
     private String deviceResponseText;
-    private SummaryResponse pending;
     private String status;
     @Getter
     private String transactionType;
@@ -139,12 +140,21 @@ public class UpaSafResponse implements ISAFResponse {
                             }
 
                         if(summaryResponse.summaryType.equals(SummaryType.Declined)){
-                            declined=summaryResponse;
+                            if (declined == null) {
+                                declined = new HashMap<>();
+                            }
+                            declined.put(summaryResponse.summaryType, summaryResponse);
                         }else if(summaryResponse.summaryType.equals(SummaryType.Pending)){
-                            pending = summaryResponse;
+                            if (pending == null) {
+                                pending = new HashMap<>();
+                            }
+                            pending.put(summaryResponse.summaryType, summaryResponse);
                         }
                         else {
-                            approved = summaryResponse;
+                            if (approved == null) {
+                                approved = new HashMap<>();
+                            }
+                            approved.put(summaryResponse.summaryType, summaryResponse);
                         }
                     });
 
@@ -167,7 +177,7 @@ public class UpaSafResponse implements ISAFResponse {
 
     @Override
     public Map<SummaryType, SummaryResponse> getApproved() {
-        return (Map<SummaryType, SummaryResponse>) approved;
+        return approved;
     }
 
     @Override
@@ -177,7 +187,7 @@ public class UpaSafResponse implements ISAFResponse {
 
     @Override
     public Map<SummaryType, SummaryResponse> getDeclined() {
-        return (Map<SummaryType, SummaryResponse>) declined;
+        return declined;
     }
 
     @Override
@@ -192,7 +202,7 @@ public class UpaSafResponse implements ISAFResponse {
 
     @Override
     public Map<SummaryType, SummaryResponse> getPending() {
-        return (Map<SummaryType, SummaryResponse>) pending;
+        return pending;
     }
 
     @Override
@@ -236,7 +246,7 @@ public class UpaSafResponse implements ISAFResponse {
         return null;
     }
 
-    public static TransactionSummary parseDeleteSAF(JsonDoc innerData){
+    public static void parseDeleteSAF(JsonDoc innerData){
         TransactionSummary transactionSummary = new TransactionSummary();
         if (innerData.getDecimal(TIP_AMOUNT) != null) {
             transactionSummary.setGratuityAmount(innerData.getDecimal(TIP_AMOUNT));
@@ -263,7 +273,6 @@ public class UpaSafResponse implements ISAFResponse {
             transactionSummary.setBaseAmount(innerData.getDecimal(BASE_AMOUNT));
         }
         transactionSummary.setGatewayResponseCode(RESPONSE_CODE);
-        return transactionSummary;
     }
 
 }

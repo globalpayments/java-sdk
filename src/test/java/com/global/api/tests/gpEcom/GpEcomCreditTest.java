@@ -193,15 +193,10 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        String orderId = response.getOrderId();
-        String paymentsReference = response.getTransactionId();
-
-        Transaction settle = Transaction.fromId(paymentsReference, orderId);
-
-        Transaction responseSettle = settle.capture()
+        Transaction responseSettle = response.capture()
                 .execute();
         assertNotNull(responseSettle);
-        assertEquals(orderId, responseSettle.getOrderId());
+        assertEquals(response.getOrderId(), responseSettle.getOrderId());
         assertEquals("00", responseSettle.getResponseCode());
         assertEquals("000000", responseSettle.getAuthorizationCode());
     }
@@ -214,6 +209,35 @@ public class GpEcomCreditTest extends BaseGpEComTest {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditAuthorization_WithMultiCapture() throws ApiException {
+        Transaction authorization = card.authorize(new BigDecimal("14"))
+                .withCurrency("USD")
+                .withMultiCapture(true, 3)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(authorization);
+        assertEquals("00", authorization.getResponseCode());
+
+        Transaction capture = authorization.capture(new BigDecimal("3"))
+                .withMultiCapture()
+                .execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+
+        Transaction capture2 = authorization.capture(new BigDecimal("5"))
+                .withMultiCapture()
+                .execute();
+        assertNotNull(capture2);
+        assertEquals("00", capture2.getResponseCode());
+
+        Transaction capture3 = authorization.capture(new BigDecimal("7"))
+                .withMultiCapture()
+                .execute();
+        assertNotNull(capture3);
+        assertEquals("00", capture3.getResponseCode());
     }
 
     @Test
@@ -703,7 +727,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction captureResponse = response.capture()
+        Transaction captureResponse = response.capture(new BigDecimal(10))
                 .withSupplementaryData("leg", "value1", "value2", "value3")
                 .withSupplementaryData("leg", "value1", "value2", "value3")
                 .execute();
@@ -809,7 +833,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        Transaction captureResponse = response.capture()
+        Transaction captureResponse = response.capture(new BigDecimal("14"))
                 .withCustomerId("E8953893489")
                 .withProductId("SID9838383")
                 .withClientTransactionId("Car Part HV")

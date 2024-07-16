@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.paymentMethods.CreditCardData;
@@ -24,7 +25,6 @@ public class PorticoCreditTests {
 	private CreditTrackData track;
     private String clientTxnID;
     private CommercialData commercialData;
-    private static final String ILLEGAL_ARGUMENT_EXCEPTION = "length should not be more than 50 digits";
 
 	public PorticoCreditTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -123,6 +123,7 @@ public class PorticoCreditTests {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
                 .withClientTransactionId(clientTxnID)
+                .withUniqueDeviceId("5678")
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -827,19 +828,22 @@ public class PorticoCreditTests {
     }
     @Test
     public void ClerkId_Negative() throws ApiException {
-        Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
+        Transaction response = card.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withClerkId("C3008")
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        IllegalArgumentException exc = assertThrows(IllegalArgumentException.class,()-> {
-        Transaction capture = response.capture(new BigDecimal(16))
+        BuilderException exc = assertThrows(BuilderException.class,()-> {
+       response.capture(new BigDecimal(16))
                 .withGratuity(new BigDecimal(2))
                 .withClerkId("C3008_ID0983634567ndhgfds45678908765432wqsdcvn 87723")
                 .execute();
-        assertNotNull(response);
-    });
-        assertEquals(ILLEGAL_ARGUMENT_EXCEPTION,exc.getMessage());
+
+        });
+        assertEquals("length should not be more than 50 digits",exc.getMessage());
   }
     @Test
     public void creditAuthorizationWithCOF_categoryIndicator() throws ApiException {

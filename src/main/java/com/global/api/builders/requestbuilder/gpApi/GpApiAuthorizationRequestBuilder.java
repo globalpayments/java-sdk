@@ -67,11 +67,13 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 DigitalWalletTokenFormat tokenFormat = DigitalWalletTokenFormat.CARD_NUMBER;
                 digitalWallet
                         .set("token", creditCardData.getToken())
-                        .set("token_format", DigitalWalletTokenFormat.CARD_NUMBER.getValue())
+                        .set("token_format", tokenFormat.getValue())
                         .set("expiry_month", creditCardData.getExpMonth() != null ? StringUtils.padLeft(creditCardData.getExpMonth(), 2, '0') : null)
                         .set("expiry_year", creditCardData.getExpYear() != null ? StringUtils.padLeft(creditCardData.getExpYear(), 4, '0').substring(2, 4) : null)
                         .set("cryptogram", creditCardData.getCryptogram())
-                        .set("eci", creditCardData.getEci());
+                        .set("eci", creditCardData.getEci())
+                        .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
+                        .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
 
                 maskedData.putAll(
                         MaskValueUtil.hideValues(
@@ -225,6 +227,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                         .set("currency", builder.getCurrency())
                                         .set("country", gateway.getGpApiConfig().getCountry())
                                         .set("payment_method", paymentMethod);
+
+                        if (builder.getStoredCredential() != null) {
+                            verificationData.set("initiator", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getInitiator()));
+                            JsonDoc storedCredential = (new JsonDoc()).set("model", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getType())).set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason())).set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
+                            verificationData.set("stored_credential", storedCredential);
+                        }
 
                         if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
                             verificationData.remove("payment_method");

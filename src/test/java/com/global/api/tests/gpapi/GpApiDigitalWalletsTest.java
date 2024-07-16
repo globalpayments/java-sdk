@@ -1,6 +1,7 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.MobilePaymentMethodType;
@@ -246,6 +247,10 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
     public void PayWithDecryptedFlow() throws ApiException {
         List<MobilePaymentMethodType> mobilePaymentMethodTypes = Arrays.asList(MobilePaymentMethodType.APPLEPAY, MobilePaymentMethodType.GOOGLEPAY);
 
+        Address address = new Address();
+        address.setPostalCode("WB3 A21");
+        address.setStreetAddress1("Flat 456");
+
         for (MobilePaymentMethodType mobilePaymentMethodType : mobilePaymentMethodTypes) {
             card.setToken("5167300431085507");
             card.setMobileType(mobilePaymentMethodType);
@@ -257,6 +262,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                     card
                             .charge(new BigDecimal(5))
                             .withCurrency("EUR")
+                            .withAddress(address)
                             .withModifier(TransactionModifier.DecryptedMobile)
                             .execute();
 

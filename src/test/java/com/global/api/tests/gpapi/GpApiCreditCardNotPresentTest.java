@@ -994,6 +994,26 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    public void CreditVerify_WithStoredCredentials() throws ApiException {
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setReason(StoredCredentialReason.Incremental);
+
+        Transaction response =
+                card
+                        .verify()
+                        .withCurrency(currency)
+                        .withStoredCredential(storedCredential)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(VERIFIED, response.getResponseMessage());
+    }
+
+    @Test
     public void CreditVerify_With_Address() throws ApiException {
         Address address = new Address();
         address.setPostalCode("WB3 A21");

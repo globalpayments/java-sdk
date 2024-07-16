@@ -27,6 +27,7 @@ public class DisputeSummary {
     private BigDecimal caseAmount;
     private String caseCurrency;
     private String caseStage;
+    private DateTime caseStageTime;
     private String caseStatus;
     private String caseDescription;
     private String transactionOrderId;
@@ -47,6 +48,7 @@ public class DisputeSummary {
     private String transactionAuthCode;
     private String transactionCardType;
     private String transactionMaskedCardNumber;
+    private String transactionBrandReference;
     private String reason;
     private String reasonCode;
     private String result;

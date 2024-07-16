@@ -1,5 +1,25 @@
 # Changelog
 
+## Latest Version - V11.2.23 (07/16/2024)
+### Enhancements
+Portico:
+- Add support for sending value for 'UniqueDeviceId' header element
+- Fixed issue 10322 "All the CGP transactions that use Management Builder are failing with ""length should not be more than 50 digits"
+
+
+GP-API:
+- Added suggested improvements into some requests and mappings
+
+GP-ECOM:
+- Added multi capture
+
+### Fixes
+NTS:
+- Fixed issue 10317 - Added masking for EMV tag data logs for tags 57,5A & 5F24.
+
+UPA:
+- Fixed 'GetSAFReport' response handling
+
 ## Latest Version - V11.2.22 (07/02/2024)
   ### Fixes
   VAPS:

@@ -155,7 +155,6 @@ public class ServicesContainer implements IDisposable {
     }
 
     private void addConfiguration(String configName, ConfiguredServices cs) throws ConfigurationException {
-        System.out.println(String.format("[Add Configuration] - %s", configName));
         if(configurations.containsKey(configName)) {
             configurations.remove(configName);
         }
@@ -171,7 +170,6 @@ public class ServicesContainer implements IDisposable {
     }
 
     private void removeConfiguration(String configName) throws ConfigurationException {
-        System.out.println(String.format("[Remove Configuration] - %s", configName));
         if(configurations.containsKey(configName)) {
             configurations.remove(configName);
         }

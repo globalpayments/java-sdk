@@ -76,6 +76,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private LodgingData lodgingData;
     private String messageAuthenticationCode;
     private boolean multiCapture;
+    private Integer estimatedNumberTransactions;
     private String offlineAuthCode;
     private boolean oneTimePayment;
     private String orderId;
@@ -359,6 +360,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     public boolean isMultiCapture() {
         return multiCapture;
     }
+    public Integer getEstimatedNumberTransactions() {return estimatedNumberTransactions; }
     public String getPosSequenceNumber() {
         return super.getPosSequenceNumber();
     }
@@ -636,6 +638,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withMultiCapture(Boolean value) {
         this.multiCapture = value;
+        this.estimatedNumberTransactions = null;
+        return this;
+    }
+    public AuthorizationBuilder withMultiCapture(Boolean value, Integer estimatedNumberTransactions) {
+        this.multiCapture = value;
+        this.estimatedNumberTransactions = estimatedNumberTransactions;
         return this;
     }
     public AuthorizationBuilder withOfflineAuthCode(String value) {
