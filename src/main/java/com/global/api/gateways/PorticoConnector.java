@@ -798,7 +798,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "ClientTxnId", clientTransactionId);
         et.subElement(header, "PosReqDT", this.getPosReqDT());
         et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
-        if (builder.getUniqueDeviceId() != null)
+        if (builder != null && builder.getUniqueDeviceId() != null)
             et.subElement(header, "UniqueDeviceId", builder.getUniqueDeviceId());
 
         if(builder instanceof AuthorizationBuilder) {

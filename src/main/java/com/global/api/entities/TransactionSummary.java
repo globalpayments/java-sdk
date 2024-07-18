@@ -26,6 +26,7 @@ public class TransactionSummary {
     private BigDecimal amount;
     private String attachmentInfo;
     private String acquirerReferenceNumber;
+    private List<AuthorizationRecord> authorizationRecord;
     private BigDecimal authorizedAmount;
     private String authCode;
     private String avsResponseCode;
@@ -34,6 +35,7 @@ public class TransactionSummary {
     private String batchId;
     private String batchSequenceNumber;
     private Address billingAddress;
+    private List<Bill> billTransactions;
     private String brandReference;
     private BigDecimal captureAmount;
     private String cardHolderFirstName;
@@ -66,12 +68,15 @@ public class TransactionSummary {
     private String emvChipCondition;
     private String emvIssuerResponse;
 	private String entryMode;
+    private String expiryDate;
+    private BigDecimal feeAmount;
     private String fraudRuleInfo;
     private boolean fullyCaptured;
     private BigDecimal cashBackAmount;
     private BigDecimal gratuityAmount;
     private boolean hasEcomPaymentData;
     private boolean hasEmvTags;
+    private String hasLevelIII;
     private Boolean hostTimeOut;
     private String invoiceNumber;
     private String issuerResponseCode;
@@ -89,16 +94,20 @@ public class TransactionSummary {
     private String merchantId;
     private String merchantName;
     private String merchantNumber;
+    private BigDecimal netAmount;
+    private BigDecimal netFeeAmount;
     private boolean oneTimePayment;
     private String orderId;
     private String originalTransactionId;
     private String paymentMethodKey;
     private String paymentType;
+    private Customer payOrData;
     private String pinVerified;
     private String poNumber;
     private String recurringDataCode;
     private String referenceNumber;
     private int repeatCount;
+    private BigDecimal requestAmount;
     private DateTime responseDate;
     private String scheduleId;
     private String schemeReferenceData;
@@ -142,12 +151,4 @@ public class TransactionSummary {
     private String safReferenceNumber;
     private String cardAcquisition;
     private String transactionTime;
-    private String hasLevelIII;
-    private BigDecimal feeAmount;
-    private Customer payOrData;
-    private List<Bill> billTransactions;
-    private List<AuthorizationRecord> authorizationRecord;
-    private BigDecimal netAmount;
-    private BigDecimal netFeeAmount;
-
 }

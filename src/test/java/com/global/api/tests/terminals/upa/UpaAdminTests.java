@@ -1,15 +1,17 @@
 package com.global.api.tests.terminals.upa;
+import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.SummaryType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
+import com.global.api.terminals.SummaryResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ISAFResponse;
 import com.global.api.terminals.abstractions.ISignatureResponse;
-import com.global.api.terminals.upa.responses.UpaSafResponse;
 import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
@@ -20,9 +22,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -119,6 +123,32 @@ public class UpaAdminTests {
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+    }
+
+    /**
+     * This test assumes there is one SAF transaction stored in the device prior to runtime.
+     * The SAF transaction should be an $85.00 sale, which results in a $55.00 partial
+     * authorization.
+     *
+     * @throws ApiException
+     */
+    @Test
+    public void test_sendSAF_partial_auth() throws ApiException {
+        ISAFResponse response = device.sendStoreAndForward();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+
+        Map<SummaryType, SummaryResponse> approvedTransactions = response.getApproved();
+        assertNotNull(approvedTransactions);
+
+        // transaction record specifics:
+        SummaryResponse summaryResponse = (SummaryResponse) approvedTransactions.values().toArray()[0];
+        TransactionSummary transRecord = summaryResponse.getTransactions().get(0);
+        assertEquals(new BigDecimal("55.00"), transRecord.getAuthorizedAmount());
+        assertEquals(new BigDecimal("85.00"), transRecord.getRequestAmount());
+        assertNotNull(transRecord.getMaskedCardNumber());
     }
 
     @Test

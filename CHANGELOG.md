@@ -1,10 +1,19 @@
 # Changelog
 
-## Latest Version - V11.2.23 (07/16/2024)
+## Latest Version - V11.2.24 (07/18/2024)
+### Enhancements
+UPA:
+- Improved sendSAF command response handling
+
+### Fixes
+Portico:
+- Fixed bug for report request formation
+
+## V11.2.23 (07/16/2024)
 ### Enhancements
 Portico:
 - Add support for sending value for 'UniqueDeviceId' header element
-- Fixed issue 10322 "All the CGP transactions that use Management Builder are failing with ""length should not be more than 50 digits"
+- Fixed issue 10322 - All the CGP transactions that use Management Builder are failing with "length should not be more than 50 digits"
 
 
 GP-API:
