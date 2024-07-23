@@ -8,13 +8,11 @@ import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.elements.DE48_1_CommunicationDiagnostics;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.CreditTrackData;
-import com.global.api.paymentMethods.DebitTrackData;
-import com.global.api.paymentMethods.GiftCard;
+import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
@@ -34,8 +32,7 @@ public class NWSEncryption3DESTests {
     private DebitTrackData debit;
     private GiftCard giftCard;
     private CreditCardData visaCard;
-
-
+    private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
 
     public NWSEncryption3DESTests() throws ApiException {
@@ -47,7 +44,7 @@ public class NWSEncryption3DESTests {
         address.setState("KY");
         address.setCountry("USA");
 
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
         // data code values
@@ -100,7 +97,6 @@ public class NWSEncryption3DESTests {
                 "F000019990E00003"));
         visaCard.setCardPresent(true);
         visaCard.setReaderPresent(true);
-        visaCard.setCardType("Visa");
 
         // VISA
         card = new CreditCardData();
@@ -136,7 +132,7 @@ public class NWSEncryption3DESTests {
         giftCard.setCardType("SV");
     }
 
-    //-----------------------------------------------Credit-------------------------------------------
+    /** ------------Manual Credit Ends--------- */
     @Test
     public void test_001_credit_manual_auth_cvn() throws ApiException {
         Transaction response = cardWithCvn.authorize(new BigDecimal(10))
@@ -148,7 +144,15 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_credit_manual_auth() throws ApiException {
-        Transaction response = visaCard.authorize(new BigDecimal(10))
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_005_credit_manual_refund_cvn() throws ApiException {
+        Transaction response = cardWithCvn.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -156,17 +160,16 @@ public class NWSEncryption3DESTests {
     }
 
     @Test
-    public void test_002_credit_swipe_auth() throws ApiException {
-        Transaction response = track.authorize(new BigDecimal(10))
+    public void test_006_credit_manual_refund() throws ApiException {
+        Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
-
     @Test
     public void test_003_credit_manual_sale() throws ApiException {
-        Transaction response = track.charge(new BigDecimal(10))
+        Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -177,6 +180,18 @@ public class NWSEncryption3DESTests {
         assertNotNull(voidResponse);
         assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
     }
+    /** ------------Manual Credit Ends--------- */
+    /** -----------------------------------------------Mastercard Credit Starts------------------------------------------- */
+
+    @Test
+    public void test_002_credit_swipe_auth() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
 
     @Test
     public void test_003_credit_sale_void() throws ApiException {
@@ -193,7 +208,7 @@ public class NWSEncryption3DESTests {
     }
 
     @Test
-    public void test_004_credit_manual_sale() throws ApiException {
+    public void test_004_credit_sale_swipe() throws ApiException {
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -253,7 +268,7 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_credit_swipe_voice_capture() throws ApiException {
-        Transaction auth = visaCard.authorize(new BigDecimal(10))
+        Transaction auth = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(auth);
@@ -263,7 +278,7 @@ public class NWSEncryption3DESTests {
                 auth.getAuthorizedAmount(),
                 auth.getAuthorizationCode(),
                 new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
-                visaCard
+                track
         );
 
         Transaction response = transaction.capture(new BigDecimal(10))
@@ -280,25 +295,6 @@ public class NWSEncryption3DESTests {
 
         // check response
         assertEquals("000", response.getResponseCode());
-    }
-
-
-    @Test
-    public void test_005_credit_manual_refund_cvn() throws ApiException {
-        Transaction response = cardWithCvn.refund(new BigDecimal(10))
-                .withCurrency("USD")
-                .execute();
-        assertNotNull(response);
-        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
-    }
-
-    @Test
-    public void test_006_credit_manual_refund() throws ApiException {
-        Transaction response = card.refund(new BigDecimal(10))
-                .withCurrency("USD")
-                .execute();
-        assertNotNull(response);
-        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
     @Test
@@ -373,7 +369,7 @@ public class NWSEncryption3DESTests {
 
 
     @Test
-    public void test_013_visa_encrypted_follow_on() throws ApiException {
+    public void test_013_encrypted_follow_on() throws ApiException {
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -399,7 +395,7 @@ public class NWSEncryption3DESTests {
     }
 
     @Test
-    public void test_014_visa_encrypted_refund() throws ApiException {
+    public void test_014_encrypted_refund() throws ApiException {
         Transaction response = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -427,8 +423,10 @@ public class NWSEncryption3DESTests {
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
     }
+    /** -----------------------------------------------Mastercard Credit Ends------------------------------------------- */
 
-    //-----------------------------------Visa Credit-----------------------------------------------
+
+    /**  Visa Credit Start */
     @Test
     public void test_001_visa_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("Visa");
@@ -441,7 +439,7 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_visa_credit_manual_auth() throws ApiException {
-        card.setCardType("Visa");
+        visaCard.setCardType("Visa");
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -451,8 +449,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_visa_credit_swipe_auth() throws ApiException {
-        track.setCardType("Visa");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -461,8 +459,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visa_Credit_auth_capture() throws ApiException {
-        track.setCardType("Visa");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -479,8 +477,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visa_credit_swipe_sale() throws ApiException {
-        track.setCardType("Visa");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -489,12 +487,12 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visa_credit_swipe_voice_capture() throws ApiException {
-        track.setCardType("Visa");
+        visaCard.setCardType("Visa");
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
                 new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
-                track
+                visaCard
         );
 
         Transaction response = transaction.capture(new BigDecimal(10))
@@ -515,7 +513,7 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_010_visa_credit_swipe_refund() throws ApiException {
-        track.setCardType("Visa");
+        visaCard.setCardType("Visa");
         Transaction response = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -525,8 +523,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_003_visa_credit_sale_void() throws ApiException {
-        track.setCardType("Visa");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -542,8 +540,8 @@ public class NWSEncryption3DESTests {
     public void test_004_visa_credit_sale_reversal() throws ApiException {
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
 
-        track.setCardType("Visa");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -559,8 +557,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visa_credit_balance_inquiry() throws ApiException {
-        track.setCardType("Visa");
-        Transaction response = track.balanceInquiry()
+        visaCard.setCardType("Visa");
+        Transaction response = visaCard.balanceInquiry()
                 .execute();
         assertNotNull(response);
 
@@ -572,8 +570,10 @@ public class NWSEncryption3DESTests {
         assertEquals("000", response.getResponseCode());
     }
 
+    /**  Visa Credit End */
 
-    //-----------------------------------VisaCorporate Credit-----------------------------------------------
+
+    /**  VisaCorporate Corporate TestCases Start  */
     @Test
     public void test_001_visaCorporate_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("VisaCorporate");
@@ -599,8 +599,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_visaCorporate_credit_swipe_auth() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -609,8 +609,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaCorporate_Credit_auth_capture() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -627,8 +627,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaCorporate_credit_swipe_sale() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -637,12 +637,12 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaCorporate_credit_swipe_voice_capture() throws ApiException {
-        track.setCardType("VisaCorporate");
+        visaCard.setCardType("VisaCorporate");
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
                 new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
-                track
+                visaCard
         );
 
         Transaction response = transaction.capture(new BigDecimal(10))
@@ -663,8 +663,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_010_visaCorporate_credit_swipe_refund() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.refund(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -673,8 +673,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_003_visaCorporate_credit_sale_void() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -690,8 +690,8 @@ public class NWSEncryption3DESTests {
     public void test_004_visaCorporate_credit_sale_reversal() throws ApiException {
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
 
-        track.setCardType("VisaCorporate");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -707,8 +707,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaCorporate_credit_balance_inquiry() throws ApiException {
-        track.setCardType("VisaCorporate");
-        Transaction response = track.balanceInquiry()
+        visaCard.setCardType("VisaCorporate");
+        Transaction response = visaCard.balanceInquiry()
                 .execute();
         assertNotNull(response);
 
@@ -720,8 +720,10 @@ public class NWSEncryption3DESTests {
         assertEquals("000", response.getResponseCode());
     }
 
+    /**  VisaCorporate Corporate TestCases End  */
 
-    //-----------------------------------VisaPurchasing Credit-----------------------------------------------
+
+    /** -----------------------------------VisaPurchasing Credit TestCases Starts ----------------------------------------------- */
     @Test
     public void test_001_visaPurchasing_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("VisaPurchasing");
@@ -744,8 +746,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_002_visaPurchasing_credit_swipe_auth() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -754,8 +756,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaPurchasing_Credit_auth_capture() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.authorize(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -772,8 +774,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaPurchasing_credit_swipe_sale() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -782,12 +784,12 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaPurchasing_credit_swipe_voice_capture() throws ApiException {
-        track.setCardType("VisaPurchasing");
+        visaCard.setCardType("VisaPurchasing");
         Transaction transaction = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
                 new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
-                track
+                visaCard
         );
 
         Transaction response = transaction.capture(new BigDecimal(10))
@@ -808,8 +810,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_010_visaPurchasing_credit_swipe_refund() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.refund(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.refund(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -818,8 +820,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_003_visaPurchasing_credit_sale_void() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -835,8 +837,8 @@ public class NWSEncryption3DESTests {
     public void test_004_visaPurchasing_credit_sale_reversal() throws ApiException {
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
 
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.charge(new BigDecimal(10))
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -852,8 +854,8 @@ public class NWSEncryption3DESTests {
 
     @Test
     public void test_visaPurchasing_credit_balance_inquiry() throws ApiException {
-        track.setCardType("VisaPurchasing");
-        Transaction response = track.balanceInquiry()
+        visaCard.setCardType("VisaPurchasing");
+        Transaction response = visaCard.balanceInquiry()
                 .execute();
         assertNotNull(response);
 
@@ -864,8 +866,10 @@ public class NWSEncryption3DESTests {
 
         assertEquals("000", response.getResponseCode());
     }
+    /** -----------------------------------VisaPurchasing Credit TestCases Starts ----------------------------------------------- */
 
-    //-----------------------------------MCPurchasing Credit-----------------------------------------------
+
+    /** -----------------------------------MCPurchasing Credit TestCases Start----------------------------------------------- */
     @Test
     public void test_001_mcPurchasing_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("MCPurchasing");
@@ -1008,8 +1012,10 @@ public class NWSEncryption3DESTests {
 
         assertEquals("000", response.getResponseCode());
     }
+    /** -----------------------------------MCPurchasing Credit TestCases End ----------------------------------------------- */
 
-    //-----------------------------------Amex Credit-----------------------------------------------
+
+    /** -----------------------------------Amex Credit TestCases Starts----------------------------------------------- */
     @Test
     public void test_001_Amex_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("Amex");
@@ -1152,8 +1158,9 @@ public class NWSEncryption3DESTests {
 
         assertEquals("000", response.getResponseCode());
     }
+    /** -----------------------------------Amex Credit TestCases Ends----------------------------------------------- */
 
-    //-----------------------------------Discover Credit-----------------------------------------------
+    /** -----------------------------------Discover CreditCard TestCases Starts----------------------------------------- */
     @Test
     public void test_001_Discover_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("Discover");
@@ -1296,9 +1303,11 @@ public class NWSEncryption3DESTests {
 
         assertEquals("000", response.getResponseCode());
     }
+    /** -----------------------------------Discover CreditCard TestCases Ends----------------------------------------- */
 
 
-    //-----------------------------------PayPal Credit-----------------------------------------------
+
+    /** -----------------------------------PayPal Credit TestCases Starts ----------------------------------------------- */
     @Test
     public void test_001_PayPal_credit_manual_auth_cvn() throws ApiException {
         cardWithCvn.setCardType("PayPal");
@@ -1445,8 +1454,10 @@ public class NWSEncryption3DESTests {
 
         assertEquals("000", response.getResponseCode());
     }
+    /** -----------------------------------PayPal Credit TestCases Ends ----------------------------------------------- */
 
-    //------------------------------------debit-----------------------------------------------------
+
+    /** ------------------------------------debit testCases Starts----------------------------------------------------- */
     @Test
     public void test_001_debit_auth() throws ApiException {
         Transaction response = debit.authorize(new BigDecimal(10))
@@ -1631,8 +1642,9 @@ public class NWSEncryption3DESTests {
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
     }
+    /** ------------------------------------debit testCases ends----------------------------------------------------- */
 
-    //-----------------------------------------------GiftCard----------------------------------------
+    /** -----------------------------------------------GiftCard TestCases Starts---------------------------------------- */
     @Test
     public void giftCard_activate() throws ApiException {
         Transaction response = giftCard.activate(new BigDecimal(10))
@@ -1793,7 +1805,34 @@ public class NWSEncryption3DESTests {
         assertNotNull(capture);
         assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
     }
+    /** -----------------------------------------------GiftCard TestCases ends---------------------------------------- */
 
+    /** TEP2 Encryption type code coverage */
+    @Test
+    public void test_002_credit_swipe_code_coverage() throws ApiException {
+        acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
+        config.setAcceptorConfig(acceptorConfig);
+        ServicesContainer.configureService(config);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    /** DE48_1  code coverage */
+    @Test
+    public void DE48_1_CommDiagnostic_tests() {
+        String original = "2181";
+
+        DE48_1_CommunicationDiagnostics element = new DE48_1_CommunicationDiagnostics().fromByteArray(original.getBytes());
+        assertEquals(2, element.getCommunicationAttempts());
+        assertEquals(DE48_ConnectionResult.LostCarrierAwaitingResponse, element.getConnectionResult());
+        assertEquals(DE48_HostConnected.PrimaryHost, element.getHostConnected());
+
+        byte[] buffer = element.toByteArray();
+        assertEquals(original, new String(buffer));
+    }
 
 
 

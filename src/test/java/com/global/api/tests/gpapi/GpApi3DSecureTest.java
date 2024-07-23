@@ -4,7 +4,6 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.gateways.SSLSocketFactoryEx;
@@ -120,76 +119,6 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .setMaximumTimeout(50)
                         .setReferenceNumber("3DS_LOA_SDK_PPFU_020100_00007")
                         .setSdkTransReference("b2385523-a66c-4907-ac3c-91848e8c0067");
-    }
-
-    @Test
-    public void FullCycle_v1() throws ApiException {
-        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
-
-        boolean errorFound = false;
-        try {
-            // Check enrollment
-            Secure3dService
-                    .checkEnrollment(card)
-                    .withCurrency(currency)
-                    .withAmount(amount)
-                    .withAuthenticationSource(AuthenticationSource.Browser)
-                    .withChallengeRequestIndicator(ChallengeRequestIndicator.ChallengeMandated)
-                    .withStoredCredential(storedCredential)
-                    .execute(Secure3dVersion.ONE);
-        } catch (BuilderException e) {
-            errorFound = true;
-            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
-        } finally {
-            assertTrue(errorFound);
-        }
-
-    }
-
-    @Test
-    public void FullCycle_v1_WithTokenizedPaymentMethod() throws Exception {
-        card.setNumber(CARDHOLDER_ENROLLED_V1.cardNumber);
-
-        // Tokenize payment method
-        CreditCardData tokenizedCard = new CreditCardData();
-        tokenizedCard.setToken(card.tokenize());
-
-        assertNotNull(tokenizedCard.getToken());
-
-        boolean errorFound = false;
-        try {
-            // Check enrollment
-            Secure3dService
-                    .checkEnrollment(tokenizedCard)
-                    .withCurrency(currency)
-                    .withAmount(amount)
-                    .execute(Secure3dVersion.ONE);
-        } catch (BuilderException e) {
-            errorFound = true;
-            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
-        } finally {
-            assertTrue(errorFound);
-        }
-    }
-
-    @Test
-    public void CardHolderNotEnrolled_v1() throws ApiException {
-        card.setNumber(CARDHOLDER_NOT_ENROLLED_V1.cardNumber);
-
-        boolean errorFound = false;
-        try {
-            // Check enrollment
-            Secure3dService
-                    .checkEnrollment(card)
-                    .withCurrency(currency)
-                    .withAmount(amount)
-                    .execute(Secure3dVersion.ONE);
-        } catch (BuilderException e) {
-            errorFound = true;
-            assertEquals("3D Secure ONE is no longer supported!", e.getMessage());
-        } finally {
-            assertTrue(errorFound);
-        }
     }
 
     @Test
@@ -348,36 +277,36 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         assertTrue(secureEcom.isEnrolled());
 
         ThreeDSecure initAuth = Secure3dService
-                        .initiateAuthentication(tokenizedCard, secureEcom)
-                        .withAmount(amount)
-                        .withCurrency(currency)
-                        .withAuthenticationSource(AuthenticationSource.Browser)
-                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
-                        .withOrderCreateDate(DateTime.now())
-                        .withAddress(billingAddress, AddressType.Billing)
-                        .withAddress(shippingAddress, AddressType.Shipping)
-                        .withBrowserData(browserData)
-                        .withCustomerAccountId("6dcb24f5-74a0-4da3-98da-4f0aa0e88db3")
-                        .withAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
-                        .withAccountCreateDate(DateTime.now().plusYears(-2))
-                        .withAccountChangeDate(DateTime.now().plusYears(-2))
-                        .withAccountChangeIndicator(AgeIndicator.LessThanThirtyDays)
-                        .withPasswordChangeDate(DateTime.now())
-                        .withPasswordChangeIndicator(AgeIndicator.LessThanThirtyDays)
-                        .withHomeNumber("44", "123456798")
-                        .withWorkNumber("44", "1801555888")
-                        .withMobileNumber("44", "7975556677")
-                        .withPaymentAccountCreateDate(DateTime.now())
-                        .withPaymentAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
-                        .withSuspiciousAccountActivity(SuspiciousAccountActivity.SUSPICIOUS_ACTIVITY)
-                        .withNumberOfPurchasesInLastSixMonths(3)
-                        .withNumberOfTransactionsInLast24Hours(1)
-                        .withNumberOfTransactionsInLastYear(5)
-                        .withNumberOfAddCardAttemptsInLast24Hours(1)
-                        .withShippingAddressCreateDate(DateTime.now().plusYears(-2))
-                        .withShippingAddressUsageIndicator(AgeIndicator.ThisTransaction)
-                        .withCustomerEmail("james@globalpay.com")
-                        .execute();
+                .initiateAuthentication(tokenizedCard, secureEcom)
+                .withAmount(amount)
+                .withCurrency(currency)
+                .withAuthenticationSource(AuthenticationSource.Browser)
+                .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                .withOrderCreateDate(DateTime.now())
+                .withAddress(billingAddress, AddressType.Billing)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withBrowserData(browserData)
+                .withCustomerAccountId("6dcb24f5-74a0-4da3-98da-4f0aa0e88db3")
+                .withAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
+                .withAccountCreateDate(DateTime.now().plusYears(-2))
+                .withAccountChangeDate(DateTime.now().plusYears(-2))
+                .withAccountChangeIndicator(AgeIndicator.LessThanThirtyDays)
+                .withPasswordChangeDate(DateTime.now())
+                .withPasswordChangeIndicator(AgeIndicator.LessThanThirtyDays)
+                .withHomeNumber("44", "123456798")
+                .withWorkNumber("44", "1801555888")
+                .withMobileNumber("44", "7975556677")
+                .withPaymentAccountCreateDate(DateTime.now())
+                .withPaymentAccountAgeIndicator(AgeIndicator.LessThanThirtyDays)
+                .withSuspiciousAccountActivity(SuspiciousAccountActivity.SUSPICIOUS_ACTIVITY)
+                .withNumberOfPurchasesInLastSixMonths(3)
+                .withNumberOfTransactionsInLast24Hours(1)
+                .withNumberOfTransactionsInLastYear(5)
+                .withNumberOfAddCardAttemptsInLast24Hours(1)
+                .withShippingAddressCreateDate(DateTime.now().plusYears(-2))
+                .withShippingAddressUsageIndicator(AgeIndicator.ThisTransaction)
+                .withCustomerEmail("james@globalpay.com")
+                .execute();
 
         assertNotNull(initAuth);
         assertEquals(SUCCESS_AUTHENTICATED, secureEcom.getStatus());

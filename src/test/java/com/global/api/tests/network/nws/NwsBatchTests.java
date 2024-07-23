@@ -550,5 +550,18 @@ public class NwsBatchTests {
         assertNotNull(response.getBatchSummary());
         assertTrue(response.getBatchSummary().isBalanced());
     }
+    @Test
+    public void test_currency_code_coverage() throws ApiException {
+        configName = "default";
+
+        creditSale(10);
+        creditAuth(20);
+
+        Transaction response = BatchService.closeBatch(1, new BigDecimal(30), new BigDecimal(0))
+                .withCurrency("CAD")
+                .execute(configName);
+        assertNotNull(response);
+        assertNotNull(response.getBatchSummary());
+    }
 
 }

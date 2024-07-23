@@ -93,7 +93,7 @@ public class NtsDebitTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("21");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
@@ -242,7 +242,7 @@ public class NtsDebitTest {
         Transaction preAuthCompletion = response.preAuthCompletion(new BigDecimal(10))
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withTagData(emvTagData)
-                .execute();
+                .execute("ICR");
 
         assertEquals("00", preAuthCompletion.getResponseCode());
 

@@ -85,38 +85,6 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
     }
 
     @Test
-    public void fullCycle_v1() throws ApiException {
-        card.setNumber("4012001037141112");
-
-        boolean errorFound = false;
-        try {
-            Secure3dService
-                    .checkEnrollment(card)
-                    .withAmount(amount)
-                    .withCurrency(currency)
-                    .execute(Secure3dVersion.ONE);
-        } catch (ConfigurationException e) {
-            errorFound = true;
-            assertEquals("Secure 3d is not configured for ONE", e.getMessage());
-        } finally {
-            assertTrue(errorFound);
-        }
-    }
-
-    @Test
-    public void fullCycle_v1_EnrolledFalse() throws ApiException {
-        card.setNumber("4012001037141112");
-
-        ThreeDSecure secureEcom = Secure3dService
-                .checkEnrollment(card)
-                .withAmount(amount)
-                .withCurrency(currency)
-                .execute();
-
-        assertFalse(secureEcom.isEnrolled());
-    }
-
-    @Test
     public void fullCycle_v2() throws ApiException {
         // check enrollment
         ThreeDSecure secureEcom = Secure3dService.checkEnrollment(card)
@@ -135,7 +103,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
-                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoChallengeRequested)
                     .execute();
             assertNotNull(initAuth);
 
@@ -287,6 +255,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                         .withAddress(shippingAddress, AddressType.Shipping)
                         .withBrowserData(browserData)
                         .withMethodUrlCompletion(MethodUrlCompletion.No)
+                        .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                         .execute();
                 assertNotNull(initAuth);
 
@@ -347,6 +316,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                     .execute();
             assertNotNull(initAuth);
 
@@ -385,6 +355,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                     .execute();
             assertNotNull(initAuth);
 
@@ -423,6 +394,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                     .execute();
             assertNotNull(initAuth);
 
@@ -464,6 +436,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
 
                     // optionals
                     .withMerchantInitiatedRequestType(MerchantInitiatedRequestType.RecurringTransaction)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
 
                     .execute();
             assertNotNull(initAuth);
@@ -516,6 +489,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withPreOrderAvailabilityDate(DateTime.parse("2019-04-18"))
                     .withReorderIndicator(ReorderIndicator.Reorder)
                     .withOrderTransactionType(OrderTransactionType.GoodsAndServicesPurchase)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
 
                     .execute();
             assertNotNull(initAuth);
@@ -575,6 +549,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withNumberOfAddCardAttemptsInLast24Hours(1)
                     .withShippingAddressCreateDate(DateTime.parse("2019-01-28"))
                     .withShippingAddressUsageIndicator(AgeIndicator.ThisTransaction)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
 
                     .execute();
             assertNotNull(initAuth);
@@ -620,6 +595,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withPriorAuthenticationTransactionId("26c3f619-39a4-4040-bf1f-6fd433e6d615")
                     .withPriorAuthenticationTimestamp(DateTime.parse("2019-01-10T12:57:33.333Z", DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")))
                     .withPriorAuthenticationData("string")
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
                     .execute();
             assertNotNull(initAuth);
 
@@ -663,6 +639,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withMaxNumberOfInstallments(5)
                     .withRecurringAuthorizationFrequency(25)
                     .withRecurringAuthorizationExpiryDate(DateTime.parse("2019-08-25"))
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
 
                     .execute();
             assertNotNull(initAuth);
@@ -702,6 +679,7 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
                     .withAddress(shippingAddress, AddressType.Shipping)
                     .withBrowserData(browserData)
                     .withMethodUrlCompletion(MethodUrlCompletion.No)
+                    .withChallengeRequestIndicator(ChallengeRequestIndicator.NoPreference)
 
                     // optionals
                     .withCustomerAuthenticationData("string")

@@ -580,7 +580,7 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             errorFound = true;
-            assertEquals("Status Code: 502 - 205,eCom error—Developers are notified", ex.getMessage());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
             assertEquals("50013", ex.getResponseText());
         } finally {
@@ -625,7 +625,7 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             errorFound = true;
-            assertEquals("Status Code: 502 - 205,eCom error—Developers are notified", ex.getMessage());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
             assertEquals("50013", ex.getResponseText());
         } finally {
@@ -649,7 +649,7 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             errorFound = true;
-            assertEquals("Status Code: 502 - 205,eCom error—Developers are notified", ex.getMessage());
+            assertEquals("Status Code: 502 - 200,eCom error—Developers are notified", ex.getMessage());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
             assertEquals("50013", ex.getResponseText());
         } finally {

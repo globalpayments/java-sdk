@@ -3,6 +3,7 @@ package com.global.api.tests.network.nws;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.SecCode;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -187,6 +188,41 @@ public class NWSCheckTest {
         check.setAccountNumber("");
         check.setRoutingNumber("");
         check.setCheckNumber("");
+        check.setCheckVerify(true) ;
+
+        Transaction response = check.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .withCheckCustomerId("0873629115")
+                .withRawMICRData("⑆111111111⑆11111111⑈00101")
+                .withAddress(address)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertEquals("1100" , pmi.getMessageTransactionIndicator());
+        assertEquals("042000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+    }
+
+    @Test
+    public void Test_CheckVerification_RawMICR_code_coverage_only() throws ApiException {
+        check.setAccountNumber("");
+        check.setRoutingNumber("");
+        check.setCheckNumber("");
+        check.setCheckVerify(true);
+        check.setMicrNumber("83483483");
+        check.setPhoneNumber("23456776543");
+        check.setSecCode(SecCode.Web);
+        check.setSsnLast4("0000");
+        check.setCheckReference("test");
+        check.setMerchantNotes("notes");
+        check.setBankAddress(new Address("8384"));
+        check.setTransitNumber("234567");
+        check.setFinancialInstituteNumber("23456");
+        check.setClientTxnId("234567");
+        check.setGatewayTxnId("3457");
         check.setCheckVerify(true) ;
 
         Transaction response = check.authorize(new BigDecimal(1), true)

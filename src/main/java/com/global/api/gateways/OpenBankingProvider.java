@@ -104,9 +104,11 @@ public class OpenBankingProvider extends RestGateway implements IOpenBankingProv
                                 .set("type", builder.getRemittanceReferenceType() != null ? builder.getRemittanceReferenceType().toString() : null)
                                 .set("value", builder.getRemittanceReferenceValue());
 
-                payment
-                        .set("scheme", bankPaymentType != null ? bankPaymentType.toString() : "")
-                        .set("destination", destination);
+                payment.set("scheme", bankPaymentType != null ? bankPaymentType.toString() : "");
+                if (!destination.getKeys().isEmpty()) {
+                    payment.set("destination", destination);
+                }
+
 
                 if(!remittance_reference.getKeys().isEmpty()) {
                     payment.set("remittance_reference", remittance_reference);

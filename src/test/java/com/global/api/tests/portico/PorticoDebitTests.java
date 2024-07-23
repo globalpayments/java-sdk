@@ -37,7 +37,6 @@ public class PorticoDebitTests {
         track.setPinBlock("32539F50C245A6A93D123412324000AA");
         track.setEncryptionData(EncryptionData.version1());
     }
-
     @Test
     public void debitSale() throws ApiException {
         Transaction response = track.charge(new BigDecimal("14.01"))

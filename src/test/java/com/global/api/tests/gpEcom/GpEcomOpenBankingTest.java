@@ -14,6 +14,7 @@ import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.paymentMethods.BankPayment;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
+import java.util.logging.Logger;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -28,6 +29,7 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
     private final BigDecimal amount = new BigDecimal("10.99");
     private final String remittanceReferenceValue = "Nike Bounce Shoes";
     private boolean runAuto = true;
+    private final Logger logger = Logger.getLogger(GpEcomOpenBankingTest.class.getName());
 
     public GpEcomOpenBankingTest() throws ApiException {
         GpEcomConfig config = gpEComSetup();
@@ -578,6 +580,34 @@ public class GpEcomOpenBankingTest extends BaseGpEComTest {
         }
     }
 
+    @Test
+    public void openBanking_FasterPaymentsCharge_WithoutDestination() throws ApiException, InterruptedException {
+        BankPayment bankPayment = fasterPaymentConfig();
+        bankPayment.setAccountNumber(null);
+        bankPayment.setAccountName(null);
+        bankPayment.setSortCode(null);
+
+
+        Transaction transaction = bankPayment
+                .charge(amount).withCurrency(currency)
+                .withRemittanceReference(RemittanceReferenceType.TEXT, remittanceReferenceValue)
+                .execute();
+
+        assertTransactionResponse(transaction);
+
+        logger.info(transaction.getBankPaymentResponse().getRedirectUrl());
+
+        Thread.sleep(2000);
+        TransactionSummaryPaged detail = ReportingService
+                .bankPaymentDetail(transaction.getBankPaymentResponse().getId(), 1, 10)
+                .execute();
+
+        assertNotNull(detail);
+        assertNull(detail.getResults().get(0).getBankPaymentResponse().getSortCode());
+        assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountNumber());
+        assertNull(detail.getResults().get(0).getBankPaymentResponse().getAccountName());
+        assertNull(detail.getResults().get(0).getBankPaymentResponse().getIban());
+    }
 
     @Test
     public void OpenBanking_Sepa_MissingIban() throws ApiException {

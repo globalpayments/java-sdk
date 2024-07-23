@@ -623,6 +623,10 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
             if (builder.getHostedPaymentData().getReturnAddress() != null) {
                 request.set("HPP_DO_NOT_RETURN_ADDRESS", builder.getHostedPaymentData().getReturnAddress().booleanValue() ? "TRUE" : "FALSE");
             }
+
+            if (builder.getHostedPaymentData().getRemoveShipping() != null) {
+                request.set("HPP_REMOVE_SHIPPING", builder.getHostedPaymentData().getRemoveShipping().booleanValue() ? "TRUE" : "FALSE");
+            }
         }
 
         if (hostedPaymentConfig.getFraudFilterMode() != null &&

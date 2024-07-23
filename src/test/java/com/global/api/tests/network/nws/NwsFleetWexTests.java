@@ -1,6 +1,7 @@
 package com.global.api.tests.network.nws;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Target;
@@ -32,9 +33,22 @@ public class NwsFleetWexTests {
     private ProductData productData;
     private FleetData fleetData;
     private NetworkGatewayConfig config;
+    private Address address;
+    AcceptorConfig acceptorConfig;
 
     public NwsFleetWexTests() throws ApiException {
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+
+        //address
+        acceptorConfig.setAddress(address);
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
@@ -422,7 +436,28 @@ public class NwsFleetWexTests {
         // check response
         assertEquals("400", voidResponse.getResponseCode());
     }
+    /** DE 40 Additional Amount */
+    @Test
+    public void test_sales_wex_with_de_40_amount() throws ApiException {
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46561");
+        fleetData.setServicePrompt("0");
 
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121014656100000");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("102", UnitOfMeasure.Units, new BigDecimal(20), new BigDecimal(30), new BigDecimal(100));
+
+        Transaction response = card.charge(new BigDecimal(30))
+                .withCurrency("USD")
+                .withSalesTaxAdditionAmount(new BigDecimal(10))
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
     @Test
     public void test_003_swipe_refund_codeCoverage() throws ApiException {
         fleetData.setDriverId("373395");
@@ -449,7 +484,7 @@ public class NwsFleetWexTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
-
+    /** Exception code coverage required field missing*/
     @Test
     public void test_003_swipe_refund_codeCoverage_Excp() {
         fleetData.setDriverId("373395");
@@ -468,6 +503,7 @@ public class NwsFleetWexTests {
         assertEquals("Transaction mapping data object required for WEX refunds.", builderException.getMessage());
     }
 
+    /** Exception code coverage batch number field missing*/
     @Test
     public void test_003_swipe_refund02_codeCoverage(){
         fleetData.setDriverId("373395");
@@ -488,6 +524,7 @@ public class NwsFleetWexTests {
         assertEquals("Transaction Matching Data incomplete. Original batch number and date are required for WEX refunds.", builderException.getMessage());
     }
 
+    /** Null Pointer Exception code coverage */
     @Test
     public void test_sales_wex_codeCoverage_Excp() {
         fleetData.setDriverId("373395");
@@ -513,21 +550,34 @@ public class NwsFleetWexTests {
                         .execute());
         assertEquals("The purchase device sequence number cannot be null for WEX transactions.", builderException.getMessage());
     }
+
     @Test
-    public void test_sales_wex_with_de_40_amount() throws ApiException {
-        fleetData.setDriverId("373395");
-        fleetData.setVehicleNumber("46561");
-        fleetData.setServicePrompt("0");
+    public void test_Wex_sale_Address_code_coverage() throws ApiException {
+
+        address = new Address();
+        address.setName("My STORE            ");
+        address.setStreetAddress1("1 MY STREET       ");
+        address.setCity("JEFFERSONVILLE  ");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
 
         CreditTrackData card = new CreditTrackData();
-        card.setValue("6900460430001234566=24121014656100000");
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
-        productData.add("102", UnitOfMeasure.Units, new BigDecimal(20), new BigDecimal(30), new BigDecimal(100));
+        productData.add("001", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
-        Transaction response = card.charge(new BigDecimal(30))
+        Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
-                .withSalesTaxAdditionAmount(new BigDecimal(10))
                 .withProductData(productData)
                 .withFleetData(fleetData)
                 .execute();

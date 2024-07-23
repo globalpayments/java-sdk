@@ -155,6 +155,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     @Getter
     private String paymentPurposeCode;
+
     @Getter
     private BigDecimal salesTaxAdditionAmount;
 

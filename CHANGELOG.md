@@ -1,6 +1,23 @@
 # Changelog
 
-## Latest Version - V11.2.24 (07/18/2024)
+## Latest Version - V11.2.25 (07/23/2024)
+### Enhancements
+- [NTS]: Added testcases for SDK capability matrix
+- [NWS]: Code Coverage Improvement
+- [Portico]: Added Test cases for code coverage
+- [Bill Pay]: Added test cases for code coverage
+- [GP-API] Code clean up and improvements
+- [GP-ECOM] HPP Addres Capture
+
+### Bug Fixes
+- [GP-API]: Fixed "destination" field as optional for Open banking
+- [UPA]: Fixed improper SAF transaction record response mapping
+- [Portico]:Fixed conditional check for UniqueDeviceId and updated a test
+- [NTS]: Fixed issue 10321 Voyager EMV Prompts issue, updated Vehicle number to 3
+- [NTS]: Fixed issue 10324 Added field for IDNumber in FleetData.
+
+
+## V11.2.24 (07/18/2024)
 ### Enhancements
 UPA:
 - Improved sendSAF command response handling
@@ -29,7 +46,7 @@ NTS:
 UPA:
 - Fixed 'GetSAFReport' response handling
 
-## Latest Version - V11.2.22 (07/02/2024)
+## V11.2.22 (07/02/2024)
   ### Fixes
   VAPS:
  - Added Tag DE_28 Date, Reconciliation to the Batch Close transaction Request.

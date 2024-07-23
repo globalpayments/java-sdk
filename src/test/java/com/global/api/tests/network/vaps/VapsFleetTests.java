@@ -65,7 +65,7 @@ public class VapsFleetTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportWexAdditionalProducts(true);
-//        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setVisaFleet2(false);
@@ -77,7 +77,7 @@ public class VapsFleetTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -89,15 +89,15 @@ public class VapsFleetTests {
 //        ServicesContainer.configureService(config, "ICR");
 
         // MASTERCARD FLEET
-        card = TestCards.MasterCardFleetManual(true, true);
-        track = TestCards.MasterCardFleetSwipe();
+//        card = TestCards.MasterCardFleetManual(true, true);
+//        track = TestCards.MasterCardFleetSwipe();
 
         // VOYAGER FLEET
-//        card = TestCards.VoyagerManual(true, true);
-//        track = TestCards.VoyagerSwipe();
+        card = TestCards.VoyagerManual(true, true);
+        track = TestCards.VoyagerSwipe();
 
         fleetData = new FleetData();
-        fleetData.setServicePrompt("00");
+//        fleetData.setServicePrompt("00");
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
@@ -1207,7 +1207,7 @@ public class VapsFleetTests {
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
-                .withTagData("4F0AA0000000049999C0001682023900840AA0000000049999C000168A025A33950500800080009A032021039B02E8009C01005F24032212315F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F4104000000009F6E1308 400003030001012059876123400987612340")
+                .withTagData("4F0AA0000000049999C0001682023900840AA0000000049999C000168A025A33950500800080009A032021039B02E8009C01005F24032212315F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F4104000000009F6E1308400003030001012059876123400987612340")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -1427,4 +1427,33 @@ public class VapsFleetTests {
         assertNotNull(resubmitResp);
         assertEquals(resubmitResp.getResponseCode(),"000");
     }
+
+    @Test
+    public void test_012_swipe_sale_voyager_product_10321() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        fleetData.setVehicleNumber("5365");
+        fleetData.setIdNumber("1298");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F4104000000009F0A06000210840000")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
 }

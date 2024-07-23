@@ -43,6 +43,7 @@ public class NWSEwicTests {
         address.setCity("MYTOWN");
         address.setPostalCode("90210");
         address.setState("KY");
+        address.setStreetAddress2("LBS Street 2");
         address.setCountry("USA");
 
         AcceptorConfig acceptorConfig = new AcceptorConfig();
@@ -413,8 +414,48 @@ public class NWSEwicTests {
         // check response
         assertEquals("000", response.getResponseCode());
 
+    }
+    @Test
+    public void test_005_manual_sale_EA_data() throws ApiException {
+        ewicData= new EWICData();
+        DE117_WIC_Data_Field_EA eaData = new DE117_WIC_Data_Field_EA();
+        eaData.setUpcData("11110583000");
+        eaData.setCategoryCode("2");
+        eaData.setSubCategoryCode("2");
+        eaData.setBenefitQuantity("500");
+        eaData.setItemDescription("desc");
+        ewicData.add(eaData);
 
+        Transaction response = card.charge(new BigDecimal(10))
+                .withEWICData(ewicData)
+                .withClerkId("41256")
+                .withAddress(address, AddressType.Billing)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
 
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("009700", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    /** truncated pan Code coverage */
+    @Test
+    public void test_002_truncated_pan_code_coverage() {
+        // create the track data object from full pan
+
+        // get the truncated data
+        String truncatedTrack = track.getTruncatedTrackData();
+        assertNotNull(track.getTruncatedTrackData());
+
+        // create new track data from truncated
+        track.setValue(truncatedTrack);
+        assertFalse(track.getTrackData().endsWith("null"));
     }
 
 }

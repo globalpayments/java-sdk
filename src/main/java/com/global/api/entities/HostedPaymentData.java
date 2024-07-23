@@ -29,6 +29,7 @@ public class HostedPaymentData {
     @Getter @Setter private Boolean captureAddress;
     // Determines whether the HPP response will contain the address and contact information
     @Getter @Setter private Boolean returnAddress = false;
+    @Getter @Setter private Boolean removeShipping;
     @Getter @Setter private Boolean enableExemptionOptimization;
     @Getter @Setter private BlockCardType[] blockCardTypes;
     private AlternativePaymentType[] presetPaymentMethods;

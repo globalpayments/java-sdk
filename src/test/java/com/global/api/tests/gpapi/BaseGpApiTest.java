@@ -67,8 +67,6 @@ public class BaseGpApiTest {
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit
     public enum GpApi3DSTestCards {
-        CARDHOLDER_NOT_ENROLLED_V1("4917000000000087"),
-        CARDHOLDER_ENROLLED_V1("4012001037141112"),
 
         CARD_AUTH_SUCCESSFUL_V2_1("4263970000005262"),
         CARD_AUTH_SUCCESSFUL_NO_METHOD_URL_V2_1("4222000006724235"),

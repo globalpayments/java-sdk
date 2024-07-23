@@ -2370,11 +2370,17 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
             }
 
+            DE48_CardType cardType = mapCardType(builder.getPaymentMethod(), builder.getTransactionType());
             customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
-            customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
+            if(cardType != null && cardType.getValue().trim().equals("VF")){
+                customerData.set(DE48_CustomerDataType.Vehicle_Number_Code3, StringUtils.padLeft(fleetData.getVehicleNumber(),6,'0'));
+                customerData.set(DE48_CustomerDataType.Id_Number_Code3, StringUtils.padLeft(fleetData.getIdNumber(),6,'0'));
+            }else {
+                customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
+            }
             customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
-            customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
-            customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
+            customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, StringUtils.padLeft(fleetData.getDriverId(),6,'0'));
+            customerData.set(DE48_CustomerDataType.Odometer_Reading, StringUtils.padLeft(fleetData.getOdometerReading(),6,'0'));
             customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
             customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, fleetData.getWorkOrderPoNumber());
             customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());

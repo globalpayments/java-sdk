@@ -323,7 +323,20 @@ public class PorticoRecurringTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+        @Test  // RecurringBillingAuth
+    public void Test_007a_CreditAuth() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("%B4012110000000011^TEST CUSTOMER^250510148888000000000074800000?;");
 
+        RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));
+        assertNotNull(paymentMethod);
+
+        Transaction response = paymentMethod.authorize(new BigDecimal(9))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
     @Test
     public void Test_007b_CreditCharge_ScheduleId() throws ApiException {
         RecurringPaymentMethod paymentMethod = RecurringPaymentMethod.find(paymentId("Credit"));

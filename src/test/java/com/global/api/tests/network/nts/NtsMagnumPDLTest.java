@@ -98,7 +98,7 @@ public class NtsMagnumPDLTest {
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
 
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
 
         config.setMerchantType("5541");
         ServicesContainer.configureService(config);

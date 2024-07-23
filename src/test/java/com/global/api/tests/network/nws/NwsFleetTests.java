@@ -152,11 +152,11 @@ public class NwsFleetTests {
         config.setMerchantType("5542");
         ServicesContainer.configureService(config);
 
-//        fleetData.setOdometerReading("111");
-//        fleetData.setDriverId("11411");
-//        fleetData.setOdometerReading("987654");
-//        fleetData.setDriverId("001001");
-        //fleetData.setServicePrompt("00");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        fleetData.setOdometerReading("987654");
+        fleetData.setDriverId("001001");
+        fleetData.setServicePrompt("00");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -334,21 +334,6 @@ public class NwsFleetTests {
         assertEquals("400", response.getResponseCode());
     }
 
-//    @Test
-//    public void test_007_swipe_reverse_sale() throws ApiException {
-//        try {
-//            track.charge(new BigDecimal(10))
-//                    .withCurrency("USD")
-//                    .withForceGatewayTimeout(true)
-//                    .execute();
-//            Assert.fail("Did not throw a timeout");
-//        }
-//        catch(GatewayTimeoutException exc) {
-//            assertEquals(1, exc.getReversalCount());
-//            assertEquals("400", exc.getReversalResponseCode());
-//        }
-//    }
-
     //Reversal
     @Test
     public void test_008_authorization_reversal() throws ApiException {
@@ -382,26 +367,6 @@ public class NwsFleetTests {
 
         assertEquals(reversal.getResponseMessage(), "400", reversal.getResponseCode());
 
-        // test_009
-/*        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.add("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
-
-        Transaction captureResponse = response.capture(new BigDecimal(12))
-                .withCurrency("USD")
-                .withProductData(productData)
-                .withFleetData(fleetData)
-                .execute("ICR");
-        assertNotNull(captureResponse);
-
-        // check message data
-        pmi = captureResponse.getMessageInformation();
-        assertNotNull(pmi);
-        assertEquals("1220", pmi.getMessageTransactionIndicator());
-        assertEquals("000900", pmi.getProcessingCode());
-        assertEquals("202", pmi.getFunctionCode());
-
-        // check response
-        assertEquals("000", captureResponse.getResponseCode());*/
     }
 
     @Test
@@ -1882,6 +1847,27 @@ public class NwsFleetTests {
         // check response
         assertEquals("400", reversal.getResponseCode());
     }
+    @Test
+    public void test_002_manual_sale_27_PDF0_code_coverage_only() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.ANSI_X9_TG23_Format);
+        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
+        Transaction response = card.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
 
 }

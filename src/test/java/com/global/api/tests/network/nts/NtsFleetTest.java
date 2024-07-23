@@ -124,7 +124,7 @@ public class NtsFleetTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("21");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
@@ -1142,7 +1142,6 @@ public class NtsFleetTest {
                 .execute();
 
         assertNotNull(response);
-//        System.out.println(response.getNtsCreditSaleResponse().getHostResponseArea());
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
 
         Transaction voidResponse = response.voidTransaction(new BigDecimal(10))

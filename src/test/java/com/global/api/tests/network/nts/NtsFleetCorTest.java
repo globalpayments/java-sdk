@@ -120,7 +120,7 @@ public class NtsFleetCorTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("21");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
@@ -428,7 +428,6 @@ public class NtsFleetCorTest {
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .execute();
 
-        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -463,7 +462,6 @@ public class NtsFleetCorTest {
                 .withCvn("123")
                 .execute();
 
-        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -602,6 +600,49 @@ public class NtsFleetCorTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
+    }
+
+    @Test
+    public void test_001_FuelMan_track1_void() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("11411");
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .execute();
+
+        assertEquals("00", voidResponse.getResponseCode());
     }
 
     @Test//not working
@@ -1015,7 +1056,6 @@ public class NtsFleetCorTest {
                 .withCvn("123")
                 .execute();
 
-        System.out.println(response.getTransactionReference().getBankcardData().get(UserDataTag.ApprovedAmount));
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -1171,6 +1211,50 @@ public class NtsFleetCorTest {
         assertNotNull(response);
         assertEquals("12", response.getResponseCode());
     }
+
+    @Test
+    public void test_001_FleetWide_track1_void() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = new CreditTrackData();
+        track.setValue(";70768512345200005=99120?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("11411");
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .execute();
+
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
     // used only for code coverage
     @Test
     public void test_DataCollect_withZipCode_CodeCoverageOnly() throws ApiException {

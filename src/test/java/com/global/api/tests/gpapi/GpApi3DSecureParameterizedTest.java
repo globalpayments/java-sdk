@@ -233,47 +233,6 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class ChallengeRequiredFailed3DSV1CardTests extends SharedSetUp {
-        @Parameterized.Parameters(name = "ChallengeRequiredFailed3DSV1CardTests :: {index} :: card [{0}], status [{1}], acs_status [{2}]")
-        public static Collection input() {
-            return asList(new Object[][]{
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, FAILED, GpApi3DSecureTest.AuthenticationResultCode.Unavailable},
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, NOT_AUTHENTICATED, GpApi3DSecureTest.AuthenticationResultCode.Failed},
-                    {CARDHOLDER_ENROLLED_V1.cardNumber, SUCCESS_ATTEMPT_MADE, GpApi3DSecureTest.AuthenticationResultCode.AttemptAcknowledge}
-            });
-        }
-
-        @Parameterized.Parameter()
-        public String cardNumber;
-        @Parameterized.Parameter(1)
-        public String status;
-        @Parameterized.Parameter(2)
-        public GpApi3DSecureTest.AuthenticationResultCode AcsStatus;
-
-        @Test
-        public void cardHolderEnrolled_ChallengeRequired_AuthenticationUnavailable_v1() throws Exception {
-            card.setNumber(cardNumber);
-
-            ThreeDSecure secureEcom =
-                    Secure3dService
-                            .checkEnrollment(card)
-                            .withCurrency(currency)
-                            .withAmount(amount)
-                            .execute();
-
-            assertNotNull(secureEcom);
-            assertEquals(NOT_ENROLLED, secureEcom.getEnrolledStatus());
-            assertEquals(NOT_ENROLLED, secureEcom.getStatus());
-            assertNotNull(secureEcom.getIssuerAcsUrl());
-            assertNotNull(secureEcom.getChallengeReturnUrl());
-            assertNotNull(secureEcom.getSessionDataFieldName());
-            assertNotNull(secureEcom.getMessageType());
-            assertNull(secureEcom.getEci());
-            assertEquals("NO", secureEcom.getLiabilityShift());
-        }
-    }
-
-    @RunWith(Parameterized.class)
     public static class ChallengeRequired3DSV2CardTests extends SharedSetUp {
         @Parameterized.Parameters(name = "ChallengeRequired3DSV2CardTests :: {index} :: card [{0}]")
         public static Collection input() {

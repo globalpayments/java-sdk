@@ -90,9 +90,6 @@ public class UpaSafResponse implements ISAFResponse {
                     safDetails.forEach(safDetail -> {
                         SummaryResponse summaryResponse= new SummaryResponse();
 
-
-                        TransactionSummary transactionSummary = new TransactionSummary();
-
                         if (safDetail.getString(SAF_TYPE) != null) {
                             summaryResponse.summaryType = mapSafType(safDetail.getString(SAF_TYPE));
                         }
@@ -103,61 +100,60 @@ public class UpaSafResponse implements ISAFResponse {
                             summaryResponse.totalAmount = safDetail.getDecimal(SAF_TOTAL);
                         }
 
-                        transactionSummary.setSafTotal(safDetail.getString(SAF_TOTAL));
+                        List<JsonDoc> safRecords = safDetail.getEnumerator(SAF_RECORDS);
+                        if (safRecords != null) {
+                            safRecords.forEach(safRecord -> {
+                                TransactionSummary transactionSummary = new TransactionSummary();
+                                transactionSummary.setApprovalCode(safRecord.getString("approvalCode"));
+                                transactionSummary.setMaskedCardNumber(safRecord.getString(MASKED_PAN));
+                                transactionSummary.setPinVerified(safRecord.getString("PinVerified"));
+                                transactionSummary.setGatewayResponseCode(safRecord.getString(RESPONSE_CODE));
+                                transactionSummary.setAvailableBalance(safRecord.getDecimal("availableBalance"));
+                                transactionSummary.setGatewayResponseMessage(safRecord.getString(RESPONSE_TEXT));
+                                transactionSummary.setAppName(safRecord.getString("appName"));
+                                transactionSummary.setTranNo(safRecord.getString("tranNo"));
+                                transactionSummary.setSafReferenceNumber(safRecord.getString("safReferenceNumber"));
 
-                            List<JsonDoc> safRecords = safDetail.getEnumerator(SAF_RECORDS);
-                            if (safRecords != null) {
-                                safRecords.forEach(safRecord -> {
-                                    transactionSummary.setApprovalCode(safRecord.getString("approvalCode"));
-                                    transactionSummary.setMaskedCardNumber(safRecord.getString(MASKED_PAN));
-                                    transactionSummary.setPinVerified(safRecord.getString("PinVerified"));
-                                    transactionSummary.setGatewayResponseCode(safRecord.getString(RESPONSE_CODE));
-                                    transactionSummary.setAvailableBalance(safRecord.getDecimal("availableBalance"));
-                                    transactionSummary.setGatewayResponseMessage(safRecord.getString(RESPONSE_TEXT));
-                                    transactionSummary.setAppName(safRecord.getString("appName"));
-                                    transactionSummary.setTranNo(safRecord.getString("tranNo"));
-                                    transactionSummary.setSafReferenceNumber(safRecord.getString("safReferenceNumber"));
+                                try {
+                                    transactionSummary.setTransactionDate(safRecord.getDateTime("transactionTime"));
+                                } catch (GatewayException ignored) { }
 
-                                    try {
-                                        transactionSummary.setTransactionDate(safRecord.getDateTime("transactionTime"));
-                                    } catch (GatewayException ignored) { }
+                                if (safRecord.getDecimal(TIP_AMOUNT) != null)
+                                    transactionSummary.setGratuityAmount(safRecord.getDecimal(TIP_AMOUNT));
 
-                                    if (safRecord.getDecimal(TIP_AMOUNT) != null)
-                                        transactionSummary.setGratuityAmount(safRecord.getDecimal(TIP_AMOUNT));
+                                if (safRecord.getDecimal(BASE_AMOUNT) != null)
+                                    transactionSummary.setBaseAmount(safRecord.getDecimal(BASE_AMOUNT));
 
-                                    if (safRecord.getDecimal(BASE_AMOUNT) != null)
-                                        transactionSummary.setBaseAmount(safRecord.getDecimal(BASE_AMOUNT));
+                                if (safRecord.getDecimal("baseDue") != null)
+                                    transactionSummary.setAmountDue(safRecord.getDecimal("baseDue"));
 
-                                    if (safRecord.getDecimal("baseDue") != null)
-                                        transactionSummary.setAmountDue(safRecord.getDecimal("baseDue"));
+                                if (safRecord.getDecimal(REQUEST_AMOUNT) != null) {
+                                    transactionSummary.setRequestAmount(safRecord.getDecimal(REQUEST_AMOUNT));
 
-                                    if (safRecord.getDecimal(REQUEST_AMOUNT) != null) {
-                                        transactionSummary.setRequestAmount(safRecord.getDecimal(REQUEST_AMOUNT));
+                                    // re-uses "totalAmount" device response property, but this
+                                    // might help call attention to the transaction being a partial
+                                    // authorization
+                                    transactionSummary.setAuthorizedAmount(safRecord.getDecimal("totalAmount"));
+                                }
 
-                                        // re-uses "totalAmount" device response property, but this
-                                        // might help call attention to the transaction being a partial
-                                        // authorization
-                                        transactionSummary.setAuthorizedAmount(safRecord.getDecimal("totalAmount"));
-                                    }
+                                if (safRecord.getString("expiryDate") != null)
+                                    transactionSummary.setExpiryDate(safRecord.getString("expiryDate"));
 
-                                    if (safRecord.getString("expiryDate") != null)
-                                        transactionSummary.setExpiryDate(safRecord.getString("expiryDate"));
+                                if (safRecord.getString("referenceNumber") != null)
+                                    transactionSummary.setTransactionId(safRecord.getString("referenceNumber"));
 
-                                    if (safRecord.getString("referenceNumber") != null)
-                                        transactionSummary.setTransactionId(safRecord.getString("referenceNumber"));
+                                if (safRecord.getString("maskedPan") != null)
+                                    transactionSummary.setMaskedCardNumber(safRecord.getString("maskedPan"));
 
-                                    if (safRecord.getString("maskedPan") != null)
-                                        transactionSummary.setMaskedCardNumber(safRecord.getString("maskedPan"));
+                                if (safRecord.getString("invoiceNbr") != null)
+                                    transactionSummary.setInvoiceNumber(safRecord.getString("invoiceNbr"));
 
-                                    if (safRecord.getString("invoiceNbr") != null)
-                                        transactionSummary.setInvoiceNumber(safRecord.getString("invoiceNbr"));
+                                if (safRecord.getDecimal("totalAmount") != null)
+                                    transactionSummary.setTotalAmount(safRecord.getString("totalAmount"));
 
-                                    if (safRecord.getDecimal("totalAmount") != null)
-                                        transactionSummary.setTotalAmount(safRecord.getString("totalAmount"));
-
-                                    summaryResponse.transactions.add(transactionSummary);
-                                });
-                            }
+                                summaryResponse.transactions.add(transactionSummary);
+                            });
+                        }
 
                         if(summaryResponse.summaryType.equals(SummaryType.Declined)){
                             if (declined == null) {

@@ -121,7 +121,7 @@ public class NtsCreditTest {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("01");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
@@ -2868,8 +2868,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
 
-        System.out.println("token:  "+response.getTransactionToken());
-
         Transaction capture = NetworkService.resubmitDataCollect(response.getTransactionToken())
                 .execute();
         assertNotNull(capture);
@@ -2893,7 +2891,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withCvn("123")
                 .execute();
         assertNotNull(response);
-       // System.out.println("Normal token case "+ response.getTransactionToken());
 
         // check response
         assertEquals("00", response.getResponseCode());
@@ -3138,6 +3135,33 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .execute();
         // check response
         assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_Refund_track2() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // refund request
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(refundResponse);
     }
 
     @Test

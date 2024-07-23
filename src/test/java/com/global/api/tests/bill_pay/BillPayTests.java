@@ -6,6 +6,7 @@ import com.global.api.entities.Customer;
 import com.global.api.entities.HostedPaymentData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.billing.Bill;
+import com.global.api.entities.billing.BillingResponse;
 import com.global.api.entities.billing.LoadHostedPaymentResponse;
 import com.global.api.entities.billing.LoadSecurePayResponse;
 import com.global.api.entities.Schedule;
@@ -17,6 +18,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.gateways.BillPayProvider;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
@@ -54,6 +56,9 @@ public class BillPayTests {
     private static final String FIRST_NAME = "Account";
     private static final String LAST_NAME = "Update";
     private static final String EMAIL_ID = "account.update@test.com";
+    private static final String GATEWAY_EXCEPTION_MESSAGE = "An error occurred attempting to commit the preloaded bills";
+    private static final String MESSAGE = "Exception message to be thrown";
+    private static final String EXPECTED = "Dev_Exp_Team_Merchant";
 
     public BillPayTests() throws ConfigurationException {
 
@@ -1285,7 +1290,129 @@ public class BillPayTests {
             assertEquals(ORDER_ID_EXCEPTION,tokenException.getResponseText());
 
     }
+    @Test
+    public void ACHAccountToCharge() throws ApiException {
+        BillPayService service = new BillPayService();
+        BigDecimal fee = service.calculateConvenienceAmount(clearTextCredit, bill.getAmount());
 
+        BillPayProvider  billPayProvider = new BillPayProvider();
+
+        Transaction result = ach.charge(bill.getAmount())
+                .withAddress(address)
+                .withBills(bill)
+                .withConvenienceAmt(fee)
+                .withCurrency("USD")
+                .execute();
+
+        validateSuccesfulTransaction(result);
+    }
+    @Test
+    public void Tokenize_UsingVisaCreditCard() throws ApiException {
+        String cardTypeVisa = "VISA";
+
+        String postalCode = address.getPostalCode();
+        String custFirstName = customer.getFirstName();
+        String custLastName = customer.getLastName();
+        String cardHoldeName = "Test Tester";
+
+        CreditCardData clearTextCreditVisa = new CreditCardData();
+        clearTextCreditVisa.setNumber( "4444444444444448");
+        clearTextCreditVisa.setExpMonth(DateTime.now().getMonthOfYear());
+        clearTextCreditVisa.setExpYear(DateTime.now().getYear());
+        clearTextCreditVisa.setCvn("123");
+        clearTextCreditVisa.setCardHolderName(cardHoldeName);
+
+        Transaction tokenResponseVisa = clearTextCreditVisa.charge(bill.getAmount())
+                .withAddress(address)
+                .withCustomerData(customer)
+                .withBills(bill)
+                .withCurrency("USD")
+                .withRequestMultiUseToken(true)
+                .execute();
+
+        assertNotNull(tokenResponseVisa);
+
+        clearTextCreditVisa.setToken(tokenResponseVisa.getToken());
+        Transaction tokenInfoResponseVisa = clearTextCreditVisa.getTokenInformation();
+
+        assertNotNull(tokenInfoResponseVisa);
+        assertNotNull(tokenInfoResponseVisa.getTokenData());
+        assertEquals(EXPECTED, tokenInfoResponseVisa.getTokenData().getMerchants().get(0));
+    }
+    @Test
+    public void ClearLoadedBills() throws ApiException {
+        BillPayService service = new BillPayService();
+        List<Bill> bills = new ArrayList<>();
+        bills.add(billLoad);
+
+        Bill loadedBill = new Bill();
+        loadedBill.setAmount(billLoad.getAmount());
+        loadedBill.setBillPresentment(billLoad.getBillPresentment());
+        loadedBill.setBillType("InvalidBillType");
+        loadedBill.setCustomer(billLoad.getCustomer());
+        loadedBill.setDueDate(billLoad.getDueDate());
+        loadedBill.setIdentifier1(billLoad.getIdentifier1());
+        bills.add(loadedBill);
+
+        BillingResponse response = service.clearBills();
+
+        assertNotNull(response);
+    }
+    @Test
+    public void test_CreateRecurringSchedule_SecondInstanceDate_ScheduleTypeRequired_Negative() throws UnsupportedOperationException, ApiException {
+        customer = new Customer();
+        customer.setAddress(address);
+        customer.setEmail("testemailaddress@e-hps.com");
+        customer.setFirstName("Test");
+        customer.setLastName("Tester");
+        customer.setHomePhone("555-555-4444");
+        customer.setId(UUID.randomUUID().toString());
+        customer = customer.create();
+
+        RecurringPaymentMethod paymentMethod = customer.addPaymentMethod(UUID.randomUUID().toString(), clearTextCredit).create();
+
+        customer.setAddress(address);
+        bill.setBillType("Tax Payments");
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+                () -> paymentMethod.addSchedule(UUID.randomUUID().toString())
+                        .withAmount(new BigDecimal(50))
+                        .withBills(bill)
+                        .withCustomer(customer)
+                        .withStartDate(DateTime.now().toDate())
+                        .withEndDate(DateUtils.parse("12/21/2026"))
+                        .withNumberOfPayments(27)
+                        .withSecondInstanceDate(DateUtils.parse("07/31/2024"))
+                        .withToken(paymentMethod.getToken())
+                        .withPrimaryConvenienceAmount(new BigDecimal(5))
+                        .withLastPrimaryConvenienceAmount(new BigDecimal(4))
+                        .withRecurringAuthorizationType(RecurringAuthorizationType.UNASSIGNED)
+                        .withInitialPaymentMethod(InitialPaymentMethod.CARD)
+                        .create());
+        assertEquals(SCHEDULE_TYPE_REQUIRED_EXCEPTION, exception.getMessage());
+    }
+    @Test
+    public void CommitPreLoadedBills_Exception() throws ApiException {
+        BillPayService service = new BillPayService();
+        BigDecimal totalAmount = new BigDecimal(0);
+
+        List<Bill> bills = new ArrayList<>();
+        bills.add(billLoad);
+
+        billLoad = new Bill();
+        billLoad.setAmount(new BigDecimal(50));
+        billLoad.setBillType("Tax Payments");
+        billLoad.setIdentifier1("12345");
+        billLoad.setIdentifier2("23456");
+        billLoad.setBillPresentment(BillPresentment.FULL);
+        billLoad.setCustomer(customer);
+
+        try {
+            BillingResponse fee = service.commitPreloadedBills();
+            fail(MESSAGE);
+        } catch (GatewayException ex){
+            assertEquals(GATEWAY_EXCEPTION_MESSAGE, ex.getMessage());
+        }
+    }
     // #region Helpers
     private void validateSuccesfulTransaction(Transaction transaction) {
         int transactionId = Integer.parseInt(transaction.getTransactionId());

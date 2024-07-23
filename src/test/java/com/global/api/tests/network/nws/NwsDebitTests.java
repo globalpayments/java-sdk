@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.AddressType;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -12,6 +13,7 @@ import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.DebitTrackData;
+import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
@@ -629,9 +631,78 @@ public class NwsDebitTests {
                 .withTagData("82021C008407A0000002771010950580000000009A031709289C01005F280201245F2A0201245F3401019F02060000000010009F03060000000000009F080200019F090200019F100706010A03A420009F1A0201249F26089CC473F4A4CE18D39F2701809F3303E0F8C89F34030100029F3501229F360200639F370435EFED379F410400000019")
                 .execute());
         assertEquals("Address is required in acceptor config for Debit/EBT Transactions.", builderException.getMessage());
+    }
+    @Test
+    public void test_billng_address_dataCollect_code_coverage_only() throws ApiException {
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+        address.setType(AddressType.Billing);
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
 
 
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
 
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000",response.getResponseCode());
+    }
+    @Test
+    public void test_shipping_address_dataCollect_code_coverage_only() throws ApiException {
+
+        Address address = new Address();
+        address.setName("My STORE");
+        address.setStreetAddress1("1 MY STREET");
+        address.setCity("MYTOWN");
+        address.setPostalCode("90210");
+        address.setState("KY");
+        address.setCountry("USA");
+        address.setType(AddressType.Shipping);
+
+        acceptorConfig.setAddress(address);
+        config.setAcceptorConfig(acceptorConfig);
+
+
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("000",response.getResponseCode());
+    }
+    @Test
+    public void test_reversal_withCashBack_code_coverage_only() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .execute();
+        assertNotNull(response);
+
+        TransactionReference reference = response.getTransactionReference();
+        reference.setOriginalApprovedAmount(null);
+        response.setTransactionReference(reference);
+
+        Transaction reversal = response.reverse()
+                .withCurrency("USD")
+                .withCashBackAmount(new BigDecimal(3))
+                .execute();
+        assertNotNull(reversal);
     }
 
 }

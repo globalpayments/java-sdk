@@ -23,6 +23,7 @@ public class PorticoEbtTests {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
         

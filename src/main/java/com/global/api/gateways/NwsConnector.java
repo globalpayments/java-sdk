@@ -599,14 +599,6 @@ public class NwsConnector extends GatewayConnectorConfig {
         return timestamp;
     }
 
-    private static PaymentMethodType getPaymentMethodType(AuthorizationBuilder builder, IPaymentMethod paymentMethod) {
-        PaymentMethodType paymentMethodType = null;
-        if (paymentMethod != null) {
-            paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
-        }
-        return paymentMethodType;
-    }
-
     private int getStan(int stan) {
         if (stan == 0 && stanProvider != null) {
             stan = stanProvider.generateStan();
@@ -2856,36 +2848,39 @@ public class NwsConnector extends GatewayConnectorConfig {
             }
 
             // if there's a batch provider handle the batch close stuff
-            if ((responseCode.equals("500") || responseCode.equals("501")) && batchProvider != null) {
-                batchProvider.closeBatch(responseCode.equals("500"));
-            } else if (responseCode.equals("580")) {
-                if(batchProvider != null) {
-                    try {
-                        LinkedList<String> encodedRequests = batchProvider.getEncodedRequests();
-                        if (encodedRequests != null) {
-                            resentTransactions = new LinkedList<Transaction>();
-                            for (String encRequest : encodedRequests) {
-                                try {
-                                    NetworkMessage newRequest = decodeRequest(encRequest);
-                                    newRequest.setMessageTypeIndicator("1221");
+            //not supported
 
-                                    Transaction resend = sendRequest(newRequest, null, new byte[2], new byte[8]);
-                                    resentTransactions.add(resend);
-                                } catch (ApiException exc) {
-                                   exc.printStackTrace();
-                                }
-                            }
 
-                            // resend the batch close
-                            request.setMessageTypeIndicator("1521");
-                            resentBatch = sendRequest(request, builder, new byte[2], new byte[8]);
-                        }
-                    } catch (ApiException exc) {
-                        exc.printStackTrace();
-                    }
-                }
-                return encodeRequest(request);
-            }
+//            if ((responseCode.equals("500") || responseCode.equals("501")) && batchProvider != null) {
+//                batchProvider.closeBatch(responseCode.equals("500"));
+//            } else if (responseCode.equals("580")) {
+//                if(batchProvider != null) {
+//                    try {
+//                        LinkedList<String> encodedRequests = batchProvider.getEncodedRequests();
+//                        if (encodedRequests != null) {
+//                            resentTransactions = new LinkedList<Transaction>();
+//                            for (String encRequest : encodedRequests) {
+//                                try {
+//                                    NetworkMessage newRequest = decodeRequest(encRequest);
+//                                    newRequest.setMessageTypeIndicator("1221");
+//
+//                                    Transaction resend = sendRequest(newRequest, null, new byte[2], new byte[8]);
+//                                    resentTransactions.add(resend);
+//                                } catch (ApiException exc) {
+//                                   exc.printStackTrace();
+//                                }
+//                            }
+//
+//                            // resend the batch close
+//                            request.setMessageTypeIndicator("1521");
+//                            resentBatch = sendRequest(request, builder, new byte[2], new byte[8]);
+//                        }
+//                    } catch (ApiException exc) {
+//                        exc.printStackTrace();
+//                    }
+//                }
+//                return encodeRequest(request);
+//            }
         }
         return null;
     }
@@ -2897,22 +2892,24 @@ public class NwsConnector extends GatewayConnectorConfig {
         }
         return requestEncoder.encode(new String(encoded));
     }
-    private NetworkMessage decodeRequest(String encodedStr) {
-        if(requestEncoder == null) {
-            requestEncoder = new PayrollEncoder(companyId, terminalId);
-        }
+    //not supported code
 
-        String requestStr = requestEncoder.decode(encodedStr);
-
-        byte[] decoded = Base64.decodeBase64(requestStr);
-        MessageReader mr = new MessageReader(decoded);
-
-        String mti = mr.readString(4);
-        byte[] buffer = mr.readBytes(decoded.length);
-        NetworkMessage request = NetworkMessage.parse(buffer, Iso8583MessageType.CompleteMessage);
-        request.setMessageTypeIndicator(mti);
-        return request;
-    }
+//    private NetworkMessage decodeRequest(String encodedStr) {
+//        if(requestEncoder == null) {
+//            requestEncoder = new PayrollEncoder(companyId, terminalId);
+//        }
+//
+//        String requestStr = requestEncoder.decode(encodedStr);
+//
+//        byte[] decoded = Base64.decodeBase64(requestStr);
+//        MessageReader mr = new MessageReader(decoded);
+//
+//        String mti = mr.readString(4);
+//        byte[] buffer = mr.readBytes(decoded.length);
+//        NetworkMessage request = NetworkMessage.parse(buffer, Iso8583MessageType.CompleteMessage);
+//        request.setMessageTypeIndicator(mti);
+//        return request;
+//    }
 
     private <T extends TransactionBuilder<Transaction>> void validate(T builder) throws BuilderException, UnsupportedTransactionException {
         IPaymentMethod paymentMethod = builder.getPaymentMethod();
