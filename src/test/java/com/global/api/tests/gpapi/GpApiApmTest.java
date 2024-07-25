@@ -410,7 +410,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withDescription("New APM Uplift")
                         .withAddress(shippingAddress, AddressType.Shipping)
-                        .withCustomerId("REF123456789")
+                        .withCustomerId("PYR_b2d3b367fcf141dcbd03cd9ccfa60519")
                         .withMiscProductData(products)
                         .withPhoneNumber("44", "124 445 556", PhoneNumberType.Work)
                         .withPhoneNumber("44", "124 444 333", PhoneNumberType.Home)

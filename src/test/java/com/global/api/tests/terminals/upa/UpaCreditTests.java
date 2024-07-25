@@ -176,7 +176,7 @@ public class UpaCreditTests {
 
         runBasicTests(
             device.creditVoid()
-                .withTerminalRefNumber(response1.getTerminalRefNumber())
+                .withTransactionId(response1.getTerminalRefNumber())
                 .execute()
         );
     }

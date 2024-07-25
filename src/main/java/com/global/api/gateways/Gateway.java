@@ -40,11 +40,6 @@ import static com.global.api.logging.PrettyLogger.toPrettyJson;
 public abstract class Gateway {
 
     private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
-
-    private String contentType;
-    private boolean enableLogging;
-    private IRequestLogger requestLogger;
-    private StringBuilder logEntry = new StringBuilder();
     private final String lSChar = System.getProperty("line.separator");
     protected HashMap<String, String> headers;
     protected HashMap<String, String> dynamicHeaders;
@@ -52,6 +47,10 @@ public abstract class Gateway {
     protected String serviceUrl;
     protected Proxy webProxy;
     protected Environment environment;
+    private String contentType;
+    private boolean enableLogging;
+    private IRequestLogger requestLogger;
+    private StringBuilder logEntry = new StringBuilder();
     private ThreadLocal<Map<String, String>> maskedRequestData;
 
     public Gateway(String contentType) {
@@ -140,25 +139,27 @@ public abstract class Gateway {
                 logEntry.append("Request Params: ").append(queryString).append(lSChar);
             }
 
-            try(InputStream responseStream = conn.getInputStream()) {
-                String rawResponse = getRawResponse(responseStream);
+            try (InputStream responseStream = conn.getInputStream()) {
+                String rawResponse = getRawResponse(responseStream, "gzip".equalsIgnoreCase(conn.getContentEncoding()));
 
-            if (this.enableLogging || this.requestLogger != null) {
-                if (acceptJson()) {
-                    logEntry.append("Response Code: ").append(conn.getResponseCode()).append(" ").append(conn.getResponseMessage()).append(lSChar);
-                    String maskedResponse = maskFieldsIfNeeded(rawResponse);
-                    logEntry.append("Response Body:").append(lSChar).append(toPrettyJson(maskedResponse));
-                } else {
-                    logEntry.append(rawResponse);
+                if (this.enableLogging || this.requestLogger != null) {
+                    if (acceptJson()) {
+                        logEntry.append("Response Code: ").append(conn.getResponseCode()).append(" ").append(conn.getResponseMessage()).append(lSChar);
+                        logEntry.append(lSChar).append("Response Headers:").append(lSChar);
+                        logResponseHeaders(conn, logEntry);
+                        String maskedResponse = maskFieldsIfNeeded(rawResponse);
+                        logEntry.append("Response Body:").append(lSChar).append(toPrettyJson(maskedResponse));
+                    } else {
+                        logEntry.append(rawResponse);
+                    }
+
+                    generateResponseLog();
                 }
 
-                generateResponseLog();
-            }
-
-            GatewayResponse response = new GatewayResponse();
-            response.setStatusCode(conn.getResponseCode());
-            response.setRawResponse(rawResponse);
-            return response;
+                GatewayResponse response = new GatewayResponse();
+                response.setStatusCode(conn.getResponseCode());
+                response.setRawResponse(rawResponse);
+                return response;
             }
         } catch (Exception exc) {
             if (this.enableLogging || this.requestLogger != null) {
@@ -169,7 +170,7 @@ public abstract class Gateway {
 
             try {
                 assert conn != null;
-                throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(conn.getErrorStream()));
+                throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(conn.getErrorStream(), "gzip".equalsIgnoreCase(conn.getContentEncoding())));
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }
@@ -179,16 +180,28 @@ public abstract class Gateway {
     private void logRequestHeaders(HttpsURLConnection conn, StringBuilder logEntry) {
         Map<String, List<String>> requestHeaders = conn.getRequestProperties();
 
-        if (requestHeaders != null) {
-            for (String headerKey : requestHeaders.keySet()) {
-                String headerValue = requestHeaders.get(headerKey).toString();
-                logEntry.append(headerKey).append(": ").append(headerValue, 1, headerValue.length() - 1).append(lSChar);
-            }
-        }
+        logHeaders(logEntry, requestHeaders);
 
         appendAuthorizationHeader(logEntry);
 
         logEntry.append(lSChar);
+    }
+
+    private void logResponseHeaders(HttpsURLConnection conn, StringBuilder logEntry) {
+        Map<String, List<String>> responseHeaders = conn.getHeaderFields();
+
+        logHeaders(logEntry, responseHeaders);
+
+        logEntry.append(lSChar);
+    }
+
+    private void logHeaders(StringBuilder logEntry, Map<String, List<String>> responseHeaders) {
+        if (responseHeaders != null) {
+            for (String headerKey : responseHeaders.keySet()) {
+                String headerValue = responseHeaders.get(headerKey).toString();
+                logEntry.append("  ").append(headerKey).append(": ").append(headerValue, 1, headerValue.length() - 1).append(lSChar);
+            }
+        }
     }
 
     private void appendAuthorizationHeader(StringBuilder logEntry) {
@@ -200,9 +213,13 @@ public abstract class Gateway {
     }
 
     public String getRawResponse(InputStream responseStream) throws IOException {
+        return getRawResponse(responseStream, true);
+    }
+
+    public String getRawResponse(InputStream responseStream, Boolean isGzip) throws IOException {
         String rawResponse = null;
 
-        if (acceptGzipEncoding()) {
+        if (isGzip) {
 
             // Decompress GZIP response
             try (GZIPInputStream gzis = new GZIPInputStream(responseStream);
@@ -239,7 +256,7 @@ public abstract class Gateway {
             conn.addRequestProperty("Content-Length", String.valueOf(content.getContentLength()));
 
             try (InputStream responseStream = conn.getInputStream();
-                 OutputStream out = conn.getOutputStream();) {
+                 OutputStream out = conn.getOutputStream()) {
 
                 if (this.enableLogging || this.requestLogger != null) {
                     logEntry.append("Request: ").append(content).append(lSChar);

@@ -12,10 +12,12 @@ import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
@@ -1150,9 +1152,30 @@ public class GpApiMapping {
         actionSummary.setAccountId(doc.getString("account_id"));
         actionSummary.setAccountName(doc.getString("account_name"));
         actionSummary.setMerchantName(doc.getString("merchant_name"));
-
         return actionSummary;
     }
+    public static <T> T mapRecurringEntity(String rawResponse, T recurringEntity) {
+        T result = null;
+        if (rawResponse != null && !rawResponse.isEmpty()) {
+            JsonDoc json = JsonDoc.parse(rawResponse);
+            if (recurringEntity instanceof Customer) {
+                Customer payer = (Customer) recurringEntity;
+                payer.setId(json.getString("id"));
+                if (json.has("payment_methods")) {
+                    payer.setPaymentMethods(new ArrayList<>());
+                    for (JsonDoc payment : json.getEnumerator("payment_methods")) {
+                        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod();
+                        paymentMethod.setId(payment.getString("id"));
+                        paymentMethod.setKey(payment.getString("default"));
+                        payer.getPaymentMethods().add(paymentMethod);
+                    }
+                }
+                return (T) payer;
+            }
+        }
+        return result;
+    }
+
 
     public static TransactionSummaryPaged mapTransactions(JsonDoc doc) throws GatewayException {
         TransactionSummaryPaged pagedResult = new TransactionSummaryPaged();

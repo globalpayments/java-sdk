@@ -945,7 +945,8 @@ public class GpApiBNPLTest extends BaseGpApiTest {
 
     private Customer generateCustomerData() {
         Customer customer = new Customer();
-        customer.setId("12345678");     // GenerationUtils.generateOrderId();
+        customer.setKey("12345678");
+        //customer.setId("12345678");     // GenerationUtils.generateOrderId();
         customer.setFirstName("James");
         customer.setLastName("Mason");
         customer.setEmail("james.mason@example.com");

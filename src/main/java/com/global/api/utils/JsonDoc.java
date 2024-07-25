@@ -344,4 +344,14 @@ public class JsonDoc {
         }
         return responses;
     }
+
+    public static boolean isJson(String json) {
+        try {
+            JsonDoc parsed = JsonDoc.parse(json);
+            return parsed != null;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
 }

@@ -283,8 +283,18 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return this;
     }
 
+
+    public TerminalAuthBuilder withPaymentMethodType(PaymentMethodType value) {
+        this.paymentMethodType = value;
+        return this;
+    }
+
     public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
+    }
+
+    public TerminalAuthBuilder(TransactionType type) {
+        super(type, null);
     }
 
     public TerminalResponse execute(String configName) throws ApiException {

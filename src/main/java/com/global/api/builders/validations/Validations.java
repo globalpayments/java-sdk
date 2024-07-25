@@ -38,6 +38,10 @@ public class Validations {
 
     private HashMap<ValidationKey, List<ValidationTarget>> rules;
 
+    Map<ValidationKey, List<ValidationTarget>> getRules() {
+        return rules;
+    }
+
     public Validations() {
         rules = new HashMap<ValidationKey, List<ValidationTarget>>();
     }

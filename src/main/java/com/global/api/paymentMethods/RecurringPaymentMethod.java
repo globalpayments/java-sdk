@@ -220,13 +220,13 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
         return RecurringService.get(key, RecurringPaymentMethod.class);
     }
 
-    public void saveChanges() throws ApiException {
-        saveChanges("default");
+    public RecurringPaymentMethod saveChanges() throws ApiException {
+        return saveChanges("default");
     }
 
-    public void saveChanges(String configName) throws ApiException {
+    public RecurringPaymentMethod saveChanges(String configName) throws ApiException {
         try {
-            RecurringService.edit(this, RecurringPaymentMethod.class, configName);
+            return RecurringService.edit(this, RecurringPaymentMethod.class, configName);
         } catch (ApiException e) {
             throw new ApiException("Update failed, see inner exception for more details", e);
         }

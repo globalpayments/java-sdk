@@ -41,4 +41,5 @@ public class GpApiRequest extends Request {
 
     public static final String FILE_PROCESSING = "/files";
 
+    public static final String PAYERS_ENDPOINT = "/payers";
 }

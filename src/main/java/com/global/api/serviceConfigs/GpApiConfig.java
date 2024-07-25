@@ -103,6 +103,7 @@ public class GpApiConfig extends GatewayConfig {
         services.setFraudService(gpApiConnector);
 
         services.setFileProcessingService(gpApiConnector);
+        services.setRecurringConnector(gpApiConnector);
 
         services.setPayFacProvider(gpApiConnector);
         services.setSecure3dProvider(Secure3dVersion.ONE, gpApiConnector);

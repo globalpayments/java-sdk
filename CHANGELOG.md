@@ -1,6 +1,17 @@
 # Changelog
 
-## Latest Version - V11.2.25 (07/23/2024)
+## Latest Version - V12.0.0 (07/25/2024)
+### Enhancements
+- [DiamondCloud] Add support for Diamond Cloud provider payment terminals.
+- [GP-API] Add "/payers" endpoint
+
+### Bug Fixes
+- [UPA]: Correction to 'Void' command SDK-level validations
+- [UPA]: Correction to 'AuthCompletion' SDK-level validations
+- [VAPS]: updated condition for Fleet Data prompt for issue 10321 & 10324. If there is no prompt data, then DE 48-8 should not be sent.
+- [Portico]: Fixed the syntax for handling GatewayTimeOut Exception
+
+## V11.2.25 (07/23/2024)
 ### Enhancements
 - [NTS]: Added testcases for SDK capability matrix
 - [NWS]: Code Coverage Improvement
@@ -16,7 +27,6 @@
 - [NTS]: Fixed issue 10321 Voyager EMV Prompts issue, updated Vehicle number to 3
 - [NTS]: Fixed issue 10324 Added field for IDNumber in FleetData.
 
-
 ## V11.2.24 (07/18/2024)
 ### Enhancements
 UPA:
@@ -31,7 +41,6 @@ Portico:
 Portico:
 - Add support for sending value for 'UniqueDeviceId' header element
 - Fixed issue 10322 - All the CGP transactions that use Management Builder are failing with "length should not be more than 50 digits"
-
 
 GP-API:
 - Added suggested improvements into some requests and mappings

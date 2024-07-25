@@ -7,15 +7,15 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.builders.TerminalAuthBuilder;
+import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
-import com.global.api.terminals.builders.TerminalAuthBuilder;
-import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.pax.responses.*;
-import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.PrintData;
 import org.apache.commons.codec.binary.Base64;
 
 import java.math.BigDecimal;
@@ -460,6 +460,16 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public TerminalManageBuilder refundById() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public TerminalManageBuilder increasePreAuth(BigDecimal amount) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }
 

@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IRecurringGateway;
+import com.global.api.services.RecurringService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,13 +16,17 @@ public abstract class RecurringEntity<TResult extends IRecurringEntity> implemen
     protected String responseCode;
     protected String responseMessage;
 
+    private RecurringService recurringService;
+
     public String getKey() {
         if(key != null)
             return key;
         else return id;
     }
 
-    protected RecurringEntity() {}
+    protected RecurringEntity() {
+        this.recurringService = new RecurringService();
+    }
 
     public TResult create() throws ApiException {
         return create("default");

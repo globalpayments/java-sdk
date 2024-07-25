@@ -144,6 +144,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     JsonDoc tokenizationData = new JsonDoc();
                     tokenizationData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountName());
                     tokenizationData.set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTokenizationAccountID());
+                    tokenizationData.set("name", builder.getDescription() != null ? builder.getDescription() : "");
+                    JsonDoc payer = new JsonDoc();
+                    payer.set("id", builder.getCustomerId() != null ? builder.getCustomerId() : "");
+                    tokenizationData.set("payer", payer);
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("card", card);
@@ -715,7 +719,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
     private static JsonDoc setPayerInformation(AuthorizationBuilder builder) {
         JsonDoc payer = new JsonDoc();
-        payer.set("reference", builder.getCustomerId() != null ? builder.getCustomerId() : (builder.getCustomerData() != null ? builder.getCustomerData().getId() : null));
+        String payerId = builder.getCustomerId() != null ? builder.getCustomerId() : (builder.getCustomerData() != null ? builder.getCustomerData().getId() : null);
+        payer.set("id", payerId);
+        String payerReference = builder.getCustomerData() != null ? builder.getCustomerData().getKey() : null;
+        payer.set("reference", payerReference);
 
         if (builder.getPaymentMethod() instanceof eCheck) {
             JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress());

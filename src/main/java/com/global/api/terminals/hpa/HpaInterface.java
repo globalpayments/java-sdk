@@ -10,13 +10,7 @@ import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
-import com.global.api.terminals.hpa.responses.SipBaseResponse;
-import com.global.api.terminals.hpa.responses.SipSendFileResponse;
-import com.global.api.terminals.hpa.responses.BatchResponse;
-import com.global.api.terminals.hpa.responses.EODResponse;
-import com.global.api.terminals.hpa.responses.InitializeResponse;
-import com.global.api.terminals.hpa.responses.SAFResponse;
-import com.global.api.terminals.hpa.responses.SignatureResponse;
+import com.global.api.terminals.hpa.responses.*;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
@@ -330,6 +324,11 @@ public class HpaInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
 
+    @Override
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
     public IBatchReportResponse getBatchSummary() throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -405,14 +404,20 @@ public class HpaInterface implements IDeviceInterface {
     }
 
     @Override
-    public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
+    public TerminalManageBuilder refundById() throws ApiException {
         throw new UnsupportedTransactionException();
     }
 
     @Override
-    public TerminalReportBuilder localDetailReport() throws ApiException {
+    public TerminalManageBuilder increasePreAuth(BigDecimal amount) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }
+
+    @Override
+    public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     @Override
     public TerminalManageBuilder deletePreAuth() throws ApiException {
         throw new UnsupportedTransactionException();

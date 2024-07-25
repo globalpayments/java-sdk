@@ -71,7 +71,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         eCheck.setBankAddress(bankAddress);
 
         customer = new Customer();
-        customer.setId("e193c21a-ce64-4820-b5b6-8f46715de931");
+        customer.setKey("e193c21a-ce64-4820-b5b6-8f46715de931");
         customer.setFirstName("James");
         customer.setLastName("Mason");
         customer.setDateOfBirth("1980-01-01");
@@ -423,7 +423,7 @@ public class GpApiAchTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: BadRequest - Transfers may only be initiated between accounts under the same partner program", ex.getMessage());
+            assertEquals("Status Code: 403 - Transfers may only be initiated between accounts under the same partner program", ex.getMessage());
             assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
             assertEquals("40041", ex.getResponseText());
         } finally {

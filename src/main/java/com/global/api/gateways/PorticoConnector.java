@@ -878,7 +878,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         String gatewayRspText = root.getString("GatewayRspMsg");
         cardType = root.getString("CardType");
 
-        if(gatewayRspCode=="30"){
+        if(gatewayRspCode.equals("30")){
             String gatewayTxnId = root.getString("GatewayTxnId");
             throw new GatewayTimeoutException(String.format("Unexpected Gateway Response: %s - %s", gatewayRspCode, gatewayRspText), gatewayRspText, gatewayRspCode, gatewayTxnId);
         }

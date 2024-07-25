@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Accessors(chain = true)
@@ -41,39 +42,22 @@ public class Customer extends RecurringEntity<Customer> {
     public Customer() {
         //super(Customer.class);
     }
+
     public Customer(String id) {
         this.id = id;
-    }
-
-    public Customer create() throws ApiException {
-        return create("default");
-    }
-    public Customer create(String configName) throws ApiException {
-        return RecurringService.create(this, Customer.class, configName);
-    }
-
-    public void delete() throws ApiException {
-        delete(false);
-    }
-    public void delete(boolean force) throws ApiException {
-        try{
-            RecurringService.delete(this, Customer.class, force);
-        }
-        catch(ApiException e) {
-            throw new ApiException("Failed to delete payment method, see inner exception for more details.", e);
-        }
     }
 
     public static Customer find(String id) throws ApiException {
         return find(id, "default");
     }
+
     public static Customer find(String id, String configName) throws ApiException {
         checkSupportsRetrieval(configName);
 
         List<Customer> response = RecurringService.search(CustomerCollection.class)
                 .addSearchCriteria("customerIdentifier", id)
                 .execute();
-        if(response.size() > 0) {
+        if (!response.isEmpty()) {
             Customer entity = response.get(0);
             if (entity != null)
                 return RecurringService.get(entity.getKey(), Customer.class);
@@ -84,6 +68,7 @@ public class Customer extends RecurringEntity<Customer> {
     public static List<Customer> findAll() throws ApiException {
         return findAll("default");
     }
+
     public static List<Customer> findAll(String configName) throws ApiException {
         checkSupportsRetrieval(configName);
         return RecurringService.search(CustomerCollection.class).execute();
@@ -92,18 +77,39 @@ public class Customer extends RecurringEntity<Customer> {
     public static Customer get(String key) throws ApiException {
         return get(key, "default");
     }
+
     public static Customer get(String key, String configName) throws ApiException {
         checkSupportsRetrieval(configName);
         return RecurringService.get(key, Customer.class);
     }
 
-    public void saveChanges() throws ApiException {
-        saveChanges("default");
+    public Customer create() throws ApiException {
+        return create("default");
     }
 
-    public void saveChanges(String configName) throws ApiException {
-        try{
-            RecurringService.edit(this, Customer.class, configName);
+    public Customer create(String configName) throws ApiException {
+        return RecurringService.create(this, Customer.class, configName);
+    }
+
+    public void delete() throws ApiException {
+        delete(false);
+    }
+
+    public void delete(boolean force) throws ApiException {
+        try {
+            RecurringService.delete(this, Customer.class, force);
+        } catch (ApiException e) {
+            throw new ApiException("Failed to delete payment method, see inner exception for more details.", e);
+        }
+    }
+
+    public Customer saveChanges() throws ApiException {
+        return saveChanges("default");
+    }
+
+    public Customer saveChanges(String configName) throws ApiException {
+        try {
+            return RecurringService.edit(this, Customer.class, configName);
         } catch (ApiException e) {
             throw new ApiException("Update failed, see inner exception for more details", e);
         }
@@ -115,8 +121,9 @@ public class Customer extends RecurringEntity<Customer> {
 
     public RecurringPaymentMethod addPaymentMethod(String paymentId, IPaymentMethod paymentMethod, StoredCredential storedCredential) {
         String nameOnAccount = String.format("%s %s", firstName, lastName);
-        if(StringUtils.isNullOrEmpty(nameOnAccount))
+        if (StringUtils.isNullOrEmpty(nameOnAccount)) {
             nameOnAccount = company;
+        }
 
         RecurringPaymentMethod method = new RecurringPaymentMethod(paymentMethod);
         method.setAddress(address);
@@ -124,6 +131,12 @@ public class Customer extends RecurringEntity<Customer> {
         method.setId(paymentId);
         method.setNameOnAccount(nameOnAccount);
         method.setStoredCredential(storedCredential);
+
+        if (paymentMethods == null) {
+            paymentMethods = new ArrayList<>();
+        }
+        paymentMethods.add(method);
+
         return method;
     }
 }

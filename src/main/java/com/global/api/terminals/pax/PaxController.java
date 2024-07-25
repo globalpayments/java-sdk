@@ -207,7 +207,7 @@ public class PaxController extends DeviceController {
     }
 
    @Override
-    public  LocalDetailReportResponse processLocalDetailReport(TerminalReportBuilder builder) throws ApiException {
+    public  LocalDetailReportResponse processReport(TerminalReportBuilder builder) throws ApiException {
         byte[] response = send(buildReportTransaction(builder));
          LocalDetailReportResponse reportResponse = new LocalDetailReportResponse(response);
          return reportResponse;

@@ -29,7 +29,7 @@ public class UpaBatchTests {
     public UpaBatchTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.198");
+        config.setIpAddress("192.168.0.199");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -107,6 +107,7 @@ public class UpaBatchTests {
                 runBasicTests(
                     device.creditCapture(n.getAuthorizedAmount())
                             .withGratuity(new BigDecimal("0.00"))
+                            .withTerminalRefNumber(n.getTransactionId())
                             .withTransactionId(n.getTransactionId())
                             .execute()
                 );

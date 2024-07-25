@@ -113,13 +113,13 @@ public class UpaInterface implements IDeviceInterface {
                 .withAmount(amount);
     }
 
-    public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit)
+    public UpaTerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
+        return new UpaTerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit)
                 .withAmount(amount);
     }
 
-    public TerminalManageBuilder creditCapture() throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit);
+    public UpaTerminalManageBuilder creditCapture() throws ApiException {
+        return new UpaTerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit);
     }
 
     public TerminalAuthBuilder creditRefund() throws ApiException {
@@ -298,6 +298,11 @@ public class UpaInterface implements IDeviceInterface {
 
     @Override
     public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public TerminalManageBuilder refundById() throws ApiException {
         throw new UnsupportedTransactionException();
     }
 
@@ -555,16 +560,24 @@ public class UpaInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    @Override
+    public TerminalReportBuilder localDetailReport() throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
     public IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException {
         throw new UnsupportedTransactionException();
     }
 
     @Override
+    public TerminalManageBuilder increasePreAuth(BigDecimal amount) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
     public UpaSafResponse safSummaryReport(String printData, String reportData) throws ApiException {
         JsonDoc body = new JsonDoc();
         JsonDoc param = new JsonDoc();
         param.set("reportOutput", "Print");
-
 
         StringBuilder reportOutput = new StringBuilder("");
         if (!StringUtils.isNullOrEmpty(printData)) {
@@ -592,11 +605,6 @@ public class UpaInterface implements IDeviceInterface {
         );
 
         return new UpaSafResponse(responseObj);
-    }
-
-    @Override
-    public TerminalReportBuilder localDetailReport() throws ApiException {
-        throw  new UnsupportedTransactionException();
     }
 
     @Override

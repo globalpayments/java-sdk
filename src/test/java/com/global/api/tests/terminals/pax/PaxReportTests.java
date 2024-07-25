@@ -31,7 +31,7 @@ public class PaxReportTests {
     public void local_detail_report_by_record_number() throws ApiException {
         Integer recordNumber = 00;
 
-         LocalDetailReportResponse reportResponse = device.localDetailReport()
+         LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
          .withPaxReportSearchCriteria(PaxSearchCriteriaType.RECORD_NUMBER, recordNumber)
         .execute("default");
 
@@ -42,7 +42,7 @@ public class PaxReportTests {
     public void local_detail_report_by_reference_number() throws ApiException {
         String referenceNumber = "65961";
 
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.REFERENCE_NUMBER, referenceNumber)
                 .execute("default");
 
@@ -52,7 +52,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_terminal_reference_number() throws ApiException {
         String terminalRefNumber = "5";
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.TERMINAL_REFERENCE_NUMBER,terminalRefNumber)
                 .execute("default");
 
@@ -62,7 +62,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_transaction_type() throws ApiException {
 
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.TRANSACTION_TYPE, PaxTxnType.AUTH)
                 .execute("default");
 
@@ -72,7 +72,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_auth_code() throws ApiException {
         String authNumber = "123456";
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.AUTH_CODE, authNumber)
                 .execute("default");
 
@@ -82,7 +82,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_card_type() throws ApiException {
 
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.CARD_TYPE, CardType.AMEX )
                 .execute("default");
 
@@ -92,7 +92,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_merchant_id() throws ApiException {
         String merchant_id ="12345";
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.MERCHANT_ID, merchant_id)
                 .execute("default");
 
@@ -102,7 +102,7 @@ public class PaxReportTests {
     @Test
     public void local_detail_report_by_merchant_name() throws ApiException {
         String merchant_name ="CAS";
-        LocalDetailReportResponse reportResponse = device.localDetailReport()
+        LocalDetailReportResponse reportResponse = (LocalDetailReportResponse) device.localDetailReport()
                 .withPaxReportSearchCriteria(PaxSearchCriteriaType.MERCHANT_ID, merchant_name)
                 .execute("default");
 

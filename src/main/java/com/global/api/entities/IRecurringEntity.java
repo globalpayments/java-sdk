@@ -11,5 +11,5 @@ public interface IRecurringEntity<T> {
     T create(String configName) throws ApiException;
     void delete() throws ApiException;
     void delete(boolean force) throws ApiException;
-    void saveChanges() throws ApiException;
+    T saveChanges() throws ApiException;
 }

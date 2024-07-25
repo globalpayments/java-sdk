@@ -5,6 +5,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import org.junit.Test;
@@ -307,5 +308,18 @@ public class PorticoInteracTests {
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void debitInteracTimeOutException() throws ApiException {
+        GatewayTimeoutException gatewayTimeoutException = assertThrows(GatewayTimeoutException.class,
+                ()-> track.charge(new BigDecimal("989.20"))
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .withPosSequenceNumber("000010010770")
+                        .withTagData(tagData)
+                        .execute());
+        assertEquals("30",gatewayTimeoutException.getResponseText());
+        assertNotNull(gatewayTimeoutException.getGatewayTransactionID());
     }
 }

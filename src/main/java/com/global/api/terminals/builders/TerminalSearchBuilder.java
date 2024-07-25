@@ -1,16 +1,18 @@
 package com.global.api.terminals.builders;
 
-import com.global.api.entities.enums.CardType;
-import com.global.api.entities.enums.PaxSearchCriteriaType;
+
 import com.global.api.entities.enums.PaxTxnType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.terminals.abstractions.ITerminalReport;
+import com.global.api.terminals.diamond.enums.DiamondCloudSearchCriteria;
+import com.global.api.entities.enums.CardType;
+import com.global.api.terminals.upa.Entities.Enums.UpaSearchCriteria;
+import com.global.api.entities.enums.PaxSearchCriteriaType;
 import com.global.api.entities.exceptions.MessageException;
-import com.global.api.terminals.pax.responses.LocalDetailReportResponse;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.lang.reflect.Field;
-
 
 public class TerminalSearchBuilder {
 
@@ -37,6 +39,14 @@ public class TerminalSearchBuilder {
     private String merchantId;
     @Getter @Setter
     private String merchantName;
+    @Getter @Setter
+    private String authCode;
+    @Getter @Setter
+    private int batch;
+    @Getter @Setter
+    private String ecrId;
+    @Getter @Setter
+    private String reportOutput;
 
     public TerminalSearchBuilder(TerminalReportBuilder terminalReportBuilder){
         this.terminalReportBuilder = terminalReportBuilder;
@@ -45,29 +55,70 @@ public class TerminalSearchBuilder {
         setProperty(criteria.getValue(), value);
         return this;
     }
-    public LocalDetailReportResponse execute(String configName) throws ApiException {
+    public <T> TerminalSearchBuilder and(UpaSearchCriteria criteria, T value) throws IllegalAccessException, MessageException {
+        setProperty(criteria.toString(), value);
+        return this;
+    }
+
+    public <T> TerminalSearchBuilder and(DiamondCloudSearchCriteria criteria, T value) throws IllegalAccessException, MessageException {
+        setProperty(criteria.toString(), value);
+        return this;
+    }
+
+    public ITerminalReport execute() throws ApiException {
+        return this.execute("default");
+    }
+
+    public ITerminalReport execute(String configName) throws ApiException {
         return terminalReportBuilder.execute(configName);
     }
 
-    private <T> void setProperty(String propertyName, T value) throws MessageException {
-        try {
-            Field prop = getClass().getDeclaredField(propertyName);
-            prop.setAccessible(true);
-            if (prop != null) {
-                if (prop.getType() == value.getClass()) {
-                    prop.set(this, value);
-                } else if (prop.getType().getName().equals("java.lang.Integer")) {
-                    if (value != null) {
-                        prop.set(this, Integer.parseInt(value.toString()));
-                    }
-                } else {
-                    prop.set(this, value);
-                }
-            }
-        }catch(Exception e){
-            throw new MessageException("Invalid type provided for "+ propertyName +" field");
+    private <T> void setProperty(String propertyName, T value) throws IllegalAccessException {
+        // TODO this is different that dotnet version
+        if (propertyName == null) {
+            return;
         }
-
+        Field[] fields = this.getClass().getDeclaredFields();
+        Field actualField = null;
+        for (Field field : fields) {
+            if (field.getName().equalsIgnoreCase(propertyName)) {
+                actualField = field;
+                break;
+            }
+        }
+        if (actualField == null) {
+            return;
+        }
+        if (actualField.getType() == String.class) {
+            setToString(actualField, value);
+        } else if (actualField.getType() == int.class) {
+            setToInt(actualField, value);
+        } else if (actualField.getType() == Integer.class) {
+            setToInteger(actualField, value);
+        }
     }
 
+    private void setToString(Field actualField, Object value) throws IllegalAccessException {
+        if (value == null) {
+            actualField.set(this, null);
+            return;
+        }
+        actualField.set(this, String.valueOf(value));
+    }
+
+    private void setToInt(Field actualField, Object value) throws IllegalAccessException {
+        if (value == null) {
+            actualField.set(this, 0);
+            return;
+        }
+        actualField.set(this, Integer.valueOf(String.valueOf(value.toString())));
+    }
+
+    private void setToInteger(Field actualField, Object value) throws IllegalAccessException {
+        if (value == null) {
+            actualField.set(this, null);
+            return;
+        }
+        actualField.set(this, Integer.valueOf(String.valueOf(value.toString())));
+    }
 }

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Accessors(chain = true)
-public abstract class Request {
+public class Request {
 
     @Getter @Setter private HttpMethod verb = HttpMethod.Get;
     @Getter @Setter private String endpoint;

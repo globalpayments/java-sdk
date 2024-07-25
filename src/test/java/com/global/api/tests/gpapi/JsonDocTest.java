@@ -3,8 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.utils.JsonDoc;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class JsonDocTest {
 
@@ -49,6 +48,51 @@ public class JsonDocTest {
 
         String value = data.getStringOrNull("lala");
         assertEquals(aValue, value);
+    }
+
+    @Test
+    public void testIsJson_withNullValue() {
+
+        String aValue = null;
+
+        boolean result = JsonDoc.isJson(aValue);
+        assertFalse(result);
+    }
+
+    @Test
+    public void testIsJson_withEmptyValue() {
+
+        String aValue = "";
+
+        boolean result = JsonDoc.isJson(aValue);
+        assertFalse(result);
+    }
+
+    @Test
+    public void testIsJson_withEmptyObject() {
+
+        String aValue = "{}";
+
+        boolean result = JsonDoc.isJson(aValue);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testIsJson_withObject() {
+
+        String aValue = "{\"a\": \"b\"}";
+
+        boolean result = JsonDoc.isJson(aValue);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testIsJson_withTest() {
+
+        String aValue = "lala";
+
+        boolean result = JsonDoc.isJson(aValue);
+        assertFalse(result);
     }
 
 }

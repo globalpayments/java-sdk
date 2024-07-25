@@ -4,6 +4,7 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Customer;
 import com.global.api.entities.enums.CurrencyType;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
@@ -145,6 +146,12 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.preAuthAmount = preAuthAmount;
         return this;
     }
+
+    public TerminalManageBuilder withTransactionModifier(TransactionModifier modifier) {
+        this.transactionModifier = modifier;
+        return this;
+    }
+
     public TerminalManageBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }
@@ -159,5 +166,9 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     public void setupValidations() {
         this.validations.of(EnumSet.of(TransactionType.Capture, TransactionType.Void)).check("transactionId").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
+        this.validations.of(TransactionType.Capture).check("transactionId").isNotNull()
+                .check("amount").isNotNull();
+        this.validations.of(TransactionType.Auth).with(TransactionModifier.Incremental).check("transactionId").isNotNull();
+        this.validations.of(TransactionType.Refund).check("transactionId").isNotNull();
     }
 }

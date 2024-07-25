@@ -5,6 +5,8 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.diamond.DiamondCloudConfig;
+import com.global.api.terminals.diamond.DiamondController;
 import com.global.api.terminals.genius.GeniusController;
 import com.global.api.terminals.genius.serviceConfigs.MitcConfig;
 import com.global.api.terminals.hpa.HpaController;
@@ -76,6 +78,14 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
                 break;
             case GENIUS_VERIFONE_P400:
                 services.setDeviceController(new GeniusController(this));
+                break;
+            case PAX_ARIES8:
+            case PAX_A80:
+            case PAX_A35:
+            case PAX_A920:
+            case PAX_A77:
+            case NEXGO_N5:
+                services.setDeviceController(new DiamondController((DiamondCloudConfig) this));
                 break;
             default:
                 break;
