@@ -1003,7 +1003,11 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
         // DE 50: Currency Code, Reconciliation - n3
         if(transactionType.equals(TransactionType.BatchClose) && !currencyCode.equals(Iso4217_CurrencyCode.USD)) {
-            request.set(DataElementId.DE_050,currencyCode.getValue());
+            if(!StringUtils.isNullOrEmpty(builder.getCurrency())) {
+                if(builder.getCurrency().equalsIgnoreCase("CAD")) {
+                    request.set(DataElementId.DE_050, Iso4217_CurrencyCode.CAD);
+                }
+            }
         }
 
         // DE 52: Personal Identification Number (PIN)
@@ -1251,6 +1255,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             throw new BuilderException("The transaction token cannot be null for resubmitted transactions.");
         }
         String currency = builder.getCurrency();
+
         // get the original request/implied capture
         NetworkMessage request = this.decodeRequest(builder.getTransactionToken());
         switch(builder.getTransactionType()) {
@@ -1260,8 +1265,10 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if(builder.isForceToHost()) {
                     request.set(DataElementId.DE_025, DE25_MessageReasonCode.Forced_AuthCapture);
                 }
-                if(currency != null) {
-                    request.set(DataElementId.DE_050, currency);
+                if(!StringUtils.isNullOrEmpty(currency)) {
+                     if(currency.equalsIgnoreCase("CAD")) {
+                        request.set(DataElementId.DE_050, Iso4217_CurrencyCode.CAD);
+                    }
                 }
                 //DE 28
                 request.set(DataElementId.DE_028,DateTime.now().toString("yyMMdd"));
@@ -1329,8 +1336,10 @@ public class VapsConnector extends GatewayConnectorConfig {
                     issuerData.add(CardIssuerEntryTag.NTS_System, builder.getNtsData().toString());
                     request.set(DataElementId.DE_062, issuerData);
                 }
-                if(currency!=null) {
-                    request.set(DataElementId.DE_050, currency);
+                if(!StringUtils.isNullOrEmpty(currency)) {
+                    if(currency.equalsIgnoreCase("CAD")) {
+                        request.set(DataElementId.DE_050, Iso4217_CurrencyCode.CAD);
+                    }
                 }
 //                DE 127
                 if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) {

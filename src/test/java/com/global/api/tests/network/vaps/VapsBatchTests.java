@@ -72,7 +72,7 @@ public class VapsBatchTests {
         config.setPrimaryEndpoint("test.7eleven.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0007999999911");
         config.setUniqueDeviceId("0001");
         config.setMerchantType("5541");
         config.setAcceptorConfig(acceptorConfig);
@@ -396,7 +396,77 @@ public class VapsBatchTests {
 
         assertNotNull(resubmitBatch);
         assertEquals(resubmitBatch.getResponseMessage(), "580", resubmitBatch.getResponseCode());
+    }
+    @Test
+    public void test_currency_code_CAD_retransmit_batch() throws ApiException {
+        configName = "NoBatch";
+        CreditTrackData track = TestCards.MasterCardSwipe();
 
+        Transaction dataCollect = track.charge(new BigDecimal(11.51))
+                .withCurrency("CAD")
+                .execute();
+        assertNotNull(dataCollect);
+         assertEquals(dataCollect.getResponseMessage(), "000", dataCollect.getResponseCode());
+        assertNotNull(dataCollect.getTransactionToken());
+
+
+        Transaction batchClose = BatchService.closeBatch(
+                        batchProvider.getBatchNumber(),
+                        batchProvider.getSequenceNumber(),
+                        new BigDecimal(11.51),
+                        BigDecimal.ZERO
+                )
+                .execute(configName);
+        assertNotNull(batchClose);
+
+
+        BatchSummary summary = batchClose.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+        Transaction resubmitBatch = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .withCurrency("CAD")
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitBatch);
+        assertEquals(resubmitBatch.getResponseMessage(), "580", resubmitBatch.getResponseCode());
+    }
+    @Test
+    public void test_currency_code_USD_retransmit_batch() throws ApiException {
+        configName = "NoBatch";
+        CreditTrackData track = TestCards.MasterCardSwipe();
+
+        Transaction dataCollect = track.charge(new BigDecimal(11.51))
+                .withCurrency("USD")
+                .withAllowPartialAuth(true)
+                .execute();
+        assertNotNull(dataCollect);
+        assertEquals(dataCollect.getResponseMessage(), "000", dataCollect.getResponseCode());
+        assertNotNull(dataCollect.getTransactionToken());
+
+
+        Transaction batchClose = BatchService.closeBatch(
+                        batchProvider.getBatchNumber(),
+                        batchProvider.getSequenceNumber(),
+                        new BigDecimal(11.51),
+                        BigDecimal.ZERO
+                )
+                .execute(configName);
+        assertNotNull(batchClose);
+
+
+        BatchSummary summary = batchClose.getBatchSummary();
+        assertNotNull(summary);
+        assertNotNull(summary.getTransactionToken());
+
+        Transaction resubmitBatch = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .withCurrency("USD")
+                .withForceToHost(true)
+                .execute();
+
+        assertNotNull(resubmitBatch);
+        assertEquals(resubmitBatch.getResponseMessage(), "580", resubmitBatch.getResponseCode());
 
     }
 }

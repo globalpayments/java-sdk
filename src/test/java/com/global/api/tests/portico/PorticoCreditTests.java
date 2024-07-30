@@ -869,5 +869,30 @@ public class PorticoCreditTests {
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
+
+    @Test
+    public void credit_AddtoBatch() throws ApiException {
+        PorticoConfig config = new PorticoConfig();
+        config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
+        config.setServiceUrl("https://cert.api2.heartlandportico.com");
+        config.setEnableLogging(true);
+
+        ServicesContainer.configureService(config);
+
+        Transaction response = track.authorize(new BigDecimal(14))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData("9F1A0208409C0150950500000088009F0702FF009F03060000000000009F2701809F3901059F0D05B850AC88009F350121500B56697361204372656469745F3401019F0802008C9F120B56697361204372656469749F0E0500000000009F360200759F40057E0000A0019F0902008C9F0F05B870BC98009F370425D254AC5F280208409F33036028C882023C004F07A00000000310109F4104000000899F0607A00000000310105F2A0208409A031911229F02060000000001009F2608D4EC434B9C1CBB358407A00000000310109F100706010A03A088069B02E8009F34031E0300")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction captureResponse = response.capture(new BigDecimal(14))
+                .withTagData(response.getEmvIssuerResponse())
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+        assertNotNull(captureResponse);
+        assertEquals("00", captureResponse.getResponseCode());
+    }
 }
 

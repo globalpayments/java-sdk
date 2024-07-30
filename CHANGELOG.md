@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V12.0.0 (07/25/2024)
+## Latest Version - V12.0.1 (07/30/2024)
+### Bug Fixes
+- [VAPS]: VAPS 8583 Currency Code - Issue 10325
+- [Portico] : Added capture condition for Debit & Credit EMV transaction - Issue 10326
+
+## V12.0.0 (07/25/2024)
 ### Enhancements
 - [DiamondCloud] Add support for Diamond Cloud provider payment terminals.
 - [GP-API] Add "/payers" endpoint
