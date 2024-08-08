@@ -26,14 +26,10 @@ import com.global.api.utils.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class DiamondController extends DeviceController {
 
-    private IDeviceInterface device;
-
-    private IMessageSentInterface onMessageSent;
-
-    private DiamondCloudConfig _settings;
     private static final Map<String, String> ENDPOINT_EXCEPTIONS = new HashMap<>();
 
     static {
@@ -50,6 +46,10 @@ public class DiamondController extends DeviceController {
         ENDPOINT_EXCEPTIONS.put(DiamondCloudRequest.GIFT_REDEEM, Region.US.toString());
     }
 
+    private IDeviceInterface device;
+    private IMessageSentInterface onMessageSent;
+    private final DiamondCloudConfig _settings;
+
     public DiamondController(DiamondCloudConfig settings) throws ConfigurationException {
         super(settings);
         _settings = settings;
@@ -59,6 +59,7 @@ public class DiamondController extends DeviceController {
         }
 
         this.requestIdProvider = settings.getRequestIdProvider();
+        this.logManagementProvider = settings.getLogManagementProvider();
 
         if (settings.getConnectionMode() == ConnectionModes.DIAMOND_CLOUD) {
             _interface = new DiamondHttpInterface(settings);
@@ -68,7 +69,7 @@ public class DiamondController extends DeviceController {
 
         _interface.setMessageSentHandler(new IMessageSentInterface() {
             public void messageSent(String message) {
-                if(onMessageSent != null)
+                if (onMessageSent != null)
                     onMessageSent.messageSent(message);
             }
         });
@@ -293,9 +294,7 @@ public class DiamondController extends DeviceController {
         }
 
         if (ENDPOINT_EXCEPTIONS.containsKey(endpoint)) {
-            if (ENDPOINT_EXCEPTIONS.get(endpoint) != _settings.getRegion()) {
-                return false;
-            }
+            return Objects.equals(ENDPOINT_EXCEPTIONS.get(endpoint), _settings.getRegion());
         }
 
         return true;

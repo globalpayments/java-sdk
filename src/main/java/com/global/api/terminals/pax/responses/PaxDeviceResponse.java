@@ -99,6 +99,9 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setApplicationCryptogram(extDataResponse.get(PaxExtData.TRANSACTION_CERTIFICATE));
             setCustomerVerificationMethod(extDataResponse.get(PaxExtData.CUSTOMER_VERIFICATION_METHOD));
             setTerminalVerificationResults(extDataResponse.get(PaxExtData.TERMINAL_VERIFICATION_RESULTS));
+
+            // newer additions
+            setSequenceNo(extDataResponse.get(PaxExtData.SEQUENCE_NUMBER));
         }
 
         PaxTxnType transType = ReverseStringEnumMap.parse(getTransactionType(), PaxTxnType.class);

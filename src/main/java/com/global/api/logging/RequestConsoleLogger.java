@@ -21,7 +21,7 @@ public class RequestConsoleLogger extends PrettyLogger {
     }
 
     private void logInConsole(String text) {
-        System.out.println(super.AppendText("%s",  new String[]{text}));
+        System.out.println(super.AppendText("%s", new String[]{text}));
     }
 
 }

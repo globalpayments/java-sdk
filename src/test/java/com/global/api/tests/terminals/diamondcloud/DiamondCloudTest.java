@@ -3,6 +3,7 @@ package com.global.api.tests.terminals.diamondcloud;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceCloudService;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.TerminalResponse;
@@ -29,15 +30,18 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
     IDeviceInterface _device;
     RandomIdProvider _requestIdProvider;
+    RequestConsoleLogger _logManagementProvider;
     private String posID = "1342641186174645";
 
     public DiamondCloudTest() throws ApiException {
         _requestIdProvider = new RandomIdProvider();
+        _logManagementProvider = new RequestConsoleLogger();
 
         DiamondCloudConfig diamondCloudConfig = new DiamondCloudConfig();
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
+        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
         diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
@@ -53,6 +57,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
+        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
         diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
@@ -295,6 +300,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
+        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
         diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
@@ -319,6 +325,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
+        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
         diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");

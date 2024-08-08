@@ -61,7 +61,7 @@ public class VaspWexEmvTests {
         config.setSecondaryPort(15031);
         config.setUniqueDeviceId("2001");
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0001126198308");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -80,7 +80,8 @@ public class VaspWexEmvTests {
     public void test_wex_emv_sales_4804_V412_ON_I_WX4_1200_1() throws ApiException {
 
         CreditTrackData card = new CreditTrackData();
-        card.setValue("6900460420006149231=27121004804220000");
+//        card.setValue("6900460420006149231=27121004804220000");
+        card.setValue("6900460420006149231=19021013019200009");
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("9876");
@@ -418,6 +419,27 @@ public class VaspWexEmvTests {
         assertNotNull(captureResponse);
         // check response
         assertEquals("400", captureResponse.getResponseCode());
+    }
+    @Test
+    public void test_wex_emv_sale_10327() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460420006149231=27121004847120001");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("1234");
+        fleetData.setOdometerReading("9876");
+
+        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel,ProductCodeSet.Conexxus_3_Digit);
+        productData.add("001", UnitOfMeasure.Gallons, new BigDecimal("10.720"), new BigDecimal(34664), new BigDecimal(50));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData("4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F24032212315F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
 }

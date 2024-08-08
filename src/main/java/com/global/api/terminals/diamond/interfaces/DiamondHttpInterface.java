@@ -32,23 +32,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DiamondHttpInterface implements IDeviceCommInterface {
-    private DiamondCloudConfig _settings;
-
-    private String lastConnectionError = null;
-
+    private final DiamondCloudConfig _settings;
     protected Map<String, String> headers;
+    private String lastConnectionError = null;
     private String AuthorizationId;
 
     private IMessageSentInterface onMessageSent;
-
-    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
     private IMessageReceivedInterface onMessageReceived;
 
     public DiamondHttpInterface(ITerminalConfiguration settings) {
         _settings = (DiamondCloudConfig) settings;
+    }
+
+    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
+        this.onMessageSent = onMessageSent;
     }
 
     public void connect() {
@@ -182,6 +179,12 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
             httpClient.setDoOutput(true);
             setHeaders(httpClient);
 
+            JsonDoc requestJsonDoc = new JsonDoc()
+                    .set("verb", verb)
+                    .set("url", serviceUrl + endpoint)
+                    .set("content_length", data.toString().length())
+                    .set("content", data);
+
             OutputStream out = null;
             try {
 
@@ -190,6 +193,7 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
                     out.write(data.toString().getBytes(StandardCharsets.UTF_8));
                     out.flush();
                 }
+                _settings.getLogManagementProvider().RequestSent(generateRequestLog(requestJsonDoc));
 
                 int statusResponse = httpClient.getResponseCode();
                 if (statusResponse != HttpStatus.SC_OK) {
@@ -200,6 +204,7 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
                 String rawResponse = IOUtils.readFully(responseStream);
 
                 checkResponse(rawResponse);
+                _settings.getLogManagementProvider().ResponseReceived(generateResponseLog(rawResponse));
 
                 return rawResponse.getBytes(StandardCharsets.UTF_8);
             } catch (Exception exc) {
@@ -265,6 +270,24 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
             String value = header.getValue();
             conn.addRequestProperty(key, value);
         }
+    }
+
+    private String generateRequestLog(JsonDoc request) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Request: ").append(request.getString("verb")).append(" ").append(request.getString("url")).append("\n");
+
+        for (Map.Entry<String, String> header : this.headers.entrySet()) {
+            sb.append(header.getKey()).append(": ").append(String.join(", ", header.getValue())).append("\n");
+        }
+
+        sb.append("Content-Length: ").append(request.getString("content_length")).append("\n");
+        sb.append(request.getString("content")).append("\n");
+
+        return sb.toString();
+    }
+
+    private String generateResponseLog(String response) {
+        return "Response: " + response + "\n";
     }
 
 }

@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V12.0.1 (07/30/2024)
+## Latest Version - V12.0.2 (08/08/2024)
+### Enhancements
+- [PAX Devices] Added 'Sequence Number' to transaction response
+- [DiamondCloud] Add logger for Diamond Cloud provider payment terminal.
+- 10312 - Default timeout has been set to be 30 seconds in sdk and also provided way to override default value for NTS, Vaps 8583, NWS & GNAP.
+
+### Fixes
+- [VAPS] Fixed 10327 - prompts are getting appended with 00 hps wex fleet emv are removed.
+
+## V12.0.1 (07/30/2024)
 ### Bug Fixes
 - [VAPS]: VAPS 8583 Currency Code - Issue 10325
 - [Portico] : Added capture condition for Debit & Credit EMV transaction - Issue 10326

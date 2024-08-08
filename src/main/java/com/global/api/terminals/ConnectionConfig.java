@@ -3,6 +3,7 @@ package com.global.api.terminals;
 import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.logging.IRequestLogger;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.diamond.DiamondCloudConfig;
@@ -29,40 +30,54 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
     private MitcConfig geniusMitcConfig;
+    private IRequestLogger logManagementProvider;
+
+    public ConnectionConfig() {
+        timeout = 30000;
+    }
 
     public void setConnectionMode(ConnectionModes connectionModes) {
         this.connectionMode = connectionModes;
     }
+
     public void setBaudRate(BaudRate baudRate) {
         this.baudRate = baudRate;
     }
+
     public void setParity(Parity parity) {
         this.parity = parity;
     }
+
     public void setStopBits(StopBits stopBits) {
         this.stopBits = stopBits;
     }
+
     public void setDataBits(DataBits dataBits) {
         this.dataBits = dataBits;
     }
+
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
+
     public void setPort(int port) {
         this.port = port;
     }
+
     public void setDeviceType(DeviceType deviceType) {
         this.deviceType = deviceType;
     }
+
     public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
         this.requestIdProvider = requestIdProvider;
     }
-    public void setGeniusMitcConfig(MitcConfig geniusMitcConfig) {
-        this.geniusMitcConfig = geniusMitcConfig;
+
+    public void setLogManagementProvider(IRequestLogger logManagementProvider) {
+        this.logManagementProvider = logManagementProvider;
     }
 
-    public ConnectionConfig(){
-        timeout = 30000;
+    public void setGeniusMitcConfig(MitcConfig geniusMitcConfig) {
+        this.geniusMitcConfig = geniusMitcConfig;
     }
 
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
@@ -94,13 +109,13 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
 
     @Override
     public void validate() throws ConfigurationException {
-        if(connectionMode == ConnectionModes.TCP_IP || connectionMode == ConnectionModes.HTTP) {
-            if(StringUtils.isNullOrEmpty(ipAddress))
+        if (connectionMode == ConnectionModes.TCP_IP || connectionMode == ConnectionModes.HTTP) {
+            if (StringUtils.isNullOrEmpty(ipAddress))
                 throw new ConfigurationException("IpAddress is required for TCP or HTTP communication modes.");
-            if(port == 0)
+            if (port == 0)
                 throw new ConfigurationException("Port is required for TCP or HTTP communication modes.");
-        } else if(connectionMode == ConnectionModes.MEET_IN_THE_CLOUD){
-            if(this.geniusMitcConfig == null){
+        } else if (connectionMode == ConnectionModes.MEET_IN_THE_CLOUD) {
+            if (this.geniusMitcConfig == null) {
                 throw new ConfigurationException("meetInTheCloudConfig object is required for this connection method");
             }
         }

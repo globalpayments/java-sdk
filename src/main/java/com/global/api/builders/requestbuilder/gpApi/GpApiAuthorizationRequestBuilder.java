@@ -15,7 +15,10 @@ import com.global.api.utils.masking.MaskValueUtil;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
@@ -238,14 +241,27 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             verificationData.set("stored_credential", storedCredential);
                         }
 
-                        if (builderPaymentMethod instanceof ITokenizable && !StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+                        if (builderPaymentMethod instanceof ITokenizable) {
                             verificationData.remove("payment_method");
-                            verificationData.set("payment_method",
-                                    new JsonDoc()
-                                            .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue()))
-                                            .set("id", ((ITokenizable) builderPaymentMethod).getToken())
-                                            .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null));
+                            if (!StringUtils.isNullOrEmpty(((ITokenizable) builderPaymentMethod).getToken())) {
+                                paymentMethod
+                                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue()))
+                                        .set("id", ((ITokenizable) builderPaymentMethod).getToken())
+                                        .set("fingerprint_mode", builder.getCustomerData() != null ? builder.getCustomerData().getDeviceFingerPrint() : null);
+                            }
+
+                            //Authentication
+                            if (builderPaymentMethod instanceof CreditCardData) {
+                                paymentMethod.set("name", ((CreditCardData) builderPaymentMethod).getCardHolderName());
+                                ThreeDSecure secureEcom = ((CreditCardData) builderPaymentMethod).getThreeDSecure();
+                                if (secureEcom != null) {
+                                    var authentication = new JsonDoc().set("id", secureEcom.getServerTransactionId());
+                                    paymentMethod.set("authentication", authentication);
+                                }
+                            }
                         }
+
+                        verificationData.set("payment_method", paymentMethod);
 
                         return (GpApiRequest)
                                 new GpApiRequest()

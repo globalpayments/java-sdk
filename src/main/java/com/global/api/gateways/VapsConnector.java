@@ -2384,12 +2384,14 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(cardType != null && cardType.getValue().trim().equals("VF")){
                 customerData.set(DE48_CustomerDataType.Vehicle_Number_Code3, fleetData.getVehicleNumber() == null ? fleetData.getVehicleNumber() : StringUtils.padLeft(fleetData.getVehicleNumber(),6,'0'));
                 customerData.set(DE48_CustomerDataType.Id_Number_Code3, fleetData.getIdNumber() == null ? fleetData.getIdNumber() : StringUtils.padLeft(fleetData.getIdNumber(),6,'0'));
+                customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId() == null ? fleetData.getDriverId() : StringUtils.padLeft(fleetData.getDriverId(),6,'0'));
+                customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading() == null ? fleetData.getOdometerReading() : StringUtils.padLeft(fleetData.getOdometerReading(),6,'0'));
             }else {
                 customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
+                customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
+                customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
             }
             customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
-            customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId() == null ? fleetData.getDriverId() : StringUtils.padLeft(fleetData.getDriverId(),6,'0'));
-            customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading() == null ? fleetData.getOdometerReading() : StringUtils.padLeft(fleetData.getOdometerReading(),6,'0'));
             customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
             customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, fleetData.getWorkOrderPoNumber());
             customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());
