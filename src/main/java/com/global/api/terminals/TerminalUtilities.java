@@ -3,6 +3,8 @@ package com.global.api.terminals;
 import com.global.api.entities.enums.*;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.utils.Element;
+import com.global.api.utils.IRawRequestBuilder;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
 
@@ -71,6 +73,7 @@ public class TerminalUtilities {
     }
 
     public static DeviceMessage buildMessage(UpaMessageId messageType, String requestId, JsonDoc body) {
+
         JsonDoc data = new JsonDoc();
         JsonDoc json = new JsonDoc();
 
@@ -85,7 +88,20 @@ public class TerminalUtilities {
         json.set("data", data);
         json.set("message", "MSG");
 
-        return compileMessage(json.toString());
+        return buildMessage(json);
+    }
+
+    public static <T extends IRawRequestBuilder> DeviceMessage buildMessage(T doc) {
+
+        IRawRequestBuilder iRawRequestBuilder = doc;
+        byte[] buffer;
+        if (doc instanceof JsonDoc) {
+            buffer = compileRawMessage(((JsonDoc) iRawRequestBuilder).toString());
+        } else {
+            buffer = compileRawMessage(((Element) iRawRequestBuilder).toString());
+        }
+
+        return new DeviceMessageWithDocument(iRawRequestBuilder, buffer);
     }
 
     public static DeviceMessage buildRequest(String message, MessageFormat format) {
@@ -159,6 +175,14 @@ public class TerminalUtilities {
     }
 
     public static DeviceMessage compileMessage(String body) {
+
+        byte[] range = compileRawMessage(body);
+
+        DeviceMessage deviceMessage = new DeviceMessage(range);
+        return deviceMessage;
+    }
+
+    private static byte[] compileRawMessage(String body) {
         MessageWriter buffer = new MessageWriter();
 
         buffer.add(ControlCodes.STX.getByte());
@@ -168,6 +192,6 @@ public class TerminalUtilities {
         buffer.add(ControlCodes.ETX.getByte());
         buffer.add(ControlCodes.LF.getByte());
 
-        return new DeviceMessage(buffer.toArray());
+        return buffer.toArray();
     }
 }

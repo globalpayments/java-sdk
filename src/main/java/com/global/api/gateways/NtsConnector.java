@@ -208,7 +208,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setUnitNumber(unitNumber);
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
-        ntsObjectParam.setTimeout(getTimeout());
+        ntsObjectParam.setTimeout(builder.getPdlTimeout());
         //Preparing the request
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);

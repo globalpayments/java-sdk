@@ -2,6 +2,7 @@ package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.terminals.IRequestIdProvider;
 
@@ -47,6 +48,10 @@ public interface ITerminalConfiguration {
     IRequestIdProvider getRequestIdProvider();
 
     void setRequestIdProvider(IRequestIdProvider requestIdProvider);
+
+    GatewayConfig getGatewayConfig();
+
+    void setGatewayConfig(GatewayConfig gatewayConfig);
 
     IRequestLogger getLogManagementProvider();
 

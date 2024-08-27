@@ -1,6 +1,20 @@
 # Changelog
 
-## Latest Version - V12.0.2 (08/08/2024)
+## Latest Version - V13.0.0 (08/27/2024)
+### Enhacements
+- [UPA MiC]: Add MiC connector for UPA via GP-API
+- [MEET-IN-THE-CLOUD] [UPA] -  Add new mapping response fields for "/devices" endpoint
+- [NTS] Created new method "withPDLTimeout" in builder to add PDL timeout value (10329).
+- [GPAPI] Add MITC mapping enchacement
+- [UPA]: Fix JSON reader in UPA
+- [UPA]: Fix Auth Amount trimming leading zero.
+- [UPA]: Implement GetParams
+### Bug Fixes:
+- [PAX] Correction to tip/gratuity handling in the request to device
+
+
+
+## V12.0.2 (08/08/2024)
 ### Enhancements
 - [PAX Devices] Added 'Sequence Number' to transaction response
 - [DiamondCloud] Add logger for Diamond Cloud provider payment terminal.

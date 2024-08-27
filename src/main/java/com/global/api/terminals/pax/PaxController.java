@@ -143,6 +143,9 @@ public class PaxController extends DeviceController {
         if (builder.isSignatureCapture())
             extData.set(PaxExtData.SIGNATURE_CAPTURE, "1");
 
+        if (builder.getGratuity() == null)
+            extData.set(PaxExtData.TIP_REQUEST, "1");
+
         PaxTxnType transType = mapTransactionType(builder.getTransactionType(), builder.isRequestMultiUseToken());
         switch (builder.getPaymentMethodType()) {
             case Credit:

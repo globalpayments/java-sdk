@@ -263,7 +263,7 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
         accessTokenInfo.setDataAccountName("dataAccount");
         accessTokenInfo.setDisputeManagementAccountName("disputeAccount");
         accessTokenInfo.setTokenizationAccountName("tokenizationAccount");
-        accessTokenInfo.setTransactionProcessingAccountName("transactionAccount");
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
 
@@ -275,9 +275,9 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
+            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
             assertEquals("NOT_AUTHENTICATED", ex.getResponseCode());
             assertEquals("40001", ex.getResponseText());
-            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
         }
     }
 
@@ -291,7 +291,7 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
         accessTokenInfo.setDataAccountName("Settlement Reporting");
         accessTokenInfo.setDisputeManagementAccountName("Dispute Management");
         accessTokenInfo.setTokenizationAccountName("Tokenization");
-        accessTokenInfo.setTransactionProcessingAccountName("Transaction_Processing");
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
 
@@ -303,9 +303,9 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
                     .withCurrency("USD")
                     .execute(GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
+            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
             assertEquals("NOT_AUTHENTICATED", ex.getResponseCode());
             assertEquals("40001", ex.getResponseText());
-            assertEquals("Status Code: 401 - Invalid access token", ex.getMessage());
         }
     }
 

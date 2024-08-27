@@ -10,6 +10,8 @@ import lombok.SneakyThrows;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 public class BaseGpApiTest {
@@ -19,6 +21,8 @@ public class BaseGpApiTest {
     // ================================================================================
     public static final String APP_ID = "4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs";
     public static final String APP_KEY = "FQyJA5VuEQfcji2M";
+    public static final String MITC_UPA_APP_ID = "aCgePu6PqA8sDdkjLYgmrHs89JAXvbvO";
+    public static final String MITC_UPA_APP_KEY = "DY0ZeWiUCHACK7dz";
     static final String APP_ID_FOR_MERCHANT = "A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t";
     static final String APP_KEY_FOR_MERCHANT = "5jPt1OpB6LLitgi7";
     // ================================================================================
@@ -63,6 +67,11 @@ public class BaseGpApiTest {
 //        gpApiConfig.setDynamicHeaders(dynamicHeaders);
 
         return gpApiConfig;
+    }
+
+    public static BigDecimal generateRandomBigDecimalFromRange(BigDecimal min, BigDecimal max, Integer scale) {
+        BigDecimal randomBigDecimal = min.add(new BigDecimal(Math.random()).multiply(max.subtract(min)));
+        return randomBigDecimal.setScale(scale, RoundingMode.HALF_UP);
     }
 
     @Ignore // Avoid this class to be considered as a Test class by JUnit

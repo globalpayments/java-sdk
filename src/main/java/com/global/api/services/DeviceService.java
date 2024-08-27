@@ -11,6 +11,9 @@ public class DeviceService {
     }
     public static IDeviceInterface create(ConnectionConfig config, String configName) throws ApiException {
         ServicesContainer.configureService(config, configName);
+        if (config.getGatewayConfig() != null) {
+            ServicesContainer.configureService(config.getGatewayConfig(), "_upa_passthrough");
+        }
         return ServicesContainer.getInstance().getDeviceInterface(configName);
     }
 }

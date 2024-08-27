@@ -276,6 +276,11 @@ public class DiamondInterface implements IDeviceInterface {
     }
 
     @Override
+    public String getParams() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public ISignatureResponse promptForSignature() throws ApiException {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }

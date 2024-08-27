@@ -421,11 +421,6 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
         throw new UnsupportedTransactionException();
     }
 
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof ReportBuilder;
-    }
-
     private static void basicsParams(GpApiRequest request, UserReportBuilder userTrb) {
         request.addQueryStringParam("page", Integer.toString(userTrb.getPage()));
         request.addQueryStringParam("page_size", Integer.toString(userTrb.getPageSize()));

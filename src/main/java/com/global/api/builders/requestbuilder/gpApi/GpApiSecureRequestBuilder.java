@@ -463,11 +463,6 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
         }
     }
 
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof Secure3dBuilder;
-    }
-
     private JsonDoc setPaymentMethodParam(IPaymentMethod builderPaymentMethod) {
         JsonDoc paymentMethod = new JsonDoc();
 

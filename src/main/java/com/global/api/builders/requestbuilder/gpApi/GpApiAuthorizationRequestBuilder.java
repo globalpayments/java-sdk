@@ -700,11 +700,6 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         .setMaskedData(maskedData);
     }
 
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof AuthorizationBuilder;
-    }
-
     private static JsonDoc setNotificationUrls(AuthorizationBuilder builder) {
         INotificationData payment = null;
         IPaymentMethod builderPaymentMethod = builder.getPaymentMethod();

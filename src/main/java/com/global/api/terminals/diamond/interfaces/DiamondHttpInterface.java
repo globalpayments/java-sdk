@@ -31,6 +31,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.global.api.logging.PrettyLogger.generateRequestLog;
+import static com.global.api.logging.PrettyLogger.generateResponseLog;
+
 public class DiamondHttpInterface implements IDeviceCommInterface {
     private final DiamondCloudConfig _settings;
     protected Map<String, String> headers;
@@ -199,6 +202,7 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
                 if (statusResponse != HttpStatus.SC_OK) {
                     throw new ApiException("ERROR: status code " + statusResponse);
                 }
+                _settings.getLogManagementProvider().RequestSent(generateRequestLog(requestJsonDoc, headers));
 
                 InputStream responseStream = httpClient.getInputStream();
                 String rawResponse = IOUtils.readFully(responseStream);
@@ -270,24 +274,6 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
             String value = header.getValue();
             conn.addRequestProperty(key, value);
         }
-    }
-
-    private String generateRequestLog(JsonDoc request) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Request: ").append(request.getString("verb")).append(" ").append(request.getString("url")).append("\n");
-
-        for (Map.Entry<String, String> header : this.headers.entrySet()) {
-            sb.append(header.getKey()).append(": ").append(String.join(", ", header.getValue())).append("\n");
-        }
-
-        sb.append("Content-Length: ").append(request.getString("content_length")).append("\n");
-        sb.append(request.getString("content")).append("\n");
-
-        return sb.toString();
-    }
-
-    private String generateResponseLog(String response) {
-        return "Response: " + response + "\n";
     }
 
 }

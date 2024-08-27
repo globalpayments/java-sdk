@@ -442,6 +442,11 @@ class PaxInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    @Override
+    public String getParams() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
     public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
         throw new UnsupportedTransactionException();
     }

@@ -382,11 +382,6 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
         return null;
     }
 
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof ManagementBuilder;
-    }
-
     static JsonDoc getDccId(DccRateData dccRateData) {
         return
                 new JsonDoc()

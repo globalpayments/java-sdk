@@ -111,6 +111,8 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     private Boolean isSAFIndicator;
     @Getter
     private String safOrignDT;
+    @Getter
+    private int pdlTimeout;
 
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
@@ -243,6 +245,11 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     public TransactionBuilder<TResult> withSAFOrigDT(String value){
         this.safOrignDT = value;
+        return this;
+    }
+
+    public TransactionBuilder<TResult> withPDLTimeout(int value){
+        this.pdlTimeout = value;
         return this;
     }
 }

@@ -569,6 +569,27 @@ public class UpaInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
+    public String getParams() throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc configuration = new JsonDoc();
+
+        String[] options = {"ALL"};
+        configuration.set("configuration", options);
+        body.set("params", configuration);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.GetParam,
+                controller.getRequestId().toString(),
+                body
+        );
+
+        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        if(responseObj == null){
+            throw new ApiException("No response from UPA!");
+        }
+        return responseObj.toString();
+    }
+
     @Override
     public TerminalManageBuilder increasePreAuth(BigDecimal amount) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();

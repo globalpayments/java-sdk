@@ -42,6 +42,10 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     private String country = "US";
 
+    // Three-letter ISO currency code for use with Card Present device processing
+    @Accessors(chain = true)
+    public String deviceCurrency = "USD";
+
     // The list of the permissions the integrator want the access token to have
     // public IStringConstant[] permissions;
     @Accessors(chain = true)
@@ -80,10 +84,11 @@ public class GpApiConfig extends GatewayConfig {
 
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
-            serviceUrl =
-                    environment.equals(Environment.TEST) ?
-                            ServiceEndpoints.GP_API_TEST.getValue() :
-                            ServiceEndpoints.GP_API_PRODUCTION.getValue();
+            if (environment.equals(Environment.TEST)) {
+                serviceUrl = ServiceEndpoints.GP_API_TEST.getValue();
+            } else {
+                serviceUrl = ServiceEndpoints.GP_API_PRODUCTION.getValue();
+            }
         }
 
         if(accessTokenProvider == null) {

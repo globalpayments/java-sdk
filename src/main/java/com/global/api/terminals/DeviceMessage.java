@@ -3,6 +3,7 @@ package com.global.api.terminals;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.EnumUtils;
+import com.global.api.utils.IRawRequestBuilder;
 
 public class DeviceMessage implements IDeviceMessage {
     private byte[] buffer;
@@ -14,6 +15,11 @@ public class DeviceMessage implements IDeviceMessage {
     }
 
     public byte[] getSendBuffer() { return this.buffer; }
+
+    @Override
+    public IRawRequestBuilder getRequestBuilder() {
+        return null;
+    }
 
     public boolean isKeepAlive() {
         return keepAlive;

@@ -5,6 +5,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.serviceConfigs.Configuration;
+import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.diamond.DiamondCloudConfig;
 import com.global.api.terminals.diamond.DiamondController;
@@ -35,6 +36,9 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     public ConnectionConfig() {
         timeout = 30000;
     }
+
+    private GatewayConfig gatewayConfig;
+    private String configName;
 
     public void setConnectionMode(ConnectionModes connectionModes) {
         this.connectionMode = connectionModes;
@@ -80,6 +84,18 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
         this.geniusMitcConfig = geniusMitcConfig;
     }
 
+    @Override
+    public void setGatewayConfig(GatewayConfig gatewayConfig) {
+        this.gatewayConfig = gatewayConfig;
+    }
+
+    @Override
+    public GatewayConfig getGatewayConfig() {
+        return gatewayConfig;
+    }
+
+
+
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
         switch (deviceType) {
             case PAX_DEVICE:
@@ -115,8 +131,8 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
             if (port == 0)
                 throw new ConfigurationException("Port is required for TCP or HTTP communication modes.");
         } else if (connectionMode == ConnectionModes.MEET_IN_THE_CLOUD) {
-            if (this.geniusMitcConfig == null) {
-                throw new ConfigurationException("meetInTheCloudConfig object is required for this connection method");
+            if (this.geniusMitcConfig == null && gatewayConfig == null) {
+                throw new ConfigurationException("meetInTheCloudConfig or gatewayConfig objects are required for this connection method");
             }
         }
     }

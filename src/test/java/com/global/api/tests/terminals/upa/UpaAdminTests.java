@@ -37,7 +37,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.199");
+        config.setIpAddress("192.168.2.82");
         config.setTimeout(450000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -311,6 +311,15 @@ public class UpaAdminTests {
                 fis.close();
             }
         }
+    }
+
+    /**
+     * ----------------------------GetParams Test Case--------------------------
+     */
+    @Test
+    public void test_getParams() throws ApiException{
+        String getParams = device.getParams();
+        assertNotNull(getParams);
     }
 
     /**

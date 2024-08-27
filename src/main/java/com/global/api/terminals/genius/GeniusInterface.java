@@ -141,6 +141,11 @@ public class GeniusInterface implements IDeviceInterface {
     }
 
     @Override
+    public String getParams() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public IDeviceResponse reboot() throws ApiException {
         throw new UnsupportedTransactionException();
     }

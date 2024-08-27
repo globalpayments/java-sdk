@@ -31,7 +31,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.199");
+        config.setIpAddress("192.168.2.82");
         config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -296,13 +296,13 @@ public class UpaCreditTests {
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
         assertEquals(new BigDecimal("10.00"), response.getTransactionAmount());
 
-        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("15"))
+        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("10.00"))
                 .withTerminalRefNumber(response.getTransactionId())
                 .withTransactionId(response.getTransactionId())
                 .execute();
 
         assertNotNull(captureResponse);
-        assertEquals(new BigDecimal("15.00"), captureResponse.getTransactionAmount());
+        assertEquals(new BigDecimal("10.00"), captureResponse.getTransactionAmount());
     }
 
     @Test

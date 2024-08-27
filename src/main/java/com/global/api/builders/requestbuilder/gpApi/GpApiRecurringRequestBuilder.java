@@ -22,11 +22,6 @@ public class GpApiRecurringRequestBuilder implements IRequestBuilder {
     private RecurringBuilder builder;
 
     @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof RecurringBuilder;
-    }
-
-    @Override
     public GpApiRequest buildRequest(Object builder, GpApiConnector gateway) throws ApiException {
         this.builder = (RecurringBuilder) builder;
         JsonDoc requestDataPayer = new JsonDoc();

@@ -154,11 +154,6 @@ public class GpApiPayFacRequestBuilder implements IRequestBuilder<PayFacBuilder>
         return null;
     }
 
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof PayFacBuilder;
-    }
-
     private static HashMap<String, Object> mapAddress(Address address, String countryCodeType, String functionKey) {
         if (StringUtils.isNullOrEmpty(countryCodeType)) {
             countryCodeType = "alpha2";

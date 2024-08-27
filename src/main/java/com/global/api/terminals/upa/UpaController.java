@@ -16,6 +16,7 @@ import com.global.api.terminals.abstractions.IUPAMessage;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.terminals.upa.interfaces.UpaMicInterface;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RequestLodgingFields;
@@ -52,10 +53,12 @@ public class UpaController extends DeviceController {
 
         if (settings.getConnectionMode() == ConnectionModes.TCP_IP) {
             _interface = new UpaTcpInterface(settings);
-            _upaInterface = (IUPAMessage) _interface;
+        } else if (settings.getConnectionMode() == ConnectionModes.MEET_IN_THE_CLOUD) {
+            _interface = new UpaMicInterface(settings);
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
+        _upaInterface = (IUPAMessage) _interface;
 
         _interface.setMessageSentHandler(new IMessageSentInterface() {
             public void messageSent(String message) {
@@ -118,11 +121,9 @@ public class UpaController extends DeviceController {
 
         String requestIdAsString = requestId != null ? requestId.toString() : getRequestId().toString();
 
-        DeviceMessage message = TerminalUtilities.buildMessage(
-            messageId,
-            requestIdAsString,
-            body
-        );
+        JsonDoc jsonDoc = prepareForBuildMessage(messageId, requestIdAsString, body);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(jsonDoc);
 
         byte[] resp;
       
@@ -139,7 +140,7 @@ public class UpaController extends DeviceController {
                 new String(resp, StandardCharsets.UTF_8)
         );
 
-        return new UpaTransactionResponse(responseObj.get("data"));
+        return new UpaTransactionResponse(responseObj);
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
@@ -160,6 +161,24 @@ public class UpaController extends DeviceController {
         requestLodgingFields.setParams(builder);
 
         return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, processingIndicators,requestLodgingFields);
+    }
+
+    private JsonDoc prepareForBuildMessage(UpaMessageId messageType, String requestId, JsonDoc body) {
+        JsonDoc data = new JsonDoc();
+        JsonDoc json = new JsonDoc();
+
+        data.set("EcrId", "13");
+        data.set("requestId", requestId);
+        data.set("command", messageType.toString());
+
+        if (body != null) {
+            data.set("data", body);
+        }
+
+        json.set("data", data);
+        json.set("message", "MSG");
+
+        return json;
     }
 
     private UpaMessageId mapTransactionType(TransactionType type) throws UnsupportedTransactionException {

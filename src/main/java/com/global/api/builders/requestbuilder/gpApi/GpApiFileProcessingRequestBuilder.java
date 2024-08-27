@@ -39,10 +39,4 @@ public class GpApiFileProcessingRequestBuilder implements IRequestBuilder<FilePr
                 return null;
         }
     }
-
-    @Override
-    public boolean canProcess(Object builder) {
-        return builder instanceof FileProcessingBuilder;
-    }
-
 }

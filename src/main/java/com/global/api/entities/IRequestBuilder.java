@@ -9,6 +9,4 @@ public interface IRequestBuilder<T> {
 
     GpApiRequest buildRequest(T builder, GpApiConnector gateway) throws ApiException;
 
-    boolean canProcess(Object builder);
-
 }

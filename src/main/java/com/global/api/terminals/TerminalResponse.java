@@ -24,6 +24,12 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String token;
     protected String signatureStatus;
     protected byte[] signatureData;
+    @Getter
+    @Setter
+    protected String qpsQualified;
+    @Getter
+    @Setter
+    protected String storeAndForward;
 
     // Transactional
     protected String transactionType;
@@ -32,6 +38,9 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String authorizationCode;
     protected String approvalCode;
     protected BigDecimal transactionAmount;
+    @Getter
+    @Setter
+    protected BigDecimal authorizedAmount;
     protected BigDecimal amountDue;
     protected BigDecimal balanceAmount;
     protected String cardHolderName;
@@ -45,16 +54,33 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String avsResponseText;
     protected String cvvResponseCode;
     protected String cvvResponseText;
+    @Getter
+    @Setter
+    protected String avsResultCode;
+    @Getter
+    @Setter
+    protected String avsResultText;
+    @Getter
+    @Setter
+    protected String cvvResultCode;
+    @Getter
+    @Setter
+    protected String cvvResultText;
     protected boolean taxExempt;
     protected String taxExemptId;
     protected String ticketNumber;
     protected String paymentType;
     protected BigDecimal merchantFee;
     protected String cardBrandTransactionId;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String expiryDate;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected BigDecimal serviceCode;
+    @Getter
+    @Setter
+    protected String cpcInd;
 
     // EMV
     protected String applicationPreferredName;
@@ -68,128 +94,186 @@ public abstract class TerminalResponse implements IDeviceResponse {
     @Setter
     protected String errorCode;
     protected String unmaskedCardNumber;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String applicationIdentifier;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionCurrencyCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String sequenceNo;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String applicationInterchangeProfile;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String dedicatedFileName;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String authorizedResponse;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String terminalVerificationResult;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionPin;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionDate;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionStatusInfo;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String emvTransactionType;
     /**
      * This method does not work with PAX S300 device
      */
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String amountAuthorized;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String otherAmount;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String applicationVersionNumber;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String issuerActionCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String iacDenial;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String iacOnline;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String issuerApplicationData;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String countryCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String serialNo;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected Integer cryptogramInfoData;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String terminalCapabilities;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String cvmResult;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String terminalType;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String applicationTransactionCounter;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String unpredictableNumber;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String additionalTerminalCapabilities;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionSequenceCounter;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String tacDefault;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String tacDenial;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String tacOnline;
 
     //Host
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String responsesId;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String responseDateTime;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected Integer gatewayResponsCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String gatewayResponseMessage;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected BigDecimal authorizeAmount;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionDescriptor;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String recurringDataCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String cavvResultCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected Integer traceNo;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String tokenResponsCode;
     protected String traceNumber;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String tokenResponseMessage;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String customHash;
 
     //DCC
-    @Getter @Setter
+    @Getter
+    @Setter
     protected BigDecimal exchangeRate;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected BigDecimal markUp;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String transactionCurrency;
-    @Getter @Setter
+    protected String requestId;
+
+    @Getter
+    @Setter
     protected String originalTransactionType;
 
     //fallback
-    @Getter @Setter
+    @Getter
+    @Setter
     protected Integer fallback;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String pinVerified;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String accountType;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String issuerResponseCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String isoResponseCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String bankResponseCode;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String applicationName;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String cardHolderLanguage;
-    @Getter @Setter
+    @Getter
+    @Setter
     protected String terminalStatusIndicator;
 
     public String getStatus() {
@@ -536,10 +620,16 @@ public abstract class TerminalResponse implements IDeviceResponse {
         this.cardType = value;
     }
 
-    public String getCardBrandTransactionId() { return cardBrandTransactionId; }
+    public String getCardBrandTransactionId() {
+        return cardBrandTransactionId;
+    }
 
-    public void setCardBrandTransactionId(String value) { this.cardBrandTransactionId = value; }
+    public void setCardBrandTransactionId(String value) {
+        this.cardBrandTransactionId = value;
+    }
 
-    public String getUnmaskedCardNumber() { return unmaskedCardNumber; }
+    public String getUnmaskedCardNumber() {
+        return unmaskedCardNumber;
+    }
 
 }

@@ -30,7 +30,7 @@ public class PaxCreditTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.29.250");
+        deviceConfig.setIpAddress("192.168.0.5");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -40,15 +40,13 @@ public class PaxCreditTests {
 
     @Test
     public void creditSale() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1000[FS][US][US][US][US][US]1[FS]1[FS][FS][FS][FS][FS][ETX]"));
-            }
+        device.setOnMessageSent(message -> {
+            assertNotNull(message);
         });
 
-        TerminalResponse response = device.creditSale(new BigDecimal(10))
+        TerminalResponse response = device.creditSale(new BigDecimal(20.99))
                 .withAllowDuplicates(true)
+                .withGratuity(new BigDecimal("1.00"))
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
@@ -529,5 +527,45 @@ public class PaxCreditTests {
         assertEquals(new BigDecimal("100"), response.getTransactionAmount());
         assertEquals(new BigDecimal("55"), response.getAmountDue());
         assertEquals(new BigDecimal(100), response.getAuthorizeAmount());
+    }
+
+    /**
+     *
+     * This test should demonstrate that the device IS prompting for a tip
+     * when a gratuity amount isn't provided to the builder. This assumes that
+     * the device has been configured for gratuity, which is something that is
+     * set at the terminal file level.
+     *
+     *   **Requires end-user confirmation**
+     *
+     * @throws ApiException
+     */
+    @Test
+    public void testTipPrompt() throws ApiException {
+        TerminalResponse response = device.creditSale(new BigDecimal(12.34))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    /**
+     * This test should demonstrate that the device is NOT prompting for a
+     * tip when a gratuity amount IS provided to the builder. This assumes that
+     * the device is configured for gratuity which is something that is set at
+     * the terminal file level.
+     *
+     *   **Requires end-user confirmation**
+     *
+     * @throws ApiException
+     */
+    @Test
+    public void testTipNoPrompt() throws ApiException {
+        TerminalResponse response = device.creditSale(new BigDecimal(15.34))
+                .withGratuity(new BigDecimal(3.00)) // this makes for an $18.34 sale on device
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

@@ -33,6 +33,7 @@ public interface IDeviceInterface extends IDisposable {
     void sendReady() throws ApiException; //UPA
     IDeviceResponse registerPOS(RegisterPOS data) throws ApiException; //UPA
     IDeviceResponse printReceipt(PrintData data) throws ApiException;//UPA
+    String getParams() throws ApiException; //UPA
     ISignatureResponse promptForSignature() throws ApiException;
     ISignatureResponse promptForSignature(String transactionId) throws ApiException;    
     IDeviceResponse reboot() throws ApiException;

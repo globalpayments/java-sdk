@@ -17,7 +17,8 @@ public class UpaTerminalManageBuilder extends TerminalManageBuilder {
 
     @Override
     public void setupValidations() {
-        this.validations.of(TransactionType.Capture).check("terminalRefNumber").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
+        this.validations.of(TransactionType.Capture).check("terminalRefNumber").isNotNull();
+        this.validations.of(TransactionType.Void).when("terminalRefNumber").isNull().check("transactionId").isNotNull();
     }
 }

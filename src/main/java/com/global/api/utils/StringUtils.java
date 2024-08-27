@@ -125,7 +125,7 @@ public class StringUtils {
             return "";
         }
         if (amount.toString().equals("0")) {
-            return "0";
+            return "0.00";
         }
 
         NumberFormat fmt = NumberFormat.getCurrencyInstance();
