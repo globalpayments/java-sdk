@@ -157,6 +157,7 @@ public class NtsDebitTest {
 
     @Test //working
     public void test_PinDebit_with_Purchase_03_EMV() throws ApiException {
+        track.setEntryMethod(EntryMethod.ContactEMV);
 
         Transaction response = track.charge(new BigDecimal(142))
                 .withCurrency("USD")

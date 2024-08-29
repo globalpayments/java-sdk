@@ -1,4 +1,7 @@
 # Changelog
+## Latest Version - V13.0.1 (08/29/2024)
+### Enhacements
+- [NTS] Implement masking of entire response after header for echoed request in response.(10317)
 
 ## Latest Version - V13.0.0 (08/27/2024)
 ### Enhacements
