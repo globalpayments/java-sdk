@@ -40,6 +40,7 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     private Lodging lodging;
     @Getter
     private BigDecimal preAuthAmount;
+
     public BigDecimal getAmount() {
         return amount;
     }
@@ -52,21 +53,45 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         return gratuity;
     }
 
-    public String getTerminalRefNumber() { return terminalRefNumber; }
-    public String getMessageAuthCode() { return messageAuthCode; }
-    public String getReasonCode() { return reasonCode; }
-    public String getSoftDescriptor() { return softDescriptor; }
-    public String getTrackingId() { return trackingId; }
-    public String getSignatureImage() { return signatureImage; }
-    public String getSignatureFormat() { return signatureFormat; }
-    public Boolean getSignatureLine() { return signatureLine; }
+    public String getTerminalRefNumber() {
+        return terminalRefNumber;
+    }
+
+    public String getMessageAuthCode() {
+        return messageAuthCode;
+    }
+
+    public String getReasonCode() {
+        return reasonCode;
+    }
+
+    public String getSoftDescriptor() {
+        return softDescriptor;
+    }
+
+    public String getTrackingId() {
+        return trackingId;
+    }
+
+    public String getSignatureImage() {
+        return signatureImage;
+    }
+
+    public String getSignatureFormat() {
+        return signatureFormat;
+    }
+
+    public Boolean getSignatureLine() {
+        return signatureLine;
+    }
 
     public Customer getCustomer() {
         return customer;
     }
+
     public String getTransactionId() {
-        if(paymentMethod instanceof TransactionReference)
-            return ((TransactionReference)paymentMethod).getTransactionId();
+        if (paymentMethod instanceof TransactionReference)
+            return ((TransactionReference) paymentMethod).getTransactionId();
         return null;
     }
 
@@ -104,30 +129,36 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.messageAuthCode = value;
         return this;
     }
+
     public TerminalManageBuilder withReasonCode(String value) {
         this.reasonCode = value;
         return this;
     }
+
     public TerminalManageBuilder withTrackingId(String value) {
         this.trackingId = value;
         return this;
     }
+
     public TerminalManageBuilder withSignatureImage(String value) {
         this.signatureImage = value;
         return this;
     }
+
     public TerminalManageBuilder withSignatureFormat(String value) {
         this.signatureFormat = value;
         return this;
     }
+
     public TerminalManageBuilder withSignatureLine(Boolean value) {
         this.signatureLine = value;
         return this;
     }
+
     public TerminalManageBuilder withTransactionId(String value) {
-        if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
+        if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
-        ((TransactionReference)paymentMethod).setTransactionId(value);
+        ((TransactionReference) paymentMethod).setTransactionId(value);
         this.transactionId = value;
         return this;
     }
@@ -137,12 +168,12 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         return this;
     }
 
-    public TerminalManageBuilder withLodging(Lodging lodging){
+    public TerminalManageBuilder withLodging(Lodging lodging) {
         this.lodging = lodging;
         return this;
     }
 
-    public TerminalManageBuilder withPreAuthAmount(BigDecimal preAuthAmount){
+    public TerminalManageBuilder withPreAuthAmount(BigDecimal preAuthAmount) {
         this.preAuthAmount = preAuthAmount;
         return this;
     }
@@ -171,4 +202,5 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.validations.of(TransactionType.Auth).with(TransactionModifier.Incremental).check("transactionId").isNotNull();
         this.validations.of(TransactionType.Refund).check("transactionId").isNotNull();
     }
+
 }

@@ -62,66 +62,82 @@ public class TransactionRebuilder {
         authCode = value;
         return this;
     }
+
     public TransactionRebuilder withAcquirerId(String value) {
         acquirerId = value;
         return this;
     }
+
     public TransactionRebuilder withMessageTypeIndicator(String value) {
         messageTypeIndicator = value;
         return this;
     }
+
     public TransactionRebuilder withOrderId(String value) {
         orderId = value;
         return this;
     }
+
     public TransactionRebuilder withAmount(BigDecimal value) {
         originalAmount = value;
         return this;
     }
-    public TransactionRebuilder withAuthorizedAmount (BigDecimal value) {
+
+    public TransactionRebuilder withAuthorizedAmount(BigDecimal value) {
         return withAuthorizedAmount(value, false);
     }
-    public TransactionRebuilder withAuthorizedAmount (BigDecimal value, boolean useAuthorizedAmount) {
+
+    public TransactionRebuilder withAuthorizedAmount(BigDecimal value, boolean useAuthorizedAmount) {
         originalApprovedAmount = value;
         this.useAuthorizedAmount = useAuthorizedAmount;
         return this;
     }
-    public TransactionRebuilder withNtsData (NtsData value) {
+
+    public TransactionRebuilder withNtsData(NtsData value) {
         originalNtsData = value;
         return this;
     }
+
     public TransactionRebuilder withPartialApproval(boolean value) {
         partialApproval = value;
         return this;
     }
+
     public TransactionRebuilder withPaymentMethod(IPaymentMethod value) {
         originalPaymentMethod = value;
         return this;
     }
+
     public TransactionRebuilder withProcessingCode(String value) {
         originalProcessingCode = value;
         return this;
     }
+
     public TransactionRebuilder withPosDataCode(String value) {
         posDataCode = value;
         return this;
     }
+
     public TransactionRebuilder withTransactionTime(String value) {
         originalTransactionTime = value;
         return this;
     }
+
     public TransactionRebuilder withPaymentMethodType(PaymentMethodType value) {
         paymentMethodType = value;
         return this;
     }
+
     public TransactionRebuilder withSystemTraceAuditNumber(String value) {
         systemTraceAuditNumber = value;
         return this;
     }
+
     public TransactionRebuilder withTransactionId(String value) {
         transactionId = value;
         return this;
     }
+
     public TransactionRebuilder withOriginalTransactionType(TransactionType value) {
         originalTransactionType = value;
         return this;
@@ -147,22 +163,27 @@ public class TransactionRebuilder {
         this.settlementDate = value;
         return this;
     }
+
     public TransactionRebuilder withBanknetRefId(String value) {
         this.banknetRefId = value;
         return this;
     }
+
     public TransactionRebuilder withVisaTransactionId(String value) {
         this.visaTransactionId = value;
         return this;
     }
+
     public TransactionRebuilder withDiscoverNetworkRefId(String value) {
         this.discoverNetworkRefId = value;
         return this;
     }
+
     public TransactionRebuilder withOriginalTransactionDate(String value) {
         this.originalTransactionDate = value;
         return this;
     }
+
     public TransactionRebuilder withOriginalMessageCode(String value) {
         this.originalMessageCode = value;
         return this;
@@ -227,4 +248,5 @@ public class TransactionRebuilder {
 
         return trans;
     }
+
 }

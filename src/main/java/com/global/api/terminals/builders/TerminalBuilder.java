@@ -2,6 +2,7 @@ package com.global.api.terminals.builders;
 
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.enums.PaymentMethodType;
+import com.global.api.entities.enums.StoredCredentialInitiator;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.TerminalResponse;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Getter;
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
     protected Integer requestId;
+
     /*
      * ID of the clerk if in retail mode, and ID of the server if in restaurant mode
      * 
@@ -18,6 +20,8 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     protected String referenceNumber;
     @Getter
     protected String clerkNumber;
+    @Getter
+    protected StoredCredentialInitiator storedCredentialInitiator;
 
     public PaymentMethodType getPaymentMethodType() {
         return paymentMethodType;
@@ -33,6 +37,11 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     public TerminalBuilder<T> withClerkId(Integer value) {
         clerkId = value;
         return this;
+    }
+
+    public TerminalAuthBuilder withCardOnFileIndicator(StoredCredentialInitiator value){
+        storedCredentialInitiator = value;
+        return (TerminalAuthBuilder) this;
     }
 
     public TerminalBuilder<T> withReferenceNumber(String value) {

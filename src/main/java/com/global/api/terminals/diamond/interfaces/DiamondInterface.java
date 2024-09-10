@@ -1,5 +1,7 @@
 package com.global.api.terminals.diamond.interfaces;
 
+import com.global.api.entities.PrintData;
+import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -15,13 +17,14 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
-import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.TimeZone;
 
 @Getter
 @Setter
@@ -173,6 +176,11 @@ public class DiamondInterface implements IDeviceInterface {
     }
 
     @Override
+    public IBatchReportResponse findBatches() throws ApiException {
+        return null;
+    }
+
+    @Override
     public ISAFResponse safDelete(String referenceNumber, String transactionNumber) throws ApiException {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
@@ -261,12 +269,92 @@ public class DiamondInterface implements IDeviceInterface {
     }
 
     @Override
+    public IDeviceResponse getAppInfo() throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse clearDataLake() throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse returnToIdle() throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceScreen loadUDDataFile(UDData udData) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceScreen removeUDDataFile(UDData udData) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse Scan(ScanData scanData) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse Print(com.global.api.entities.PrintData printData) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse setTimeZone(TimeZone timezone) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse getParams(ArrayList<String> parameters) throws ApiException {
+        return null;
+    }
+
+    @Override
     public void sendReady() throws ApiException {
 
     }
 
     @Override
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
+    @Override
+    public IDeviceResponse setDebugLevel(DebugLevel[] debugLevels, Enum logToConsole) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse getDebugLevel() throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse getDebugInfo(Enum logFile) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse broadcastConfiguration(boolean enable) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public IDeviceResponse executeUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
+    @Override
+    public IDeviceResponse injectUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+    }
+
+    @Override
+    public IDeviceResponse getConfigContents(TerminalConfigType configType) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
     }
 

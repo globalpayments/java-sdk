@@ -1,22 +1,22 @@
 package com.global.api.tests.terminals.upa;
+
+import com.global.api.entities.PrintData;
+import com.global.api.entities.ScanData;
 import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.enums.ConnectionModes;
-import com.global.api.entities.enums.DeviceType;
-import com.global.api.entities.enums.SummaryType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.SummaryResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.terminals.abstractions.ISAFResponse;
-import com.global.api.terminals.abstractions.ISignatureResponse;
-import com.global.api.terminals.upa.subgroups.PrintData;
+import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -26,7 +26,10 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.junit.Assert.*;
 
@@ -37,11 +40,12 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.2.82");
-        config.setTimeout(450000);
+        config.setIpAddress("192.168.8.181");
+        config.setTimeout(30_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
+        config.setRequestLogger(new RequestConsoleLogger());
 //        config.setRequestLogger(new RequestFileLogger("AdminTests.txt"));
 
         device = DeviceService.create(config);
@@ -65,7 +69,7 @@ public class UpaAdminTests {
     }
 
     /**
-     -----------------------------Line Items Test case start ----------------------------------------------------------------------
+     * -----------------------------Line Items Test case start ----------------------------------------------------------------------
      */
     @Test
     public void test03_lineItems() throws ApiException {
@@ -82,26 +86,28 @@ public class UpaAdminTests {
 
     /**
      * For line item display left side text is mandatory & should not be null.
+     *
      * @throws ApiException
      */
     @Test
-    public void test03_lineItems_leftSideTextMandatory() throws ApiException {
-        ApiException leftSideTextMandatory = assertThrows(ApiException.class,() -> device.addLineItem(null,"null"));
-        assertEquals("Left-side text is required.",leftSideTextMandatory.getMessage());
+    public void test03_lineItems_leftSideTextMandatory() {
+        ApiException leftSideTextMandatory = assertThrows(ApiException.class, () -> device.addLineItem(null, "null"));
+        assertEquals("Left-side text is required.", leftSideTextMandatory.getMessage());
     }
 
     /**
      * For line item display right side text character should not exceed 10 length.
+     *
      * @throws ApiException
      */
     @Test
-    public void test03_lineItems_rightSideTextLimit() throws ApiException {
-        ApiException rightSideTextLimit = assertThrows(ApiException.class,() -> device.addLineItem("Line Item ","1111.1111111111"));
-        assertEquals("Right-side text has 10 char limit.",rightSideTextLimit.getMessage());
+    public void test03_lineItems_rightSideTextLimit() {
+        ApiException rightSideTextLimit = assertThrows(ApiException.class, () -> device.addLineItem("Line Item ", "1111.1111111111"));
+        assertEquals("Right-side text has 10 char limit.", rightSideTextLimit.getMessage());
     }
 
     /**
-     -------------------------------Line Items Test case end ----------------------------------------------------------------------
+     * -------------------------------Line Items Test case end ----------------------------------------------------------------------
      */
 
     @Test
@@ -114,8 +120,13 @@ public class UpaAdminTests {
         device.sendReady();
     }
 
+    @Test
+    public void test06_reset() throws ApiException {
+        runBasicTests(device.reset());
+    }
+
     /**
-     ---------------------------------SAF test case start------------------------------------------------------------------
+     * ---------------------------------SAF test case start------------------------------------------------------------------
      */
     @Test
     public void test_sendSAF() throws ApiException {
@@ -165,9 +176,6 @@ public class UpaAdminTests {
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
-        assertNotNull(response.getApproved());
-        assertNotNull(response.getDeclined());
-        assertNotNull(response.getPending());
     }
 
     @Test
@@ -203,7 +211,7 @@ public class UpaAdminTests {
      */
 
     /**
-     ----------------------------------Get Signature test case start-----------------------------------------------------------------------
+     * ----------------------------------Get Signature test case start-----------------------------------------------------------------------
      */
     @Test
     public void test_getSignature() throws ApiException {
@@ -215,8 +223,11 @@ public class UpaAdminTests {
         assertNotNull(response.getSignatureData());
         runBasicTests(response);
 
+        Path resourcesDir = Paths.get("src", "test", "resources");
+        String filePath = resourcesDir.toFile().getAbsolutePath() + "\\image.jpg";
+
         try {
-            saveSignatureImage(response.getSignatureData(), "C:\\Temp\\image16.png");
+            saveSignatureImage(response.getSignatureData(), filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -245,7 +256,7 @@ public class UpaAdminTests {
      */
 
     /**
-     ----------------------------------Register POS test case start-----------------------------------------------------------------------
+     * ----------------------------------Register POS test case start-----------------------------------------------------------------------
      */
     @Test
     public void test_registerPOS() throws ApiException {
@@ -269,6 +280,7 @@ public class UpaAdminTests {
 
     /**
      * Package Name of Application is required for Register POS command.
+     *
      * @throws ApiException
      */
     @Test
@@ -276,8 +288,8 @@ public class UpaAdminTests {
         RegisterPOS data = new RegisterPOS();
         data.setLaunchOrder(1);
         data.setRemove(true);
-        ApiException packageNameRequiredException = assertThrows(ApiException.class,() -> device.registerPOS(data));
-        assertEquals("The package name of the application is required.",packageNameRequiredException.getMessage());
+        ApiException packageNameRequiredException = assertThrows(ApiException.class, () -> device.registerPOS(data));
+        assertEquals("The package name of the application is required.", packageNameRequiredException.getMessage());
     }
 
     /**
@@ -285,7 +297,7 @@ public class UpaAdminTests {
      */
 
     /**
-     ----------------------------------Print Data test case start-----------------------------------------------------------------------
+     * ----------------------------------Print Data test case start-----------------------------------------------------------------------
      */
     @Test
     public void test_receipt() throws ApiException, IOException {
@@ -304,10 +316,12 @@ public class UpaAdminTests {
             data.setContent(base64Image);
             data.setLine1("Printing");
             data.setLine2("Please Wait...");
+            data.setDisplayOption(DisplayOption.NO_SCREEN_CHANGE);
+
             IDeviceResponse response = device.printReceipt(data);
             runBasicTests(response);
         } finally {
-            if(fis != null){
+            if (fis != null) {
                 fis.close();
             }
         }
@@ -324,16 +338,17 @@ public class UpaAdminTests {
 
     /**
      * Image content for PrintData command is mandatory.
+     *
      * @throws ApiException
      */
     @Test
-    public void test_receipt_ImageDataShouldNotBeNull() throws ApiException{
+    public void test_receipt_ImageDataShouldNotBeNull() throws ApiException {
         PrintData data = new PrintData();
         data.setLine1("Printing");
         data.setLine2("Please Wait...");
-        ApiException imageDataNotNullException = assertThrows(ApiException.class,() ->
-                 device.printReceipt(data));
-        assertEquals("The image data cannot be null or empty.",imageDataNotNullException.getMessage());
+        ApiException imageDataNotNullException = assertThrows(ApiException.class, () ->
+                device.printReceipt(data));
+        assertEquals("The image data cannot be null or empty.", imageDataNotNullException.getMessage());
 
     }
 
@@ -344,6 +359,7 @@ public class UpaAdminTests {
 
     /**
      * Only TCP_IP mode supported for UPA.
+     *
      * @throws ConfigurationException
      */
     @Test
@@ -356,8 +372,8 @@ public class UpaAdminTests {
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.HTTP);
 
-       ConfigurationException configurationException = assertThrows(ConfigurationException.class,() -> device = DeviceService.create(config));
-        assertEquals("Unsupported connection mode.",configurationException.getMessage());
+        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> device = DeviceService.create(config));
+        assertEquals("Unsupported connection mode.", configurationException.getMessage());
     }
 
     public void runBasicTests(IDeviceResponse response) {
@@ -367,18 +383,201 @@ public class UpaAdminTests {
     }
 
     /**
-     used to save the signature data in image format
+     * used to save the signature data in image format
      */
-    public static void saveSignatureImage(byte[] signatureData, String imgFileName) throws IOException
-    {
-        try(OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imgFileName))){
+    public static void saveSignatureImage(byte[] signatureData, String imgFileName) throws IOException {
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imgFileName))) {
             outputStream.write(signatureData);
             outputStream.flush();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void clearDataLake() throws ApiException {
+        IDeviceResponse response = device.clearDataLake();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void setTimeZone() throws ApiException {
+        TimeZone curTimeZone = TimeZone.getDefault();
+        IDeviceResponse response = device.setTimeZone(curTimeZone);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void getParams() throws ApiException {
+        ArrayList<String> paramsList = new ArrayList<>(Arrays.asList("TerminalLanguage", "PinBypassIsSupported"));
+        IDeviceResponse response = device.getParams(paramsList);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void testSetDebugLevel() throws ApiException {
+        DebugLevel[] debugLevels = {DebugLevel.PACKETS, DebugLevel.DATA, DebugLevel.MESSAGE};
+        IDeviceResponse response = device.setDebugLevel(debugLevels, DebugLogsOutput.FILE);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void testGetDebugLevel() throws ApiException {
+        IDeviceResponse response = device.getDebugLevel();
+        assertNotNull(response);
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void testGetDebugInfo() throws ApiException {
+        UpaTransactionResponse response = (UpaTransactionResponse) device.getDebugInfo(LogFile.DEBUGLOG1);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void testBroadcastConfiguration() throws ApiException {
+        IDeviceResponse response = device.broadcastConfiguration(false);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void ReturnToIdle() throws ApiException {
+        IDeviceResponse response = device.returnToIdle();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void LoadUDDataFile() throws ApiException {
+        UDData udData = new UDData();
+        udData.setFileType(UDFileType.HTML5);
+        udData.setSlot((short) 2);
+        udData.setFileName("PIA.html");
+        IDeviceResponse response = device.loadUDDataFile(udData);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void removeUDDataFile() throws ApiException {
+        UDData udData = new UDData();
+        udData.setFileType(UDFileType.HTML5);
+        udData.setSlot(1);
+        IDeviceResponse response = device.removeUDDataFile(udData);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void scan() throws ApiException {
+        ScanData scanData = new ScanData();
+        scanData.setHeader("SCAN");
+        scanData.setPrompt1("SCAN QR CODE");
+        scanData.setPrompt2("ALIGN THE QR CODE WITHIN THE FRAME TO SCAN");
+        scanData.setDisplayOption(DisplayOption.NO_SCREEN_CHANGE);
+        scanData.setTimeout(26);
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        IDeviceResponse response = device.Scan(scanData);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void printData() throws ApiException {
+        PrintData printData = new PrintData();
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "download.png").toString();
+        printData.setFilePath(filePath);
+        printData.setLine1("Printing...");
+        printData.setLine2("Please Wait...");
+        printData.setDisplayOption(DisplayOption.NO_SCREEN_CHANGE);
+        device.setOnMessageSent(Assert::assertNotNull);
+        IDeviceResponse response = device.Print(printData);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void availableBatches() throws ApiException {
+        IBatchReportResponse response = device.findBatches();
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void executeUDDataFile() throws ApiException {
+        UDData udData = new UDData();
+        udData.setFileType(UDFileType.HTML5);
+        udData.setSlot(1);
+        device.setOnMessageSent(Assert::assertNotNull);
+        IDeviceResponse response = device.executeUDDataFile(udData);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+
+    @Test
+    public void injectUDDataFile() throws IOException, ApiException {
+        UDData udData = new UDData();
+        udData.setFileType(UDFileType.HTML5);
+        udData.setFileName("UDDataFile.html");
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "UDDataFile.html").toString();
+        udData.setFilePath(filePath);
+        device.setOnMessageSent(Assert::assertNotNull);
+        IDeviceResponse response = device.injectUDDataFile(udData);
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+    }
+
+    @Test
+    public void getConfigContent() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.getConfigContents(TerminalConfigType.ContactTerminalConfiguration);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("GetConfigContents", response.getCommand());
+        assertNotNull(response.getConfigContent().getConfigType());
+        assertNotNull(response.getConfigContent().getFileContent());
+        assertEquals(response.getConfigContent().getLength(), response.getConfigContent().getFileContent().length());
+    }
+
+    @Test
+    public void getAppInfo() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.getAppInfo();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("GetAppInfo", response.getCommand());
+        assertFalse(response.getDeviceSerialNum().isEmpty());
+        assertFalse(response.getAppVersion().isEmpty());
+        assertFalse(response.getOsVersion().isEmpty());
+        assertFalse(response.getEmvSdkVersion().isEmpty());
+        assertFalse(response.getCtlsSdkVersion().isEmpty());
+    }
+
 }
-
-

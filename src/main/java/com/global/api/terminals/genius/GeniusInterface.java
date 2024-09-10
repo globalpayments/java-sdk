@@ -1,5 +1,7 @@
 package com.global.api.terminals.genius;
 
+import com.global.api.entities.PrintData;
+import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
@@ -14,11 +16,12 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
-import com.global.api.terminals.upa.subgroups.PrintData;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.TimeZone;
 
 public class GeniusInterface implements IDeviceInterface {
 
@@ -126,8 +129,90 @@ public class GeniusInterface implements IDeviceInterface {
     }
 
     @Override
+    public IDeviceResponse getAppInfo() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse clearDataLake() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse returnToIdle() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceScreen loadUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceScreen removeUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse Scan(ScanData scanData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse Print(PrintData printData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse setTimeZone(TimeZone timezone) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getParams(ArrayList<String> parameters) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public void sendReady() throws ApiException {
 
+    }
+
+
+    @Override
+    public IDeviceResponse setDebugLevel(DebugLevel[] debugLevels, Enum logToConsole) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+
+    }
+
+    @Override
+    public IDeviceResponse getDebugLevel() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getDebugInfo(Enum logFile) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse broadcastConfiguration(boolean enable) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse executeUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse injectUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getConfigContents(TerminalConfigType configType) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
     }
 
     @Override
@@ -135,7 +220,6 @@ public class GeniusInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
-    @Override
     public IDeviceResponse printReceipt(PrintData data) throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -373,6 +457,11 @@ public class GeniusInterface implements IDeviceInterface {
 
     @Override
     public IBatchReportResponse getOpenTabDetails() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IBatchReportResponse findBatches() throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }
 

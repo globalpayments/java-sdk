@@ -90,8 +90,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationCryptogram;
     protected String customerVerificationMethod;
     protected String terminalVerificationResults;
-    @Getter
-    @Setter
+    @Getter @Setter
     protected String errorCode;
     protected String unmaskedCardNumber;
     @Getter
@@ -240,10 +239,19 @@ public abstract class TerminalResponse implements IDeviceResponse {
     @Getter
     @Setter
     protected String transactionCurrency;
+    @Getter @Setter
+    protected String deviceSerialNum;
+    @Getter @Setter
+    protected String appVersion;
+    @Getter @Setter
+    protected String osVersion;
+    @Getter @Setter
+    protected String emvSdkVersion;
+    @Getter @Setter
+    protected String ctlsSdkVersion;
+    @Getter @Setter
     protected String requestId;
-
-    @Getter
-    @Setter
+    @Getter @Setter
     protected String originalTransactionType;
 
     //fallback
@@ -632,4 +640,27 @@ public abstract class TerminalResponse implements IDeviceResponse {
         return unmaskedCardNumber;
     }
 
+    public String getAppVersion() { return appVersion; }
+
+    public void setAppVersion(String appVersion) { this.appVersion = appVersion; }
+
+    public String getOsVersion() { return osVersion; }
+
+    public void setOsVersion(String osVersion) {
+        this.osVersion = osVersion;
+    }
+
+    public String getEmvSdkVersion() {
+        return emvSdkVersion;
+    }
+
+    public void setEmvSdkVersion(String emvSdkVersion) { this.emvSdkVersion = emvSdkVersion; }
+
+    public String getCtlsSdkVersion() {
+        return ctlsSdkVersion;
+    }
+
+    public void setCtlsSdkVersion(String ctlsSdkVersion) {
+        this.ctlsSdkVersion = ctlsSdkVersion;
+    }
 }

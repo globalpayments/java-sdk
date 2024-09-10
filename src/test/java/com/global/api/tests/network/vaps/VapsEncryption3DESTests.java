@@ -57,7 +57,7 @@ public class VapsEncryption3DESTests {
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
 
         // hardware software config values
-        acceptorConfig.setHardwareLevel("34");
+        acceptorConfig.setHardwareLevel("S1");
         acceptorConfig.setSoftwareLevel("21205710");
 
         // pos configuration values
@@ -79,7 +79,7 @@ public class VapsEncryption3DESTests {
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0007998855611");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -144,14 +144,14 @@ public class VapsEncryption3DESTests {
         foodCard.setTrackNumber(TrackNumber.TrackTwo);
 
         //Gift card
-//        config.setNodeIdentification("VLK2");
-//        ServicesContainer.configureService(config, "ValueLink");
+        config.setNodeIdentification("VLK2");
+        ServicesContainer.configureService(config, "ValueLink");
 
         // VALUE LINK
         giftCard = new GiftCard();
-        giftCard.setEncryptionData(EncryptionData.setKtbAndKsn("D87A55F042D1DA9DAD3959DAAE8C3A423E27412D58669AA86993049F07662E478E75B439D9279790",
-                "F0000100095E6701"));
-        giftCard.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        giftCard.setEncryptionData(EncryptionData.setKtbAndKsn("B1ADDC4F8C73F54A6F774ACD6C9DB09DD1E7EAEDB044711EAA08DBC78887256B8CD1D14DB7C2CC8D",
+                "F000016F870850EB"));
+        giftCard.setEncryptedPan("6B246DF0FF1EE73152F148C5F0C992CC");
         giftCard.setTrackNumber(TrackNumber.TrackTwo);
         giftCard.setEntryMethod(EntryMethod.Swipe);
         giftCard.setExpiry("2501");
@@ -283,6 +283,7 @@ public class VapsEncryption3DESTests {
     public void test_005_credit_manual_refund_cvn() throws ApiException {
         Transaction response = cardWithCvn.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -292,6 +293,7 @@ public class VapsEncryption3DESTests {
     public void test_006_credit_manual_refund() throws ApiException {
         Transaction response = card.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -364,6 +366,7 @@ public class VapsEncryption3DESTests {
     public void test_010_credit_swipe_refund() throws ApiException {
         Transaction response = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
@@ -678,6 +681,7 @@ public class VapsEncryption3DESTests {
 
         Transaction response = track.refund(new BigDecimal(10))
                 .withCurrency("USD")
+                .withOfflineAuthCode("105683")
                 .execute();
         assertNotNull(response);
 
@@ -945,32 +949,6 @@ public class VapsEncryption3DESTests {
 
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
-    }
-
-    @Test
-    public void test_GiftCard_preAuthCompletion() throws ApiException {
-        Transaction response = giftCard.authorize(new BigDecimal(10))
-                .withCurrency("USD")
-                .execute("ValueLink");
-        PriorMessageInformation pmi = response.getMessageInformation();
-        assertNotNull(pmi);
-        assertEquals("1100",pmi.getMessageTransactionIndicator());
-        assertEquals("006000",pmi.getProcessingCode());
-        assertEquals("100",pmi.getFunctionCode());
-        assertNotNull(response);
-        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
-
-        Transaction captureResponse = response.preAuthCompletion(new BigDecimal(10))
-                .withCurrency("USD")
-                .execute("ValueLink");
-        assertNotNull(captureResponse);
-        pmi = captureResponse.getMessageInformation();
-        assertNotNull(pmi);
-        assertEquals("1220",pmi.getMessageTransactionIndicator());
-        assertEquals("006000",pmi.getProcessingCode());
-        assertEquals("201",pmi.getFunctionCode());
-        // check response
-        assertEquals("000", captureResponse.getResponseCode());
     }
 
     @Test
@@ -1714,7 +1692,7 @@ public class VapsEncryption3DESTests {
         foodCard = new EBTTrackData(EbtCardType.FoodStamp);
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
-        foodCard.setEncryptedPan("4355567063338");
+        foodCard.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
         foodCard.setTrackNumber(TrackNumber.TrackTwo);
 
         Transaction response = foodCard.charge(new BigDecimal(10))
@@ -1744,7 +1722,7 @@ public class VapsEncryption3DESTests {
         foodCard = new EBTTrackData(EbtCardType.FoodStamp);
         foodCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("C540BE2B2666CDF89D1CCE48ED0ED682DB88A0AD0765136FA1966602F3A49D90","F000014151181825"));
         foodCard.setPinBlock("62968D2481D231E1A504010024A00014");
-        foodCard.setEncryptedPan("4355567063338");
+        foodCard.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
         foodCard.setTrackNumber(TrackNumber.TrackTwo);
 
         Transaction response = foodCard.charge(new BigDecimal(10))

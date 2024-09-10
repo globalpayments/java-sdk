@@ -307,7 +307,7 @@ public class UpaMicTests extends BaseGpApiTest {
     }
 
     private void assertMitcTransactionResponse(TerminalResponse response) {
-        assertEquals("Success", response.getStatus());
+        assertEquals("COMPLETE", response.getStatus());
         assertEquals("COMPLETE", response.getDeviceResponseText());
         assertEquals("00", response.getDeviceResponseCode());
         assertEquals("00", response.getResponseCode());

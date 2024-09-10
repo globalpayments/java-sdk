@@ -1180,7 +1180,10 @@ public class VapsConnector extends GatewayConnectorConfig {
             DE127_ForwardingData forwardingData = new DE127_ForwardingData();
             if (paymentMethod instanceof TransactionReference) {
                 TransactionReference reference = (TransactionReference) paymentMethod;
-
+                String card =null;
+                if(reference.getOriginalPaymentMethod() instanceof GiftCard) {
+                    card = ((GiftCard) reference.getOriginalPaymentMethod()).getCardType();
+                }
             if(reference.getOriginalPaymentMethod() != null && reference.getOriginalPaymentMethod() instanceof IEncryptable) {
                 EncryptionData encryptionData = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptionData();
                 String encryptedPan = null;
@@ -1188,13 +1191,13 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if (encryptionData != null && encryptionData.getEncryptedKTB() != null) {
                     encryptedKTB = encryptionData.getEncryptedKTB();
                 }
-                boolean nonOriginalTransactions = transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion) || transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)
-                        || transactionType.equals(TransactionType.Refund);
+                boolean nonOriginalTransactions = (!("ValueLink").equals(card)) && (transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion) || transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)
+                        || transactionType.equals(TransactionType.Refund));
 
                 if (nonOriginalTransactions) {
                     if ((reference.getOriginalPaymentMethod() instanceof Credit || ((reference.getOriginalPaymentMethod() instanceof Debit
                             || reference.getOriginalPaymentMethod() instanceof EBTTrackData) && !(transactionType.equals(TransactionType.Refund))) ||
-                            reference.getOriginalPaymentMethod() instanceof GiftCard || reference.getOriginalPaymentMethod() instanceof EBTCardData)) {
+                             reference.getOriginalPaymentMethod() instanceof EBTCardData)) {
                         encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
                     }
                 }
@@ -3292,7 +3295,10 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
     }
     private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod, EncryptionType encryptionType, TransactionType transactionType){
-
+        String card = null;
+        if(paymentMethod instanceof GiftCard){
+            card = ((GiftCard) paymentMethod).getCardType();
+        }
         if(encryptionType.equals(EncryptionType.TDES)){
             if(paymentMethod instanceof ICardData || (paymentMethod instanceof CreditTrackData && transactionType.equals(TransactionType.Refund))){
                 return EncryptedFieldMatrix.Pan;
@@ -3303,7 +3309,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                     return EncryptedFieldMatrix.Track1;
                 else if (trackType == TrackNumber.TrackTwo)
                     return EncryptedFieldMatrix.Track2;
-            }else if(paymentMethod instanceof GiftCard && !transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.PreAuthCompletion) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)) {
+            }else if(paymentMethod instanceof GiftCard && ((("ValueLink").equals(card)) || (!transactionType.equals(TransactionType.Capture)
+                    && !transactionType.equals(TransactionType.PreAuthCompletion)
+                    && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)))) {
                 TrackNumber trackType=((GiftCard)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;

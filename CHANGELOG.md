@@ -1,5 +1,11 @@
 # Changelog
-## Latest Version - V13.0.1 (08/29/2024)
+## Latest Version - V14.0.0 (09/10/2024)
+### Enhacements
+- [UPA] Add new UPA commands
+### Bug Fixes
+- [VAPS] - Resolved 3DES storedValue RC-125 with the updated field matrix value for NonOriginal transaction (10330)
+
+## V13.0.1 (08/29/2024)
 ### Enhacements
 - [NTS] Implement masking of entire response after header for echoed request in response.(10317)
 

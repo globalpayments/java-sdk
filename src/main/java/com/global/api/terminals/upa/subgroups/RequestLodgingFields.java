@@ -3,7 +3,6 @@ package com.global.api.terminals.upa.subgroups;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.Arrays;

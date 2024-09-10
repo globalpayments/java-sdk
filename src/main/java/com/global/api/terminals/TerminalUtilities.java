@@ -1,6 +1,7 @@
 package com.global.api.terminals;
 
 import com.global.api.entities.enums.*;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.utils.Element;
@@ -8,8 +9,26 @@ import com.global.api.utils.IRawRequestBuilder;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.Iterator;
+
+import static java.lang.Math.*;
+
 public class TerminalUtilities {
     private static final String version = "1.35";
+    private static final int BASE_BIT = 1024;
+    private static final int MAX_WIDTH = 370;
+    private static final int MAX_HEIGHT = 13930;
+    private static final int MAX_BYTES = 3145728;
 
     public static String getElementString(Object... elements) {
         StringBuilder sb = new StringBuilder();
@@ -76,19 +95,16 @@ public class TerminalUtilities {
 
         JsonDoc data = new JsonDoc();
         JsonDoc json = new JsonDoc();
-
         data.set("EcrId", "13");
         data.set("requestId", requestId);
         data.set("command", messageType.toString());
-
         if (body != null) {
             data.set("data", body);
         }
-
         json.set("data", data);
         json.set("message", "MSG");
 
-        return buildMessage(json);
+        return compileMessage(json.toString());
     }
 
     public static <T extends IRawRequestBuilder> DeviceMessage buildMessage(T doc) {
@@ -165,6 +181,51 @@ public class TerminalUtilities {
         return lrc;
     }
 
+    public static String buildBitMapUPAContent(String filePath) throws BuilderException {
+        if (filePath == null || filePath.isEmpty() || !new File(filePath).exists()) {
+            throw new BuilderException(String.format("The image %s does not exist.", filePath));
+        }
+        try {
+            BufferedImage image = ImageIO.read(new File(filePath));
+            String format = filePath.substring(filePath.lastIndexOf('.') + 1);
+
+            // Verificar si hay un ImageWriter disponible para el formato
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(format);
+            if (!writers.hasNext()) {
+                throw new BuilderException(String.format("Unsupported image format: %s", format));
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, format, baos);
+            byte[] imageBytes = baos.toByteArray();
+            validateImage(image, imageBytes, null);
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            return String.format("data:%s;base64,%s", format, base64Image);
+        } catch (IOException e) {
+            throw new BuilderException(String.format("Error processing image %s: %s", filePath, e.getMessage()));
+        }
+    }
+
+    private static void validateImage(BufferedImage image, byte[] imageBytes, UpaMessageId transType) throws BuilderException {
+        if (imageBytes.length > MAX_BYTES) {
+            double maxMb = ((double) MAX_BYTES) / (BASE_BIT * BASE_BIT);
+            throw new BuilderException(String.format("The image must not exceed %.2fMB.", maxMb));
+        }
+        if (image.getWidth() > MAX_WIDTH) {
+            throw new BuilderException(String.format("The maximum width must be %dpx.", MAX_WIDTH));
+        }
+        if (image.getHeight() > MAX_HEIGHT) {
+            throw new BuilderException(String.format("The maximum height must be %dpx.", MAX_HEIGHT));
+        }
+
+        int multiplier = transType == UpaMessageId.InjectUDDataFile ? 3 : 1;
+        int maxBytesForValidation = MAX_BYTES * multiplier;
+
+        if (imageBytes.length > maxBytesForValidation) {
+            double maxMb = round((double) maxBytesForValidation / BASE_BIT) / BASE_BIT;
+            throw new BuilderException(String.format("The image must not exceed %.2fMB.", maxMb));
+        }
+    }
     public static boolean checkLRC(String message) {
         byte[] messageBuffer = message.getBytes();
 
@@ -194,4 +255,32 @@ public class TerminalUtilities {
 
         return buffer.toArray();
     }
+
+    public static String buildStringFromFile(String filePath) throws IOException, BuilderException {
+        if (filePath == null || filePath.isEmpty() || !Files.exists(Paths.get(filePath))) {
+            throw new BuilderException("The file " + filePath + " does not exist.");
+        }
+        Path path = Paths.get(filePath);
+        return new String(Files.readAllBytes(path));
+    }
+
+    public static String buildToBase64Content(String filePath, UpaMessageId transType, boolean imageValidation) throws BuilderException {
+        if (filePath == null || filePath.isEmpty() || !new File(filePath).exists()) {
+            throw new BuilderException(String.format("The file %s does not exist.", filePath));
+        }
+
+        try {
+            byte[] fileBytes = Files.readAllBytes(new File(filePath).toPath());
+
+            if (imageValidation) {
+                BufferedImage image = ImageIO.read(new File(filePath));
+                validateImage(image, fileBytes, transType);
+            }
+
+            return Base64.getEncoder().encodeToString(fileBytes);
+        } catch (IOException e) {
+            throw new BuilderException("Error reading the file.");
+        }
+    }
+
 }

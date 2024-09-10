@@ -1,5 +1,7 @@
 package com.global.api.terminals.pax;
 
+import com.global.api.entities.PrintData;
+import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
@@ -15,12 +17,13 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.*;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
-import com.global.api.terminals.upa.subgroups.PrintData;
 import org.apache.commons.codec.binary.Base64;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 
 class PaxInterface implements IDeviceInterface {
     private PaxController controller;
@@ -414,6 +417,11 @@ class PaxInterface implements IDeviceInterface {
     }
 
     @Override
+    public IBatchReportResponse findBatches() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public ISAFResponse safDelete(String referenceNumber, String transactionNumber) throws ApiException {
         throw new UnsupportedTransactionException();
     }
@@ -428,7 +436,88 @@ class PaxInterface implements IDeviceInterface {
     }
 
     @Override
+    public IDeviceResponse getAppInfo() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse clearDataLake() throws ApiException {
+        throw new UnsupportedTransactionException();
+   }
+
+    @Override
+    public IDeviceResponse returnToIdle() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceScreen loadUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceScreen removeUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse Scan(ScanData scanData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse Print(PrintData printData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse setTimeZone(TimeZone timezone) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getParams(ArrayList<String> parameters) throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
     public void sendReady() throws ApiException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse setDebugLevel(DebugLevel[] debugLevels, Enum logToConsole) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+
+    }
+
+    @Override
+    public IDeviceResponse getDebugLevel() throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getDebugInfo(Enum logFile) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse broadcastConfiguration(boolean enable) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse executeUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse injectUDDataFile(UDData udData) throws UnsupportedTransactionException {
+        throw new UnsupportedTransactionException();
+    }
+
+    @Override
+    public IDeviceResponse getConfigContents(TerminalConfigType configType) throws UnsupportedTransactionException {
         throw new UnsupportedTransactionException();
     }
 
@@ -437,7 +526,6 @@ class PaxInterface implements IDeviceInterface {
         throw new UnsupportedTransactionException();
     }
 
-    @Override
     public IDeviceResponse printReceipt(PrintData data) throws ApiException {
         throw new UnsupportedTransactionException();
     }

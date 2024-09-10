@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
@@ -22,11 +23,12 @@ public class UpaEbtTests {
     public UpaEbtTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.0.101");
+        config.setIpAddress("192.168.8.181");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
+        config.setRequestLogger(new RequestConsoleLogger());
 
         device = DeviceService.create(config);
         assertNotNull(device);

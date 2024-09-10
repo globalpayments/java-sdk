@@ -13,6 +13,8 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.terminals.upa.Entities.Enums.UpaCardTypeFilter;
 import lombok.Getter;
+import lombok.Setter;
+import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -39,6 +41,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private String taxExemptId;
     private Integer tokenRequest;
     private String tokenValue;
+    @Getter @Setter
+    private boolean processCPC;
     private String transactionId;
     @Getter
     private boolean allowPartialAuth;
@@ -59,6 +63,9 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private BigDecimal preAuthAmount;
     @Getter
     private EnumSet<UpaCardTypeFilter> cardTypeFilter;
+    @Getter
+    private String cardBrandTransId;
+    private DateTime shippingDate;
 
     public Address getAddress() {
         return address;
@@ -282,7 +289,10 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.preAuthAmount = preAuthAmount;
         return this;
     }
-
+    public TerminalAuthBuilder withProcessCPC(boolean processCPC) {
+        this.processCPC = processCPC;
+        return this;
+    }
 
     public TerminalAuthBuilder withPaymentMethodType(PaymentMethodType value) {
         this.paymentMethodType = value;
@@ -326,5 +336,15 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .check("currency").isEqualTo(CurrencyType.CashBenefits);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund).check("allowDuplicates").isEqualTo(false);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates").isEqualTo(false);
+    }
+
+    public TerminalAuthBuilder withCardBrandTransId(String value) {
+        cardBrandTransId = value;
+        return this;
+    }
+
+    public TerminalAuthBuilder withShippingDate(DateTime value) {
+        shippingDate = value;
+        return this;
     }
 }
