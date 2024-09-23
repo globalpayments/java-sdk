@@ -1349,6 +1349,30 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             summary.setBillingAddress(address);
         }
 
+        // 3DSecure
+        if (root.has("Secure3D")) {
+            ThreeDSecure secure3D = new ThreeDSecure();
+            secure3D.setAuthenticationValue(root.getString("AuthenticationValue"));
+            secure3D.setDirectoryServerTransactionId(root.getString("DirectoryServerTxnId"));
+            secure3D.setEci(root.getString("ECI"));
+            
+            try {
+                // account for default value of Version One. No value will be returned from Portico in this case.
+                String versionString = root.getString("Version");
+                if (versionString == null || versionString.isEmpty()) {
+                    // Default to version One.
+                    secure3D.setVersion(Secure3dVersion.ONE);
+                } else {
+                    int versionNumber = Integer.parseInt(root.getString("Version"));
+                    secure3D.setVersion(getSecure3dVersion(versionNumber));
+                }
+            } catch (ApiException e) {
+                throw new RuntimeException("No Matching Version Found");
+            }
+
+            summary.setThreeDSecure(secure3D);
+        }
+
         return summary;
     }
 
@@ -1401,6 +1425,19 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             case ANY:
             default:
                 return 1;
+        }
+    }
+
+    public static Secure3dVersion getSecure3dVersion(int versionNumber) {
+        switch (versionNumber) {
+            case 0:
+                return Secure3dVersion.NONE;
+            case 1:
+                return Secure3dVersion.ONE;
+            case 2:
+                return Secure3dVersion.TWO;
+            default:
+                return Secure3dVersion.ANY;
         }
     }
 

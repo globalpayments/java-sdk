@@ -121,6 +121,7 @@ public class TransactionSummary {
     private String taxType;
     private String tranNo;
     private String terminalId;
+    private ThreeDSecure threeDSecure;
     private String tokenPanLastFour;
     private DateTime transactionDate;
     private DateTime transactionLocalDate;

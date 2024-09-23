@@ -126,7 +126,7 @@ public class PorticoEcommerceTests {
     }
 
     @Test
-    public void ecomWithSecure3D_03() throws ApiException {
+    public void ecomWithSecure3D_03DefaultVersionOne() throws ApiException {
         ThreeDSecure ecom = new ThreeDSecure();
         ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
         ecom.setXid("0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst");
@@ -139,8 +139,18 @@ public class PorticoEcommerceTests {
                 .withInvoiceNumber("1234567890")
                 .withAllowDuplicates(true)
                 .execute();
+
+        TransactionSummary txnDetails = ReportingService.transactionDetail(response.getTransactionId()).execute();
+
         assertNotNull(response);
+        assertNotNull(txnDetails);
+
         assertEquals("00", response.getResponseCode());
+
+        assertNotNull(txnDetails.getThreeDSecure().getAuthenticationValue());
+        assertNotNull(txnDetails.getThreeDSecure().getDirectoryServerTransactionId());
+        assertNotNull(txnDetails.getThreeDSecure().getEci());
+        assertNotNull(txnDetails.getThreeDSecure().getVersion());
     }
 
     @Test
@@ -160,6 +170,33 @@ public class PorticoEcommerceTests {
         TransactionSummary txnSummary = ReportingService.transactionDetail(response.getTransactionId()).execute();
         assertNotNull(txnSummary);
         assertEquals(customerEmail, txnSummary.getEmail() );
+    }
+
+    @Test
+    public void ecomWithSecure3D_03Version2() throws ApiException {
+        ThreeDSecure ecom = new ThreeDSecure();
+        ecom.setCavv("XXXXf98AAajXbDRg3HSUMAACAAA=");
+        ecom.setXid("0l35fwh1sys3ojzyxelu4ddhmnu5zfke5vst");
+        ecom.setEci("5");
+        ecom.setVersion(Secure3dVersion.TWO);
+        card.setThreeDSecure(ecom);
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withInvoiceNumber("1234567890")
+                .withAllowDuplicates(true)
+                .execute();
+
+        TransactionSummary txnDetails = ReportingService.transactionDetail(response.getTransactionId()).execute();
+
+        assertNotNull(response);
+        assertNotNull(txnDetails);
+
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(txnDetails.getThreeDSecure().getAuthenticationValue());
+        assertNotNull(txnDetails.getThreeDSecure().getDirectoryServerTransactionId());
+        assertNotNull(txnDetails.getThreeDSecure().getEci());
+        assertNotNull(txnDetails.getThreeDSecure().getVersion());
     }
     @Test
     public void testCardHolderEmailIfCustomerDataIsNull() throws ApiException {

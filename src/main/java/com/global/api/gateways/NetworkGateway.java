@@ -45,6 +45,7 @@ public class NetworkGateway {
     private IGatewayEventHandler gatewayEventHandler;
     @Getter @Setter
     private Target target;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
@@ -130,19 +131,16 @@ public class NetworkGateway {
                     try {
                         SSLSocketFactory factory = new SSLSocketFactoryEx();
                         client = (SSLSocket) factory.createSocket();
-                        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
                         Callable<Integer> task = () -> {
                             client.connect(new InetSocketAddress(endpoint, port), 5000);
                             return 0;
                         };
-                        try {
-                            Future<Integer> future = executorService.submit(task);
-                            future.get(5000, TimeUnit.MILLISECONDS);
-                            client.startHandshake();
-                            raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
-                        } catch (TimeoutException | InterruptedException | ExecutionException e) {
-                            throw new GatewayTimeoutException();
-                        }
+                        Future<Integer> future = executorService.submit(task);
+                        future.get(5000, TimeUnit.MILLISECONDS);
+                        client.startHandshake();
+                        raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
+                    } catch (TimeoutException | InterruptedException e) {
+                        throw new GatewayTimeoutException();
                     }
                     catch(Exception exc) {
                         raiseGatewayEvent(new SslHandshakeEvent(connectorName, exc));
@@ -282,7 +280,6 @@ public class NetworkGateway {
     }
 
     private int awaitResponse(InputStream in, byte[] buffer) throws GatewayTimeoutException {
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         Callable<Integer> task = () -> {
         long t = System.currentTimeMillis();
 
@@ -320,14 +317,25 @@ public class NetworkGateway {
 
         throw new GatewayTimeoutException();
         };
-        int result;
+        Future<Integer> future = executorService.submit(task);
         try {
-            Future<Integer> future = executorService.submit(task);
-            result = future.get( timeout, TimeUnit.MILLISECONDS);
+            return future.get( timeout, TimeUnit.MILLISECONDS);
         }  catch (TimeoutException | InterruptedException | ExecutionException e) {
             throw new GatewayTimeoutException();
+        } finally {
+            shutdownExecutorService();
         }
-        return result;
+    }
+
+    public void shutdownExecutorService(){
+        executorService.shutdown();
+        try {
+            if(!executorService.awaitTermination(1,TimeUnit.SECONDS)){
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
     }
 
     private void raiseGatewayEvent(final IGatewayEvent event) {

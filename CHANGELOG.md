@@ -1,5 +1,10 @@
 # Changelog
-## Latest Version - V14.0.0 (09/10/2024)
+## Latest Version - V14.0.1 (09/20/2024)
+### Bug Fixes
+- [VAPS/NTS] - Fixed Java Memory leak issue by implementing cache thread pool to optimize memory utilization(10331).
+- [Portico] - Added mapping for 3DSecure (Version 2) to Transaction Summary Report.
+
+## V14.0.0 (09/10/2024)
 ### Enhacements
 - [UPA] Add new UPA commands
 ### Bug Fixes
