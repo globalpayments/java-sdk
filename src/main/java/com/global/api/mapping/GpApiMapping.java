@@ -17,7 +17,6 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
@@ -140,6 +139,7 @@ public class GpApiMapping {
                 transaction.setMultiCapture(getIsMultiCapture(json));
                 transaction.setFingerPrint(paymentMethod.getString("fingerprint"));
                 transaction.setFingerPrintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
+                transaction.setPaymentMethodResult(paymentMethod.getString("result"));
 
                 if (paymentMethod.has("bnpl")) {
                     mapBNPLResponse(json, transaction);

@@ -117,6 +117,7 @@ public class Transaction {
     private Address address;
     private  Customer customerData;
     private TokenData tokenData;
+    @Getter @Setter private String paymentMethodResult;
 
     public Customer getCustomerData() {
         return customerData;
