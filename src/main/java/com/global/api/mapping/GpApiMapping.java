@@ -17,7 +17,6 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
@@ -503,6 +502,11 @@ public class GpApiMapping {
                 summary.setBNPLResponse(bnplResponse);
                 summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BNPL));
             }
+        }
+
+        if(doc.has("fees"))  {
+            JsonDoc fees = doc.get("fees");
+            summary.setFeeTotalAmount(fees.getDecimal("total_amount_decimal"));
         }
 
         summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);

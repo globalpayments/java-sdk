@@ -152,4 +152,6 @@ public class TransactionSummary {
     private String safReferenceNumber;
     private String cardAcquisition;
     private String transactionTime;
+
+    private BigDecimal feeTotalAmount;  //The value contain precision lower than the lowest denomination of the currency. For example 1298.67 USD means $12.98 and 0.67 of a penny.
 }
