@@ -45,7 +45,7 @@ public class NetworkGateway {
     private IGatewayEventHandler gatewayEventHandler;
     @Getter @Setter
     private Target target;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private ExecutorService executorService = null;
 
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
@@ -106,6 +106,7 @@ public class NetworkGateway {
 
     // establish connection
     private void connect(String endpoint, Integer port) throws GatewayComsException {
+        executorService = Executors.newCachedThreadPool();
         currentHost = endpoint.equals(primaryEndpoint) ? Host.Primary : Host.Secondary;
 
         // create the connection event
@@ -255,6 +256,7 @@ public class NetworkGateway {
             throw exc;
         } finally {
             disconnect();
+            shutdownExecutorService();
             // remove the force timeout
             raiseGatewayEvent(new DisconnectEvent(connectorName));
 
@@ -322,8 +324,6 @@ public class NetworkGateway {
             return future.get( timeout, TimeUnit.MILLISECONDS);
         }  catch (TimeoutException | InterruptedException | ExecutionException e) {
             throw new GatewayTimeoutException();
-        } finally {
-            shutdownExecutorService();
         }
     }
 

@@ -365,8 +365,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 threeDS.put("exempt_status", secureEcom.getExemptStatus() != null ? secureEcom.getExemptStatus().getValue() : null);
                 threeDS.put("eci", secureEcom.getEci());
                 threeDS.put("message_version", secureEcom.getMessageVersion());
-                threeDS.put("server_trans_reference", secureEcom.getServerTransactionId());
-                threeDS.put("ds_trans_reference", secureEcom.getDirectoryServerTransactionId());
+                threeDS.put("server_trans_ref", secureEcom.getServerTransactionId());
+                threeDS.put("ds_trans_ref", secureEcom.getDirectoryServerTransactionId());
                 threeDS.put("value", secureEcom.getAuthenticationValue());
 
                 JsonDoc authentication =
