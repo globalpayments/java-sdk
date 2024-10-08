@@ -5,6 +5,7 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.ResubmitBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.BatchSummary;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -14,10 +15,11 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.payroll.PayrollEncoder;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.network.abstractions.IBatchProvider;
+import com.global.api.network.elements.DE127_ForwardingData;
 import com.global.api.network.entities.NTSUserData;
 import com.global.api.network.entities.NtsObjectParam;
 import com.global.api.network.entities.nts.*;
-import com.global.api.network.enums.NTSCardTypes;
+import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.GatewayConnectorConfig;
 import com.global.api.terminals.DeviceMessage;
@@ -49,6 +51,7 @@ public class NtsConnector extends GatewayConnectorConfig {
     BatchSummary summary = new BatchSummary();
 
     StringBuilder maskedRequest = new StringBuilder("");
+    private Integer UTILITY_TYPE =2;
 
     @Override
     public int getTimeout() {
@@ -136,6 +139,21 @@ public class NtsConnector extends GatewayConnectorConfig {
                             userData.put(UserDataTag.ReceiptText, responseParser.readRemaining());
                         }
                     }
+                } else if (cardTypes.equals(NTSCardTypes.VoyagerFleet)) {
+                    if (transactionType.equals(TransactionType.Auth)) {
+                        NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
+                        String hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
+                        if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
+                            StringParser responseParser = new StringParser(hostResponseArea);
+                            String amount = responseParser.readString(7);
+                            userData.put(UserDataTag.ApprovedAmount, amount);
+                            reference.setOriginalApprovedAmount(StringUtils.getStringToAmount(amount, 2));
+                            if (builder.getTagData() != null) {
+                                userData.put(UserDataTag.EmvDataLength, responseParser.readString(4));
+                                userData.put(UserDataTag.EvmData, responseParser.readRemaining());
+                            }
+                        }
+                    }
                 }
             }
             authBuilder = (AuthorizationBuilder) builder;
@@ -208,9 +226,68 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setUnitNumber(unitNumber);
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
+        ntsObjectParam.setTimeout(getTimeout());
         ntsObjectParam.setTimeout(builder.getPdlTimeout());
-        //Preparing the request
 
+        //set 3des data
+        if(paymentMethod instanceof IEncryptable) {
+            EncryptionData encryptionData = ((IEncryptable) paymentMethod).getEncryptionData();
+            if (encryptionData != null) {
+                DE127_ForwardingData de127ForwardingData = createEncryptedData(paymentMethod,builder.getTransactionType());
+                if (de127ForwardingData != null) {
+                    ntsObjectParam.setEncryptedData(String.valueOf(de127ForwardingData.prepareNTS3DTagData()));
+                }
+            }
+        }
+
+        // Tokenization Implementation Operation Type - Tokenize
+        if(builder.getTransactionType().equals(TransactionType.UtilityMessage)){
+            NtsUtilityMessageRequest utilityMessageRequest = builder.getNtsUtilityMessageRequest();
+
+            ICardData iCardData = utilityMessageRequest.getICardData();
+            DebitTrackData debitTrackData = utilityMessageRequest.getDebitTrackData();
+            GiftCard giftCardData = utilityMessageRequest.getGiftCard();
+
+            Integer utilityType = utilityMessageRequest.getUtilityType();
+            String pan =null;
+            String expiry =null;
+            if(utilityType.equals(UTILITY_TYPE)) {
+                if (iCardData != null) {
+                    pan = iCardData.getTokenizationData();
+                    expiry = iCardData.getShortExpiry();
+                    generateTokenTagData(ntsObjectParam, pan, expiry);
+                } else if (debitTrackData != null) {
+                    pan = debitTrackData.getTokenizationData();
+                    expiry = debitTrackData.getExpiry();
+                    generateTokenTagData(ntsObjectParam, pan, expiry);
+                } else if (giftCardData != null) {
+                    pan = giftCardData.getTokenizationData();
+                    expiry = giftCardData.getExpiry();
+                    generateTokenTagData(ntsObjectParam, pan, expiry);
+                }
+            }
+        }
+
+        // tokenization implementation Operation type - DeTokenize
+         if (paymentMethod instanceof ITokenizable && paymentMethod instanceof ICardData) {
+            ICardData cardData = (ICardData) paymentMethod;
+            String token = cardData.getTokenizationData();
+            String expiry =  cardData.getShortExpiry();
+            generateTokenTagData(ntsObjectParam,token,expiry);
+        } else if (paymentMethod instanceof Debit && paymentMethod instanceof ITrackData) {
+             DebitTrackData debitTrackData = (DebitTrackData)paymentMethod;
+             String token = debitTrackData.getTokenizationData();
+             String expiry = debitTrackData.getExpiry();
+             generateTokenTagData(ntsObjectParam,token,expiry);
+         }
+         else if (paymentMethod instanceof GiftCard) {
+             GiftCard giftCard = (GiftCard)paymentMethod;
+             String token = giftCard.getTokenizationData();
+             String expiry = giftCard.getExpiry();
+             generateTokenTagData(ntsObjectParam,token,expiry);
+         }
+
+        //Preparing the request
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
         Transaction transaction = sendRequest(request, builder);
         transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
@@ -220,6 +297,14 @@ public class NtsConnector extends GatewayConnectorConfig {
         }
         return transaction;
 
+    }
+    public void generateTokenTagData(NtsObjectParam ntsObjectParam, String token, String expiry){
+        if (token != null) {
+            Nts3DESAndTokenizationData data = getTokenizationData( expiry, token);
+            if(data != null){
+                ntsObjectParam.setTokenData(String.valueOf(data));
+            }
+        }
     }
 
     private String generateDataCollectRequest(NtsObjectParam ntsObjectParam, Transaction transaction) throws ApiException {
@@ -681,6 +766,42 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setTimeout(getTimeout());
         ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
 
+        TransactionReference reference = (TransactionReference)paymentMethod;
+        IPaymentMethod originalPaymentMethod = reference.getOriginalPaymentMethod();
+        //set 3des data
+        if(originalPaymentMethod instanceof IEncryptable) {
+            EncryptionData encryptionData = ((IEncryptable) originalPaymentMethod).getEncryptionData();
+            if (encryptionData != null) {
+                DE127_ForwardingData de127ForwardingData = createEncryptedData(originalPaymentMethod,builder.getTransactionType());
+                if(de127ForwardingData != null){
+                    ntsObjectParam.setEncryptedData(String.valueOf(de127ForwardingData.prepareNTS3DTagData()));
+                }
+            }
+        }
+        // tokenization implementation Operation type - DeTokenize
+        if (originalPaymentMethod instanceof ICardData) {
+            ICardData cardData = (ICardData) originalPaymentMethod;
+            String token = cardData.getTokenizationData();
+            String expiry =  cardData.getShortExpiry();
+
+            generateTokenTagData(ntsObjectParam,token,expiry);
+
+        } else if (originalPaymentMethod instanceof Debit && originalPaymentMethod instanceof ITrackData) {
+            DebitTrackData debitTrackData = (DebitTrackData)originalPaymentMethod;
+            String token = debitTrackData.getTokenizationData();
+            String expiry = debitTrackData.getExpiry();
+
+            generateTokenTagData(ntsObjectParam,token,expiry);
+
+        }
+        else if (originalPaymentMethod instanceof GiftCard) {
+            GiftCard giftCard = (GiftCard)originalPaymentMethod;
+            String token = giftCard.getTokenizationData();
+            String expiry = giftCard.getExpiry();
+
+            generateTokenTagData(ntsObjectParam,token,expiry);
+
+        }
 
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
         Transaction transaction = sendRequest(request, builder);
@@ -1059,6 +1180,134 @@ public class NtsConnector extends GatewayConnectorConfig {
             default: StringUtils.setMaskRequest(new StringBuilder(originalReq));
         }
         return maskedRequest;
+    }
+
+    public DE127_ForwardingData createEncryptedData(IPaymentMethod paymentMethod, TransactionType transactionType){
+        DE127_ForwardingData forwardingData = null;
+
+        if(paymentMethod instanceof IEncryptable) {
+            EncryptionData encryptionData = ((IEncryptable)paymentMethod).getEncryptionData();
+            String encryptedPan = null;
+            if(transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.Void) || transactionType.equals(TransactionType.Reversal)) {
+                encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
+            }
+            if(encryptionData != null) {
+                forwardingData = new DE127_ForwardingData();
+                EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
+                if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
+                    encryptionData.setKtb(encryptedPan);
+                }
+                EncryptedFieldMatrix encryptedField=getEncryptionField(paymentMethod,encryptionType,transactionType);
+                if(encryptionType.equals(EncryptionType.TDES)){
+                    forwardingData.setServiceType(acceptorConfig.getServiceType());
+                    forwardingData.setOperationType(acceptorConfig.getOperationType());
+                }
+                forwardingData.setEncryptedField(encryptedField);
+                forwardingData.addEncryptionData(encryptionType, encryptionData);
+            }
+        }
+        return forwardingData;
+    }
+
+    private EncryptedFieldMatrix getEncryptionField(IPaymentMethod paymentMethod, EncryptionType encryptionType, TransactionType transactionType){
+
+        if(encryptionType.equals(EncryptionType.TDES)){
+            if(paymentMethod instanceof ICardData){
+                return EncryptedFieldMatrix.Pan;
+            }
+            else if(paymentMethod instanceof GiftCard){
+               GiftCard gift = (GiftCard) paymentMethod;
+               TrackNumber trackNumber = gift.getTrackNumber();
+               if(trackNumber!= null && trackNumber.equals(TrackNumber.TrackOne)){
+                   return EncryptedFieldMatrix.Track1;
+               }
+               else if(trackNumber!= null && trackNumber.equals(TrackNumber.TrackTwo)){
+                   return EncryptedFieldMatrix.Track2;
+               }
+               else{
+                   return EncryptedFieldMatrix.Pan;
+               }
+            }
+            else if(paymentMethod instanceof ITrackData && ((!transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)))) {
+                TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
+                if (trackType == TrackNumber.TrackOne)
+                    return EncryptedFieldMatrix.Track1;
+                else if (trackType == TrackNumber.TrackTwo)
+                    return EncryptedFieldMatrix.Track2;
+            }else{
+                return EncryptedFieldMatrix.Pan;
+            }
+        }else if (encryptionType.equals(EncryptionType.TEP1)||encryptionType.equals(EncryptionType.TEP2)){
+            if(paymentMethod instanceof ICardData) {
+                String encryptedCvn = ((ICardData) paymentMethod).getCvn();
+                if(!StringUtils.isNullOrEmpty(encryptedCvn))
+                    return EncryptedFieldMatrix.CustomerDataCSV;
+                else
+                    return EncryptedFieldMatrix.CustomerData;
+            }
+        }
+        return EncryptedFieldMatrix.CustomerData;
+    }
+
+    private Nts3DESAndTokenizationData getTokenizationData(String expiry, String token) {
+
+        Nts3DESAndTokenizationData data = new Nts3DESAndTokenizationData();
+        //Token data AccountNumber/Token
+        data.setTokenOrAcctNum(token);
+
+        // Card Expiry
+        if(expiry != null) {
+            data.setExpiryDate(formatExpiry(expiry));
+        }
+
+        //Merchant Id
+        String merchantId = acceptorConfig.getMerchantId();
+        if(merchantId != null) {
+            data.setMerchantId(merchantId);
+        }
+
+        //Service Type #G GP API
+        ServiceType serviceType = acceptorConfig.getServiceType();
+        if (serviceType != null) {
+            data.setServiceType(serviceType);
+        }
+
+        //tokenization type  #Global tokenization-1   #Merchant tokenization-2
+        TokenizationType tokenizationType = acceptorConfig.getTokenizationType();
+        if (tokenizationType != null) {
+            data.setTokenizationType(tokenizationType);
+        }
+
+        //Tokenization Operation type
+        TokenizationOperationType tokenOperationType = acceptorConfig.getTokenizationOperationType();
+        setTokenizationOperationType(data, tokenOperationType);
+        data.addNtsTokenizationData(tokenizationType);
+
+        return data;
+    }
+    private static void setTokenizationOperationType(Nts3DESAndTokenizationData data, TokenizationOperationType tokenOperationType) {
+        if (tokenOperationType != null) {
+            data.setTokenizationOperationType(tokenOperationType);
+            switch (tokenOperationType) {
+                case Tokenize:
+                case UpdateToken: {
+                    data.setTokenizedFieldMatrix(TokenizedFieldMatrix.AccountNumber);
+                }
+                break;
+                case DeTokenize: {
+                    data.setTokenizedFieldMatrix(TokenizedFieldMatrix.TokenizedData);
+                }
+                break;
+                default:
+                    data.setTokenizedFieldMatrix(TokenizedFieldMatrix.TokenizedData);
+            }
+        }
+    }
+    private String formatExpiry(String shortExpiry) {
+        if(shortExpiry != null) {
+            return shortExpiry.substring(2, 4).concat(shortExpiry.substring(0, 2));
+        }
+        return shortExpiry;
     }
 
 }

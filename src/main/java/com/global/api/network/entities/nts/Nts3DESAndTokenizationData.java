@@ -1,6 +1,5 @@
-package com.global.api.network.elements;
+package com.global.api.network.entities.nts;
 
-import com.global.api.entities.EncryptionData;
 import com.global.api.network.abstractions.IDataElement;
 import com.global.api.network.enums.*;
 import com.global.api.utils.StringParser;
@@ -10,14 +9,12 @@ import lombok.Setter;
 
 import java.util.LinkedList;
 
-public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> {
-    private LinkedList<DE127_ForwardingDataEntry> entries;
-
+public class Nts3DESAndTokenizationData implements IDataElement<Nts3DESAndTokenizationData> {
+    private LinkedList<Nts3DESAndTokenizationDataEntry> entries;
     private int getEntryCount() {
         return entries.size();
     }
-
-    public DE127_ForwardingData() {
+    public Nts3DESAndTokenizationData() {
         entries = new LinkedList<>();
     }
     @Setter @Getter
@@ -39,45 +36,9 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
     @Getter @Setter
     private String expiryDate;
 
-    public void addEncryptionData(EncryptionType encryptionType,EncryptionData encryptionData) {
-        addEncryptionData(encryptionType,encryptionData,null);
-    }
-
-    public void addEncryptionData(EncryptionType encryptionType,EncryptionData encryptionData,String cvn) {
-
-        DE127_ForwardingDataEntry entry = new DE127_ForwardingDataEntry();
-        String ktb=encryptionData.getKtb();
-        switch(encryptionType) {
-            case TEP1:
-            case TEP2:
-                entry.setTag(DE127_ForwardingDataTag.E3_EncryptedData) ;
-                entry.setRecordId(RecordId.E3_Encryption);
-                entry.setRecordType("001");
-                entry.setKeyBlockDataType("v");
-                entry.setEncryptedFieldMatrix(encryptedField.getValue());
-                entry.setTepType(encryptionType);
-                entry.setCardSecurityCode(cvn!=null?cvn:StringUtils.padRight("",7,' '));
-                entry.setEtbBlock(ktb);
-                break;
-            case TDES:
-                String ksn=encryptionData.getKsn();
-                entry.setTag(DE127_ForwardingDataTag.Encryption_3DES) ;
-                entry.setRecordId(RecordId.Encryption_3DE);
-                entry.setRecordType("001");
-                entry.setServiceType(serviceType);
-                entry.setTepType(encryptionType);
-                entry.setEncryptedFieldMatrix(encryptedField.getValue());
-                entry.setOperationType(operationType);
-                entry.setKsn(StringUtils.padRight(ksn,24,' '));
-                entry.setEncryptedData(ktb);
-        }
-
-        add(entry);
-    }
-
-    public void addTokenizationData(TokenizationType tokenizationType) {
-        DE127_ForwardingDataEntry entry = new DE127_ForwardingDataEntry();
-        entry.setTag(DE127_ForwardingDataTag.Tokenization_TOK) ;
+    public void addNtsTokenizationData(TokenizationType tokenizationType) {
+        Nts3DESAndTokenizationDataEntry entry = new Nts3DESAndTokenizationDataEntry();
+        entry.setTag(Nts3DESAndTokenizationDataTag.Tokenization_TOK) ;
         entry.setRecordId(RecordId.Tokenization_TD);
         entry.setRecordType("001");
         entry.setServiceType(serviceType);
@@ -87,22 +48,20 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
         entry.setMerchantId(StringUtils.padRight(merchantId,32,' '));
         entry.setTokenOrAcctNum(StringUtils.padRight(tokenOrAcctNum,128,' '));
         entry.setExpiryDate(expiryDate!=null?expiryDate:StringUtils.padRight("",4,' '));
-
         add(entry);
-
     }
 
-    public void add(DE127_ForwardingDataEntry entry) {
+    public void add(Nts3DESAndTokenizationDataEntry entry) {
+        entries.clear();
         entries.add(entry);
     }
 
-    public DE127_ForwardingData fromByteArray(byte[] buffer) {
+    public Nts3DESAndTokenizationData fromByteArray(byte[] buffer) {
         StringParser sp = new StringParser(buffer);
-
         int entryCount = sp.readInt(2);
         for(int i = 0; i < entryCount; i++) {
-            DE127_ForwardingDataEntry entry = new DE127_ForwardingDataEntry();
-            entry.setTag(sp.readStringConstant(3, DE127_ForwardingDataTag.class));
+            Nts3DESAndTokenizationDataEntry entry = new Nts3DESAndTokenizationDataEntry();
+            entry.setTag(sp.readStringConstant(3, Nts3DESAndTokenizationDataTag.class));
 
             String data = sp.readLLLVAR();
             switch (entry.getTag()) {
@@ -153,19 +112,14 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                     entry.setEntryData(data);
                 }
             }
-
             entries.add(entry);
         }
-
         return this;
     }
 
     public byte[] toByteArray() {
-        String rvalue = StringUtils.padLeft(getEntryCount(), 2, '0');
-
-        for(DE127_ForwardingDataEntry entry: entries) {
-            rvalue = rvalue.concat(entry.getTag().getValue());
-
+        String rvalue = "";
+        for(Nts3DESAndTokenizationDataEntry entry: entries) {
             switch (entry.getTag()) {
                 case E3_EncryptedData: {
                     String entryData = entry.getRecordId().getValue()
@@ -177,7 +131,6 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                             .concat(entry.getCardSecurityCode())
                             .concat(StringUtils.padRight("", 45, ' '))
                             .concat(StringUtils.toLLLVar(entry.getEtbBlock()));
-
                     rvalue = rvalue.concat(StringUtils.toLLLVar(entryData));
                 } break;
                 case Encryption_3DES: {
@@ -208,60 +161,18 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                             .concat(StringUtils.padRight(entry.getTokenOrAcctNum(),128,' '))
                             .concat(entry.getExpiryDate()!=null?entry.getExpiryDate():StringUtils.padRight("", 4, ' '))
                             .concat(StringUtils.padRight("", 36, ' '));
-                    rvalue = rvalue.concat(StringUtils.toLLLVar(entryData));
+                    rvalue = rvalue.concat(entryData);
                 }break;
                 default: {
                     rvalue = rvalue.concat(StringUtils.toLLLVar(entry.getEntryData()));
                 }
             }
         }
-
         return rvalue.getBytes();
-    }
-
-    public String prepareNTS3DTagData() {
-        String rvalue = "";
-        for(DE127_ForwardingDataEntry entry: entries) {
-
-            switch (entry.getTag()) {
-                case E3_EncryptedData: {
-                    String entryData = entry.getRecordId().getValue()
-                            .concat(entry.getRecordType())
-                            .concat(entry.getKeyBlockDataType())
-                            .concat(entry.getEncryptedFieldMatrix())
-                            .concat(entry.getTepType().getValue())
-                            .concat(StringUtils.padRight("", 18, ' '))
-                            .concat(entry.getCardSecurityCode())
-                            .concat(StringUtils.padRight("", 45, ' '))
-                            .concat(StringUtils.toLLLVar(entry.getEtbBlock()));
-
-                    rvalue = rvalue.concat(StringUtils.toLLLVar(entryData));
-                } break;
-                case Encryption_3DES: {
-                    String entryData = entry.getRecordId().getValue()
-                            .concat(entry.getRecordType())
-                            .concat(entry.getServiceType().getValue())
-                            .concat(entry.getTepType().getValue())
-                            .concat(entry.getEncryptedFieldMatrix())
-                            .concat(entry.getOperationType().getValue())
-                            .concat(entry.getServiceCodeOrigin()!=null?entry.getServiceCodeOrigin():StringUtils.padRight("", 2, ' '))
-                            .concat(entry.getServiceResponseCode()!=null?entry.getServiceResponseCode():StringUtils.padRight("", 3, ' '))
-                            .concat(StringUtils.padRight("", 2, ' '))
-                            .concat(StringUtils.padRight(entry.getKsn(), 24, ' '))
-                            .concat(StringUtils.padRight("", 8, ' '))
-                            .concat(StringUtils.padRight(entry.getEncryptedData(),256,' '))
-                            .concat(StringUtils.padRight("", 32, ' '));
-                    rvalue = rvalue.concat(entryData);
-                } break;
-                default: {
-                    rvalue = rvalue.concat(StringUtils.toLLLVar(entry.getEntryData()));
-                }
-            }
-        }
-        return rvalue;
     }
 
     public String toString() {
         return new String(toByteArray());
     }
+
 }

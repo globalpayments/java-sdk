@@ -17,6 +17,14 @@ public class ReportingService {
         return new TransactionReportBuilder<>(ReportType.FindTransactions, TransactionSummaryList.class);
     }
 
+    public static TransactionReportBuilder<TransactionSummaryList> batchDetail() {
+        return new TransactionReportBuilder<>(ReportType.BatchDetail, TransactionSummaryList.class);
+    }
+
+    public static TransactionReportBuilder<TransactionSummaryList> openAuths() {
+        return new TransactionReportBuilder<>(ReportType.OpenAuths, TransactionSummaryList.class);
+    }
+
     public static TransactionReportBuilder<TransactionSummary> findTransactions(String transactionId) {
         return new TransactionReportBuilder<>(ReportType.FindTransactions, TransactionSummary.class)
                 .withTransactionId(transactionId);

@@ -93,9 +93,10 @@ public class NtsEMVPDLTest {
         config.setBinTerminalId(" ");
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
-        config.setTerminalId("21");
-        config.setUnitNumber("00001234567");
-        config.setSoftwareVersion("21");
+        config.setTerminalId("08");
+        config.setUnitNumber("11122233341");
+        config.setSoftwareVersion("01");
+        config.setCompanyId("044");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
 
@@ -687,4 +688,41 @@ public class NtsEMVPDLTest {
     }
 
 
-}
+
+    @Test
+    public void test60_Emv_PDL_TableID_50_ContactlessCardData() throws ApiException {
+        //1. Request EMV PDL
+        NtsPDLData ntsPDLData = new NtsPDLData();
+        ntsPDLData.setParameterType(PDLParameterType.RequestEMVPDL);
+        ntsPDLData.setParameterVersion("001");
+        ntsPDLData.setTableId(PDLTableID.Table50);
+        ntsPDLData.setBlockSequenceNumber("01");
+        ntsPDLData.setEmvPDLCardType(EmvPDLCardType.Mastercard);
+
+        Transaction response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                .withPDLData(ntsPDLData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        NtsEMVPDLResponse pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+
+        //2. Confirm EMV PDL Data
+        if (pdlResponse.getEmvPdlEndOfTableFlag().equals(PDLEndOfTableFlag.EndOfTable)) {
+            ntsPDLData.setBlockSequenceNumber("00");
+            ntsPDLData.setParameterType(PDLParameterType.EMVPDLConfirm);
+
+            response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                    .withPDLData(ntsPDLData)
+                    .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+            pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+            assertEquals(PDLEndOfTableFlag.DownloadConfirmation, pdlResponse.getEmvPdlEndOfTableFlag());
+        }
+    }
+
+
+    }

@@ -1,5 +1,15 @@
 # Changelog
-## Latest Version - V14.0.2 (10/01/2024)
+## Latest Version - V14.1.0 (10/08/2024)
+### Enhacements
+- [NTS] - NTS Spec Update 22.1 includes General Information, EMV PDL, Bankcard Tag data, Pin debit Authorization, MasterCard Fleet, Voyager Fleet, Wex Fleet user data format, 3DES & Tokenization.
+- [Portico] - Added ClientTxnId to ReportBatchDetail and ReportOpenAuths reports
+- [Portico] - Reporting refactoring
+- [Portico] - BatchId, StartDateUTC and EndDateUTC added to ReportBuilder
+- 
+### Bug Fixes
+- [Portico] - Portico Activity Report mapping, plus correction of some failing tests
+
+## V14.0.2 (10/01/2024)
 ### Bug Fixes
 - [VAPS/NTS] - Fixed issue 10332 - Debit transactions were failing due to Communication exceptions.
 - [GP-API] - Update 3DS Object fields in transaction endpoint ("server_trans_ref" and "ds_trans_ref").

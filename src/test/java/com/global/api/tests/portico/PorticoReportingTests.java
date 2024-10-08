@@ -16,8 +16,9 @@ import com.global.api.utils.DateUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -32,9 +33,19 @@ public class PorticoReportingTests {
 
     @Test
     public void ReportActivity() throws ApiException {
-        List<TransactionSummary> summary = ReportingService.activity()
-                .withStartDate(DateUtils.addDays(new Date(), -7))
-                .withEndDate(DateUtils.addDays(new Date(), -1))
+
+        DateFormat formatterUTC = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        formatterUTC.setTimeZone(TimeZone.getTimeZone("UTC")); // UTC timezone
+
+        Date startDate = DateUtils.addDays(new Date(), -7);
+        Date endDate = DateUtils.addDays(new Date(), -1);
+
+        String startDateUTC = formatterUTC.format(startDate);
+        String endDateUTC = formatterUTC.format(endDate);
+
+        ActivityReport summary = ReportingService.activity()
+                .withStartDateUTC(startDateUTC)
+                .withEndDateUTC(endDateUTC)
                 .execute();
         assertNotNull(summary);
     }
@@ -59,17 +70,41 @@ public class PorticoReportingTests {
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2-c.heartlandportico.com");
 
+        DateFormat formatterUTC = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        formatterUTC.setTimeZone(TimeZone.getTimeZone("UTC")); // UTC timezone
+
+        Date startDate = DateUtils.addDays(new Date(), -7);
+        Date endDate = DateUtils.addDays(new Date(), -1);
+
+        String startDateUTC = formatterUTC.format(startDate);
+        String endDateUTC = formatterUTC.format(endDate);
+
         ServicesContainer.configureService(config);
         List<TransactionSummary> summary = ReportingService.activity()
-                .withStartDate(DateUtils.addDays(new Date(), -7))
-                .withEndDate(DateUtils.addDays(new Date(), -1))
+                .withEndDateUTC(startDateUTC)
+                .withEndDateUTC(endDateUTC)
                 .execute();
         assertNotNull(summary);
     }
 
     @Test
     public void ReportTransactionDetailWithTransactionId() throws ApiException {
-        TransactionSummary response = ReportingService.transactionDetail("1038021900")
+        //setting up the card to use
+        CreditCardData card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+
+        //Do authorize
+        Transaction authResponse = card.authorize(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(authResponse);
+
+        TransactionSummary response = ReportingService.transactionDetail(authResponse.getTransactionId())
                 .execute();
         assertNotNull(response);
     }
@@ -195,10 +230,9 @@ public class PorticoReportingTests {
         address.setState("IN");
         address.setPostalCode("47130");
 
-        Transaction trResponse = creditCardData.charge(new BigDecimal(10))
+        Transaction trResponse = creditCardData.charge(new BigDecimal(22))
                 .withCurrency("usd")
                 .withAddress(address)
-                .withRequestMultiUseToken(true)
                 .execute();
 
         assertNotNull(trResponse);
@@ -214,5 +248,97 @@ public class PorticoReportingTests {
         assertNotEquals("", response.getCardHolderFirstName());
         assertNotEquals("", response.getCardHolderLastName());
         assertNotEquals("", response.getResponseDate());
+    }
+
+    @Test
+    public void ReportBatchDetail_WithClientTxnId_and_BatchID() throws ApiException {
+
+        //setting up the card to use
+        CreditCardData card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+
+        //generate random clienttxnid
+        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        String clientTxnID = Integer.toString(randomID);
+
+        //Do authorize
+        Transaction response = card.authorize(new BigDecimal(15))
+                .withCurrency("USD")
+                .withClientTransactionId(clientTxnID)
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //Do a capture to add to batch
+        Transaction capture = response.capture(new BigDecimal(16)).withGratuity(new BigDecimal(2)).execute();
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+
+        assertNotNull(capture);
+        assertEquals("00", capture.getResponseCode());
+
+        //Get ReportBatchDetail
+        TransactionSummaryList reportResponse = ReportingService.batchDetail()
+                .withBatchId(992515)
+                .execute();
+
+        //Get reportItem that matches the clienttxnid
+        TransactionSummary reportItem = reportResponse.stream()
+                                                .filter((summary)-> summary.getClientTransactionId().equals(clientTxnID))
+                                                .findFirst()
+                                                .orElse(null);
+
+        assertNotNull(reportItem);
+        assertEquals(reportItem.getClientTransactionId(), clientTxnID);
+
+    }
+
+    @Test
+    public void ReportOpenAuths_WithClientTxnId() throws ApiException {
+
+        //setting up the card to use
+        CreditCardData card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+
+        //generate random clienttxnid
+        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        String clientTxnID = Integer.toString(randomID);
+
+        //Do authorize
+        Transaction response = card.authorize(new BigDecimal(15))
+                .withCurrency("USD")
+                .withClientTransactionId(clientTxnID)
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //Get ReportOpenAuths
+        TransactionSummaryList reportResponse = ReportingService.openAuths()
+                .withDeviceId("5577503")
+                .execute();
+
+        assertNotNull(reportResponse);
+
+
+        //Get reportItem that matches the clienttxnid
+        TransactionSummary reportItem = reportResponse.stream()
+                .filter((summary)-> summary.getClientTransactionId().equals(clientTxnID))
+                .findFirst()
+                .orElse(null);
+
+        assertNotNull(reportItem);
+        assertEquals(reportItem.getClientTransactionId(), clientTxnID);
+
+        assertNotNull(response);
     }
 }

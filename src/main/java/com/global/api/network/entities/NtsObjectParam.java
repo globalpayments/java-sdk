@@ -35,4 +35,6 @@ public class NtsObjectParam {
     private String companyId;
     private int timeout;
     private String hostResponseCode = "";
+    private String encryptedData;
+    private String tokenData;
 }

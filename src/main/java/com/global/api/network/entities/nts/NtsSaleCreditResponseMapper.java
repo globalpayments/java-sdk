@@ -33,7 +33,12 @@ public class NtsSaleCreditResponseMapper implements INtsResponseMessage {
         NtsUtils.log("Card Type", ntsCreditResponse.getCardType());
 
         ntsCreditResponse.setAccountNumber(sp.readString(19));
-        NtsUtils.log("Account Number", StringUtils.maskAccountNumber(ntsCreditResponse.getAccountNumber()));
+        if (ntsCreditResponse.getAccountNumber() != null) {
+            String acctNumber = ntsCreditResponse.getAccountNumber().trim();
+            if (!acctNumber.isEmpty()) {
+                NtsUtils.log("Account Number", StringUtils.maskAccountNumber(ntsCreditResponse.getAccountNumber()));
+            }
+        }
 
         ntsCreditResponse.setApprovalCode(sp.readString(6));
         NtsUtils.log("Approval Code", ntsCreditResponse.getApprovalCode());

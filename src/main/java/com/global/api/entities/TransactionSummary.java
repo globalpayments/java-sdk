@@ -152,4 +152,9 @@ public class TransactionSummary {
     private String safReferenceNumber;
     private String cardAcquisition;
     private String transactionTime;
+
+    public String getClientTransactionId() {
+        return clientTransactionId;
+    }
+
 }

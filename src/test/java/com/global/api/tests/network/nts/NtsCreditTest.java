@@ -1,10 +1,7 @@
 package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.Address;
-import com.global.api.entities.EcommerceInfo;
-import com.global.api.entities.StoredCredential;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
@@ -80,6 +77,7 @@ public class NtsCreditTest {
         acceptorConfig.setCapableVoid(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setMobileDevice(true);
+        acceptorConfig.setPosActionCode(true);
 
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
@@ -123,6 +121,7 @@ public class NtsCreditTest {
         config.setTerminalId("21");
         config.setUnitNumber("00001234567");
         config.setSoftwareVersion("01");
+        config.setCompanyId("044");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
         config.setGatewayEventHandler(new IGatewayEventHandler() {
@@ -135,7 +134,6 @@ public class NtsCreditTest {
         // with merchant type
         config.setMerchantType("5542");
         ServicesContainer.configureService(config);
-//        ServicesContainer.configureService(config, "ICR");
 
         // VISA
 //        card = TestCards.VisaManual(true, true);
@@ -422,11 +420,12 @@ public class NtsCreditTest {
                 .withEmvMaxPinEntry("20")
                 .withNtsProductData(productData)
                 .withEcommerceInfo(new EcommerceInfo())
+                .withEcommerceData1("123345")
+                .withEcommerceData2("88787")
                 .withStoredCredential(new StoredCredential())
                 .withPosSequenceNumber("001")  //only for the emv transaction.
                 .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
                 .withOfflineAuthCode("")
-                .withNtsTag16(tag)
                 .execute();
         assertNotNull(response);
 
@@ -447,7 +446,6 @@ public class NtsCreditTest {
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
                 .withNtsTag16(tag)
-//                .withCvn("123")
                 .execute();
 
         assertNotNull(response);
@@ -1380,9 +1378,9 @@ public class NtsCreditTest {
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
-                .withNtsTag16(tag)
+//                .withNtsTag16(tag)
                 .withCvn("123")
-                .execute("ICR");
+                .execute();
         assertNotNull(authResponse);
 
         // check response
@@ -1405,7 +1403,7 @@ public class NtsCreditTest {
                 .withCurrency("USD")
                 .withNtsProductData(productData)
                 .withNtsRequestMessageHeader(header)
-                .withNtsTag16(tag)
+//                .withNtsTag16(tag)
                 .execute("ICR");
         assertNotNull(dataCollectResponse);
 
@@ -1559,6 +1557,22 @@ public class NtsCreditTest {
         assertNotNull(response);
 
         // check response
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Amex_auth_001_ecommerce_without_track_amount_expansion() throws ApiException {
+        card = TestCards.AmexManual(true, true);
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withEcommerceInfo(new EcommerceInfo())
+                .withGoodsSold("1000")
+                .execute();
+
+        assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
@@ -1832,7 +1846,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
-                .withNtsTag16(tag)
                 .withCvn("123")
                 .execute();
 
@@ -1847,7 +1860,6 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withCurrency("USD")
                 .withNtsProductData(getProductDataForNonFleetBankCards(track))
                 .withNtsRequestMessageHeader(header)
-                .withNtsTag16(tag)
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -2825,9 +2837,9 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         Transaction dataCollectResponse = response.capture(new BigDecimal(90.90))
                 .withCurrency("USD")
                 .withNtsProductData(productData)
-                .withNtsTag16(tag)
+//                .withNtsTag16(tag)
                 .withNtsRequestMessageHeader(header)
-                //.withCustomerCode("123456789")
+                .withCustomerCode("123456789")
                 .execute();
         assertNotNull(dataCollectResponse);
 
@@ -3564,4 +3576,142 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", response.getResponseCode());
         assertNotNull(response.getNtsResponse().getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getTimeoutValue());
     }
+
+    @Test
+    public void test_002_Visa_MSR_sales_with_track2() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        track = NtsTestCards.VisaTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Amex_auth_msr_003_track2_amount_expansion() throws ApiException {
+        track = NtsTestCards.AmexTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withGoodsSold("1000")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Amex_sales_msr_003_with_track2() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.AmexTrack2(EntryMethod.Swipe);
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withGoodsSold("1000")
+                .withNtsProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_059_e_commerce_sale_without_track() throws ApiException {
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = getProductDataForNonFleetBankCards(card);
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0001")
+                .withEmvMaxPinEntry("20")
+                .withNtsProductData(productData)
+                .withEcommerceInfo(new EcommerceInfo())
+                .withStoredCredential(new StoredCredential())
+                .withPosSequenceNumber("001")  //only for the emv transaction.
+                .withModifier(TransactionModifier.Offline) // Only for the offline approved transactions.
+                .withOfflineAuthCode("")
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
+
+    //Ecommerce void Expansion
+    @Test // Not working
+    @Ignore
+    public void test_credit_authorization_void_e_commerce_mc() throws ApiException {
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        NtsTag16 tag = new NtsTag16();
+        tag.setPumpNumber(1);
+        tag.setWorkstationId(1);
+        tag.setServiceCode(ServiceCode.Self);
+        tag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withEcommerceInfo(new EcommerceInfo())
+                .withUniqueDeviceId("0102")
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+
+    }
+
+    @Test
+    public void test16v221_ICR_Auth_Approval_AmexCard_Credit() throws ApiException {
+
+        track = NtsTestCards.MasterCardTrack1(EntryMethod.Swipe);
+
+        Transaction authResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withCvn("123")
+                .execute();
+
+        // check response
+        assertEquals("00", authResponse.getResponseCode());
+
+        // Data-Collect request preparation.
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = authResponse.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
 }

@@ -21,6 +21,9 @@ public class NtsDebitRequest implements INtsRequestMessage {
     private TransactionCode transactionCode;
     private BigDecimal cashBackAmount;
     private NTSEntryMethod entryMethod;
+    private static final String EMPTY_STRING = " ";
+    private static final String GROUP_SEPARATOR = "\u001D" ;
+
 
     StringBuilder maskedRequest = new StringBuilder("");
     @Getter
@@ -126,14 +129,14 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 this.setTrackData(trackData.getValue());
                 StringUtils.setTrackData(trackData.getValue());
             } else {
-                ITrackData trackData = (ITrackData) paymentMethod;  //Without Track Data
+                ITrackData trackData = (ITrackData) paymentMethod; //Without Track Data
                 String accNumber = trackData.getPan();
                 String expYear = trackData.getExpiry().substring(0, 2);
                 String expMonth = trackData.getExpiry().substring(2, 4);
 
                 String shortExpiry = expMonth + expYear;
                 String panWithExpiry = accNumber + "=" + shortExpiry;
-                String maskedPanWithExpiry = StringUtils.maskAccountNumber(accNumber) + "*" + StringUtils.padLeft("",4,'*');
+                String maskedPanWithExpiry = StringUtils.maskAccountNumber(accNumber) + "*" + StringUtils.padLeft("", 4,'*');
                 this.setAccNo(accNumber);
                 StringUtils.setAccNo(accNumber);
                 this.setExpDate(shortExpiry);
@@ -259,11 +262,10 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("EMV DATA", userData);
             request.addRange(StringUtils.padRight(userData, userData.length(), ' '), userData.length());
         }
-         if (isReadyLink) {
+        if (isReadyLink) {
             NtsUtils.log("Added FILLER", "");
             request.addRange("                    ", 20);
-         }
-
+        }
         maskedRequest.append(request.getMessageRequest());
         if (this.getTrackData() != null) {
             int startIndex = maskedRequest.indexOf(this.getTrackData());

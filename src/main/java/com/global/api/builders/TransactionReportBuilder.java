@@ -13,6 +13,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     private String deviceId;
     private Date endDate;
     private Date startDate;
+    @Getter @Setter private String startDateUTC;
+    @Getter @Setter private String endDateUTC;
     private String transactionId;
     @Getter @Setter private int page = 1;       // 1: DEFAULT PARAM VALUE
     @Getter @Setter private int pageSize = 5;   // 5: DEFAULT PARAM VALUE
@@ -25,6 +27,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     @Getter @Setter private ActionSortProperty actionOrderBy;
     @Getter @Setter private PayByLinkSortProperty payByLinkOrderBy;
     @Getter @Setter private String payByLinkId;
+    @Getter @Setter private int batchId;
+
 
     private SearchCriteriaBuilder<TResult> _searchBuilder;
 
@@ -83,8 +87,20 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         getSearchBuilder().setStartDate(value);
         return this;
     }
+    public TransactionReportBuilder<TResult> withStartDateUTC(String value) {
+        setStartDateUTC(value);
+        return this;
+    }
+    public TransactionReportBuilder<TResult> withEndDateUTC(String value) {
+        setEndDateUTC(value);
+        return this;
+    }
     public TransactionReportBuilder<TResult> withTimeZoneConversion(TimeZoneConversion value) {
         setTimeZoneConversion(value);
+        return this;
+    }
+    public TransactionReportBuilder<TResult> withBatchId(int value){
+        setBatchId(value);
         return this;
     }
     public TransactionReportBuilder<TResult> withTransactionId(String value) {
@@ -172,5 +188,6 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.validations.of(ReportType.DocumentDisputeDetail)
                 .check("_searchBuilder").propertyOf(String.class, "disputeDocumentId").isNotNull();
         this.validations.of(ReportType.PayByLinkDetail).check("payByLinkId").isNotNull();
+        this.validations.of(ReportType.BatchDetail).check("batchId").isNotNull();
     }
 }

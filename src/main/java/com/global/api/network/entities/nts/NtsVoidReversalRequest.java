@@ -1,6 +1,7 @@
 package com.global.api.network.entities.nts;
 
 import com.global.api.builders.TransactionBuilder;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.enums.NTSEntryMethod;
 import com.global.api.entities.enums.TrackNumber;
@@ -9,10 +10,7 @@ import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.entities.NtsObjectParam;
 import com.global.api.network.enums.NTSCardTypes;
-import com.global.api.paymentMethods.ICardData;
-import com.global.api.paymentMethods.IPaymentMethod;
-import com.global.api.paymentMethods.ITrackData;
-import com.global.api.paymentMethods.TransactionReference;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
@@ -28,6 +26,10 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
     String expDate;
     @Getter @Setter
     String trackData;
+    EncryptionData encryptionData = null;
+    private static final String GROUP_SEPARATOR = "\u001D" ;
+    private static final String EMPTY_STRING = " ";
+    private String tokenizationData;
 
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
@@ -79,32 +81,59 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         IPaymentMethod originalPaymentMethod = transactionReference.getOriginalPaymentMethod();
         if (originalPaymentMethod instanceof ICardData) {
             ICardData cardData = (ICardData) originalPaymentMethod;
-            String accNumber = cardData.getNumber();
-            request.addRange(StringUtils.padLeft(accNumber, 19, ' '), 19);
-            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
-            this.setAccNo(cardData.getNumber());
-            StringUtils.setAccNo(cardData.getNumber());
+            if(cardData instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
+                encryptionData = ((IEncryptable) cardData).getEncryptionData();
+            }
+            String tokenizationData = cardData.getTokenizationData();
+            if(encryptionData != null){
+                request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                request.addRange(StringUtils.padRight(cardData.getShortExpiry(),4,' '),4);
 
-            request.addRange(cardData.getShortExpiry(), 4);
-            NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
-            this.setExpDate(cardData.getShortExpiry());
-            StringUtils.setExpDate(cardData.getShortExpiry());
+            } else if(tokenizationData != null){
+                request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                request.addRange(StringUtils.padRight(EMPTY_STRING,4,' '),4);
+            }
+            else {
+                String accNumber = cardData.getNumber();
+                request.addRange(StringUtils.padLeft(accNumber, 19, ' '), 19);
+                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+                this.setAccNo(cardData.getNumber());
+                StringUtils.setAccNo(cardData.getNumber());
+
+                request.addRange(cardData.getShortExpiry(), 4);
+                NtsUtils.log("Expiration Date", StringUtils.padRight("", 4, '*'));
+                this.setExpDate(cardData.getShortExpiry());
+                StringUtils.setExpDate(cardData.getShortExpiry());
+            }
 
         } else if (originalPaymentMethod instanceof ITrackData) {
             ITrackData trackData = (ITrackData) originalPaymentMethod;
-            String accNumber = trackData.getPan();
 
-            request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
-            this.setAccNo(accNumber);
-            StringUtils.setAccNo(accNumber);
+            if (trackData instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
+                encryptionData = ((IEncryptable) trackData).getEncryptionData();
+            }
+            if (encryptionData != null) {
+                String expiryDate  = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());;
+                request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                request.addRange(StringUtils.padRight( expiryDate, 4, ' '),4);
 
-            String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
+            } else if ( tokenizationData != null) {
+                request.addRange(StringUtils.padRight(EMPTY_STRING,4,' '),4);
 
-            request.addRange(expiryDate, 4);
-            NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
-            this.setExpDate(expiryDate);
-            StringUtils.setExpDate(expiryDate);
+            } else {
+                String accNumber = trackData.getPan();
+                request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
+                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+                this.setAccNo(accNumber);
+                StringUtils.setAccNo(accNumber);
+
+                String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
+
+                request.addRange(expiryDate, 4);
+                NtsUtils.log("Expiration Date", StringUtils.padRight("", 4, '*'));
+                this.setExpDate(expiryDate);
+                StringUtils.setExpDate(expiryDate);
+            }
         }
 
 
@@ -205,6 +234,22 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             request.addRange(StringUtils.padLeft(userData, userData.length(), ' '), userData.length());
             NtsUtils.log("User data", userData);
         }
+
+        // 3DE tag data
+        if(ntsObjectParam.getEncryptedData() != null) {
+
+            request.addRange(GROUP_SEPARATOR,1);
+            request.addRange(  ntsObjectParam.getEncryptedData(), 336);
+            NtsUtils.log("3DE Tag DATA", ntsObjectParam.getEncryptedData());
+
+        } else if(ntsObjectParam.getTokenData() != null){
+
+            request.addRange(GROUP_SEPARATOR,1);
+            request.addRange(ntsObjectParam.getTokenData(),216);
+            NtsUtils.log("Token Tag DATA", ntsObjectParam.getTokenData());
+
+        }
+
         maskedRequest.append(request.getMessageRequest());
         if (this.getTrackData() != null) {
             int startIndex = maskedRequest.indexOf(this.getTrackData());

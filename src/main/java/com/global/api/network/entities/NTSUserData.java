@@ -787,6 +787,7 @@ public class NTSUserData {
         BigDecimal discount = new BigDecimal(0);
         int serviceLevel = 0;
         String referenceMessageCode = null;
+        IPaymentMethod paymentMethod =  builder.getPaymentMethod();
         FleetData fleetData = builder.getFleetData();
         if (productData != null) {
             serviceLevel = mapServiceByCardType(productData.getServiceLevel(), cardType);
@@ -807,7 +808,6 @@ public class NTSUserData {
             case StoredValueOrHeartlandGiftCard:
             case MastercardPurchasing:
             case PinDebit:
-                IPaymentMethod paymentMethod =  builder.getPaymentMethod();
                 if(paymentMethod instanceof TransactionReference){
                     paymentMethod = ((TransactionReference)paymentMethod).getOriginalPaymentMethod();
                 }
@@ -1011,6 +1011,19 @@ public class NTSUserData {
                     sb.append(fleetData != null ?
                             StringUtils.padLeft(fleetData.getDriverId(), 6, '0'):
                             StringUtils.padLeft(0, 6, '0'));
+                    if (builder.getTagData() != null) {
+                        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+                        if (paymentMethod instanceof IPinProtected) {
+                            String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
+                            if (!StringUtils.isNullOrEmpty(pinBlock)) {
+                                sb.append(pinBlock.substring(0,16));
+                                sb.append(StringUtils.padLeft(pinBlock.substring(16), 20, ' '));
+                            }
+                        }
+                        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+                        sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
+                        sb.append(builder.getTagData());
+                    }
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
                         builder.getTransactionType().equals(TransactionType.Capture)) {
@@ -1027,6 +1040,12 @@ public class NTSUserData {
                         sb.append(getVoyagerFleetFuelList(builder));
                         sb.append(getRollUpData(builder, cardType, productData, 4));
                         sb.append(StringUtils.toNumeric(salesTax, 6));
+                        if (builder.getTagData() != null) {
+                            sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+                            sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+                            sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
+                            sb.append(builder.getTagData());
+                        }
                     } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
 
                         sb.append(builder.getInvoiceNumber());

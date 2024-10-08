@@ -536,7 +536,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
             // reversal & Capture
-            if (type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
+            if (type.equals(TransactionType.Reversal)  || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // client transaction id
                 et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
 
@@ -569,7 +569,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         }
                     }
                 }
+            }
 
+            if (type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // tag data
                 if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                     Element tagData = et.subElement(root, "TagData");
@@ -577,7 +579,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
             }
 
-            // Level II Data and Level_III Data
+                // Level II Data and Level_III Data
             if (builder.getCommercialData() != null) {
                 CommercialData cd = builder.getCommercialData();
                 if (modifier.equals(TransactionModifier.LevelII) || modifier.equals(TransactionModifier.Level_III)) {
@@ -675,14 +677,17 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
     public <TResult> TResult processReport(ReportBuilder<TResult> builder, Class<TResult> clazz) throws ApiException {
         ElementTree et = new ElementTree();
-
+        ReportType reportType = builder.getReportType();
         Element transaction = et.element(mapReportType(builder.getReportType()));
-        et.subElement(transaction, "TzConversion", builder.getTimeZoneConversion());
         if (builder instanceof TransactionReportBuilder) {
             TransactionReportBuilder<TResult> trb = (TransactionReportBuilder<TResult>) builder;
-            if (trb.getTransactionId() != null) {
-                et.subElement(transaction, "TxnId", trb.getTransactionId());
-            } else {
+
+            if(reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.TransactionDetail)){
+                if (trb.getTransactionId() != null) {
+                    et.subElement(transaction, "TxnId", trb.getTransactionId());
+                }
+            }
+            if(reportType.equals(ReportType.FindTransactions)){
                 Element criteria = et.subElement(transaction, "Criteria");
                 et.subElement(criteria, "StartUtcDT", trb.getStartDate() == null ? null : formatDate(trb.getStartDate()));
                 et.subElement(criteria, "EndUtcDT", trb.getEndDate() == null ? null : formatDate(trb.getEndDate()));
@@ -720,8 +725,30 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(criteria, "AltPaymentStatus", trb.getSearchBuilder().getAltPaymentStatus());
                 et.subElement(criteria, "SAFIndicator", trb.getSearchBuilder().getSafIndicator());
             }
-        }
 
+            if(reportType.equals(ReportType.Activity)){
+                if (trb.getStartDate() != null) {
+                    et.subElement(transaction, "RptStartUtcDT", formatDate(trb.getStartDate()));
+                }
+                if (trb.getEndDate() != null) {
+                    et.subElement(transaction, "RptEndUtcDT", formatDate(trb.getEndDate()));
+                }
+            }
+            if(reportType.equals(ReportType.Activity)||reportType.equals(ReportType.OpenAuths) ||reportType.equals(ReportType.BatchDetail)){
+                if (trb.getDeviceId() != null) {
+                    et.subElement(transaction, "DeviceId", trb.getDeviceId());
+                }
+                if (trb.getTimeZoneConversion() != null) {
+                    et.subElement(transaction, "TzConversion", trb.getTimeZoneConversion());
+                }
+            }
+
+            if(reportType.equals(ReportType.BatchDetail)){
+                if (trb.getBatchId() != 0) {
+                    et.subElement(transaction, "BatchId", trb.getBatchId());
+                }
+            }
+        }
         String response = doTransaction(buildEnvelope(et, transaction));
         return mapReportResponse(response, builder.getReportType(), clazz);
     }
@@ -1015,16 +1042,15 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         try {
             TResult rvalue = clazz.newInstance();
-            if (reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail)) {
+            if (reportType.equals(ReportType.FindTransactions) || reportType.equals(ReportType.Activity) || reportType.equals(ReportType.TransactionDetail) || reportType.equals(ReportType.BatchDetail) || reportType.equals(ReportType.OpenAuths)) {
                 // Activity
                 if (rvalue instanceof ActivityReport) {
-                    ActivityReport list = new ActivityReport();
                     for (Element detail : doc.getAll("Details")) {
-                        list.add(hydrateTransactionSummary(detail));
+                        ((ArrayList<TransactionSummary>) rvalue).add(hydrateTransactionSummary(detail));
                     }
-                } else if (rvalue instanceof TransactionSummaryList) {
-                    for (Element transaction : doc.getAll("Transactions")) {
-                        ((TransactionSummaryList) rvalue).add(hydrateTransactionSummary(transaction));
+                } else if(rvalue instanceof TransactionSummaryList){
+                    for (Element detail : doc.getAll("Details")) {
+                        ((TransactionSummaryList) rvalue).add(hydrateTransactionSummary(detail));
                     }
                 } else {
                     rvalue = (TResult) hydrateTransactionSummary(doc);
@@ -1220,8 +1246,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             case TransactionDetail:
                 return "ReportTxnDetail";
             case Activity:
+                return "ReportActivity";
             case FindTransactions:
                 return "FindTransactions";
+            case BatchDetail:
+                return "ReportBatchDetail";
+            case OpenAuths:
+                return "ReportOpenAuths";
             default:
                 throw new UnsupportedTransactionException();
         }
@@ -1262,6 +1293,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         summary.setCustomerFirstName(root.getString("CustomerFirstname"));
         summary.setCustomerId(root.getString("CustomerID"));
         summary.setCustomerLastName(root.getString("CustomerLastname"));
+        summary.setClientTransactionId(root.getString("ClientTxnId"));
         summary.setDebtRepaymentIndicator(root.getString("DebtRepaymentIndicator") == "1");
         summary.setDescription(root.getString("Description"));
         summary.setEmvChipCondition(root.getString("EMVChipCondition"));

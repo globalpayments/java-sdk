@@ -2,6 +2,7 @@ package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.EncryptionData;
+import com.global.api.entities.enums.MobilePaymentMethodType;
 import com.global.api.entities.enums.InquiryType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionType;
@@ -17,6 +18,12 @@ public abstract class Debit implements IPaymentMethod, IPrePayable, IRefundable,
     protected String cardType = "Unknown";
     @Getter @Setter
     private String tokenizedData;
+    @Getter @Setter
+    private MobilePaymentMethodType mobileType;
+    @Getter @Setter
+    protected String token;
+    @Getter @Setter
+    private String encryptedPan;
 
     public String getCardType() {
         return cardType;

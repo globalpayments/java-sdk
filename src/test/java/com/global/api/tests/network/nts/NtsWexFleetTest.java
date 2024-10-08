@@ -130,9 +130,10 @@ public class NtsWexFleetTest {
         config.setBinTerminalId(" ");
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
-        config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
-        config.setSoftwareVersion("21");
+        config.setTerminalId("08");
+        config.setUnitNumber("11122233341");
+        config.setSoftwareVersion("01");
+        config.setCompanyId("044");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
 
@@ -1944,7 +1945,55 @@ public class NtsWexFleetTest {
         assertEquals("00", voidResponse.getResponseCode());
     }
 
+    @Test // Working
+    public void test61_WexFleet_Auth_Emv() throws ApiException {
 
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,new BigDecimal(0),new BigDecimal(0),new BigDecimal(10));
+        productData.setSalesTax(new BigDecimal(9));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withTagData(emvTagData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test // Working
+    public void test62_WexFleet_Auth_NonEmv() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(0), new BigDecimal(0), new BigDecimal(10));
+        productData.setSalesTax(new BigDecimal(9));
+
+        fleetData.setServicePrompt("03");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
     // nonfuel product with correct product amount
     @Test
     public void test_WexFleet_issue_10233_product_roll_up_product6_double_digit01_prodAmt() throws ApiException {
@@ -2178,7 +2227,6 @@ public class NtsWexFleetTest {
     //Negative scenario
     @Test
     public void test_WexFleet_With_Sale_Emv_Fallback_10301_Neg1() throws ApiException {
-
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = new CreditTrackData();

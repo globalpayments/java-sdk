@@ -15,8 +15,9 @@ public class DebitTrackData extends Debit implements ITrackData {
     private TrackNumber trackNumber;
     private String trackData;
     private String value;
-    @Getter
-    @Setter
+    @Getter @Setter
+    private String token;
+    @Getter @Setter
     private String tokenizationData;
 
 

@@ -92,27 +92,25 @@ public class NtsDebitTest {
         config.setBinTerminalId(" ");
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
-        config.setTerminalId("21");
-        config.setUnitNumber("00001234567");
-        config.setSoftwareVersion("21");
+        config.setTerminalId("08");
+        config.setUnitNumber("11122233341");
+        config.setSoftwareVersion("01");
+        config.setCompanyId("044");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
 
         ServicesContainer.configureService(config);
-
-//        config.setMerchantType("5541");
         ServicesContainer.configureService(config, "ICR");
 
 
-        ServicesContainer.configureService(config, "timeout");
         EncryptionData encryptionData = new EncryptionData();
         encryptionData.setKsn("A504010005E0003C    ");
 
         // debit card
         track = new DebitTrackData();
-        track.setValue(";720002123456789=2512120000000000001?9  ");
+        track.setValue(";720002123456787=2512120000000000001?   ");
          track.setEntryMethod(EntryMethod.Swipe); //For EMV test cases
-        track.setPinBlock("78FBB9DAEEB14E5A504010005E0003C     ");
+        track.setPinBlock("78FBB9DAEEB14E5AA504010005E0003C     ");
         track.setCardType("PinDebit");
     }
 
@@ -1515,5 +1513,48 @@ public class NtsDebitTest {
                         .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                         .execute());
         assertNotNull(incorrectFormat2);
+    }
+
+
+    @Test//working
+    public void test04_PinDebit_purchase_with_cashBack_04() throws ApiException {
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashBack(new BigDecimal(3))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test//working
+    public void test05_PinDebit_purchase_with_cashBack_04_With_DataCollect_02() throws ApiException {
+        TransactionReference transactionReference = new TransactionReference();
+        transactionReference.setOriginalTransactionCode(TransactionCode.PurchaseCashBack);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("21")
+                .withApprovalCode("778899")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0129")
+                .withTransactionTime("115829")
+                .build();
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
     }
 }

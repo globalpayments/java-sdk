@@ -1,10 +1,8 @@
 package com.global.api.network.entities.nts;
 
 import com.global.api.builders.TransactionBuilder;
-import com.global.api.entities.enums.DebitAuthorizerCode;
-import com.global.api.entities.enums.NTSEntryMethod;
-import com.global.api.entities.enums.NtsMessageCode;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.EncryptionData;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.BatchFullException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.entities.NtsObjectParam;
@@ -24,6 +22,11 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
     String expDate;
     @Getter @Setter
     String trackData;
+    ICardData iCardData;
+    EncryptionData encryptionData = null;
+    private static final String GROUP_SEPARATOR = "\u001D";
+    private static final String EMPTY_STRING = " ";
+
     @Override
     public MessageWriter setNtsRequestMessage(NtsObjectParam ntsObjectParam) throws BatchFullException {
         TransactionBuilder builder = ntsObjectParam.getNtsBuilder();
@@ -81,38 +84,69 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
 
             if (paymentMethod instanceof ICardData) {
                 ICardData cardData = (ICardData) paymentMethod;
-                String accNumber = cardData.getNumber();
-                this.setAccNo(accNumber);
-                StringUtils.setAccNo(accNumber);
-                request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
-                request.addRange(cardData.getShortExpiry(), 4);
-                this.setExpDate(cardData.getShortExpiry());
-                StringUtils.setExpDate(cardData.getShortExpiry());
-                NtsUtils.log("Expiration Date", StringUtils.padRight("",4,'*'));
+                if(cardData instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
+                    encryptionData = ((IEncryptable) cardData).getEncryptionData();
+                }
+                String tokenizationData = cardData.getTokenizationData();
+                if(encryptionData != null){
+                    request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                    request.addRange(StringUtils.padRight(cardData.getShortExpiry(),4,' '),4);
+
+                } else if(tokenizationData != null){
+                    request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                    request.addRange(StringUtils.padRight(EMPTY_STRING,4,' '),4);
+                }
+
+                else {
+                    String accNumber = cardData.getNumber();
+                    this.setAccNo(accNumber);
+                    StringUtils.setAccNo(accNumber);
+                    request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
+                    NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+                    request.addRange(cardData.getShortExpiry(), 4);
+                    this.setExpDate(cardData.getShortExpiry());
+                    StringUtils.setExpDate(cardData.getShortExpiry());
+                    NtsUtils.log("Expiration Date", StringUtils.padRight("", 4, '*'));
+                }
 
             } else if (paymentMethod instanceof ITrackData) {
                 ITrackData trackData = (ITrackData) paymentMethod;
+                if (trackData instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
+                    encryptionData = ((IEncryptable) trackData).getEncryptionData();
+                }
                 if (trackData.getPan() != null) {
-                    this.setAccNo(trackData.getPan());
-                    StringUtils.setAccNo(trackData.getPan());
-                    // Account number
-                    NtsUtils.log("Account Number", StringUtils.maskAccountNumber(trackData.getPan()));
-                    request.addRange(StringUtils.padRight(trackData.getPan(), 19, ' '), 19);
+                    if (encryptionData != null) {
+                        String expiryDate  = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());;
+                        request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                        request.addRange(StringUtils.padRight( expiryDate, 4, ' '),4);
+                    }
+                    else {
+                        this.setAccNo(trackData.getPan());
+                        StringUtils.setAccNo(trackData.getPan());
+                        // Account number
+                        NtsUtils.log("Account Number", StringUtils.maskAccountNumber(trackData.getPan()));
+                        request.addRange(StringUtils.padRight(trackData.getPan(), 19, ' '), 19);
 
-                    String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
-                    this.setExpDate(expiryDate);
-                    StringUtils.setExpDate(expiryDate);
-                    // Expiry date
-                    NtsUtils.log("Expiry Date", StringUtils.padRight("", 4, '*'));
-                    request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                        String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
+                        this.setExpDate(expiryDate);
+                        StringUtils.setExpDate(expiryDate);
+                        // Expiry date
+                        NtsUtils.log("Expiry Date", StringUtils.padRight("", 4, '*'));
+                        request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                    }
                 } else {
-                    this.setTrackData(trackData.getValue());
-                    StringUtils.setTrackData(trackData.getValue());
-                    StringUtils.setAccNo(trackData.getPan());
-                    StringUtils.setExpDate(trackData.getExpiry());
-                    NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
-                    request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
+                    if(encryptionData != null){
+                        request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                        request.addRange(StringUtils.padRight( EMPTY_STRING, 4, ' '),4);
+
+                    } else {
+                        this.setTrackData(trackData.getValue());
+                        StringUtils.setTrackData(trackData.getValue());
+                        StringUtils.setAccNo(trackData.getPan());
+                        StringUtils.setExpDate(trackData.getExpiry());
+                        NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(), trackData));
+                        request.addRange(StringUtils.padRight(trackData.getValue(), 40, ' '), 40);
+                    }
                 }
             } else if (paymentMethod instanceof GiftCard) {
                 GiftCard gift = (GiftCard) paymentMethod;
@@ -201,6 +235,26 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
 
                 request.addRange(userData, userData.length());
                 NtsUtils.log("User Data ", userData);
+            }else{
+                request.addRange("E", 1);
+                NtsUtils.log("Extended user data flag", "E");
+
+                request.addRange(userData.length(), 3);
+                NtsUtils.log("User Data Length", Integer.toString(userData.length()));
+            }
+
+            // 3DE tag data
+            if(ntsObjectParam.getEncryptedData() != null) {
+                request.addRange(GROUP_SEPARATOR,1);
+                request.addRange(  ntsObjectParam.getEncryptedData(), 336);
+                NtsUtils.log("3DE Tag DATA", ntsObjectParam.getEncryptedData());
+
+            } else if(ntsObjectParam.getTokenData() != null){
+
+                request.addRange(GROUP_SEPARATOR,1);
+                request.addRange(ntsObjectParam.getTokenData(),216);
+                NtsUtils.log("Token Tag DATA", ntsObjectParam.getTokenData());
+
             }
 
         }

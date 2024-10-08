@@ -13,7 +13,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable, IEncryptable {
+public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IReversable, IChargable, IAuthable, IRefundable,IEncryptable {
     private String alias;
     private String cardType;
     private String expiry;
@@ -25,15 +25,13 @@ public class GiftCard implements IPaymentMethod, IPrePayable, IBalanceable, IRev
     private TrackNumber trackNumber;
     private String value;
     private String valueType;
-    @Getter
-    @Setter
+    private EntryMethod entryMethod = EntryMethod.Swipe;
+    @Getter @Setter
     private EncryptionData encryptionData;
-    @Getter
-    @Setter
+    @Getter @Setter
     private String encryptedPan;
     @Getter @Setter
     private String tokenizationData;
-    private EntryMethod entryMethod = EntryMethod.Swipe;
     public EntryMethod getEntryMethod() {
         return entryMethod;
     }
