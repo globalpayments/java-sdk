@@ -44,6 +44,8 @@ public class AcceptorConfig {
     private Boolean capableVoid;
     @Getter @Setter
     private Boolean supportWexAdditionalProducts;
+    @Getter @Setter
+    private Boolean capableVisaFleetTwoPointO;
 //    @Getter @Setter
 //    private Boolean supportBankcard;
     @Getter @Setter
@@ -53,10 +55,9 @@ public class AcceptorConfig {
     @Getter @Setter
     private Boolean visaFleet2;
 
+    //NTS Message Header
     @Getter @Setter
     private Boolean posActionCode;
-
-    //NTS Message Header
     private Boolean pinlessDebit;
     @Getter @Setter
     private PINCapability pinCapability;
@@ -339,7 +340,8 @@ public class AcceptorConfig {
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat("N")
-                .concat(posActionCode != null? posActionCode? "Y": "N": "N");
+                .concat(posActionCode != null? posActionCode? "Y": "N": "N")
+                .concat(capableVisaFleetTwoPointO != null ? capableVisaFleetTwoPointO ? "Y" : "N" : "N");
         return rvalue;
     }
 

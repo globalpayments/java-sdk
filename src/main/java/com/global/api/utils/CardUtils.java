@@ -95,7 +95,7 @@ public class CardUtils {
         // visa fleet mappings
         Map<String, String> visaFleetMap = new HashMap<String, String>();
         visaFleetMap.put("448460", "448611");
-        visaFleetMap.put("448613", "448615");
+        visaFleetMap.put("448613", "448616");
         visaFleetMap.put("448617", "448674");
         visaFleetMap.put("448676", "448686");
         visaFleetMap.put("448688", "448699");
@@ -106,6 +106,7 @@ public class CardUtils {
         visaFleetMap.put("448631", "448663");
         visaFleetMap.put("448665", "448673");
         visaFleetMap.put("480700", "480899");
+        visaFleetMap.put("471562", "471562");
         fleetBinMap.put("Visa", visaFleetMap);
 
         // mastercard fleet mappings

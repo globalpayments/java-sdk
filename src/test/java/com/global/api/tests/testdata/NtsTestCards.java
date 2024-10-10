@@ -104,6 +104,20 @@ public class NtsTestCards {
         return track;
     }
 
+    public static CreditTrackData VisaFleet(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
+
+    //Visa Fleet 2.0
+    public static CreditTrackData VisaFleetTwoPointO(EntryMethod entryMethod){
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";4485580000080017=311220115886224023?");
+        track.setEntryMethod(entryMethod);
+        return track;
+    }
 
     /**
      * Amex Cards

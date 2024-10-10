@@ -95,7 +95,7 @@ public class NtsResponseObjectFactory {
             }
         } else if (paymentMethodType != null
                 && (isCreditAuthBalanceTransaction(transactionType, paymentMethodType)
-                || NtsUtils.isSVSGiftCard(transactionType, paymentMethodType))) {
+                || NtsUtils.isSVSGiftCard(transactionType, paymentMethodType)) && builder.getEcommerceInfo()==null) {
             ntsResponseMessage = new NtsAuthCreditResponseMapper();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         } else if (transactionType.equals(TransactionType.DataCollect)
@@ -109,6 +109,7 @@ public class NtsResponseObjectFactory {
             ntsResponseMessage = new NtsMailResponse();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         } else if (transactionType.equals(TransactionType.Sale)
+                && (builder.getEcommerceInfo()==null)
                 && paymentMethodType != null && paymentMethodType.equals(PaymentMethodType.Credit)) {
             ntsResponseMessage = new NtsSaleCreditResponseMapper();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
@@ -136,6 +137,14 @@ public class NtsResponseObjectFactory {
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         }else if (transactionType.equals(TransactionType.RequestPendingMessages)) {
             ntsResponseMessage = new NtsRequestPendingMessagesResponse();
+            ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
+        }else if((paymentMethodType != null && isCreditAuthBalanceTransaction(transactionType,paymentMethodType))
+                && (builder.getEcommerceInfo()!=null)) {
+            ntsResponseMessage = new NtsEcommerceAuthResponseMapper();
+            ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
+        }else if(transactionType.equals(TransactionType.Sale)
+                && (builder.getEcommerceInfo()!=null)) {
+            ntsResponseMessage = new NtsEcommerceSaleResponseMapper();
             ntsResponseMessage = ntsResponseMessage.setNtsResponseMessage(mr.readRemainingBytes(), emvFlag);
         }
         ntsResponse.setNtsResponseMessageHeader(ntsResponseMessageHeader);

@@ -277,6 +277,17 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
                 isExtendedUserData = true;
             }
         }
+        else if (paymentMethod instanceof ICardData) {
+            EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
+            if (method != null) {
+                NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, operatingEnvironment);
+                if (NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
+                    request.addRange("E", 1);
+                    NtsUtils.log("Expanded User Data","E");
+                    isExtendedUserData = true;
+                }
+            }
+        }
 
         // UserDataLength & UserData
         if (isExtendedUserData) {

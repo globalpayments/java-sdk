@@ -41,7 +41,7 @@ public class TestCards {
     }
     public static CreditCardData VisaManual(boolean cardPresent, boolean readerPresent) {
         CreditCardData rvalue = new CreditCardData();
-        rvalue.setNumber("4012002000060016");
+        rvalue.setNumber("4761739001010119");
         rvalue.setExpMonth(12);
         rvalue.setExpYear(2025);
         rvalue.setCvn("811");
@@ -179,6 +179,7 @@ public class TestCards {
         rvalue.setCvn("123");
         rvalue.setCardPresent(cardPresent);
         rvalue.setReaderPresent(readerPresent);
+//        rvalue.setThreeDSecure();
         return rvalue;
     }
 

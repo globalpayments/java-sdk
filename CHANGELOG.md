@@ -1,5 +1,9 @@
 # Changelog
-## Latest Version - V14.1.0 (10/08/2024)
+## Latest Version - V14.2.0 (10/10/2024)
+### Enhacements
+- [NTS] - NTS 23.1 Spec Update includes General Information, EMV PDL, Bankcard Tag data, Pin debit Authorization, MasterCard Fleet, Voyager Fleet, Visa Fleet 2.0 & Wex Fleet changes.
+
+## V14.1.0 (10/08/2024)
 ### Enhacements
 - [NTS] - NTS Spec Update 22.1 includes General Information, EMV PDL, Bankcard Tag data, Pin debit Authorization, MasterCard Fleet, Voyager Fleet, Wex Fleet user data format, 3DES & Tokenization.
 - [Portico] - Added ClientTxnId to ReportBatchDetail and ReportOpenAuths reports

@@ -42,6 +42,14 @@ public class NtsProductData {
     @Getter
     @Setter
     private NTSCardTypes cardType;
+    @Getter @Setter
+    private BigDecimal netFuelAmount;
+    @Getter @Setter
+    private BigDecimal grossNonFuelAmount;
+    @Getter @Setter
+    private BigDecimal netNonFuelAmount;
+    @Getter @Setter
+    private String nonFuelProductCount;
 
     public NtsProductData() {
         nonFuelDataEntries = new ArrayList<>();

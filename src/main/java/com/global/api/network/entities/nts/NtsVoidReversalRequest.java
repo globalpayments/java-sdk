@@ -95,10 +95,14 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
             }
             else {
                 String accNumber = cardData.getNumber();
+            if (builder.getEcommerceInfo() != null) {
+                request.addRange(StringUtils.padRight(accNumber, 19, ' '), 19);
+            } else {
                 request.addRange(StringUtils.padLeft(accNumber, 19, ' '), 19);
-                NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
-                this.setAccNo(cardData.getNumber());
-                StringUtils.setAccNo(cardData.getNumber());
+            }
+            NtsUtils.log("Account No", StringUtils.maskAccountNumber(accNumber));
+            this.setAccNo(cardData.getNumber());
+            StringUtils.setAccNo(cardData.getNumber());
 
                 request.addRange(cardData.getShortExpiry(), 4);
                 NtsUtils.log("Expiration Date", StringUtils.padRight("", 4, '*'));
@@ -174,18 +178,18 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
         // Batch Number & Sequence Number
         if (transactionReference.getOriginalMessageCode().equals("02") || (!transactionReference.getOriginalMessageCode().equals("01") && transactionType.equals(TransactionType.Reversal))) {
             // Batch Number & Sequence Number
-            if (transactionReference.getBatchNumber() != null) {
-                int batchNumber = transactionReference.getBatchNumber();
-                request.addRange(batchNumber, 2);
-                NtsUtils.log("Batch Number", String.valueOf(batchNumber));
-            }
+                if (transactionReference.getBatchNumber() != null) {
+                    int batchNumber = transactionReference.getBatchNumber();
+                    request.addRange(batchNumber, 2);
+                    NtsUtils.log("Batch Number", String.valueOf(batchNumber));
+                }
 
-            int sequenceNumber = 0;
-            if (!builder.getTransactionType().equals(TransactionType.BatchClose) && transactionReference.getSequenceNumber() != null) {
-                sequenceNumber = transactionReference.getSequenceNumber();
-            }
-            request.addRange(StringUtils.padLeft(sequenceNumber, 3, '0'), 3);
-            NtsUtils.log("Sequence Number", String.valueOf(sequenceNumber));
+                int sequenceNumber = 0;
+                if (!builder.getTransactionType().equals(TransactionType.BatchClose) && transactionReference.getSequenceNumber() != null) {
+                    sequenceNumber = transactionReference.getSequenceNumber();
+                }
+                request.addRange(StringUtils.padLeft(sequenceNumber, 3, '0'), 3);
+                NtsUtils.log("Sequence Number", String.valueOf(sequenceNumber));
         } else {
             request.addRange("00", 2);
             NtsUtils.log("Batch Number", String.valueOf("00"));
@@ -204,6 +208,16 @@ public class NtsVoidReversalRequest implements INtsRequestMessage {
                     request.addRange("E", 1);
                     NtsUtils.log("EXPANDED USER DATA INDICATOR", "E");
                     isExtendedUserData = true;
+                }
+            } else if (paymentMethod instanceof ICardData) {
+                EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
+                if (method != null) {
+                    NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, ntsObjectParam.getNtsAcceptorConfig().getOperatingEnvironment());
+                    if (NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
+                        request.addRange("E", 1);
+                        NtsUtils.log("Expanded User Data","E");
+                        isExtendedUserData = true;
+                    }
                 }
             }
 

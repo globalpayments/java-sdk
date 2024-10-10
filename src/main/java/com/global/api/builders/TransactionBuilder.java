@@ -1,5 +1,6 @@
 package com.global.api.builders;
 
+import com.global.api.entities.EcommerceInfo;
 import com.global.api.entities.PayByLinkData;
 import com.global.api.entities.enums.*;
 import com.global.api.network.elements.EWICData;
@@ -91,6 +92,12 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     @Getter
     protected String ecommerceData2;
     @Getter
+    protected String mcUCAF;
+    @Getter
+    protected String mcWalletId;
+    @Getter
+    protected String mcSLI;
+    @Getter
     protected NtsNetworkMessageHeader ntsNetworkMessageHeader;
     @Getter
     protected NtsRequestMessageHeader ntsRequestMessageHeader;
@@ -119,6 +126,11 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     private String safOrignDT;
     @Getter
     private int pdlTimeout;
+    @Getter @Setter
+    protected EcommerceInfo ecommerceInfo;
+    @Getter @Setter
+    protected String merchantOrCustomerInitiatedFlag;
+
 
 
     public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
@@ -281,6 +293,10 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
 
     public TransactionBuilder<TResult> withSAFOrigDT(String value) {
         this.safOrignDT = value;
+        return this;
+    }
+    public TransactionBuilder<TResult> withMerchantOrCustomerInitiatedFlag(String merchantOrCustomerInitiatedFlag){
+        this.merchantOrCustomerInitiatedFlag = merchantOrCustomerInitiatedFlag;
         return this;
     }
 

@@ -43,7 +43,11 @@ public class NtsUtils {
                 || entryMethod == NTSEntryMethod.ContactlessEmvNoTrackDataAttended
                 || entryMethod == NTSEntryMethod.ContactEmvNoTrackDataUnattendedCat
                 || entryMethod == NTSEntryMethod.ContactEmvNoTrackDataUnattended
-                || entryMethod == NTSEntryMethod.ContactlessEmvNoTrackDataUnattended;
+                || entryMethod == NTSEntryMethod.ContactlessEmvNoTrackDataUnattended
+                || entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataAttended
+                || entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataUnattendedAfd
+                || entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataUnattendedCat
+                || entryMethod == NTSEntryMethod.CardOnFileECommerceNoTrackDataUnattended;
     }
 
 
@@ -106,6 +110,8 @@ public class NtsUtils {
     public static TransactionReference prepareTransactionReference(NtsResponse ntsResponse) {
         NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = null;
         NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = null;
+        NtsEcommerceAuthResponseMapper ntsEcommerceAuthResponseMapper = null;
+        NtsEcommerceSaleResponseMapper ntsEcommerceSaleResponseMapper = null;
         NtsVoidReversalResponse ntsVoidReversalResponse=null;
         String approvalCode = null;
         String hostResponseArea = null;
@@ -148,6 +154,19 @@ public class NtsUtils {
             approvalCode = getOrDefault(ntsVoidReversalResponse.getCreditMapper().getApprovalCode(), "");
             hostResponseArea = getOrDefault(ntsVoidReversalResponse.getCreditMapper().getHostResponseArea(), "");
             authorizer = ntsVoidReversalResponse.getCreditMapper().getAuthorizer();
+        }
+        else if (ntsResponse.getNtsResponseMessage() instanceof NtsEcommerceAuthResponseMapper) {
+            ntsEcommerceAuthResponseMapper = (NtsEcommerceAuthResponseMapper) ntsResponse.getNtsResponseMessage();
+            approvalCode = getOrDefault(ntsEcommerceAuthResponseMapper.getCreditMapper().getApprovalCode(), "");
+            hostResponseArea = getOrDefault(ntsEcommerceAuthResponseMapper.getCreditMapper().getHostResponseArea(), "");
+            authorizer = ntsEcommerceAuthResponseMapper.getCreditMapper().getAuthorizer();
+        } else if (ntsResponse.getNtsResponseMessage() instanceof NtsEcommerceSaleResponseMapper) {
+            ntsEcommerceSaleResponseMapper = (NtsEcommerceSaleResponseMapper) ntsResponse.getNtsResponseMessage();
+            approvalCode = getOrDefault(ntsEcommerceSaleResponseMapper.getCreditMapper().getApprovalCode(), "");
+            hostResponseArea = getOrDefault(ntsEcommerceSaleResponseMapper.getCreditMapper().getHostResponseArea(), "");
+            sequenceNumber = ntsEcommerceSaleResponseMapper.getSequenceNumber();
+            batchNumber = ntsEcommerceSaleResponseMapper.getBatchNumber();
+            authorizer =  ntsEcommerceSaleResponseMapper.getCreditMapper().getAuthorizer();
         }
 
         reference.setApprovalCode(approvalCode);

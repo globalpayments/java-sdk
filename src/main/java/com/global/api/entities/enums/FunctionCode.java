@@ -4,7 +4,9 @@ public enum FunctionCode implements IStringConstant{
 	OfflineApprovedSaleAdvice("A"),
 	BalanceInquiry("B"),
 	OfflineDeclineAdvice("D"),
-	Void("V");
+	Void("V"),
+	ZERO_VALUE_ACCOUNT_VERIFFICATION("Z");
+
 	
 	String value;
 	FunctionCode(String value) {

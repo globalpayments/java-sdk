@@ -585,6 +585,21 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         this.ecommerceInfo = value;
         return this;
     }
+
+    public ManagementBuilder withMcUCAF(String mcUCAF) {
+        this.mcUCAF = mcUCAF;
+        return this;
+    }
+
+    public ManagementBuilder withMcWalletId(String mcWalletId) {
+        this.mcWalletId = mcWalletId;
+        return this;
+    }
+
+    public ManagementBuilder withMcSLI(String mcSLI) {
+        this.mcSLI = mcSLI;
+        return this;
+    }
     public ManagementBuilder withStoredCredential(StoredCredential value) {
         this.storedCredential = value;
         return this;

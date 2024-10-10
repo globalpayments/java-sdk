@@ -15,6 +15,7 @@ import com.global.api.network.entities.gnap.GnapRequestData;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.FeeType;
+import com.global.api.network.enums.nts.PurchaseRestrictionFlag;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
@@ -193,6 +194,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     @Getter
     private String paymentPurposeCode;
+    @Getter
+    private PurchaseRestrictionFlag purchaseRestrictionFlag;
 
     @Getter
     private BigDecimal salesTaxAdditionAmount;
@@ -223,6 +226,20 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
+    public AuthorizationBuilder withMcUCAF(String mcUCAF) {
+        this.mcUCAF = mcUCAF;
+        return this;
+    }
+
+    public AuthorizationBuilder withMcWalletId(String mcWalletId) {
+        this.mcWalletId = mcWalletId;
+        return this;
+    }
+
+    public AuthorizationBuilder withMcSLI(String mcSLI) {
+        this.mcSLI = mcSLI;
+        return this;
+    }
     public AuthorizationBuilder withNtsMailData(NtsMailData value) {
         ntsMailData = value;
         return this;
@@ -240,6 +257,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withTransactionTime(String value) {
         transactionTime = value;
+        return this;
+    }
+    public AuthorizationBuilder withPurchaseRestrictionFlag(PurchaseRestrictionFlag purchaseRestrictionFlag) {
+        this.purchaseRestrictionFlag = purchaseRestrictionFlag;
         return this;
     }
 

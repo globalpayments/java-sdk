@@ -596,6 +596,7 @@ public class NtsEMVPDLTest {
             endOfData = pdlResponse.getEmvPdlEndOfTableFlag();
             table50Data.append(pdlResponse.getEmvPdlTableDataBlockData());
         }
+        //pdl checking
         assertEquals(PDLEndOfTableFlag.EndOfTable, pdlResponse.getEmvPdlEndOfTableFlag());
         System.out.println("Table 50 data: " + table50Data);
 
@@ -687,6 +688,75 @@ public class NtsEMVPDLTest {
         System.out.println(table60.getTable().toString());
     }
 
+    @Test
+    public void test_Emv_PDL_Jcb() throws ApiException {
+        //1. Request EMV PDL
+        NtsPDLData ntsPDLData = new NtsPDLData();
+        ntsPDLData.setParameterType(PDLParameterType.RequestEMVPDL);
+        ntsPDLData.setParameterVersion("001");
+        ntsPDLData.setTableId(PDLTableID.Table50);
+        ntsPDLData.setBlockSequenceNumber("01");
+        ntsPDLData.setEmvPDLCardType(EmvPDLCardType.JCB);
+
+        Transaction response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                .withPDLData(ntsPDLData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        NtsEMVPDLResponse pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+
+        //2. Confirm EMV PDL Data
+        if (pdlResponse.getEmvPdlEndOfTableFlag().equals(PDLEndOfTableFlag.EndOfTable)) {
+            ntsPDLData.setBlockSequenceNumber("00");
+            ntsPDLData.setParameterType(PDLParameterType.EMVPDLConfirm);
+
+            response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                    .withPDLData(ntsPDLData)
+                    .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+            pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+            assertEquals(PDLEndOfTableFlag.DownloadConfirmation, pdlResponse.getEmvPdlEndOfTableFlag());
+        }
+    }
+
+    @Test
+    public void test_Emv_PDL_UnionPay() throws ApiException {
+        //1. Request EMV PDL
+        NtsPDLData ntsPDLData = new NtsPDLData();
+        ntsPDLData.setParameterType(PDLParameterType.RequestEMVPDL);
+        ntsPDLData.setParameterVersion("001");
+        ntsPDLData.setTableId(PDLTableID.Table50);
+        ntsPDLData.setBlockSequenceNumber("01");
+        ntsPDLData.setEmvPDLCardType(EmvPDLCardType.UNIONPAY);
+
+        Transaction response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                .withPDLData(ntsPDLData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        NtsEMVPDLResponse pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+
+        //2. Confirm EMV PDL Data
+        if (pdlResponse.getEmvPdlEndOfTableFlag().equals(PDLEndOfTableFlag.EndOfTable)) {
+            ntsPDLData.setBlockSequenceNumber("00");
+            ntsPDLData.setParameterType(PDLParameterType.EMVPDLConfirm);
+
+            response = NetworkService.fetchPDL(TransactionType.EmvPdl)
+                    .withPDLData(ntsPDLData)
+                    .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                    .execute();
+
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+            pdlResponse = (NtsEMVPDLResponse) response.getNtsResponse().getNtsResponseMessage();
+            assertEquals(PDLEndOfTableFlag.DownloadConfirmation, pdlResponse.getEmvPdlEndOfTableFlag());
+        }
+    }
 
 
     @Test

@@ -35,11 +35,14 @@ public enum UserDataTag implements IStringConstant{
 	MCSLI("32"),
 	EcommerceAuthIndicator("33"),
 	EcommerceMerchantOrderNumber("34"),
+	MITCITFlag("40"),
 	IntegratedCircuitCard("99"),
 	AvailableProducts("AvailableProducts"),
 	EmvDataLength("EmvDataLength"),
 	EvmData("EvmData"),
-	ReceiptText("ReceiptText");
+	ReceiptText("ReceiptText"),
+	PurchaseRestrictionFlag("41"),
+	ExtendedFleetPromptData("43");
 	
 	String value;
 	UserDataTag(String value) {

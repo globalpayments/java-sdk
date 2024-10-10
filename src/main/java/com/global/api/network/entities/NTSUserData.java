@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.network.entities.nts.NtsRequestToBalanceData;
 import com.global.api.network.elements.DE63_ProductDataEntry;
 import com.global.api.network.enums.*;
+import com.global.api.network.enums.nts.UserDataSubTag;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.utils.EmvData;
@@ -41,6 +42,10 @@ public class NTSUserData {
         }
 
         boolean isAVSUsed = StringUtils.isNullOrEmpty(cvn);
+        boolean supportVisaFleetTwoPointO = false;
+        if (acceptorConfig.getCapableVisaFleetTwoPointO() != null) {
+            supportVisaFleetTwoPointO = acceptorConfig.getCapableVisaFleetTwoPointO();
+        }
 
         String uniqueDeviceId = StringUtils.padRight(builder.getUniqueDeviceId(), 4, ' ');
 
@@ -48,19 +53,25 @@ public class NTSUserData {
 
         String amount = StringUtils.toNumeric(builder.getAmount());
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
-                && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
+                && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture)) && !supportVisaFleetTwoPointO) {
                 sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
             if (builder.getNtsProductData() != null) {
                 sb.append(getProductDataTag09(builder, cardType));
             }
             return sb.append("?").toString();
         }
+        else if (supportVisaFleetTwoPointO && cardType.equals(NTSCardTypes.VisaFleet) && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))){
+            sb.append(getFleetDataTag08(builder.getFleetData(),cardType));
+            if (builder.getNtsProductData() != null){
+                sb.append(getTagData09ForVisaFleetTwoPointO(builder,cardType));
+            }
+            return sb.append("?").toString();
+        }
 
         int totalNoOfTags = 0; // Tag counter.
-
+        String functionCode = null;
         // 01 Function Code
         if (!StringUtils.isNullOrEmpty(builder.getTagData()) || transactionType.equals(TransactionType.Void) || transactionType.equals(TransactionType.Balance)) {
-            String functionCode = null;
             if ((messageCode == NtsMessageCode.DataCollectOrSale && builder.getTransactionModifier() == TransactionModifier.Offline) ||
                     messageCode == NtsMessageCode.ForceCollectOrForceSale)
                 functionCode = FunctionCode.OfflineApprovedSaleAdvice.getValue();
@@ -74,6 +85,16 @@ public class NTSUserData {
             } else if (messageCode == NtsMessageCode.ReversalOrVoid ||
                     messageCode == NtsMessageCode.ForceReversalOrForceVoid) {
                 functionCode = FunctionCode.Void.getValue();
+            }
+            if (!StringUtils.isNullOrEmpty(functionCode)) {
+                totalNoOfTags++; // Increment the counter if tag is used.
+                sb.append(UserDataTag.FunctionCode.getValue()).append("\\");
+                sb.append(functionCode).append("\\");
+            }
+        } else if( builder.getEcommerceInfo()!=null && (messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry)) {
+            BigDecimal tranAmount = StringUtils.toFractionalAmount(amount);
+            if (tranAmount.equals(new BigDecimal(0))) {
+                functionCode = FunctionCode.ZERO_VALUE_ACCOUNT_VERIFFICATION.getValue();
             }
             if (!StringUtils.isNullOrEmpty(functionCode)) {
                 totalNoOfTags++; // Increment the counter if tag is used.
@@ -146,6 +167,12 @@ public class NTSUserData {
             sb.append("\\"); // Added separator
             totalNoOfTags++;
 
+        }else if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && cardType.equals(NTSCardTypes.VisaFleet)){
+            sb.append(UserDataTag.ProductDataTag.getValue()).append("\\");
+            sb.append(getTagData09ForVisaFleetTwoPointO(builder, cardType));
+            sb.append("?");
+            sb.append("\\"); // Added separator
+            totalNoOfTags++;
         }
 
         // 10 Reserved
@@ -200,7 +227,7 @@ public class NTSUserData {
         }
 
         //17 Card Sequence No // Only for EMV
-        if (!StringUtils.isNullOrEmpty(builder.getTagData()) && builder.getCardSequenceNumber() != null) {
+        if ((!StringUtils.isNullOrEmpty(builder.getTagData()) && builder.getCardSequenceNumber() != null) || (builder.getCardSequenceNumber() != null && builder.getEcommerceInfo() != null && transactionType.equals(TransactionType.Void))) {
             sb.append(UserDataTag.CardSequenceNumber.getValue()).append("\\");
             sb.append(builder.getCardSequenceNumber()).append("\\");
             totalNoOfTags++; // Increment the counter if tag is used.
@@ -287,74 +314,117 @@ public class NTSUserData {
 
         // 27 Reserved
 
+        if(builder.getEcommerceInfo()!=null){
         // 28 Ecommerce Data1
-        if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet) ||
-                cardType.equals(NTSCardTypes.AmericanExpress) || cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal)) &&
-                ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
-                        && builder.getEcommerceData1() != null)) {
-            sb.append(UserDataTag.EcommerceData1.getValue()).append("\\");
-            sb.append(builder.getEcommerceData1()).append("\\");
-            totalNoOfTags++; // Increment the counter if tag is used.
-
-        }
-
-        // 29 Ecommerce Data2
-        if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet) ||
-                cardType.equals(NTSCardTypes.AmericanExpress) || cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal))
-                && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)) && builder.getEcommerceData2() != null)) {
-            sb.append(UserDataTag.EcommerceData2.getValue()).append("\\");
-            sb.append(builder.getEcommerceData2()).append("\\");
-            totalNoOfTags++; // Increment the counter if tag is used.
-        }
-
-        // 30 MCUCAF // For E-com entry methods, 31 MCWalletId // For all E-com entry methods & 32 MCSLI // For all E-com entry methods
-        if (((cardType.equals(NTSCardTypes.Mastercard) || cardType.equals(NTSCardTypes.MastercardFleet) ||
-                cardType.equals(NTSCardTypes.MastercardPurchasing)) && (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)))
-                && (paymentMethod instanceof ITrackData)) {
-            ITrackData trackData = (ITrackData) builder.getPaymentMethod();
-            NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), acceptorConfig.getOperatingEnvironment());
-            if (entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
-                sb.append(UserDataTag.MCUCAF.getValue()).append("\\");
-                sb.append("" + "\\");
+            if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet) ||
+                    cardType.equals(NTSCardTypes.AmericanExpress)) && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
+                    && builder.getEcommerceData1() != null)) {
+                sb.append(UserDataTag.EcommerceData1.getValue()).append("\\");
+                sb.append(builder.getEcommerceData1()).append("\\");
                 totalNoOfTags++; // Increment the counter if tag is used.
-                sb.append(UserDataTag.MCWalletId.getValue()).append("\\"); // 31 MCWalletId // For all E-com entry methods
-                sb.append("" + "\\");
-                totalNoOfTags++; // Increment the counter if tag is used.
-                sb.append(UserDataTag.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
-                sb.append("" + "\\");
-                totalNoOfTags++; // Increment the counter if tag is used.
+
             }
-        }
 
-
-        // 33 Ecommerce Auth Indicator & 34 Ecommerce Merchant Order No
-        if ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)) && ((cardType.equals(NTSCardTypes.VisaFleet)) || (cardType.equals(NTSCardTypes.MastercardFleet))) && (paymentMethod instanceof ITrackData)) {
-            ITrackData trackData = (ITrackData) builder.getPaymentMethod();
-            NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(trackData.getEntryMethod(), trackData.getTrackNumber(), acceptorConfig.getOperatingEnvironment());
-            if (entryMethod == NTSEntryMethod.ECommerceNoTrackDataAttended ||
-                    entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattendedAfd ||
-                    entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattended ||
-                    entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattendedCat ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
-                    entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
-                sb.append(UserDataTag.EcommerceAuthIndicator.getValue() + "\\"); // 33 Ecommerce Auth Indicator // For all E-com entry methods
-                sb.append(builder.getEcommerceAuthIndicator() + "\\");
-                totalNoOfTags++; // Increment the counter if tag is used.
-
-                if (builder.getInvoiceNumber() != null) {
-                    sb.append(UserDataTag.EcommerceMerchantOrderNumber.getValue() + "\\"); // 34 Ecommerce Merchant Order No
-                    sb.append(builder.getInvoiceNumber() + "\\");
+//         29 Ecommerce Data2
+            if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet) ||
+                    cardType.equals(NTSCardTypes.AmericanExpress) || cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal))
+                    && ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale))
+                    && builder.getEcommerceData2() != null)) {
+                EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
+                NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, acceptorConfig.getOperatingEnvironment());
+                if (entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
+                    sb.append(UserDataTag.EcommerceData2.getValue()).append("\\");
+                    sb.append(builder.getEcommerceData2()).append("\\");
                     totalNoOfTags++; // Increment the counter if tag is used.
                 }
             }
+
+//         30 MCUCAF // For E-com entry methods, 31 MCWalletId // For all E-com entry methods & 32 MCSLI // For all E-com entry methods
+            if (((cardType.equals(NTSCardTypes.Mastercard) || cardType.equals(NTSCardTypes.MastercardFleet) ||
+                    cardType.equals(NTSCardTypes.MastercardPurchasing)) && (transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)))
+                    && (paymentMethod instanceof ICardData)) {
+                EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
+                NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, acceptorConfig.getOperatingEnvironment());
+                if (entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended) {
+                    if (builder.getMcUCAF() != null) {
+                        sb.append(UserDataTag.MCUCAF.getValue()).append("\\"); // 30 MCUCAF // For E-com entry methods
+                        sb.append(builder.getMcUCAF() + "\\");
+                        totalNoOfTags++; // Increment the counter if tag is used.
+                    }
+                }
+
+                if (builder.getMcWalletId() != null) {
+                    sb.append(UserDataTag.MCWalletId.getValue()).append("\\"); // 31 MCWalletId // For all E-com entry methods
+                    sb.append(builder.getMcWalletId() + "\\");
+                    totalNoOfTags++; // Increment the counter if tag is used.
+                }
+
+                if (builder.getMcSLI() != null) {
+                    sb.append(UserDataTag.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
+                    sb.append(builder.getMcSLI() + "\\");
+                    totalNoOfTags++; // Increment the counter if tag is used.
+                }
+            }
+
+
+            // 33 Ecommerce Auth Indicator & 34 Ecommerce Merchant Order No
+            if ((transactionType.equals(TransactionType.Auth) || transactionType.equals(TransactionType.Sale)) && (paymentMethod instanceof ICardData)) {
+                EntryMethod method = NtsUtils.isEcommerceEntryMethod((AuthorizationBuilder) builder);
+                NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, acceptorConfig.getOperatingEnvironment());
+                if (entryMethod == NTSEntryMethod.ECommerceNoTrackDataAttended ||
+                        entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattendedAfd ||
+                        entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattended ||
+                        entryMethod == NTSEntryMethod.ECommerceNoTrackDataUnattendedCat ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataAttended ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedAfd ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattendedCat ||
+                        entryMethod == NTSEntryMethod.SecureEcommerceNoTrackDataUnattended ||
+                        entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataAttended ||
+                        entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataUnattendedAfd ||
+                        entryMethod == NTSEntryMethod.CardOnFileEcommerceNoTrackDataUnattendedCat ||
+                        entryMethod == NTSEntryMethod.CardOnFileECommerceNoTrackDataUnattended) {
+
+                    if (builder.getEcommerceAuthIndicator() != null) {
+                        sb.append(UserDataTag.EcommerceAuthIndicator.getValue() + "\\"); // 33 Ecommerce Auth Indicator // For all E-com entry methods
+                        sb.append(builder.getEcommerceAuthIndicator() + "\\");
+                        totalNoOfTags++; // Increment the counter if tag is used.
+                    }
+
+                    if (cardType.equals(NTSCardTypes.Visa) && builder.getInvoiceNumber() != null) {
+                        sb.append(UserDataTag.EcommerceMerchantOrderNumber.getValue() + "\\"); // 34 Ecommerce Merchant Order No
+                        sb.append(builder.getInvoiceNumber() + "\\");
+                        totalNoOfTags++; // Increment the counter if tag is used.
+                    }
+                }
+            }
+        }
+        // 44 MITCIT flag
+        if (cardType.equals(NTSCardTypes.Mastercard)){
+            sb.append(UserDataTag.MITCITFlag.getValue() + "\\");
+            sb.append(builder.getMerchantOrCustomerInitiatedFlag() + "\\");
+            totalNoOfTags++;
         }
 
+        // 41 VisaFleet 2.0 Purchase Restriction Flag
+        if(supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && ((AuthorizationBuilder) builder).getPurchaseRestrictionFlag() != null) {
+            sb.append(UserDataTag.PurchaseRestrictionFlag.getValue() + "\\");
+            sb.append(((AuthorizationBuilder) builder).getPurchaseRestrictionFlag().getValue() + "\\");
+            totalNoOfTags++;
+        }
 
+        // 43 VisaFleet 2.0 Extended Fleet Prompt Data
+        if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && builder.getFleetData() != null){
+            sb.append(UserDataTag.ExtendedFleetPromptData.getValue() + "\\");
+            sb.append(getTagData43((AuthorizationBuilder) builder));
+            sb.append("\\");
+            totalNoOfTags++;
+        }
         // 99 Integrated Circuit Card
         if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
             sb.append(UserDataTag.IntegratedCircuitCard.getValue()).append("\\");
@@ -503,7 +573,7 @@ public class NTSUserData {
                     } else{
                         sb.append(String.format("%07d",0));
                     }
-                        if(fleetData.getDriverId() != null || fleetData.getVehicleNumber() != null || fleetData.getVehicleNumber() != null){
+                        if(fleetData.getDriverId() != null || fleetData.getVehicleNumber() != null || fleetData.getGenericIdentificationNo() != null){
                             if (fleetData.getDriverId() != null) {
                                 sb.append(StringUtils.padRight(fleetData.getDriverId(), 17, ' '));
                             } else if (fleetData.getVehicleNumber() != null) {
@@ -1004,6 +1074,7 @@ public class NTSUserData {
                 }
                 break;
             case VoyagerFleet:
+                paymentMethod = builder.getPaymentMethod();
                 if (builder.getTransactionType().equals(TransactionType.Auth)) {
                     sb.append(fleetData != null ?
                             StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'):
@@ -1012,17 +1083,9 @@ public class NTSUserData {
                             StringUtils.padLeft(fleetData.getDriverId(), 6, '0'):
                             StringUtils.padLeft(0, 6, '0'));
                     if (builder.getTagData() != null) {
-                        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
-                        if (paymentMethod instanceof IPinProtected) {
-                            String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
-                            if (!StringUtils.isNullOrEmpty(pinBlock)) {
-                                sb.append(pinBlock.substring(0,16));
-                                sb.append(StringUtils.padLeft(pinBlock.substring(16), 20, ' '));
-                            }
-                        }
-                        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
-                        sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
-                        sb.append(builder.getTagData());
+                        sb.append(getVoyagerEmvUserData(builder, paymentMethod)) ;
+                    }else if (builder.getTransactionModifier() != null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
+                        sb.append(getVoyagerFallBackUserData(builder,paymentMethod));
                     }
                 } else if (builder.getTransactionType().equals(TransactionType.DataCollect)
                         || builder.getTransactionType().equals(TransactionType.Sale) ||
@@ -1040,11 +1103,10 @@ public class NTSUserData {
                         sb.append(getVoyagerFleetFuelList(builder));
                         sb.append(getRollUpData(builder, cardType, productData, 4));
                         sb.append(StringUtils.toNumeric(salesTax, 6));
-                        if (builder.getTagData() != null) {
-                            sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
-                            sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
-                            sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
-                            sb.append(builder.getTagData());
+                        if (builder.getTagData() != null && builder.getTransactionType().equals(TransactionType.Sale)){
+                            sb.append(getVoyagerEmvUserData(builder,paymentMethod));
+                        }else if (builder.getTransactionModifier() != null && builder.getTransactionType().equals(TransactionType.Sale) && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
+                            sb.append(getVoyagerFallBackUserData(builder,paymentMethod));
                         }
                     } else if (messageCode.equals(NtsMessageCode.CreditAdjustment)) {
 
@@ -1694,4 +1756,134 @@ public class NTSUserData {
         }
     }
 
+    private static StringBuffer getTagData43(AuthorizationBuilder builder){
+        StringBuffer sb = new StringBuffer();
+        if (builder.getFleetData().getWorkOrderPoNumber() != null){
+            sb.append(UserDataSubTag.FleetWorkOrderNumber.getValue());
+            sb.append(StringUtils.padLeft(builder.getFleetData().getWorkOrderPoNumber().length(), 2, '0'));
+            sb.append(builder.getFleetData().getWorkOrderPoNumber());
+        }
+        if (builder.getFleetData().getTrailerNumber() != null){
+            sb.append(UserDataSubTag.FleetTrailerNumber.getValue());
+            sb.append(StringUtils.padLeft(builder.getFleetData().getTrailerNumber().length(),2,'0'));
+            sb.append(builder.getFleetData().getTrailerNumber());
+        }
+        if (builder.getFleetData().getEmployeeNumber() != null){
+            sb.append(UserDataSubTag.FleetEmployeeNumber.getValue());
+            sb.append(StringUtils.padLeft(builder.getFleetData().getEmployeeNumber().length(),2,'0'));
+            sb.append(builder.getFleetData().getEmployeeNumber());
+        }
+        if (builder.getFleetData().getAdditionalPromptData1() != null){
+            sb.append(UserDataSubTag.FleetAdditionalPromptData1.getValue());
+            sb.append(StringUtils.padLeft(builder.getFleetData().getAdditionalPromptData1().length(),2,'0'));
+            sb.append(builder.getFleetData().getAdditionalPromptData1());
+        }
+        if (builder.getFleetData().getAdditionalPromptData2() != null){
+            sb.append(UserDataSubTag.FleetAdditionalPromptData2.getValue());
+            sb.append(StringUtils.padLeft(builder.getFleetData().getAdditionalPromptData2().length(),2,'0'));
+            sb.append(builder.getFleetData().getAdditionalPromptData2());
+        }
+        return sb;
+    }
+    public static StringBuilder getTagData09ForVisaFleetTwoPointO(TransactionBuilder builder,NTSCardTypes ntsCardTypes) {
+
+        StringBuilder sb = new StringBuilder();
+        NtsProductData productData = builder.getNtsProductData();
+        List<DE63_ProductDataEntry> fuel = productData.getFuelDataEntries();
+        List<DE63_ProductDataEntry> nonFuel = productData.getNonFuelDataEntries();
+        PurchaseType purchaseType = productData.getPurchaseType();
+        ServiceLevel serviceLevelVisaFleet = productData.getServiceLevel();
+        boolean fuelFlag = fuel != null;
+        boolean nonFuelFlag = nonFuel != null;
+        sb.append(purchaseType.getValue());
+        for (int i = 0; i < 1; i++) {
+            if (fuelFlag && i < fuel.size()) {
+                sb.append(StringUtils.padRight(fuel.get(i).getCode(), 4, ' '));
+                sb.append(StringUtils.padLeft(fuel.get(i).getUnitOfMeasure().getValue() , 1, ' '));
+                sb.append(StringUtils.toFormatDigit(fuel.get(i).getQuantity(), 12,4));
+                sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 12, 4));
+                sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,4));
+                sb.append(StringUtils.toFormatDigit(productData.getNetFuelAmount(), 12,4));
+            } else {
+                sb.append(String.format("%4s", " "));
+                sb.append(String.format("%1s", " "));
+                sb.append(String.format("%012d", 0));
+                sb.append(String.format("%012d", 0));
+                sb.append(String.format("%012d", 0));
+                sb.append(String.format("%012d", 0));
+                    }
+                }
+        if (nonFuelFlag) {
+            BigDecimal grossNonFuelAmount = BigDecimal.valueOf(0);
+            for (int nonFuelCount = 0; nonFuelCount < nonFuel.size(); nonFuelCount++) {
+                grossNonFuelAmount = grossNonFuelAmount.add(nonFuel.get(nonFuelCount).getPrice());
+            }
+            sb.append(StringUtils.toFormatDigit(grossNonFuelAmount, 12, 4));
+        }
+        if (purchaseType.equals(PurchaseType.NonFuel) || purchaseType.equals(PurchaseType.FuelAndNonFuel)) {
+            sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount(), 12, 4));
+        }
+        else
+            sb.append(String.format("%12d", 0));
+        sb.append(serviceLevelVisaFleet.getValue());
+
+        String nonFuelProductCountForFuel = "00";
+        if (fuelFlag && !nonFuelFlag){
+            sb.append(nonFuelProductCountForFuel);
+        }
+        else if (productData !=null){
+           sb.append(getNonFuelProductCount(productData));
+        }
+        sb.append(getRollUpData(builder, ntsCardTypes, productData, 8));
+        if (productData.getSalesTax() != null)
+            sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
+        else
+            sb.append(String.format("%05d", 0));
+        return sb;
+
+    }
+
+    public static StringBuilder getNonFuelProductCount(NtsProductData productData){
+        StringBuilder sb = new StringBuilder();
+        String maxNonFuelProductCount = "08";
+        List<DE63_ProductDataEntry> nonFuel = productData.getNonFuelDataEntries();
+        if (nonFuel.size() > 8){
+            sb.append(maxNonFuelProductCount);
+        }
+        else {
+            sb.append(StringUtils.padLeft(nonFuel.size(), 2, '0'));
+        }
+        return sb;
+
+    }
+
+
+    private static StringBuffer getVoyagerEmvUserData(TransactionBuilder<Transaction> builder,IPaymentMethod paymentMethod){
+        StringBuffer sb = new StringBuffer();
+        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+        if (paymentMethod instanceof IPinProtected) {
+            String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
+            sb.append(pinBlock != null ? pinBlock.substring(0,16):StringUtils.padLeft(0, 16, '0'));
+            sb.append(pinBlock != null ? StringUtils.padLeft(pinBlock.substring(16), 20, ' ') :StringUtils.padLeft(0, 20, '0'));
+        }
+        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+        sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));
+        sb.append(builder.getTagData());
+        return sb;
+    }
+
+    private static StringBuffer getVoyagerFallBackUserData(TransactionBuilder<Transaction> builder, IPaymentMethod paymentMethod){
+        StringBuffer sb = new StringBuffer();
+        final String fallBack = "FALLBACK";
+        sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
+        if (paymentMethod instanceof IPinProtected) {
+            String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
+            sb.append(pinBlock != null ? pinBlock.substring(0,16):StringUtils.padLeft(0, 16, '0'));
+            sb.append(pinBlock != null ? StringUtils.padLeft(pinBlock.substring(16), 20, ' ') :StringUtils.padLeft(0, 20, '0'));
+        }
+        sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
+        sb.append(StringUtils.padLeft(fallBack.length(), 4, '0'));
+        sb.append(fallBack);
+        return sb;
+    }
 }

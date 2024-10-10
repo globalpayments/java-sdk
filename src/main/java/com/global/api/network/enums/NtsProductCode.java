@@ -334,17 +334,17 @@ public enum NtsProductCode implements IStringConstant {
     }}), Oil("101", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "30");
         put(NTSCardTypes.MastercardPurchasing, "030");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "30");
         put(NTSCardTypes.VoyagerFleet, "09");
     }}), CarWash("102", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "45");
         put(NTSCardTypes.MastercardPurchasing, "045");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "45");
         put(NTSCardTypes.VoyagerFleet, "27");
     }}), OilChange("103", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "31");
         put(NTSCardTypes.MastercardPurchasing, "031");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "31");
         put(NTSCardTypes.VoyagerFleet, "18");
     }}), OilFilter("104", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "37");
@@ -374,7 +374,7 @@ public enum NtsProductCode implements IStringConstant {
     }}), Tires("109", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "41");
         put(NTSCardTypes.MastercardPurchasing, "041");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "41");
         put(NTSCardTypes.VoyagerFleet, "23");
     }}), FexTax("110", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "99");
@@ -389,7 +389,7 @@ public enum NtsProductCode implements IStringConstant {
     }}), Batteries("112", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "42");
         put(NTSCardTypes.MastercardPurchasing, "042");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "42");
         put(NTSCardTypes.VoyagerFleet, "73");
     }}), Lube("113", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "39");
@@ -439,17 +439,17 @@ public enum NtsProductCode implements IStringConstant {
     }}), EngineSvc("122", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "32");
         put(NTSCardTypes.MastercardPurchasing, "032");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "32");
         put(NTSCardTypes.VoyagerFleet, "O9");
     }}), TransSvc("123", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "33");
         put(NTSCardTypes.MastercardPurchasing, "033");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "33");
         put(NTSCardTypes.VoyagerFleet, "38");
     }}), BrakeSvc("124", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "34");
         put(NTSCardTypes.MastercardPurchasing, "034");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "34");
         put(NTSCardTypes.VoyagerFleet, "M8");
     }}), Exhaust("125", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "39");
@@ -494,7 +494,7 @@ public enum NtsProductCode implements IStringConstant {
     }}), Repairs("133", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "39");
         put(NTSCardTypes.MastercardPurchasing, "039");
-        put(NTSCardTypes.VisaFleet, "90");
+        put(NTSCardTypes.VisaFleet, "39");
         put(NTSCardTypes.VoyagerFleet, "20");
     }}), TankClean("136", new EnumMap<NTSCardTypes, String>(NTSCardTypes.class) {{
         put(NTSCardTypes.MastercardFleet, "38");
