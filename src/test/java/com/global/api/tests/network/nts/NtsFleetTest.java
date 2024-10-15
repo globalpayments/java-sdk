@@ -4076,6 +4076,41 @@ public class NtsFleetTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+    @Test
+    public void test_VisaFleet_authorization_Reversal_10329_PDLTimeout_1() throws ApiException {
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("1234567");
+        fleetData.setDriverId("123456789");
+        fleetData.setServicePrompt("0");
+
+        track = new CreditTrackData();
+        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withPDLTimeout(NTSCardTypes.VisaFleet.getTimeOut())
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction voidResponse = response.reverse(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withPDLTimeout(NTSCardTypes.VisaFleet.getTimeOut())
+                .execute();
+
+        // check response
+        assertEquals("00", voidResponse.getResponseCode());
+    }
 
     /**
       Voyager EMV Auth User Data

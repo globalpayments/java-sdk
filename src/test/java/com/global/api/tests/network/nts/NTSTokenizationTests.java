@@ -1101,4 +1101,40 @@ public class NTSTokenizationTests {
         // check response
         assertEquals("00", response.getResponseCode());
     }
+    @Test
+    public void test_sales_without_track_mastercard_formatErrorIssue() throws ApiException {
+
+        config.setCompanyId("009");
+        config.setTerminalId("01");
+        config.setUnitNumber("00001234567");
+        config.setSoftwareVersion("21");
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+        ServicesContainer.configureService(config);
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("MC");
+        card.setTokenizationData("43840500F2BB20EE4456EEF73060859B424A5D3EC8EB612FF6964DCACF8DBDA03C44CC86568FC71B3BB2D0273AFF97686C785462E53F9543D005B2E1FC5D5B90");
+        productData = getProductDataForNonFleetBankCards(card);
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
 }

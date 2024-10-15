@@ -1,5 +1,10 @@
 # Changelog
-## Latest Version - V14.2.0 (10/10/2024)
+## Latest Version - V14.2.1 (10/15/2024)
+### Bug Fixes
+- [NTS] - Setting PDL timeout values in Reversal & Completion requests. (rebasing the code with the hotfix branch- 10335) 
+- [NTS] - Added Transaction Reference check for Visa ,Discover & Mastercard in the NTS User data.
+
+## V14.2.0 (10/10/2024)
 ### Enhacements
 - [NTS] - NTS 23.1 Spec Update includes General Information, EMV PDL, Bankcard Tag data, Pin debit Authorization, MasterCard Fleet, Voyager Fleet, Visa Fleet 2.0 & Wex Fleet changes.
 
@@ -85,8 +90,8 @@
 - [GP-API]: Fixed "destination" field as optional for Open banking
 - [UPA]: Fixed improper SAF transaction record response mapping
 - [Portico]:Fixed conditional check for UniqueDeviceId and updated a test
-- [NTS]: Fixed issue 10321 Voyager EMV Prompts issue, updated Vehicle number to 3
-- [NTS]: Fixed issue 10324 Added field for IDNumber in FleetData.
+- [VAPS]: Fixed issue 10321 Voyager EMV Prompts issue, updated Vehicle number to 3
+- [VAPS]: Fixed issue 10324 Added field for IDNumber in FleetData.
 
 ## V11.2.24 (07/18/2024)
 ### Enhancements

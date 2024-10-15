@@ -114,9 +114,11 @@ public class NTSUserData {
         if ((messageCode == NtsMessageCode.ReversalOrVoid || messageCode == NtsMessageCode.ForceReversalOrForceVoid)
                 && paymentMethod instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTag.Stan.getValue()).append("\\");
-            sb.append(reference.getSystemTraceAuditNumber()).append("\\"); // Get from host response area
-            totalNoOfTags++; // Increment the counter if tag is used.
+            if (!StringUtils.isNullOrEmpty(reference.getSystemTraceAuditNumber())) {
+                sb.append(UserDataTag.Stan.getValue()).append("\\");
+                sb.append(reference.getSystemTraceAuditNumber()).append("\\"); // Get from host response area
+                totalNoOfTags++; // Increment the counter if tag is used.
+            }
         }
 
         // 04 and 05 is expected in host response are not in request.
@@ -183,12 +185,16 @@ public class NTSUserData {
                 transactionType.equals(TransactionType.Balance))
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTag.MasterCardBanknetRefId.getValue()).append("\\");
-            sb.append(reference.getMastercardBanknetRefNo()).append("\\"); // Get from host response area
-            totalNoOfTags++; // Increment the counter if tag is used.
-            sb.append(UserDataTag.MasterCardSettlementDate.getValue()).append("\\"); // 12 Settlement Date
-            sb.append(reference.getMastercardBanknetSettlementDate()).append("\\"); // Get from host response area
-            totalNoOfTags++; // Increment the counter if tag is used.
+            if (reference.getMastercardBanknetRefNo() != null) {
+                sb.append(UserDataTag.MasterCardBanknetRefId.getValue()).append("\\");
+                sb.append(reference.getMastercardBanknetRefNo()).append("\\"); // Get from host response area
+                totalNoOfTags++; // Increment the counter if tag is used.
+            }
+            if (reference.getMastercardBanknetSettlementDate() != null) {
+                sb.append(UserDataTag.MasterCardSettlementDate.getValue()).append("\\"); // 12 Settlement Date
+                sb.append(reference.getMastercardBanknetSettlementDate()).append("\\"); // Get from host response area
+                totalNoOfTags++; // Increment the counter if tag is used.
+            }
         }
 
 
@@ -211,9 +217,11 @@ public class NTSUserData {
         if (((cardType.equals(NTSCardTypes.Discover) || cardType.equals(NTSCardTypes.PayPal)) && (messageCode == NtsMessageCode.ReversalOrVoid ||
                 messageCode == NtsMessageCode.ForceReversalOrForceVoid)) && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTag.DiscoverNetworkRefId.getValue()).append("\\");
-            sb.append(reference.getDiscoverNetworkRefId() + "\\"); // Get from host response area
-            totalNoOfTags++; // Increment the counter if tag is used.
+            if (!StringUtils.isNullOrEmpty(reference.getDiscoverNetworkRefId())) {
+                sb.append(UserDataTag.DiscoverNetworkRefId.getValue()).append("\\");
+                sb.append(reference.getDiscoverNetworkRefId() + "\\"); // Get from host response area
+                totalNoOfTags++; // Increment the counter if tag is used.
+            }
 
         }
 
@@ -237,9 +245,11 @@ public class NTSUserData {
         if ((cardType.equals(NTSCardTypes.Visa) || cardType.equals(NTSCardTypes.VisaFleet)) && transactionType.equals(TransactionType.Void)
                 && (paymentMethod instanceof TransactionReference)) {
             TransactionReference reference = (TransactionReference) paymentMethod;
-            sb.append(UserDataTag.VisaTransactionId.getValue()).append("\\");
-            sb.append(reference.getVisaTransactionId()).append("\\"); // Get from host response area (left justify)
-            totalNoOfTags++; // Increment the counter if tag is used.
+            if (reference.getVisaTransactionId() != null) {
+                sb.append(UserDataTag.VisaTransactionId.getValue()).append("\\");
+                sb.append(reference.getVisaTransactionId()).append("\\"); // Get from host response area (left justify)
+                totalNoOfTags++; // Increment the counter if tag is used.
+            }
         }
 
         // 19
@@ -404,8 +414,8 @@ public class NTSUserData {
                 }
             }
         }
-        // 44 MITCIT flag
-        if (cardType.equals(NTSCardTypes.Mastercard)){
+        // 40 MITCIT flag
+        if (cardType.equals(NTSCardTypes.Mastercard) && builder.getMerchantOrCustomerInitiatedFlag() != null){
             sb.append(UserDataTag.MITCITFlag.getValue() + "\\");
             sb.append(builder.getMerchantOrCustomerInitiatedFlag() + "\\");
             totalNoOfTags++;

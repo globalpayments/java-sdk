@@ -4323,4 +4323,68 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
         assertEquals("00", dataCollectResponse.getResponseCode());
     }
 
+    @Test
+    public void test_credit_auth_void_visa_referenceCheck() throws ApiException {
+
+        config.setCompanyId("009");
+        config.setTerminalId("01");
+        config.setUnitNumber("00001234567");
+        config.setSoftwareVersion("21");
+        ServicesContainer.configureService(config);
+        track = NtsTestCards.Visa2Track1(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(response.getTransactionReference().getAuthorizer())
+                .withPaymentMethod(track)
+                .withOriginalMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry.getValue())
+                .withApprovalCode(response.getTransactionReference().getApprovalCode())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withSystemTraceAuditNumber(response.getTransactionReference().getSystemTraceAuditNumber())
+                .withTransactionTime(response.getTransactionReference().getOriginalTransactionTime())
+                .withOriginalTransactionDate( response.getTransactionReference().getOriginalTransactionDate())
+                .withVisaTransactionId(response.getTransactionReference().getVisaTransactionId())
+                .build();
+
+        Transaction voidResponse = transaction.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_credit_auth_void_mastercard_referenceCheck() throws ApiException {
+
+        config.setCompanyId("009");
+        config.setTerminalId("01");
+        config.setUnitNumber("00001234567");
+        config.setSoftwareVersion("21");
+        ServicesContainer.configureService(config);
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertNotNull(response.getTransactionReference().getMastercardBanknetRefNo());
+        assertNotNull(response.getTransactionReference().getMastercardBanknetSettlementDate());
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
 }

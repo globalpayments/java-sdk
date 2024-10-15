@@ -763,7 +763,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setUnitNumber(unitNumber);
         ntsObjectParam.setTerminalId(terminalId);
         ntsObjectParam.setCompanyId(companyId);
-        ntsObjectParam.setTimeout(getTimeout());
+        ntsObjectParam.setTimeout(builder.getPdlTimeout());
         ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
 
         TransactionReference reference = (TransactionReference)paymentMethod;

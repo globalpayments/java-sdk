@@ -1514,8 +1514,47 @@ public class NtsDebitTest {
                         .execute());
         assertNotNull(incorrectFormat2);
     }
+    @Test //working
+    public void test_10335_PinDebit_pre_authorization_completion_without_TrackData_PdlTimeout() throws ApiException {
+        Transaction preAuthorizationResponse = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withPDLTimeout(NTSCardTypes.PinDebit.getTimeOut())
+                .execute();
+        assertNotNull(preAuthorizationResponse);
+
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+
+        Transaction captureResponse = preAuthorizationResponse.preAuthCompletion(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSettlementAmount(new BigDecimal(10))
+                .withPDLTimeout(NTSCardTypes.PinDebit.getTimeOut())
+                .execute();
+
+        // check response
+        assertEquals("00", captureResponse.getResponseCode());
+    }
+    @Test
+    public void test_pinDebit_purchase_reversal_10335_pdlTimeout() throws ApiException {
+        Transaction reversalResponse = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withPDLTimeout(NTSCardTypes.PinDebit.getTimeOut())
+                .execute();
+        assertNotNull(reversalResponse);
+        assertEquals("00", reversalResponse.getResponseCode());
 
 
+        Transaction refund = reversalResponse.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withCurrency("USD")
+                .withPDLTimeout(NTSCardTypes.PinDebit.getTimeOut())
+                .execute();
+        assertNotNull(refund);
+
+        assertEquals("00", refund.getResponseCode());
+    }
+  
     @Test//working
     public void test04_PinDebit_purchase_with_cashBack_04() throws ApiException {
 
