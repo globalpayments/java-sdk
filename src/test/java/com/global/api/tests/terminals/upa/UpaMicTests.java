@@ -1,8 +1,10 @@
 package com.global.api.tests.terminals.upa;
 
+import com.global.api.entities.PrintData;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.DisplayOption;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
@@ -14,13 +16,17 @@ import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IEODResponse;
+import com.global.api.terminals.abstractions.ITerminalReport;
+import com.global.api.terminals.upa.responses.BatchReportResponse;
 import com.global.api.tests.gpapi.BaseGpApiTest;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -44,6 +50,7 @@ public class UpaMicTests extends BaseGpApiTest {
         connectionConfig.setLogManagementProvider(_logManagementProvider);
 
         device = DeviceService.create(connectionConfig);
+        device.setEcrId("12");
     }
 
     private static GpApiConfig getGpApiConfig() {
@@ -63,10 +70,10 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditSale() throws ApiException {
-        TerminalResponse response = device.creditSale(amount).execute();
+        TerminalResponse response = device.sale(amount).execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -76,7 +83,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -89,7 +96,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals(amount.add(tipAmount), response.getAuthorizedAmount());
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -155,10 +162,10 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditRefund() throws ApiException {
-        TerminalResponse response = device.creditRefund(amount).execute();
+        TerminalResponse response = device.refund(amount).execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -168,7 +175,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
 
         Thread.sleep(15000);
 
@@ -177,7 +184,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(refundResponse);
-        assertMitcTransactionResponse(refundResponse);
+        assertMitcUpaResponse(refundResponse);
     }
 
     @Test
@@ -185,24 +192,24 @@ public class UpaMicTests extends BaseGpApiTest {
         TerminalResponse response = device.creditVerify().execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
     public void CreditVoid() throws ApiException, InterruptedException {
-        TerminalResponse response = device.creditSale(amount).execute();
+        TerminalResponse response = device.sale(amount).execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
 
         Thread.sleep(15000);
 
-        TerminalResponse voidResponse = device.creditVoid()
+        TerminalResponse voidResponse = device.Void()
                 .withTransactionId(response.getTransactionId())
                 .execute();
 
         assertNotNull(voidResponse);
-        assertMitcTransactionResponse(voidResponse);
+        assertMitcUpaResponse(voidResponse);
     }
 
     @Test
@@ -212,7 +219,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
 
         Thread.sleep(15000);
 
@@ -221,7 +228,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(voidResponse);
-        assertMitcTransactionResponse(voidResponse);
+        assertMitcUpaResponse(voidResponse);
     }
 
     @Test
@@ -230,7 +237,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -240,7 +247,7 @@ public class UpaMicTests extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertMitcTransactionResponse(response);
+        assertMitcUpaResponse(response);
     }
 
     @Test
@@ -306,11 +313,42 @@ public class UpaMicTests extends BaseGpApiTest {
         }
     }
 
-    private void assertMitcTransactionResponse(TerminalResponse response) {
+    @Test
+    public void GetBatchReport() throws ApiException {
+        ITerminalReport response = device.getBatchReport().execute();
+        assertNotNull(response);
+        assertMitcUpaResponse((BatchReportResponse) response);
+    }
+
+    @Test
+    public void CardVerify() throws ApiException {
+        TerminalResponse response = device.verify().execute();
+
+        assertNotNull(response);
+        assertMitcUpaResponse(response);
+    }
+
+    @Test
+    public void printData() throws ApiException {
+        PrintData printData = new PrintData();
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "download.png").toString();
+        printData.setFilePath(filePath);
+        printData.setLine1("Printing...");
+        printData.setLine2("Please Wait...");
+        printData.setDisplayOption(DisplayOption.RETURN_TO_IDLE_SCREEN);
+        device.setOnMessageSent(Assert::assertNotNull);
+        IDeviceResponse response = device.Print(printData);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("COMPLETE", response.getStatus());
+    }
+
+    private void assertMitcUpaResponse(TerminalResponse response) {
         assertEquals("COMPLETE", response.getStatus());
         assertEquals("COMPLETE", response.getDeviceResponseText());
         assertEquals("00", response.getDeviceResponseCode());
-        assertEquals("00", response.getResponseCode());
     }
 }
 

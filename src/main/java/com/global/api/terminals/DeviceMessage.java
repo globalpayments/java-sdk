@@ -4,11 +4,16 @@ import com.global.api.entities.enums.ControlCodes;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.IRawRequestBuilder;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DeviceMessage implements IDeviceMessage {
     private byte[] buffer;
     private boolean keepAlive;
     private boolean awaitResponse;
+    @Getter
+    @Setter
+    private IRawRequestBuilder rawRequest;
 
     public DeviceMessage(byte[] buffer){
         this.buffer = buffer;
@@ -18,7 +23,7 @@ public class DeviceMessage implements IDeviceMessage {
 
     @Override
     public IRawRequestBuilder getRequestBuilder() {
-        return null;
+        return rawRequest;
     }
 
     public boolean isKeepAlive() {

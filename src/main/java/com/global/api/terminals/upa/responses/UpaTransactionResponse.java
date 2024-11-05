@@ -6,6 +6,7 @@ import com.global.api.entities.enums.CardType;
 import com.global.api.entities.enums.TerminalConfigType;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.utils.JsonDoc;
+import com.global.api.utils.StringUtils;
 import com.google.gson.JsonParseException;
 
 import java.math.BigDecimal;
@@ -189,6 +190,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setEntryMethod(payment.getString("cardAcquisition"));
         setMaskedCardNumber(payment.getString("maskedPan"));
         setPaymentType(payment.getString("cardGroup"));
+        setInvoiceNumber(payment.getString("invoiceNbr"));
     }
 
     protected void hydrateTransactionData(JsonDoc transaction) {
@@ -222,7 +224,11 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setApplicationLabel(emv.getString("50"));
         setApplicationPreferredName(emv.getString("9F12"));
         applicationIdentifier = emv.getString("4F");
-        setCardHolderName(emv.getString("5F20"));
+        //Upa is already parsing the Cardholder name from 5F20 so below is just a check to see if it was not pass
+        //then take it from 5F20.  Otherwise, if 5F20 is not passed cardholder name will be blank with this check.
+        if (StringUtils.isNullOrEmpty(getCardHolderName()) && emv.has("5F20")) {
+            setCardHolderName(emv.getString("5F20"));
+        }
         if (emv.getString("5F2A") != null) {
             transactionCurrencyCode = emv.getString("5F2A");
         }

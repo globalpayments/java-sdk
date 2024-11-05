@@ -4,6 +4,8 @@ import com.global.api.utils.StringUtils;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 
@@ -61,6 +63,17 @@ public class StringUtilsTest {
         String result = StringUtils.toNumeric(amount);
 
         assertEquals("12352", result);
+    }
+    @Test
+    public void toCurrencyString() {
+        Locale[] locales = NumberFormat.getAvailableLocales();
+
+        for (Locale ignored : locales) {
+            assertEquals("0.46", StringUtils.toCurrencyString(new BigDecimal("0.459")));
+            assertEquals("0.40", StringUtils.toCurrencyString(new BigDecimal("0.4")));
+            assertEquals("12.41", StringUtils.toCurrencyString(new BigDecimal("12.413")));
+            assertEquals("12.40", StringUtils.toCurrencyString(new BigDecimal("12.4")));
+        }
     }
 
 }

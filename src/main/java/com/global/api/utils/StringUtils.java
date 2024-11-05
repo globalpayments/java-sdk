@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -128,9 +129,15 @@ public class StringUtils {
             return "0.00";
         }
 
-        NumberFormat fmt = NumberFormat.getCurrencyInstance();
+        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
         String currency = fmt.format(amount);
-        return trimStart(currency.replaceAll("[^0-9.,]", ""), "0");
+        String value = currency.replaceAll("[^0-9.,]", "");
+
+        if (amount.abs().compareTo(BigDecimal.valueOf(1.0)) > 0) {
+            trimStart(value, "0");
+        }
+
+        return value;
     }
 
     public static String join(String separator, Object[] fields) {

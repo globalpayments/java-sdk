@@ -1,31 +1,23 @@
 package com.global.api.terminals.pax;
 
-import com.global.api.entities.PrintData;
-import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
-import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.DeviceInterface;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
-import com.global.api.terminals.genius.enums.TransactionIdType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.*;
-import com.global.api.terminals.upa.subgroups.RegisterPOS;
-import com.global.api.terminals.upa.subgroups.SignatureData;
 import org.apache.commons.codec.binary.Base64;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.TimeZone;
 
-class PaxInterface implements IDeviceInterface {
+class PaxInterface extends DeviceInterface {
     private PaxController controller;
     private IMessageSentInterface onMessageSent;
 
@@ -174,84 +166,43 @@ class PaxInterface implements IDeviceInterface {
         return new PaxDeviceResponse(response, PaxMsgId.A05_RSP_SET_VARIABLE);
     }
 
-    public IDeviceResponse closeLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
-            throw new UnsupportedTransactionException("The device does not support this call.");
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse openLane() throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
-            throw new UnsupportedTransactionException("The device does not support this call.");
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException {
-        if(controller.getDeviceType().equals(DeviceType.PAX_DEVICE))
-            throw new UnsupportedTransactionException("The device does not support this call.");
-        throw new UnsupportedTransactionException();
-    }
-
-    public ISAFResponse sendStoreAndForward() throws ApiException {
-        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-    }
-
-    public IDeviceResponse setStoreAndForwardMode(boolean enabled) throws ApiException {
-        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-    }
-    public IEODResponse endOfDay() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException {
-        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-    }
     //</editor-fold>
 
     //<editor-fold desc="CREDIT MESSAGES">
     public TerminalAuthBuilder creditAuth() throws ApiException {
-        return creditAuth(null);
+        return authorize(null);
     }
     public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit).withAmount(amount);
+        return authorize(amount);
     }
 
     public TerminalManageBuilder creditCapture() throws ApiException {
         return creditCapture(null);
     }
     public TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withAmount(amount);
+        return capture(amount);
     }
 
     public TerminalAuthBuilder creditRefund() throws ApiException {
         return creditRefund(null);
     }
     public TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit).withAmount(amount);
+        return refund(amount);
     }
 
     public TerminalAuthBuilder creditSale() throws ApiException {
-        return creditSale(null);
+        return sale(null);
     }
     public TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Credit).withAmount(amount);
+        return sale(amount);
     }
 
     public TerminalAuthBuilder creditVerify() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Verify, PaymentMethodType.Credit);
+        return verify();
     }
 
     public TerminalManageBuilder creditVoid() throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
-    }
-
-    @Override
-    public TerminalManageBuilder voidRefund() throws ApiException {
-        throw new UnsupportedTransactionException();
+        return Void();
     }
     //</editor-fold>
 
@@ -260,25 +211,20 @@ class PaxInterface implements IDeviceInterface {
         return debitRefund(null);
     }
     public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit).withAmount(amount);
-    }
-
-    @Override
-    public TerminalManageBuilder debitVoid() throws ApiException {
-        return null;
+        return refund(amount).withPaymentMethodType(PaymentMethodType.Debit);
     }
 
     public TerminalAuthBuilder debitSale() throws ApiException {
-        return debitSale(null);
+        return sale(null).withPaymentMethodType(PaymentMethodType.Debit);
     }
     public TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Debit).withAmount(amount);
+        return sale(amount).withPaymentMethodType(PaymentMethodType.Debit);
     }
     //</editor-fold>
 
     //<editor-fold desc="EBT MESSAGES">
-    public TerminalAuthBuilder ebtBalance() {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.EBT);
+    public TerminalAuthBuilder ebtBalance() throws ApiException {
+        return balance().withPaymentMethodType(PaymentMethodType.EBT);
     }
 
     public TerminalAuthBuilder ebtPurchase() {
@@ -288,11 +234,11 @@ class PaxInterface implements IDeviceInterface {
         return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT).withAmount(amount);
     }
 
-    public TerminalAuthBuilder ebtRefund() {
+    public TerminalAuthBuilder ebtRefund() throws ApiException {
         return ebtRefund(null);
     }
-    public TerminalAuthBuilder ebtRefund(BigDecimal amount) {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.EBT).withAmount(amount);
+    public TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException {
+        return refund(amount).withPaymentMethodType(PaymentMethodType.EBT);
     }
 
     public TerminalAuthBuilder ebtWithdrawal() {
@@ -308,7 +254,9 @@ class PaxInterface implements IDeviceInterface {
         return giftSale(null);
     }
     public TerminalAuthBuilder giftSale(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.Gift).withAmount(amount).withCurrency(CurrencyType.Currency);
+        return sale(amount)
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .withCurrency(CurrencyType.Currency);
     }
 
     public TerminalAuthBuilder giftAddValue() throws ApiException {
@@ -321,11 +269,13 @@ class PaxInterface implements IDeviceInterface {
     }
 
     public TerminalManageBuilder giftVoid() throws ApiException {
-        return new TerminalManageBuilder(TransactionType.Void, PaymentMethodType.Gift).withCurrency(CurrencyType.Currency);
+        return Void()
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .withCurrency(CurrencyType.Currency);
     }
 
     public TerminalAuthBuilder giftBalance() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Balance, PaymentMethodType.Gift).withCurrency(CurrencyType.Currency);
+        return  balance().withCurrency(CurrencyType.Currency);
     }
     //</editor-fold>
 
@@ -392,192 +342,8 @@ class PaxInterface implements IDeviceInterface {
         return summaryResponse;
     }
 
-    public IBatchReportResponse getBatchSummary() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IBatchReportResponse getBatchSummary(String batchId) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IBatchReportResponse getBatchDetails() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IBatchReportResponse getOpenTabDetails() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IBatchReportResponse findBatches() throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public ISAFResponse safDelete(String referenceNumber, String transactionNumber) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-    @Override
-    public TerminalResponse getTransactionDetails(TransactionType transactionType, String transactionId, TransactionIdType transactionIdType) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-
-    public IDeviceResponse ping() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse getAppInfo() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse clearDataLake() throws ApiException {
-        throw new UnsupportedTransactionException();
-   }
-
-    @Override
-    public IDeviceResponse returnToIdle() throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceScreen loadUDDataFile(UDData udData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceScreen removeUDDataFile(UDData udData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse Scan(ScanData scanData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse Print(PrintData printData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse setTimeZone(TimeZone timezone) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse getParams(ArrayList<String> parameters) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public void sendReady() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse setDebugLevel(DebugLevel[] debugLevels, Enum logToConsole) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-
-    }
-
-    @Override
-    public IDeviceResponse getDebugLevel() throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse getDebugInfo(Enum logFile) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse broadcastConfiguration(boolean enable) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse executeUDDataFile(UDData udData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse injectUDDataFile(UDData udData) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse getConfigContents(TerminalConfigType configType) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse printReceipt(PrintData data) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public String getParams() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public void cancel(Integer cancelParams) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
     public TerminalManageBuilder tipAdjust(BigDecimal amount) {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
                 .withGratuity(amount);
-    }
-
-    public TerminalManageBuilder reverse() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    public TerminalManageBuilder refundById(BigDecimal amount) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public TerminalManageBuilder refundById() throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public TerminalManageBuilder increasePreAuth(BigDecimal amount) throws UnsupportedTransactionException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
-        throw new UnsupportedTransactionException();
-    }
-
-    @Override
-    public ISignatureResponse getSignatureFile(SignatureData data) throws ApiException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TerminalManageBuilder deletePreAuth() throws ApiException {
-        throw new UnsupportedTransactionException();
     }
 }

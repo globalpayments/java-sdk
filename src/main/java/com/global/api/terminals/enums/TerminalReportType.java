@@ -6,7 +6,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum TerminalReportType implements IFlag {
-    LocalDetailReport;
+    LocalDetailReport,
+    GetBatchReport;
 
     @Override
     public long getLongValue() {

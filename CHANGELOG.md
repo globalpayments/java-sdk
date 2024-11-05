@@ -1,5 +1,23 @@
 # Changelog
-## Latest Version - V14.2.1 (10/15/2024)
+
+## Latest Version - V14.2.2 (10/31/2024)
+### Enhancements
+- [Terminals] Add abstract class DeviceInterface
+- [Terminals] Clean-up HPAInterface, UPAInterface, PaxInterface, GeniusInterface, DiamondInterface - remove all the 
+              unused methods
+- [DeviceInterface] Add new method: balance, authorize, sale, refund, Void, capture, startTransaction, getBatchReport
+- [MITC UPA] Automatic access to UPA commands when new commands are added
+
+### Deprecate
+- [IDeviceInterface] Deprecate methods: - addLineItem, creditAuth, creditCapture, creditRefund, creditSale, creditVerify, 
+                     creditVoid, debitSale, debitRefund, debitVoid, giftSale, giftSale, giftVoid, giftBalance,
+                     ebtBalance, ebtRefund, ebtRefund, getBatchSummary
+
+### Bug Fixes
+- [UPA] Fixed issue for amount with values lower than 1
+- [UPA] Fixed issue for invoiceNbr - change from Integer to String
+
+## V14.2.1 (10/15/2024)
 ### Bug Fixes
 - [NTS] - Setting PDL timeout values in Reversal & Completion requests. (rebasing the code with the hotfix branch- 10335) 
 - [NTS] - Added Transaction Reference check for Visa ,Discover & Mastercard in the NTS User data.

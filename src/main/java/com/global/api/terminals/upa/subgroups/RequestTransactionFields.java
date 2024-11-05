@@ -18,7 +18,7 @@ public class RequestTransactionFields {
     private String tipAmount;
     private Integer taxIndicator;
     private BigDecimal cashBackAmount;
-    private Integer invoiceNbr;
+    private String invoiceNbr;
     private String totalAmount;
     private String terminalRefNumber;
     private String gatewayRefNumber;
@@ -63,7 +63,7 @@ public class RequestTransactionFields {
             if (builder.getTransactionType() == TransactionType.Refund || builder.getTransactionType() == TransactionType.Activate) {
                 this.totalAmount = StringUtils.toCurrencyString(builder.getAmount());
             } else if (builder.getTransactionType() == TransactionType.Auth) {
-                this.amount = builder.getAmount().toString();
+                this.amount = StringUtils.toCurrencyString(builder.getAmount());
             } else {
                 this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
             }
@@ -86,7 +86,7 @@ public class RequestTransactionFields {
         }
 
         if (builder.getInvoiceNumber() != null) {
-            this.invoiceNbr = Integer.parseInt(builder.getInvoiceNumber());
+            this.invoiceNbr = builder.getInvoiceNumber();
         }
 
         if (builder.getReferenceNumber() != null) {

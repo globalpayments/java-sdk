@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.generateRandomBigDecimalFromRange;
 import static org.junit.Assert.*;
@@ -34,7 +35,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.8.181");
+        config.setIpAddress("192.168.2.178");
         config.setTimeout(45_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -86,6 +87,27 @@ public class UpaCreditTests {
 
         runBasicTests(response);
         assertEquals(new BigDecimal("12.02"), response.getTransactionAmount());
+    }
+
+    @Test
+    public void creditSaleAmountFormat() throws ApiException {
+        //Transaction amount tested could be 0.X, 0.XX, XX.XXX etc
+        TerminalResponse response = device.creditSale(new BigDecimal("5.7983"))
+                .execute();
+
+        runBasicTests(response);
+        assertEquals(new BigDecimal("5.80"), response.getTransactionAmount());
+    }
+
+    @Test
+    public void creditSaleWithInvoiceNbr() throws ApiException {
+        //Test withInvoiceNumber since no sale has an invoice number.
+        TerminalResponse response = device.creditSale(new BigDecimal("1.10"))
+                .withInvoiceNumber("123")
+                .execute();
+
+        runBasicTests(response);
+        assertEquals(new BigDecimal("1.10"), response.getTransactionAmount());
     }
 
     @Test
@@ -329,14 +351,14 @@ public class UpaCreditTests {
 
     @Test
     public void preAuthAndCapture() throws ApiException {
-        TerminalResponse response = device.creditAuth(new BigDecimal("10.00"))
+        TerminalResponse response = device.authorize(new BigDecimal("10.00"))
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
         assertEquals(new BigDecimal("10.00"), response.getTransactionAmount());
 
-        TerminalResponse captureResponse = device.creditCapture(new BigDecimal("10.00"))
+        TerminalResponse captureResponse = device.capture(new BigDecimal("10.00"))
                 .withTerminalRefNumber(response.getTransactionId())
                 .withTransactionId(response.getTransactionId())
                 .execute();

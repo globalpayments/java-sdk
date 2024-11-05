@@ -4,6 +4,7 @@ import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.*;
 import com.global.api.terminals.abstractions.IDeviceInterface;
@@ -13,11 +14,13 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.abstractions.IUPAMessage;
+import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaMicInterface;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
+import com.global.api.terminals.upa.responses.BatchReportResponse;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RequestLodgingFields;
 import com.global.api.terminals.upa.subgroups.RequestParamFields;
@@ -227,6 +230,67 @@ public class UpaController extends DeviceController {
 
     @Override
     public ITerminalReport processReport(TerminalReportBuilder builder) throws ApiException {
-        throw new UnsupportedTransactionException("This transaction is not currently supported for this payment type.");
+        IDeviceMessage message = buildReportParams(builder);
+
+        byte[] resp;
+
+        try {
+            resp = send(message);
+        } catch (ApiException e) {
+            if (e.getMessage().equals("Terminal did not respond in the given timeout.")) {
+                _device.cancel();
+            }
+            throw new ApiException(e.getMessage());
+        }
+
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(resp, StandardCharsets.UTF_8)
+        );
+        switch (builder.getTerminalReportType()) {
+            case GetBatchReport:
+                return new BatchReportResponse(responseObj);
+            default:
+                throw new GatewayException("Unknown report type!");
+        }
+    }
+
+    private IDeviceMessage buildReportParams(TerminalReportBuilder builder) throws UnsupportedTransactionException {
+        String requestId = builder.getTerminalSearchBuilder().getReferenceNumber();
+        if (requestId == null) {
+            requestId = getRequestId().toString();
+        }
+        JsonDoc doc = new JsonDoc();
+        doc.set("message", "MSG");
+
+        JsonDoc baseRequest = doc.subElement("data");
+        baseRequest.set("command", MapReportType(builder.getTerminalReportType()));
+        baseRequest.set("EcrId", _device.getEcrId());
+        baseRequest.set("requestId", requestId);
+        JsonDoc dataParams = new JsonDoc();
+        switch (builder.getTerminalReportType()) {
+            case GetBatchReport:
+                if (builder.getTerminalSearchBuilder().getBatch() > 0) {
+                    dataParams.set("batch", builder.getTerminalSearchBuilder().getBatch());
+                }
+                break;
+            default:
+                break;
+        }
+
+
+        if (!dataParams.getKeys().isEmpty()) {
+            baseRequest.set("params", dataParams);
+        }
+
+        return TerminalUtilities.buildMessage(doc);
+    }
+
+    private String MapReportType(TerminalReportType type) throws UnsupportedTransactionException {
+        switch (type) {
+            case GetBatchReport:
+                return UpaMessageId.GetBatchReport.toString();
+            default:
+                throw new UnsupportedTransactionException("Unsupported report type");
+        }
     }
 }

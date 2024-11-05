@@ -183,6 +183,11 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         return this;
     }
 
+    public TerminalManageBuilder withPaymentMethodType(PaymentMethodType value) {
+        this.paymentMethodType = value;
+        return this;
+    }
+
     public TerminalManageBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }

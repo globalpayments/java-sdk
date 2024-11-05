@@ -72,6 +72,12 @@ public class UpaAdminTests {
      * -----------------------------Line Items Test case start ----------------------------------------------------------------------
      */
     @Test
+    public void LineItemDisplay() throws ApiException {
+        runBasicTests(device.lineItem("Line Item #1", "10.00"));
+        runBasicTests(device.lineItem("Line Item #2", "11.00"));
+    }
+
+    @Test
     public void test03_lineItems() throws ApiException {
         runBasicTests(device.addLineItem("Line Item 1", "111.11"));
         runBasicTests(device.addLineItem("Line Item 2", null));
@@ -316,7 +322,6 @@ public class UpaAdminTests {
             data.setContent(base64Image);
             data.setLine1("Printing");
             data.setLine2("Please Wait...");
-            data.setDisplayOption(DisplayOption.NO_SCREEN_CHANGE);
 
             IDeviceResponse response = device.printReceipt(data);
             runBasicTests(response);

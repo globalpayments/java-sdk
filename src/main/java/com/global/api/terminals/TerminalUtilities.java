@@ -88,7 +88,9 @@ public class TerminalUtilities {
         json.set("message", message);
         json.set("data", "", true);
 
-        return compileMessage(json.toString());
+        DeviceMessage deviceMessage = compileMessage(json.toString());
+        deviceMessage.setRawRequest(json);
+        return deviceMessage;
     }
 
     public static DeviceMessage buildMessage(UpaMessageId messageType, String requestId, JsonDoc body) {
@@ -104,7 +106,10 @@ public class TerminalUtilities {
         json.set("data", data);
         json.set("message", "MSG");
 
-        return compileMessage(json.toString());
+        DeviceMessage deviceMessage = compileMessage(json.toString());
+        deviceMessage.setRawRequest(json);
+
+        return deviceMessage;
     }
 
     public static <T extends IRawRequestBuilder> DeviceMessage buildMessage(T doc) {
@@ -240,6 +245,7 @@ public class TerminalUtilities {
         byte[] range = compileRawMessage(body);
 
         DeviceMessage deviceMessage = new DeviceMessage(range);
+
         return deviceMessage;
     }
 
