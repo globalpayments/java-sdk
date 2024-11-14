@@ -194,7 +194,9 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
 
     @Test
     public void Test_004a_ChargeStoredCard() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+        checkCustomer();
+        RecurringPaymentMethod paymentMethod = checkPaymentMethod();
+
         Transaction response = paymentMethod.charge(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withCvn("123")
@@ -426,9 +428,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
             assertEquals("Schedule created successfully", response.getResponseMessage());
 
             // the schedule id/key is not received in the response from the create request
-            Schedule schedule = new Schedule();
-            schedule.setKey(scheduleId);
-            schedule = RecurringService.get(scheduleId, Schedule.class);
+            Schedule schedule = RecurringService.get(scheduleId, Schedule.class);
 
             assertEquals(scheduleId, schedule.getId());
             assertEquals(-1, schedule.getNumberOfPayments().intValue());

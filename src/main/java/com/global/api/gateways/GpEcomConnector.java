@@ -219,6 +219,9 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                 Element paymentData = et.subElement(request, "paymentdata");
                 Element cvn = et.subElement(paymentData, "cvn");
                 et.subElement(cvn, "number").text(builder.getCvn());
+                addMaskedData(MaskValueUtil.hideValues(
+                        new ElementToMask("request.paymentdata.cvn.number", builder.getCvn())
+                ));
             }
 
             String hash;

@@ -10,12 +10,12 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.tests.testdata.TestCards;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoEcommerceTests {
     private CreditCardData card;
@@ -38,10 +38,10 @@ public class PorticoEcommerceTests {
         ecom.setChannel(EcommerceChannel.Moto);
 
         Transaction response = card.charge(new BigDecimal("9"))
-            .withCurrency("USD")
-            .withEcommerceInfo(ecom)
-            .withAllowDuplicates(true)
-            .execute();
+                .withCurrency("USD")
+                .withEcommerceInfo(ecom)
+                .withAllowDuplicates(true)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -144,9 +144,7 @@ public class PorticoEcommerceTests {
 
         assertNotNull(response);
         assertNotNull(txnDetails);
-
         assertEquals("00", response.getResponseCode());
-
         assertNotNull(txnDetails.getThreeDSecure().getAuthenticationValue());
         assertNotNull(txnDetails.getThreeDSecure().getDirectoryServerTransactionId());
         assertNotNull(txnDetails.getThreeDSecure().getEci());
@@ -169,7 +167,7 @@ public class PorticoEcommerceTests {
 
         TransactionSummary txnSummary = ReportingService.transactionDetail(response.getTransactionId()).execute();
         assertNotNull(txnSummary);
-        assertEquals(customerEmail, txnSummary.getEmail() );
+        assertEquals(customerEmail, txnSummary.getEmail());
     }
 
     @Test
@@ -191,13 +189,13 @@ public class PorticoEcommerceTests {
 
         assertNotNull(response);
         assertNotNull(txnDetails);
-
         assertEquals("00", response.getResponseCode());
         assertNotNull(txnDetails.getThreeDSecure().getAuthenticationValue());
         assertNotNull(txnDetails.getThreeDSecure().getDirectoryServerTransactionId());
         assertNotNull(txnDetails.getThreeDSecure().getEci());
         assertNotNull(txnDetails.getThreeDSecure().getVersion());
     }
+
     @Test
     public void testCardHolderEmailIfCustomerDataIsNull() throws ApiException {
         Customer customerData = null;
@@ -214,11 +212,11 @@ public class PorticoEcommerceTests {
         TransactionSummary txnSummary = ReportingService.transactionDetail(response.getTransactionId()).execute();
 
         assertNotNull(txnSummary);
-        assertEquals("", txnSummary.getEmail() );
+        assertEquals("", txnSummary.getEmail());
     }
 
     @Test
-    @Ignore("Having the token invalidate known error for mobile transactions.")
+    @Disabled("Having the token invalidate known error for mobile transactions.")
     public void ecomWithWalletData_with_mobileType_04() throws ApiException {
         Address addy = new Address();
         addy.setPostalCode("56789");
@@ -238,7 +236,7 @@ public class PorticoEcommerceTests {
     }
 
     @Test
-    @Ignore("Having the token invalidate known error for mobile transactions.")
+    @Disabled("Having the token invalidate known error for mobile transactions.")
     public void ecomAuthWithWalletData_with_mobileType_05() throws ApiException {
         card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
         card.setPaymentDataSourceType(PaymentDataSourceType.GOOGLEPAYWEB);
@@ -252,6 +250,7 @@ public class PorticoEcommerceTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
     @Test
     public void UniqueTokenRequest() throws ApiException {
         card = TestCards.VisaManual();
@@ -264,7 +263,7 @@ public class PorticoEcommerceTests {
         assertNotNull(response1.getToken());
 
         Transaction response2 = card.verify()
-                .withRequestMultiUseToken(true,false)
+                .withRequestMultiUseToken(true, false)
                 .execute();
 
         assertNotNull(response2);
@@ -276,7 +275,7 @@ public class PorticoEcommerceTests {
                 .execute();
 
         assertNotNull(response3);
-        assertNotNull(response2.getToken());
-        assertNotEquals(response1.getToken(),response3.getToken());
+        assertNotNull(response3.getToken());
+        assertNotEquals(response1.getToken(), response3.getToken());
     }
 }

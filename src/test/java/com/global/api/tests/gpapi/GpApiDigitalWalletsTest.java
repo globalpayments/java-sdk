@@ -3,10 +3,7 @@ package com.global.api.tests.gpapi;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.Channel;
-import com.global.api.entities.enums.MobilePaymentMethodType;
-import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.enums.TransactionStatus;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
@@ -25,11 +22,10 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
     private final CreditCardData card;
     private final String clickToPayToken = "8144735251653223601";
-    private final String googlePayToken = "{\n" +
-            "    \"signature\": \"MEQCICeHhPSrVhVghzBUwtQcBZq9ed1+oe8wcInjOG5TciXeAiBmw35LvnI0POMW5p+oxisD2ImtZ9HmyKcYIYUX4kINtw\\u003d\\u003d\",\n" +
-            "    \"protocolVersion\": \"ECv1\",\n" +
-            "    \"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"E+gmqwjr4RZUMA0iQKJJS69k+kQirnRQGf4F0OglGXNcXnBCHDAmgKyjFxTS8l0pRkgG6f6qvgrTDPL6m+XxOIAQ9mh6yM2MerybNYaPUuVZl2MGBe1eckVg3oYYsuIOLkF6Qrq/+fpZhcXZPQbsAgx0dt1IDOE3XL245aIrxHED01gFLZQE2eizQIXVtbU4eJahysBjzDu9nUMhHKE3eAHW+ltuyFtB4jGTUKRJHM5x2YsXgyy5hzY9zjiPYc7uNNSCWQUUSYdVY0dzT9DUO5jvl0YhsZVvjHgSCRKEsBisDbbhs3pkUvCQnPZYSqflTl/EendCyUDq8PgtVSNYdyH+ByAe67kOMbiQ2LTXu8Nry0/UUvTdc8RdRR3aC1LpKf2KlEFiYdbYTi1IiGiK16cJHqrbOyjXXzqWp878jn2hSO3/ONAdshacHGrFWw58BHH9\\\",\\\"ephemeralPublicKey\\\":\\\"BJlb3xtHbQ/7thj/4D+eXls+fbjewUw1EWEc6diZOvkeIBPvUbbTCzHo448t6sEuffCZ9u+rqVWnA2p6djT+1h8\\\\u003d\\\",\\\"tag\\\":\\\"CSB0z2fhjaY5KjRnh1k0G5X2HiTxLTdXUYTiflKm7So\\\\u003d\\\"}\"\n" +
-            "}";
+    private final String googlePayToken = "{\n\"signature\": \"MEUCICd0LX9L1tHEf0I037gVTPS/DSFfKSHmChCkzGH629atAiEA2FbMt8aOuI+8p7QDEJIz2CetUWqHn+wpudVkEmc436A=\"," +
+            "\n\"protocolVersion\": \"ECv1\"," +
+            "\n\"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"keMtGQ03Kz+ydkxvv3Wy8XtUoHIGDvaKdLmIT3Czi7gY4wNe7o6UQ4gkjxH2qyYvRyoFqSfUyXAN+++AEEAlaJUsJysFJkM6G3GOcAvt7mxrNRJQhj60JbvX3iJ/NBDTlInPZVO5jbDh314igbV/tKhehztLIjFF4+Rn0bwh+ZE8DvFqt+hH/piw4vvDSVPXLdMiCddfmFKYEgHAxeiovHjnlb6PcA6UXRIWanu0etLmX0Wj4Kkz15MD6rIjPaKTP8VJr5El13/4SaRpbWZ8pAEULZuJYNUQbhwEas+5YjsskGDPJQKn8L2zMAOF9YOCA9+C/wBMRvDPvJ4X4hobkk7E/QsHViUtKFlEYHN73ojTsymrJxq9kDQY2rZQtgalzDq0gRWJYxDyvCX3979X8FGNitbV7rzL2rPyt0TA\\\",\\\"ephemeralPublicKey\\\":\\\"BMEZDnSw5a1OgsZlMJU9mrml/FWfKzRRNgtV/2P7uzpb0j5/MuqXH4gFgan6u1qlVC8E6nPCsago7yu2tMNJBAA\\\\u003d\\\",\\\"tag\\\":\\\"YGvjeXWGRW1jfLkHzm6vDJKu3p+ccCeUF/xARa5NQuk\\\\u003d\\\"}" +
+            "\"\n}";
 
     public GpApiDigitalWalletsTest() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
@@ -290,6 +286,8 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
         assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
         assertFalse(StringUtils.isNullOrEmpty(transaction.getTransactionId()));
+        assertEquals(CardType.VISA.toString(), transaction.getCardDetails().getBrand());
+        assertNotNull(transaction.getCardBrandTransactionId());
     }
 
     @Test

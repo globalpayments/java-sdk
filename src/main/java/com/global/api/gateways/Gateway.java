@@ -128,7 +128,7 @@ public abstract class Gateway {
                     } else {
                         logEntry.append(StringUtils.mask(maskedRequest));
                     }
-
+                    this.maskedRequestData.remove();
                     generateRequestLog();
                 }
                 try (DataOutputStream requestStream = new DataOutputStream(conn.getOutputStream())) {
@@ -147,8 +147,7 @@ public abstract class Gateway {
                         logEntry.append("Response Code: ").append(conn.getResponseCode()).append(" ").append(conn.getResponseMessage()).append(lSChar);
                         logEntry.append(lSChar).append("Response Headers:").append(lSChar);
                         logResponseHeaders(conn, logEntry);
-                        String maskedResponse = maskFieldsIfNeeded(rawResponse);
-                        logEntry.append("Response Body:").append(lSChar).append(toPrettyJson(maskedResponse));
+                        logEntry.append("Response Body:").append(lSChar).append(toPrettyJson(rawResponse));
                     } else {
                         logEntry.append(rawResponse);
                     }

@@ -148,34 +148,32 @@ public class GpApiMapping {
 
                 transaction.setToken(paymentMethod.getString("id"));
 
-                if (paymentMethod.has("card")) {
-                    JsonDoc card = paymentMethod.get("card");
-                    transaction.setAuthorizationCode(paymentMethod.get("card").getString("authcode"));
+                JsonDoc paymentMethodObj = paymentMethod.has("card") ? paymentMethod.get("card") : (
+                        paymentMethod.has("digital_wallet") ? paymentMethod.get("digital_wallet") : null);
+                if (paymentMethodObj != null) {
+
+                    transaction.setAuthorizationCode(paymentMethodObj.getString("authcode"));
 
                     var cardDetails = new Card();
-                    cardDetails.setMaskedNumberLast4(card.getString("masked_number_last4"));
-                    cardDetails.setBrand(card.getString("brand"));
+                    cardDetails.setMaskedNumberLast4(paymentMethodObj.getString("masked_number_last4"));
+                    cardDetails.setBrand(paymentMethodObj.getString("brand"));
                     transaction.setCardDetails(cardDetails);
 
-                    transaction.setCardType(card.getString("brand"));
-                    transaction.setCardLast4(card.getString("masked_number_last4"));
-                    transaction.setCvnResponseMessage(card.getString("cvv_result"));
-                    transaction.setCardBrandTransactionId(card.getString("brand_reference"));
-                    transaction.setAvsResponseCode(card.getString("avs_postal_code_result"));
-                    transaction.setAvsAddressResponse(card.getString("avs_address_result"));
-                    transaction.setAvsResponseMessage(card.getString("avs_action"));
-                    transaction.setPaymentMethodType(paymentMethod.has("bank_transfer") == false ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
+                    transaction.setCardType(paymentMethodObj.getString("brand"));
+                    transaction.setCardLast4(paymentMethodObj.getString("masked_number_last4"));
+                    transaction.setCvnResponseMessage(paymentMethodObj.getString("cvv_result"));
+                    transaction.setCardBrandTransactionId(paymentMethodObj.getString("brand_reference"));
+                    transaction.setAvsResponseCode(paymentMethodObj.getString("avs_postal_code_result"));
+                    transaction.setAvsAddressResponse(paymentMethodObj.getString("avs_address_result"));
+                    transaction.setAvsResponseMessage(paymentMethodObj.getString("avs_action"));
                     transaction.setPaymentMethodType(!paymentMethod.has("bank_transfer") ? PaymentMethodType.ACH : transaction.getPaymentMethodType());
-                    if (card.has("provider")) {
-                        transaction.setCardIssuerResponse(mapCardIssuerResponse(card.get("provider")));
-                    }else{
+                    if (paymentMethod.has("card") && paymentMethod.get("card").has("provider")) {
+                        transaction.setCardIssuerResponse(mapCardIssuerResponse(paymentMethodObj.get("provider")));
+                    }else if(paymentMethod.has("result")) {
                         transaction.setCardIssuerResponse(new CardIssuerResponse(paymentMethod.getString("result")));
                     }
                 }
-                if (paymentMethod.has("digital_wallet")){
-                    JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
-                    transaction.setAuthorizationCode(digitalWallet.getString("authcode"));
-                }
+
                 if (paymentMethod.has("apm") &&
                         paymentMethod.get("apm").getString("provider").toUpperCase().equals(PaymentProvider.OPEN_BANKING.toString())) {
                     transaction.setPaymentMethodType(PaymentMethodType.BankPayment);

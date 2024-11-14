@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - V14.2.2 (10/31/2024)
+## Latest Version - V14.2.3 (11/14/2024)
+### Enhancements
+- [GP-API] - Add new mapping fields on digital wallet transaction response: masked_number_last4, brand, brand_reference
+- Added Support for JUnit 5, Mockito and Jacoco Reporting
+
+### Bug Fixes
+- [GP-ECOM] Fix request logger for recurring payments
+
+## V14.2.2 (10/31/2024)
 ### Enhancements
 - [Terminals] Add abstract class DeviceInterface
 - [Terminals] Clean-up HPAInterface, UPAInterface, PaxInterface, GeniusInterface, DiamondInterface - remove all the 
