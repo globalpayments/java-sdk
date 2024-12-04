@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V14.2.3 (11/14/2024)
+## Latest Version - V14.2.4 (12/03/2024)
+### Enhancements
+- [GP-API] - Add new mappings on GET /transaction response: funding, tid, masked_number_first6last4, issuer, gratuity_amount, cashback_amount, authentication
+- [GP-API] - Add new enum value for payByLinkType
+
+### Bug Fixes
+- [NTS] - Updated DirverID format for Voyager Fleet EMV (10341)
+- [NTS] - Fixed Null pointer exception for Batch close Transaction (10342)
+
+## V14.2.3 (11/14/2024)
 ### Enhancements
 - [GP-API] - Add new mapping fields on digital wallet transaction response: masked_number_last4, brand, brand_reference
 - Added Support for JUnit 5, Mockito and Jacoco Reporting

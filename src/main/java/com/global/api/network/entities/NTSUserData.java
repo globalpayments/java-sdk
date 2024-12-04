@@ -1089,10 +1089,15 @@ public class NTSUserData {
                     sb.append(fleetData != null ?
                             StringUtils.padLeft(fleetData.getOdometerReading(), 7, '0'):
                             StringUtils.padLeft(0, 7, '0'));
-                    sb.append(fleetData != null ?
-                            StringUtils.padLeft(fleetData.getDriverId(), 6, '0'):
-                            StringUtils.padLeft(0, 6, '0'));
+                    if(builder.getTagData() == null) {
+                        sb.append(fleetData != null ?
+                                StringUtils.padLeft(fleetData.getDriverId(), 6, '0') :
+                                StringUtils.padLeft(0, 6, '0'));
+                    }
                     if (builder.getTagData() != null) {
+                        sb.append(fleetData != null ?
+                                StringUtils.padLeft(fleetData.getDriverId(), 6, ' ') :
+                                StringUtils.padLeft(" ", 6, ' '));
                         sb.append(getVoyagerEmvUserData(builder, paymentMethod)) ;
                     }else if (builder.getTransactionModifier() != null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
                         sb.append(getVoyagerFallBackUserData(builder,paymentMethod));
@@ -1874,7 +1879,7 @@ public class NTSUserData {
         if (paymentMethod instanceof IPinProtected) {
             String pinBlock = ((IPinProtected) paymentMethod).getPinBlock();
             sb.append(pinBlock != null ? pinBlock.substring(0,16):StringUtils.padLeft(0, 16, '0'));
-            sb.append(pinBlock != null ? StringUtils.padLeft(pinBlock.substring(16), 20, ' ') :StringUtils.padLeft(0, 20, '0'));
+            sb.append(StringUtils.padLeft(0, 20, '0'));
         }
         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
         sb.append(StringUtils.padLeft(builder.getTagData().length(), 4, '0'));

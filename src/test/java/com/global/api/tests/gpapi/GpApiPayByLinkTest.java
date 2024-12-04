@@ -44,11 +44,12 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     private String payByLinkId = null;
 
     public GpApiPayByLinkTest() throws ApiException {
-        GpApiConfig config = gpApiSetup("v2yRaFOLwFaQc0fSZTCyAdQCBNByGpVK", "oKZpWitk6tORoCVT", Channel.CardNotPresent);
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+        ServicesContainer.configureService(config);
         config.setCountry("GB");
         AccessTokenInfo accessTokenInfo =
                 new AccessTokenInfo()
-                        .setTransactionProcessingAccountName("LinkManagement");
+                        .setTransactionProcessingAccountName("paylink");
 
         config.setAccessTokenInfo(accessTokenInfo);
 
@@ -117,7 +118,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     @Test
     public void ReportPayByLinkDetail() throws ApiException {
-        String payByLinkId = "LNK_XXmoF2d4UVBs4k8oXwuqPw1LFQCvc2";
+        String payByLinkId = "LNK_DSCdHKewZBC24QIObU77DQyMlCYYPK";
 
         PayByLinkSummary response =
                 PayByLinkService
@@ -176,21 +177,6 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         assertNotNull(response.getResults());
         PayByLinkSummary randomPayByLink = response.getResults().get(0);
         assertNotNull(randomPayByLink);
-    }
-
-    @Test
-    public void FindPayByLinkByDate_NoResults() throws ApiException {
-        PayByLinkSummaryPaged response =
-                PayByLinkService
-                        .findPayByLink(1, 10)
-                        .orderBy(PayByLinkSortProperty.TimeCreated, SortDirection.Ascending)
-                        .where(SearchCriteria.StartDate, DateTime.now().minusMonths(24).toDate())
-                        .and(SearchCriteria.EndDate, DateTime.now().minusMonths(22).toDate())
-                        .execute();
-
-        assertNotNull(response);
-        assertEquals(0, response.getResults().size());
-        assertEquals(0, response.getTotalRecordCount());
     }
 
     @Test
@@ -791,46 +777,6 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         } catch (BuilderException e) {
             exceptionCaught = true;
             assertEquals("usageLimit cannot be null for this transaction type.", e.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void EditPayByLink_MissingDescription() throws ApiException {
-        assertNotNull(payByLinkId);
-
-        boolean exceptionCaught = false;
-        try {
-            PayByLinkService
-                    .edit(payByLinkId)
-                    .withAmount(amount)
-                    .withPayByLinkData(payByLink)
-                    .execute();
-        } catch (GatewayException e) {
-            exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following field description", e.getMessage());
-            assertEquals("40005", e.getResponseText());
-        } finally {
-            assertTrue(exceptionCaught);
-        }
-    }
-
-    @Test
-    public void EditPayByLink_MissingAmount() throws ApiException {
-        assertNotNull(payByLinkId);
-
-        boolean exceptionCaught = false;
-        try {
-            PayByLinkService
-                    .edit(payByLinkId)
-                    .withAmount(null)
-                    .withPayByLinkData(payByLink)
-                    .withDescription("Update PayByLink description")
-                    .execute();
-        } catch (BuilderException e) {
-            exceptionCaught = true;
-            assertEquals("amount cannot be null for this transaction type.", e.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }

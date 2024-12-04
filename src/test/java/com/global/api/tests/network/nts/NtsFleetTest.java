@@ -1438,19 +1438,17 @@ public class NtsFleetTest {
     public void test_003_Voyager_Fleet_EMV_auth_track2_amount_expansion() throws ApiException {
         track = new CreditTrackData();
         track.setValue(";7088869008250005031=25120000000000000?");
-        track.setEntryMethod(EntryMethod.Swipe);
-        track.setPinBlock("78FBB9DAEEB14E5A");
+        track.setEntryMethod(EntryMethod.ContactEMV);
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setDriverId("123456");
+        fleetData.setDriverId("1234");
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withTagData(emvTagData)
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)
                 .withFleetData(fleetData)
-                .withCardSequenceNumber("101")
                 .execute();
 
         assertNotNull(response);
@@ -1534,7 +1532,7 @@ public class NtsFleetTest {
 
         fleetData = new FleetData();
         fleetData.setOdometerReading("4800012");
-        fleetData.setDriverId("123456");
+        fleetData.setDriverId("1234");
 
         Transaction response = track.charge(new BigDecimal(90.90))
                 .withCurrency("USD")

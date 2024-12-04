@@ -36,4 +36,6 @@ public class Card {
     // The label of the issuing bank or financial institution of the bin
     private String issuer;
 
+    private String funding;
+
 }

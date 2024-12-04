@@ -394,7 +394,8 @@ public class GpApiMapping {
         summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setOrderId(doc.getString("order_reference"));
         summary.setBatchCloseDate(parseGpApiDateTime(doc.getString("batch_time_created")));
-
+        summary.setGratuityAmount(doc.getAmount("gratuity_amount"));
+        summary.setCashBackAmount(doc.getAmount("cashback_amount"));
         if (doc.has("payment_method")) {
             final JsonDoc paymentMethod = doc.get("payment_method");
 
@@ -410,6 +411,8 @@ public class GpApiMapping {
                 summary.setBrandReference(card.getString("brand_reference"));
                 summary.setAcquirerReferenceNumber(card.getString("arn"));
                 summary.setMaskedCardNumber(card.getString("masked_number_first6last4"));
+
+                summary.setCardDetails(mapCardDetails(card));
             } else if (paymentMethod.has("digital_wallet")) {
                 JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
 
@@ -417,6 +420,10 @@ public class GpApiMapping {
                 summary.setAuthCode(digitalWallet.getString("authcode"));
                 summary.setBrandReference(digitalWallet.getString("brand_reference"));
                 summary.setMaskedCardNumber(digitalWallet.getString("masked_token_first6last4"));
+            }
+
+            if (paymentMethod.has("authentication")) {
+                summary.setThreeDSecure(map3DSInfo(paymentMethod.get("authentication")));
             }
         }
 
@@ -427,6 +434,7 @@ public class GpApiMapping {
             summary.setMerchantHierarchy(system.getString("hierarchy"));
             summary.setMerchantName(system.getString("name"));
             summary.setMerchantDbaName(system.getString("dba"));
+            summary.setMerchantDeviceIdentifier(system.getString("tid"));
         }
 
         if (doc.has("payment_method")) {
@@ -1650,4 +1658,32 @@ public class GpApiMapping {
                         .setAvsPostalCodeResult(response.getString("avs_postal_code_result"));
     }
 
+    private static ThreeDSecure map3DSInfo(JsonDoc response) {
+        ThreeDSecure threeDSecure = new ThreeDSecure();
+        threeDSecure.setServerTransactionId(response.getString("id"));
+        if (response.has("three_ds")) {
+            JsonDoc threeDSNode = response.get("three_ds");
+            threeDSecure.setAuthenticationValue(threeDSNode.getString("value"));
+            threeDSecure.setProviderServerTransRef(threeDSNode.getString("server_trans_ref"));
+            threeDSecure.setDirectoryServerTransactionId(threeDSNode.getString("ds_trans_ref"));
+            if (threeDSNode.has("exempt_status") && !threeDSNode.getString("exempt_status").isEmpty()) {
+                threeDSecure.setExemptStatus(ExemptStatus.valueOf(threeDSNode.getString("exempt_status").toUpperCase()));
+            }
+            threeDSecure.setCavv(threeDSNode.getString("cavv_result"));
+            threeDSecure.setMessageVersion(threeDSNode.getString("message_version"));
+            threeDSecure.setEci(threeDSNode.getString("eci"));
+        }
+
+        return threeDSecure;
+    }
+
+    private static Card mapCardDetails(JsonDoc cardInfo) {
+        Card cardDetails = new Card();
+        cardDetails.setMaskedCardNumber(cardInfo.getString("masked_number_first6last4"));
+        cardDetails.setFunding(cardInfo.getString("funding"));
+        cardDetails.setBrand(cardInfo.getString("brand"));
+        cardDetails.setIssuer(cardInfo.getString("issuer"));
+
+        return cardDetails;
+    }
 }

@@ -92,6 +92,7 @@ public class TransactionSummary {
     private String merchantDbaName;
     private String merchantHierarchy;
     private String merchantId;
+    private String merchantDeviceIdentifier;
     private String merchantName;
     private String merchantNumber;
     private BigDecimal netAmount;
@@ -152,9 +153,6 @@ public class TransactionSummary {
     private String safReferenceNumber;
     private String cardAcquisition;
     private String transactionTime;
-
-    public String getClientTransactionId() {
-        return clientTransactionId;
-    }
+    private Card cardDetails;
 
 }

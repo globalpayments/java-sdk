@@ -767,6 +767,8 @@ public class NtsConnector extends GatewayConnectorConfig {
         ntsObjectParam.setHostResponseCode(builder.getHostResponseCode());
 
         TransactionReference reference = (TransactionReference)paymentMethod;
+
+        if(reference!=null){
         IPaymentMethod originalPaymentMethod = reference.getOriginalPaymentMethod();
         //set 3des data
         if(originalPaymentMethod instanceof IEncryptable) {
@@ -802,7 +804,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             generateTokenTagData(ntsObjectParam,token,expiry);
 
         }
-
+      }
         request = NtsRequestObjectFactory.getNtsRequestObject(ntsObjectParam);
         Transaction transaction = sendRequest(request, builder);
         transaction.setMessageInformation(ntsObjectParam.getNtsBuilder().getNtsRequestMessageHeader().getPriorMessageInformation());
