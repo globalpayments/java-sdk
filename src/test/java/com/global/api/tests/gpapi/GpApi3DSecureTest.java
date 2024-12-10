@@ -424,7 +424,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     @Test
     public void FullCycle_v2_WithMobileSdk() throws ApiException {
         // Frictionless scenario
-        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
         // Check enrollment
         ThreeDSecure secureEcom =

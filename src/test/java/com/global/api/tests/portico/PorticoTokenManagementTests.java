@@ -7,9 +7,8 @@ import com.global.api.paymentMethods.CreditCardData;
 
 import com.global.api.serviceConfigs.PorticoConfig;
 import org.joda.time.DateTime;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoTokenManagementTests {
     public PorticoTokenManagementTests() throws ApiException {

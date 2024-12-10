@@ -8,11 +8,11 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoInteracTests {
     private DebitTrackData track;
@@ -129,13 +129,15 @@ public class PorticoInteracTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test(expected = BuilderException.class)
-    public void debitInteracChipConditionWithTagData() throws ApiException {
-        track.charge(new BigDecimal("8"))
-                .withCurrency("USD")
-                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
-                .withTagData(tagData)
-                .execute();
+    @Test
+    public void debitInteracChipConditionWithTagData()  {
+        assertThrows(BuilderException.class, () ->
+            track.charge(new BigDecimal("8"))
+                    .withCurrency("USD")
+                    .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                    .withTagData(tagData)
+                    .execute()
+        );
     }
 
     @Test
@@ -215,9 +217,9 @@ public class PorticoInteracTests {
 
         Transaction transaction =
                 Transaction.fromId(
-                    response.getTransactionId(),
-                    PaymentMethodType.Debit,
-                    track
+                        response.getTransactionId(),
+                        PaymentMethodType.Debit,
+                        track
                 );
 
         Transaction capture =
@@ -311,7 +313,7 @@ public class PorticoInteracTests {
     }
 
     @Test
-    public void debitInteracTimeOutException() throws ApiException {
+    public void debitInteracTimeOutException()  {
         GatewayTimeoutException gatewayTimeoutException = assertThrows(GatewayTimeoutException.class,
                 ()-> track.charge(new BigDecimal("989.20"))
                         .withCurrency("USD")

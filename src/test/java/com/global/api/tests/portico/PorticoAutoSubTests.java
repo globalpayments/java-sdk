@@ -9,18 +9,19 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoAutoSubTests {
     private CreditCardData card;
     private CreditTrackData track;
 
-    public PorticoAutoSubTests() throws ApiException {
+    @BeforeEach
+    public void setup() throws ApiException {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MTeSAQAfG1UA9qQDrzl-kz4toXvARyieptFwSKP24w");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
@@ -31,14 +32,14 @@ public class PorticoAutoSubTests {
         card.setNumber("4111111111111111");
         card.setExpMonth(12);
         card.setExpYear(2025);
-        card.setCvn ("123");
+        card.setCvn("123");
 
         track = new CreditTrackData();
         track.setValue("<E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;");
         track.setEncryptionData(EncryptionData.version1());
     }
 
-        @Test
+    @Test
     public void totalAmountTest() {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setClinicSubTotal(new BigDecimal("25"));
@@ -48,7 +49,7 @@ public class PorticoAutoSubTests {
         assertEquals(new BigDecimal("100"), autoSub.getTotalHelthcareAmount());
     }
 
-        @Test
+    @Test
     public void dental() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -56,15 +57,15 @@ public class PorticoAutoSubTests {
         autoSub.setDentalSubTotal(new BigDecimal("150"));
 
         Transaction response = card.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAutoSubstantiation(autoSub)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-        @Test
+    @Test
     public void vision() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -72,15 +73,15 @@ public class PorticoAutoSubTests {
         autoSub.setVisionSubTotal(new BigDecimal("150"));
 
         Transaction response = track.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAutoSubstantiation(autoSub)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-        @Test
+    @Test
     public void clinicOrOther() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -88,15 +89,15 @@ public class PorticoAutoSubTests {
         autoSub.setClinicSubTotal(new BigDecimal("150"));
 
         Transaction response = card.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAutoSubstantiation(autoSub)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-        @Test
+    @Test
     public void prescription() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -104,15 +105,15 @@ public class PorticoAutoSubTests {
         autoSub.setPrescriptionSubTotal(new BigDecimal("150"));
 
         Transaction response = track.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAutoSubstantiation(autoSub)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test(expected = BuilderException.class)
+    @Test
     public void allSubTotals() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -122,14 +123,16 @@ public class PorticoAutoSubTests {
         autoSub.setDentalSubTotal(new BigDecimal("25"));
         autoSub.setPrescriptionSubTotal(new BigDecimal("25"));
 
-        card.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+        assertThrows(BuilderException.class, () ->
+            card.charge(new BigDecimal("215"))
+                    .withCurrency("USD")
+                    .withAllowDuplicates(true)
+                    .withAutoSubstantiation(autoSub)
+                    .execute()
+        );
     }
 
-        @Test
+    @Test
     public void threeSubTotals() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");
@@ -139,15 +142,15 @@ public class PorticoAutoSubTests {
         autoSub.setDentalSubTotal(new BigDecimal("25"));
 
         Transaction response = track.charge(new BigDecimal("215"))
-            .withCurrency("USD")
-            .withAllowDuplicates(true)
-            .withAutoSubstantiation(autoSub)
-            .execute();
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withAutoSubstantiation(autoSub)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
 
-        @Test
+    @Test
     public void twoSubTotals() throws ApiException {
         AutoSubstantiation autoSub = new AutoSubstantiation();
         autoSub.setMerchantVerificationValue("12345");

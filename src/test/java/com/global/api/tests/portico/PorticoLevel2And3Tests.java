@@ -10,13 +10,13 @@ import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.tests.testdata.TestCards;
 import org.joda.time.DateTime;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class PorticoLevel2And3Tests {
     private CreditCardData card;

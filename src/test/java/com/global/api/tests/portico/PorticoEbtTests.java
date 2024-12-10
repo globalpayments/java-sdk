@@ -9,16 +9,16 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoEbtTests {
     private final EBTCardData card;
     private final EBTTrackData track;
-    
+
     public PorticoEbtTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
@@ -26,7 +26,7 @@ public class PorticoEbtTests {
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config);
-        
+
         card = new EBTCardData();
         card.setNumber("4012002000060016");
         card.setExpMonth(12);
@@ -112,8 +112,11 @@ public class PorticoEbtTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test(expected = UnsupportedTransactionException.class)
-    public void ebtRefundFromTransactionId() throws ApiException {
-        Transaction.fromId("1234567890", PaymentMethodType.EBT).refund().execute();
+    @Test
+    public void ebtRefundFromTransactionId() {
+        assertThrows(UnsupportedTransactionException.class, () ->
+            Transaction.fromId("1234567890", PaymentMethodType.EBT).refund().execute()
+        );
     }
+
 }

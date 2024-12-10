@@ -6,27 +6,26 @@ import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.serviceConfigs.PorticoConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoGiftTests {
     private GiftCard card;
     private GiftCard track;
-    
+
     public PorticoGiftTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
         config.setSecretApiKey("skapi_cert_MaePAQBr-1QAqjfckFC8FTbRTT120bVQUlfVOjgCBw");
         config.setServiceUrl("https://cert.api2.heartlandportico.com");
 
         ServicesContainer.configureService(config);
-        
+
         card = new GiftCard();
         card.setNumber("5022440000000000007");
-        
+
         track = new GiftCard();
         track.setTrackData("%B5022440000000000098^^391200081613?;5022440000000000098=391200081613?");
     }
@@ -173,9 +172,9 @@ public class PorticoGiftTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
-    
+
     @Test
-    public void giftReverseWthTransactionId() throws ApiException {
+    public void giftReverseWithTransactionId() throws ApiException {
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();

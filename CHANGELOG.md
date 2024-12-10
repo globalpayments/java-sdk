@@ -1,9 +1,14 @@
 # Changelog
 
-## Latest Version - V14.2.4 (12/03/2024)
+## Latest Version - V14.2.5 (12/10/2024)
+### Enhancements
+- [GP-API] - Add cardholder name on 3DS check availability request
+- [Portico] - Converted test files to JUnit 5 in Portico folder
+
+## V14.2.4 (12/03/2024)
 ### Enhancements
 - [GP-API] - Add new mappings on GET /transaction response: funding, tid, masked_number_first6last4, issuer, gratuity_amount, cashback_amount, authentication
-- [GP-API] - Add new enum value for payByLinkType
+- [GP-API] - Add new enum value for payByLinkType: HOSTED_PAYMENT_PAGE, THIRD_PARTY_PAGE
 
 ### Bug Fixes
 - [NTS] - Updated DirverID format for Voyager Fleet EMV (10341)

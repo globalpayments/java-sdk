@@ -13,13 +13,12 @@ import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoDebitTests {
     private DebitTrackData track;
@@ -56,7 +55,7 @@ public class PorticoDebitTests {
         assertEquals("00", reversal.getResponseCode());
     }
 
-    @Test @Ignore
+    @Test @Disabled
     public void debitAddValue() throws ApiException {
         Transaction response = track.addValue(new BigDecimal("15.01"))
                 .withCurrency("USD")
@@ -115,9 +114,11 @@ public class PorticoDebitTests {
         assertEquals("DebitReversal", reversalDetails.getServiceName());
     }
 
-    @Test(expected = UnsupportedTransactionException.class)
-    public void debitRefundFromTransactionId() throws ApiException {
-        Transaction.fromId("1234567890", PaymentMethodType.Debit).refund().execute();
+    @Test
+    public void debitRefundFromTransactionId()  {
+        assertThrows(UnsupportedTransactionException.class, () -> {
+            Transaction.fromId("1234567890", PaymentMethodType.Debit).refund().execute();
+        });
     }
 
     @Test

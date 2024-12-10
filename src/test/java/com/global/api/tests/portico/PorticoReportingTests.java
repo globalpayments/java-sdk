@@ -13,14 +13,18 @@ import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.services.SurchargeEligibilityService;
 import com.global.api.utils.DateUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.TimeZone;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class PorticoReportingTests {
     public PorticoReportingTests() throws ApiException {
@@ -57,7 +61,7 @@ public class PorticoReportingTests {
                 .withEndDate(DateUtils.addDays(new Date(), -1))
                 .execute();
 
-        if (summary.size() > 0) {
+        if (!summary.isEmpty()) {
             TransactionSummary response = ReportingService.transactionDetail(summary.get(0).getTransactionId()).execute();
             assertNotNull(response);
             assertEquals("00", response.getGatewayResponseCode());
@@ -165,26 +169,26 @@ public class PorticoReportingTests {
         creditCardData.setCvn("123");
 
         creditCardData.charge(new BigDecimal(15))
-            .withCurrency("usd")
-            .withInvoiceNumber("11115")
-            .withAllowDuplicates(true)
-            .execute();
+                .withCurrency("usd")
+                .withInvoiceNumber("11115")
+                .withAllowDuplicates(true)
+                .execute();
 
         creditCardData.charge(new BigDecimal(10))
-            .withCurrency("usd")
-            .withInvoiceNumber("776655")
-            .withAllowDuplicates(true)
-            .execute();
+                .withCurrency("usd")
+                .withInvoiceNumber("776655")
+                .withAllowDuplicates(true)
+                .execute();
 
         creditCardData.charge(new BigDecimal(10))
-            .withCurrency("usd")
-            .withInvoiceNumber("776655")
-            .withAllowDuplicates(true)
-            .execute();
+                .withCurrency("usd")
+                .withInvoiceNumber("776655")
+                .withAllowDuplicates(true)
+                .execute();
 
         TransactionSummaryList summary = ReportingService.findTransactions()
-            .where(SearchCriteria.CardNumberLastFour, "9876")
-            .execute();
+                .where(SearchCriteria.CardNumberLastFour, "9876")
+                .execute();
 
         assertNotNull(summary);
 
@@ -193,9 +197,9 @@ public class PorticoReportingTests {
         }
 
         TransactionSummaryList summary2 = ReportingService.findTransactions()
-            .where(SearchCriteria.SettlementAmount, new BigDecimal(10))
-            .and(SearchCriteria.InvoiceNumber, "776655")
-            .execute();
+                .where(SearchCriteria.SettlementAmount, new BigDecimal(10))
+                .and(SearchCriteria.InvoiceNumber, "776655")
+                .execute();
 
         assertNotNull(summary2);
 
@@ -204,9 +208,9 @@ public class PorticoReportingTests {
         }
 
         TransactionSummaryList summary3 = ReportingService.findTransactions()
-            .where(SearchCriteria.InvoiceNumber, "11115")
+                .where(SearchCriteria.InvoiceNumber, "11115")
                 .and(SearchCriteria.SafIndicator,"N")
-            .execute();
+                .execute();
 
         assertNotNull(summary3);
 
@@ -289,9 +293,9 @@ public class PorticoReportingTests {
 
         //Get reportItem that matches the clienttxnid
         TransactionSummary reportItem = reportResponse.stream()
-                                                .filter((summary)-> summary.getClientTransactionId().equals(clientTxnID))
-                                                .findFirst()
-                                                .orElse(null);
+                .filter((summary)-> summary.getClientTransactionId().equals(clientTxnID))
+                .findFirst()
+                .orElse(null);
 
         assertNotNull(reportItem);
         assertEquals(reportItem.getClientTransactionId(), clientTxnID);
