@@ -25,9 +25,8 @@ class PaxInterface extends DeviceInterface {
         this.onMessageSent = onMessageSent;
     }
 
-    @Override
     public void setOnMessageReceived(IMessageSentInterface onMessageReceived) {
-        //Intentional left blank
+        controller.onMessageReceived = onMessageReceived;
     }
 
     PaxInterface(PaxController controller) {

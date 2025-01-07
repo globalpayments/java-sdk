@@ -29,9 +29,10 @@ import com.global.api.utils.StringUtils;
 import java.util.ArrayList;
 
 public class PaxController extends DeviceController {
-    private IDeviceInterface device;
-
+    private PaxInterface device;
     private IMessageSentInterface onMessageSent;
+    public IMessageSentInterface onMessageReceived;
+
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
     }
@@ -149,16 +150,24 @@ public class PaxController extends DeviceController {
         PaxTxnType transType = mapTransactionType(builder.getTransactionType(), builder.isRequestMultiUseToken());
         switch (builder.getPaymentMethodType()) {
             case Credit:
-                return doCredit(transType, amounts, account, trace, avs, cashier, commercial, ecom, extData);
+                CreditResponse creditResponse = doCredit(transType, amounts, account, trace, avs, cashier, commercial, ecom, extData);
+                if (onMessageReceived != null) onMessageReceived.messageSent(creditResponse.toString());
+                return creditResponse;
             case Debit:
-                return doDebit(transType, amounts, account, trace, cashier, extData);
+                DebitResponse debitResponse = doDebit(transType, amounts, account, trace, cashier, extData);
+                if (onMessageReceived != null) onMessageReceived.messageSent(debitResponse.toString());
+                return debitResponse;
             case Gift:
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
-                return doGift(messageId, transType, amounts, account, trace, cashier, extData);
+                GiftResponse giftResponse = doGift(messageId, transType, amounts, account, trace, cashier, extData);
+                if (onMessageReceived != null) onMessageReceived.messageSent(giftResponse.toString());
+                return giftResponse;
             case EBT:
                 if(builder.getCurrency() != null)
                     account.setEbtType(builder.getCurrency().getValue().substring(0, 1));
-                return doEbt(transType, amounts, account, trace, cashier);
+                EbtResponse ebtResponse = doEbt(transType, amounts, account, trace, cashier);
+                if (onMessageReceived != null) onMessageReceived.messageSent(ebtResponse.toString());
+                return ebtResponse;
             default:
                 throw new UnsupportedTransactionException();
         }

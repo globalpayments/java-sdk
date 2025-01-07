@@ -16,7 +16,12 @@ import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.Test;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -30,7 +35,7 @@ public class PaxCreditTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.0.5");
+        deviceConfig.setIpAddress("192.168.154.5");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -40,11 +45,9 @@ public class PaxCreditTests {
 
     @Test
     public void creditSale() throws ApiException {
-        device.setOnMessageSent(message -> {
-            assertNotNull(message);
-        });
+        logStuff(); // simple logger I added to the bottom of this file
 
-        TerminalResponse response = device.creditSale(new BigDecimal(20.99))
+        TerminalResponse response = device.sale(new BigDecimal("20.99"))
                 .withAllowDuplicates(true)
                 .withGratuity(new BigDecimal("1.00"))
                 .execute();
@@ -567,5 +570,41 @@ public class PaxCreditTests {
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    public void logStuff() {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        String newLine = System.lineSeparator();
+
+        device.setOnMessageSent(message -> {
+            assertNotNull(message);
+
+            FileWriter writer;
+            try {
+                writer = new FileWriter("logs.txt", true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            PrintWriter printer = new PrintWriter(writer);
+            printer.append(timeStamp).append(newLine);
+            printer.println("Sent to device:");
+            printer.println(message + newLine);
+            printer.close();
+        });
+
+        device.setOnMessageReceived(message -> {
+            assertNotNull(message);
+
+            FileWriter writer;
+            try {
+                writer = new FileWriter("logs.txt", true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            PrintWriter printer = new PrintWriter(writer);
+            printer.println("Received from device:");
+            printer.println(message + newLine + newLine);
+            printer.close();
+        });
     }
 }

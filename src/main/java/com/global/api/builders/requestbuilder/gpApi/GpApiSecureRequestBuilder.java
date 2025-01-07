@@ -154,9 +154,6 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("account_change_indicator", getValueIfNotNull(builder.getAccountChangeIndicator()))
                         .set("account_password_change_date", builder.getPasswordChangeDate() != null ? builder.getPasswordChangeDate().toString("yyyy-MM-dd") : null)
                         .set("account_password_change_indicator", getValueIfNotNull(builder.getPasswordChangeIndicator()))
-                        .set("home_phone", homePhone.getKeys() != null ? homePhone : null)
-                        .set("work_phone", workPhone.getKeys() != null ? workPhone : null)
-                        .set("mobile_phone", mobilePhone.getKeys() != null ? mobilePhone : null)
                         .set("payment_account_creation_date", builder.getPaymentAccountCreateDate() != null ? builder.getPaymentAccountCreateDate().toString("yyyy-MM-dd") : null)
                         .set("payment_account_age_indicator", getValueIfNotNull(builder.getPaymentAgeIndicator()))
                         .set("suspicious_account_activity", builder.getSuspiciousAccountActivity() != null ? builder.getSuspiciousAccountActivity().toString() : "")
@@ -167,7 +164,15 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString(format) : null)
                         .set("email", builder.getCustomerEmail())
                         .set("shipping_address_creation_indicator", getValueIfNotNull(builder.getShippingAddressUsageIndicator()));
-
+        if (!mobilePhone.getKeys().isEmpty()) {
+            payer.set("mobile_phone", mobilePhone);
+        }
+        if (!homePhone.getKeys().isEmpty()) {
+            payer.set("home_phone", homePhone);
+        }
+        if (!workPhone.getKeys().isEmpty()) {
+            payer.set("work_phone", workPhone);
+        }
         if (builder.getBillingAddress() != null) {
             var billingAddress =
                     new JsonDoc()
@@ -315,37 +320,6 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
                 JsonDoc order = setOrderParam(builder);
 
-                JsonDoc homePhone =
-                        new JsonDoc()
-                                .set("country_code", builder.getHomeCountryCode())
-                                .set("subscriber_number", builder.getHomeNumber());
-
-                JsonDoc workPhone =
-                        new JsonDoc()
-                                .set("country_code", builder.getWorkCountryCode())
-                                .set("subscriber_number", builder.getWorkNumber());
-
-                JsonDoc payer =
-                        new JsonDoc()
-                                .set("reference", builder.getCustomerAccountId())     //TODO: Confirm
-                                .set("account_age", builder.getAccountAgeIndicator())
-                                .set("account_creation_date", GpApiConnector.getDateIfNotNull(builder.getAccountCreateDate()))
-                                .set("account_change_date", GpApiConnector.getDateIfNotNull(builder.getAccountChangeDate()))
-                                .set("account_change_indicator", getValueIfNotNull(builder.getAccountChangeIndicator()))
-                                .set("account_password_change_date", GpApiConnector.getDateIfNotNull(builder.getPasswordChangeDate()))
-                                .set("account_password_change_indicator", getValueIfNotNull(builder.getPasswordChangeIndicator()))
-                                .set("home_phone", !homePhone.getKeys().isEmpty() ? homePhone : null)
-                                .set("work_phone", !workPhone.getKeys().isEmpty() ? workPhone : null)
-                                .set("payment_account_creation_date", GpApiConnector.getDateIfNotNull(builder.getPaymentAccountCreateDate()))
-                                .set("payment_account_age_indicator", getValueIfNotNull(builder.getPaymentAgeIndicator()))
-                                .set("suspicious_account_activity", builder.getSuspiciousAccountActivity() != null ? builder.getSuspiciousAccountActivity().toString() : "")
-                                .set("purchases_last_6months_count", builder.getNumberOfPurchasesInLastSixMonths())
-                                .set("transactions_last_24hours_count", builder.getNumberOfTransactionsInLast24Hours())
-                                .set("email", builder.getCustomerEmail())
-                                .set("transaction_last_year_count", builder.getNumberOfTransactionsInLastYear())
-                                .set("provision_attempt_last_24hours_count", builder.getNumberOfAddCardAttemptsInLast24Hours())
-                                .set("shipping_address_time_created_reference", builder.getShippingAddressCreateDate() != null ? builder.getShippingAddressCreateDate().toString(format) : null)
-                                .set("shipping_address_creation_indicator", getValueIfNotNull(builder.getShippingAddressUsageIndicator()));
                 JsonDoc payerPrior3DSAuthenticationData =
                         new JsonDoc()
                                 .set("authentication_method", getValueIfNotNull(builder.getPriorAuthenticationMethod()))
@@ -413,7 +387,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                                 .set("decoupled_flow_request", builder.getDecoupledFlowRequest() == Boolean.TRUE ? DecoupledFlowRequest.DECOUPLED_PREFERRED.toString() : null)
                                 .set("decoupled_flow_timeout", builder.getDecoupledFlowTimeout() != null ? builder.getDecoupledFlowTimeout().toString() : null)
                                 .set("order", !order.getKeys().isEmpty() ? order : null)
-                                .set("payer", !payer.getKeys().isEmpty() ? payer : null)
+                                .set("payer", SetPayerParam(builder))
                                 .set("payer_prior_three_ds_authentication_data", !payerPrior3DSAuthenticationData.getKeys().isEmpty() ? payerPrior3DSAuthenticationData : null)
                                 .set("recurring_authorization_data", !recurringAuthorizationData.getKeys().isEmpty() ? recurringAuthorizationData : null)
                                 .set("payer_login_data", !payerLoginData.getKeys().isEmpty() ? payerLoginData : null)

@@ -1096,8 +1096,8 @@ public class NTSUserData {
                     }
                     if (builder.getTagData() != null) {
                         sb.append(fleetData != null ?
-                                StringUtils.padLeft(fleetData.getDriverId(), 6, ' ') :
-                                StringUtils.padLeft(" ", 6, ' '));
+                                StringUtils.padRight(fleetData.getDriverId(), 6, ' ') :
+                                StringUtils.padRight(" ", 6, ' '));
                         sb.append(getVoyagerEmvUserData(builder, paymentMethod)) ;
                     }else if (builder.getTransactionModifier() != null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
                         sb.append(getVoyagerFallBackUserData(builder,paymentMethod));

@@ -127,6 +127,9 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setTransactionAmount(host.getDecimal("totalAmount"));
         setBaseAmount(host.getDecimal("baseAmount"));
         setTipAmount(host.getDecimal("tipAmount"));
+        setIssuerResponseCode(host.getString("IssuerResp"));
+        setIsoResponseCode(host.getString("IsoRespCode"));
+        setBankResponseCode(host.getString("BankRespCode"));
 
         if (getTransactionAmount() == null) {
             BigDecimal amount = host.getDecimal("amount");
@@ -191,6 +194,12 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setMaskedCardNumber(payment.getString("maskedPan"));
         setPaymentType(payment.getString("cardGroup"));
         setInvoiceNumber(payment.getString("invoiceNbr"));
+        setPinVerified(payment.getString("PinVerified"));
+        setAccountType(payment.getString("AccountType"));
+        setTransactionType(payment.getString("transactionType"));
+        setSequenceNo(payment.getString("PosSequenceNbr"));
+        setApplicationName(payment.getString("appName"));
+
     }
 
     protected void hydrateTransactionData(JsonDoc transaction) {
@@ -231,6 +240,9 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         }
         if (emv.getString("5F2A") != null) {
             transactionCurrencyCode = emv.getString("5F2A");
+        }
+        if (emv.getString("5F2D") != null) {
+            cardHolderLanguage = emv.getString("5F2D");
         }
         if (emv.getString("5F34") != null) {
             sequenceNo = emv.getString("5F34");

@@ -1,6 +1,16 @@
 # Changelog
 
-## Latest Version - V14.2.5 (12/10/2024)
+## Latest Version - V14.2.6 (01/06/2025)
+### Enhancements
+- [PAX] - Added logger to capture message received from device
+- [GP-API] - Add mobile_phone and billing_address to 3DS initiate step request
+
+### Bug Fixes
+- [UPA] Put back removed fields on UpaTransactionResponse: IssuerResp, IsoRespCode, BankRespCode, PinVerified, AccountType,
+  transactionType, PosSequenceNbr, appName
+- [NTS] Fixed Voyager Fleet EMV DriverId formatting with left justified & space filled (10341)
+
+## V14.2.5 (12/10/2024)
 ### Enhancements
 - [GP-API] - Add cardholder name on 3DS check availability request
 - [Portico] - Converted test files to JUnit 5 in Portico folder
