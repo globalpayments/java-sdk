@@ -650,11 +650,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         Element setElement = et.subElement(tokenActions, "Set");
 
                         Element expMonth = et.subElement(setElement, "Attribute");
-                        et.subElement(expMonth, "Name", "expmonth");
+                        et.subElement(expMonth, "Name", "ExpMonth");
                         et.subElement(expMonth, "Value", card.getExpMonth());
 
                         Element expYear = et.subElement(setElement, "Attribute");
-                        et.subElement(expYear, "Name", "expyear");
+                        et.subElement(expYear, "Name", "ExpYear");
                         et.subElement(expYear, "Value", card.getExpYear());
                     } else {
                         et.subElement(tokenActions, "Delete");

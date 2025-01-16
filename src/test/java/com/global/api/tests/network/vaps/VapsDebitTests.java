@@ -83,7 +83,7 @@ public class VapsDebitTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0007998855611");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -1167,6 +1167,91 @@ public class VapsDebitTests {
                 .withCashBackAmount(new BigDecimal(3))
                 .execute();
         assertNotNull(reversal);
+    }
+
+    @Test
+    public void test_sale_without_internal_datacollect() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_sale_internal_datacollect() throws ApiException {
+        IStanProvider stanGenerator = StanGenerator.getInstance();
+        int stan = stanGenerator.generateStan();
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan,stan)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000800", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Debit_Auth_without_internal_Capture() throws ApiException {
+
+        Transaction response = track.authorize(new BigDecimal(40))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .execute();
+        assertNotNull(capture);
+
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
+    }
+    @Test
+    public void test_Debit_Auth_with_internal_Capture() throws ApiException {
+        IStanProvider stanGenerator = StanGenerator.getInstance();
+        int stan = stanGenerator.generateStan();
+
+        Transaction response = track.authorize(new BigDecimal(40))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withSystemTraceAuditNumber(stan,stan)
+                .execute();
+        assertNotNull(capture);
+
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
     }
 
 }

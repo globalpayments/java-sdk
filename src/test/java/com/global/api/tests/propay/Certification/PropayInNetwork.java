@@ -7,10 +7,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.ProPayConfig;
 import com.global.api.services.ProPayService;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PropayInNetwork {
     private ProPayService service;
@@ -36,9 +34,9 @@ public class PropayInNetwork {
     //this method uses a certStr directly tied to the source account for funds disbursement
     @Test
     public void DisburseFunds_02() throws ApiException {
-       config.setCertificationStr("AE4A2DBDDF0D4FF8879E77DC9E4D60");
-       config.setTerminalID("AE4A2DBDDF0D4FF8");
-       ServicesContainer.configureService(config);
+        config.setCertificationStr("AE4A2DBDDF0D4FF8879E77DC9E4D60");
+        config.setTerminalID("AE4A2DBDDF0D4FF8");
+        ServicesContainer.configureService(config);
 
         Transaction response = service.disburseFunds()
                 .withAmount("10")

@@ -14,30 +14,30 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.ProPayConfig;
 import com.global.api.services.ProPayService;
 import com.global.api.tests.testdata.TestAccountData;
-import org.joda.time.DateTime;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PropayAccount {
     private ProPayService _service;
-    private String documentPath=System.getProperty("user.dir")+"\\src\\test\\java\\com\\global\\api\\tests\\propay\\TestData\\TestDocChargeback.docx";
-    private String x509CertificatePath=System.getProperty("user.dir")+"\\src\\test\\java\\com\\global\\api\\tests\\propay\\Certification\\testCertificate.crt";
+    private String documentPath = System.getProperty("user.dir") + "\\src\\test\\java\\com\\global\\api\\tests\\propay\\TestData\\TestDocChargeback.docx";
+    private String x509CertificatePath = System.getProperty("user.dir") + "\\src\\test\\java\\com\\global\\api\\tests\\propay\\Certification\\testCertificate.crt";
+
     public PropayAccount() {
         _service = new ProPayService();
         ProPayConfig config = new ProPayConfig();
-        
+
         // Certification Credentials
         config.setCertificationStr("4ee64cbd706400fb4a34e65aab6f48");
         config.setTerminalID("ab6f48");
 
         config.setX509CertificatePath(x509CertificatePath);
-       // config.setX509CertificateBase64String("MIICpDCCAYygAwIBAgIIS7Y5fijJytIwDQYJKoZIhvcNAQENBQAwETEPMA0GA1UEAwwGUFJPUEFZMB4XDTE5MDkxOTAwMDAwMFoXDTI5MDkxOTAwMDAwMFowEzERMA8GA1UEAwwIMTI3LjAuMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCCwvq2ho43oeeGX3L9+2aD7bna7qjdLwWumeIpwhPZLa44MeQ5100wy4W2hKk3pOb5yaHqyhzoHDriveQnq/EpZJk9m7sizXsxZtBHtt+wghSZjdNhnon3R54SH5J7oEPybRSAKXSEzHjN+kCu7W3TmXSLve6YuODnjUpbOcAsHG2wE+zpCoEbe8toH5Tt7g8HzEc5mJYkkILTq6j9pwDE50r2NVbV3SXwmQ1ifxf54Z9EFB5bQv5cI3+GL/VwlQeJdiKMGj1rs8zTR8TjbAjVlJbz6bBkFItUsqexgwAHIJZAaU7an8ZamGRlPjf6dp3mOEu4B47igNj5KOSgCNdRAgMBAAEwDQYJKoZIhvcNAQENBQADggEBAF88u367yrduqd3PfEIo2ClaI2QPRIIWKKACMcZDl3z1BzVzNFOZNG2vLcSuKnGRH89tJPCjyxdJa0RyDTkXMSLqb5FgUseEjmj3ULAvFqLZNW35PY9mmlmCY+S3CC/bQR4iyPLo8lsRq0Nl6hlvB440+9zS8UQjtc2957QgcXfD427UJb698gXzsfQcNeaQWy8pNm7FzDfHTJbo/t6FOpmfR+RMZky9FrlWabInkrkf3w2XJL0uUAYU9jGQa+l/vnZD2KNzs1mO1EqkS6yB/fsn85mkgGe4Vfbo9GQ/S+KmDujewFA0ma7O03fy1W5v6Amn/nAcFTCddVL3BDNEtOM=");
+        // config.setX509CertificateBase64String("MIICpDCCAYygAwIBAgIIS7Y5fijJytIwDQYJKoZIhvcNAQENBQAwETEPMA0GA1UEAwwGUFJPUEFZMB4XDTE5MDkxOTAwMDAwMFoXDTI5MDkxOTAwMDAwMFowEzERMA8GA1UEAwwIMTI3LjAuMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCCwvq2ho43oeeGX3L9+2aD7bna7qjdLwWumeIpwhPZLa44MeQ5100wy4W2hKk3pOb5yaHqyhzoHDriveQnq/EpZJk9m7sizXsxZtBHtt+wghSZjdNhnon3R54SH5J7oEPybRSAKXSEzHjN+kCu7W3TmXSLve6YuODnjUpbOcAsHG2wE+zpCoEbe8toH5Tt7g8HzEc5mJYkkILTq6j9pwDE50r2NVbV3SXwmQ1ifxf54Z9EFB5bQv5cI3+GL/VwlQeJdiKMGj1rs8zTR8TjbAjVlJbz6bBkFItUsqexgwAHIJZAaU7an8ZamGRlPjf6dp3mOEu4B47igNj5KOSgCNdRAgMBAAEwDQYJKoZIhvcNAQENBQADggEBAF88u367yrduqd3PfEIo2ClaI2QPRIIWKKACMcZDl3z1BzVzNFOZNG2vLcSuKnGRH89tJPCjyxdJa0RyDTkXMSLqb5FgUseEjmj3ULAvFqLZNW35PY9mmlmCY+S3CC/bQR4iyPLo8lsRq0Nl6hlvB440+9zS8UQjtc2957QgcXfD427UJb698gXzsfQcNeaQWy8pNm7FzDfHTJbo/t6FOpmfR+RMZky9FrlWabInkrkf3w2XJL0uUAYU9jGQa+l/vnZD2KNzs1mO1EqkS6yB/fsn85mkgGe4Vfbo9GQ/S+KmDujewFA0ma7O03fy1W5v6Amn/nAcFTCddVL3BDNEtOM=");
+
         config.setEnvironment(Environment.TEST);
         config.setProPayUS(true);
         config.setEnableLogging(true);
@@ -51,15 +51,15 @@ public class PropayAccount {
     @Test
     public void Disbursement_Account_Boarding_01() throws ApiException {
         BeneficialOwnerData beneficialOwnerData = new BeneficialOwnerData();
-        List<OwnersData> ownersList=new ArrayList<>();
-        OwnersData owner1=new OwnersData();
+        List<OwnersData> ownersList = new ArrayList<>();
+        OwnersData owner1 = new OwnersData();
         owner1.setFirstName("First1");
         owner1.setLastName("Last1");
         owner1.setTitle("CEO");
         owner1.setEmail("abc@qamail.com");
         owner1.setDateOfBirth("11-11-1988");
         owner1.setSsn("123545677");
-        Address address1=new Address();
+        Address address1 = new Address();
         address1.setStreetAddress1("123 Main St.");
         address1.setCity("Downtown");
         address1.setState("NJ");
@@ -85,7 +85,6 @@ public class PropayAccount {
 
     @Test
     public void MerchantBoarding_EcomDeviceOrder_01() throws ApiException {
-
         UserPersonalData userPersonalInfo = TestAccountData.getUserPersonalData();
         userPersonalInfo.setTier("test");
         userPersonalInfo.setIpSignup("4.14.150.14");
@@ -122,7 +121,6 @@ public class PropayAccount {
 
     @Test
     public void MerchantBoarding_EcomAndPhysicalDevice_01() throws ApiException {
-
         UserPersonalData userPersonalInfo = TestAccountData.getUserPersonalData();
         userPersonalInfo.setTier("test");
         userPersonalInfo.setIpSignup("4.14.150.14");
@@ -155,7 +153,7 @@ public class PropayAccount {
 
         BeneficialOwnerData beneficialOwnerData = TestAccountData.getBeneficialOwnerData();
 
-        DeviceData deviceData = TestAccountData.getDeviceData(2,false);
+        DeviceData deviceData = TestAccountData.getDeviceData(2, false);
 
         Transaction response = _service.createAccount()
                 .withUserPersonalData(userPersonalInfo)
@@ -173,7 +171,6 @@ public class PropayAccount {
 
     @Test
     public void MerchantBoarding_KYCStatus66_01() throws ApiException {
-
         UserPersonalData userPersonalInfo = TestAccountData.getUserPersonalData();
         userPersonalInfo.setTier("test");
         userPersonalInfo.setIpSignup("4.14.150.14");
@@ -247,7 +244,6 @@ public class PropayAccount {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         assertNotNull(response.getProPayResponseData().getPassword());
-
     }
 
     @Test
@@ -263,7 +259,7 @@ public class PropayAccount {
     @Test
     public void CreateAccount_01_for_UpdateBeneficialOwnerData() throws ApiException {
         BeneficialOwnerData beneficialOwnerData = new BeneficialOwnerData();
-        beneficialOwnerData.setOwnersCount(2); //beneficial owner data with owner's count only
+        beneficialOwnerData.setOwnersCount(2); // beneficial owner data with owner's count only
 
         UserPersonalData userPersonalInfo = TestAccountData.getUserPersonalData();
         userPersonalInfo.setTier("CardOnly");
@@ -309,7 +305,7 @@ public class PropayAccount {
 
     @Test
     public void UploadChargebackDoc_46() throws Exception {
-        String documentPath=System.getProperty("user.dir")+"\\src\\test\\java\\com\\global\\api\\tests\\propay\\TestData\\TestDocChargeback.docx";
+        String documentPath = System.getProperty("user.dir") + "\\src\\test\\java\\com\\global\\api\\tests\\propay\\TestData\\TestDocChargeback.docx";
         DocumentUploadData docUploadData = new DocumentUploadData();
         docUploadData.setDocumentName("Chargeback 456");
         docUploadData.setTransactionReference("1");
@@ -361,7 +357,7 @@ public class PropayAccount {
     @Test
     public void orderNewDevice() throws ApiException {
         OrderDevice orderDevice = TestAccountData.getOrderNewDeviceData();
-        DeviceData deviceData = TestAccountData.getDeviceData(1,false);
+        DeviceData deviceData = TestAccountData.getDeviceData(1, false);
 
         Transaction response = _service.orderDevice()
                 .withAccountNumber("718579267")
@@ -370,7 +366,8 @@ public class PropayAccount {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("00",response.getResponseCode());
+
+        assertEquals("00", response.getResponseCode());
     }
 
 }

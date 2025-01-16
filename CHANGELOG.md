@@ -1,6 +1,14 @@
 # Changelog
+## Latest Version - V14.2.7 (01/16/2025)
+### Enhancements
+- [Testing Framework] - Converted BillPay and ProPay test folders to JUnit-5.
+- [NTS] - 24.1 Spec Update Code Coverage.
 
-## Latest Version - V14.2.6 (01/06/2025)
+### Bug Fixes
+- [Portico] - Fixed managed token XML request to update expiration date.
+- [Vaps] - Debit & EBT DataCollect Generation by SDK based on STAN(10336).
+
+##  V14.2.6 (01/06/2025)
 ### Enhancements
 - [PAX] - Added logger to capture message received from device
 - [GP-API] - Add mobile_phone and billing_address to 3DS initiate step request

@@ -10,6 +10,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -76,7 +77,7 @@ public class VapsEbtTests {
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
 //        config.setTerminalId("0000912197711");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0007998855611");
         config.setUniqueDeviceId("0001");
         config.setMerchantType("5541");
         config.setAcceptorConfig(acceptorConfig);
@@ -596,5 +597,59 @@ public class VapsEbtTests {
             assertNotNull(response);
         });
         assertEquals("Authorizations are not allowed for EBT cards.", unsupportedTransactionException.getMessage());
+    }
+
+    @Test
+    public void test_sale_internal_datacollect() throws ApiException {
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        IStanProvider stanGenerator = StanGenerator.getInstance();
+        int stan = stanGenerator.generateStan();
+
+        Transaction response = trackData.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan,stan)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_EBT_internal_Capture() throws ApiException {
+        EBTCardData ebtCard = new EBTCardData(EbtCardType.FoodStamp);
+        ebtCard.setNumber("4012002000060016");
+        ebtCard.setExpMonth(12);
+        ebtCard.setExpYear(2025);
+        ebtCard.setPinBlock("32539F50C245A6A93D123412324000AA");
+        IStanProvider stanGenerator = StanGenerator.getInstance();
+        int stan = stanGenerator.generateStan();
+
+        Transaction response = ebtCard.charge(new BigDecimal(40))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withSystemTraceAuditNumber(stan,stan)
+                .execute();
+        assertNotNull(capture);
+
+
+        // check response
+        assertEquals("000", capture.getResponseCode());
     }
 }

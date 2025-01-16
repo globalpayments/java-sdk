@@ -3,16 +3,15 @@ package com.global.api.tests.propay;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Environment;
-import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.ProPayConfig;
 import com.global.api.services.ProPayService;
 import com.global.api.tests.testdata.TestFundsData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProPayFundsTests {
     private ProPayService service;

@@ -1512,10 +1512,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                         }
 
                         Integer followOnStan = builder.getFollowOnStan();
-                        if(followOnStan == null && stanProvider != null) {
-                            followOnStan = stanProvider.generateStan();
-                        }
-
+                        if (followOnStan == null) {
+                            return response;
+                        } else {
                         NetworkMessage impliedCapture = decodeRequest(response.getTransactionToken());
                         impliedCapture.set(DataElementId.DE_011, StringUtils.padLeft(followOnStan, 6, '0'));
                         impliedCapture.set(DataElementId.DE_012, DateTime.now().toString("yyMMddhhmmss"));
@@ -1549,13 +1548,12 @@ public class VapsConnector extends GatewayConnectorConfig {
                         Transaction dataCollectResponse = sendRequest(impliedCapture, null, orgCorr1, orgCorr2);
                         response.setPreAuthCompletion(dataCollectResponse);
                     }
+                  }
                     else if(transactionType.equals(TransactionType.Capture) && messageReasonCode != null) {
                         Integer followOnStan = builder.getFollowOnStan();
-                        if(followOnStan == null && stanProvider != null) {
-                            followOnStan = stanProvider.generateStan();
-                        }
-
-                        if(messageReasonCode.equals(DE25_MessageReasonCode.AuthCapture.getValue())) {
+                        if (followOnStan == null) {
+                            return response;
+                        } else if (messageReasonCode.equals(DE25_MessageReasonCode.AuthCapture.getValue())) {
                             request.set(DataElementId.DE_011, StringUtils.padLeft(followOnStan, 6, '0'));
                             request.set(DataElementId.DE_012, DateTime.now().toString("yyMMddhhmmss"));
                             request.set(DataElementId.DE_025, DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement);

@@ -13,10 +13,9 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.ProPayConfig;
 import com.global.api.services.ProPayService;
 import com.global.api.tests.testdata.TestAccountData;
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProPayAccountTests {
     private ProPayService _service;
@@ -136,8 +135,9 @@ public class ProPayAccountTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Ignore
+
     @Test
+    @Disabled
     public void UpdateAccountBeneficialOwnership() throws ApiException {
         BeneficialOwnerData beneficialOwners = TestAccountData.getBeneficialOwnerData();
 
@@ -151,8 +151,8 @@ public class ProPayAccountTests {
         assertNotNull(response.getProPayResponseData().getBeneficialOwnerDataResults());
     }
 
-    @Ignore
     @Test
+    @Disabled
     public void DisownAccount() throws ApiException {
         Transaction response = _service.disownAccount()
                 .withAccountNumber("718553721") // The account being "disowned" needs to have another affiliation set. Contact propayimplementations@tsys.com and they will set one if necessary
