@@ -898,5 +898,57 @@ public class PorticoCreditTests {
         assertNotNull(captureResponse);
         assertEquals("00", captureResponse.getResponseCode());
     }
+
+    @Test
+    public void credit_Sale_AmountIndicator_F() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAmountEstimated(false)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //TODO: This is insufficient to actually test. The request needs to be checked for the presence of <AmountIndicator>F</AmountIndicator>
+    }
+
+    @Test
+    public void credit_Sale_AmountIndicator_E() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAmountEstimated(true)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //TODO: This is insufficient to actually test. The request needs to be checked for the presence of <AmountIndicator>E</AmountIndicator>
+    }
+
+    @Test
+    public void credit_Auth_AmountIndicator_F() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAmountEstimated(false)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //TODO: This is insufficient to actually test. The request needs to be checked for the presence of <AmountIndicator>F</AmountIndicator>
+    }
+
+    @Test
+    public void credit_Auth_AmountIndicator_E() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAmountEstimated(true)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        //TODO: This is insufficient to actually test. The request needs to be checked for the presence of <AmountIndicator>E</AmountIndicator>
+    }
 }
 

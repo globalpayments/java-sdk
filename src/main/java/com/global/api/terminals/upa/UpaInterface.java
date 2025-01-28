@@ -14,10 +14,12 @@ import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
 import com.global.api.terminals.upa.builders.UpaTerminalManageBuilder;
 import com.global.api.terminals.upa.responses.*;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.UpaSafReportParams;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
@@ -44,6 +46,7 @@ public class UpaInterface extends DeviceInterface {
         super();
         controller = _controller;
     }
+
     public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
         return lineItem(leftText, rightText);
     }
@@ -125,6 +128,7 @@ public class UpaInterface extends DeviceInterface {
     public UpaTerminalManageBuilder capture() throws ApiException {
         return capture(null);
     }
+
     public UpaTerminalManageBuilder capture(BigDecimal amount) throws ApiException {
         return new UpaTerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit)
                 .withAmount(amount);
@@ -724,8 +728,8 @@ public class UpaInterface extends DeviceInterface {
         );
 
         JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
-        if(responseObj == null){
-            throw new ApiException("No response from UPA!");
+        if (responseObj == null) {
+            throw new ApiException("No valid response from UPA!");
         }
         return responseObj.toString();
     }
@@ -760,6 +764,56 @@ public class UpaInterface extends DeviceInterface {
                 new String(controller.send(message), StandardCharsets.UTF_8)
         );
 
+        return new UpaSafResponse(responseObj);
+    }
+
+    /**
+     * Set Report params to run in the background for Android
+     *
+     * @param reportParams
+     * @return UpaSafResponse
+     * @throws ApiException
+     */
+    @Override
+    public ISAFResponse safSummaryReportInBackground(UpaSafReportParams reportParams) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc params = new JsonDoc();
+
+        String reportOutput;
+        UpaSafReportDataType dataType = reportParams.getDataType();
+
+        switch (dataType) {
+            case REPORT_DATA:
+                reportOutput = "ReturnData";
+                break;
+            case REPORT_N_PRINT:
+                reportOutput = "Print|ReturnData";
+                break;
+            default:
+                reportOutput = "Print";
+                break;
+        }
+
+        params.set("reportOutput", reportOutput);
+        if (reportParams.isBackgroundTask()) {
+            params.set("background", "true");
+        }
+
+        body.set("params", params);
+        DeviceMessage message = TerminalUtilities.buildMessage(
+                UpaMessageId.GetSAFReport,
+                controller.getRequestId().toString(),
+                body
+        );
+
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(
+                new String(controller.send(message), StandardCharsets.UTF_8)
+        );
+
+        if (responseObj == null) {
+            throw new ApiException("No valid response from UPA!");
+        }
         return new UpaSafResponse(responseObj);
     }
 

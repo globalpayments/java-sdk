@@ -139,7 +139,8 @@ public class CardUtils {
         fleetBinMap.put("FleetWide", fleetWideMap);
     }
     public static boolean isFleet(String cardType, String pan) {
-        if (!StringUtils.isNullOrEmpty(pan)) {
+        //PW: Check the pan length to prevent a StringIndexOutOfBoundsException
+        if (!StringUtils.isNullOrEmpty(pan) && pan.length() >= 6) {
             int compareValue = Integer.parseInt(pan.substring(0, 6));
             String baseCardType = StringUtils.trimEnd(cardType, "Fleet");
 

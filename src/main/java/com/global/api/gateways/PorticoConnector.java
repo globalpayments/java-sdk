@@ -65,6 +65,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 if (modifier.equals(TransactionModifier.None) && paymentType != PaymentMethodType.EBT && paymentType != PaymentMethodType.Recurring)
                     et.subElement(block1, "AllowPartialAuth", builder.isAllowPartialAuth() ? "Y" : "N");
             }
+
+            if(paymentType.equals(PaymentMethodType.Credit) && modifier.equals(TransactionModifier.None)) {
+                et.subElement(block1, "AmountIndicator", builder.isAmountEstimated() ? "E" : "F");
+            }
         }
         et.subElement(block1, "Amt", builder.getAmount());
         et.subElement(block1, "GratuityAmtInfo", builder.getGratuity());
@@ -304,7 +308,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
             if (builder.getAliasAction() != AliasAction.Create)
                 block1.append(cardData);
-        } else if ((builder.getPaymentMethod() instanceof eCheck) && (!type.equals(TransactionType.CheckQueryInfo))) {
+        }
+        else if ((builder.getPaymentMethod() instanceof eCheck) && (!type.equals(TransactionType.CheckQueryInfo))) {
             eCheck check = (eCheck) builder.getPaymentMethod();
 
             // check action
@@ -329,11 +334,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             Element verify = et.subElement(block1, "VerifyInfo");
             et.subElement(verify, "CheckVerify").text(check.isCheckVerify() ? "Y" : "N");
             et.subElement(verify, "ACHVerify").text(check.isAchVerify() ? "Y" : "N");
-        } else if (builder.getPaymentMethod() instanceof TransactionReference) {
+        }
+        else if (builder.getPaymentMethod() instanceof TransactionReference) {
             TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
             et.subElement(block1, "GatewayTxnId", reference.getTransactionId());
             et.subElement(block1, "ClientTxnId", reference.getClientTransactionId());
-        } else if (builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
+        }
+        else if (builder.getPaymentMethod() instanceof RecurringPaymentMethod) {
             RecurringPaymentMethod method = (RecurringPaymentMethod) builder.getPaymentMethod();
 
             // card on File
@@ -341,7 +348,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 Element cardOnFileData = et.subElement(block1, "CardOnFileData");
                 if (builder.getTransactionInitiator() == StoredCredentialInitiator.CardHolder) {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.CardHolder));
-                } else {
+                }
+                else {
                     et.subElement(cardOnFileData, "CardOnFile", EnumUtils.getMapping(Target.Portico, StoredCredentialInitiator.Merchant));
                 }
                 et.subElement(cardOnFileData, "CardBrandTxnId", builder.getCardBrandTransactionId());
@@ -1111,7 +1119,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 //                        else if (modifier.equals(TransactionModifier.EncryptedMobile))
 //                            throw new UnsupportedTransactionException("Transaction not supported for this payment method.");
                         return "CreditAuth";
-                    } else if (paymentMethodType.equals(PaymentMethodType.Recurring))
+                    }
+                    else if (paymentMethodType.equals(PaymentMethodType.Recurring))
                         return "RecurringBillingAuth";
                     else if (paymentMethodType.equals(PaymentMethodType.Debit))
                         return "DebitAuth";

@@ -1,5 +1,11 @@
 # Changelog
-## Latest Version - V14.2.7 (01/16/2025)
+
+## Latest Version - V14.2.8 (01/28/2025)
+### Bug Fixes
+- [UPA] - Background SAFReport for android.
+- [Portico] - Added pan length check to isFleet() to prevent a StringIndexOutOfBoundsException from occurring.
+
+##  V14.2.7 (01/16/2025)
 ### Enhancements
 - [Testing Framework] - Converted BillPay and ProPay test folders to JUnit-5.
 - [NTS] - 24.1 Spec Update Code Coverage.

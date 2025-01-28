@@ -35,7 +35,8 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.2.178");
+        //config.setIpAddress("192.168.2.178");
+        config.setIpAddress("192.168.51.94");
         config.setTimeout(45_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);

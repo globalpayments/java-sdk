@@ -11,9 +11,11 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.SummaryResponse;
 import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.UpaSafReportParams;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
@@ -177,6 +179,15 @@ public class UpaAdminTests {
     }
 
     @Test
+    public void test_getSafReportInBackground() throws ApiException {
+        UpaSafReportParams params = new UpaSafReportParams();
+        params.setDataType(UpaSafReportDataType.REPORT_DATA);
+        params.setBackgroundTask(true);
+        ISAFResponse response = device.safSummaryReportInBackground(params);
+        assertNotNull(response);
+    }
+
+    @Test
     public void test_getSafReport() throws ApiException {
         ISAFResponse response = device.safSummaryReport("", "ReturnData");
         assertNotNull(response);
@@ -336,7 +347,7 @@ public class UpaAdminTests {
      * ----------------------------GetParams Test Case--------------------------
      */
     @Test
-    public void test_getParams() throws ApiException{
+    public void test_getParams() throws ApiException {
         String getParams = device.getParams();
         assertNotNull(getParams);
     }

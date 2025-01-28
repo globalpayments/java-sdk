@@ -16,6 +16,7 @@ import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.UpaSafReportParams;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,19 +29,21 @@ public interface IDeviceInterface extends IDisposable {
     void setOnMessageReceived(IMessageSentInterface onMessageReceived);
 
     String getEcrId();
+
     void setEcrId(String ecrId);
 
     // admin calls
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #lineItem(String, String)}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #lineItem(String, String)}  will be added
      */
     @Deprecated
     IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #lineItem(String, String, String, String)} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #lineItem(String, String, String, String)} will be added
      */
     @Deprecated
     IDeviceResponse addLineItem(String leftText, String rightText, String runningLeftText, String runningRightText) throws ApiException;
@@ -142,63 +145,64 @@ public interface IDeviceInterface extends IDisposable {
     SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException;
 
     // credit calls
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #authorize(BigDecimal)} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #authorize(BigDecimal)} will be added
      */
     @Deprecated
     TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #capture(BigDecimal)}   will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #capture(BigDecimal)}   will be added
      */
     @Deprecated
     TerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #refund(BigDecimal)}    will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #refund(BigDecimal)}    will be added
      */
     @Deprecated
     TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #sale(BigDecimal)}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #sale(BigDecimal)}  will be added
      */
     @Deprecated
     TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
+     * @deprecated Will be removed with the next major increase (15.0.0)
      */
     @Deprecated
     TerminalAuthBuilder creditSale() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
+     * @deprecated Will be removed with the next major increase (15.0.0)
      */
     @Deprecated
     TerminalAuthBuilder creditAuth() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #capture()} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #capture()} will be added
      */
     @Deprecated
     TerminalManageBuilder creditCapture() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #refund()}   will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #refund()}   will be added
      */
     @Deprecated
     TerminalAuthBuilder creditRefund() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #verify()} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #verify()} will be added
      */
     @Deprecated
     TerminalAuthBuilder creditVerify() throws ApiException;
@@ -206,8 +210,8 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder verify() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #Void()}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #Void()}  will be added
      */
     @Deprecated
     TerminalManageBuilder creditVoid() throws ApiException;
@@ -217,15 +221,16 @@ public interface IDeviceInterface extends IDisposable {
     TerminalManageBuilder tipAdjust(BigDecimal amount) throws ApiException;
 
     // debit calls
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #sale(BigDecimal)}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #sale(BigDecimal)}  will be added
      */
     @Deprecated
     TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
+     * @deprecated Will be removed with the next major increase (15.0.0)
      */
     @Deprecated
     TerminalAuthBuilder debitSale() throws ApiException;
@@ -235,22 +240,23 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder debitRefund() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #Void()}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #Void()}  will be added
      */
     @Deprecated
     TerminalManageBuilder debitVoid() throws ApiException;
 
     // gift calls
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #sale(BigDecimal)}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #sale(BigDecimal)}  will be added
      */
     @Deprecated
     TerminalAuthBuilder giftSale(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
+     * @deprecated Will be removed with the next major increase (15.0.0)
      */
     @Deprecated
     TerminalAuthBuilder giftSale() throws ApiException;
@@ -260,23 +266,24 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #Void()}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #Void()}  will be added
      */
     @Deprecated
     TerminalManageBuilder giftVoid() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #balance()} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #balance()} will be added
      */
     @Deprecated
     TerminalAuthBuilder giftBalance() throws ApiException;
 
     // ebt calls
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #balance()} will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #balance()} will be added
      */
     @Deprecated
     TerminalAuthBuilder ebtBalance() throws ApiException;
@@ -284,15 +291,17 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder ebtPurchase() throws ApiException;
 
     TerminalAuthBuilder ebtPurchase(BigDecimal amount) throws ApiException;
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #refund()}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #refund()}  will be added
      */
     @Deprecated
     TerminalAuthBuilder ebtRefund() throws ApiException;
+
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #refund(BigDecimal)}  will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #refund(BigDecimal)}  will be added
      */
     @Deprecated
     TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException;
@@ -305,15 +314,15 @@ public interface IDeviceInterface extends IDisposable {
     SAFSummaryReport safSummaryReport(SafReportSummary safReportIndicator) throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #getBatchReport()}   will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #getBatchReport()}   will be added
      */
     @Deprecated
     IBatchReportResponse getBatchSummary() throws ApiException;
 
     /**
-     * @deprecated     Will be removed with the next major increase (15.0.0)
-     *                 A new method {@link #getBatchReport()}   will be added
+     * @deprecated Will be removed with the next major increase (15.0.0)
+     * A new method {@link #getBatchReport()}   will be added
      */
     @Deprecated
     IBatchReportResponse getBatchSummary(String batchId) throws ApiException;
@@ -337,6 +346,8 @@ public interface IDeviceInterface extends IDisposable {
     TerminalManageBuilder refundById() throws ApiException;
 
     ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException;
+
+    ISAFResponse safSummaryReportInBackground(UpaSafReportParams reportParams) throws ApiException;
 
     TerminalReportBuilder localDetailReport() throws ApiException;
 

@@ -16,6 +16,7 @@ import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
+import com.global.api.terminals.upa.subgroups.UpaSafReportParams;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -924,6 +925,17 @@ public abstract class DeviceInterface implements IDeviceInterface {
      */
     @Override
     public ISAFResponse safSummaryReport(String printData, String reportData) throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * Saf Summary Report in background for Android
+     * @param params
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public ISAFResponse safSummaryReportInBackground(UpaSafReportParams params) throws ApiException {
         throw new UnsupportedTransactionException(ERROR_MESSAGE);
     }
 

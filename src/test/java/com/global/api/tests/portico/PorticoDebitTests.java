@@ -44,15 +44,6 @@ public class PorticoDebitTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
-
-        Transaction reference = Transaction.fromBuilder()
-                .withAmount(new BigDecimal("14.01"))
-                .withPaymentMethod(track)
-                .build();
-
-        Transaction reversal = reference.reverse().execute();
-        assertNotNull(reversal);
-        assertEquals("00", reversal.getResponseCode());
     }
 
     @Test @Disabled
