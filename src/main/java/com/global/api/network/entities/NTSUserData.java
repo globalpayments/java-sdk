@@ -1095,9 +1095,17 @@ public class NTSUserData {
                                 StringUtils.padLeft(0, 6, '0'));
                     }
                     if (builder.getTagData() != null) {
-                        sb.append(fleetData != null ?
-                                StringUtils.padRight(fleetData.getDriverId(), 6, ' ') :
-                                StringUtils.padRight(" ", 6, ' '));
+                        if(fleetData != null){
+                            if(fleetData.getDriverId() != null && !fleetData.getDriverId().isEmpty()){
+                                sb.append(StringUtils.padRight(fleetData.getDriverId(), 6, ' '));
+                            } else if (fleetData.getVehicleNumber() != null && !fleetData.getVehicleNumber().isEmpty()) {
+                                sb.append(StringUtils.padRight(fleetData.getVehicleNumber(), 6, ' '));
+                            } else if (fleetData.getIdNumber() != null && !fleetData.getIdNumber().isEmpty()) {
+                                sb.append(StringUtils.padRight(fleetData.getIdNumber(), 6, ' '));
+                            } else {
+                                sb.append(StringUtils.padRight(" ", 6, ' '));
+                            }
+                        }
                         sb.append(getVoyagerEmvUserData(builder, paymentMethod)) ;
                     }else if (builder.getTransactionModifier() != null && builder.getTransactionModifier().equals(TransactionModifier.Fallback)){
                         sb.append(getVoyagerFallBackUserData(builder,paymentMethod));

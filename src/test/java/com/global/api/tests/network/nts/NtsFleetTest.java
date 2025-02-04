@@ -4602,4 +4602,54 @@ public class NtsFleetTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
+    @Test
+    public void test_Voyager_Fleet_EMV_auth_track2_amount_expansion_10347() throws ApiException {
+        track = new CreditTrackData();
+        track.setValue(";7088869008250005031=25120000000000000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("4800012");
+        fleetData.setDriverId("3333");
+        fleetData.setVehicleNumber("12345");
+        fleetData.setIdNumber("5555");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData(emvTagData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    //negative scenario
+    @Test
+    public void test_003_Voyager_Fleet_EMV_auth_track2_amount_expansion_10347() throws ApiException {
+        track = new CreditTrackData();
+        track.setValue(";7088869008250005031=25120000000000000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("");
+        fleetData.setDriverId("");
+        fleetData.setVehicleNumber("");
+        fleetData.setIdNumber("");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withTagData(emvTagData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+
+
 }
