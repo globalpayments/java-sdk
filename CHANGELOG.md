@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.2.9 (02/03/2025)
+## Latest Version - V14.2.10 (02/11/2025)
+### Enhancements
+- [UPA] - Added withRequireSecurityCode to TerminalAuthBuilder to allow bypass of security code for manual entry gift card.
+- [GPApi] - Converted GPAPI folder to JUnit 5 testing framework.
+
+## V14.2.9 (02/03/2025)
 ### Bug Fixes
 - [NTS] - Fix Issue 10347 : Updated p66 voyager auth emv request to send vehicle & id number instead of empty spaces.
 

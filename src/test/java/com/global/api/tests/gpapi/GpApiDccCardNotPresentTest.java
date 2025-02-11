@@ -9,15 +9,13 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
-
 import static java.lang.Double.parseDouble;
 import static java.math.BigDecimal.valueOf;
-import static org.junit.Assert.*;
 
 public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
 

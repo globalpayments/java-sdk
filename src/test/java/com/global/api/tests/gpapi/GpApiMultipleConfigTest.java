@@ -5,9 +5,8 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GpApiMultipleConfigTest extends BaseGpApiTest {
 

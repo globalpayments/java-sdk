@@ -18,11 +18,12 @@ import com.global.api.services.PayByLinkService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,9 @@ import java.util.Random;
 import java.util.UUID;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.CARD_AUTH_SUCCESSFUL_V2_1;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     private final CreditCardData card;
@@ -111,12 +112,13 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         }
     }
 
-    @After
+    @AfterEach
     public void removeConfig() throws ApiException {
         ServicesContainer.removeConfig();
     }
 
     @Test
+    @Order(1)
     public void ReportPayByLinkDetail() throws ApiException {
         String payByLinkId = "LNK_DSCdHKewZBC24QIObU77DQyMlCYYPK";
 
@@ -130,6 +132,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void ReportPayByLinkDetail_RandomId() throws ApiException {
         String payByLinkId = UUID.randomUUID().toString();
 
@@ -149,6 +152,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void ReportPayByLinkDetail_NullLinkId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -164,6 +168,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void FindPayByLinkByDate() throws ApiException {
         PayByLinkSummaryPaged response =
                 PayByLinkService
@@ -180,6 +185,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void CreatePayByLink() throws ApiException {
         PayByLinkData payByLink = new PayByLinkData();
 
@@ -214,6 +220,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void CreatePayByLink_MultipleUsage() throws ApiException {
         payByLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payByLink.setUsageLimit(2);
@@ -230,6 +237,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void CreatePayByLink_ThenCharge() throws ApiException {
         List<String> imagesList = new ArrayList<>();
         imagesList.add("\"https://gpapi-sandbox.truust.io/assets/images/37272.jpg\"");
@@ -272,6 +280,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void CreatePayByLink_ThenCharge_DifferentAmount() throws ApiException {
         Transaction response =
                 PayByLinkService
@@ -309,6 +318,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void CreatePayByLink_MultipleUsage_ThenCharge() throws ApiException {
         payByLink.setUsageMode(PaymentMethodUsageMode.MULTIPLE);
         payByLink.setUsageLimit(2);
@@ -350,6 +360,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void CreatePayByLink_ThenAuthorizeAndCapture() throws ApiException {
         Transaction response =
                 PayByLinkService
@@ -397,6 +408,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void CreatePayByLink_ThenCharge_WithTokenizedCard() throws ApiException {
         Transaction response =
                 PayByLinkService
@@ -447,6 +459,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void CreatePayByLink_ThenCharge_With3DS() throws ApiException {
         Transaction response =
                 PayByLinkService
@@ -524,6 +537,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void EditPayByLink() throws ApiException {
         PayByLinkSummaryPaged response =
                 PayByLinkService
@@ -565,6 +579,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void CreatePayByLink_MissingUsageMode() throws ApiException {
         payByLink.setUsageMode(null);
 
@@ -585,6 +600,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void CreatePayByLink_MissingPaymentMethods() throws ApiException {
         payByLink.setAllowedPaymentMethods(null);
 
@@ -605,6 +621,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void CreatePayByLink_MissingName() throws ApiException {
         payByLink.setName(null);
 
@@ -625,6 +642,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void CreatePayByLink_MissingShippable() throws ApiException {
         payByLink.isShippable(null);
 
@@ -641,6 +659,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void CreatePayByLink_MissingShippingAmount() throws ApiException {
         payByLink.setShippingAmount(null);
 
@@ -661,6 +680,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void CreatePayByLink_MissingDescription() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -678,6 +698,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void CreatePayByLink_MissingCurrency() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -695,6 +716,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void EditPayByLink_MissingType() throws ApiException {
         assertNotNull(payByLinkId);
 
@@ -717,6 +739,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void EditPayByLink_MissingUsageMode() throws ApiException {
         payByLink.setUsageMode(null);
 
@@ -737,6 +760,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void EditPayByLink_MissingName() throws ApiException {
         assertNotNull(payByLinkId);
 
@@ -761,6 +785,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     //TODO - usageLimit is incorrect set as optional
     @Test
+    @Order(24)
     public void EditPayByLink_MissingUsageLimit() throws ApiException {
         assertNotNull(payByLinkId);
 
@@ -783,6 +808,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void EditPayByLink_MissingPayByLinkData() throws ApiException {
         assertNotNull(payByLinkId);
 
@@ -803,6 +829,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void EditPayByLink_RandomPayByLinkId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -822,6 +849,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void FindPayByLinkByStatus() throws ApiException {
         PayByLinkSummaryPaged response =
                 PayByLinkService
@@ -840,6 +868,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void FindPayByLinkUsageModeAndName() throws ApiException {
         String name = "iphone 14";
 
@@ -862,6 +891,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void FindPayByLinkByAmount() throws ApiException {
         amount = new BigDecimal("10.01");
 
@@ -882,6 +912,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(30)
     public void FindPayByLinkByExpireDate() throws ApiException {
         DateTime date = new DateTime("2024-05-09");
 

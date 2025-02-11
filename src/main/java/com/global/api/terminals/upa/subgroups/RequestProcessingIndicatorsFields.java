@@ -14,11 +14,13 @@ public class RequestProcessingIndicatorsFields implements IRequestSubGroup {
     private String cardTypesString = "";
     private boolean quickChip;
     private boolean checkLuhn;
+    private boolean requireSecurityCode = true;
 
     public void setParams(TerminalAuthBuilder builder) {
         if(builder.getCardTypeFilter() != null) {
             this.cardTypeFilter.addAll(builder.getCardTypeFilter());
         }
+        requireSecurityCode = builder.getRequireSecurityCode();
     }
 
     public JsonDoc getElementsJson() {
@@ -30,6 +32,7 @@ public class RequestProcessingIndicatorsFields implements IRequestSubGroup {
 
         params.set("quickChip", "Y");
         params.set("checkLuhn", "N");
+        params.set("securityCode", requireSecurityCode ? "Y" : "N");
 
         if (cardTypeFilter != null && !cardTypeFilter.isEmpty()) {
             cardTypesString = "";

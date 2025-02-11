@@ -11,18 +11,17 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import org.joda.time.DateTime;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     private final CreditCardData card;
@@ -51,6 +50,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
 
     //TODO - For filter set OFF the response fraud result is set incorrectly as Hold
     @Test
+    @Order(1)
     public void FraudManagementDataSubmissions() throws ApiException {
 
         HashMap<FraudFilterMode, String> fraudFilters = new HashMap<FraudFilterMode, String>() {{
@@ -78,6 +78,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void FraudManagementDataSubmissionWithRules() throws ApiException {
         final String rule1 = "0c93a6c9-7649-4822-b5ea-1efa356337fd";
         final String rule2 = "a539d51a-abc1-4fff-a38e-b34e00ad0cc3";
@@ -112,6 +113,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void FraudManagementDataSubmissionWith_AllRulesActive() throws ApiException {
         ArrayList<String> ruleList = new ArrayList<String>() {{
             add("0c93a6c9-7649-4822-b5ea-1efa356337fd");
@@ -145,6 +147,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void FraudManagementDataSubmissionWith_AllRulesOff() throws ApiException {
         ArrayList<String> ruleList = new ArrayList<String>() {{
             add("0c93a6c9-7649-4822-b5ea-1efa356337fd");
@@ -180,6 +183,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void ReleaseTransactionAfterFraudResultHold() throws ApiException {
         card.setCardHolderName("Lenny Bruce");
         Transaction trn =
@@ -211,6 +215,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void FraudManagementDataSubmissionFullCycle() throws ApiException {
         Transaction trn =
                 card
@@ -263,6 +268,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void FraudManagementDataSubmissionFullCycle_HoldAndReleaseWithoutReasonCode() throws ApiException {
         Transaction trn =
                 card
@@ -312,6 +318,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void CaptureTransactionAfterFraudResultHold() throws ApiException {
         card.setCardHolderName("Lenny Bruce");
         Transaction trn =
@@ -344,6 +351,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void RefundTransactionAfterFraudResultHold() throws ApiException {
         card.setCardHolderName("Lenny Bruce");
         Transaction trn =
@@ -377,6 +385,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void FraudManagementDataSubmissionFullCycle_Charge() throws ApiException {
         Transaction trn =
                 card
@@ -419,6 +428,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void FraudManagementDataSubmissionFullCycle_Charge_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -455,6 +465,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void FraudManagementDataSubmissionFullCycle_ChargeThenRefund() throws ApiException {
         Transaction trn =
                 card
@@ -506,6 +517,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void FraudManagementDataSubmissionFullCycle_ChargePassive() throws ApiException {
         Transaction trn =
                 card
@@ -548,6 +560,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void FraudManagementDataSubmissionFullCycle_Charge_ThenReleaseWithoutHold() throws ApiException {
         Transaction trn =
                 card
@@ -582,6 +595,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void FraudManagementDataSubmissionFullCycle_Authorize_ThenReleaseWithoutHold() throws ApiException {
         Transaction trn =
                 card
@@ -614,6 +628,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void Release_AllReasonCodes() throws ApiException {
         for (ReasonCode reasonCode : ReasonCode.values()) {
             if (reasonCode.equals(ReasonCode.Fraud) || reasonCode.equals(ReasonCode.OutOfStock)) {
@@ -663,6 +678,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void Release_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -711,6 +727,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void Release_RandomTransaction() {
         Transaction trn = new Transaction();
         trn.setTransactionId(UUID.randomUUID().toString());
@@ -733,6 +750,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void Release_InvalidReason() throws ApiException {
         Transaction trn =
                 card
@@ -765,6 +783,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void HoldTransactionAfterFraudResultHold() throws ApiException {
         card.setCardHolderName("Lenny Bruce");
         Transaction trn =
@@ -800,6 +819,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void Hold_AllReasonCodes() throws ApiException {
         for (ReasonCode reasonCode : ReasonCode.values()) {
             if (reasonCode.equals(ReasonCode.FalsePositive) || reasonCode.equals(ReasonCode.InStock)) {
@@ -838,6 +858,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void Hold_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -875,6 +896,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void Hold_RandomTransaction() {
         Transaction trn = new Transaction();
         trn.setTransactionId(UUID.randomUUID().toString());
@@ -897,6 +919,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void Hold_InvalidReason() throws ApiException {
         Transaction trn =
                 card
@@ -929,6 +952,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void GetTransactionWithFraudCheck() throws ApiException {
         DateTime startDate = DateTime.now().plusDays(-30);
         DateTime endDate = DateTime.now().plusDays(-3);

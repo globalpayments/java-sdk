@@ -9,12 +9,10 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.reporting.DisputeSummary;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
-
-import static org.junit.Assert.*;
 
 public class GpApiDisputeTest extends BaseGpApiTest {
     DisputeSummary dispute;
@@ -24,7 +22,7 @@ public class GpApiDisputeTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void Initialize() {
         dispute = new DisputeSummary();
         dispute.setCaseId("DIS_SAND_abcd1234");

@@ -11,11 +11,10 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.GenerationUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -26,7 +25,7 @@ public class GpApiPayerTest extends BaseGpApiTest {
     private Address billingAddress;
     private Address shippingAddress;
 
-    @Before
+    @BeforeEach
     public void initialize() throws Exception {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
@@ -63,7 +62,7 @@ public class GpApiPayerTest extends BaseGpApiTest {
         shippingAddress.setCountryCode("US");
     }
 
-    @After
+    @AfterEach
     public void removeConfig() throws ConfigurationException {
         ServicesContainer.removeConfig();
     }
@@ -87,19 +86,19 @@ public class GpApiPayerTest extends BaseGpApiTest {
 
         String tokenizedResponse2 = card2.tokenize();
         card2.setToken(tokenizedResponse2);
-        Assert.assertNotNull(tokenizedResponse2);
+        assertNotNull(tokenizedResponse2);
 
         paymentMethods.add(newCustomer.addPaymentMethod(card2.getToken(), card2));
         newCustomer.setPaymentMethods(paymentMethods);
         Customer payer = newCustomer.create();
-        Assert.assertNotNull(payer.getId());
-        Assert.assertEquals(newCustomer.getFirstName(), payer.getFirstName());
-        Assert.assertEquals(newCustomer.getLastName(), payer.getLastName());
-        Assert.assertNotNull(payer.getPaymentMethods());
+        assertNotNull(payer.getId());
+        assertEquals(newCustomer.getFirstName(), payer.getFirstName());
+        assertEquals(newCustomer.getLastName(), payer.getLastName());
+        assertNotNull(payer.getPaymentMethods());
         for (RecurringPaymentMethod paymentMethod : payer.getPaymentMethods()) {
             String[] tokensArray = {card2.getToken(), card.getToken()};
             List<String> tokensList = Arrays.asList(tokensArray);
-            Assert.assertTrue(tokensList.contains(paymentMethod.getId()));
+            assertTrue(tokensList.contains(paymentMethod.getId()));
         }
     }
 
@@ -107,10 +106,10 @@ public class GpApiPayerTest extends BaseGpApiTest {
     public void createPayerWithoutPaymentMethods() throws ApiException {
         Customer payer = newCustomer.create();
 
-        Assert.assertNotNull(payer.getId());
-        Assert.assertEquals(newCustomer.getFirstName(), payer.getFirstName());
-        Assert.assertEquals(newCustomer.getLastName(), payer.getLastName());
-        Assert.assertNull(payer.getPaymentMethods());
+        assertNotNull(payer.getId());
+        assertEquals(newCustomer.getFirstName(), payer.getFirstName());
+        assertEquals(newCustomer.getLastName(), payer.getLastName());
+        assertNull(payer.getPaymentMethods());
     }
 
     @Test
@@ -124,10 +123,10 @@ public class GpApiPayerTest extends BaseGpApiTest {
             newCustomer.create();
         } catch (GatewayException e) {
             exceptionCaught = true;
-            Assert.assertEquals("Status Code: 400 - Request expects the following fields: first_name", e.getMessage());
-            Assert.assertEquals("40005", e.getResponseText());
+            assertEquals("Status Code: 400 - Request expects the following fields: first_name", e.getMessage());
+            assertEquals("40005", e.getResponseText());
         } finally {
-            Assert.assertTrue(exceptionCaught);
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -142,10 +141,10 @@ public class GpApiPayerTest extends BaseGpApiTest {
             newCustomer.create();
         } catch (GatewayException e) {
             exceptionCaught = true;
-            Assert.assertEquals("Status Code: 400 - Request expects the following fields: last_name", e.getMessage());
-            Assert.assertEquals("40005", e.getResponseText());
+            assertEquals("Status Code: 400 - Request expects the following fields: last_name", e.getMessage());
+            assertEquals("40005", e.getResponseText());
         } finally {
-            Assert.assertTrue(exceptionCaught);
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -157,16 +156,16 @@ public class GpApiPayerTest extends BaseGpApiTest {
         newCustomer.setId(id);
 
         String tokenizeResponse = card.tokenize();
-        Assert.assertNotNull(tokenizeResponse);
+        assertNotNull(tokenizeResponse);
 
         card.setToken(tokenizeResponse);
         newCustomer.addPaymentMethod(tokenizeResponse, card);
 
         Customer payer = newCustomer.saveChanges();
 
-        Assert.assertEquals(newCustomer.getKey(), payer.getKey());
-        Assert.assertFalse(payer.getPaymentMethods().isEmpty());
-        Assert.assertEquals(card.getToken(), payer.getPaymentMethods().get(0).getId());
+        assertEquals(newCustomer.getKey(), payer.getKey());
+        assertFalse(payer.getPaymentMethods().isEmpty());
+        assertEquals(card.getToken(), payer.getPaymentMethods().get(0).getId());
     }
 
     @Test
@@ -175,7 +174,7 @@ public class GpApiPayerTest extends BaseGpApiTest {
         newCustomer.setKey(key);
 
         String tokenizeResponse = card.tokenize();
-        Assert.assertNotNull(tokenizeResponse);
+        assertNotNull(tokenizeResponse);
 
         card.setToken(tokenizeResponse);
         newCustomer.addPaymentMethod(tokenizeResponse, card);
@@ -185,10 +184,10 @@ public class GpApiPayerTest extends BaseGpApiTest {
             newCustomer.saveChanges();
         } catch (ApiException e) {
             exceptionCaught = true;
-            Assert.assertEquals("Status Code: 502 - Unable to process your request due to an error with a system down stream.", e.getCause().getMessage());
-            Assert.assertEquals("50046", ((GatewayException) e.getCause()).getResponseText());
+            assertEquals("Status Code: 502 - Unable to process your request due to an error with a system down stream.", e.getCause().getMessage());
+            assertEquals("50046", ((GatewayException) e.getCause()).getResponseText());
         } finally {
-            Assert.assertTrue(exceptionCaught);
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -200,7 +199,7 @@ public class GpApiPayerTest extends BaseGpApiTest {
         newCustomer.setId(id);
 
         String tokenizeResponse = card.tokenize();
-        Assert.assertNotNull(tokenizeResponse);
+        assertNotNull(tokenizeResponse);
 
         card.setToken(tokenizeResponse);
         newCustomer.addPaymentMethod(tokenizeResponse, card);
@@ -210,10 +209,10 @@ public class GpApiPayerTest extends BaseGpApiTest {
             newCustomer.saveChanges();
         } catch (ApiException e) {
             exceptionCaught = true;
-            Assert.assertEquals("Status Code: 404 - Payer " + newCustomer.getId() + " not found at this location", e.getCause().getMessage());
-            Assert.assertEquals("40008", ((GatewayException) e.getCause()).getResponseText());
+            assertEquals("Status Code: 404 - Payer " + newCustomer.getId() + " not found at this location", e.getCause().getMessage());
+            assertEquals("40008", ((GatewayException) e.getCause()).getResponseText());
         } finally {
-            Assert.assertTrue(exceptionCaught);
+            assertTrue(exceptionCaught);
         }
     }
 
@@ -262,9 +261,9 @@ public class GpApiPayerTest extends BaseGpApiTest {
                 .withOrderId("12365")
                 .execute();
 
-        Assert.assertNotNull(transaction);
-        Assert.assertEquals("SUCCESS", transaction.getResponseCode());
-        Assert.assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
-        Assert.assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
+        assertNotNull(transaction);
+        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
+        assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
     }
 }

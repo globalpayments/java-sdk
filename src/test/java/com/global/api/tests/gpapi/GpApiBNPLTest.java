@@ -12,20 +12,19 @@ import com.global.api.paymentMethods.BNPL;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiBNPLTest extends BaseGpApiTest {
     private BNPL paymentMethod;
     private final String currency = "USD";
@@ -38,7 +37,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void testInitialize() {
         paymentMethod =
                 new BNPL()
@@ -66,6 +65,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(1)
     public void BNPL_FullCycle() throws ApiException, InterruptedException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -120,6 +120,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void FullRefund() throws ApiException {
         TransactionSummaryPaged response =
                 ReportingService
@@ -148,6 +149,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void BNPL_PartialRefund() throws ApiException, InterruptedException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -207,6 +209,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void BNPL_MultipleRefund() throws ApiException, InterruptedException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -276,6 +279,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void BNPL_Reverse() throws ApiException, InterruptedException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -323,6 +327,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void BNPL_OnlyMandatory() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -344,6 +349,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void BNPL_KlarnaProvider() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.KLARNA;
         Customer customer = generateCustomerData();
@@ -389,6 +395,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void BNPL_ClearPayProvider() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
         Customer customer = generateCustomerData();
@@ -434,6 +441,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void BNPL_ClearPayProvider_PartialCapture() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
         Customer customer = generateCustomerData();
@@ -479,6 +487,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void BNPL_ClearPayProvider_MultipleCapture() throws ApiException, InterruptedException {
         paymentMethod.BNPLType = BNPLType.CLEARPAY;
         Customer customer = generateCustomerData();
@@ -536,6 +545,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void BNPL_InvalidStatusForCapture_NoRedirect() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -573,6 +583,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void GetBNPLTransactionById() throws ApiException {
         String id = "TRN_o7PsaRAgOviqLCPHBaxDcqYO70oUhu";
 
@@ -585,6 +596,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void GetBNPLTransactionById_RandomTransactionId() throws ApiException {
         String transactionId = UUID.randomUUID().toString();
 
@@ -604,6 +616,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void GetBNPLTransactionById_NullTransactionId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -619,6 +632,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void BNPL_MissingProducts() throws ApiException {
         Customer customer = generateCustomerData();
 
@@ -644,6 +658,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void BNPL_MissingBillingAddress() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -670,6 +685,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void BNPL_MissingCustomerData() throws ApiException {
         ArrayList<Product> products = generateProducts();
 
@@ -695,6 +711,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void BNPL_MissingAmount() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -722,6 +739,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void BNPL_MissingCurrency() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -748,6 +766,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void BNPL_MissingCustomerEmail() throws ApiException {
         Customer customer = generateCustomerData();
         customer.setEmail(null);
@@ -776,6 +795,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void BNPL_MissingCustomerPhoneNumber() throws ApiException {
         Customer customer = generateCustomerData();
         customer.setPhone(null);
@@ -804,6 +824,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void BNPL_MissingProductId() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -832,6 +853,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void BNPL_MissingProductDescription() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -860,6 +882,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void BNPL_ZeroProductQuantity() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -888,6 +911,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void BNPL_MissingProductUrl() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();
@@ -916,6 +940,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void BNPL_MissingProductImageUrl() throws ApiException {
         Customer customer = generateCustomerData();
         ArrayList<Product> products = generateProducts();

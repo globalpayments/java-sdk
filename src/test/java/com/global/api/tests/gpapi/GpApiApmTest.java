@@ -13,15 +13,15 @@ import com.global.api.paymentMethods.AlternativePaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.StringUtils;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+
 
 /**
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -41,7 +41,7 @@ public class GpApiApmTest extends BaseGpApiTest {
     private Address shippingAddress = null;
     private Date startDate;
 
-    @Before
+    @BeforeEach
     public void initialize() throws ConfigurationException {
 
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
@@ -244,7 +244,7 @@ public class GpApiApmTest extends BaseGpApiTest {
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
 
-    @Ignore
+    @Disabled
     @Test
     //Sandbox returning: Can't CAPTURE a Transaction that is already CAPTURED
     public void PayPalFullCycle_Reverse() throws ApiException, InterruptedException {

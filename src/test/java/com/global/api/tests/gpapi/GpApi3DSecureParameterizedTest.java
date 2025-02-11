@@ -17,10 +17,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
 import java.math.BigDecimal;
 import java.util.Collection;
-
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;

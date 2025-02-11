@@ -15,16 +15,15 @@ import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.BatchService;
 import lombok.SneakyThrows;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiBatchTest extends BaseGpApiTest {
 
     private final CreditTrackData creditCard;
@@ -43,6 +42,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(1)
     public void CloseBatch() {
         Transaction chargeTransaction =
                 creditCard
@@ -60,6 +60,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(2)
     public void CloseBatch_ChipTransaction() {
         Transaction transaction =
                 creditCard
@@ -78,6 +79,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(3)
     public void CloseBatch_AuthAndCapture() {
         Transaction authTransaction =
                 creditCard
@@ -102,6 +104,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(4)
     public void CloseBatch_ContactlessTransaction() {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue(";4024720012345671=30125025432198712345?");
@@ -126,6 +129,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(5)
     public void CloseBatch_MultipleChargeCreditTrackData() {
         Transaction firstTransaction =
                 creditCard
@@ -150,6 +154,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(6)
     public void CloseBatch_Refund_CreditTrackData() {
         Transaction transaction =
                 creditCard
@@ -174,6 +179,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(7)
     public void CloseBatch_DebitTrackData() {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
@@ -197,6 +203,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(8)
     public void CloseBatch_Reverse_DebitTrackData() {
         DebitTrackData debitCard = new DebitTrackData();
         debitCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
@@ -234,6 +241,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(9)
     public void CloseBatch_WithCardNumberDetails() {
         CreditCardData card = new CreditCardData();
         card.setNumber("4263970000005262");
@@ -256,9 +264,10 @@ public class GpApiBatchTest extends BaseGpApiTest {
         assertBatchCloseResponse(batchSummary, amount);
     }
 
-    @Ignore // Now with a DECLINED transaction is allowed
+    @Disabled // Now with a DECLINED transaction is allowed
     @SneakyThrows
     @Test
+    @Order(10)
     public void CloseBatch_WithCardNumberDetails_DeclinedTransaction() {
         CreditCardData card = new CreditCardData();
         card.setNumber("38865000000705");
@@ -293,7 +302,8 @@ public class GpApiBatchTest extends BaseGpApiTest {
     }
 
     @Test
-    @Ignore
+    @Order(11)
+    @Disabled
     //TODO - add idempotency key as header
     public void CloseBatch_WithIdempotency() throws ApiException {
         String idempotency = java.util.UUID.randomUUID().toString();
@@ -316,6 +326,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(12)
     public void CloseBatch_WithClosedBatchReference() {
         Transaction transaction =
                 creditCard
@@ -348,6 +359,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(13)
     public void CloseBatch_Verify_MissingBatchId() {
         Transaction transaction =
                 creditCard
@@ -373,6 +385,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(14)
     public void CloseBatch_CardNotPresentChannel() {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
@@ -410,6 +423,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(15)
     public void CloseBatch_WithInvalidBatchReference() {
         String batchReference = java.util.UUID.randomUUID().toString().replace("-", "");
 
@@ -428,6 +442,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(16)
     public void CloseBatch_ActionNotAuthorized() {
         GpApiConfig config = new GpApiConfig();
 

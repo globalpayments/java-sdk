@@ -14,10 +14,11 @@ import com.global.api.services.Secure3dService;
 import com.global.api.utils.IOUtils;
 import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
 import java.math.BigDecimal;
@@ -26,9 +27,8 @@ import java.net.URLEncoder;
 import java.util.*;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApi3DSecureTest extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
@@ -120,6 +120,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(1)
     public void FullCycle_v2() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
@@ -186,6 +187,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void FullCycle_v2_WithTokenizedPaymentMethod() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
@@ -253,6 +255,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void FullCycle_WithPayerInformation() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
         CreditCardData tokenizedCard = new CreditCardData();
@@ -318,6 +321,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void FullCycle_v2_CreditSale_WithStoredCredentials_RecurringPayment() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
@@ -399,6 +403,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void testChargeTransaction_WithRandom3DSValues() throws ApiException {
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
 
@@ -422,6 +427,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void FullCycle_v2_WithMobileSdk() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
@@ -484,6 +490,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void CardHolderEnrolled_ChallengeRequired_v2() throws Exception {
         // Challenge required scenario
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
@@ -554,6 +561,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void Frictionless_AuthenticationSuccessful_FullCycle_v2_DifferentAmount() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
@@ -631,6 +639,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void FullCycle_v2_ForceFrictionlessToDoChallenge() throws Exception {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
@@ -700,6 +709,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void DecoupledAuth() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
 
@@ -763,6 +773,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void ExemptionSaleTransaction() throws ApiException {
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_2.cardNumber);
 
@@ -783,6 +794,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void FrictionlessFullCycle_v2_Verify3DS() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);
@@ -851,6 +863,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void FrictionlessFullCycle_v2_Verify3DS_TokenizedCard() throws ApiException {
         // Frictionless scenario
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_1.cardNumber);

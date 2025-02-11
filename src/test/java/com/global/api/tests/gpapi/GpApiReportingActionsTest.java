@@ -13,17 +13,16 @@ import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
 import org.joda.time.DateTime;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
 
     private final ActionSummary sampleAction;
@@ -39,6 +38,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(1)
     public void ReportActionDetail() throws ApiException {
         String actionId = sampleAction.getId();
 
@@ -52,6 +52,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(2)
     public void ReportActionDetailWithRandomId() throws ApiException {
         String actionId = "ACT_" + UUID.randomUUID();
         boolean exceptionCaught = false;
@@ -71,6 +72,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(3)
     public void ReportFindActionsPaged_By_Id() throws ApiException {
         String actionId = sampleAction.getId();
 
@@ -87,6 +89,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(4)
     public void ReportFindActionsPaged_By_Random_Id() throws ApiException {
         String actionId = "ACT_" + UUID.randomUUID();
 
@@ -101,6 +104,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(5)
     public void ReportFindActionsPaged_By_Type() throws ApiException {
         String actionType = sampleAction.getType();
 
@@ -117,6 +121,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(6)
     public void ReportFindActionsPaged_By_RandomType() throws ApiException {
         final String actionType = "USERS";
 
@@ -131,6 +136,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(7)
     public void ReportFindActionsPaged_By_Resource() throws ApiException {
         String resource = sampleAction.getResource();
 
@@ -147,6 +153,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(8)
     public void ReportFindActionsPaged_By_ResourceStatus() throws ApiException {
         String resourceStatus = !StringUtils.isNullOrEmpty(sampleAction.getResourceStatus()) ? sampleAction.getResourceStatus() : "AVAILABLE";
 
@@ -163,6 +170,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(9)
     public void ReportFindActionsPaged_By_ResourceId() throws ApiException {
         String resourceId = sampleAction.getResourceId();
 
@@ -195,6 +203,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(10)
     public void ReportFindActionsPaged_By_StartDate_And_EndDate() throws ApiException {
         ActionSummaryPaged result =
                 ReportingService
@@ -212,6 +221,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(11)
     public void ReportFindActionsPaged_By_RandomMerchantName() throws ApiException {
         String merchantName = "Sandbox_merchant_" + UUID.randomUUID();
         boolean exceptionCaught = false;
@@ -232,6 +242,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(12)
     public void ReportFindActionsPaged_By_MerchantName() throws ApiException {
         String merchantName = sampleAction.getMerchantName();
 
@@ -248,6 +259,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(13)
     public void ReportFindActionsPaged_By_AccountName() throws ApiException {
         String accountName = !StringUtils.isNullOrEmpty(sampleAction.getAccountName()) ? sampleAction.getAccountName() : "Tokenization";
 
@@ -264,6 +276,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(14)
     public void ReportFindActionsPaged_By_AppName() throws ApiException {
         String appName = sampleAction.getAppName();
 
@@ -280,6 +293,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(15)
     public void ReportFindActionsPaged_By_Version() throws ApiException {
         String version = sampleAction.getVersion();
 
@@ -296,6 +310,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(16)
     public void ReportFindActionsPaged_By_WrongVersion() throws ApiException {
         final String version = "2020-05-10";
 
@@ -313,6 +328,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(17)
     public void ReportFindActionsPaged_By_ResponseCode() throws ApiException {
         String responseCode = !StringUtils.isNullOrEmpty(sampleAction.getResponseCode()) ? sampleAction.getResponseCode() : "SUCCESS";
 
@@ -329,6 +345,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(18)
     public void ReportFindActionsPaged_By_ResponseCode_Declined() throws ApiException {
         final String responseCode = "DECLINED";
 
@@ -345,6 +362,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(19)
     public void ReportFindActionsPaged_By_HttpResponseCode() throws ApiException {
         String httpResponseCode = sampleAction.getHttpResponseCode();
 
@@ -361,6 +379,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(20)
     public void ReportFindActionsPaged_By_502_HttpResponseCode() throws ApiException {
         final String httpResponseCode = "502";
 
@@ -377,6 +396,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(21)
     public void ReportFindActionsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
         ActionSummaryPaged result =
                 ReportingService
@@ -395,6 +415,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(22)
     public void ReportFindActionsPaged_OrderBy_TimeCreated_Descending() throws ApiException {
         ActionSummaryPaged result =
                 ReportingService
@@ -413,6 +434,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(23)
     public void ReportFindActionsPaged_OrderBy_TimeCreated() throws ApiException {
         ActionSummaryPaged actionSummaryDescending =
                 ReportingService
@@ -446,6 +468,7 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(24)
     public void ReportFindActionsPaged_By_MultipleFilters() throws ApiException {
         final String actionType = "AUTHORIZE";
         final String resource = "TRANSACTIONS";

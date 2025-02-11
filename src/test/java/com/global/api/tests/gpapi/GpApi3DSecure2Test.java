@@ -11,17 +11,17 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.JsonDoc;
 import org.joda.time.DateTime;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(OrderAnnotation.class)
 public class GpApi3DSecure2Test extends BaseGpApiTest {
 
     private final static String AVAILABLE = "AVAILABLE";
@@ -94,6 +94,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(1)
     public void CardHolderEnrolled_ChallengeRequired_v22() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -107,6 +108,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void CardHolderEnrolled_ChallengeRequired_v2_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -140,6 +142,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void CardHolderEnrolled_ChallengeRequired_v2_WithTokenizedCard() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize());
@@ -158,6 +161,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void CardHolderEnrolled_ChallengeRequired_v2_AllPreferenceValues() throws ApiException {
         for (ChallengeRequestIndicator challengeRequestIndicator : ChallengeRequestIndicator.values()) {
             ThreeDSecure secureEcom =
@@ -175,6 +179,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void CardHolderEnrolled_ChallengeRequired_v2_StoredCredentials() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
         storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
@@ -195,6 +200,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void CardHolderEnrolled_ChallengeRequired_v2_AllSources() throws ApiException {
         for (AuthenticationSource source : AuthenticationSource.values()) {
             ThreeDSecure secureEcom =
@@ -211,6 +217,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void CardHolderEnrolled_ChallengeRequired_v2_WithNullPaymentMethod() throws ApiException {
         card = new CreditCardData();
 
@@ -232,6 +239,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void CardHolderEnrolled_Frictionless_v2() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -247,6 +255,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void CardHolderEnrolled_Frictionless_v2_WithIdempotencyKey() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
         String idempotencyKey = UUID.randomUUID().toString();
@@ -281,6 +290,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void CardHolderEnrolled_Frictionless_v2_WithTokenizedCard() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -301,6 +311,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void CardHolderEnrolled_Frictionless_v2_AllPreferenceValues() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -319,6 +330,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void CardHolderEnrolled_Frictionless_v2_StoredCredentials() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -344,6 +356,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
      * Tests for 3DS v2 Card Enrolled - Initiate Auth
      */
     @Test
+    @Order(13)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -373,6 +386,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_With_IdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -427,6 +441,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_TokenizedCard() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize());
@@ -461,6 +476,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MethodUrlSetNo() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -490,6 +506,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MethodUrlSetUnavailable() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -519,6 +536,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_Without_ShippingAddress() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -547,6 +565,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_Without_PaymentMethod() throws ApiException {
         ThreeDSecure secureEcom = new ThreeDSecure();
         secureEcom.setServerTransactionId("AUT_" + UUID.randomUUID().toString().replace("-", ""));
@@ -572,6 +591,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_NonExistentId() throws ApiException {
         String transId = UUID.randomUUID().toString();
 
@@ -598,6 +618,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_AcsNotPerformed() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -638,6 +659,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_AllSources() throws ApiException {
 
         // TODO: Add other sources:
@@ -676,6 +698,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_WithGiftCard() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -708,6 +731,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_WithDeliveryEmail() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -738,6 +762,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_WithShippingMethod() throws ApiException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -769,6 +794,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void CardHolderEnrolled_Frictionless_v2_Initiate() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -809,6 +835,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void CardHolderEnrolled_Frictionless_v2_Initiate_AllPreferenceValues() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -859,6 +886,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void CardHolderEnrolled_Frictionless_v2_Initiate_AllPreferenceValues_ChallengeRequired() throws ApiException {
         card.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
 
@@ -905,6 +933,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void CardHolderEnrolled_Frictionless_v2_Initiate_DuplicateInitiate() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -965,6 +994,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(30)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_PostResultFailed() throws ApiException, InterruptedException {
         ThreeDSecure secureEcom =
                 Secure3dService
@@ -1005,6 +1035,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(31)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MobileSDK() throws ApiException {
         CreditCardData challengeCard = new CreditCardData();
         challengeCard.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
@@ -1044,6 +1075,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(32)
     public void CardHolderEnrolled_ChallengeRequired_v2_Initiate_MobileDataAndBrowserData() throws ApiException {
         CreditCardData challengeCard = new CreditCardData();
         challengeCard.setNumber(CARD_CHALLENGE_REQUIRED_V2_1.cardNumber);
@@ -1080,6 +1112,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(33)
     public void CardHolderEnrolled_Frictionless_v2_Initiate_With_MobileData_SourceBrowser() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -1117,6 +1150,7 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
     }
 
     @Test
+    @Order(34)
     public void CardHolderEnrolled_Frictionless_v2_Initiate_SourceMobileSdk_WithoutMobileData() throws ApiException {
         card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
 
@@ -1161,6 +1195,4 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
         assertNotNull(secureEcom.getMessageType());
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNull(secureEcom.getEci());
-    }
-
-}
+    }}

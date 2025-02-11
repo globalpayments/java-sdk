@@ -13,14 +13,13 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import org.joda.time.LocalDate;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
 
 public class GpApiAchTest extends BaseGpApiTest {
 
@@ -39,7 +38,7 @@ public class GpApiAchTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void TestInitialize() {
         address = new Address();
         address.setStreetAddress1("Apartment 852");
@@ -447,7 +446,7 @@ public class GpApiAchTest extends BaseGpApiTest {
     }
 
     @Test
-    @Ignore("GP-API sandbox limitation")
+    @Disabled("GP-API sandbox limitation")
     public void CheckRefundExistingSale() throws ApiException {
         BigDecimal amount = new BigDecimal("1.29");
 

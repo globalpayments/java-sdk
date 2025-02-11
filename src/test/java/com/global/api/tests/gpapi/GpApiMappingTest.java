@@ -17,12 +17,10 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
 import org.joda.time.DateTime;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class GpApiMappingTest extends BaseGpApiTest {
 

@@ -9,14 +9,12 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.StringUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 public class GpApiTokenManagementTest extends BaseGpApiTest {
 
@@ -38,9 +36,9 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         try {
             token = card.tokenize();
 
-            assertFalse("Token could not be generated.", StringUtils.isNullOrEmpty(token));
+            assertFalse(StringUtils.isNullOrEmpty(token), "Token could not be generated.");
         } catch (GatewayException ex) {
-            Assert.fail(ex.getMessage());
+            fail(ex.getMessage());
         }
     }
 
@@ -261,7 +259,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
-    @Ignore
+    @Disabled
     // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test
@@ -282,7 +280,7 @@ public class GpApiTokenManagementTest extends BaseGpApiTest {
         }
     }
 
-    @Ignore
+    @Disabled
     // Credentials on this test have no permissions to delete a tokenized card
     // Test passed using secret credentials with permissions to delete a tokenized card
     @Test

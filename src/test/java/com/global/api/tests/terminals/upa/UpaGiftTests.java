@@ -86,6 +86,17 @@ public class UpaGiftTests {
     }
 
     @Test
+    public void startCard_NoSecurityCode() throws ApiException {
+        TerminalResponse response = device.giftAddValue(new BigDecimal("2.00"))
+                .withGiftTransactionType(TransactionType.Sale)
+                .withRequireSecurityCode(false)
+                .withCardTypeFilter(EnumSet.of(UpaCardTypeFilter.GIFT))
+                .execute();
+
+        runBasicTests(response);
+    }
+
+    @Test
     public void startCard_serviceCode() throws ApiException {
         TerminalResponse response = device.giftAddValue(new BigDecimal("10.01"))
                 .withGiftTransactionType(TransactionType.Sale)

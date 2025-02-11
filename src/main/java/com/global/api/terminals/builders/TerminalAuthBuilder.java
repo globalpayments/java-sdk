@@ -66,6 +66,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     @Getter
     private String cardBrandTransId;
     private DateTime shippingDate;
+	private boolean requireSecurityCode = true;
 
     public Address getAddress() {
         return address;
@@ -96,6 +97,9 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     }
     public String getInvoiceNumber() {
         return invoiceNumber;
+    }
+    public boolean getRequireSecurityCode() {
+        return requireSecurityCode;
     }
     public boolean isRequestMultiUseToken() {
         return requestMultiUseToken;
@@ -296,6 +300,11 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 
     public TerminalAuthBuilder withPaymentMethodType(PaymentMethodType value) {
         this.paymentMethodType = value;
+        return this;
+    }
+
+    public TerminalAuthBuilder withRequireSecurityCode(boolean requireSecurityCode) {
+        this.requireSecurityCode = requireSecurityCode;
         return this;
     }
 

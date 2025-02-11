@@ -10,12 +10,10 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.junit.After;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
 import java.math.BigDecimal;
-
-import static org.junit.Assert.*;
 
 public class GpApiDebitTest extends BaseGpApiTest {
 
@@ -181,7 +179,7 @@ public class GpApiDebitTest extends BaseGpApiTest {
         }
     }
 
-    @After
+    @AfterEach
     public void generalValidations() {
         assertEquals("Visa", debitTrackData.getCardType());
     }

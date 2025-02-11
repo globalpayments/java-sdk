@@ -11,11 +11,11 @@ import com.global.api.paymentMethods.eCheck;
 import com.global.api.serviceConfigs.PorticoConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoAchTests {
     private eCheck check;

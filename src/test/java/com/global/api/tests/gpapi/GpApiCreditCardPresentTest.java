@@ -18,21 +18,20 @@ import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     private final CreditTrackData creditTrackData = new CreditTrackData();
@@ -60,6 +59,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     //region Create sale using Credit track data
     @Test
+    @Order(1)
     public void CreditTrackData_SaleSwipe() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -70,6 +70,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void CreditTrackData_SaleSwipe_Chip() throws ApiException {
         creditTrackData.setPinBlock(null);
         Transaction response =
@@ -82,6 +83,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void CreditTrackData_SaleSwipe_Chip_WrongPin() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -97,6 +99,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void CreditTrackData_SaleSwipe_AuthorizeThenCapture() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -114,6 +117,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void CreditTrackData_RefundSwipe() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -124,6 +128,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void CreditTrackData_RefundChip() throws ApiException {
         creditTrackData.setPinBlock(null);
 
@@ -137,6 +142,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void CreditTrackData_SwipeEncrypted() throws ApiException {
         creditTrackData.setValue("&lt;E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;");
         creditTrackData.setEncryptionData(EncryptionData.version1());
@@ -154,6 +160,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void CreditTrackData_SaleSwipeChip_ExpiredCreditTrackDataDetails() throws ApiException {
         CreditTrackData trackData = new CreditTrackData();
         trackData.setValue(";4024720012345671=18125025432198712345?");
@@ -176,6 +183,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void CreditTrackData_SaleContactlessChip() throws ApiException {
         creditTrackData.setPinBlock(null);
         creditTrackData.setEntryMethod(EntryMethod.Proximity);
@@ -189,8 +197,9 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         assertTransactionResponse(response, TransactionStatus.Captured);
     }
 
-    @Ignore
+    @Disabled
     @Test
+    @Order(10)
     public void CreditTrackData_SaleContactlessSwipe() throws ApiException {
         creditTrackData.setPinBlock(null);
 
@@ -205,6 +214,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void CreditTrackData_SaleContactlessChip_WrongPin() throws ApiException {
         creditTrackData.setEntryMethod(EntryMethod.Proximity);
 
@@ -222,6 +232,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void CreditTrackData_SaleSwipe_Refund() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -239,6 +250,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void CreditTrackData_SaleSwipe_Reverse() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -255,6 +267,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void CreditTrackData_RefundChip_Rejected() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -274,6 +287,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void AdjustSaleTransaction() throws ApiException {
         var card = new CreditTrackData();
         card.setTrackData("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
@@ -303,6 +317,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void AdjustAuthTransaction() throws ApiException {
         var card = initCreditTrackData(EntryMethod.Proximity);
         var tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
@@ -330,6 +345,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void AdjustSaleTransaction_AdjustAmountHigherThanSale() throws ApiException {
         var card = initCreditTrackData();
 
@@ -352,6 +368,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void AdjustSaleTransaction_AdjustOnlyTag() throws ApiException {
         var card = initCreditTrackData(EntryMethod.Proximity);
         var tagData = "9F4005F000F0A0019F02060000000025009F03060000000000009F2608D90A06501B48564E82027C005F3401019F360200029F0702FF009F0802008C9F0902008C9F34030403029F2701809F0D05F0400088009F0E0508000000009F0F05F0400098005F280208409F390105FFC605DC4000A800FFC7050010000000FFC805DC4004F8009F3303E0B8C89F1A0208409F350122950500000080005F2A0208409A031409109B02E8009F21030811539C01009F37045EED3A8E4F07A00000000310109F0607A00000000310108407A00000000310109F100706010A03A400029F410400000001";
@@ -376,6 +393,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void AdjustSaleTransaction_AdjustOnlyGratuity() throws ApiException {
         var card = initCreditTrackData();
 
@@ -400,6 +418,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void AdjustSaleTransaction_AdjustAmountToZero() throws ApiException {
         var card = initCreditTrackData();
 
@@ -424,6 +443,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void AdjustSaleTransaction_AdjustGratuityToZero() throws ApiException {
         var card = initCreditTrackData();
 
@@ -448,6 +468,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void AdjustSaleTransaction_WithoutMandatory() throws ApiException {
         var card = initCreditTrackData();
 
@@ -478,6 +499,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void AdjustSaleTransaction_TransactionNotFound() throws ApiException {
         Transaction transaction = new Transaction();
         transaction.setTransactionId(UUID.randomUUID().toString());
@@ -498,6 +520,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     @SneakyThrows
     @Test
+    @Order(24)
     public void CreditSale_WithoutPermissions() {
         String[] permissions = new String[]{"TRN_POST_Capture"};
 
@@ -528,6 +551,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     //region Create sale using Credit Card Data
     @Test
+    @Order(25)
     public void CreditCard_SaleManual() throws ApiException {
         Transaction response =
                 card
@@ -538,6 +562,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void CreditCard_SaleManual_AuthorizeThenCapture() throws ApiException {
         Transaction response =
                 card
@@ -555,6 +580,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void CreditCard_RefundManual() throws ApiException {
         Transaction response =
                 card
@@ -565,6 +591,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void CreditCard_SaleManual_Refund() throws ApiException {
         Transaction response =
                 card
@@ -582,6 +609,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void CreditCard_SaleManual_Reverse() throws ApiException {
         Transaction response =
                 card
@@ -600,6 +628,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     //region Verify
     @Test
+    @Order(30)
     public void CreditVerify_CreditTrackDataDetails() throws ApiException {
         Transaction response =
                 creditTrackData
@@ -613,6 +642,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(31)
     public void CreditVerify_CardNumberDetails() throws ApiException {
         Transaction response =
                 card
@@ -626,6 +656,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(32)
     public void CreditVerify_CardNumber_ExpiredCard() throws ApiException {
         card.setNumber("4000120000001154");
         card.setExpYear(2021);
@@ -644,6 +675,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
     //region Reauthorize
     @Test
+    @Order(33)
     public void CreditCardReauthorizeTransaction() throws ApiException {
         Transaction chargeTransaction =
                 card
@@ -668,6 +700,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(34)
     public void CreditCardReauthorizeTransaction_OldExistentSale() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -100);
         Date endDate = DateUtils.addDays(new Date(), -1);
@@ -709,6 +742,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(35)
     public void CreditCardReauthorizeAuthorizedTransaction() throws ApiException {
         Transaction authTransaction =
                 card
@@ -734,6 +768,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(36)
     public void CreditCardReauthorizeTransaction_WithIdempotencyKey() throws ApiException {
         Transaction chargeTransaction =
                 card
@@ -774,6 +809,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(37)
     public void CreditCardReauthorizeTransaction_Refund() throws ApiException {
         Transaction refundTransaction =
                 card
@@ -798,6 +834,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(38)
     public void CreditCardReauthorizeTransaction_SaleWithCapturedStatus() throws ApiException {
         Transaction chargeTransaction =
                 card
@@ -822,6 +859,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(39)
     public void CreditCardReauthorizeTransaction_NonExistentId() throws ApiException {
         String randomTransactionId = UUID.randomUUID().toString();
 
@@ -845,6 +883,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(40)
     public void IncrementalAuth() throws ApiException {
         var transaction =
                 card
@@ -895,6 +934,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(41)
     public void IncrementalAuth_WithoutLodgingData() throws ApiException {
         var transaction =
                 card
@@ -928,6 +968,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(42)
     public void IncrementalAuth_Reverse() throws ApiException {
         var transaction =
                 card
@@ -978,6 +1019,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(43)
     public void IncrementalAuth_Charge() throws ApiException {
         var transaction =
                 card
@@ -1023,6 +1065,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(44)
     public void IncrementalAuth_RandomTransaction() throws ApiException {
         String randomTransactionId = UUID.randomUUID().toString();
 
@@ -1063,7 +1106,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
     //endregion
 
-    @After
+    @AfterEach
     public void generalValidations() {
         assertEquals("Visa", creditTrackData.getCardType());
         assertEquals("Visa", card.getCardType());

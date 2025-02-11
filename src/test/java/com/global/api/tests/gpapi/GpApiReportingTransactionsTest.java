@@ -13,20 +13,20 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
-
 import static com.global.api.entities.enums.Target.GP_API;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
 
     public GpApiReportingTransactionsTest() throws ApiException {
@@ -35,6 +35,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(1)
     public void ReportTransactionDetail_By_Id() throws ApiException {
         TransactionSummary sampleTransactionSummary =
                 ReportingService
@@ -53,6 +54,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(2)
     public void ReportTransactionDetail_WrongId() throws ApiException {
         String transactionId = UUID.randomUUID().toString();
 
@@ -72,6 +74,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(3)
     public void ReportTransactionDetail_NullId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -87,6 +90,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(4)
     public void ReportFindTransactionsPaged_By_StartDate() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -100,6 +104,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(5)
     public void ReportFindTransactionsPaged_By_StartDate_And_EndDate() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -117,6 +122,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(6)
     public void ReportFindTransactionsPaged_By_SameDates_StartDate_And_EndDate() throws ApiException {
         Date startDate = DateUtils.atStartOfDay(new Date());
         Date endDate = DateUtils.atEndOfDay(new Date());
@@ -137,6 +143,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(7)
     public void ReportFindTransactionsPaged_OrderBy_TimeCreated() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -161,6 +168,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
 
     //TODO - returning empty transaction list
     @Test
+    @Order(8)
     public void ReportFindTransactionsPaged_OrderBy_Status() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -171,6 +179,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(9)
     public void ReportFindTransactionsPaged_OrderBy_Type() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -180,9 +189,10 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
         assertNotNull(transactions);
     }
 
-    @Ignore // Although documentation allows order_by DEPOSIT_ID, the real endpoint does not.
+    @Disabled // Although documentation allows order_by DEPOSIT_ID, the real endpoint does not.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
+    @Order(10)
     public void ReportFindTransactionsPaged_OrderBy_DepositsId() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -193,6 +203,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(11)
     public void CompareResults_reportFindTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
         TransactionSummaryPaged transactionsOrderedByTimeCreated =
                 ReportingService
@@ -211,6 +222,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(12)
     public void ReportFindTransactionsPaged_By_Id() throws ApiException {
         String transactionId =
                 ReportingService
@@ -232,6 +244,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(13)
     public void ReportFindTransactionsPaged_WrongId() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -243,6 +256,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(14)
     public void ReportFindTransactionsPaged_By_Type() throws ApiException {
         PaymentType paymentType = PaymentType.Sale;
         TransactionSummaryPaged transactions =
@@ -269,6 +283,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(15)
     public void ReportFindTransactionsPaged_By_Amount_And_Currency_And_Country() throws ApiException {
         BigDecimal amount = new BigDecimal("1.12");
         String currency = "aud"; //This is case-sensitive
@@ -291,6 +306,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(16)
     public void ReportFindTransactionsPaged_By_WrongCurrency() throws ApiException {
         String currency = "AAA";
 
@@ -305,6 +321,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(17)
     public void ReportFindTransactionsPaged_By_Channel() throws ApiException {
         Channel channel = Channel.CardNotPresent;
 
@@ -332,11 +349,12 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
         assertNotSame(transactionsCNP, transactionsCP);
     }
 
-    @Ignore
+    @Disabled
     // TODO: Reported to GP-API team. Enable when fixed.
     // GP-API returns SUCCESS_AUTHENTICATED an NOT_AUTHENTICATED instead of just AUTHENTICATED
     // when searching by TransactionStatus = AUTHENTICATED
     @Test
+    @Order(18)
     public void ReportFindTransactionsPaged_By_AllStatus() throws ApiException {
         for (TransactionStatus transactionStatus : TransactionStatus.values()) {
             TransactionSummaryPaged transactions =
@@ -356,6 +374,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(19)
     public void ReportFindTransactionsPaged_By_Status() throws ApiException {
         TransactionStatus transactionStatus = TransactionStatus.Preauthorized;
 
@@ -384,6 +403,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(20)
     public void ReportFindTransactionsPaged_By_CardBrand_And_AuthCode() throws ApiException {
         String cardBrand = "VISA";
         String authCode = "123456";
@@ -404,6 +424,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
 
     //Diners and JCB cards are not working
     @Test
+    @Order(21)
     public void ReportFindTransactionsPaged_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
@@ -427,6 +448,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(22)
     public void ReportFindTransactionsPaged_By_InvalidCardBrand() throws ApiException {
         String cardBrand = "MIT";
 
@@ -448,6 +470,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(23)
     public void ReportFindTransactionsPaged_By_Reference() throws ApiException {
         String referenceNumber = "98f64385-6fcd-4605-b0ae-c5675be681cf";
 
@@ -463,6 +486,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(24)
     public void ReportFindTransactionsPaged_By_RandomReference() throws ApiException {
         String referenceNumber = UUID.randomUUID().toString();
 
@@ -477,6 +501,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(25)
     public void ReportFindTransactionsPaged_By_BrandReference() throws ApiException {
         String brandReference = "300351293234459";
 
@@ -492,6 +517,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(26)
     public void ReportFindTransactionsPaged_By_WrongBrandReference() throws ApiException {
         String brandReference = "000000000000001";
 
@@ -505,10 +531,11 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
         assertEquals(0, transactions.getResults().size());
     }
 
-    @Ignore
+    @Disabled
     // Although requests are done with &entry_mode set properly, the real endpoint returns transactions with other entry_modes.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
+    @Order(27)
     public void ReportFindTransactionsPaged_By_AllEntryModes() throws ApiException {
         for (PaymentEntryMode paymentEntryMode : PaymentEntryMode.values()) {
 
@@ -525,6 +552,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(28)
     public void ReportFindTransactionsPaged_By_EntryMode() throws ApiException {
         PaymentEntryMode paymentEntryMode = PaymentEntryMode.Ecom;
 
@@ -553,6 +581,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(29)
     public void ReportFindTransactionsPaged_By_Number_First6_And_Number_Last4() throws ApiException {
         String number_first6 = "543458";
         String number_last4 = "7652";
@@ -572,6 +601,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(30)
     public void ReportFindTransactionsPaged_By_Token_First6_And_Token_Last4() throws ApiException {
         String token_first6 = "516730";
         String token_last4 = "5507";
@@ -594,6 +624,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(31)
     public void ReportFindTransactionsPaged_By_Token_First6_And_Token_Last4_WithPaymentMethod() throws ApiException {
         String token_first6 = "516730";
         String token_last4 = "5507";
@@ -617,6 +648,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(32)
     public void ReportFindTransactionsPaged_By_Token_First6_And_Token_Last4_WithWrongPaymentMethod() throws ApiException {
         String token_first6 = "516730";
         String token_last4 = "5507";
@@ -642,6 +674,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(33)
     public void ReportFindTransactionsPaged_By_BatchId() throws ApiException {
         String batchId = "BAT_875461";
 
@@ -657,6 +690,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(34)
     public void ReportFindTransactionsPaged_By_WrongBatchId() throws ApiException {
         String batchId = "BAT_000461";
 
@@ -671,6 +705,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(35)
     public void ReportFindTransactionsPaged_By_Name() throws ApiException {
         String name = "James Mason";
 
@@ -686,6 +721,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(36)
     public void ReportFindTransactionsPaged_By_RandomName() throws ApiException {
         String name = UUID.randomUUID().toString().replace("-", "");
 
@@ -700,6 +736,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(37)
     public void ReportFindTransactionsPaged_WithInvalid_AccountName() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -718,9 +755,10 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
         }
     }
 
-    @Ignore // Although documentation indicates from_time_created is required, the real endpoint returns results.
+    @Disabled // Although documentation indicates from_time_created is required, the real endpoint returns results.
     // TODO: Report error to GP-API team. Enable it when fixed.
     @Test
+    @Order(38)
     public void ReportFindTransactionsPaged_Without_Mandatory_StartDate() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -738,6 +776,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(39)
     public void ReportFindTransactionsPaged_By_PaymentMethod() throws ApiException {
         for (PaymentMethodName paymentMethodName : PaymentMethodName.values()) {
             TransactionSummaryPaged transactions =
@@ -751,6 +790,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(40)
     public void CompareResults_ReportFindTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
         TransactionSummaryPaged resultByTimeCreated =
                 ReportingService
@@ -775,6 +815,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(41)
     public void ReportFindTransactionsPaged_OrderBy_TimeCreated_Ascending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -787,6 +828,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(42)
     public void ReportFindTransactionsPaged_OrderBy_TimeCreated_Descending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -799,6 +841,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(43)
     public void ReportFindTransactionsPaged_OrderBy_Id_Ascending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -811,6 +854,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(44)
     public void ReportFindTransactionsPaged_OrderBy_Id_Descending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -823,6 +867,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(45)
     public void ReportFindTransactionsPaged_OrderBy_Type_Ascending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -835,6 +880,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(46)
     public void ReportFindTransactionsPaged_OrderBy_Type_Descending() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -850,6 +896,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     // Settlement Transactions
     // ================================================================================
     @Test
+    @Order(47)
     public void ReportFindSettlementTransactionsPaged_By_StartDate_And_EndDate() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -867,6 +914,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(48)
     public void ReportFindSettlementTransactionsPaged_OrderBy_TimeCreated() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -889,6 +937,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(49)
     public void ReportFindSettlementTransactionsPaged_OrderBy_Status() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -911,6 +960,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(50)
     public void ReportFindSettlementTransactionsPaged_OrderBy_Type() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -933,6 +983,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(51)
     public void ReportFindSettlementTransactionsPaged_OrderBy_DepositId() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -955,6 +1006,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(52)
     public void CompareResults_ReportFindSettlementTransactionsPaged_OrderBy_TypeAndTimeCreated() throws ApiException {
         TransactionSummaryPaged transactionsOrderedByTimeCreated =
                 ReportingService
@@ -977,6 +1029,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(53)
     public void ReportFindSettlementTransactionsPaged_By_Number_First6_And_Number_Last4() throws ApiException {
         String number_first6 = "543458";
         String number_last4 = "7652";
@@ -996,6 +1049,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(54)
     public void ReportFindSettlementTransactionsPaged_FilterBy_AllDepositStatus() throws ApiException {
         for (DepositStatus depositStatus : DepositStatus.values()) {
 
@@ -1012,6 +1066,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(55)
     public void ReportFindSettlementTransactionsPaged_By_CardBrand() throws ApiException {
         String[] cardBrands = {"VISA", "MASTERCARD", "AMEX", "DINERS", "DISCOVER", "JCB", "CUP"};
 
@@ -1030,6 +1085,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(56)
     public void ReportFindSettlementTransactionsPaged_By_InvalidCardBrand() throws ApiException {
         String cardBrand = "MIT";
 
@@ -1045,6 +1101,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(57)
     public void ReportFindSettlementTransactionsPaged_By_ARN() throws ApiException {
         String arn = "74500010037624410827759";
 
@@ -1060,6 +1117,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(58)
     public void ReportFindSettlementTransactionsPaged_By_WrongARN() throws ApiException {
         String arn = "00000010037624410827527";
 
@@ -1074,6 +1132,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(59)
     public void ReportFindSettlementTransactionsPaged_By_BrandReference() throws ApiException {
         String brandReference = "MCF1CZ5ME5405";
 
@@ -1090,6 +1149,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(60)
     public void ReportFindSettlementTransactionsPaged_By_WrongBrandReference() throws ApiException {
         String brandReference = "000000000000001";
 
@@ -1104,6 +1164,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(61)
     public void ReportFindSettlementTransactionsPaged_By_CardBrand_And_AuthCode() throws ApiException {
         String cardBrand = "MASTERCARD";
         String authCode = "028010";
@@ -1124,6 +1185,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(62)
     public void ReportFindSettlementTransactionsPaged_By_Reference() throws ApiException {
         String referenceNumber = "50080513769";
 
@@ -1139,6 +1201,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(63)
     public void ReportFindSettlementTransactionsPaged_By_RandomReference() throws ApiException {
         String referenceNumber = UUID.randomUUID().toString();
 
@@ -1153,6 +1216,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(64)
     public void ReportFindSettlementTransactionsPaged_By_AllStatus() throws ApiException {
         for (TransactionStatus transactionStatus : TransactionStatus.values()) {
 
@@ -1170,6 +1234,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(65)
     public void ReportFindSettlementTransactionsPaged_By_DepositId() throws ApiException {
         String depositId = "DEP_2342423423";
 
@@ -1185,6 +1250,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(66)
     public void ReportFindSettlementTransactionsPaged_By_RandomDepositId() throws ApiException {
         String depositId = UUID.randomUUID().toString();
 
@@ -1199,6 +1265,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(67)
     public void ReportFindSettlementTransactionsPaged_By_FromDepositTimeCreated_And_ToDepositTimeCreated() throws ApiException {
         TransactionSummaryPaged transactions =
                 ReportingService
@@ -1216,6 +1283,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(68)
     public void ReportFindSettlementTransactionsPaged_By_FromBatchTimeCreated_And_ToBatchTimeCreated() throws ApiException {
         Date startDate = DateUtils.addDays(new Date(), -90);
         Date startBatchDate = DateUtils.addDays(new Date(), -89);
@@ -1240,6 +1308,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(69)
     public void ReportFindSettlementTransactionsPaged_By_SystemMid_And_SystemHierarchy() throws ApiException {
         String merchantId = "101023947262";
         String hierarchy = "055-70-024-011-019";
@@ -1259,6 +1328,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(70)
     public void ReportFindSettlementTransactionsPaged_By_NonExistent_SystemMerchantId() throws ApiException {
         String merchantId = String.valueOf(new Random().nextInt(999999999));
 
@@ -1273,6 +1343,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(71)
     public void ReportFindSettlementTransactionsPaged_By_Invalid_SystemMid() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -1291,6 +1362,7 @@ public class GpApiReportingTransactionsTest extends BaseGpApiReportingTest {
     }
 
     @Test
+    @Order(72)
     public void ReportFindSettlementTransactionsPaged_By_Random_SystemHierarchy() throws ApiException {
         String systemHierarchy = "000-00-024-000-000";
 

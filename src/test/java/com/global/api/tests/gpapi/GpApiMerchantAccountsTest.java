@@ -19,17 +19,20 @@ import com.global.api.services.GpApiService;
 import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
-import org.junit.*;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     private List<MerchantAccountSummary> accounts;
     private PayFacService payFacService;
@@ -43,7 +46,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void testInitialize() throws ApiException {
         payFacService = new PayFacService();
 
@@ -59,12 +62,13 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         accounts = !response.getResults().isEmpty() ? response.getResults() : null;
     }
 
-    @After
+    @AfterEach
     public void RemoveConfig() throws ApiException {
         ServicesContainer.removeConfig();
     }
 
     @Test
+    @Order(1)
     public void FindAccountsInfo() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -82,6 +86,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void FindAccountsInfo_SearchByStatusActive() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -100,6 +105,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void FindAccountsInfo_SearchByStatusInactive() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -118,6 +124,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void FindAccountsInfo_SearchByName() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -136,6 +143,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void FindAccountsInfo_SearchById() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -154,6 +162,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void FindAccountsInfo_WithoutParameters() throws ApiException {
         MerchantAccountSummaryPaged response =
                 ReportingService
@@ -168,6 +177,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void AccountDetails() throws ApiException {
         String accountId = !accounts.isEmpty() ? accounts.get(0).getId() : null;
 
@@ -180,6 +190,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void AccountDetails_RandomId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -197,6 +208,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void AccountDetails_NullId() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -213,8 +225,9 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
         }
     }
 
-    @Ignore //can be tested only in Production
+    @Disabled //can be tested only in Production
     @Test
+    @Order(10)
     public void EditAccountInformation() throws ApiException {
         Address billingAddress = new Address();
 
@@ -277,6 +290,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void AccountAddressLookup() throws ApiException {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
 
@@ -298,6 +312,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void AccountAddressLookup_WithoutAddressLine1() throws ApiException {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
 
@@ -317,6 +332,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void AccountAddressLookup_WithoutAddressLine2() throws ApiException {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
 
@@ -336,6 +352,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void EditAccountInformation_WithoutCardDetails() throws ApiException {
         Address billingAddress = new Address();
 
@@ -397,6 +414,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void EditAccountInformation_WithoutAddress() throws ApiException {
         CreditCardData creditCardInformation = cardInformation();
 
@@ -450,6 +468,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void EditAccountInformation_WithoutCardHolderName() throws ApiException {
         CreditCardData creditCardInformation = cardInformation();
         creditCardInformation.setCardHolderName(null);
@@ -503,6 +522,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void EditAccountInformation_WithoutAccountId() throws ApiException {
         Address billingAddress = new Address();
 
@@ -544,6 +564,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void EditAccountInformation_WithoutUserRef() throws ApiException {
         Address billingAddress =
                 new Address()
@@ -602,6 +623,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void AccountAddressLookup_MissingPostalCode() throws ApiException {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
 
@@ -628,6 +650,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void AccountAddressLookup_MissingAddressLine() throws GatewayException {
         AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(config);
         Address address =
@@ -655,6 +678,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
 
     //region Transfer and Split
     @Test
+    @Order(21)
     public void TransferFunds() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -692,6 +716,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void TransferFunds_OnlyMandatoryFields() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -723,6 +748,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void TransferFunds_WithIdempotency() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -771,6 +797,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void TransferFunds_WithoutSenderAccountName() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -807,6 +834,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void TransferFunds_WithoutUsableBalanceMode() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -846,6 +874,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     //region Transfer error scenarios
 
     @Test
+    @Order(26)
     public void TransferFunds_WithoutSenderAccountId() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -882,6 +911,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void TransferFunds_WithoutRecipientAccountId() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -914,6 +944,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void TransferFunds_WithoutSenderAccountIdAndAccountName() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -953,6 +984,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void TransferFunds_WithoutMerchantId() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -994,6 +1026,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(30)
     public void TransferFunds_WithoutAmount() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -1030,6 +1063,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(31)
     public void TransferFunds_WithRandomSenderAccountId() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -1068,6 +1102,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(32)
     public void TransferFunds_WithRandomRecipientAccountId() throws ApiException {
         List<MerchantSummary> merchants = GetMerchants();
 
@@ -1095,6 +1130,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(33)
     public void TransferFunds_WithRandomMerchantId() throws ApiException {
         AccountFunds funds = new AccountFunds();
         funds.setAccountId(UUID.randomUUID().toString());
@@ -1117,6 +1153,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(34)
     public void AddFunds() throws ApiException {
         String amount = "10";
         String currency = "USD";
@@ -1148,6 +1185,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(35)
     public void AddFunds_OnlyMandatory() throws ApiException {
         String amount = "10";
         String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
@@ -1175,6 +1213,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(36)
     public void AddFunds_InsufficientFunds() throws ApiException {
 
         String amount = "10";
@@ -1202,6 +1241,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(37)
     public void AddFunds_WithoutAmount() throws ApiException {
         String currency = "USD";
         String accountId = "FMA_a78b841dfbd14803b3a31e4e0c514c72";
@@ -1226,6 +1266,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(38)
     public void AddFunds_WithoutAccountNumber() throws ApiException {
         String amount = "10";
         String currency = "USD";
@@ -1250,6 +1291,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(39)
     public void AddFunds_WithoutUserRef() throws ApiException {
         String amount = "10";
         String currency = "USD";

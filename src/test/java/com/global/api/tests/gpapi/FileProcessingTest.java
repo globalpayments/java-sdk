@@ -9,17 +9,15 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FileProcessingService;
 import com.global.api.tests.fileprocessing.FileProcessingClient;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
 import java.io.File;
 import java.net.URL;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileProcessingTest extends BaseGpApiTest {
 
-    @BeforeClass
+     @BeforeAll
     public static void ClassInitialize() throws ConfigurationException {
 
         GpApiConfig gpApiConfig = gpApiSetup("fWkEqBHQNyLrWCAtp1vCWDbo10kf5jr6", "EkOH93AQKuGlj8Ty", Channel.CardPresent);

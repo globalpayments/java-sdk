@@ -9,13 +9,10 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.EBTCardData;
 import com.global.api.paymentMethods.EBTTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class GpApiEbtTest extends BaseGpApiTest {
     private EBTCardData ebtCardData;
@@ -30,7 +27,7 @@ public class GpApiEbtTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void testInitialize() {
         ebtCardData = new EBTCardData();
         ebtCardData.setNumber("4012002000060016");

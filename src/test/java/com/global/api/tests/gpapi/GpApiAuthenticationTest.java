@@ -8,20 +8,18 @@ import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.GpApiService;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
-
 import static com.global.api.entities.enums.IntervalToExpire.FIVE_MINUTES;
 import static com.global.api.entities.enums.IntervalToExpire.THREE_HOURS;
-import static org.junit.Assert.*;
 
 public class GpApiAuthenticationTest extends BaseGpApiTest {
 
     private final CreditCardData card = new CreditCardData();
 
-    @Before
+    @BeforeEach
     public void Initialize() {
         card.setNumber("4263970000005262");
         card.setExpMonth(expMonth);

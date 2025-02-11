@@ -13,20 +13,19 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.services.Secure3dService;
 import org.joda.time.DateTime;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
 
     private CreditCardData card;
@@ -36,7 +35,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     private final String currency = "USD";
     private static String merchantConfig = null;
 
-    @Before
+    @BeforeEach
     public void initialize() throws ApiException {
 
         GpApiConfig config = gpApiSetup(APP_ID_FOR_MERCHANT, APP_KEY_FOR_MERCHANT, Channel.CardNotPresent);
@@ -93,6 +92,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(1)
     public void CreditAuthorization() throws ApiException {
         Transaction transaction =
                 card
@@ -116,6 +116,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void CreditAuthorization_CaptureLowerAmount() throws ApiException {
         Transaction transaction =
                 card
@@ -139,6 +140,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void CreditAuthorization_CaptureHigherAmount() throws ApiException {
         Transaction transaction =
                 card
@@ -162,6 +164,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void CreditAuthorization_CaptureHigherAmount_WithError() throws ApiException {
         Transaction transaction =
                 card
@@ -190,6 +193,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void CreditSale() throws ApiException {
         Address address = new Address();
         address.setStreetAddress1("123 Main St.");
@@ -211,6 +215,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void CreditSale_WithRequestMultiUseToken() throws ApiException {
         Transaction response =
                 card
@@ -226,6 +231,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void CreditRefund() throws ApiException {
         Transaction response =
                 card
@@ -239,6 +245,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void CreditRefundTransaction() throws ApiException {
         Transaction transaction =
                 card
@@ -262,6 +269,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void CreditRefundTransaction_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -304,6 +312,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void CreditRefundTransaction_RefundLowerAmount() throws ApiException {
         Transaction transaction =
                 card
@@ -327,6 +336,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void CreditRefundTransaction_RefundHigherAmount() throws ApiException {
         Transaction transaction =
                 card
@@ -355,6 +365,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void CreditRefundTransactionWrongId() throws ApiException {
         Transaction transaction = new Transaction();
         transaction.setTransactionId("TRN_" + UUID.randomUUID());
@@ -377,6 +388,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void CreditReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
@@ -399,6 +411,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void CreditReverseTransaction_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -439,6 +452,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void CreditReverseTransactionWrongId() throws ApiException {
         Transaction transaction = new Transaction();
         transaction.setTransactionId("TRN_" + UUID.randomUUID());
@@ -461,6 +475,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void CreditPartialReverseTransaction() throws ApiException {
         Transaction transaction =
                 card
@@ -488,6 +503,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void CreditAuthorizationForMultiCapture() throws ApiException {
         Transaction authorization =
                 card
@@ -529,6 +545,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void CreditAuthorizationAndCapture_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -570,6 +587,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void CreditCaptureWrongId() throws ApiException {
         Transaction authorization = new Transaction();
         authorization.setTransactionId("TRN_" + UUID.randomUUID());
@@ -587,6 +605,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void SaleWithTokenizedPaymentMethod() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize(merchantConfig));
@@ -603,6 +622,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void CardTokenizationThenPayingWithToken_SingleToMultiUse() throws ApiException {
         String[] permissions = new String[]{"PMT_POST_Create_Single"};
 
@@ -644,6 +664,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void CreditVerify() throws ApiException {
         Transaction response =
                 card
@@ -657,6 +678,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void CreditVerify_WithAddress() throws ApiException {
         Address address = new Address();
         address.setPostalCode("750241234");
@@ -675,6 +697,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void CreditVerify_WithIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -707,6 +730,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void CreditVerify_WithoutCurrency() throws ApiException {
         boolean exceptionCaught = false;
         try {
@@ -724,6 +748,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void CreditChargeTransactions_WithSameIdempotencyKey() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -756,6 +781,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void CreditVerify_WithStoredCredentials() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
         storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
@@ -775,6 +801,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void CreditSale_WithStoredCredentials() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
         storedCredential.setInitiator(StoredCredentialInitiator.CardHolder);
@@ -795,6 +822,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void CreditSale_WithStoredCredentials_RecurringPayment() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize(merchantConfig));
@@ -884,6 +912,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(30)
     public void CreditSale_WithCardBrandStorage_RecurringPayment() throws ApiException {
         CreditCardData tokenizedCard = new CreditCardData();
         tokenizedCard.setToken(card.tokenize(merchantConfig));
@@ -917,7 +946,7 @@ public class GpApiCreditWithMerchantIdTest extends BaseGpApiTest {
         assertNotNull(response2.getCardBrandTransactionId());
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeConfig() throws ConfigurationException {
         ServicesContainer.removeConfig(merchantConfig);
     }

@@ -1,20 +1,22 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.utils.JsonDoc;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonDocTest {
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testGetString_withNullValue() {
 
         String aValue = null;
         JsonDoc data = new JsonDoc();
         data.set("lala", aValue, true);
 
-        data.getString("lala");
+        assertThrows(NullPointerException.class, () -> {
+            data.getString("lala");
+        });
     }
 
     @Test

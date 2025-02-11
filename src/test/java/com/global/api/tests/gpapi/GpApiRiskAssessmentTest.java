@@ -12,15 +12,12 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.FraudService;
 import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GpApiRiskAssessmentTest extends BaseGpApiTest {
 
@@ -37,7 +34,7 @@ public class GpApiRiskAssessmentTest extends BaseGpApiTest {
         ServicesContainer.configureService(config);
     }
 
-    @Before
+    @BeforeEach
     public void testInitialize() {
         // Create card data
         card = new CreditCardData();

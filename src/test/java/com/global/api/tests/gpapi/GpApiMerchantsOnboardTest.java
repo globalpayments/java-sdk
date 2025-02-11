@@ -23,24 +23,27 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayFacService;
 import com.global.api.services.ReportingService;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
 
     private PayFacService payFacService;
     private CreditCardData card;
 
-    @Before
+    @BeforeEach
     public void TestInitialize() throws ConfigurationException {
         payFacService = new PayFacService();
 
@@ -55,12 +58,13 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
         card.setCardPresent(true);
     }
 
-    @After
+    @AfterEach
     public void removeConfig() throws ConfigurationException {
         ServicesContainer.removeConfig();
     }
 
     @Test
+    @Order(1)
     public void BoardMerchant() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -87,6 +91,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void BoardMerchant_OnlyMandatory() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -111,6 +116,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void BoardMerchant_WithIdempotency() throws ApiException {
         String idempotencyKey = UUID.randomUUID().toString();
         UserPersonalData merchantData = GetMerchantData();
@@ -157,6 +163,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void BoardMerchant_DuplicateMerchantName() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -197,6 +204,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void BoardMerchant_WithoutMerchantData() {
         List<Product> productData = GetProductList();
         List<Person> persons = GetPersonList(null);
@@ -220,6 +228,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void BoardMerchant_WithoutUserName() {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setUserName(null);
@@ -251,6 +260,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void GetMerchantInfo() throws ApiException {
         String merchantId = "MER_98f60f1a397c4dd7b7167bda61520292";
         User merchant =
@@ -263,6 +273,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void GetMerchantInfo_RandomId() throws ApiException {
         String merchantId = "MER_" + UUID.randomUUID().toString().replace("-", "");
 
@@ -282,6 +293,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void GetMerchantInfo_InvalidId() throws ApiException {
         String merchantId = UUID.randomUUID().toString();
 
@@ -301,6 +313,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void SearchMerchants() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -312,6 +325,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void SearchMerchantAccounts() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -346,6 +360,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void EditMerchantApplicantInfo() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -372,6 +387,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void EditMerchantPaymentProcessing() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -401,6 +417,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void EditMerchantBusinessInformation() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -445,6 +462,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void EditMerchant_RemoveMerchantFromPartner_FewArguments() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -473,6 +491,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void EditMerchant_RemoveMerchantFromPartner_TooManyArguments() throws ApiException {
         MerchantSummaryPaged merchants =
                 ReportingService
@@ -502,6 +521,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void BoardMerchant_WithoutLegalName() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setLegalName(null);
@@ -525,6 +545,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void BoardMerchant_WithoutDba() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setDBA(null);
@@ -548,6 +569,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(19)
     public void BoardMerchant_WithoutWebsite() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setWebsite(null);
@@ -571,6 +593,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(20)
     public void BoardMerchant_WithoutNotificationStatusUrl() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         merchantData.setNotificationStatusUrl(null);
@@ -594,6 +617,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(21)
     public void BoardMerchant_WithoutPersons() {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -621,6 +645,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(22)
     public void BoardMerchant_WithoutPaymentStatistics() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -640,6 +665,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(23)
     public void BoardMerchant_WithoutTotalMonthlySalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -664,6 +690,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(24)
     public void BoardMerchant_WithoutAverageTicketSalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -687,6 +714,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(25)
     public void BoardMerchant_WithoutHighestTicketSalesAmount() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -711,6 +739,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(26)
     public void BoardMerchant_WithoutDescription() throws ApiException {
         UserPersonalData merchantData = GetMerchantData();
         List<Product> productData = GetProductList();
@@ -731,6 +760,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(27)
     public void UploadMerchantDocs() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
@@ -751,6 +781,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(28)
     public void UploadMerchantDocs_AllDocumentFormats() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
@@ -774,6 +805,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(29)
     public void UploadMerchantDocs_AllDocumentCategories() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
@@ -804,6 +836,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(30)
     public void UploadMerchantDocs_MissingDocFormat() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
@@ -823,6 +856,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(31)
     public void UploadMerchantDocs_MissingDocCategory() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocument("VGVzdGluZw==");
@@ -844,6 +878,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(32)
     public void UploadMerchantDocs_MissingDocBaseContent() throws ApiException {
         DocumentUploadData documentDetail = new DocumentUploadData();
         documentDetail.setDocType(FileType.TIF);

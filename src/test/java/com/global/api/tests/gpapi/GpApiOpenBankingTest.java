@@ -14,18 +14,21 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.EnumUtils;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-
 import static com.global.api.entities.reporting.SearchCriteria.EndDate;
 import static com.global.api.entities.reporting.SearchCriteria.StartDate;
-import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiOpenBankingTest extends BaseGpApiTest {
     private static final String currency = "GBP";
     private static final BigDecimal amount = new BigDecimal("10.99");
@@ -37,6 +40,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(1)
     public void FasterPaymentsCharge() throws ApiException, InterruptedException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -66,6 +70,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(2)
     public void SEPACharge() throws ApiException, InterruptedException {
         BankPayment bankPayment = SepaConfig();
 
@@ -96,6 +101,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(3)
     public void ReportFindOBTransactionsByStartDateAndEndDate() throws ApiException {
         TransactionSummaryPaged response =
                 ReportingService
@@ -116,6 +122,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(4)
     public void FasterPaymentsChargeThenRefund() throws ApiException, InterruptedException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -145,6 +152,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(5)
     public void SepaChargeThenRefund() throws ApiException, InterruptedException {
         BankPayment bankPayment = SepaConfig();
 
@@ -174,6 +182,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(6)
     public void FasterPaymentsMissingRemittanceReference() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -194,6 +203,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(7)
     public void FasterPaymentsMissingRemittanceReferenceType() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -215,6 +225,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(8)
     public void FasterPaymentsMissingRemittanceReferenceValue() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -236,6 +247,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(9)
     public void FasterPaymentsMissingReturnUrl() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
         bankPayment.setReturnUrl(null);
@@ -258,6 +270,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(10)
     public void FasterPaymentsMissingStatusUrl() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
         bankPayment.setStatusUpdateUrl(null);
@@ -280,6 +293,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(11)
     public void FasterPaymentsMissingAccountNumber() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
         bankPayment.setAccountNumber(null);
@@ -302,6 +316,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(12)
     public void FasterPaymentsMissingAccountName() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
         bankPayment.setAccountName(null);
@@ -324,6 +339,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(13)
     public void FasterPaymentsMissingSortCode() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
         bankPayment.setSortCode(null);
@@ -346,6 +362,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(14)
     public void FasterPaymentsInvalidCurrency() throws ApiException {
         BankPayment bankPayment = FasterPaymentsConfig();
 
@@ -367,6 +384,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(15)
     public void SepaMissingIban() throws ApiException {
         BankPayment bankPayment = SepaConfig();
         bankPayment.setIban(null);
@@ -389,6 +407,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(16)
     public void SepaMissingAccountName() throws ApiException {
         BankPayment bankPayment = SepaConfig();
         bankPayment.setAccountName(null);
@@ -411,6 +430,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(17)
     public void SepaInvalidCurrency() throws ApiException {
         BankPayment bankPayment = SepaConfig();
         bankPayment.setIban(null);
@@ -433,6 +453,7 @@ public class GpApiOpenBankingTest extends BaseGpApiTest {
     }
 
     @Test
+    @Order(18)
     public void SepaChargeCADCurrency() throws ApiException {
         BankPayment bankPayment = SepaConfig();
         bankPayment.setIban(null);

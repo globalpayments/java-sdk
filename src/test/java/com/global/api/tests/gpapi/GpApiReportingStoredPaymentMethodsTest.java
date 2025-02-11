@@ -16,16 +16,14 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import com.global.api.utils.DateUtils;
 import com.global.api.utils.StringUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
-import static org.junit.Assert.*;
 
 public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTest {
 
@@ -44,9 +42,9 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
 
         try {
             token = card.tokenize();
-            assertFalse("Token could not be generated.", StringUtils.isNullOrEmpty(token));
+            assertFalse(StringUtils.isNullOrEmpty(token), "Token could not be generated.");
         } catch (GatewayException ex) {
-            Assert.fail(ex.getMessage());
+            fail(ex.getMessage());
         }
     }
 
@@ -127,7 +125,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         assertEquals(0, result.getTotalRecordCount());
     }
 
-    @Ignore
+    @Disabled
     // TODO: Reported the the GP API team. Enable when fixed.
     // Endpoint is retrieving not filtered results
     @Test
@@ -146,7 +144,7 @@ public class GpApiReportingStoredPaymentMethodsTest extends BaseGpApiReportingTe
         }
     }
 
-    @Ignore
+    @Disabled
     // TODO: Reported the the GP API team. Enable when fixed.
     // Endpoint is retrieving not filtered results
     @Test
