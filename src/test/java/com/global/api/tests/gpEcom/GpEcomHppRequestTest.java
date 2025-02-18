@@ -12,15 +12,14 @@ import com.global.api.tests.JsonComparator;
 import com.global.api.tests.gpEcom.hpp.GpEcomHppClient;
 import com.global.api.utils.JsonDoc;
 import lombok.var;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpEcomHppRequestTest {
     private HostedService _service;
     private GpEcomHppClient _client;
@@ -59,6 +58,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(1)
     public void creditAuth() throws ApiException {
         Address address = new Address();
         address.setPostalCode("123|56");
@@ -77,6 +77,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(2)
     public void creditSale() throws ApiException {
         Address address = new Address();
         address.setPostalCode("123|56");
@@ -95,6 +96,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(3)
     public void creditVerify() throws ApiException {
         Address address = new Address();
         address.setPostalCode("123|56");
@@ -113,6 +115,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(4)
     public void creditVerify_3DS() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setVersion(HppVersion.Version2);
@@ -151,6 +154,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(5)
     public void test_CUST_NUM_HostedPaymentDataAndCustomerNumberAndCustomerId() throws ApiException {
 
         // prepare
@@ -169,6 +173,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(6)
     public void test_CUST_NUM_HostedPaymentDataAndNoCustomerNumberAndCustomerId() throws ApiException {
 
         // prepare
@@ -187,6 +192,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(7)
     public void test_CUST_NUM_HostedPaymentDataAndNoCustomerNumberAndNoCustomerId() throws ApiException {
         // prepare
         prepareConfig();
@@ -204,6 +210,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(8)
     public void test_CUST_NUM_NoHostedPaymentDataAndCustomerId() throws ApiException {
         // prepare
         prepareConfig();
@@ -220,6 +227,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(9)
     public void test_CUST_NUM_NoHostedPaymentDataAndNoCustomerId() throws ApiException {
         // prepare
         prepareConfig();
@@ -280,37 +288,57 @@ public class GpEcomHppRequestTest {
         assertEquals(expected_CUST_NUM, custNum);
     }
 
-    @Test(expected = BuilderException.class)
-    public void authNoAmount() throws ApiException {
-        _service.authorize(null).withCurrency("USD").serialize();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void authNoCurrency() throws ApiException {
-        _service.authorize(new BigDecimal("10")).serialize();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void saleNoAmount() throws ApiException {
-        _service.charge(null).withCurrency("USD").serialize();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void saleNoCurrency() throws ApiException {
-        _service.charge(new BigDecimal("10")).serialize();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void verifyNoCurrency() throws ApiException {
-        _service.verify().serialize();
-    }
-
-    @Test(expected = BuilderException.class)
-    public void verifyWithAmount() throws ApiException {
-        _service.verify().withAmount(new BigDecimal("10")).serialize();
+    @Test
+    @Order(10)
+    public void authNoAmount() {
+       assertThrows(BuilderException.class, () -> {
+           _service.authorize(null).withCurrency("USD").serialize();
+       });
     }
 
     @Test
+    @Order(11)
+    public void authNoCurrency() {
+        assertThrows(BuilderException.class, () -> {
+            _service.authorize(new BigDecimal("10")).serialize();
+        });
+    }
+
+    @Test
+    @Order(12)
+    public void saleNoAmount() {
+        assertThrows(BuilderException.class, () -> {
+            _service.charge(null).withCurrency("USD").serialize();
+        });
+
+    }
+
+    @Test
+    @Order(13)
+    public void saleNoCurrency() {
+        assertThrows(BuilderException.class, () -> {
+            _service.charge(new BigDecimal("10")).serialize();
+        });
+    }
+
+    @Test
+    @Order(14)
+    public void verifyNoCurrency() {
+        assertThrows(BuilderException.class, () -> {
+            _service.verify().serialize();
+        });
+    }
+
+    @Test
+    @Order(15)
+    public void verifyWithAmount()  {
+        assertThrows(BuilderException.class, () -> {
+            _service.verify().withAmount(new BigDecimal("10")).serialize();
+        });
+    }
+
+    @Test
+    @Order(16)
     public void basicAuth() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -337,6 +365,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(17)
     public void basicCharge() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -363,6 +392,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(18)
     // testing COMMENT1, CUST_NUM, PROD_ID, VAR_REF, HPP_LANG, CARD_PAYMENT_BUTTON
     public void basicHostedPaymentData() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
@@ -399,6 +429,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(19)
     public void storeCardNewCustomerNoRefs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -430,6 +461,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(20)
     public void storeCardNewCustomerJustPayerRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -462,6 +494,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(21)
     public void storeCardNewCustomerJustPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -494,6 +527,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(22)
     public void storeCardNewCustomerAllSuppliedRefs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -527,6 +561,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(23)
     public void storeCardAutoNewCustomerNoRefs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -558,6 +593,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(24)
     public void storeCardReturnCustomerNoPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -590,6 +626,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(25)
     public void storeCardReturnCustomerWithPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -622,6 +659,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(26)
     public void storeCardAutoReturnCustomerAllRefs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -655,6 +693,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(27)
     public void displayStoredCardsOfferSaveNoPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -687,6 +726,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(28)
     public void displayStoredCardsOfferSaveWithPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -720,6 +760,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(29)
     public void billingData() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -750,6 +791,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(30)
     public void shippingData() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -780,6 +822,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(31)
     public void billingAndShippingData() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -815,6 +858,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(32)
     public void fraudFilterPassive() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -841,6 +885,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(33)
     public void fraudFilterOff() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -867,6 +912,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(34)
     public void fraudFilterNone() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -893,6 +939,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(35)
     public void fraudFilterActive() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -920,6 +967,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(36)
     public void fraudManagementRequestWithRules() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("myMerchantId");
@@ -978,6 +1026,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(37)
     public void fraudWithFraudRules() throws ApiException {
         String ruleId = "853c1d37-6e9f-467e-9ffc-182210b40c6b";
         FraudFilterMode mode = FraudFilterMode.Off;
@@ -1010,6 +1059,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(38)
     public void dynamicCurrencyConversionOn() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1036,6 +1086,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(39)
     public void dynamicCurrencyConversionOff() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1062,6 +1113,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(40)
     public void returnTssOn() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1088,6 +1140,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(41)
     public void returnTssOff() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1114,6 +1167,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(42)
     public void recurringInfo() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1160,6 +1214,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(43)
     public void hashCheckAllInputs() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1192,6 +1247,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(44)
     public void hashCheckNoPaymentRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1223,6 +1279,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(45)
     public void hashCheckNoPayerRef() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1254,6 +1311,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(46)
     public void hashCheckFraudFilterNone() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1285,6 +1343,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(47)
     public void allFieldsCheck() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1337,6 +1396,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(48)
     public void basicChargeAlternativePayment() throws ApiException {
 
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
@@ -1371,6 +1431,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(49)
     public void creditAuth_MultiAutoSettle() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1397,6 +1458,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(50)
     public void creditAuth_AutoSettle() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1423,6 +1485,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(51)
     public void hasSupplementaryDataWithOneValueSerialized() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1477,6 +1540,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(52)
     public void hasSupplementaryDataWithTwoValuesSerialized() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1530,6 +1594,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(53)
     public void customHostedServiceConfigName() throws ApiException {
         HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
         hostedConfig.setResponseUrl("https://www.example.com/response");
@@ -1559,6 +1624,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(54)
     public void testNetherlandsAntillesCountry() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
@@ -1601,6 +1667,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(55)
     public void cardBlockingPayment() throws ApiException {
 
         GpEcomConfig config = new GpEcomConfig();
@@ -1641,6 +1708,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(56)
     public void cardBlockingPayment_AllCardTypes() throws ApiException {
 
         GpEcomConfig config = new GpEcomConfig();
@@ -1692,6 +1760,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(57)
     /**
      * We can set multiple APMs/LPMs on $presetPaymentMethods, but our HppClient for testing will treat only the first
      * entry from the list as an example for our unit test, in this case will be "sofort"
@@ -1757,6 +1826,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(58)
     public void openBankingInitiate() throws ApiException {
         var config = new GpEcomConfig();
         config.setMerchantId("openbankingsandbox");
@@ -1806,6 +1876,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(59)
     public void captureBillingAndShippingInformation() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("MerchantId");
@@ -1846,6 +1917,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(60)
     public void threeDSExemption() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
@@ -1904,6 +1976,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(61)
     public void testBasicChargeCardsAndAlternativePaymentMethods() throws ApiException {
         GpEcomConfig config = new GpEcomConfig();
         config.setMerchantId("heartlandgpsandbox");
@@ -1966,6 +2039,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(62)
     public void testPaymentsSerialization_nullArrays() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = null;
 
@@ -1977,6 +2051,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(63)
     public void testPaymentsSerialization_emptyArrays() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[0];
 
@@ -1988,6 +2063,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(64)
     public void testPaymentsSerialization_IDEAL() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = null;
 
@@ -2000,6 +2076,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(65)
     public void testPaymentsSerialization_IDEALandPAYPAL() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = null;
 
@@ -2013,6 +2090,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(66)
     public void testPaymentsSerialization_IDEALandPAYPALandSOFORTUBERWEISUNG() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = null;
 
@@ -2027,6 +2105,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(67)
     public void testPaymentsSerialization_OB() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[1];
         hostedPaymentMethods[0] = HostedPaymentMethods.OB;
@@ -2039,6 +2118,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(68)
     public void testPaymentsSerialization_OBandCARDS() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[2];
         hostedPaymentMethods[0] = HostedPaymentMethods.OB;
@@ -2052,6 +2132,7 @@ public class GpEcomHppRequestTest {
     }
 
     @Test
+    @Order(69)
     public void testPaymentsSerialization_CARDSandIDEALandPAYPALandSOFORTUBERWEISUNG() throws ApiException {
         HostedPaymentMethods[] hostedPaymentMethods = new HostedPaymentMethods[1];
         hostedPaymentMethods[0] = HostedPaymentMethods.CARDS;

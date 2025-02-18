@@ -9,18 +9,16 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import lombok.var;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpEcomCreditTest extends BaseGpEComTest {
     private CreditCardData card;
 
@@ -41,6 +39,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(1)
     public void creditAuthorization() throws ApiException {
         Transaction authorization = card.authorize(new BigDecimal("14"))
                 .withCurrency("USD")
@@ -56,6 +55,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(2)
     public void creditSale() throws ApiException {
         Transaction response = card.charge(new BigDecimal("15"))
                 .withCurrency("USD")
@@ -66,6 +66,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(3)
     public void creditSaleWithRecurring() throws ApiException {
         Transaction response = card.charge(new BigDecimal("15"))
                 .withCurrency("USD")
@@ -77,6 +78,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(4)
     public void creditRefund_withClientTransactionId() throws ApiException {
         Transaction response = card.refund(new BigDecimal("16"))
                 .withCurrency("USD")
@@ -88,6 +90,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(5)
     public void creditRefund() throws ApiException {
         Transaction response = card.refund(new BigDecimal("16"))
                 .withCurrency("USD")
@@ -98,6 +101,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(6)
     public void creditRebate() throws ApiException {
         Transaction response = card.charge(new BigDecimal("17"))
                 .withCurrency("USD")
@@ -114,6 +118,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(7)
     public void creditVoid() throws ApiException {
         Transaction response = card.charge(new BigDecimal("15"))
                 .withCurrency("USD")
@@ -128,6 +133,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(8)
     public void creditVerify() throws ApiException {
         Transaction response = card.verify()
                 .withAllowDuplicates(true)
@@ -137,6 +143,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(9)
     public void creditFraudResponse() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
@@ -172,6 +179,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(10)
     public void creditSale_GB_NoStreetAddress() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setCountry("GB");
@@ -186,6 +194,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(11)
     public void creditSettle_WithoutAmountCurrency() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("99.99"))
                 .withCurrency("EUR")
@@ -202,6 +211,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(12)
     public void creditAuthorization_WithMultiAutoSettle() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("14"))
                 .withCurrency("USD")
@@ -212,6 +222,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(13)
     public void creditAuthorization_WithMultiCapture() throws ApiException {
         Transaction authorization = card.authorize(new BigDecimal("14"))
                 .withCurrency("USD")
@@ -241,6 +252,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(14)
     public void CreditAuthorization_WithDynamicDescriptor() throws ApiException {
         String dynamicDescriptor = "MyCompany LLC";
 
@@ -266,6 +278,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(15)
     public void dccRateLookup_Charge() throws ApiException {
         card.setNumber("4006097467207025");
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
@@ -285,6 +298,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(16)
     public void dccRateLookup_Auth() throws ApiException {
         card.setNumber("4006097467207025");
         Transaction dccResponse = card.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
@@ -303,80 +317,101 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertEquals("00", authResponse.getResponseCode());
     }
 
-    @Test(expected = ApiException.class)
+    @Test
+    @Order(17)
     public void googlePay_InvalidToken() throws ApiException {
-        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
-        card = new CreditCardData();
-        card.setToken(token);
-        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+        assertThrows(ApiException.class, () -> {
+            String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
-        card.charge(new BigDecimal("15"))
-                .withCurrency("EUR")
-                .execute();
+            card = new CreditCardData();
+            card.setToken(token);
+            card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
+            card.charge(new BigDecimal("15"))
+                    .withCurrency("EUR")
+                    .execute();
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void googlePay_NoToken() throws ApiException {
-        card = new CreditCardData();
-        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+    @Test
+    @Order(18)
+    public void googlePay_NoToken() {
 
-        card.charge(new BigDecimal("15"))
-                .withCurrency("EUR")
-                .execute();
+        assertThrows(ApiException.class, () -> {
+            card = new CreditCardData();
+            card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
+            card.charge(new BigDecimal("15"))
+                    .withCurrency("EUR")
+                    .execute();
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void googlePay_Charge_NoAmount() throws ApiException {
-        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+    @Test
+    @Order(19)
+    public void googlePay_Charge_NoAmount() {
 
-        card = new CreditCardData();
-        card.setToken(token);
-        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+        assertThrows(ApiException.class, () -> {
+            String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
-        card.charge()
-                .withCurrency("USD")
-                .execute();
+            card = new CreditCardData();
+            card.setToken(token);
+            card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
+            card.charge()
+                    .withCurrency("USD")
+                    .execute();
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void googlePay_Charge_NoCurrency() throws ApiException {
-        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+    @Test
+    @Order(20)
+    public void googlePay_Charge_NoCurrency()  {
+       assertThrows(ApiException.class, () -> {
+           String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
 
-        card = new CreditCardData();
-        card.setToken(token);
-        card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
+           card = new CreditCardData();
+           card.setToken(token);
+           card.setMobileType(MobilePaymentMethodType.GOOGLEPAY);
 
-        card.charge(new BigDecimal(10))
-                .execute();
-
-    }
-
-    @Test(expected = ApiException.class)
-    public void applePay_InvalidToken() throws ApiException {
-        String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
-
-        card = new CreditCardData();
-        card.setToken(token);
-        card.setMobileType(MobilePaymentMethodType.APPLEPAY);
-
-        card.charge().execute();
-
-    }
-
-    @Test(expected = ApiException.class)
-    public void applePay_Charge_WithoutToken() throws ApiException {
-        card = new CreditCardData();
-        card.setMobileType(MobilePaymentMethodType.APPLEPAY);
-
-        card.charge().execute();
+           card.charge(new BigDecimal(10))
+                   .execute();
+       });
 
     }
 
     @Test
+    @Order(21)
+    public void applePay_InvalidToken() throws ApiException {
+
+        assertThrows(ApiException.class, () -> {
+            String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
+
+            card = new CreditCardData();
+            card.setToken(token);
+            card.setMobileType(MobilePaymentMethodType.APPLEPAY);
+
+            card.charge().execute();
+        });
+
+    }
+
+    @Test
+    @Order(22)
+    public void applePay_Charge_WithoutToken() throws ApiException {
+
+        assertThrows(ApiException.class, () -> {
+            card = new CreditCardData();
+            card.setMobileType(MobilePaymentMethodType.APPLEPAY);
+
+            card.charge().execute();
+        });
+
+    }
+
+    @Test
+    @Order(23)
     public void Credit_SupplementaryData() throws ApiException {
         Transaction authorize =
                 card
@@ -402,6 +437,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(24)
     public void fraudManagement_DecisionManager() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
@@ -488,6 +524,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(25)
     public void FraudManagementDataSubmissionWithRules() throws ApiException {
         final String rule1 = "853c1d37-6e9f-467e-9ffc-182210b40c6b";
         final String rule2 = "f9b93363-4f4e-4d31-b7a2-1f816f461ada";
@@ -553,6 +590,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(26)
     public void fraudManagement_Hold() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("199.99"))
                 .withCurrency("EUR")
@@ -570,6 +608,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(27)
     public void fraudManagement_Release() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("199.99"))
                 .withCurrency("EUR")
@@ -593,6 +632,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(28)
     public void fraudManagement_Filter() throws ApiException {
         Address billingAddress = new Address();
         billingAddress.setStreetAddress1("Flat 123");
@@ -629,6 +669,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(29)
     public void fraudManagement_FraudResponse() throws ApiException {
         Transaction response =
                 card
@@ -718,6 +759,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
 //    }
 
     @Test
+    @Order(30)
     public void supplementaryData() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("GBP")
@@ -736,6 +778,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(31)
     public void cardBlockingPaymentRequest() throws ApiException {
         BlockedCardType cardTypesBlocked = new BlockedCardType();
         cardTypesBlocked.setCommercialDebit(true);
@@ -751,6 +794,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(32)
     public void storedCredential_Sale() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
         storedCredential.setType(StoredCredentialType.OneOff);
@@ -768,6 +812,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(33)
     public void storedCredential_OTB() throws ApiException {
         StoredCredential storedCredential = new StoredCredential();
         storedCredential.setType(StoredCredentialType.OneOff);
@@ -784,6 +829,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(34)
     public void storedCredential_ReceiptIn() throws ApiException {
         RecurringPaymentMethod storedCard = new RecurringPaymentMethod("20190729-GlobalApi", "20190729-GlobalApi-Credit");
 
@@ -804,6 +850,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(35)
     public void storedCredential_ReceiptIn_OTB() throws ApiException {
         RecurringPaymentMethod storedCard = new RecurringPaymentMethod("20190729-GlobalApi", "20190729-GlobalApi-Credit");
 
@@ -823,6 +870,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(36)
     public void optionalFields() throws ApiException {
         Transaction response = card.authorize(new BigDecimal("14"))
                 .withCurrency("USD")
@@ -852,6 +900,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(37)
     public void creditChargeWithSurchargeAmount() throws ApiException {
         Transaction authorize = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -864,6 +913,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(38)
     public void creditCaptureWithSurchargeAmount() throws ApiException {
         Transaction authorize = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -879,6 +929,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(39)
     public void creditChargeWithExceededSurchargeAmount() throws ApiException {
         boolean exceptionCaught = false;
 

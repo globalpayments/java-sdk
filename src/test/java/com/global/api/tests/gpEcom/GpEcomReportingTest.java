@@ -7,16 +7,15 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpEcomReportingTest extends BaseGpEComTest {
 
     public GpEcomReportingTest() throws ApiException {
@@ -25,6 +24,7 @@ public class GpEcomReportingTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(1)
     public void GetTransactionDetail() throws ApiException {
         String orderId = "Bu6PN-F1Tt2VqMTP0Mvtwg";
 
@@ -45,6 +45,7 @@ public class GpEcomReportingTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(2)
     public void GetTransactionDetail_WithRandomId() throws ApiException {
         String orderId = UUID.randomUUID().toString();
 
@@ -59,6 +60,7 @@ public class GpEcomReportingTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(3)
     public void GetTransactionDetail_WithNullId() throws ApiException {
         try {
             ReportingService

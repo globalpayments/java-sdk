@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.2.10 (02/11/2025)
+## Latest Version - V14.2.11 (02/18/2025)
+### Enhancements
+- [Terminals] - Fix Large Amount Format.
+- [GPApi] - Converted GPEcomm folder to JUnit 5 testing framework.
+
+## V14.2.10 (02/11/2025)
 ### Enhancements
 - [UPA] - Added withRequireSecurityCode to TerminalAuthBuilder to allow bypass of security code for manual entry gift card.
 - [GPApi] - Converted GPAPI folder to JUnit 5 testing framework.

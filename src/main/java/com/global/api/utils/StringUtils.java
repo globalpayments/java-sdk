@@ -121,7 +121,8 @@ public class StringUtils {
         String rvalue = trimStart(amount.toString().replaceAll("[^0-9]", ""), "0");
         return numberPlaces + rvalue;
     }
-    public static String toCurrencyString(BigDecimal amount) {
+
+  /*  public static String toCurrencyString(BigDecimal amount) {
         if (amount == null) {
             return "";
         }
@@ -138,6 +139,57 @@ public class StringUtils {
         }
 
         return value;
+    }*/
+
+    /**
+     * Returns a string representation of the value formatted to two decimal places.
+     *
+     * @param amount as a BigDecimal
+     * @return the amount to two decimal places as a String
+     */
+    public static String toCurrencyString(BigDecimal amount) {
+        if (amount == null) {
+            return "0.00";
+        }
+
+        DecimalFormat df = new DecimalFormat("#0.00");
+        return df.format(amount);
+    }
+
+    /**
+     * Returns a string representation of the value formatted to the specified decimal places.
+     *
+     * @param amount        as a BigDecimal
+     * @param decimalPlaces an integer representing the number of decimal places to be returned.
+     * @return the amount to the specified decimal places as a String
+     */
+    public static String toCurrencyString(BigDecimal amount, int decimalPlaces) {
+        if (amount == null) {
+            return "0." + repeatString("0", decimalPlaces);
+        }
+
+        String pattern = decimalPlaces > 0 ? "#0." + repeatString("0", decimalPlaces) : "#";
+        DecimalFormat df = new DecimalFormat(pattern);
+        return df.format(amount);
+    }
+
+    /**
+     * Use internally to support the repeat method.
+     *
+     * @param str        String to repeat
+     * @param numOfTimes number of times to repeat the string
+     * @return repeated string based on the number of times as a String
+     */
+    private static String repeatString(String str, int numOfTimes) {
+        if (numOfTimes < 0) {
+            numOfTimes = 0;
+        }
+
+        StringBuilder repeatStr = new StringBuilder();
+        for (int i = 0; i < numOfTimes; i++) {
+            repeatStr.append(str);
+        }
+        return repeatStr.toString();
     }
 
     public static String join(String separator, Object[] fields) {

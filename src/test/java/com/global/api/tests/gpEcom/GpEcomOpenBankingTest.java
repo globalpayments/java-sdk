@@ -16,13 +16,12 @@ import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.ReportingService;
 import java.util.logging.Logger;
 import org.joda.time.LocalDate;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static com.global.api.entities.enums.BankPaymentStatus.PAYMENT_INITIATED;
-import static org.junit.Assert.*;
 
 public class GpEcomOpenBankingTest extends BaseGpEComTest {
     private final String currency = "GBP";

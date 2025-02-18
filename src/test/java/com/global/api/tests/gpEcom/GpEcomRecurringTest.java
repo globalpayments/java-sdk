@@ -14,18 +14,17 @@ import com.global.api.services.RecurringService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
 import org.joda.time.DateTime;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpEcomRecurringTest extends BaseGpEComTest {
     private Customer new_customer;
     private CreditCardData card;
@@ -77,6 +76,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(1)
     public void Test_001a_CreateCustomer() throws ApiException {
         try {
             Customer customer = new_customer.create();
@@ -89,6 +89,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(2)
     public void Test_001b_CreatePaymentMethod() throws ApiException {
         try {
             RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card).create();
@@ -101,6 +102,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(3)
     public void Test_001c_CreatePaymentMethodWithStoredCredential() throws ApiException {
         try {
             StoredCredential storedCredential = new StoredCredential();
@@ -120,6 +122,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(4)
     public void Test_001d_CardStorage3DSFlow() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
 
@@ -138,6 +141,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(5)
     public void Test_002a_EditCustomer() throws ApiException {
         Customer customer = new Customer();
         customer.setKey(customerId());
@@ -146,6 +150,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(6)
     public void Test_002b_EditPaymentMethod() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         CreditCardData newCard = new CreditCardData();
@@ -159,6 +164,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(7)
     public void Test_002c_EditPaymentMethodWithStoredCredential() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         CreditCardData newCard = new CreditCardData();
@@ -175,6 +181,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(8)
     public void Test_002c_EditPaymentMethodExpOnly() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         CreditCardData card = new CreditCardData();
@@ -187,12 +194,16 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
         paymentMethod.saveChanges();
     }
 
-    @Test(expected = UnsupportedTransactionException.class)
+    @Test
+    @Order(9)
     public void Test_003_FindOnRealex() throws ApiException {
-        Customer.find(customerId());
+        assertThrows(UnsupportedTransactionException.class, () -> {
+            Customer.find(customerId());
+        });
     }
 
     @Test
+    @Order(10)
     public void Test_004a_ChargeStoredCard() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -207,6 +218,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(11)
     public void Test_004b_VerifyStoredCard() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.verify()
@@ -218,6 +230,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(12)
     public void Test_004c_RefundStoredCard() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.refund(new BigDecimal("10.01"))
@@ -229,6 +242,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(13)
     public void Test_005_RecurringPayment() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         Transaction response = paymentMethod.charge(new BigDecimal("12"))
@@ -241,91 +255,105 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(14)
     public void Test_006_DeletePaymentMethod() throws ApiException {
         RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
         paymentMethod.delete(false);
     }
 
     // Negative Test Cases
-    @Test(expected = ApiException.class)
-    public void Test_007_EditPaymentMethod_Invalid_Name() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
-        CreditCardData newCard = new CreditCardData();
-        newCard.setNumber("5425230000004415");
-        newCard.setExpMonth(1000);
-        newCard.setExpYear(2020);
-        newCard.setCardHolderName(null);
+    @Test
+    @Order(15)
+    public void Test_007_EditPaymentMethod_Invalid_Name() {
+        assertThrows(ApiException.class, () -> {
+            RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+            CreditCardData newCard = new CreditCardData();
+            newCard.setNumber("5425230000004415");
+            newCard.setExpMonth(1000);
+            newCard.setExpYear(2020);
+            newCard.setCardHolderName(null);
 
-        paymentMethod.setPaymentMethod(newCard);
-        paymentMethod.saveChanges();
+            paymentMethod.setPaymentMethod(newCard);
+            paymentMethod.saveChanges();
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void Test_008_EditPaymentMethod_Invalid_Card() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
-        CreditCardData newCard = new CreditCardData();
-        newCard.setNumber("542523");
-        newCard.setExpMonth(1000);
-        newCard.setExpYear(2020);
-        newCard.setCardHolderName("Philip Marlowe");
+    @Test
+    @Order(16)
+    public void Test_008_EditPaymentMethod_Invalid_Card() {
+        assertThrows(ApiException.class, () -> {
+            RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(customerId(), paymentId("Credit"));
+            CreditCardData newCard = new CreditCardData();
+            newCard.setNumber("542523");
+            newCard.setExpMonth(1000);
+            newCard.setExpYear(2020);
+            newCard.setCardHolderName("Philip Marlowe");
 
-        paymentMethod.setPaymentMethod(newCard);
-        paymentMethod.saveChanges();
+            paymentMethod.setPaymentMethod(newCard);
+            paymentMethod.saveChanges();
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void Test_009_DccRateLookup_AuthNotEnabledAccount() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
-                "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
-                "fe1bb177-0a35-421c-9b0e-c7623712387c"
-        );
+    @Test
+    @Order(17)
+    public void Test_009_DccRateLookup_AuthNotEnabledAccount() {
+        assertThrows(ApiException.class, () -> {
+            RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
+                    "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
+                    "fe1bb177-0a35-421c-9b0e-c7623712387c"
+            );
 
-        Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
-                .withAmount(new BigDecimal("10.01"))
-                .withCurrency("EUR")
-                .execute();
+            Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                    .withAmount(new BigDecimal("10.01"))
+                    .withCurrency("EUR")
+                    .execute();
 
-        assertNotNull(dccResponse);
-        assertEquals("00", dccResponse.getResponseCode());
+            assertNotNull(dccResponse);
+            assertEquals("00", dccResponse.getResponseCode());
 
-        Transaction response = paymentMethod.authorize(new BigDecimal("10.01"))
-                .withCurrency("EUR")
-                .withOrderId(dccResponse.getOrderId())
-                .withDccRateData(dccResponse.getDccRateData())
-                .execute();
+            Transaction response = paymentMethod.authorize(new BigDecimal("10.01"))
+                    .withCurrency("EUR")
+                    .withOrderId(dccResponse.getOrderId())
+                    .withDccRateData(dccResponse.getDccRateData())
+                    .execute();
 
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+        });
     }
 
-    @Test(expected = ApiException.class)
-    public void Test_010_DccRateLookup_ChargeNotEnabledAccount() throws ApiException {
-        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
-                "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
-                "fe1bb177-0a35-421c-9b0e-c7623712387c"
-        );
+    @Test
+    @Order(18)
+    public void Test_010_DccRateLookup_ChargeNotEnabledAccount() {
+        assertThrows(ApiException.class, () -> {
+            RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod(
+                    "038cb8bc-0289-48cf-a5ad-8bfbe54e204a",
+                    "fe1bb177-0a35-421c-9b0e-c7623712387c"
+            );
 
-        Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
-                .withAmount(new BigDecimal("10.01"))
-                .withCurrency("EUR")
-                .execute();
+            Transaction dccResponse = paymentMethod.getDccRate(DccRateType.Sale, DccProcessor.Fexco)
+                    .withAmount(new BigDecimal("10.01"))
+                    .withCurrency("EUR")
+                    .execute();
 
-        assertNotNull(dccResponse);
-        assertEquals("00", dccResponse.getResponseCode());
+            assertNotNull(dccResponse);
+            assertEquals("00", dccResponse.getResponseCode());
 
-        Transaction response = paymentMethod.charge(new BigDecimal("10.01"))
-                .withCurrency("EUR")
-                .withOrderId(dccResponse.getOrderId())
-                .withDccRateData(dccResponse.getDccRateData())
-                .execute();
+            Transaction response = paymentMethod.charge(new BigDecimal("10.01"))
+                    .withCurrency("EUR")
+                    .withOrderId(dccResponse.getOrderId())
+                    .withDccRateData(dccResponse.getDccRateData())
+                    .execute();
 
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode());
+            assertNotNull(response);
+            assertEquals("00", response.getResponseCode());
+        });
     }
 
     /**************** Payment Scheduler Test ****************/
 
     @Test
+    @Order(19)
     public void CardStorageAddSchedule() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -365,6 +393,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(20)
     public void CardStorageAddSchedule_AllScheduleFrequency() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -403,6 +432,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(21)
     public void CardStorageAddSchedule_WithIndefinitelyRun() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -440,6 +470,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(22)
     public void CardStorageAddSchedule_With999Runs() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -473,6 +504,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(23)
     public void CardStorageAddSchedule_WithoutScheduleRef() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         boolean exceptionCaught = false;
@@ -500,6 +532,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(23)
     public void CardStorageAddSchedule_WithoutFrequency() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -527,6 +560,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(24)
     public void CardStorageAddSchedule_WithoutCustomerRef() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -557,6 +591,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(25)
     public void CardStorageAddSchedule_WithoutPaymentMethod() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(null, card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -585,6 +620,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(26)
     public void CardStorageAddSchedule_WithoutAmount() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -612,6 +648,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(27)
     public void CardStorageAddSchedule_WithoutCurrency() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -639,6 +676,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(28)
     public void CardStorageAddSchedule_WithoutNumberOfPayments() throws ApiException {
         RecurringPaymentMethod paymentMethod = new_customer.addPaymentMethod(paymentId("Credit"), card);
         String scheduleId = GenerationUtils.generateScheduleId();
@@ -660,6 +698,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(29)
     public void CardStorageAddSchedule_WithNumberOfPaymentsInvalid() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -686,6 +725,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(30)
     public void CardStorageAddSchedule_WithNumberOfPaymentsZero() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -712,6 +752,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(31)
     public void GetListOfPaymentSchedules() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -753,6 +794,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(32)
     public void GetListOfPaymentSchedules_RandomCustomerIdDetails() throws ApiException {
         String customerId = UUID.randomUUID().toString();
 
@@ -772,6 +814,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(33)
     public void GetListOfPaymentSchedules_RandomPayment() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -793,6 +836,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(34)
     public void GetListOfPaymentSchedules_EmptyList() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -826,6 +870,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(35)
     public void GetListOfPaymentSchedules_WithoutPayer() throws ApiException {
         try {
             RecurringCollection<Schedule> response =
@@ -842,6 +887,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(36)
     public void GetListOfPaymentSchedules_WithoutPaymentMethod() throws ApiException {
         try {
             RecurringCollection<Schedule> response =
@@ -858,6 +904,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(37)
     public void DeleteSchedule() throws ApiException {
         checkCustomer();
         RecurringPaymentMethod paymentMethod = checkPaymentMethod();
@@ -905,6 +952,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(38)
     public void Delete_RandomSchedule() {
         Schedule schedule = new Schedule();
         schedule.setKey(GenerationUtils.generateScheduleId());
@@ -921,6 +969,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(39)
     public void GetPaymentScheduleById() throws ApiException {
         Schedule schedule = new Schedule();
         schedule.setKey("bopinslfouil39vfmkqg");
@@ -933,6 +982,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(40)
     public void GetPaymentScheduleById_RandomId() {
         Schedule schedule = new Schedule();
         schedule.setKey(GenerationUtils.generateScheduleId());
@@ -948,6 +998,7 @@ public class GpEcomRecurringTest extends BaseGpEComTest {
     }
 
     @Test
+    @Order(41)
     public void GetPaymentScheduleById_NullId() {
         try {
             RecurringEntity<Schedule> response = RecurringService.get(null, Schedule.class);

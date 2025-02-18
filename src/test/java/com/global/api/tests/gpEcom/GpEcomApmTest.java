@@ -8,9 +8,10 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
@@ -18,7 +19,7 @@ import static com.global.api.entities.enums.AlternativePaymentType.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GpEcomApmTest extends BaseGpEComTest {
 
@@ -30,7 +31,7 @@ public class GpEcomApmTest extends BaseGpEComTest {
     static final String accountName = "James Mason";
     static final String chargeDescription = "New APM";
 
-    @Before
+    @BeforeEach
     public void Init() throws ConfigurationException {
         GpEcomConfig config = gpEComSetup();
         ServicesContainer.configureService(config);
@@ -243,7 +244,7 @@ public class GpEcomApmTest extends BaseGpEComTest {
         }
     }
 
-    @Ignore // Getting Original transaction not found. Need to find a proper orderId without PENDING status
+    @Disabled // Getting Original transaction not found. Need to find a proper orderId without PENDING status
     @Test
     public void testApmForRefund() throws ApiException {
         // a settle request requires the original order id

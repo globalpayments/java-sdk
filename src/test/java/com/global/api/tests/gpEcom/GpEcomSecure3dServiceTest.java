@@ -15,12 +15,11 @@ import com.global.api.tests.AcsResponse;
 import com.global.api.tests.ThreeDSecureAcsClient;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-
-import static org.junit.Assert.*;
 
 public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
     private CreditCardData card;
@@ -847,11 +846,15 @@ public class GpEcomSecure3dServiceTest extends BaseGpEComTest {
         }
     }
 
-    @Test(expected = BuilderException.class)
-    public void checkVersion_Not_ISecure3d() throws ApiException {
-        ThreeDSecure secureEcom = Secure3dService.checkEnrollment(new DebitTrackData())
-                .execute(Secure3dVersion.ANY);
-        assertNotNull(secureEcom);
+    @Test
+    public void checkVersion_Not_ISecure3d() {
+        assertThrows(ApiException.class, () -> {
+            ThreeDSecure secureEcom = Secure3dService.checkEnrollment(new DebitTrackData())
+                    .execute(Secure3dVersion.ANY);
+            assertNotNull(secureEcom);
+        });
+
+
     }
 
     @Test

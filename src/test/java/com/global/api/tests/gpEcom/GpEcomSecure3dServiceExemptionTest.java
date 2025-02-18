@@ -13,12 +13,9 @@ import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.serviceConfigs.GpEcomConfig;
 import com.global.api.services.Secure3dService;
 import org.joda.time.DateTime;
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
-
-import static org.junit.Assert.*;
 
 public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
 
@@ -133,10 +130,10 @@ public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
             } else {
-                Assert.fail("Signature verification Assert.Failed.");
+                fail("Signature verification Assert.Failed.");
             }
         } else {
-            Assert.fail("Card not enrolled.");
+            fail("Card not enrolled.");
         }
     }
 
@@ -192,10 +189,10 @@ public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
                 assertNotNull(response);
                 assertEquals("00", response.getResponseCode());
             } else {
-                Assert.fail("Signature verification Assert.Failed.");
+                fail("Signature verification Assert.Failed.");
             }
         } else {
-            Assert.fail("Card not enrolled.");
+            fail("Card not enrolled.");
         }
     }
 
@@ -244,7 +241,7 @@ public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
             assertNotNull(secureEcom);
             assertEquals("CHALLENGE_REQUIRED", secureEcom.getStatus());
         } else {
-            Assert.fail("Card not enrolled.");
+            fail("Card not enrolled.");
         }
     }
 
@@ -280,7 +277,7 @@ public class GpEcomSecure3dServiceExemptionTest extends BaseGpEComTest {
                 assertEquals("Status code: 202 - {  'eos_reason' : 'Blocked by Transaction Risk Analysis.'}", message);
             }
         } else {
-            Assert.fail("Card not enrolled.");
+            fail("Card not enrolled.");
         }
     }
 
