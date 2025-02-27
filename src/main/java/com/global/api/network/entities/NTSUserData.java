@@ -1403,25 +1403,25 @@ public class NTSUserData {
             if (nonFuelSize > rollUpAt) {
                 for (int i = 0; i < nonFuelSize; i++) {
                     if (i < rollUpAt - 1) {
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, ' '));
+                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, '0'));
                         sb.append(StringUtils.padLeft(nonFuel.get(i).getQuantity().intValue(), 2, '0'));
                         sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 5));
                     } else {
                         sumAmount += nonFuel.get(i).getAmount().floatValue();
                     }
                 }
-                sb.append(StringUtils.padLeft(33, 2, ' '));
+                sb.append(StringUtils.padLeft(33, 2, '0'));
                 sb.append("01");
                 sb.append(StringUtils.toNumeric(BigDecimal.valueOf(sumAmount), 5));
             } else {
                 nonFuel = nonFuel.stream().sorted(Comparator.comparing(DE63_ProductDataEntry::getAmount).reversed()).collect(Collectors.toList());
                 for (int i = 0; i < rollUpAt; i++) {
                     if (i < nonFuelSize) {
-                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, ' '));
+                        sb.append(StringUtils.padLeft(nonFuel.get(i).getCode(), 2, '0'));
                         sb.append(StringUtils.padLeft(nonFuel.get(i).getQuantity().intValue(), 2, '0'));
                         sb.append(StringUtils.toNumeric(nonFuel.get(i).getAmount(), 5));
                     } else {
-                        sb.append(String.format("%2s", " "));
+                        sb.append(String.format("%02d", 0));
                         sb.append(String.format("%02d", 0));
                         sb.append(String.format("%05d", 0));
                     }

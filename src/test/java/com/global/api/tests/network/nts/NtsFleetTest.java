@@ -4650,6 +4650,40 @@ public class NtsFleetTest {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Test
+    public void test_VoyagerFleetEMV_Datacollect_10348() throws ApiException{
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = TestCards.VoyagerSwipe();
+        track.setEntryMethod(EntryMethod.ContactEMV);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("12345");
+        fleetData.setDriverId("12345");
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Plus, UnitOfMeasure.Gallons, 10.34, 1.238);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("      ")
+                .withAuthorizationCode("000616")
+                .withOriginalTransactionDate("0129")
+                .withTransactionTime("153044")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(5)
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
 
 
 }

@@ -1,6 +1,8 @@
 # Changelog
+## Latest Version - V14.2.12 (02/27/2025)
+- [NTS] -Fix issue 10348 : Updated the default value space to 0 for Voyager EMV  non-fuel product types.
 
-## Latest Version - V14.2.11 (02/18/2025)
+## V14.2.11 (02/18/2025)
 ### Enhancements
 - [Terminals] - Fix Large Amount Format.
 - [GPApi] - Converted GPEcomm folder to JUnit 5 testing framework.
