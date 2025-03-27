@@ -8,7 +8,6 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.global.api.entities.enums.ControlCodes;
@@ -24,7 +23,6 @@ import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.MessageWriter;
 import com.global.api.utils.StringUtils;
-import org.joda.time.LocalTime;
 
 public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
     private Socket client;
@@ -58,15 +56,12 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
                     in = new DataInputStream(client.getInputStream());
                     client.setKeepAlive(true);
                     client.setSoTimeout(settings.getTimeout());
-                }
-                else throw new IOException("Client failed to connect");
-            }
-            catch(IOException exc) {
+                } else throw new IOException("Client failed to connect");
+            } catch (IOException exc) {
                 // eat connection exception
             }
         }
     }
-
 
     public void disconnect() {
         try {
@@ -105,6 +100,7 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
 
             out.write(sendBuffer);
             out.flush();
+
             long timeOfSend = System.currentTimeMillis();
 
             do {
@@ -115,22 +111,22 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
                 }
 
                 Thread.sleep(100);
-            } while (!readyReceived);
+            }
+            while (!readyReceived);
 
             //This check is put in place for UPA message "READY".
             if (getMessageType(message).equalsIgnoreCase(Constants.READY_MESSAGE) &&
                     StringUtils.isNullOrEmpty(responseMessageString)) {
                 return readyMessageSent();
             } else {
-                if(onMessageReceived != null){
+                if (onMessageReceived != null) {
                     onMessageReceived.messageReceived(responseMessageString.getBytes());
                 }
                 return responseMessageString.getBytes();
             }
         } catch (Exception exc) {
             throw new MessageException(exc.getMessage(), exc);
-        }
-        finally {
+        } finally {
             if (client != null) disconnect();
             try {
                 // a little padding here

@@ -1,5 +1,12 @@
 # Changelog
-## Latest Version - V14.2.12 (02/27/2025)
+
+## Latest Version - V14.2.13 (03/27/2025)
+### Bug Fixes
+- [Vaps] - Added a fix to set the original batchNumber into a datacollect transaction through TransactionReference object.
+- [Vaps] - Updated DE 12 dateTime function for non-original transaction.
+- [Vaps] - Updated the datetime retrieval method from datetime.now() to localdatetime.now() for internal data collect DE 12 tag (10349).
+
+## V14.2.12 (02/27/2025)
 - [NTS] -Fix issue 10348 : Updated the default value space to 0 for Voyager EMV  non-fuel product types.
 
 ## V14.2.11 (02/18/2025)

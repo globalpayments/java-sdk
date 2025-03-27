@@ -7,23 +7,13 @@ import com.global.api.entities.enums.PaxTxnType;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.utils.ReverseStringEnumMap;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public class PaxDeviceResponse extends PaxBaseResponse {
     private String referenceNumber;
     private String hostReferenceNumber;
-
-    public String getReferenceNumber() {
-        return referenceNumber;
-    }
-    public void setReferenceNumber(String referenceNumber) {
-        this.referenceNumber = referenceNumber;
-    }
-    public String getHostReferenceNumber() {
-        return hostReferenceNumber;
-    }
-    public void setHostReferenceNumber(String hostReferenceNumber) {
-        this.hostReferenceNumber = hostReferenceNumber;
-    }
 
     public PaxDeviceResponse(byte[] buffer, PaxMsgId... messageIds) throws MessageException {
         super(buffer, messageIds);
@@ -59,7 +49,9 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setMaskedCardNumber(StringUtils.padLeft(accountResponse.getAccountNumber(), 16, '*'));
             setEntryMethod(accountResponse.getEntryMode().toString());
             setExpirationDate(accountResponse.getExpireDate());
-            setPaymentType(accountResponse.getCardType().replace('_', ' '));
+            if(accountResponse.getCardType() != null) {
+                setPaymentType(accountResponse.getCardType().replace('_', ' '));
+            }
             setCardHolderName(accountResponse.getCardHolder());
             setCvvResponseCode(accountResponse.getCvdApprovalCode());
             setCvvResponseText(accountResponse.getCvdMessage());

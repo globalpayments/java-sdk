@@ -32,7 +32,7 @@ public class MitcResponse extends TerminalResponse {
     private Integer tokenResponseCode;
     private String tokenResponseMsg;
     private String token;
-    private Integer traceNumber;
+    private String traceNumber;
     private String availableBalance;
     private IntegratedCircuitCard icc;
     private String currencyCode;
@@ -259,10 +259,10 @@ public class MitcResponse extends TerminalResponse {
             this.customerId= value;
         }
         if (key.equals("debit_trace_number")) {
-            this.traceNumber=new Integer(value);
+            this.traceNumber = value;
         }
         if (key.equals("tokenization_error_code")) {
-            this.tokenResponseCode= new Integer(value);
+            this.tokenResponseCode = new Integer(value);
         }
         if (key.equals("tokenization_error_message")) {
             this.tokenResponseMsg= value;

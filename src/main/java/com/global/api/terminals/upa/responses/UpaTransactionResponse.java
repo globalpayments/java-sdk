@@ -4,10 +4,11 @@ import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.enums.CardType;
 import com.global.api.entities.enums.TerminalConfigType;
+import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.utils.EmvUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonParseException;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -18,12 +19,13 @@ import java.util.logging.Logger;
 public class UpaTransactionResponse extends UpaResponseHandler {
     private final Logger logger = Logger.getLogger(UpaTransactionResponse.class.getName());
 
-    public UpaTransactionResponse(JsonDoc responseData) {
+    public UpaTransactionResponse(JsonDoc responseData) throws ApiException {
         try {
             parseResponse(responseData);
         } catch (Exception e) {
-            throw new JsonParseException(e);
+            throw new ApiException("Error parsing response.", e);
         }
+
         JsonDoc response;
         if (isGpApiResponse(responseData)) {
             response = responseData.get("response");
@@ -31,6 +33,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
             response = responseData.get("data");
             setTransactionType(responseData.getString("response"));
         }
+
         JsonDoc data = response.get("data");
         if (data != null) {
             if (Optional.ofNullable(getCommand()).isPresent()) {
@@ -38,7 +41,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
                     UpaMessageId messageId = UpaMessageId.valueOf(getCommand());
                     switch (messageId) {
                         case GetAppInfo:
-                            hydrateGetAppInfoData(response.get("data"));
+                            hydrateGetAppInfoData(data);
                             break;
                         case Scan:
                             setScanData(String.valueOf(responseData.getValue("scanData")));
@@ -47,7 +50,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
                             setDataString(String.valueOf(responseData.getValue("dataString")));
                             break;
                         case GetConfigContents:
-                            hydrateGetConfigData(response.get("data"));
+                            hydrateGetConfigData(data);
                             break;
                         case GetDebugInfo:
                             //TODO map response
@@ -57,7 +60,6 @@ public class UpaTransactionResponse extends UpaResponseHandler {
                     }
                 } catch (IllegalArgumentException e) {
                     logger.info("Invalid command: " + getCommand());  // Handle invalid enum conversion
-
                 }
             }
 
@@ -108,6 +110,9 @@ public class UpaTransactionResponse extends UpaResponseHandler {
             if (data.getDecimal(SERVICE_CODE) != null) {
                 serviceCode = data.getDecimal(SERVICE_CODE);
             }
+
+            // Merchant Id
+            merchantId = data.getString("merchantId");
         }
     }
 
@@ -159,7 +164,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         }
 
         if (host.getString(TRACE_NUMBER) != null) {
-            setTraceNumber(host.getInt(TRACE_NUMBER));
+            setTraceNumber(host.getString(TRACE_NUMBER));
         }
         if (host.getString(TOKEN_RESPONSE_CODE) != null) {
             tokenResponsCode = host.getString(TOKEN_RESPONSE_CODE);
@@ -242,7 +247,8 @@ public class UpaTransactionResponse extends UpaResponseHandler {
             transactionCurrencyCode = emv.getString("5F2A");
         }
         if (emv.getString("5F2D") != null) {
-            cardHolderLanguage = emv.getString("5F2D");
+            String value = emv.getString("5F2D");
+            cardHolderLanguage = EmvUtils.mapCardHolderLanguage(value);
         }
         if (emv.getString("5F34") != null) {
             sequenceNo = emv.getString("5F34");
@@ -327,5 +333,4 @@ public class UpaTransactionResponse extends UpaResponseHandler {
 
         setConfigContent(configContent);
     }
-
 }

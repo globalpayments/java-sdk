@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EmvUtils {
-    private static Map<String, String> knownTags;
-    private static Map<String, String> blackList;
-    private static Map<String, String> dataTypes;
+    private static final Map<String, String> knownTags;
+    private static final Map<String, String> blackList;
+    private static final Map<String, String> dataTypes;
+    private static final Map<String, String> cardHolderLanguages;
 
     static {
-        blackList = new HashMap<String, String>();
+        blackList = new HashMap<>();
         blackList.put("57", "Track 2 Equivalent Data");
         blackList.put("5A", "Application Primary Account Number (PAN)");
         blackList.put("99", "Transaction PIN Data");
@@ -19,7 +20,7 @@ public class EmvUtils {
         blackList.put("9F1F", "Track 1 Discretionary Data");
         blackList.put("9F20", "Track 2 Discretionary Data");
 
-        knownTags = new HashMap<String, String>();
+        knownTags = new HashMap<>();
         knownTags.put("4F", "Application Dedicated File (ADF) Name");
         knownTags.put("50", "Application Label");
         knownTags.put("6F", "File Control Information (FCI) Template");
@@ -195,11 +196,10 @@ public class EmvUtils {
         knownTags.put("DF39", "Purchase Device Sequence Number (with the suffix)* ");
         knownTags.put("DF40", "DDOL Related Data Length");
         knownTags.put("DF41", "CCDOL2 Related Data Length");
-        knownTags.put("DF41", "CCDOL2 Related Data Length");
         knownTags.put("DF4D", "Transaction Log Setting parameter31");
 
 
-        dataTypes = new HashMap<String, String>();
+        dataTypes = new HashMap<>();
         dataTypes.put("82", "b");
         dataTypes.put("8E", "b");
         dataTypes.put("95", "b");
@@ -208,6 +208,11 @@ public class EmvUtils {
         dataTypes.put("9F33", "b");
         dataTypes.put("9F40", "b");
         dataTypes.put("9F5B", "b");
+
+        cardHolderLanguages = new HashMap<>();
+        cardHolderLanguages.put("656E", "en-US");
+        cardHolderLanguages.put("6672", "fr-CA");
+        cardHolderLanguages.put("6573", "es");
     }
 
     public static EmvData parseTagData(String tagData) {
@@ -272,8 +277,7 @@ public class EmvUtils {
                     rvalue.addRemovedTag(tagName, lengthStr, value, blackList.get(tagName));
                 }
             }
-            catch(NumberFormatException exc) {}
-            catch(IndexOutOfBoundsException exc) {}
+            catch(NumberFormatException | IndexOutOfBoundsException exc) { /* NOM NOM*/ }
         }
 
         if(verbose) {
@@ -282,26 +286,36 @@ public class EmvUtils {
                 TlvData tag = rvalue.getTag(tagName);
                 boolean appendBinary = dataTypes.containsKey(tagName);
 
-                System.out.println(String.format("TAG: %s - %s", tagName, tag.getDescription()));
-                System.out.println(String.format("%s: %s%s\r\n",tag.getLength(), tag.getValue(), appendBinary ? String.format(" [%s]", tag.getBinaryValue()) : ""));
+                System.out.printf("TAG: %s - %s%n", tagName, tag.getDescription());
+                System.out.printf("%s: %s%s\r\n%n",tag.getLength(), tag.getValue(), appendBinary ? String.format(" [%s]", tag.getBinaryValue()) : "");
             }
 
             System.out.println("Removed Tags:");
             for(String tagName: rvalue.getRemovedTags().keySet()) {
                 TlvData tag = rvalue.getRemovedTags().get(tagName);
-                System.out.println(String.format("TAG: %s - %s", tagName, tag.getDescription()));
+                System.out.printf("TAG: %s - %s%n", tagName, tag.getDescription());
                 if("57".equals(tagName)){
-                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), StringUtils.maskTrackData(tag.getValue())));
+                    System.out.printf("%s: %s\r\n%n",tag.getLength(), StringUtils.maskTrackData(tag.getValue()));
                 } else if ("5A".equals(tagName)) {
-                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), StringUtils.maskAccountNumber(tag.getValue())));
+                    System.out.printf("%s: %s\r\n%n",tag.getLength(), StringUtils.maskAccountNumber(tag.getValue()));
                 } else if ("5F24".equals(tagName)) {
-                    System.out.println(String.format("%s: %s\r\n",tag.getLength(), tag.getValue().replace(tag.getValue(),"******")));
+                    System.out.printf("%s: %s\r\n%n",tag.getLength(), tag.getValue().replace(tag.getValue(),"******"));
                 }else {
-                    System.out.println(String.format("%s: %s\r\n", tag.getLength(), tag.getValue()));
+                    System.out.printf("%s: %s\r\n%n", tag.getLength(), tag.getValue());
                 }
             }
         }
 
         return rvalue;
+    }
+
+    public static String mapCardHolderLanguage(String tagValue) {
+        if(!StringUtils.isNullOrEmpty(tagValue)) {
+            if(cardHolderLanguages.containsKey(tagValue)){
+                return cardHolderLanguages.get(tagValue);
+            }
+            return tagValue;
+        }
+        return tagValue;
     }
 }

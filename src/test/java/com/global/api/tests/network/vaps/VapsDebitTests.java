@@ -1,6 +1,7 @@
 package com.global.api.tests.network.vaps;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
@@ -13,6 +14,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
+import com.global.api.network.elements.DE48_MessageControl;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -26,6 +28,8 @@ import com.global.api.services.BatchService;
 import com.global.api.services.NetworkService;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -57,7 +61,7 @@ public class VapsDebitTests {
         acceptorConfig = new AcceptorConfig();
         acceptorConfig.setAddress(address);
 
-        // data code values
+        // data code values DE 22
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
         acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
@@ -66,7 +70,7 @@ public class VapsDebitTests {
         acceptorConfig.setHardwareLevel("34");
         acceptorConfig.setSoftwareLevel("21205710");
 
-        // pos configuration values
+        // pos configuration values DE 48-33
         acceptorConfig.setSupportsPartialApproval(true);
         acceptorConfig.setSupportsShutOffAmount(true);
         acceptorConfig.setSupportsReturnBalance(true);
@@ -88,12 +92,12 @@ public class VapsDebitTests {
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
-
+        config.setMerchantType("5541");
         ServicesContainer.configureService(config);
 
         // with merchant type
-        config.setMerchantType("5542");
-        ServicesContainer.configureService(config, "ICR");
+//        config.setMerchantType("5542");
+//        ServicesContainer.configureService(config, "ICR");
 
         // debit card
         track = new DebitTrackData();
@@ -931,7 +935,6 @@ public class VapsDebitTests {
 
         Transaction response = track.charge(new BigDecimal("10"))
                 .withCurrency("USD")
-//                .withSystemTraceAuditNumber(stan.generateStan())
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
@@ -1190,10 +1193,12 @@ public class VapsDebitTests {
     @Test
     public void test_sale_internal_datacollect() throws ApiException {
         IStanProvider stanGenerator = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
         int stan = stanGenerator.generateStan();
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .withSystemTraceAuditNumber(stan,stan)
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
                 .execute();
         assertNotNull(response);
 
@@ -1251,6 +1256,298 @@ public class VapsDebitTests {
 
 
         // check response
+        assertEquals("000", capture.getResponseCode());
+    }
+
+    @Test
+    public void test_debit_pre_auth_builder() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction response = track.authorize(new BigDecimal("10"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withFee(FeeType.Surcharge,new BigDecimal("10"))
+                .withUniqueDeviceId("101")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("10"))
+                .withAuthorizedAmount(response.getAuthorizedAmount())
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withNtsData(response.getNtsData())
+                .withPaymentMethod(track)
+                .withMessageTypeIndicator(pmi.getMessageTransactionIndicator())
+                .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber())
+                .withTransactionTime(response.getOriginalTransactionTime())
+                .withProcessingCode(response.getProcessingCode())
+                .withBatchNumber(batch.getBatchNumber())
+                .withSequenceNumber(batch.getSequenceNumber())
+                .build();
+
+        NtsData ntsData = new NtsData();
+        rebuild.setNtsData(ntsData);
+        Transaction capture = rebuild.capture()
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withClientTransactionId(response.getClientTransactionId())
+                .withTimestamp(date)
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+    }
+
+    @Test
+    public void test_debit_resubmit() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction response = track.authorize(new BigDecimal("10"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withFee(FeeType.Surcharge,new BigDecimal("10"))
+                .withUniqueDeviceId("101")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("10"))
+                .withAuthorizationCode(response.getAuthorizationCode())
+                .withNtsData(response.getNtsData())
+                .withPaymentMethod(track)
+                .withMessageTypeIndicator(pmi.getMessageTransactionIndicator())
+                .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber())
+                .withTransactionTime(response.getOriginalTransactionTime())
+                .withProcessingCode(response.getProcessingCode())
+                .withBatchNumber(batch.getBatchNumber())
+                .withSequenceNumber(batch.getSequenceNumber())
+                .build();
+
+        NtsData ntsData = new NtsData();
+        rebuild.setNtsData(ntsData);
+        Transaction capture = rebuild.capture(new BigDecimal("10"))
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withClientTransactionId(response.getClientTransactionId())
+                .withTimestamp(date)
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+
+
+
+        Transaction resubmitDataCollect = NetworkService.resubmitDataCollect(capture.getTransactionToken())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withAuthCode(capture.getAuthorizationCode())
+                .execute();
+        assertNotNull(resubmitDataCollect);
+    }
+
+
+    @Test
+    public void test_debit_sale() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        DateTime date = DateTime.now();
+
+        track = new DebitTrackData();
+        track.setValue("4355567063338=2012101HJNw/ewskBgnZqkL");
+        track.setPinBlock("62968D2481D231E1A504010024A00014");
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date.toString("YYMMDDhhmmss"))
+                .withFee(FeeType.Surcharge, new BigDecimal("10"))
+                .withUniqueDeviceId("101")
+                .withClerkId("1211")
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(response);
+    }
+
+    @Test
+    public void test_debit_preAuth_completion() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction authResponse = track.authorize(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withFee(FeeType.Surcharge,new BigDecimal("10"))
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withUniqueDeviceId("1001")
+                .execute();
+        assertNotNull(authResponse );
+        assertEquals("000", authResponse .getResponseCode());
+
+        Transaction recreated = Transaction.fromBuilder()
+                .withAmount(new BigDecimal(10))  //Original Amount
+                .withSystemTraceAuditNumber(authResponse.getSystemTraceAuditNumber()) //Original Stan
+                .withAuthorizationCode(authResponse.getAuthorizationCode())
+                .withPaymentMethod(track)
+                .withNtsData(authResponse.getNtsData())
+                .withPosDataCode(authResponse.getPosDataCode())
+                .withMessageTypeIndicator(authResponse.getMessageTypeIndicator())
+                .withProcessingCode(authResponse.getProcessingCode())
+                .withTransactionTime(authResponse.getOriginalTransactionTime())
+                .withSequenceNumber(batch.getSequenceNumber())
+                .withBatchNumber(batch.getSequenceNumber())
+                .build();
+
+        Transaction capture = recreated.capture()
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withClientTransactionId(authResponse.getClientTransactionId())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withTimestamp(date)
+                .execute();
+        assertNotNull(capture);
+
+        Transaction completion = recreated.preAuthCompletion(authResponse.getAuthorizedAmount())
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withTimestamp(date)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(completion);
+    }
+
+    @Test
+    public void test_debit_Authorization() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction auth = track.authorize(new BigDecimal("1"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withFee(FeeType.Surcharge,new BigDecimal("10"))
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withUniqueDeviceId("101")
+                .withClerkId("1211")
+                .execute("ICR");
+                assertNotNull(auth);
+                assertEquals("000", auth);
+
+    }
+
+    public Transaction test_debit_Authorization(BigDecimal amount) throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        return track.authorize(new BigDecimal("1"), true)
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withFee(FeeType.Surcharge,new BigDecimal("10"))
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withUniqueDeviceId("101")
+                .withClerkId("1211")
+                .execute();
+        }
+
+    @Test
+    public void test_debit_refund_1() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction refundResponse = track.refund(new BigDecimal("5"))
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withTimestamp(date)
+                .withFee(FeeType.Surcharge, new BigDecimal("10"))
+                .withUniqueDeviceId("101")
+                .withClerkId("123")
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .execute();
+        assertNotNull(refundResponse);
+
+        // check response
+        assertEquals("000", refundResponse.getResponseCode());
+        Transaction recreated = Transaction.fromBuilder()
+                .withAmount(new BigDecimal(10))
+                .withSystemTraceAuditNumber(refundResponse.getSystemTraceAuditNumber())
+                .withAuthorizationCode(refundResponse.getAuthorizationCode())
+                .withPaymentMethod(track)
+                .withNtsData(refundResponse.getNtsData())
+                .withPosDataCode(refundResponse.getPosDataCode())
+                .withMessageTypeIndicator(refundResponse.getMessageTypeIndicator())
+                .withProcessingCode(refundResponse.getProcessingCode())
+                .withTransactionTime(refundResponse.getOriginalTransactionTime())
+                .withSequenceNumber(batch.getSequenceNumber())
+                .withBatchNumber(refundResponse.getTransactionReference().getBatchNumber())
+                .build();
+
+        Transaction capture = recreated.capture()
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan())
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber())
+                .withTimestamp(date)
+                .execute();
+        assertNotNull(capture);
+
+    }
+
+    @Test
+    public void test_debit_sale_capture() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("YYMMDDhhmmss");
+
+        Transaction saleResponse = track.charge(new BigDecimal("10")) //Amount : DE 4
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan()) //STAN : DE 11
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber()) // DE 48-4
+                .withTimestamp(date) // DE 12
+                .withUniqueDeviceId("1001")
+                .withChipCondition(null)
+                .execute();
+        assertNotNull(saleResponse);
+
+        PriorMessageInformation pmi = saleResponse.getMessageInformation();
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("10")) //original transaction amount
+                .withAuthorizationCode(saleResponse.getAuthorizationCode()) // auth code from sales response DE 38 M
+                .withNtsData(saleResponse.getNtsData()) //DE 62-NTS Need to check, as we are receiving this parameter missing
+                .withPaymentMethod(track) //Original Payment method DE 48-11 M
+                .withMessageTypeIndicator(pmi.getMessageTransactionIndicator()) // original MTI DE 56 M
+                .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber()) // Original STAN DE 56 M
+                .withTransactionTime(saleResponse.getOriginalTransactionTime()) // original transaction time DE 56 M
+                .withProcessingCode(saleResponse.getProcessingCode()) //original Processing code DE 3 M
+                .withBatchNumber(saleResponse.getTransactionReference().getBatchNumber())
+                .withSequenceNumber(batch.getSequenceNumber())
+                .build();
+
+        Transaction capture = rebuild.capture()
+                .withSystemTraceAuditNumber(stan.generateStan()) //DE 11
+                .withTransactiontype(TransactionType.Capture) //DE 24 M (Note : If capture method is called no need to set this value)
+                .withTimestamp(date)    //DE 12 - M
+                .withPriorMessageInformation(pmi) //DE 48-39
+                .execute();
+        assertNotNull(capture);
         assertEquals("000", capture.getResponseCode());
     }
 

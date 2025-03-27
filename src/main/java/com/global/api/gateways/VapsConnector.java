@@ -27,6 +27,8 @@ import org.joda.time.DateTimeZone;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -798,7 +800,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 12: Date and Time, Transaction - n12 (YYMMDDhhmmss)
         String timestamp = builder.getTimestamp();
         if(StringUtils.isNullOrEmpty(timestamp)) {
-            timestamp = DateTime.now(DateTimeZone.UTC).toString("yyMMddhhmmss");
+            timestamp = DateTime.now().toString("yyMMddhhmmss");
         }
         request.set(DataElementId.DE_012, timestamp);
 
@@ -1517,7 +1519,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                         } else {
                         NetworkMessage impliedCapture = decodeRequest(response.getTransactionToken());
                         impliedCapture.set(DataElementId.DE_011, StringUtils.padLeft(followOnStan, 6, '0'));
-                        impliedCapture.set(DataElementId.DE_012, DateTime.now().toString("yyMMddhhmmss"));
+                        impliedCapture.set(DataElementId.DE_012, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddhhmmss")));
                         impliedCapture.set(DataElementId.DE_025, DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement);
 
 
@@ -1555,7 +1557,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                             return response;
                         } else if (messageReasonCode.equals(DE25_MessageReasonCode.AuthCapture.getValue())) {
                             request.set(DataElementId.DE_011, StringUtils.padLeft(followOnStan, 6, '0'));
-                            request.set(DataElementId.DE_012, DateTime.now().toString("yyMMddhhmmss"));
+                            request.set(DataElementId.DE_012, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddhhmmss")));
                             request.set(DataElementId.DE_025, DE25_MessageReasonCode.PinDebit_EBT_Acknowledgement);
 
                             Transaction dataCollectResponse = sendRequest(request, builder, orgCorr1, orgCorr2);
@@ -2331,8 +2333,18 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE48-4 (Sequence Number & Batch Number)
         if(!builder.getTransactionType().equals(TransactionType.Auth) && !isTimeRequest) {
             int sequenceNumber = 0;
+
             if(!builder.getTransactionType().equals(TransactionType.BatchClose)) {
                 sequenceNumber = builder.getSequenceNumber();
+                if (builder.getPaymentMethod() != null) {
+                    IPaymentMethod paymentMethod = builder.getPaymentMethod();
+                    if (paymentMethod instanceof TransactionReference) {
+                        TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
+                        if(reference.getSequenceNumber()!=null) {
+                            sequenceNumber = reference.getSequenceNumber();
+                        }
+                    }
+                }
                 if (sequenceNumber == 0 && batchProvider != null) {
                     sequenceNumber = batchProvider.getSequenceNumber();
                 }
@@ -2340,12 +2352,19 @@ public class VapsConnector extends GatewayConnectorConfig {
             messageControl.setSequenceNumber(sequenceNumber);
 
             int batchNumber = builder.getBatchNumber();
-            if (batchNumber == 0 && batchProvider != null) {
-                batchNumber = batchProvider.getBatchNumber();
+            if (builder.getPaymentMethod() != null) {
+                IPaymentMethod paymentMethod = builder.getPaymentMethod();
+                if (paymentMethod instanceof TransactionReference) {
+                    TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
+                    if(reference.getBatchNumber()!=null)
+                        batchNumber = reference.getBatchNumber();
+                }
             }
+            if (batchNumber == 0 && batchProvider != null) {
+                    batchNumber = batchProvider.getBatchNumber();
+                }
             messageControl.setBatchNumber(batchNumber);
         }
-
         // DE48-5
         if(builder instanceof AuthorizationBuilder) {
             AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;

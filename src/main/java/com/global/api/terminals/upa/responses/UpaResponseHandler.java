@@ -11,8 +11,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-@Getter
-@Setter
+@Getter @Setter
 public class UpaResponseHandler extends TerminalResponse {
     public static final String RESPONSE_ID = "responseId";
     public static final String RESPONSE_DATE_TIME = "respDateTime";
@@ -111,7 +110,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private String descriptor;
     private int tokenPANLast;
     private int partialApproval;
-    private int traceNumber;
+    private String traceNumber;
     private double baseDue;
     private double taxDue;
     private double tipDue;
@@ -132,7 +131,7 @@ public class UpaResponseHandler extends TerminalResponse {
                 return;
             }
             requestId = response.getString("requestId");
-            command = response.getString("response") == null ? null : response.getString("response");
+            command = response.getString("response");
         } else {
             response = root.get("response");
             status = root.getStringOrNull("status");
