@@ -1551,4 +1551,42 @@ public class VapsDebitTests {
         assertEquals("000", capture.getResponseCode());
     }
 
+    @Test
+    public void test_visaReadyLink_Data_Collect_withCardType_completion_order1() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setValue(";4009081122223335=25121010000012345678?");
+        track.setCardType("VisaReadyLink");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction dataCollectResponse = response.preAuthCompletion(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(dataCollectResponse);
+        // check response
+        assertEquals("000", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_visaReadyLink_Data_Collect_withCardType_completion_order2() throws ApiException {
+        CreditTrackData track = new CreditTrackData();
+        track.setCardType("VisaReadyLink");
+        track.setValue(";4009081122223335=25121010000012345678?");
+
+        Transaction response = track.addValue(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction dataCollectResponse = response.preAuthCompletion(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(dataCollectResponse);
+        // check response
+        assertEquals("000", dataCollectResponse.getResponseCode());
+    }
 }

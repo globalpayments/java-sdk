@@ -1,10 +1,20 @@
 # Changelog
 
-## Latest Version - V14.2.13 (03/27/2025)
+## Latest Version - V14.2.14 (04/03/2025)
+### Enhancements
+- [Portico] - Added variable to Transaction for splitTenderBalanceDueAmt, rewards, and notes.
+- [Portico] - Added the parsing of these values to PorticoConnector.
+
+### Bug Fixes
+- [Vaps] - Added fix to skip the Bin validation for Visa Ready Link if POS sends cardType as "VisaReadyLink" (10352).
+
+## V14.2.13 (03/27/2025)
 ### Bug Fixes
 - [Vaps] - Added a fix to set the original batchNumber into a datacollect transaction through TransactionReference object.
 - [Vaps] - Updated DE 12 dateTime function for non-original transaction.
 - [Vaps] - Updated the datetime retrieval method from datetime.now() to localdatetime.now() for internal data collect DE 12 tag (10349).
+- [UPA]  - Cleaned up related files in regards to their use of lombok getters and setter.
+- [PAX]  - Added a null check on the card type in the account response from Pax Devices.
 
 ## V14.2.12 (02/27/2025)
 - [NTS] -Fix issue 10348 : Updated the default value space to 0 for Voyager EMV  non-fuel product types.

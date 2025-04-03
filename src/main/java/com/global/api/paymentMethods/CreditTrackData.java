@@ -100,7 +100,9 @@ public class CreditTrackData extends Credit implements ITrackData, IPinProtected
     public void setValue(String value) {
         this.value = value;
         CardUtils.parseTrackData(this);
-        this.cardType = CardUtils.mapCardType(pan);
+        if (!cardType.equals("VisaReadyLink")) {
+            this.cardType = CardUtils.mapCardType(pan);
+        }
         this.fleetCard = CardUtils.isFleet(cardType, pan);
 
         if(cardType.equals("WexFleet") && discretionaryData != null && discretionaryData.length() >= 8) {

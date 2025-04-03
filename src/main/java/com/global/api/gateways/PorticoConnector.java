@@ -945,6 +945,9 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             result.setCvnResponseMessage(root.getString("CVVRsltText"));
             result.setEmvIssuerResponse(root.getString("EMVIssuerResp"));
             result.setPointsBalanceAmount(root.getDecimal("PointsBalanceAmt"));
+            result.setSplitTenderBalanceDueAmt(root.getDecimal("SplitTenderBalanceDueAmt"));
+            result.setRewards(root.getString("Rewards"));
+            result.setNotes(root.getString("Notes"));
             result.setRecurringDataCode(root.getString("RecurringDataCode"));
             result.setReferenceNumber(root.getString("RefNbr"));
             result.setCardBrandTransactionId(root.getString("CardBrandTxnId"));

@@ -74,6 +74,9 @@ public class Transaction {
     @Getter private List<FundsAccountDetails> transferFundsAccountDetailsList;
     @Getter @Setter private CardIssuerResponse cardIssuerResponse;
     private BigDecimal pointsBalanceAmount;
+    private BigDecimal splitTenderBalanceDueAmt;
+    private String rewards;
+    private String notes;
     private Transaction preAuthCompletion;
     private String recurringDataCode;
     private String referenceNumber;
@@ -567,6 +570,30 @@ public class Transaction {
 
     public void setPointsBalanceAmount(BigDecimal pointsBalanceAmount) {
         this.pointsBalanceAmount = pointsBalanceAmount;
+    }
+
+    public BigDecimal getSplitTenderBalanceDueAmt() {
+        return splitTenderBalanceDueAmt;
+    }
+
+    public void setSplitTenderBalanceDueAmt(BigDecimal splitTenderBalanceDueAmt) {
+        this.splitTenderBalanceDueAmt = splitTenderBalanceDueAmt;
+    }
+
+    public String getRewards() {
+        return rewards;
+    }
+
+    public void setRewards(String rewards) {
+        this.rewards = rewards;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public String getPosDataCode() {
