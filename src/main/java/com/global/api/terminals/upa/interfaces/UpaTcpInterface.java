@@ -4,25 +4,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.IDeviceCommInterface;
-import com.global.api.terminals.abstractions.IDeviceMessage;
-import com.global.api.terminals.abstractions.IUPAMessage;
+import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Constants;
-import com.global.api.utils.JsonDoc;
-import com.global.api.utils.MessageWriter;
-import com.global.api.utils.StringUtils;
+import com.global.api.utils.*;
 
 public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
     private Socket client;
@@ -31,9 +24,6 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
     private final ConnectionConfig settings;
     private IMessageSentInterface onMessageSent;
     private IMessageReceivedInterface onMessageReceived;
-    private MessageWriter data;
-    private String responseMessageString;
-    private boolean readyReceived;
 
     public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
@@ -52,12 +42,15 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
             try {
                 client = new Socket(settings.getIpAddress(), settings.getPort());
                 if (client.isConnected()) {
+                    client.setSoTimeout(settings.getTimeout());
+                    client.setKeepAlive(true);
+
                     out = new DataOutputStream(client.getOutputStream());
                     in = new DataInputStream(client.getInputStream());
-                    client.setKeepAlive(true);
-                    client.setSoTimeout(settings.getTimeout());
-                } else throw new IOException("Client failed to connect");
-            } catch (IOException exc) {
+                }
+                else throw new IOException("Client failed to connect");
+            }
+            catch(IOException exc) {
                 // eat connection exception
             }
         }
@@ -65,7 +58,7 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
 
     public void disconnect() {
         try {
-            if (!client.isClosed()) {
+            if (client != null && !client.isClosed()) {
                 in.close();
                 out.close();
                 client.close();
@@ -78,210 +71,246 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
 
     public byte[] send(IDeviceMessage message) throws MessageException {
         connect();
-
         if (client == null) {
             throw new MessageException("Unable to connect with device.");
         }
 
-        readyReceived = false;
         byte[] sendBuffer = message.getSendBuffer();
+        try {
+            // send the message out
+            out.write(sendBuffer);
+            out.flush();
 
+            // log the message sent
+            raiseOnMessageSent(new String(sendBuffer));
+
+            // read the response
+            boolean readyReceived = false;
+            byte[] responseMessage = null;
+            do {
+                byte[] rvalue = getTerminalResponse();
+                if (rvalue != null) {
+                    // split the messages
+                    List<byte[]> messages = splitMessage(rvalue);
+
+                    // loop the messages
+                    for(byte[] response : messages) {
+                        raiseOnMessageReceived(response);
+
+                        String messageType = getMessageType(response);
+                        switch(messageType) {
+                            case Constants.ACK_MESSAGE:
+                            case Constants.NAK_MESSAGE:
+                            case Constants.TIMEOUT_MESSAGE:
+                                break;
+                            case Constants.BUSY_MESSAGE:
+                                throw new MessageException("Device is busy.");
+                            case Constants.READY_MESSAGE: {
+                                readyReceived = true;
+                            } break;
+                            case Constants.DATA_MESSAGE: {
+                                // Set readyReceived for reboot messages
+                                if(isRebootMessage(response)) {
+                                    readyReceived = true;
+                                }
+
+                                // Send the ACK
+                                sendControlCode(ControlCodes.ACK);
+
+                                // Set response message to return
+                                responseMessage = trimControlCodes(response);
+                            } break;
+                            default:
+                                throw new MessageException(String.format("Unknown message value: %s", messageType));
+                        }
+                    }
+                }
+            }
+            while(!readyReceived);
+
+            return responseMessage;
+        }
+        catch (Exception exc) {
+            throw new MessageException(exc.getMessage(), exc);
+        }
+        finally {
+            disconnect();
+        }
+    }
+
+    private void raiseOnMessageSent(String message) {
         try {
             if (onMessageSent != null) {
-                long currentMillis = System.currentTimeMillis();
-                Timestamp t = new Timestamp(currentMillis);
-                onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
+                onMessageSent.messageSent(message);
             }
 
             if (settings.getRequestLogger() != null) {
-                String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
-                settings.getRequestLogger().RequestSent(formMsg);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                JsonDoc msg = new JsonDoc();
+                msg.set("timestamp", timestamp.toString());
+                msg.set("type", "REQUEST");
+                msg.set("message", message);
+
+                settings.getRequestLogger().RequestSent(msg.toString());
             }
-
-            out.write(sendBuffer);
-            out.flush();
-
-            long timeOfSend = System.currentTimeMillis();
-
-            do {
-                getTerminalResponse();
-
-                if (System.currentTimeMillis() > timeOfSend + settings.getTimeout()) {
-                    throw new TimeoutException("Terminal did not respond in the given timeout.");
-                }
-
-                Thread.sleep(100);
-            }
-            while (!readyReceived);
-
-            //This check is put in place for UPA message "READY".
-            if (getMessageType(message).equalsIgnoreCase(Constants.READY_MESSAGE) &&
-                    StringUtils.isNullOrEmpty(responseMessageString)) {
-                return readyMessageSent();
-            } else {
-                if (onMessageReceived != null) {
-                    onMessageReceived.messageReceived(responseMessageString.getBytes());
-                }
-                return responseMessageString.getBytes();
-            }
-        } catch (Exception exc) {
-            throw new MessageException(exc.getMessage(), exc);
-        } finally {
-            if (client != null) disconnect();
-            try {
-                // a little padding here
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        }
+        catch(IOException exc) {
+            /* Logging should never interfere with processing */
         }
     }
 
-    private String getMessageType(IDeviceMessage message) {
-        String messageType = "NONE";
+    private void raiseOnMessageReceived(byte[] message) {
         try {
-            if (message != null) {
-                String formMsg = new String(message.getSendBuffer(), StandardCharsets.UTF_8)
-                        .trim();
-                JsonDoc responseObj = JsonDoc.parse(
-                        new String(formMsg.getBytes(), StandardCharsets.UTF_8)
-                );
-                messageType = responseObj.getString("message");
-                String data = responseObj.getString("data");
-                if (StringUtils.isNullOrEmpty(data)) {
-                    responseMessageString = "";
-                }
+            if(onMessageReceived != null) {
+                onMessageReceived.messageReceived(message);
             }
-        } catch (Exception e) {
-            return messageType;
+
+            if(settings.getRequestLogger() != null) {
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                JsonDoc msg = new JsonDoc();
+                msg.set("timestamp", timestamp.toString());
+                msg.set("type", "RESPONSE");
+                msg.set("message", new String(message));
+
+                settings.getRequestLogger().ResponseReceived(msg.toString());
+            }
         }
-        return messageType;
+        catch(IOException exc) {
+            /* NOM NOM */
+        }
     }
 
-    private void getTerminalResponse() throws Exception {
+    private byte[] getTerminalResponse() throws MessageException {
+        byte[] buffer = new byte[65536];
+
         try {
-            validateResponsePacket();
-            byte[] buffer = Arrays.copyOf(data.toArray(), data.length());
+            int bytesReceived = awaitResponse(in, buffer);
+            if (bytesReceived > 0) {
+                byte[] rec_buffer = new byte[bytesReceived];
+                System.arraycopy(buffer, 0, rec_buffer, 0, bytesReceived);
 
-            if (buffer.length > 0) {
-                JsonDoc responseObj = JsonDoc.parse(
-                        new String(buffer, StandardCharsets.UTF_8)
-                );
-
-                String message = responseObj.getString("message");
-
-                if (settings.getRequestLogger() != null) {
-                    String formMsg = new String(buffer, StandardCharsets.UTF_8);
-                    settings.getRequestLogger().ResponseReceived(formMsg);
+                ControlCodes code = EnumUtils.parse(ControlCodes.class, rec_buffer[0]);
+                if (code.equals(ControlCodes.STX)) {
+                    return rec_buffer;
                 }
-
-                switch (message) {
-                    case Constants.ACK_MESSAGE:
-                    case Constants.NAK_MESSAGE:
-                    case Constants.TIMEOUT_MESSAGE:
-                        break;
-                    case Constants.BUSY_MESSAGE:
-                        throw new Exception("Device is busy");
-                    case Constants.DATA_MESSAGE:
-                        responseMessageString = new String(buffer, StandardCharsets.UTF_8);
-                        String eval = responseObj.get("data").getString("response");
-                        if (eval.equals("Reboot")) {
-                            readyReceived = true; // since reboot doesn't return READY
-                        }
-                        sendAckMessageToDevice();
-                        break;
-                    case Constants.READY_MESSAGE:
-                        readyReceived = true;
-                        break;
-                    default:
-                        throw new Exception("Message field value is unknown in API Response.");
-                }
+                else throw new MessageException(String.format("Unknown message received: %s", code));
             }
-        } catch (IOException exc) {
-            throw new IOException(exc.getMessage(), exc);
+            return null;
+        }
+        catch(IOException exc) {
+            return null;
         }
     }
 
-    private void validateResponsePacket() throws IOException {
+    private int awaitResponse(DataInputStream in, byte[] buffer) throws IOException {
+        long t = System.currentTimeMillis();
+        int index = 0;
+        do {
+            if (in.available() > 0) {
+                index += in.read(buffer, index, 1460);
+
+                // check we have a complete message
+                if(buffer[index - 2] == ControlCodes.ETX.getByte()) {
+                    return index;
+                }
+            }
+        }
+        while (System.currentTimeMillis() - t < settings.getTimeout());
+        throw new IOException("Terminal did not respond in the given timeout");
+    }
+
+    private List<byte[]> splitMessage(byte[] buffer) throws MessageException {
+        List<byte[]> rvalue = new ArrayList<>();
+
+        MessageReader mr = new MessageReader(buffer);
+        do {
+            MessageWriter mw = new MessageWriter();
+
+            byte stx = mr.readByte();
+            if (stx == ControlCodes.STX.getByte()) {
+                mw.add(stx); // STX
+                mw.add(mr.readByte()); // should be the LF following the STX
+
+                // read to the following ETX
+                byte[] message = mr.readBytesToCode(ControlCodes.ETX, false);
+                mw.addRange(message);
+
+                // read the ETX, and LF
+                byte etx = mr.readByte(); // should be the ETX
+                if (etx == ControlCodes.ETX.getByte()) {
+                    mw.add(etx); // ETX
+                    mw.add(mr.readByte()); // should be the LF following the STX
+
+                    rvalue.add(mw.toArray());
+                }
+                else {
+                    throw new MessageException("Invalid message format: Message doesn't end with ETX");
+                }
+            }
+            else {
+                throw new MessageException("Invalid message format: Message doesn't begin with STX");
+            }
+        }
+        while(mr.canRead());
+
+        return rvalue;
+    }
+
+    private String getMessageType(byte[] buffer) {
+        byte[] messageBytes = trimControlCodes(buffer);
+        JsonDoc message = JsonDoc.parse(new String(messageBytes));
+        return message.getString(Constants.COMMAND_MESSAGE);
+    }
+
+    private byte[] trimControlCodes(byte[] buffer) {
+        MessageWriter mw = new MessageWriter();
+        for(byte b :  buffer) {
+            ControlCodes code = EnumUtils.parse(ControlCodes.class, b);
+            if(code == null || code == ControlCodes.COLON || code == ControlCodes.COMMA) {
+                mw.add(b);
+            }
+        }
+        return mw.toArray();
+    }
+
+    private boolean isRebootMessage(byte[] buffer) {
+        byte[] rec_buffer = trimControlCodes(buffer);
+
         try {
-            byte[] buffer;
-            List<Byte> receive = new ArrayList<>();
-            data = new MessageWriter();
-
-            byte stx = ControlCodes.STX.getByte();
-            byte etx = ControlCodes.ETX.getByte();
-            byte lf = ControlCodes.LF.getByte();
-
-            do {
-                receive.add(in.readByte());
-            } while (in.available() > 0);
-
-            buffer = new byte[receive.size()];
-
-            for (int i = 0; i < buffer.length; i++) {
-                buffer[i] = receive.get(i);
-            }
-
-            for (int i = 0; i < buffer.length; i++) {
-                if (i < 2) {
-                    if (buffer[i] != stx && buffer[i + 1] != lf) {
-                        throw new IOException("The bytes of the start response packet are not the expected bytes.");
-                    }
-
-                    i += 1;
-                    continue;
-                }
-
-                if (buffer[i] == etx) {
-                    if ((buffer[i - 1] & buffer[i + 1]) != lf) {
-                        throw new IOException("The bytes of the end response packet are not the expected bytes.");
-                    }
-
-                    break;
-                } else if (buffer[i] != lf) {
-                    data.add(buffer[i]);
-                }
-            }
-        } catch (SocketTimeoutException e) {
-            client.setSoTimeout(0);
+            JsonDoc response = JsonDoc.parse(new String(rec_buffer));
+            String messageType = response.get(Constants.COMMAND_DATA).getString(Constants.COMMAND_USED);
+            return messageType.equals(Constants.REBOOT);
+        }
+        catch(Exception exc) {
+            return false;
         }
     }
 
-    private void sendAckMessageToDevice() throws IOException {
+    private void sendControlCode(ControlCodes code) throws MessageException {
+        // remove the brackets from the code
+        String value = code.toString().replaceAll("[\\[\\]]", "");
+
+        // Build the message
         JsonDoc json = new JsonDoc();
-        json.set("data", "", true);
-        json.set("message", "ACK");
+        json.set(Constants.COMMAND_DATA, "", true);
+        json.set(Constants.COMMAND_MESSAGE, value);
         String body = json.toString();
-        IDeviceMessage message = TerminalUtilities.compileMessage(body);
-        byte[] sendBuffer = message.getSendBuffer();
 
-        if (settings.getRequestLogger() != null) {
-            String formMsg = new String(sendBuffer, StandardCharsets.UTF_8);
-            settings.getRequestLogger().RequestSent(formMsg);
-        }
-
+        // Send the message
         try {
-            if (onMessageSent != null) {
-                long currentMillis = System.currentTimeMillis();
-                Timestamp t = new Timestamp(currentMillis);
-                onMessageSent.messageSent(t + ":\n" + new String(sendBuffer, StandardCharsets.UTF_8));
-            }
-
+            byte[] sendBuffer = TerminalUtilities.compileMessage(body).getSendBuffer();
             out.write(sendBuffer);
             out.flush();
-        } catch (IOException exc) {
-            throw new IOException(exc.getMessage(), exc);
         }
-    }
-
-    private byte[] readyMessageSent() {
-        if (onMessageSent != null) {
-            JsonDoc jsonMsg = new JsonDoc();
-            jsonMsg.set("message", "READY");
-            long currentMillis = System.currentTimeMillis();
-            Timestamp t = new Timestamp(currentMillis);
-            onMessageSent.messageSent(t + ":\n" + jsonMsg.toString());
+        catch(IOException exc) {
+            // Wrap the IO Exception
+            throw new MessageException(exc.getMessage(), exc);
         }
-        return Constants.READY_MESSAGE.getBytes();
+        finally {
+            // Report
+            raiseOnMessageSent(body);
+        }
     }
 }

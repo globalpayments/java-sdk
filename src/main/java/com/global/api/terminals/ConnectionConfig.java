@@ -6,6 +6,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.terminals.abstractions.IAidlService;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.diamond.DiamondCloudConfig;
 import com.global.api.terminals.diamond.DiamondController;
@@ -32,6 +33,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private IRequestIdProvider requestIdProvider;
     private MitcConfig geniusMitcConfig;
     private IRequestLogger logManagementProvider;
+    private IAidlService iAidlService;
 
     public ConnectionConfig() {
         timeout = 30000;
@@ -42,6 +44,10 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
 
     public void setConnectionMode(ConnectionModes connectionModes) {
         this.connectionMode = connectionModes;
+    }
+
+    public void setAidlService(IAidlService aidlServiceMode) {
+        this.iAidlService = aidlServiceMode;
     }
 
     public void setBaudRate(BaudRate baudRate) {
@@ -133,6 +139,10 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
         } else if (connectionMode == ConnectionModes.MEET_IN_THE_CLOUD) {
             if (this.geniusMitcConfig == null && gatewayConfig == null) {
                 throw new ConfigurationException("meetInTheCloudConfig or gatewayConfig objects are required for this connection method");
+            }
+        } else if (connectionMode == ConnectionModes.AIDL) {
+            if (deviceType != DeviceType.UPA_DEVICE) {
+                throw new ConfigurationException("AIDL is only currently supported on UPA Devices!");
             }
         }
     }

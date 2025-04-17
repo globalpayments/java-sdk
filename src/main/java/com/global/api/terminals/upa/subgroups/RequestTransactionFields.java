@@ -97,8 +97,8 @@ public class RequestTransactionFields {
             this.gatewayRefNumber = builder.getTransactionId();
         }
 
-        if (builder.getCommercialRequest()) {
-            this.commercialRequest = builder.getCommercialRequest();
+        if (builder.isCommercialRequest()) {
+            this.commercialRequest = true;
         }
 
         if (builder.getGiftTransactionType() != null) {
@@ -140,7 +140,7 @@ public class RequestTransactionFields {
         }
 
         if (tipAmount != null) {
-            params.set("tipAmount", tipAmount.toString());
+            params.set("tipAmount", tipAmount);
             hasContents = true;
         }
 
@@ -198,6 +198,7 @@ public class RequestTransactionFields {
 
         return hasContents ? params : null;
     }
+
     public void getDeletePreAuthRequestParam(TerminalManageBuilder builder){
         if (builder.getTerminalRefNumber() == null) {
             throw new IllegalArgumentException(TERMINAL_REF_REQUIRED);

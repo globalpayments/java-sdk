@@ -1,6 +1,12 @@
 # Changelog
+## Latest Version - V14.2.15 (04/17/2025)
+### Bug Fixes
+- [NTS] - EMV tag data removal from the Wex Fleet Retransmit Data Collect transaction(Issue -10356).
+- [UPA] - Unit test addition to check the mapping of Merchant ID in Terminal Response object.
+- [UPA] - General maintenance on Java SDK to clean-up inconsistent getters and setters.
+- [UPA] - Updated UpaTcpInterface to account for multi-messaging.
 
-## Latest Version - V14.2.14 (04/03/2025)
+## V14.2.14 (04/03/2025)
 ### Enhancements
 - [Portico] - Added variable to Transaction for splitTenderBalanceDueAmt, rewards, and notes.
 - [Portico] - Added the parsing of these values to PorticoConnector.

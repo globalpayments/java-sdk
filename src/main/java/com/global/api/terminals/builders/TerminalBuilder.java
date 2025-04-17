@@ -7,53 +7,31 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.TerminalResponse;
 import lombok.Getter;
 
+@Getter
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
     protected Integer requestId;
-
-    /*
-     * ID of the clerk if in retail mode, and ID of the server if in restaurant mode
-     * 
-     * @var int
-     */
-    protected Integer clerkId;
+    protected Integer clerkId; // ID of the clerk in retail mode, server in restaurant mode
     protected String referenceNumber;
-    @Getter
     protected String clerkNumber;
-    @Getter
     protected StoredCredentialInitiator storedCredentialInitiator;
-
-    public PaymentMethodType getPaymentMethodType() {
-        return paymentMethodType;
-    }
-    public Integer getRequestId() {
-        return requestId;
-    }
-    public Integer getClerkId() {
-        return this.clerkId;
-    }
-    public String getReferenceNumber() { return this.referenceNumber; }
 
     public TerminalBuilder<T> withClerkId(Integer value) {
         clerkId = value;
         return this;
     }
-
     public TerminalAuthBuilder withCardOnFileIndicator(StoredCredentialInitiator value){
         storedCredentialInitiator = value;
         return (TerminalAuthBuilder) this;
     }
-
     public TerminalBuilder<T> withReferenceNumber(String value) {
         referenceNumber = value;
         return this;
     }
-
     public TerminalBuilder<T> withRequestId(Integer value) {
         requestId = value;
         return this;
     }
-
     public TerminalBuilder<T> withClerkNumber(String value) {
         this.clerkNumber = value;
         return this;

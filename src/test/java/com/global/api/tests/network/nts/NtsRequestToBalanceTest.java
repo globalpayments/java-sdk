@@ -7,6 +7,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -336,6 +337,47 @@ public class NtsRequestToBalanceTest {
                 .withNtsTag16(tag)
                 .withCvn("123")
                 .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        return response;
+    }
+    private Transaction creditSaleWexEmv(double amount) throws ApiException {
+        String emvTagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F410400000000";
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setServicePrompt("06");
+        fleetData.setVehicleNumber("123456");
+        fleetData.setUserId("123456");
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("123456");
+        fleetData.setDriversLicenseNumber("123456");
+        fleetData.setEnteredData("123456");
+        fleetData.setJobNumber("123456");
+        fleetData.setDepartment("123456");
+        fleetData.setOtherPromptCode("123456");
+
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.ContactEMV);
+        Transaction response = track.charge(new BigDecimal(amount))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withFleetData(fleetData)
+                .withTagData(emvTagData)
+                .withCardSequenceNumber("101")
+                .execute();
+
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         return response;
@@ -798,6 +840,41 @@ public class NtsRequestToBalanceTest {
 
         }
 
+
+    }
+    @Test
+    public void test_WexFleetEMV_RTB_01_Issue_10356() throws ApiException {
+        Transaction t= creditSaleWexEmv(10.11);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(10.11), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 1
+                        , new BigDecimal(10.11), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+
+        BatchSummary summary = batchSummary.resubmitTransactions(list);
+        assertNotNull(summary);
+
+        Transaction dataCollect = NetworkService.resubmitBatchClose(summary.getTransactionToken())
+                .execute();
+        assertNotNull(dataCollect);
 
     }
 }

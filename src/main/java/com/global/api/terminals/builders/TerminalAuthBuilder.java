@@ -19,6 +19,7 @@ import org.joda.time.DateTime;
 import java.math.BigDecimal;
 import java.util.EnumSet;
 
+@Getter
 public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private Address address;
     private boolean allowDuplicates;
@@ -41,71 +42,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private String taxExemptId;
     private Integer tokenRequest;
     private String tokenValue;
-    @Getter @Setter
     private boolean processCPC;
     private String transactionId;
-    @Getter
     private boolean allowPartialAuth;
-    @Getter
     private StoredCredentialInitiator storedCredentialInitiator;
-    @Getter
     private String clientTransactionId;
     private TransactionType giftTransactionType;
-    @Getter
     private String directMarketInvoiceNumber;
-    @Getter
     private Integer directMarketShipMonth;
-    @Getter
     private Integer directMarketShipDay;
-    @Getter
     private Lodging lodging;
-    @Getter
     private BigDecimal preAuthAmount;
-    @Getter
     private EnumSet<UpaCardTypeFilter> cardTypeFilter;
-    @Getter
     private String cardBrandTransId;
     private DateTime shippingDate;
 	private boolean requireSecurityCode = true;
 
-    public Address getAddress() {
-        return address;
-    }
-    public boolean isAllowDuplicates() {
-        return allowDuplicates;
-    }
-    public BigDecimal getAmount() {
-        return amount;
-    }
     public String getAuthCode() {
         if(paymentMethod instanceof TransactionReference)
             return ((TransactionReference)paymentMethod).getAuthCode();
         return null;
-    }
-    public AutoSubstantiation getAutoSubstantiation() { return autoSubstantiation; }
-    public BigDecimal getCashBackAmount() {
-        return cashBackAmount;
-    }
-    public StoredCredentialInitiator getCardBrandStorage() { return cardBrandStorage; }
-    public String getCardBrandTransactionId() { return cardBrandTransactionId; }
-    public boolean getCommercialRequest() { return commercialRequest; }
-    public CurrencyType getCurrency() {
-        return currency;
-    }
-    public BigDecimal getGratuity() {
-        return gratuity;
-    }
-    public String getInvoiceNumber() {
-        return invoiceNumber;
-    }
-    public boolean getRequireSecurityCode() {
-        return requireSecurityCode;
-    }
-    public boolean isRequestMultiUseToken() {
-        return requestMultiUseToken;
-    }
-    public boolean isSignatureCapture() {
-        return signatureCapture;
     }
     public String getTransactionId() {
         if(paymentMethod instanceof TransactionReference) {
@@ -113,44 +69,21 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         }
         return transactionId;
     }
-    public String getCustomerCode() {
-        return customerCode;
-    }
-    public String getPoNumber() {
-        return poNumber;
-    }
-    public BigDecimal getTaxAmount() {
-        return taxAmount;
-    }
-    public String getTaxExempt() {
-        return taxExempt;
-    }
-    public String getTaxExemptId() {
-        return taxExemptId;
-    }
-    public Integer getTokenRequest() {
-        return this.tokenRequest;
-    }
     public String getTokenValue() {
-        if (paymentMethod instanceof CreditCardData)
+        if (paymentMethod instanceof CreditCardData) {
             return ((CreditCardData)paymentMethod).getToken();
+            }
         return null;
     }
 
-    public TransactionType getGiftTransactionType() { return this.giftTransactionType; }
-
-    public TerminalAuthBuilder withTokenRequest(Integer tokenRequest)
-    {
+    public TerminalAuthBuilder withTokenRequest(Integer tokenRequest) {
         this.tokenRequest = tokenRequest;
         return this;
     }
-
-    public TerminalAuthBuilder withTokenValue(String tokenValue)
-    {
+    public TerminalAuthBuilder withTokenValue(String tokenValue) {
         this.tokenValue = tokenValue;
         return this;
     }
-
     public TerminalAuthBuilder withAddress(Address address) {
         this.address = address;
         return this;
@@ -248,27 +181,22 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.transactionId = value;
         return this;
     }
-
     public TerminalAuthBuilder withAllowPartialAuth(boolean value) {
         this.allowPartialAuth = value;
         return this;
     }
-
     public TerminalAuthBuilder withStoredCredentialInitiator(StoredCredentialInitiator value) {
         this.storedCredentialInitiator = value;
         return this;
     }
-
     public TerminalAuthBuilder withClientTransactionId(String value) {
         this.clientTransactionId = value;
         return this;
     }
-
     public TerminalAuthBuilder withCardTypeFilter(EnumSet<UpaCardTypeFilter> cardTypeFilter) {
         this.cardTypeFilter = cardTypeFilter;
         return this;
     }
-
     public TerminalAuthBuilder withGiftTransactionType(TransactionType value) {
         this.giftTransactionType = value;
         return this;
@@ -297,21 +225,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.processCPC = processCPC;
         return this;
     }
-
     public TerminalAuthBuilder withPaymentMethodType(PaymentMethodType value) {
         this.paymentMethodType = value;
         return this;
     }
-
     public TerminalAuthBuilder withRequireSecurityCode(boolean requireSecurityCode) {
         this.requireSecurityCode = requireSecurityCode;
+        return this;
+    }
+    public TerminalAuthBuilder withCardBrandTransId(String value) {
+        cardBrandTransId = value;
+        return this;
+    }
+    public TerminalAuthBuilder withShippingDate(DateTime value) {
+        shippingDate = value;
         return this;
     }
 
     public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }
-
     public TerminalAuthBuilder(TransactionType type) {
         super(type, null);
     }
@@ -345,15 +278,5 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .check("currency").isEqualTo(CurrencyType.CashBenefits);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund).check("allowDuplicates").isEqualTo(false);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates").isEqualTo(false);
-    }
-
-    public TerminalAuthBuilder withCardBrandTransId(String value) {
-        cardBrandTransId = value;
-        return this;
-    }
-
-    public TerminalAuthBuilder withShippingDate(DateTime value) {
-        shippingDate = value;
-        return this;
     }
 }

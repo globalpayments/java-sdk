@@ -1135,6 +1135,9 @@ public class NtsConnector extends GatewayConnectorConfig {
 
             if (!StringUtils.isNullOrEmpty(userData)) {
                 if (userData.length() != 99) {
+                    if (builder.getTagData() != null && builder.getTransactionType().equals(TransactionType.DataCollect) && cardType.equals(NTSCardTypes.WexFleet)){
+                        userData = StringUtils.trimEnd(userData,String.valueOf(builder.getTagData().length()).concat(builder.getTagData()));
+                    }
                     // Extended user data flag
                     request.addRange("E", 1);
                     // User data length

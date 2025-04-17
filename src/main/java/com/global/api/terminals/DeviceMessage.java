@@ -55,4 +55,19 @@ public class DeviceMessage implements IDeviceMessage {
 
         return sb.toString();
     }
+
+    @Override
+    public String toString(boolean removeControlChars) {
+        if (removeControlChars) {
+            StringBuilder sb = new StringBuilder();
+            for (byte b : getSendBuffer()) {
+                if (b >= 32 && b < 127) {
+                    sb.append((char) b);
+                }
+            }
+            return sb.toString();
+        } else {
+            return toString();
+        }
+    }
 }

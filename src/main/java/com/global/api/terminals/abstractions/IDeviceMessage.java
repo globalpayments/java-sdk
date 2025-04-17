@@ -9,4 +9,6 @@ public interface IDeviceMessage {
     void setAwaitResponse(boolean awaitResponse);
     byte[] getSendBuffer();
     IRawRequestBuilder getRequestBuilder();
+
+    String toString(boolean removeControlChars);
 }

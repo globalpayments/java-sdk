@@ -18,6 +18,7 @@ import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
+import com.global.api.terminals.upa.interfaces.UpaAidlInterface;
 import com.global.api.terminals.upa.interfaces.UpaMicInterface;
 import com.global.api.terminals.upa.interfaces.UpaTcpInterface;
 import com.global.api.terminals.upa.responses.BatchReportResponse;
@@ -42,7 +43,7 @@ public class UpaController extends DeviceController {
         this.onMessageSent = onMessageSent;
     }
 
-    void setOnMessageReceivedHandler(IMessageSentInterface onMessageReceived){
+    void setOnMessageReceivedHandler(IMessageSentInterface onMessageReceived) {
         this.onMessageReceived = onMessageReceived;
     }
     public UpaController(ConnectionConfig settings) throws ConfigurationException {
@@ -58,6 +59,8 @@ public class UpaController extends DeviceController {
             _interface = new UpaTcpInterface(settings);
         } else if (settings.getConnectionMode() == ConnectionModes.MEET_IN_THE_CLOUD) {
             _interface = new UpaMicInterface(settings);
+        } else if (settings.getConnectionMode() == ConnectionModes.AIDL) {
+            _interface = new UpaAidlInterface(settings);
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
@@ -73,7 +76,7 @@ public class UpaController extends DeviceController {
         _upaInterface.setMessageReceivedHandler(new IMessageReceivedInterface() {
             @Override
             public void messageReceived(byte[] message) {
-                if(onMessageReceived != null){
+                if (onMessageReceived != null) {
                     onMessageReceived.messageSent(new String(message, StandardCharsets.UTF_8));
                 }
             }

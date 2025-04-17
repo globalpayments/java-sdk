@@ -81,7 +81,7 @@ public class MessageReader {
         return readToCode(code, true);
     }
     public String readToCode(ControlCodes code, boolean removeCode){
-        String rvalue = "";
+        StringBuilder rvalue = new StringBuilder();
 
         try {
             byte value;
@@ -90,10 +90,12 @@ public class MessageReader {
                     ControlCodes byteCode = EnumUtils.parse(ControlCodes.class, buffer[position++]);
                     if(byteCode == ControlCodes.ETX)
                         break;
-                    else rvalue += byteCode.toString();
-                } else rvalue += (char)buffer[position++];
+                    else rvalue.append(byteCode.toString());
+                }
+                else rvalue.append((char) buffer[position++]);
             }
-        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
             removeCode = false;
         }
 
@@ -101,7 +103,33 @@ public class MessageReader {
         if(removeCode)
             readByte();
 
-        return rvalue;
+        return rvalue.toString();
+    }
+
+    public byte[] readBytesToCode(ControlCodes code, boolean removeCode) {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            byte value;
+            while((value = peek()) != code.getByte()) {
+                if(EnumUtils.isDefined(ControlCodes.class, value)) {
+                    ControlCodes byteCode = EnumUtils.parse(ControlCodes.class, buffer[position++]);
+                    if(byteCode == ControlCodes.ETX)
+                        break;
+                    else sb.append((char)byteCode.getByte());
+                }
+                else sb.append((char) buffer[position++]);
+            }
+        }
+        catch(ArrayIndexOutOfBoundsException e) {
+            removeCode = false;
+        }
+
+        if(removeCode) {
+            readByte();
+        }
+
+        return sb.toString().getBytes();
     }
 
     public void purge(){

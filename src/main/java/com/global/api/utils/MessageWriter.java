@@ -2,20 +2,17 @@ package com.global.api.utils;
 
 import com.global.api.entities.enums.IByteConstant;
 import com.global.api.entities.enums.IStringConstant;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageWriter {
     List<Byte> buffer;
+    @Setter @Getter
     StringBuilder messageRequest;
     static final char ZERO_CHAR = '0';
-    public StringBuilder getMessageRequest() {
-        return messageRequest;
-    }
-
-    public void setMessageRequest(StringBuilder messageRequest) {
-        this.messageRequest = messageRequest;
-    }
 
     public MessageWriter() {
         buffer = new ArrayList<>();

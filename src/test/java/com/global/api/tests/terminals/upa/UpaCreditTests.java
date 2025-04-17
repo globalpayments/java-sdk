@@ -8,6 +8,8 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.abstractions.IAidlCallback;
+import com.global.api.terminals.abstractions.IAidlService;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.upa.Entities.Lodging;
@@ -18,7 +20,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.generateRandomBigDecimalFromRange;
 import static org.junit.Assert.*;
@@ -26,18 +27,31 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UpaCreditTests {
     IDeviceInterface device;
-
     private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
     private static final String SUCCESS_STATUS = "Success";
     private final CreditCardData card;
     private final BigDecimal amount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("10"), 2);
+
+    private IAidlService service = new IAidlService() {
+        public IAidlCallback aidlCallback;
+        @Override
+        public void onSendAidlMessage(String data, IAidlCallback aidlCallback) {
+            this.aidlCallback = aidlCallback;
+            aidlCallback.onResponse(data);
+        }
+
+        @Override
+        public void onAidlResponse(String data) {
+            aidlCallback.onResponse(data);
+        }
+    };
 
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
         //config.setIpAddress("192.168.2.178");
         config.setIpAddress("192.168.51.94");
-        config.setTimeout(45_000);
+        config.setTimeout(45000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
@@ -46,8 +60,8 @@ public class UpaCreditTests {
         device = DeviceService.create(config);
         assertNotNull(device);
 
-        device.setOnMessageSent(System.out::println);
-        device.setOnMessageReceived(System.out::println);
+        //device.setOnMessageSent(System.out::println);
+        //device.setOnMessageReceived(System.out::println);
 
         card = new CreditCardData();
         card.setNumber("4111111111111111");
@@ -64,6 +78,27 @@ public class UpaCreditTests {
                 .withGratuity(new BigDecimal("0"))
                 .execute();
 
+        runBasicTests(response);
+    }
+
+    @Test
+    public void AidlTest() throws ApiException {
+        //You will need to have the AIDL Library included to test
+        ConnectionConfig config = new ConnectionConfig();
+        config.setRequestIdProvider(new RandomIdProvider());
+        config.setConnectionMode(ConnectionModes.AIDL);
+        config.setDeviceType(DeviceType.UPA_DEVICE);
+        config.setAidlService(service);
+
+        device = DeviceService.create(config);
+        assertNotNull(device);
+
+        device.setOnMessageSent(System.out::println);
+        device.setOnMessageReceived(System.out::println);
+
+        TerminalResponse response = device.creditSale(amount)
+                .withGratuity(new BigDecimal("1.00"))
+                .execute();
         runBasicTests(response);
     }
 
@@ -483,6 +518,21 @@ public class UpaCreditTests {
         assertNotNull(response.getCardHolderLanguage());
     }
 
+    @Test
+    public void voidDebitMerchantIdMappingWithHardcodedValue() throws ApiException {
+
+        TerminalResponse response = device.creditVoid().withTerminalRefNumber("1234").execute();
+        assertNotNull(response.getMerchantId());
+    }
+
+    @Test
+    public void voidDebitMerchantIdMappingWithReferenceNoOfSale() throws ApiException {
+        TerminalResponse response1 = device.creditSale(amount).withGratuity(new BigDecimal("0")).execute();
+        runBasicTests(response1);
+        TerminalResponse response = device.creditVoid().withTransactionId(response1.getTransactionId()).execute();
+        runBasicTests(response);
+        assertNotNull(response.getMerchantId());
+    }
     public void runBasicTests(IDeviceResponse response) {
         assertNotNull(response);
         assertEquals("00", response.getDeviceResponseCode());

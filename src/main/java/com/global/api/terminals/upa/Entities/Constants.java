@@ -34,6 +34,7 @@ public class Constants {
     public static final String ERROR_MESSAGE = "errorMessage";
 
     public static final String GET_PARAM = "GetParam";
+    public static final String REBOOT = "Reboot";
     public static final String EMV = "emv";
 
     // JSON Request parameter fields

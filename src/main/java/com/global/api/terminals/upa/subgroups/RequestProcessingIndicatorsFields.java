@@ -20,7 +20,7 @@ public class RequestProcessingIndicatorsFields implements IRequestSubGroup {
         if(builder.getCardTypeFilter() != null) {
             this.cardTypeFilter.addAll(builder.getCardTypeFilter());
         }
-        requireSecurityCode = builder.getRequireSecurityCode();
+        requireSecurityCode = builder.isRequireSecurityCode();
     }
 
     public JsonDoc getElementsJson() {

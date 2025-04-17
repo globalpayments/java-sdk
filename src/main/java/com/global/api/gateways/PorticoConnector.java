@@ -863,8 +863,8 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             Element safData = et.subElement(header, "SAFData");
             et.subElement(safData, "SAFIndicator", builder.getIsSAFIndicator() ? "Y" : "N");
 
-            if (builder.getSafOrignDT() != null) {
-                et.subElement(safData, "SAFOrigDT", builder.getSafOrignDT());
+            if (builder.getSafOriginalDateTime() != null) {
+                et.subElement(safData, "SAFOrigDT", builder.getSafOriginalDateTime());
             } else {
                 throw new UnsupportedOperationException("SAFData operation not supported without SAFOrigDT");
             }
