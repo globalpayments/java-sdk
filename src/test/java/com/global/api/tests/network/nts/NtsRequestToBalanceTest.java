@@ -839,8 +839,53 @@ public class NtsRequestToBalanceTest {
             assertNotNull(newSummary);
 
         }
+    }
 
+    @Test
+    public void test_BatchCloseIssue_10358_MC16_70_79() throws ApiException {
 
+        Transaction t = creditSale(10.11);
+        Transaction t1 = creditSale(20.22);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation = new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 2
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        Transaction retransmitBatchCloseResponse = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .execute();
+        assertNotNull(retransmitBatchCloseResponse);
+
+        NtsHostResponseCode responseCode = retransmitBatchCloseResponse.getNtsResponse().getNtsResponseMessageHeader().getNtsNetworkMessageHeader().getResponseCode();
+        if (responseCode.equals(NtsHostResponseCode.FormatError)) {
+            for (int i = 0; i < 2; i++) {
+                if (i == 0) {
+                    Transaction transaction = NetworkService.resubmitBatchClose(retransmitBatchCloseResponse.getTransactionToken())
+                            .execute();
+                } else {
+                    Transaction transaction = NetworkService.resubmitBatchClose(retransmitBatchCloseResponse.getTransactionToken())
+                            .withHostResponseCode("79")
+                            .execute();
+                    BatchSummary newSummary = transaction.getBatchSummary();
+                    assertNotNull(newSummary);
+                }
+
+            }
+        }
     }
     @Test
     public void test_WexFleetEMV_RTB_01_Issue_10356() throws ApiException {

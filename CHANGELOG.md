@@ -1,10 +1,17 @@
 # Changelog
-## Latest Version - V14.2.15 (04/17/2025)
+## Latest Version - V14.2.16 (04/22/2025)
+### Bug Fixes
+- [NTS] - Added code 70/70/79 scenerio for retransmitBatchClose transaction with Message Code 16 (Issue -10358). 
+
+## V14.2.15 (04/17/2025)
 ### Bug Fixes
 - [NTS] - EMV tag data removal from the Wex Fleet Retransmit Data Collect transaction(Issue -10356).
 - [UPA] - Unit test addition to check the mapping of Merchant ID in Terminal Response object.
 - [UPA] - General maintenance on Java SDK to clean-up inconsistent getters and setters.
 - [UPA] - Updated UpaTcpInterface to account for multi-messaging.
+
+### Enhancements
+- [UPA] - Implementation of AIDL for Android.
 
 ## V14.2.14 (04/03/2025)
 ### Enhancements

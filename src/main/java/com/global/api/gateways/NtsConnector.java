@@ -388,6 +388,9 @@ public class NtsConnector extends GatewayConnectorConfig {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceRequestToBalance.getValue() + originalReq.substring(count + 2);
                     }
                 }
+                if (builder.getHostResponseCode().equals(NtsHostResponseCode.Code70TwiceInRow.getValue())){
+                    originalReq = originalReq.substring(0, hostRespCount) + NtsHostResponseCode.Code70TwiceInRow.getValue() + originalReq.substring(hostRespCount + 2);
+                }
             }
             break;
             case DataCollect:
