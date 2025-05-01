@@ -1,5 +1,10 @@
 # Changelog
-## Latest Version - V14.2.16 (04/22/2025)
+## Latest Version - V14.2.17 (05/01/2025)
+### Bug Fixes
+- [NTS] - Added message code condition for retransmit data collect & credit adjustment (Issue 10359).
+- [NTS] - Corrected unit of measure for type of purchase 3 in VisaFleet data collect transactions (Issue 10360).
+
+## V14.2.16 (04/22/2025)
 ### Bug Fixes
 - [NTS] - Added code 70/70/79 scenerio for retransmitBatchClose transaction with Message Code 16 (Issue -10358). 
 

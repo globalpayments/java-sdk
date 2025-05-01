@@ -371,6 +371,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         MessageWriter request = new MessageWriter();
         String reqStr = new String(decodeRequest, StandardCharsets.UTF_8);
         int count = 21;
+        int count1 = 98;
         String originalReq = reqStr.substring(messageRequestLength);
         String messageCode = originalReq.substring(21, 23);
         int hostRespCount = 6;
@@ -398,27 +399,37 @@ public class NtsConnector extends GatewayConnectorConfig {
             case Sale: {
                 if (messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())) {
                     originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitDataCollect.getValue() + originalReq.substring(count + 2);
+                    originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitDataCollect.getValue() + originalReq.substring(count1 + 2);
                 } else if (messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())) {
                     originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                    originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitCreditAdjustment.getValue() + originalReq.substring(count1 + 2);
                 } else if (messageCode.equals(NtsMessageCode.ForceCollectOrForceSale.getValue())) {
                     originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count + 2);
+                    originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count1 + 2);
                 } else if (messageCode.equals(NtsMessageCode.ForceCreditAdjustment.getValue())) {
                     originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                    originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count1 + 2);
                 }
                 if (builder.isForceToHost()) {
                     if (messageCode.equals(NtsMessageCode.DataCollectOrSale.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceCollectOrForceSale.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.ForceCollectOrForceSale.getValue() + originalReq.substring(count1 + 2);
                     } else if (messageCode.equals(NtsMessageCode.CreditAdjustment.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.ForceCreditAdjustment.getValue() + originalReq.substring(count1 + 2);
                     } else if (messageCode.equals(NtsMessageCode.ReversalOrVoid.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceReversalOrForceVoid.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.ForceReversalOrForceVoid.getValue() + originalReq.substring(count1 + 2);
                     }
                     if (messageCode.equals(NtsMessageCode.RetransmitDataCollect.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.ForceCollectOrForceSale.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.ForceCollectOrForceSale.getValue() + originalReq.substring(count1 + 2);
                     } else if (messageCode.equals(NtsMessageCode.ForceCollectOrForceSale.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitForceCollect.getValue() + originalReq.substring(count1 + 2);
                     } else if (messageCode.equals(NtsMessageCode.RetransmitCreditAdjustment.getValue())) {
                         originalReq = originalReq.substring(0, count) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count + 2);
+                        originalReq = originalReq.substring(0, count1) + NtsMessageCode.RetransmitForceCreditAdjustment.getValue() + originalReq.substring(count1 + 2);
                     }
                 }
                 if (builder.getHostResponseCode().equals(NtsHostResponseCode.Code70TwiceInRow.getValue())){

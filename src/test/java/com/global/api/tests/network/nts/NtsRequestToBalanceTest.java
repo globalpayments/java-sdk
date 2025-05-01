@@ -922,4 +922,130 @@ public class NtsRequestToBalanceTest {
         assertNotNull(dataCollect);
 
     }
+
+    private Transaction creditDataCollect(double amount) throws ApiException {
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(amount))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(response.getAuthorizedAmount())
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+        return dataCollectResponse;
+    }
+
+    private Transaction creditCreditAuthorization(double amount) throws ApiException {
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+
+        productData = getProductDataForNonFleetBankCards(track);
+
+        track = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+        Transaction response = track.authorize(new BigDecimal(amount))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction dataCollectResponse = response.capture(response.getAuthorizedAmount())
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+        return dataCollectResponse;
+    }
+
+    @Test
+    public void test_BatchCloseIssue_10359_retransmitDatacollect() throws ApiException {
+
+        Transaction t= creditDataCollect(10.11);
+        Transaction t1= creditCreditAuthorization(10.11);
+
+        NtsRequestMessageHeader ntsRequestMessageHeader = new NtsRequestMessageHeader();
+        ntsRequestMessageHeader.setTerminalDestinationTag("478");
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.RequestToBalacnce);
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+
+        priorMessageInformation =new PriorMessageInformation();
+        priorMessageInformation.setResponseTime("999");
+        priorMessageInformation.setConnectTime("999");
+        priorMessageInformation.setMessageReasonCode("01");
+        ntsRequestMessageHeader.setPriorMessageInformation(priorMessageInformation);
+
+        NtsRequestToBalanceData data = new NtsRequestToBalanceData(batchProvider.getSequenceNumber(), new BigDecimal(1), "Version");
+        Transaction batchClose = BatchService.closeBatch(BatchCloseType.EndOfShift,
+                        ntsRequestMessageHeader, batchProvider.getBatchNumber(), 1
+                        , new BigDecimal(30.33), BigDecimal.ONE, data)
+                .execute();
+        assertNotNull(batchClose);
+
+        BatchSummary batchSummary = batchClose.getBatchSummary();
+        LinkedList<String> list = new LinkedList<>();
+        list.add(t.getTransactionToken());
+        list.add(t1.getTransactionToken());
+
+        BatchSummary summary = batchSummary.resubmitTransactions(list);
+        assertNotNull(summary);
+
+    }
+
 }

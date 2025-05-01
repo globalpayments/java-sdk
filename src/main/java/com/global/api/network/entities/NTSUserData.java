@@ -645,7 +645,7 @@ public class NTSUserData {
                 for (int i = 0; i < 1; i++) {
                     if (fuelFlag && i < fuel.size()) {
                         sb.append(StringUtils.padLeft(fuel.get(i).getCode(), 2, ' '));
-                        sb.append(StringUtils.padLeft(purchaseType.equals(PurchaseType.Fuel) ? fuel.get(i).getUnitOfMeasure().getValue() : " ", 1, ' '));
+                        sb.append(StringUtils.padLeft(purchaseType.equals(PurchaseType.NonFuel) ? " " : fuel.get(i).getUnitOfMeasure().getValue(), 1, ' '));
                         sb.append(StringUtils.toNumeric(fuel.get(i).getQuantity(), 6));
                         sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 5, 3));
                         sb.append(StringUtils.toNumeric(fuel.get(i).getAmount(), 9));
