@@ -66,7 +66,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(block1, "AllowPartialAuth", builder.isAllowPartialAuth() ? "Y" : "N");
             }
 
-            if(paymentType.equals(PaymentMethodType.Credit) && modifier.equals(TransactionModifier.None)) {
+            if(paymentType.equals(PaymentMethodType.Credit) && modifier.equals(TransactionModifier.None) && builder.isAmountEstimated() != null) {
                 et.subElement(block1, "AmountIndicator", builder.isAmountEstimated() ? "E" : "F");
             }
         }

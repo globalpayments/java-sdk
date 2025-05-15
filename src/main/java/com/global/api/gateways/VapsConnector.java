@@ -1700,6 +1700,10 @@ public class VapsConnector extends GatewayConnectorConfig {
                         reference.setBatchNumber(messageControl.getBatchNumber());
                     }
 
+                    if (messageControl != null ) {
+                        reference.setSequenceNumber(messageControl.getSequenceNumber());
+                    }
+
                     // card issuer data
                     if (cardIssuerData != null) {
                         reference.setNtsData(cardIssuerData.get("NTS"));
@@ -2340,7 +2344,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     IPaymentMethod paymentMethod = builder.getPaymentMethod();
                     if (paymentMethod instanceof TransactionReference) {
                         TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
-                        if(reference.getSequenceNumber()!=null) {
+                        if(reference.getSequenceNumber()!=null && reference.getOriginalPaymentMethod() instanceof Debit) {
                             sequenceNumber = reference.getSequenceNumber();
                         }
                     }

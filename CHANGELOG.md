@@ -1,5 +1,10 @@
 # Changelog
-## Latest Version - V14.2.17 (05/01/2025)
+## Latest Version - V14.2.18 (05/15/2025)
+### Bug Fixes
+-[VAPS] - Added a fix to set the original sequenceNumber into a non Original transaction through TransactionReference object for Debit transaction.
+-[VAPS] - Updated VisaFleet2.0 condition to add 8 Non Fuel products.
+
+## V14.2.17 (05/01/2025)
 ### Bug Fixes
 - [NTS] - Added message code condition for retransmit data collect & credit adjustment (Issue 10359).
 - [NTS] - Corrected unit of measure for type of purchase 3 in VisaFleet data collect transactions (Issue 10360).

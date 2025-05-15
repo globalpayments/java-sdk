@@ -324,7 +324,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                                     .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                         }
                     }
-                    if (getNonFuelProductCount() != 0 && getNonFuelProductCount() < 8) {
+                    if (getNonFuelProductCount() != 0 && getNonFuelProductCount() <= 8) {
                         for (DE63_ProductDataEntry entry : nonFuelProductDataEntries.values()) {
                             rvalue = rvalue.concat(entry.getCode() + "\\")
                                     .concat("\\")   //Quantity

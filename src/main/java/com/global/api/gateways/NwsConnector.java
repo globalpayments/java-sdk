@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import com.global.api.builders.*;
 import com.global.api.entities.enums.*;
@@ -64,8 +63,8 @@ import com.global.api.terminals.abstractions.IDeviceMessage;
 public class NwsConnector extends GatewayConnectorConfig {
     private static final String DATE_FORMAT_SPAN_10 = "MMddhhmmss";
     private static final String DATE_FORMAT_SPAN_12 = "yyMMddhhmmss";
-    private static String cardTypeWexFleet = "WexFleet";
-    private static String cardTypeVisaReadyLink = "VisaReadyLink";
+    private static final String cardTypeWexFleet = "WexFleet";
+    private static final String cardTypeVisaReadyLink = "VisaReadyLink";
     private static final String WEX_SEQ_EXCEPTION_MESSAGE_STRING = "The purchase device sequence number cannot be null for WEX transactions.";
 
     public Transaction processAuthorization(AuthorizationBuilder builder) throws ApiException {
@@ -76,7 +75,7 @@ public class NwsConnector extends GatewayConnectorConfig {
             byte[] orgCorr2 = new byte[8];
 
         NetworkMessage request = new NetworkMessage();
-        IPaymentMethod paymentMethod = null;
+        IPaymentMethod paymentMethod;
         paymentMethod = builder.getPaymentMethod();
         PaymentMethodType paymentMethodType = null;
         if (paymentMethod != null)
@@ -878,7 +877,7 @@ public class NwsConnector extends GatewayConnectorConfig {
             22.2 CARDHOLDER AUTHENTICATION CAPABILITY an1 The methods available for authenticating the cardholder.
             22.3 CARD CAPTURE CAPABILITY an1 Indicates whether the POS application can retain the card if required to do so.
             22.4 OPERATING ENVIRONMENT an1 Indicates whether the POS application is attended by a clerk and the location of the POS application.
-                22.5 CARDHOLDER PRESENT an1 Indicates whether or not the cardholder is present and if not present then why.
+                22.5 CARDHOLDER PRESENT an1 Indicates whether the cardholder is present and if not present then why.
                 22.6 CARD PRESENT an1 Indicates whether the card is present.
                 22.7 CARD DATA INPUT MODE an1 The method used for inputting the card data.
                 22.8 CARDHOLDER AUTHENTICATION METHOD an1 The method used for verifying the cardholder identity.

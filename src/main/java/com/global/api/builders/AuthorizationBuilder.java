@@ -39,14 +39,12 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private boolean isAvs;
     private boolean allowPartialAuth;
     private BigDecimal amount;
-    private boolean amountEstimated;
+    private Boolean amountEstimated;
     private BigDecimal authAmount;
     private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
-    @Getter
-    @Setter
-    private BlockedCardType cardTypesBlocking;
+    @Getter @Setter private BlockedCardType cardTypesBlocking;
     private String cardBrandTransactionId;
     private String cardHolderLanguage;
     private BigDecimal cashBackAmount;
@@ -80,7 +78,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     @Setter
     private String clientTxnId;
-
     @Getter
     @Setter
     private String idempotencyKey;
@@ -284,7 +281,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return amount;
     }
 
-    public boolean isAmountEstimated() {
+    public Boolean isAmountEstimated() {
         return amountEstimated;
     }
 
