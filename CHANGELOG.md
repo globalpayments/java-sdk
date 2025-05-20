@@ -1,5 +1,10 @@
 # Changelog
-## Latest Version - V14.2.18 (05/15/2025)
+
+## Latest Version - V14.2.19 (05/20/2025)
+### Bug Fixes
+- [NTS] - Reverted code to add back the EMV data into Retransmit transactions(Issue -10356).
+
+## V14.2.18 (05/15/2025)
 ### Bug Fixes
 -[VAPS] - Added a fix to set the original sequenceNumber into a non Original transaction through TransactionReference object for Debit transaction.
 -[VAPS] - Updated VisaFleet2.0 condition to add 8 Non Fuel products.
