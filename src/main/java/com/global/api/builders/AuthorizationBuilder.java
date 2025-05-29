@@ -203,6 +203,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public boolean requestUniqueToken;
 
+    @Getter
+    @Setter
+    private InstallmentData installmentData;
+
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
         return this;
@@ -258,6 +262,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     }
     public AuthorizationBuilder withPurchaseRestrictionFlag(PurchaseRestrictionFlag purchaseRestrictionFlag) {
         this.purchaseRestrictionFlag = purchaseRestrictionFlag;
+        return this;
+    }
+
+    public AuthorizationBuilder withInstallmentData(InstallmentData installmentData) {
+        this.installmentData = installmentData;
         return this;
     }
 

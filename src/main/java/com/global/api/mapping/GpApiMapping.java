@@ -12,6 +12,7 @@ import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.InstallmentData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
 import com.global.api.utils.EnumUtils;
@@ -157,6 +158,9 @@ public class GpApiMapping {
                     var cardDetails = new Card();
                     cardDetails.setMaskedNumberLast4(paymentMethodObj.getString("masked_number_last4"));
                     cardDetails.setBrand(paymentMethodObj.getString("brand"));
+                    cardDetails.setIssuer(paymentMethodObj.getString("issuer"));
+                    cardDetails.setFunding(paymentMethodObj.getString("funding"));
+                    cardDetails.setBinCountry(paymentMethodObj.getString("country"));
                     transaction.setCardDetails(cardDetails);
 
                     transaction.setCardType(paymentMethodObj.getString("brand"));
@@ -251,6 +255,11 @@ public class GpApiMapping {
                 cardDetail.setCardExpYear(card.getString("expiry_year"));
 
                 transaction.setCardDetails(cardDetail);
+            }
+
+            if (json.has("installment")) {
+                JsonDoc installment = json.get("installment");
+                transaction.setInstallmentData(setInstallmentData(installment));
             }
         }
 
@@ -509,6 +518,10 @@ public class GpApiMapping {
                 summary.setBNPLResponse(bnplResponse);
                 summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.BNPL));
             }
+        }
+        if(doc.has("installment")){
+            JsonDoc installment = doc.get("installment");
+            summary.setInstallmentData(setInstallmentData(installment));
         }
 
         summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);
@@ -1672,6 +1685,7 @@ public class GpApiMapping {
             threeDSecure.setCavv(threeDSNode.getString("cavv_result"));
             threeDSecure.setMessageVersion(threeDSNode.getString("message_version"));
             threeDSecure.setEci(threeDSNode.getString("eci"));
+            threeDSecure.setStatus(threeDSNode.getString("status"));
         }
 
         return threeDSecure;
@@ -1683,7 +1697,18 @@ public class GpApiMapping {
         cardDetails.setFunding(cardInfo.getString("funding"));
         cardDetails.setBrand(cardInfo.getString("brand"));
         cardDetails.setIssuer(cardInfo.getString("issuer"));
+        cardDetails.setBinCountry(cardInfo.getString("country"));
 
         return cardDetails;
+    }
+
+    private static InstallmentData setInstallmentData(JsonDoc installment)
+    {
+        var installmentData = new InstallmentData();
+        installmentData.setProgram(installment.getString("program"));
+        installmentData.setMode(installment.getString("mode"));
+        installmentData.setCount(installment.getString("count"));
+        installmentData.setGracePeriodCount(installment.getString("grace_period_count"));
+        return installmentData;
     }
 }

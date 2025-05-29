@@ -4,6 +4,7 @@ import com.global.api.entities.billing.AuthorizationRecord;
 import com.global.api.entities.billing.Bill;
 import com.global.api.entities.reporting.AltPaymentData;
 import com.global.api.entities.reporting.CheckData;
+import com.global.api.paymentMethods.InstallmentData;
 import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
@@ -154,5 +155,5 @@ public class TransactionSummary {
     private String cardAcquisition;
     private String transactionTime;
     private Card cardDetails;
-
+    private InstallmentData installmentData;
 }

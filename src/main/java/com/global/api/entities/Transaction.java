@@ -20,6 +20,7 @@ import com.global.api.network.enums.CardIssuerEntryTag;
 import com.global.api.network.enums.nts.PendingRequestIndicator;
 import com.global.api.paymentMethods.GiftCard;
 import com.global.api.paymentMethods.IPaymentMethod;
+import com.global.api.paymentMethods.InstallmentData;
 import com.global.api.paymentMethods.TransactionReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -120,6 +121,8 @@ public class Transaction {
     private Address address;
     private  Customer customerData;
     private TokenData tokenData;
+    @Getter @Setter
+    private InstallmentData installmentData;
 
     public Customer getCustomerData() {
         return customerData;

@@ -690,6 +690,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason()))
                             .set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
             data.set("stored_credential", storedCredential);
+            //set installment data
+            if(builder.getInstallmentData() != null && builder.getStoredCredential().getType().equals(StoredCredentialType.Installment)) {
+                data.set("installment", setInstallmentData(builder.getInstallmentData()));
+            }
         }
 
         return (GpApiRequest)
@@ -1104,4 +1108,14 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         }
     }
 
+    private static JsonDoc setInstallmentData(InstallmentData installmentData)
+    {
+        JsonDoc installment = new JsonDoc();
+        installment
+                .set("program", installmentData.getProgram())
+                .set("mode", installmentData.getMode())
+                .set("count", installmentData.getCount())
+                .set("grace_period_count", installmentData.getGracePeriodCount());
+        return installment;
+    }
 }

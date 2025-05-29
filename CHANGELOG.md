@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.2.19 (05/20/2025)
+## Latest Version - V14.2.20 (05/29/2025)
+### Enhancements
+- [GPApi] - Added Installment Object in Create Sale API (POST /transactions)
+- [GPApi] - Added Installment Object in Reporting API (GET /transactions & GET /transactions/{id})
+
+## V14.2.19 (05/20/2025)
 ### Bug Fixes
 - [NTS] - Reverted code to add back the EMV data into Retransmit transactions(Issue -10356).
 
