@@ -1,9 +1,9 @@
 package com.global.api;
 
-import com.global.api.gateways.IFileProcessingService;
 import com.global.api.entities.enums.Secure3dVersion;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
+import com.global.api.services.InstallmentService;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDisposable;
@@ -28,6 +28,7 @@ public class ConfiguredServices implements IDisposable {
     @Getter @Setter
     private IProPayProvider proPayProvider;
     @Getter @Setter private IPayFacProvider payFacProvider;
+    @Getter @Setter private IInstallmentService installmentService;
 
 
     IPaymentGateway getGatewayConnector() {

@@ -12,6 +12,7 @@ import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.Installment;
 import com.global.api.paymentMethods.InstallmentData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
 import com.global.api.paymentMethods.eCheck;
@@ -1710,5 +1711,80 @@ public class GpApiMapping {
         installmentData.setCount(installment.getString("count"));
         installmentData.setGracePeriodCount(installment.getString("grace_period_count"));
         return installmentData;
+    }
+
+    /**
+     * It maps the GP API create installment response to Installment object
+     * @param  rawResponse
+     * @return {@link Installment}
+     * @throws GatewayException
+     */
+
+    public static Installment mapInstallmentResponse(String rawResponse) throws GatewayException {
+
+        Installment installment = new Installment();
+        if (!isNullOrEmpty(rawResponse)) {
+            JsonDoc json = JsonDoc.parse(rawResponse);
+
+            installment.setId(json.getString("id"));
+            installment.setTimeCreated(json.getDateTime("time_created"));
+            installment.setType(json.getString("type"));
+            installment.setStatus(json.getString("status"));
+            installment.setChannel(json.getString("channel"));
+            installment.setAmount(json.getAmount("amount"));
+            installment.setCurrency(json.getString("currency"));
+            installment.setCountry(json.getString("country"));
+            installment.setMerchantId(json.getString("merchant_id"));
+            installment.setMerchantName(json.getString("merchant_name"));
+            installment.setAccountId(json.getString("account_id"));
+            installment.setAccountName(json.getString("account_name"));
+            installment.setReference(json.getString("reference"));
+            installment.setProgram(json.getString("program"));
+
+            if (json.has("payment_method")) {
+                JsonDoc paymentMethodJson = json.get("payment_method");
+                installment.setResult(paymentMethodJson.getString("result"));
+                installment.setEntryMode(paymentMethodJson.getString("entry_mode"));
+                installment.setMessage(paymentMethodJson.getString("message"));
+                if (paymentMethodJson.has("card")) {
+                    JsonDoc cardJson = paymentMethodJson.get("card");
+                    Card card = new Card();
+                    if (cardJson != null) {
+                        card.setBrand(cardJson.getString("brand"));
+                        card.setMaskedNumberLast4(cardJson.getString("masked_number_last4"));
+                        card.setBrandReference(cardJson.getString("brand_reference"));
+                        installment.setAuthCode(cardJson.getString("authcode"));
+
+                    }
+                    installment.setCard(card);
+                }
+
+            }
+            if (json.has("action")) {
+                JsonDoc actionJson = json.get("action");
+                Action action = new Action();
+                action.setType(actionJson.getString("type"));
+                action.setId(actionJson.getString("id"));
+                action.setTimeCreated(actionJson.getString("time_created"));
+                action.setAppId(actionJson.getString("app_id"));
+                action.setAppName(actionJson.getString("app_name"));
+                action.setResultCode(actionJson.getString("result_code"));
+                installment.setAction(action);
+            }
+
+            List<Terms> termsList = new ArrayList();
+            if (json.has("terms")) {
+                List<JsonDoc> terms = json.getEnumerator("terms");
+                for (JsonDoc termObject : terms) {
+                    Terms term = new Terms();
+                    term.setId(termObject.getString("id"));
+                    term.setTimeUnit(termObject.getString("time_unit"));
+                    term.setTimeUnitNumbers((List<Integer>) termObject.get("time_unit_numbers"));
+                    termsList.add(term);
+                }
+                installment.setTerms(termsList);
+            }
+        }
+        return  installment;
     }
 }

@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.2.20 (05/29/2025)
+## Latest Version - V14.2.21 (06/03/2025)
+### Bug Fixes
+- [Portico] - Updated the condition where clientTransactionId should not be added as part of CreditAddToBatch tag for Capture transactions.
+- [GPAPI] - Created New API "/installments"
+
+## V14.2.20 (05/29/2025)
 ### Enhancements
 - [GPApi] - Added Installment Object in Create Sale API (POST /transactions)
 - [GPApi] - Added Installment Object in Reporting API (GET /transactions & GET /transactions/{id})

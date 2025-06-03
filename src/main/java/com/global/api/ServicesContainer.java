@@ -92,6 +92,14 @@ public class ServicesContainer implements IDisposable {
 
         throw new ConfigurationException("PayFacProvider is not configured");
     }
+    public IInstallmentService getInstallmentClient(String configName) throws ApiException {
+        if (configurations.containsKey(configName)) {
+            return configurations.get(configName).getInstallmentService();
+        }
+
+        throw new ApiException("The specified configuration has not been configured for installment processing.");
+    }
+
 
     public static ServicesContainer getInstance() {
         if(instance == null)

@@ -45,30 +45,30 @@ public class ProPayBuilder extends BaseBuilder<Transaction>{
     public CreditCardData creditCardData;
     public BankAccountData aCHInofmation;
     public Address mailingAddressInofmation;
-    public BankAccountData secondaryBankInofmation; 
+    public BankAccountData secondaryBankInofmation;
     public GrossBillingInformation grossBillingInformation;
-    public String negativeLimit; 
-    public RenewAccountData renewalAccountData; 
-    public String accountNumber; 
-    public String password; 
-    public AccountPermissions accountPermissions; 
-    public BankAccountOwnershipData primaryBankAccountOwner; 
-    public BankAccountOwnershipData secondaryBankAccountOwner; 
+    public String negativeLimit;
+    public RenewAccountData renewalAccountData;
+    public String accountNumber;
+    public String password;
+    public AccountPermissions accountPermissions;
+    public BankAccountOwnershipData primaryBankAccountOwner;
+    public BankAccountOwnershipData secondaryBankAccountOwner;
     public DocumentUploadData documentUploadData;
     public SSORequestData sSORequestData;
     public OrderDevice orderDevice;
 
-    public String amount; 
-    public String receivingAccountNumber; 
+    public String amount;
+    public String receivingAccountNumber;
     public Boolean allowPending;
-    public String cCAmount; 
+    public String cCAmount;
     public Boolean requireCCRefund;
-    public String transNum; 
+    public String transNum;
 
-    public String externalID; 
-    public String sourceEmail; 
+    public String externalID;
+    public String sourceEmail;
 
-    public FlashFundsPaymentCardData flashFundsPaymentCardData; 
+    public FlashFundsPaymentCardData flashFundsPaymentCardData;
 
     public String gatewayTransactionId;
     public String cardBrandTransactionId;

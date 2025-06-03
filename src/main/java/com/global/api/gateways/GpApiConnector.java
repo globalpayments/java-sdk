@@ -16,6 +16,7 @@ import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
+import com.global.api.paymentMethods.Installment;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.JsonDoc;
@@ -38,7 +39,7 @@ import java.util.HashMap;
 import static com.global.api.utils.StringUtils.isNullOrEmpty;
 
 public class GpApiConnector extends RestGateway implements IPaymentGateway, IReportingService, ISecure3dProvider, 
-        IPayFacProvider, IFraudCheckService, IFileProcessingService, IRecurringGateway, IDeviceCloudService {
+        IPayFacProvider, IFraudCheckService, IFileProcessingService, IRecurringGateway, IDeviceCloudService, IInstallmentService{
 
     public static final SimpleDateFormat DATE_SDF = DateParsingUtils.DATE_SDF;
     public static final DateTimeFormatter DATE_TIME_DTF = DateParsingUtils.DATE_TIME_DTF;
@@ -337,7 +338,6 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         if (request != null) {
             addMaskedData(request.maskedData);
             String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), null);
-
             return GpApiMapping.mapReportResponse(response, builder.getReportType());
         }
         return null;
@@ -408,6 +408,28 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
                     request.getEndpoint(),
                     request.getRequestBody(),
                     request.getQueryStringParams());
+        }
+        return null;
+    }
+
+    /**
+     * send request to server and return GP API create installment response
+     * @param builder
+     * @return {@link Installment}
+     * @throws ApiException
+     */
+    public Installment processInstallment(InstallmentBuilder builder) throws ApiException {
+        if (StringUtils.isNullOrEmpty(accessToken)) {
+            signIn();
+        }
+
+        GpApiInstallmentRequestBuilder gpApiInstallmentRequestBuilder = new GpApiInstallmentRequestBuilder();
+        GpApiRequest request = gpApiInstallmentRequestBuilder.buildRequest(builder, this);
+
+        if (request != null) {
+            addMaskedData(request.maskedData);
+            String response = doTransaction(request.getVerb(), request.getEndpoint(), request.getRequestBody(), request.getQueryStringParams(), null);
+            return GpApiMapping.mapInstallmentResponse(response);
         }
         return null;
     }

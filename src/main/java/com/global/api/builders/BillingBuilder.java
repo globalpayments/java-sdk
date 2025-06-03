@@ -92,7 +92,7 @@ public class BillingBuilder extends TransactionBuilder<BillingResponse> {
         this.bills = Arrays.asList(bills);
         return this;
     }
-    
+
     public BillingBuilder withBills(List<Bill> bills) {
         this.bills = bills;
         return this;
@@ -138,6 +138,6 @@ public class BillingBuilder extends TransactionBuilder<BillingResponse> {
 
     @Override
     public void setupValidations() {
-        // 
+        //
     }
 }
