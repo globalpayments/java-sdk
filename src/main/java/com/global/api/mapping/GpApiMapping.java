@@ -52,6 +52,7 @@ public class GpApiMapping {
     private static final String DOCUMENT_UPLOAD = "DOCUMENT_UPLOAD";
     private static final String FILE_CREATE = "FILE_CREATE";
     private static final String FILE_SINGLE = "FILE_SINGLE";
+    private static final String DISPUTE_CHALLENGE = "CHALLENGE";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -127,6 +128,24 @@ public class GpApiMapping {
                     break;
                 case TRANSFER:
                     transaction.setPaymentMethodType(PaymentMethodType.AccountFunds);
+                    break;
+                case DISPUTE_CHALLENGE:
+                    if (json.has("documents")) {
+                        List<JsonDoc> documents = json.getEnumerator("documents");
+
+                        List<DisputeDocument> disputeDocuments = new ArrayList<>();
+                        for (JsonDoc document : documents) {
+                            if (document.getString("id") != null) {
+                                DisputeDocument disputeDocument = new DisputeDocument();
+                                disputeDocument.setId(document.getString("id"));
+                                disputeDocument.setType(document.getString("type") != null ? document.getString("type") : null);
+
+                                disputeDocuments.add(disputeDocument);
+                            }
+                        }
+
+                        transaction.setDisputeDocuments(disputeDocuments);
+                    }
                     break;
                 default:
                     break;

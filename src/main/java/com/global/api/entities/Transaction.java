@@ -123,6 +123,7 @@ public class Transaction {
     private TokenData tokenData;
     @Getter @Setter
     private InstallmentData installmentData;
+    @Getter @Setter private List<DisputeDocument> disputeDocuments;
 
     public Customer getCustomerData() {
         return customerData;
