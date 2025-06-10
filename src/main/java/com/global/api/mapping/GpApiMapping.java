@@ -765,6 +765,12 @@ public class GpApiMapping {
             summary.setRefundsTotalAmount(refunds.getAmount("amount"));
         }
 
+        if(doc.has("discounts")) {
+            JsonDoc discounts = doc.get("discounts");
+            summary.setDiscountsTotalCount(discounts.getInt("count"));
+            summary.setDiscountsTotalAmount(discounts.getAmount("amount"));
+        }
+
         if (doc.has("disputes")) {
             JsonDoc disputes = doc.get("disputes");
 
