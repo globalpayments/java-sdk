@@ -919,6 +919,7 @@ public class GpApiMapping {
         summary.setCaseIdTime(parseGpApiDateTime(doc.getString("stage_time_created")));
         summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setDepositReference(doc.getString("deposit_id"));
+        summary.setType(doc.getString("funding_type"));
 
         if (doc.has("transaction")) {
             JsonDoc transaction = doc.get("transaction");
