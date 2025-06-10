@@ -1152,7 +1152,11 @@ public class NtsConnector extends GatewayConnectorConfig {
                     // Extended user data flag
                     request.addRange("E", 1);
                     // User data length
-                    request.addRange(userData.length(), 3);
+                    if(cardType.equals(NTSCardTypes.WexFleet) && ntsRequestMessageHeader.getNtsMessageCode().equals(NtsMessageCode.DataCollectOrSale) && builder.getTagData()!=null) {
+                        request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
+                    } else {
+                        request.addRange(StringUtils.padLeft(userData.length(), 3, '0'), 3);
+                    }
                 }
                 request.addRange(userData, userData.length());
             }

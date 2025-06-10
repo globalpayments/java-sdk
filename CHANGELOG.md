@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V14.2.21 (06/03/2025)
+## Latest Version - V14.2.22 (06/10/2025)
+### Bug Fixes
+- [NTS] - Resolved WEX EMV Retransmit Format Error (Issue 10356).
+
+## V14.2.21 (06/03/2025)
 ### Bug Fixes
 - [Portico] - Updated the condition where clientTransactionId should not be added as part of CreditAddToBatch tag for Capture transactions.
 - [GPAPI] - Created New API "/installments"
