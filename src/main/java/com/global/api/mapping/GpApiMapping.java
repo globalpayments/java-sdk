@@ -11,15 +11,10 @@ import com.global.api.entities.gpApi.entities.UserAccount;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.Installment;
-import com.global.api.paymentMethods.InstallmentData;
-import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.paymentMethods.eCheck;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
