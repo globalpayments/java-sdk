@@ -831,6 +831,7 @@ public class GpApiMapping {
         summary.setReasonCode(doc.getString("reason_code"));
         summary.setReason(doc.getString("reason_description"));
         summary.setResult(doc.getString("result"));
+        summary.setMerchantAmount(doc.getAmount("merchant_amount"));
 
         if (doc.has("system")) {
             JsonDoc system = doc.get("system");

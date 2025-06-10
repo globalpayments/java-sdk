@@ -20,6 +20,7 @@ public class DisputeSummary {
     private String merchantDbaName;
     private String merchantNumber;
     private String merchantCategory;
+    private BigDecimal merchantAmount;
     private Date depositDate;
     private String depositReference;
     private String depositType;
