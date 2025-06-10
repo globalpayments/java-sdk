@@ -544,6 +544,10 @@ public class GpApiMapping {
             summary.setInstallmentData(setInstallmentData(installment));
         }
 
+        if(doc.has("merchant_discount_amount")) {
+            summary.setMerchantDiscountAmount(doc.getDecimal("merchant_discount_amount"));
+        }
+
         summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);
 
         return summary;
