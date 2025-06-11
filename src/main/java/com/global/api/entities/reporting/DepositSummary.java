@@ -30,6 +30,8 @@ public class DepositSummary {
     public int refundsTotalCount;
     public BigDecimal refundsTotalAmount;
     public String refundsTotalCurrency;
+    public int discountsTotalCount;
+    public BigDecimal discountsTotalAmount;
     public int chargebackTotalCount;
     public BigDecimal chargebackTotalAmount;
     public String chargebackTotalCurrency;

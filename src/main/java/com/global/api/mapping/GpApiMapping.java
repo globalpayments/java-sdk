@@ -11,15 +11,10 @@ import com.global.api.entities.gpApi.entities.UserAccount;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.Installment;
-import com.global.api.paymentMethods.InstallmentData;
-import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.paymentMethods.eCheck;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
@@ -52,6 +47,7 @@ public class GpApiMapping {
     private static final String DOCUMENT_UPLOAD = "DOCUMENT_UPLOAD";
     private static final String FILE_CREATE = "FILE_CREATE";
     private static final String FILE_SINGLE = "FILE_SINGLE";
+    private static final String DISPUTE_CHALLENGE = "CHALLENGE";
 
     public static Transaction mapResponse(String rawResponse) throws GatewayException {
         Transaction transaction = new Transaction();
@@ -127,6 +123,24 @@ public class GpApiMapping {
                     break;
                 case TRANSFER:
                     transaction.setPaymentMethodType(PaymentMethodType.AccountFunds);
+                    break;
+                case DISPUTE_CHALLENGE:
+                    if (json.has("documents")) {
+                        List<JsonDoc> documents = json.getEnumerator("documents");
+
+                        List<DisputeDocument> disputeDocuments = new ArrayList<>();
+                        for (JsonDoc document : documents) {
+                            if (document.getString("id") != null) {
+                                DisputeDocument disputeDocument = new DisputeDocument();
+                                disputeDocument.setId(document.getString("id"));
+                                disputeDocument.setType(document.getString("type") != null ? document.getString("type") : null);
+
+                                disputeDocuments.add(disputeDocument);
+                            }
+                        }
+
+                        transaction.setDisputeDocuments(disputeDocuments);
+                    }
                     break;
                 default:
                     break;
@@ -525,6 +539,10 @@ public class GpApiMapping {
             summary.setInstallmentData(setInstallmentData(installment));
         }
 
+        if(doc.has("merchant_discount_amount")) {
+            summary.setMerchantDiscountAmount(doc.getDecimal("merchant_discount_amount"));
+        }
+
         summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);
 
         return summary;
@@ -746,6 +764,12 @@ public class GpApiMapping {
             summary.setRefundsTotalAmount(refunds.getAmount("amount"));
         }
 
+        if(doc.has("discounts")) {
+            JsonDoc discounts = doc.get("discounts");
+            summary.setDiscountsTotalCount(discounts.getInt("count"));
+            summary.setDiscountsTotalAmount(discounts.getAmount("amount"));
+        }
+
         if (doc.has("disputes")) {
             JsonDoc disputes = doc.get("disputes");
 
@@ -802,6 +826,7 @@ public class GpApiMapping {
         summary.setReasonCode(doc.getString("reason_code"));
         summary.setReason(doc.getString("reason_description"));
         summary.setResult(doc.getString("result"));
+        summary.setMerchantAmount(doc.getAmount("merchant_amount"));
 
         if (doc.has("system")) {
             JsonDoc system = doc.get("system");
@@ -842,6 +867,20 @@ public class GpApiMapping {
                     summary.setTransactionCardType(card.getString("brand"));
                     summary.setTransactionBrandReference(card.getString("brand_reference"));
                 }
+            } else if(transaction.has("provider")) {
+                JsonDoc provider = transaction.get("provider");
+                if (provider.has("payment_method")) {
+                    JsonDoc paymentMethod = provider.get("payment_method");
+
+                    if (paymentMethod.has("card")) {
+                        JsonDoc card = paymentMethod.get("card");
+
+                        summary.setTransactionMaskedCardNumber(card.getString("number"));
+                        summary.setTransactionARN(card.getString("arn"));
+                        summary.setTransactionCardType(card.getString("brand"));
+                        summary.setTransactionBrandReference(card.getString("brand_reference"));
+                    }
+                }
             }
         }
         String timeToRespondBy = doc.getString("time_to_respond_by");
@@ -875,6 +914,7 @@ public class GpApiMapping {
         summary.setCaseIdTime(parseGpApiDateTime(doc.getString("stage_time_created")));
         summary.setDepositDate(parseGpApiDate(doc.getString("deposit_time_created")));
         summary.setDepositReference(doc.getString("deposit_id"));
+        summary.setType(doc.getString("funding_type"));
 
         if (doc.has("transaction")) {
             JsonDoc transaction = doc.get("transaction");

@@ -76,7 +76,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         .set("cryptogram", creditCardData.getCryptogram())
                         .set("eci", creditCardData.getEci())
                         .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
-                        .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "");
+                        .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "")
+                        .set("brand_reference", builder.getCardBrandTransactionId());
 
                 maskedData.putAll(
                         MaskValueUtil.hideValues(
