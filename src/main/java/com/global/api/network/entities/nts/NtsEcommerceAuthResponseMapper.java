@@ -34,8 +34,10 @@ public class NtsEcommerceAuthResponseMapper implements INtsResponseMessage {
         NtsUtils.log("Authorizer", ntsCreditResponse.getAuthorizer());
 
         if(buffer.length>28) {
-            ntsCreditResponse.setExpandedUserData(sp.readString(1));
-            NtsUtils.log("Expanded User Data", ntsCreditResponse.getExpandedUserData());
+            if(!ntsCreditResponse.getCardType().equals(NTSCardTypes.WexFleet)) {
+                ntsCreditResponse.setExpandedUserData(sp.readString(1));
+                NtsUtils.log("Expanded User Data", ntsCreditResponse.getExpandedUserData());
+            }
 
             ntsCreditResponse.setHostResponseLength(sp.readInt(3));
             NtsUtils.log("Host Response Area Length", ntsCreditResponse.getHostResponseLength());

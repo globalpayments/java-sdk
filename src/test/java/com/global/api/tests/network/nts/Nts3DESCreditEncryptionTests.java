@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NtsEncryption3DESTests {
+public class Nts3DESCreditEncryptionTests {
     private CreditCardData card;
     private CreditCardData cardWithCvn;
     private CreditTrackData track;
@@ -44,7 +44,7 @@ public class NtsEncryption3DESTests {
     private PriorMessageInformation priorMessageInformation;
     Integer Stan = Integer.parseInt(DateTime.now().toString("hhmmss"));
 
-    public NtsEncryption3DESTests() throws ConfigurationException {
+    public Nts3DESCreditEncryptionTests() throws ConfigurationException {
 
         acceptorConfig = new AcceptorConfig();
         acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
@@ -118,10 +118,10 @@ public class NtsEncryption3DESTests {
         config.setBinTerminalId(" ");
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactEmv_MagStripe);
-        config.setTerminalId("08");
-        config.setUnitNumber("11122233341");
+        config.setTerminalId("21");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("01");
-        config.setCompanyId("044");
+        config.setCompanyId("045");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
         config.setTerminalType(TerminalType.VerifoneRuby2Ci);
         config.setMerchantType("5542");
@@ -132,16 +132,18 @@ public class NtsEncryption3DESTests {
         track.setEntryMethod(EntryMethod.Swipe);
         track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A15B6FB3D21191BA5",
                 "F000019990E00003"));
-        track.setCardType("Amex");
+        track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
+        track.setCardType("MC");
         track.setTrackNumber(TrackNumber.TrackOne);
+        track.setExpiry("2512");
 
         track2 = new CreditTrackData();
         track2.setEntryMethod(EntryMethod.Swipe);
         track2.setEncryptionData(EncryptionData.setKSNAndEncryptedData("3EC0C41AB0CCC3BCA6EF798140BEF7BB5A06F78222AFD7BA8E949CA21AAF26E33B97D7493E4D7C1A",
                 "F000019990E00003"));
         track2.setCardType("MC");
-        track2.setEncryptedPan("49AB0D7DF39F4EAA3ADEB107CCCC03D0");
-        track2.setExpiry("2025");
+        track2.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
+        track2.setExpiry("2512");
         track2.setEntryMethod(EntryMethod.Swipe);
         track2.setTrackNumber(TrackNumber.TrackTwo);
 
@@ -153,6 +155,8 @@ public class NtsEncryption3DESTests {
                 "F000019990E00003"));
         card.setCardType("Visa");
         card.setCvn("123");
+        card.setExpMonth(12);
+        card.setExpYear(2025);
 
         cardWithCvn = new CreditCardData();
         cardWithCvn.setCvn("103");
@@ -170,12 +174,6 @@ public class NtsEncryption3DESTests {
         debit.setCardType("PINDebitCard");
         debit.setPinBlock("62968D2481D231E1A504010024A00014");
         debit.setTrackNumber(TrackNumber.TrackTwo);
-
-        //prepaid card SVS account number
-        giftCard = new GiftCard();
-        giftCard.setCardType("StoredValue");
-        giftCard.setEncryptionData(EncryptionData.setKSNAndEncryptedData("4FBB3A14C4D744F044CE5E56EAFEB19EC99A321B093237F","F000019990E00003"));
-        giftCard.setExpiry("1239");
     }
     private NtsProductData getProductDataForNonFleetBankCards(IPaymentMethod method) throws ApiException {
         productData = new NtsProductData(ServiceLevel.FullServe, method);
@@ -353,6 +351,7 @@ public class NtsEncryption3DESTests {
     }
     @Test //working
     public void test_009_auth_capture_track2() throws ApiException {
+        track2.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E");
 
         Transaction response = track2.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -732,6 +731,8 @@ public class NtsEncryption3DESTests {
                 .withNtsRequestMessageHeader(header)
                 .withUniqueDeviceId("0102")
                 .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .withCvn("123")
                 .execute();
         assertNotNull(response);
 

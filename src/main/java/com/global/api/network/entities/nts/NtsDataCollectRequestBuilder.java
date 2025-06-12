@@ -137,7 +137,12 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                 } else {
                     if(encryptionData != null){
                         request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
-                        request.addRange(StringUtils.padRight( EMPTY_STRING, 4, ' '),4);
+                        String expiryDate = NtsUtils.prepareExpDateWithoutTrack(trackData.getExpiry());
+                        this.setExpDate(expiryDate);
+                        StringUtils.setExpDate(expiryDate);
+                        // Expiry date
+                        NtsUtils.log("Expiry Date", StringUtils.padRight("", 4, '*'));
+                        request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
 
                     } else {
                         this.setTrackData(trackData.getValue());
@@ -150,20 +155,32 @@ public class NtsDataCollectRequestBuilder implements INtsRequestMessage {
                 }
             } else if (paymentMethod instanceof GiftCard) {
                 GiftCard gift = (GiftCard) paymentMethod;
-                // Account number
-                this.setAccNo(gift.getPan());
-                StringUtils.setAccNo(gift.getPan());
-                NtsUtils.log("Account Number", StringUtils.maskAccountNumber(gift.getPan()));
-                request.addRange(StringUtils.padRight(gift.getPan(), 19, ' '), 19);
+                if (gift instanceof IEncryptable && ((IEncryptable) paymentMethod).getEncryptionData() != null) {
+                    encryptionData = ((IEncryptable) gift).getEncryptionData();
+                }
+                if (encryptionData != null) {
+                    request.addRange(StringUtils.padRight(EMPTY_STRING, 19, ' '), 19);
+                    // Expiry date
+                    String expiryDate = NtsUtils.prepareExpDateWithoutTrack(gift.getExpiry());
+                    this.setExpDate(expiryDate);
+                    StringUtils.setExpDate(expiryDate);
+                    NtsUtils.log("Expiry Date", StringUtils.padRight("", 4, '*'));
+                    request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                } else {
+                    // Account number
+                    this.setAccNo(gift.getPan());
+                    StringUtils.setAccNo(gift.getPan());
+                    NtsUtils.log("Account Number", StringUtils.maskAccountNumber(gift.getPan()));
+                    request.addRange(StringUtils.padRight(gift.getPan(), 19, ' '), 19);
 
-                String expiryDate = NtsUtils.prepareExpDateWithoutTrack(gift.getExpiry());
-                // Expiry date
-                this.setExpDate(expiryDate);
-                StringUtils.setExpDate(expiryDate);
-                NtsUtils.log("Exp Date", StringUtils.padRight("", 4, '*'));
-                request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                    String expiryDate = NtsUtils.prepareExpDateWithoutTrack(gift.getExpiry());
+                    // Expiry date
+                    this.setExpDate(expiryDate);
+                    StringUtils.setExpDate(expiryDate);
+                    NtsUtils.log("Exp Date", StringUtils.padRight("", 4, '*'));
+                    request.addRange(StringUtils.padRight(expiryDate, 4, ' '), 4);
+                }
             }
-
             request.addRange(transactionReference.getApprovalCode(), 6);
             NtsUtils.log("ApprovalCode", transactionReference.getApprovalCode());
 

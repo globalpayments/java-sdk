@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V14.2.22 (06/10/2025)
+## Latest Version - V14.3.0 (06/12/2025)
+### Enhancements
+- [NTS] - NTS 24.1 spec updates which include enhancements for tokenization, 3DES encryption, Bankcard tag data, Wex Fleet, Fleetcor, and SVS.
+
+### Bug Fixes
+- [GP-API] - Added Merchant ID for Recurring Operations (Payer URL)
+
+## V14.2.22 (06/10/2025)
 ### Bug Fixes
 - [NTS] - Resolved WEX EMV Retransmit Format Error (Issue 10356).
 

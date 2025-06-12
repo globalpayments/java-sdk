@@ -51,12 +51,17 @@ public class NtsEcommerceSaleResponseMapper implements INtsResponseMessage {
         NtsUtils.log("Sequence Number", ntsEcommerceSaleResponseMapper.getSequenceNumber());
 
         if (buffer.length > 33) {
-            ntsCreditResponse.setExpandedUserData(sp.readString(1));
-            NtsUtils.log("Expanded User Data", ntsCreditResponse.getExpandedUserData());
+            if(!ntsCreditResponse.getCardType().equals(NTSCardTypes.WexFleet)) {
+                ntsCreditResponse.setExpandedUserData(sp.readString(1));
+                NtsUtils.log("Expanded User Data", ntsCreditResponse.getExpandedUserData());
 
-            ntsCreditResponse.setHostResponseLength(sp.readInt(4));
-            NtsUtils.log("Host Response Area Length", ntsCreditResponse.getHostResponseLength());
-
+                ntsCreditResponse.setHostResponseLength(sp.readInt(4));
+                NtsUtils.log("Host Response Area Length", ntsCreditResponse.getHostResponseLength());
+            }
+            else {
+                ntsCreditResponse.setHostResponseLength(sp.readInt(3));
+                NtsUtils.log("Host Response Area Length", ntsCreditResponse.getHostResponseLength());
+            }
             ntsCreditResponse.setHostResponseArea(sp.readRemaining());
             NtsUtils.log("Host Response Area", ntsCreditResponse.getHostResponseArea());
         }

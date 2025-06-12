@@ -90,8 +90,14 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (builder instanceof AuthorizationBuilder) {
                 if (cardTypes.equals(NTSCardTypes.WexFleet)) {
                     if (transactionType.equals(TransactionType.Auth)) {
-                        NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
-                        String hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
+                        String hostResponseArea = null;
+                        if(ntsResponse.getNtsResponseMessage() instanceof NtsAuthCreditResponseMapper) {
+                            NtsAuthCreditResponseMapper ntsAuthCreditResponseMapper = (NtsAuthCreditResponseMapper) ntsResponse.getNtsResponseMessage();
+                            hostResponseArea = ntsAuthCreditResponseMapper.getCreditMapper().getHostResponseArea();
+                        } else if (ntsResponse.getNtsResponseMessage() instanceof NtsEcommerceAuthResponseMapper) {
+                            NtsEcommerceAuthResponseMapper ntsEcommerceAuthResponseMapper = (NtsEcommerceAuthResponseMapper) ntsResponse.getNtsResponseMessage();
+                            hostResponseArea = ntsEcommerceAuthResponseMapper.getCreditMapper().getHostResponseArea();
+                        }
                         if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
@@ -104,9 +110,16 @@ public class NtsConnector extends GatewayConnectorConfig {
                             }
                         }
                     } else if (transactionType.equals(TransactionType.Sale)) {
-                        NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
-                        String hostResponseArea = ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea();
-                        if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
+                        String hostResponseArea = null;
+                        if(ntsResponse.getNtsResponseMessage() instanceof NtsSaleCreditResponseMapper) {
+                            NtsSaleCreditResponseMapper ntsSaleCreditResponseMapper = (NtsSaleCreditResponseMapper) ntsResponse.getNtsResponseMessage();
+                            hostResponseArea = ntsSaleCreditResponseMapper.getCreditMapper().getHostResponseArea();
+                        } else if(ntsResponse.getNtsResponseMessage() instanceof NtsEcommerceSaleResponseMapper) {
+                            NtsEcommerceSaleResponseMapper ntsEcommerceSaleResponseMapper = (NtsEcommerceSaleResponseMapper) ntsResponse.getNtsResponseMessage();
+                            hostResponseArea = ntsEcommerceSaleResponseMapper.getCreditMapper().getHostResponseArea();
+                        }
+
+                            if (!StringUtils.isNullOrEmpty(hostResponseArea) && userData != null) {
                             StringParser responseParser = new StringParser(hostResponseArea);
                             String amount = responseParser.readString(7);
                             userData.put(UserDataTag.ApprovedAmount, amount);
@@ -1152,7 +1165,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                     // Extended user data flag
                     request.addRange("E", 1);
                     // User data length
-                    if(cardType.equals(NTSCardTypes.WexFleet) && ntsRequestMessageHeader.getNtsMessageCode().equals(NtsMessageCode.DataCollectOrSale) && builder.getTagData()!=null) {
+                    if(cardType.equals(NTSCardTypes.WexFleet) && ntsRequestMessageHeader.getNtsMessageCode().equals(NtsMessageCode.DataCollectOrSale) && builder.getTagData() != null) {
                         request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
                     } else {
                         request.addRange(StringUtils.padLeft(userData.length(), 3, '0'), 3);
@@ -1208,7 +1221,7 @@ public class NtsConnector extends GatewayConnectorConfig {
         if(paymentMethod instanceof IEncryptable) {
             EncryptionData encryptionData = ((IEncryptable)paymentMethod).getEncryptionData();
             String encryptedPan = null;
-            if(transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.Void) || transactionType.equals(TransactionType.Reversal)) {
+            if(transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.Void) || transactionType.equals(TransactionType.Reversal)  || transactionType.equals(TransactionType.PreAuthCompletion)) {
                 encryptedPan = ((IEncryptable) paymentMethod).getEncryptedPan();
             }
             if(encryptionData != null) {
@@ -1235,7 +1248,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             if(paymentMethod instanceof ICardData){
                 return EncryptedFieldMatrix.Pan;
             }
-            else if(paymentMethod instanceof GiftCard){
+            else if(paymentMethod instanceof GiftCard && ((!transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal) && !transactionType.equals(TransactionType.PreAuthCompletion)))) {
                GiftCard gift = (GiftCard) paymentMethod;
                TrackNumber trackNumber = gift.getTrackNumber();
                if(trackNumber!= null && trackNumber.equals(TrackNumber.TrackOne)){
@@ -1248,7 +1261,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                    return EncryptedFieldMatrix.Pan;
                }
             }
-            else if(paymentMethod instanceof ITrackData && ((!transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)))) {
+            else if(paymentMethod instanceof ITrackData && ((!transactionType.equals(TransactionType.Capture) && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal) && !transactionType.equals(TransactionType.PreAuthCompletion)))) {
                 TrackNumber trackType=((ITrackData)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;

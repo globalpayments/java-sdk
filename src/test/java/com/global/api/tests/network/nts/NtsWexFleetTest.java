@@ -2,17 +2,17 @@ package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.EcommerceInfo;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.MessageException;
-import com.global.api.network.entities.PriorMessageInformation;
-import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsProductData;
 import com.global.api.network.entities.NtsTag16;
-import com.global.api.network.entities.nts.PriorMessageInfo;
+import com.global.api.network.entities.PriorMessageInformation;
+import com.global.api.network.entities.nts.NtsRequestMessageHeader;
 import com.global.api.network.enums.*;
 import com.global.api.network.enums.nts.AvailableProductsCapability;
 import com.global.api.paymentMethods.CreditCardData;
@@ -26,6 +26,7 @@ import com.global.api.tests.testdata.NtsTestCards;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
 import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
@@ -2427,4 +2428,334 @@ public class NtsWexFleetTest {
 
     }
 
+    //Authorization WEX e-Commerce Request Format without Track Data with Amount Expansion
+    @Test
+    public void test_auth_without_track_amount_expansion_e_commerce_Wex_DEVEXP1329() throws ApiException {
+        acceptorConfig.setPosActionCode(true);
+        acceptorConfig.setMobileDevice(false);
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withEcommerceInfo(new EcommerceInfo())
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withFleetData(fleetData)
+                .withInvoiceNumber("1234567890123456789012345")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    //Sale WEX e-Commerce Request Format without Track Data with Amount Expansion
+    @Test
+    public void test_sale_without_track_amount_expansion_e_commerce_Wex() throws ApiException {
+        acceptorConfig.setPosActionCode(true);
+        acceptorConfig.setMobileDevice(false);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.ECommerce);
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,track);
+        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.EngineSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.Batteries,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.CarWash,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.BeerOrAlc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.AutoGlass,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.AutoAcces,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+        productData.setDiscount(new BigDecimal(5));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withEcommerceInfo(new EcommerceInfo())
+                .withOfflineAuthCode("")
+                .withEcommerceData1("1234512345123451234512345123451234512345")
+                .withEcommerceAuthIndicator("S")
+                .withInvoiceNumber("1231212345123451234512345")
+                .withNtsTag16(tag)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    //DataCollect WEX e-Commerce Request Format without Track Data with Amount Expansion
+    @Test
+    public void test_dataCollect_without_track_amount_expansion_e_commerce_Wex() throws ApiException {
+        acceptorConfig.setPosActionCode(true);
+        acceptorConfig.setMobileDevice(false);
+        FleetData fleetData = new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("98765");
+        fleetData.setServicePrompt("3");
+
+        fleetData.setWorkOrderPoNumber("123456");
+        fleetData.setUnitNumber("9876");
+        fleetData.setTrailerNumber("656556");
+
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+
+        productData = new NtsProductData(ServiceLevel.FullServe,card);
+        productData.addFuel(NtsProductCode.Cng, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons,10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.EngineSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.Batteries,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.CarWash,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.BeerOrAlc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.AutoGlass,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.AutoAcces,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc,UnitOfMeasure.NoFuelPurchased,1,10.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33),new BigDecimal(5));
+        productData.setSalesTax(new BigDecimal(8));
+        productData.setDiscount(new BigDecimal(5));
+
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withEcommerceInfo(new EcommerceInfo())
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withInvoiceNumber("1234567890123456789012345")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .withEcommerceInfo(new EcommerceInfo())
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_01_WexFleet_AuthFallbackModifier() throws ApiException {
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.authorize(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withTagData("FALLBACK")
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_02_WexFleet_AuthFallbackModifier_withDecimalAmount() throws ApiException {
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.authorize(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withTagData("FALLBACK")
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_03_WexFleet_AuthFallback_withOnlyOnePrompt() throws ApiException {
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        FleetData fleetData=new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setVehicleNumber("123456");
+        Transaction response = track.authorize(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withTagData("FALLBACK")
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+
+    //Negative - without tag data & modifier it will work as simple auth transaction
+    @Test
+    public void test_04_WexFleet_AuthFallback_withoutTagData_And_Modifier() throws ApiException {
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.authorize(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_01_WexFleet_SaleFallbackModifier() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withTagData("FALLBACK")
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_02_WexFleet_SaleFallbackModifier_withDecimalAmount() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.charge(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withTagData("FALLBACK")
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_03_WexFleet_SaleFallback_withOnlyOnePrompt() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        FleetData fleetData=new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("12345");
+        fleetData.setVehicleNumber("123456");
+        Transaction response = track.charge(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withTagData("FALLBACK")
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .withModifier(TransactionModifier.Fallback)
+                .execute();
+        assertNotNull(response);
+    }
+
+    //Negative - without tag data & modifier it will work as simple auth transaction
+    @Test
+    public void test_04_WexFleet_SaleFallback_withoutTagData_And_Modifier() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.charge(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_WexFleet_sale_emv_codeCoverage(){
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = new CreditTrackData();
+        track.setValue(";6900460430001234566=25121012202100000?");
+        track.setEntryMethod(EntryMethod.ContactEMV);
+
+        assertThrows(BuilderException.class,
+                ()  -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                        .withNtsProductData(getProductDataForNonFleetBankCards(track))
+                        .withTagData(emvTagData)
+                        .withFleetData(fleetData)
+                        .withModifier(TransactionModifier.Offline)
+                        .withCardSequenceNumber("101")
+                        .execute());
+    }
+    @Test
+    public void test_WexFleet_SaleFallback_CaseOrCarton_UnitOfMeasure_codeCoverage() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.CaseOrCarton, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.charge(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_WexFleet_SaleFallback_Ounces_UnitOfMeasure_codeCoverage() throws ApiException {
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        track = NtsTestCards.WexFleetTrack2(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Ounces, new BigDecimal(2), new BigDecimal(10), new BigDecimal(20));
+        productData.setSalesTax(new BigDecimal(9));
+
+        Transaction response = track.charge(new BigDecimal("10.11"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+    }
 }

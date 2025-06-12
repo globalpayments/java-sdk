@@ -114,7 +114,7 @@ public class NTSTokenizationTests {
         config.setBinTerminalType(" ");
         config.setInputCapabilityCode(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
         config.setTerminalId("21");
-        config.setUnitNumber("00066654534");
+        config.setUnitNumber("00001234567");
         config.setSoftwareVersion("01");
         //config.setCompanyId("045");
         config.setLogicProcessFlag(LogicProcessFlag.Capable);
@@ -214,6 +214,35 @@ public class NTSTokenizationTests {
         cardData.setExpMonth(12);
         cardData.setExpYear(2025);
         cardData.setTokenizationData("372700699251018");
+
+        ntsUtilityMessageRequest.setICardData(cardData);
+
+        Transaction response = NetworkService.sendUtilityMessage()
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsUtilityMessageRequest(ntsUtilityMessageRequest)
+                .execute();
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test //working
+    public void test_Nts_Utility_Message_credit_discover_tokenization() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        header.setNtsMessageCode(NtsMessageCode.UtilityMessage);
+
+        NtsUtilityMessageRequest ntsUtilityMessageRequest = new NtsUtilityMessageRequest();
+        ntsUtilityMessageRequest.setUtilityType(002);
+        ntsUtilityMessageRequest.setReserved("");
+
+        CreditCardData cardData = new CreditCardData();
+        cardData.setExpMonth(12);
+        cardData.setExpYear(2025);
+        cardData.setTokenizationData("6011000990156527");
 
         ntsUtilityMessageRequest.setICardData(cardData);
 
@@ -930,6 +959,246 @@ public class NTSTokenizationTests {
 
         card = TestCards.AmexManual(true, true);
         card.setTokenizationData("083D89E75F0BB0D86A1D72B3EF5838C30216D7A70CF34BF0E6F0965D6212A6E21B9436E5C62C095B29913B330BCDA3EAACDCE107601DF32CE8A5AAE4F2BC2169");
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.reverse(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    //-------------------------- Discover detokenization --------------------------//
+
+    @Test
+    public void test_001_sales_without_track_Discover() throws ApiException {
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test
+    public void test_002_authorize_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
+    @Test
+    public void test_balance_inquiry_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+
+        Transaction response = card.balanceInquiry(InquiryType.Cash)
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withAmount(new BigDecimal(0))
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_auth_capture_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        header.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+        productData = getProductDataForNonFleetBankCards(card);
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        // check response
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsProductData(getProductDataForNonFleetBankCards(card))
+                .withNtsRequestMessageHeader(header)
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+    @Test
+    public void test_004_refund_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        header.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withCvn("123")
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // refund request
+        header.setPinIndicator(PinIndicator.WithoutPin);
+        header.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+
+        Transaction refundResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(refundResponse);
+        // check response
+        assertEquals("00", refundResponse.getResponseCode());
+    }
+    @Test
+    public void test_void_transaction_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(header)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withGoodsSold("1000")
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+
+        header.setNtsMessageCode(NtsMessageCode.ReversalOrVoid);
+
+        Transaction voidResponse = response.voidTransaction(new BigDecimal(10))
+                .withNtsRequestMessageHeader(header)
+                .withNtsTag16(tag)
+                .execute();
+
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+    @Test
+    public void test_reversal_without_track_Discover() throws ApiException {
+
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.DeTokenize);
+        config.setAcceptorConfig(acceptorConfig);
+
+        card = new CreditCardData();
+        card.setExpMonth(12);
+        card.setExpYear(2025);
+        card.setCvn("123");
+        card.setCardPresent(true);
+        card.setReaderPresent(true);
+        card.setCardType("Discover");
+        card.setTokenizationData("DA6C56152E40444CEBF6BCA3F2636F94B89984DECA483535594AC65BB92345A5B0795D5CB564B6D0178BAA898CE2C73D817B5C77BFCB895246933EE30F6613AD");
 
         Transaction response = card.authorize(new BigDecimal(10))
                 .withCurrency("USD")

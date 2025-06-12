@@ -250,11 +250,11 @@ public class NtsFleetCorTest {
         fleetData.setOdometerReading("125630");
         fleetData.setDriverId("11411");
         productData = new NtsProductData(ServiceLevel.FullServe, track);
-        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
-        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
-        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 1, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 1, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 1,20);
+        productData.addNonFuel(NtsProductCode.AcService, UnitOfMeasure.NoFuelPurchased, 1, 20);
         productData.add(new BigDecimal(88), new BigDecimal(0));
         productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
 
@@ -1311,6 +1311,174 @@ public class NtsFleetCorTest {
         productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
         productData.add(new BigDecimal(88), new BigDecimal(0));
         productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_DataCollect_Individual_CodeCoverageOnly() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(track)
+                .withApprovalCode("00")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0727")
+                .withTransactionTime("090540")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(70)
+                .withDebitAuthorizer("1234")
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .build();
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.CreditAdjustment);
+        Transaction creditAdjustment = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+        assertNotNull(creditAdjustment);
+
+    }
+    @Test //Empty Driver ID
+    public void test_Fuelman_authorization_negative() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_FleetWide_authorization_negative() throws ApiException {
+
+        track = new CreditTrackData();
+        track.setValue(";70768512345200005=99120?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("");
+        fleetData.setDriverId("");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
+
+    @Test //working
+    public void test_FuelMan_completion_DevEXP1669() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("11411");
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Regular, UnitOfMeasure.Gallons, 05.10, 15.20);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.Milk, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 10, 20);
+        productData.add(new BigDecimal(88), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // Data-Collect request preparation.
+
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+
+                .execute();
+        assertNotNull(dataCollectResponse);
+
+        // check response
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test //working
+    public void test02_FuelMan_completion_DevEXP1669_0products() throws ApiException {
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        track = new CreditTrackData();
+        track.setValue(";70764912345100040=4912?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("11411");
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
 
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")

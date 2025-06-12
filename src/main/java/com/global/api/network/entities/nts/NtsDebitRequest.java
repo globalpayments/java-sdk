@@ -21,6 +21,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
     private TransactionCode transactionCode;
     private BigDecimal cashBackAmount;
     private NTSEntryMethod entryMethod;
+    private EncryptionData encryptionData = null;
     private static final String EMPTY_STRING = " ";
     private static final String GROUP_SEPARATOR = "\u001D" ;
 
@@ -118,18 +119,29 @@ public class NtsDebitRequest implements INtsRequestMessage {
             NtsUtils.log("Address", acceptorConfig.getAddress().toString());
         }
         if (paymentMethod instanceof Debit && paymentMethod instanceof ITrackData) {
+            ITrackData trackData = (ITrackData) paymentMethod;
+            if (trackData instanceof IEncryptable && ((IEncryptable) trackData).getEncryptionData() != null) {
+                encryptionData = ((IEncryptable) trackData).getEncryptionData();
+            }
             if (!NtsUtils.isNoTrackEntryMethods(entryMethod) && !(transactionCode.equals(TransactionCode.PreAuthCompletion)
                     || transactionCode.equals(TransactionCode.PreAuthCancelation)
                     || transactionCode.equals(TransactionCode.PurchaseReversal)
                     || transactionCode.equals(TransactionCode.PurchaseCashBackReversal)
                     || transactionCode.equals(TransactionCode.PurchaseReturnReversal))) {
-                ITrackData trackData = (ITrackData) paymentMethod;
+                if(encryptionData != null){
+                        request.addRange(StringUtils.padRight(EMPTY_STRING, 40, ' '), 40);
+                } else {
                 NtsUtils.log("TrackData 2", StringUtils.maskTrackData(trackData.getValue(),trackData));
                 request.addRange(trackData.getValue(), 40);
                 this.setTrackData(trackData.getValue());
                 StringUtils.setTrackData(trackData.getValue());
+                }
+            }
+            else if(encryptionData != null){
+                request.addRange(StringUtils.padRight(EMPTY_STRING, 40, ' '), 40);
+                request.addRange(StringUtils.padLeft(" ", 1, ' '), 1);
+                request.addRange(StringUtils.padLeft(" ", 16, ' '), 16);
             } else {
-                ITrackData trackData = (ITrackData) paymentMethod; //Without Track Data
                 String accNumber = trackData.getPan();
                 String expYear = trackData.getExpiry().substring(0, 2);
                 String expMonth = trackData.getExpiry().substring(2, 4);
@@ -211,7 +223,7 @@ public class NtsDebitRequest implements INtsRequestMessage {
             request.addRange(StringUtils.toNumeric(cashBackAmount, 7), 7); //04=cash back amount
         } else if (settlementAmount != null) {
             NtsUtils.log("Transaction Amount 2", StringUtils.toNumeric(settlementAmount, 7));
-            request.addRange(settlementAmount.toString(), 7);
+            request.addRange(StringUtils.toNumeric(settlementAmount, 7),7);
         } else if ((transactionCode != null)
                 && transactionCode.equals(TransactionCode.Purchase) //03,05,06,08,13,15 = zero
                 || transactionCode.equals(TransactionCode.PurchaseReturn)
@@ -237,6 +249,11 @@ public class NtsDebitRequest implements INtsRequestMessage {
                 NtsUtils.log("KEY SERIAL NUMBER(KSN)", StringUtils.padRight("", 20, ' '));
                 request.addRange(StringUtils.padRight("", 20, ' '), 20);
             }
+        }
+        if(ntsObjectParam.getEncryptedData() != null) {
+            request.addRange(GROUP_SEPARATOR,1);
+            request.addRange(ntsObjectParam.getEncryptedData(), 336);
+            NtsUtils.log("3DE Tag DATA", ntsObjectParam.getEncryptedData());
         }
         if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
             //Card Sequence no

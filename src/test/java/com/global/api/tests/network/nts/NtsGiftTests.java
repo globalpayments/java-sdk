@@ -1,6 +1,7 @@
 package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
@@ -1701,5 +1702,101 @@ public class NtsGiftTests {
                 .withSystemTraceAuditNumber(Stan)
                 .execute();
         assertNotNull(response);
+    }
+
+    @Test
+    public void test_NTS24point1_svs_purchase() throws ApiException {
+        Transaction response = giftCard.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertNotNull(response);
+    }
+
+    @Test
+    public void test_NTS24point1_svs_purchase_reverse() throws ApiException {
+        Transaction purchaseReverse = SVS_reverseTransaction(TransactionTypeIndicator.Purchase,70122,"0310","133122",new BigDecimal(10));
+        assertEquals("00",purchaseReverse.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_activation() throws ApiException {
+        Transaction response = giftCard.activate(new BigDecimal(11))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertNotNull(response);
+    }
+
+    @Test
+    public void test_NTS24point1_svs_activation_reverse() throws ApiException {
+        Transaction activationReverse = SVS_reverseTransaction(TransactionTypeIndicator.CardActivation,70346,"0310","133346",new BigDecimal(11));
+        assertEquals("00",activationReverse.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_preAuth() throws ApiException {
+        Transaction response = giftCard.authorize(new BigDecimal(12))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_preAuth_reverse() throws ApiException {
+        Transaction preAuthReverse = SVS_reverseTransaction(TransactionTypeIndicator.PreAuthorization,70506,"0310","133506",new BigDecimal(12));
+        assertEquals("00",preAuthReverse.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_return() throws ApiException {
+        Transaction response = giftCard.refund(new BigDecimal(13))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_return_reverse() throws ApiException {
+        Transaction returnReverse = SVS_reverseTransaction(TransactionTypeIndicator.MerchandiseReturn,70602,"0310","133602",new BigDecimal(13));
+        assertEquals("00",returnReverse.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_issue() throws ApiException {
+        Transaction response = giftCard.issue(new BigDecimal(14))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan)
+                .execute();
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_NTS24point1_svs_issue_reverse() throws ApiException {
+        Transaction issueReverse = SVS_reverseTransaction(TransactionTypeIndicator.CardIssue,70710,"0310","133711",new BigDecimal(14));
+        assertEquals("00",issueReverse.getResponseCode());
+    }
+
+    public Transaction SVS_reverseTransaction(TransactionTypeIndicator originalTransactionIndicator,int originalStan,String originalDate, String originalTime,BigDecimal reversibleAmount) throws ApiException {
+        Transaction transaction = Transaction.fromBuilder()
+                .withPaymentMethod(giftCard)
+                .withOriginalTransactionDate(originalDate)
+                .withTransactionTime(originalTime)
+                .build();
+        transaction.getTransactionReference()
+                .setOriginalTransactionTypeIndicator(originalTransactionIndicator);
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+        ManagementBuilder builder = transaction.reverse(reversibleAmount)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(originalStan);
+       return builder.execute();
     }
 }

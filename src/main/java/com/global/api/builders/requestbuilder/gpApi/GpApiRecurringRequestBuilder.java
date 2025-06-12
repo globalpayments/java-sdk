@@ -26,19 +26,22 @@ public class GpApiRecurringRequestBuilder implements IRequestBuilder {
         this.builder = (RecurringBuilder) builder;
         JsonDoc requestDataPayer = new JsonDoc();
         Map<String, Object> requestData = new HashMap<>();
-
+        String merchantUrl = "";
+        if(gateway.getGpApiConfig().getMerchantId() != null) {
+            merchantUrl = "/merchants/"+ gateway.getGpApiConfig().getMerchantId();
+        }
         Request.HttpMethod verb;
         String endpoint;
         switch (((RecurringBuilder<?>) builder).getTransactionType()) {
             case Create:
-                endpoint = GpApiRequest.PAYERS_ENDPOINT;
+                endpoint = merchantUrl + GpApiRequest.PAYERS_ENDPOINT;
                 verb = GpApiRequest.HttpMethod.Post;
                 if (((RecurringBuilder<?>) builder).getEntity() instanceof Customer) {
                     requestDataPayer = preparePayerRequest();
                 }
                 break;
             case Edit:
-                endpoint = GpApiRequest.PAYERS_ENDPOINT + "/";
+                endpoint = merchantUrl + GpApiRequest.PAYERS_ENDPOINT + "/";
                 if (this.builder.getEntity().getId() != null) {
                     endpoint = endpoint + this.builder.getEntity().getId();
                 }

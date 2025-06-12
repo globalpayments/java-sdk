@@ -46,6 +46,8 @@ public class AcceptorConfig {
     private Boolean supportWexAdditionalProducts;
     @Getter @Setter
     private Boolean capableVisaFleetTwoPointO;
+    @Getter @Setter
+    private Boolean accountFundingSourceOrTransactionLinkId;
 //    @Getter @Setter
 //    private Boolean supportBankcard;
     @Getter @Setter
@@ -341,7 +343,8 @@ public class AcceptorConfig {
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat("N")
                 .concat(posActionCode != null? posActionCode? "Y": "N": "N")
-                .concat(capableVisaFleetTwoPointO != null ? capableVisaFleetTwoPointO ? "Y" : "N" : "N");
+                .concat(capableVisaFleetTwoPointO != null ? capableVisaFleetTwoPointO ? "Y" : "N" : "N")
+                .concat(accountFundingSourceOrTransactionLinkId != null ? accountFundingSourceOrTransactionLinkId ? "Y" : "N" : "N");
         return rvalue;
     }
 

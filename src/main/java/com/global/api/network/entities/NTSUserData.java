@@ -91,7 +91,7 @@ public class NTSUserData {
                 sb.append(UserDataTag.FunctionCode.getValue()).append("\\");
                 sb.append(functionCode).append("\\");
             }
-        } else if( builder.getEcommerceInfo()!=null && (messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry)) {
+        } else if( builder.getEcommerceInfo()!=null && (messageCode == NtsMessageCode.AuthorizationOrBalanceInquiry) && !cardType.equals(NTSCardTypes.AmericanExpress)) {
             BigDecimal tranAmount = StringUtils.toFractionalAmount(amount);
             if (tranAmount.equals(new BigDecimal(0))) {
                 functionCode = FunctionCode.ZERO_VALUE_ACCOUNT_VERIFFICATION.getValue();
@@ -376,10 +376,14 @@ public class NTSUserData {
                 }
 
                 if (builder.getMcSLI() != null) {
-                    sb.append(UserDataTag.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
-                    sb.append(builder.getMcSLI() + "\\");
-                    totalNoOfTags++; // Increment the counter if tag is used.
+                    if (builder.getMcSLI().length() <= 3) {
+                        sb.append(UserDataTag.MCSLI.getValue()).append("\\"); // 32 MCSLI // For all E-com entry methods
+                        sb.append(builder.getMcSLI() + "\\");
+                        totalNoOfTags++; // Increment the counter if tag is used.
+                    }else
+                        throw new UnsupportedOperationException("Mastercard SLI contain only 3 positions . Kindly provide the correct value");
                 }
+
             }
 
 
@@ -960,6 +964,9 @@ public class NTSUserData {
                     sb.append(fleetData!=null ?
                             StringUtils.padRight(fleetData.getPurchaseDeviceSequenceNumber(), 5, '0'):
                             StringUtils.padRight("", 5, '0'));
+                    if(builder.getInvoiceNumber() != null){
+                        sb.append(builder.getInvoiceNumber());
+                    }
                     if (builder.getTagData() != null) {
                         sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
                         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
@@ -1013,6 +1020,9 @@ public class NTSUserData {
                             StringUtils.padLeft("", 5, '0'));
                     sb.append(StringUtils.toNumeric(salesTax, 5));
                     sb.append(StringUtils.toNumeric(discount, 5));
+                    if(builder.getInvoiceNumber() != null){
+                        sb.append(builder.getInvoiceNumber());
+                    }
                     if (builder.getTagData() != null) {
                         sb.append(builder.getCardSequenceNumber() != null ? builder.getCardSequenceNumber() : "000");
                         sb.append(mapEmvTransactionType(builder.getTransactionModifier()));
@@ -1511,7 +1521,7 @@ public class NTSUserData {
         FleetData fleetData = builder.getFleetData();
         int noOfPrompt= fleetData != null ? getWexPromptCount(fleetData) : 0;
 
-        int promptSize = builder.getTagData() != null ?
+        int promptSize = (builder.getTagData() != null && (builder instanceof AuthorizationBuilder && (!(isWexAuthFallback((AuthorizationBuilder) builder) || isWexSaleFallback((AuthorizationBuilder) builder)))))?
                 Math.min(noOfPrompt, 6) :
                 Math.min(noOfPrompt, 3);
         sb.append(promptSize);
@@ -1644,6 +1654,55 @@ public class NTSUserData {
                 return sb;
             }
         }
+        if(data.getMaintenanceNumber() != null){
+            sb.append(getWexPrompt(data.getMaintenanceNumber(), "A"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getHubometerNumber() != null){
+            sb.append(getWexPrompt(data.getHubometerNumber(), "B"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getTrailerReferHours() != null){
+            sb.append(getWexPrompt(data.getTrailerReferHours(), "C"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getTrailerNumber() != null){
+            sb.append(getWexPrompt(data.getTrailerNumber(), "D"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getTripNumber() != null){
+            sb.append(getWexPrompt(data.getTripNumber(), "E"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getUnitNumber() != null){
+            sb.append(getWexPrompt(data.getUnitNumber(), "F"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
+        if(data.getWorkOrderPoNumber() != null){
+            sb.append(getWexPrompt(data.getWorkOrderPoNumber(), "G"));
+            sizeFlag ++;
+            if(sizeFlag >= promptSize){
+                return sb;
+            }
+        }
         return sb;
     }
 
@@ -1672,6 +1731,8 @@ public class NTSUserData {
         promptCode.add(fleetData.getTrailerReferHours());
         promptCode.add(fleetData.getTripNumber());
         promptCode.add(fleetData.getEnteredData());
+        promptCode.add(fleetData.getWorkOrderPoNumber());
+        promptCode.add(fleetData.getUnitNumber());
 
         noOfPrompt = Math.toIntExact(promptCode.stream().filter(code -> code != null).count());
         promptCode.clear();
@@ -1847,7 +1908,7 @@ public class NTSUserData {
             sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount(), 12, 4));
         }
         else
-            sb.append(String.format("%12d", 0));
+            sb.append(String.format("%012d", 0));
         sb.append(serviceLevelVisaFleet.getValue());
 
         String nonFuelProductCountForFuel = "00";
@@ -1858,10 +1919,14 @@ public class NTSUserData {
            sb.append(getNonFuelProductCount(productData));
         }
         sb.append(getRollUpData(builder, ntsCardTypes, productData, 8));
-        if (productData.getSalesTax() != null)
-            sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
-        else
-            sb.append(String.format("%05d", 0));
+        if(nonFuel.size() != 0) {
+            if (productData.getSalesTax() != null)
+                sb.append(StringUtils.toNumeric(productData.getSalesTax(), 5));
+            else
+                sb.append(String.format("%05d", 0));
+        }else{
+            sb.append(String.format("%5s", " "));
+        }
         return sb;
 
     }
@@ -1908,5 +1973,11 @@ public class NTSUserData {
         sb.append(StringUtils.padLeft(fallBack.length(), 4, '0'));
         sb.append(fallBack);
         return sb;
+    }
+    private static boolean isWexAuthFallback(AuthorizationBuilder authorizationBuilder){
+        return (authorizationBuilder.getTransactionType().equals(TransactionType.Auth) && authorizationBuilder.getTransactionModifier().equals(TransactionModifier.Fallback));
+    }
+    private static boolean isWexSaleFallback(AuthorizationBuilder authorizationBuilder){
+        return (authorizationBuilder.getTransactionType().equals(TransactionType.Sale) && authorizationBuilder.getTransactionModifier().equals(TransactionModifier.Fallback));
     }
 }

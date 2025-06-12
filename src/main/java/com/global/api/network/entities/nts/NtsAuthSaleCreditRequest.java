@@ -281,7 +281,7 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             EntryMethod method = NtsUtils.isEcommerceEntryMethod(builder);
             if (method != null) {
                 NTSEntryMethod entryMethod = NtsUtils.isAttendedOrUnattendedEntryMethod(method, TrackNumber.Unknown, operatingEnvironment);
-                if (NtsUtils.isUserDataExpansionEntryMethod(entryMethod)) {
+                if (NtsUtils.isUserDataExpansionEntryMethod(entryMethod) && !cardType.equals(NTSCardTypes.WexFleet)) {
                     request.addRange("E", 1);
                     NtsUtils.log("Expanded User Data","E");
                     isExtendedUserData = true;
@@ -294,7 +294,7 @@ public class NtsAuthSaleCreditRequest implements INtsRequestMessage {
             NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 4, '0'));
             request.addRange(StringUtils.padLeft(userData.length(), 4, '0'), 4);
         } else {
-            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 3, ' '));
+            NtsUtils.log("USER DATA LENGTH", StringUtils.padLeft(userData.length(), 3, '0'));
             request.addRange(userData.length(), 3);
         }
 

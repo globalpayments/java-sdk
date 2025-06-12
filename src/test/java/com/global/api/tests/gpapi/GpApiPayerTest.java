@@ -6,6 +6,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.BNPL;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.RecurringPaymentMethod;
@@ -265,5 +266,64 @@ public class GpApiPayerTest extends BaseGpApiTest {
         assertEquals("SUCCESS", transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
+    }
+
+    @Test
+    public void createPayerWithMerchantId() throws Exception {
+        gpApiPayerInitializeTest("MER_7e3e2c7df34f42819b3edee31022ee3f");
+        String tokenizedResponse = card.tokenize();
+        card.setToken(tokenizedResponse);
+
+        List<RecurringPaymentMethod> paymentMethods = new ArrayList<>();
+        paymentMethods.add(newCustomer.addPaymentMethod(tokenizedResponse, card));
+
+        newCustomer.setPaymentMethods(paymentMethods);
+
+        CreditCardData card2 = new CreditCardData();
+        card2.setNumber("4012001038488884");
+        card2.setExpMonth(Integer.valueOf(expMonth));
+        card2.setExpYear(Integer.valueOf(expYear));
+        card2.setCvn("131");
+        card2.setCardHolderName("James Mason");
+
+        String tokenizedResponse2 = card2.tokenize();
+        card2.setToken(tokenizedResponse2);
+        assertNotNull(tokenizedResponse2);
+
+        paymentMethods.add(newCustomer.addPaymentMethod(card2.getToken(), card2));
+        newCustomer.setPaymentMethods(paymentMethods);
+        Customer payer = newCustomer.create();
+        assertNotNull(payer.getId());
+        assertEquals(newCustomer.getFirstName(), payer.getFirstName());
+        assertEquals(newCustomer.getLastName(), payer.getLastName());
+        assertNotNull(payer.getPaymentMethods());
+        for (RecurringPaymentMethod paymentMethod : payer.getPaymentMethods()) {
+            String[] tokensArray = {card2.getToken(), card.getToken()};
+            List<String> tokensList = Arrays.asList(tokensArray);
+            assertTrue(tokensList.contains(paymentMethod.getId()));
+        }
+    }
+
+    @Test
+    public void createPayerWithWrongMerchantId() throws Exception {
+        GpApiConfig config = gpApiPayerInitializeTest("MER_7e3e2c7df34f42819b3edee31022ee");
+        String merchantId = config.getMerchantId();
+        GatewayException exception = assertThrows(GatewayException.class, card::tokenize);
+        assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: merchant_id - "+ merchantId +", account_id - , account_name - ", exception.getMessage());
+    }
+
+    public GpApiConfig gpApiPayerInitializeTest(String merchantId) throws ConfigurationException {
+
+        String APP_ID = "DgRZQ6DAwWtwl6tVGBS6EgnsfVG5SiXh";
+        String APP_KEY = "cayFg03gE0Ei7TLB";
+        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
+
+        config.setMerchantId(merchantId);
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
+        config.setAccessTokenInfo(accessTokenInfo);
+
+        ServicesContainer.configureService(config);
+        return config;
     }
 }
