@@ -270,6 +270,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     if (!block1.has("EMVChipCondition") && !block1.has("PINBlock")) {
                         block1.remove("EMVData");
                     }
+
                 }
                 if (paymentType == PaymentMethodType.Debit) {
                     String chipCondition = null;
@@ -378,7 +379,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
         // pin block
         if (builder.getPaymentMethod() instanceof IPinProtected) {
-            if (!type.equals(TransactionType.Reversal))
+            if (!type.equals(TransactionType.Reversal) && !block1.has("EMVData"))
                 et.subElement(block1, "PinBlock", ((IPinProtected) builder.getPaymentMethod()).getPinBlock());
         }
 

@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V14.3.0 (06/12/2025)
+## Latest Version - V14.3.1 (06/24/2025)
+### Enhancements
+- [GPAPI] - Added SDK support for Blik as a payment APM.
+
+### Bug Fixes
+- [Portico] - Duplicate PINBLOCK elements in the CreditSale request removed if EMVData element exist
+
+## V14.3.0 (06/12/2025)
 ### Enhancements
 - [NTS] - NTS 24.1 spec updates which include enhancements for tokenization, 3DES encryption, Bankcard tag data, Wex Fleet, Fleetcor, and SVS.
 

@@ -722,6 +722,28 @@ public class PorticoCreditTests {
     }
 
     @Test
+    public void creditSale_WithChipData() throws ApiException {
+        track.setPinBlock("abcjhvcjbvhjxbvjxh");
+        Transaction response = track.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withChipCondition(EmvChipCondition.ChipFailPreviousSuccess)
+                .execute();
+        assertNotNull(response);
+        assertEquals("APPROVAL", response.getResponseMessage());
+    }
+    @Test
+    public void creditSale_Without_ChipCondition() throws ApiException {
+        track.setPinBlock("abcjhvcjbvhjxbvjxh");
+        GatewayException exception = assertThrows(GatewayException.class,
+                () -> track.charge(new BigDecimal(15))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute());
+        assertEquals("Unexpected Gateway Response: 34 - Transaction rejected because the provided data was invalid. When sending EMVData block either chip card TLV tag data or EMVChipCondition must be specified.", exception.getMessage());
+    }
+
+    @Test
     public void creditSale_withSAFIndicator_And_SAFOrigDT_01() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
                 .withCurrency("USD")

@@ -12,6 +12,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.mapping.GpApiMapping;
 import com.global.api.utils.masking.ElementToMask;
 import com.global.api.utils.masking.MaskValueUtil;
 import com.global.api.gateways.GpApiConnector;
@@ -74,6 +75,21 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
         } else if (builderTransactionType == TransactionType.Refund) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
+            if(builderPaymentMethod instanceof  TransactionReference) {
+                var transactionReference = (TransactionReference) builderPaymentMethod;
+                var apmResponse = transactionReference.getAlternativePaymentResponse();
+                if (apmResponse != null && apmResponse.getProviderName().equalsIgnoreCase(GpApiMapping.BLIK)) {
+                    var apm =
+                            new JsonDoc()
+                                    .set("provider", apmResponse.getProviderName())
+                                    .set("redirect_url", apmResponse.getRedirectUrl());
+                    var payment_method =
+                            new JsonDoc()
+                                    .set("apm", apm);
+
+                    data.set("payment_method", payment_method);
+                }
+            }
 
             return (GpApiRequest)
                     new GpApiRequest()

@@ -2,13 +2,18 @@ package com.global.api.tests.gpEcom;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.enums.Channel;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
+import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.serviceConfigs.GpEcomConfig;
-import org.junit.jupiter.api.BeforeAll;
+import com.global.api.services.ReportingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -267,6 +272,162 @@ public class GpEcomApmTest extends BaseGpEComTest {
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    // Sale for Blik APM
+    @Test
+    public void testBlikApmForSale() throws ApiException {
+        GpApiBlikInitializationTest();
+        AlternativePaymentMethod paymentMethodDetails =
+                new AlternativePaymentMethod()
+                        .setAlternativePaymentMethodType(BLIK)
+                        .setReturnUrl(returnUrl)
+                        .setStatusUpdateUrl(statusUpdateUrl)
+                        .setDescriptor(descriptor)
+                        .setCountry("PL")
+                        .setAccountHolderName(accountName);
+
+        Transaction response =
+                paymentMethodDetails
+                        .charge(amount)
+                        .withCurrency("PLN")
+                        .withDescription(chargeDescription)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertNotNull(response.getAlternativePaymentResponse());
+        assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
+        assertEquals("BLIK",response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+
+    }
+
+    // Sale for Blik APM without return url
+    @Test
+    public void testBlikApmForSaleWithoutReturnUrl() throws ApiException {
+        GpApiBlikInitializationTest();
+        boolean errorFound = false;
+        try {
+            new AlternativePaymentMethod()
+                    .setAlternativePaymentMethodType(BLIK)
+                    .setStatusUpdateUrl(statusUpdateUrl)
+                    .setDescriptor(descriptor)
+                    .setCountry("PL")
+                    .setAccountHolderName(accountName)
+                    .charge(amount)
+                    .withCurrency("PLN")
+                    .withDescription(chargeDescription)
+                    .execute();
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("returnUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+
+    }
+
+    // Sale for Blik APM without status url
+    @Test
+    public void testBlikApmForSaleWithoutStatusUrl() throws ApiException {
+        GpApiBlikInitializationTest();
+        boolean errorFound = false;
+        try {
+            new AlternativePaymentMethod()
+                    .setAlternativePaymentMethodType(BLIK)
+                    .setReturnUrl(returnUrl)
+                    .setDescriptor(descriptor)
+                    .setCountry("PL")
+                    .setAccountHolderName(accountName)
+                    .charge(amount)
+                    .withCurrency("PLN")
+                    .withDescription(chargeDescription)
+                    .execute();
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+    }
+
+
+    // Refund for Blik APM first time
+    @Test
+    public void testBlikApmForRefund() throws ApiException {
+        GpApiBlikInitializationTest();
+        // For refund we have to run sale test and get Transaction ID from that response and paste here in transactionId.
+        // Also go to redirect_url from response of sale and approve by entering the code.
+        // After some time when status changed to "Captured" run the refund test.
+        String transactionId = "TRN_L673EQlmzJ63SbmS7JDbiCoWVrDnPW_4a5a231010fa";
+
+        // create the rebate transaction object
+        Transaction transaction = Transaction.fromId(transactionId);
+
+        TransactionSummary transactionDetails =
+                ReportingService
+                        .transactionDetail(transactionId)
+                        .execute();
+        transaction.setAlternativePaymentResponse(transactionDetails.getAlternativePaymentResponse());
+
+        Transaction response =
+                transaction
+                        .refund(amount)
+                        .withCurrency("PLN")
+                        .withAlternativePaymentType(BLIK)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("BLIK",response.getTransactionReference().getAlternativePaymentResponse().getProviderName().toUpperCase());
+        assertEquals("SUCCESS", response.getResponseCode());
+    }
+
+    // Run refund on same transactionId it will give response as "Declined"
+    @Test
+    public void testBlikApmForRefundSecondTime() throws ApiException {
+        GpApiBlikInitializationTest();
+        // Run Refund with same transaction Id given in first time blik apm refund
+        String transactionId = "TRN_L673EQlmzJ63SbmS7JDbiCoWVrDnPW_4a5a231010fa";
+
+        // create the rebate transaction object
+        Transaction transaction = Transaction.fromId(transactionId);
+
+        TransactionSummary transactionDetails =
+                ReportingService
+                        .transactionDetail(transactionId)
+                        .execute();
+        transaction.setAlternativePaymentResponse(transactionDetails.getAlternativePaymentResponse());
+
+        Transaction response =
+                transaction
+                        .refund(amount)
+                        .withCurrency("PLN")
+                        .withAlternativePaymentType(BLIK)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("BLIK",response.getTransactionReference().getAlternativePaymentResponse().getProviderName().toUpperCase());
+        assertEquals("DECLINED", response.getResponseCode());
+    }
+
+    public void GpApiBlikInitializationTest() throws ApiException {
+        String APP_ID = "p2GgW0PntEUiUh4qXhJHPoDqj3G5GFGI";
+        String APP_KEY = "lJk4Np5LoUEilFhH";
+        GpApiConfig  gpApiConfig = new GpApiConfig()
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
+        gpApiConfig.setChannel(Channel.CardNotPresent);
+        gpApiConfig.setServiceUrl("https://apis-sit.globalpay.com/ucp");
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+        gpApiConfig.setCountry("PL");
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("GPECOM_BLIK_APM_Transaction_Processing");
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+        ServicesContainer.configureService(gpApiConfig);
+
     }
 
 }
