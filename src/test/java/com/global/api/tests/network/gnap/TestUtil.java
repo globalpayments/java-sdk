@@ -24,36 +24,24 @@ public class TestUtil {
     }
 
     protected int getTransmissionNo()  {
-        FileOutputStream fos = null;
         String userName = System.getProperty("user.name");
         //byte b = 1;
         int i =0;
         int c = 0;
-        FileInputStream fis=null;
-        try {
-            fis=new FileInputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt");
+        try (FileInputStream fis = new FileInputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt")) {
             while ((i = fis.read()) != -1) {
                 c = i;
             }
-
-            fos = new FileOutputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt");
-            if (c == 99) {
-                fos.write(0);
-            } else {
-                fos.write(++c);
+            try (FileOutputStream fos = new FileOutputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt")) {
+                if (c == 99) {
+                    fos.write(0);
+                } else {
+                    fos.write(++c);
+                }
+                fos.flush();
             }
-            fos.flush();
         } catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
-            try {
-                if (fos != null)
-                    fos.close();
-                if (fis != null)
-                    fis.close();
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         System.out.println("transmission Number :" + c);
         return c;
@@ -106,33 +94,20 @@ public class TestUtil {
     {
         save(null);
     }
-    private void save(SequenceNumber sequence)
-    {
-        if(sequence!=null)
-        {
-            dayCounter= sequence.getDayCounter();
+
+    private void save(SequenceNumber sequence) {
+        if (sequence != null) {
+            dayCounter = sequence.getDayCounter();
             shiftCounter = sequence.getShiftCounter();
             batchCounter = sequence.getBatchCounter();
             seqCounter = sequence.getSequenceCounter();
-            indicator =sequence.getIndicator();
+            indicator = sequence.getIndicator();
         }
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(fileName));
-            bw.write(String.format("%s|%s|%s|%s|%s\r\n",dayCounter,shiftCounter,batchCounter,seqCounter,indicator));
-        }
-        catch (IOException exc) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            bw.write(String.format("%s|%s|%s|%s|%s\r\n", dayCounter, shiftCounter, batchCounter, seqCounter, indicator));
+            bw.flush();
+        } catch (IOException exc) {
             exc.printStackTrace();
-        }
-        finally {
-            if (bw != null) {
-                try {
-                    bw.flush();
-                    bw.close();
-                } catch (IOException exc) { /* NOM NOM */
-                    exc.printStackTrace();
-                }
-            }
         }
     }
 

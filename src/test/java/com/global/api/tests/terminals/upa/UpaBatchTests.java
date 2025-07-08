@@ -8,12 +8,10 @@ import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IBatchReportResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IEODResponse;
+import com.global.api.terminals.upa.UpaInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
-
-import com.global.api.logging.RequestFileLogger;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -25,7 +23,7 @@ import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UpaBatchTests {
-    IDeviceInterface device;
+    UpaInterface device;
 
     public UpaBatchTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
@@ -37,9 +35,7 @@ public class UpaBatchTests {
         config.setConnectionMode(ConnectionModes.TCP_IP);
         config.setRequestLogger(new RequestConsoleLogger());
 
-//        config.setRequestLogger(new RequestFileLogger("batchTests.txt"));
-
-        device = DeviceService.create(config);
+        device = (UpaInterface) DeviceService.create(config);
         assertNotNull(device);
 
         device.setOnMessageSent(System.out::println);
@@ -53,7 +49,7 @@ public class UpaBatchTests {
 
         // use Visa card
         runBasicTests(
-            device.creditSale(new BigDecimal("12.01"))
+            device.sale(new BigDecimal("12.01"))
                     .withGratuity(new BigDecimal("0"))
                     .execute()
         );
@@ -62,7 +58,7 @@ public class UpaBatchTests {
 
         // use Amex card
         runBasicTests(
-            device.creditAuth(new BigDecimal("10.00"))
+            device.authorize(new BigDecimal("10.00"))
                     .execute()
         );
     }
@@ -130,7 +126,7 @@ public class UpaBatchTests {
         transactions.forEach((n) -> {
             try {
                 runBasicTests(
-                    device.creditCapture(n.getAuthorizedAmount())
+                    device.capture(n.getAuthorizedAmount())
                             .withGratuity(new BigDecimal("0.00"))
                             .withTerminalRefNumber(n.getTransactionId())
                             .withTransactionId(n.getTransactionId())

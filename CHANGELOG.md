@@ -1,11 +1,21 @@
 # Changelog
 
-## Latest Version - V14.3.1 (06/24/2025)
+## Latest Version - V14.3.2 (07/08/2025)
+### Bug Fixes
+- [VAPS] - Added addFuel & addNonFuel method for other fleet cards.(Issue 10353)
+- [VAPS] - Added condition for tag DE 62 NSI & DE 3 for EBT Manual Voice Capture transaction.
+- [Portico] - Bug fix for the auth amount indicator
+- [GP-API] - Bug fix for base amount parsing
+- [Pax] - Terminal normalization and PAX reporting updates.
+- [Macroscope] -Fixed macroscope issues as per scan report.
+
+## V14.3.1 (06/24/2025)
 ### Enhancements
 - [GPAPI] - Added SDK support for Blik as a payment APM.
 
 ### Bug Fixes
 - [Portico] - Duplicate PINBLOCK elements in the CreditSale request removed if EMVData element exist
+- [Portico] - AmountIndicator on authorize set to not show when null.
 
 ## V14.3.0 (06/12/2025)
 ### Enhancements

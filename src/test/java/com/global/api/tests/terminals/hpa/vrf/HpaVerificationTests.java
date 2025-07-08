@@ -2,6 +2,7 @@ package com.global.api.tests.terminals.hpa.vrf;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.services.DeviceService;
@@ -21,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class HpaVerificationTests {
-    private IDeviceInterface _device;
+    private final IDeviceInterface _device;
 
     public HpaVerificationTests() throws ApiException {
         ConnectionConfig connectionConfig = new ConnectionConfig();
@@ -36,7 +37,7 @@ public class HpaVerificationTests {
         _device.openLane();
     }
 
-    private void PrintReceipt(TerminalResponse response) throws ApiException {
+    private void PrintReceipt(TerminalResponse response) {
         String receipt = "x_trans_type=" + response.getTransactionType();
         receipt += "&x_application_label=" + response.getApplicationLabel();
         receipt += "&x_masked_card=" + response.getMaskedCardNumber();
@@ -63,13 +64,13 @@ public class HpaVerificationTests {
     /*
         TEST CASE #1 – Contact Chip and Signature – Offline
         Objective Process a contact transaction where the CVM’s supported are offline chip and signature
-        Test Card Card #1 - MasterCard EMV
-        Procedure Perform a complete transaction without error..
+        Test Card #1 - MasterCard EMV
+        Procedure Perform a complete transaction without error.
         Enter transaction amount $23.00.
     */
     @Test
     public void testCase01() throws ApiException {
-        TerminalResponse response = _device.creditSale(new BigDecimal("23"))
+        TerminalResponse response = _device.sale(new BigDecimal("23"))
                 .withSignatureCapture(true)
                 .withAllowDuplicates(true)
                 .execute();
@@ -91,14 +92,14 @@ public class HpaVerificationTests {
         Cardholder is prompted to sign on the device.
     */
     @Test
-    public void testCase02() throws ApiException {
+    public void testCase02() {
         // print receipt for TestCase01
     }
 
     /*
         TEST CASE #3 - Approved Sale with Offline PIN
         Objective	Process an EMV contact sale with offline PIN.
-        Test Card	Card #1 - MasterCard EMV
+        Test Card #1 - MasterCard EMV
         Procedure	Insert the card in the chip reader and follow the instructions on the device.
         Enter transaction amount $25.00.
         When prompted for PIN, enter 4315.
@@ -106,7 +107,7 @@ public class HpaVerificationTests {
     */
     @Test
     public void testCase03() throws ApiException {
-        TerminalResponse response = _device.creditSale(new BigDecimal("25"))
+        TerminalResponse response = _device.sale(new BigDecimal("25"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -121,7 +122,7 @@ public class HpaVerificationTests {
         TEST CASE #4 -  Manually Entered Sale with AVS & CVV2/CID 
         (If AVS is supported)
         Objective	Process a keyed sale, with PAN & exp date, along with Address Verification and Card Security Code to confirm the application can support any or all of these.
-        Test Card	Card #5 – MSD only MasterCard
+        Test Card #5 – MSD only MasterCard
         Procedure	1. Select sale function and manually key Test Card #5 for the amount of $90.08.
         a.	Enter PAN & expiration date.
         b.	Enter 321 for Card Security Code (CVV2, CID), if supporting this feature.
@@ -129,13 +130,11 @@ public class HpaVerificationTests {
     */
     @Test
     public void testCase04() throws ApiException {
-        TerminalResponse response = _device.creditSale(new BigDecimal("90.08"))
+        TerminalResponse response = _device.sale(new BigDecimal("90.08"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
-        //assertEquals("Y", response.getAvsResponseCode());
-        //assertEquals("M", response.getCvvResponseCode());
         assertEquals("Zip and address match.", response.getAvsResponseText());
         assertEquals("M", response.getAvsResponseCode());
         assertEquals("Not Processed.", response.getCvvResponseText());
@@ -150,14 +149,14 @@ public class HpaVerificationTests {
         TEST CASE #5 - Partial Approval
         Objective	1. Ensure application can handle non-EMV swiped transactions.
         2. Validate partial approval support.
-        Test Card	Card #4 – MSD only Visa
+        Test Card #4 – MSD only Visa
         Procedure	Run a credit sale and follow the instructions on the device to complete the transaction.
         Enter transaction amount $155.00 to receive a partial approval.
         Transaction is partially approved online with an amount due remaining.
     */
     @Test
     public void testCase05() throws ApiException {
-        TerminalResponse response = _device.creditSale(new BigDecimal("155"))
+        TerminalResponse response = _device.sale(new BigDecimal("155"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -172,19 +171,19 @@ public class HpaVerificationTests {
     /*
         TEST CASE #6 - Online Void
         Objective	Process an online void.
-        Test Card	Card #3 – EMV Visa w/ Signature CVM
+        Test Card #3 – EMV Visa w/ Signature CVM
         Procedure	Enter the Transaction ID to void.
         Transaction has been voided.
     */
     @Test
     public void testCase06() throws ApiException {
-        TerminalResponse response = _device.creditSale(new BigDecimal("10"))
+        TerminalResponse response = _device.sale(new BigDecimal("10"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        TerminalResponse voidResponse = _device.creditVoid()
+        TerminalResponse voidResponse = _device.voidTransaction()
                 .withTransactionId(response.getTransactionId())
                 .execute();
         assertNotNull(voidResponse);
@@ -210,14 +209,14 @@ public class HpaVerificationTests {
     /*
         TEST CASE #9 – Credit Return
         Objective	Confirm support of a Return transaction for credit.
-        Test Card	Card #4 – MSD only Visa
+        Test Card #4 – MSD only Visa
         Procedure	1.	Select return function for the amount of $9.00
         2.	Swipe or Key Test card #4 through the MSR
         3.	Select credit on the device
     */
     @Test
     public void testCase09() throws ApiException {
-        TerminalResponse response = _device.creditRefund(new BigDecimal("9"))
+        TerminalResponse response = _device.refund(new BigDecimal("9"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -232,22 +231,24 @@ public class HpaVerificationTests {
         Objective	Transactions: Gift Balance Inquiry,  Gift Load,  Gift Sale/Redeem, Gift Replace
         Test Card	Gift Card (Card Present/Card Swipe)
         Procedure	Test System is a Stateless Environment, the responses are Static.
-        1.	Gift Balance Inquiry (GiftCardBalance):
-        a.	Should respond with a BalanceAmt of $10
-        2.	Gift Load (GiftCardAddValue):
-        a.	Initiate a Sale and swipe
-        b.	Enter $8.00 as the amount
-        3.	Gift Sale/Redeem (GiftCardSale):
-        a.	Initiate a Sale and swipe
-        b.	Enter $1.00 as the amount
+        1.	Gift Balance Inquiry (GiftCardBalance)
+            a.	Should respond with a BalanceAmt of $10
+        2.	Gift Load (GiftCardAddValue)
+            a.	Initiate a Sale and swipe
+            b.	Enter $8.00 as the amount
+        3.	Gift Sale/Redeem (GiftCardSale)
+            a.	Initiate a Sale and swipe
+            b.	Enter $1.00 as the amount
         4.	Gift Card Replace (GiftCardReplace)
-        a.	Initiate a Gift Card Replace
-        b.	Swipe Card #1 – (Acct #: 5022440000000000098)
+            a.	Initiate a Gift Card Replace
+            b.	Swipe Card #1 – (Acct #: 5022440000000000098)
         c.	Manually enter  Card #2 –  (Acct #: “5022440000000000007”)
     */
     @Test
     public void testCase10a() throws ApiException {
-        TerminalResponse response = _device.giftBalance().execute();
+        TerminalResponse response = _device.balance()
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
         assertEquals(new BigDecimal("10"), response.getBalanceAmount());
@@ -258,7 +259,7 @@ public class HpaVerificationTests {
 
     @Test
     public void testCase10b() throws ApiException {
-        TerminalResponse response = _device.giftAddValue(new BigDecimal("8")).execute();
+        TerminalResponse response = _device.addValue(new BigDecimal("8")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -268,7 +269,8 @@ public class HpaVerificationTests {
 
     @Test
     public void testCase10c() throws ApiException {
-        TerminalResponse response = _device.giftSale(new BigDecimal("1"))
+        TerminalResponse response = _device.sale(new BigDecimal("1"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -281,21 +283,21 @@ public class HpaVerificationTests {
     /*
         TEST CASE #11 – EBT Food Stamp
         Objective Transactions: Food Stamp Purchase, Food Stamp Return and Food Stamp Balance Inquiry
-        Test Card   Card #4 – MSD only Visa
-        1.Food Stamp Purchase (EBTFSPurchase):
-        a.  Initiate an EBT sale transaction and swipe Test Card #4
-        b.  Select EBT Food Stamp if prompted.
-        c.  Enter $101.01 as the amount
-        2.Food Stamp Return (EBTFSReturn):
-        a.  Intitiate an EBT return and manually enter Test Card #4
-        b.  Select EBT Food Stamp if prompted
-        c.  Enter $104.01 as the amount
-        3.Food Stamp Balance Inquiry (EBTBalanceInquiry):
-        a.  Initiate an EBT blance inquiry transaction and swipe Test Card #4 Settle all transactions.
+        Test Card #4 – MSD only Visa
+        1.Food Stamp Purchase (EBTFSPurchase)
+            a.  Initiate an EBT sale transaction and swipe Test Card #4
+            b.  Select EBT Food Stamp if prompted.
+            c.  Enter $101.01 as the amount
+        2.Food Stamp Return (EBTFSReturn)
+            a.  Initiate an EBT return and manually enter Test Card #4
+            b.  Select EBT Food Stamp if prompted
+            c.  Enter $104.01 as the amount
+        3.Food Stamp Balance Inquiry (EBTBalanceInquiry)
+            a.  Initiate an EBT balance inquiry transaction and swipe Test Card #4 Settle all transactions.
      */
     @Test
     public void testCase11a() throws ApiException {
-        TerminalResponse response = _device.ebtPurchase(new BigDecimal("101.01"))
+        TerminalResponse response = _device.purchase(new BigDecimal("101.01"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -307,7 +309,9 @@ public class HpaVerificationTests {
 
     @Test
     public void testCase11b() throws ApiException {
-        TerminalResponse response = _device.ebtRefund(new BigDecimal("104.01")).execute();
+        TerminalResponse response = _device.refund(new BigDecimal("104.01"))
+                .withPaymentMethodType(PaymentMethodType.EBT)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -317,7 +321,9 @@ public class HpaVerificationTests {
 
     @Test
     public void testCase11c() throws ApiException {
-        TerminalResponse response = _device.ebtBalance().execute();
+        TerminalResponse response = _device.balance()
+                .withPaymentMethodType(PaymentMethodType.EBT)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -328,20 +334,20 @@ public class HpaVerificationTests {
     /*
         TEST CASE #12 – EBT Cash Benefits
         Objective   Transactions: EBT Cash Benefits with Cash Back, EBT Cash Benefits Balance Inquiry and EBT Cash Benefits Withdraw
-        Test Card   Card #4 – MSD only Visa
-        EBT Cash Benefits w Cash Back (EBTCashBackPurchase):
-        a.  Initiate an EBT sale transaction and swipe Test Card #4
-        b.  Select EBT Cash Benefits if prompted
-        c.  Enter $101.01 as the amount
-        d.  Enter $5.00 as the cash back amount
-        e.  The settlement amount is $106.01
-        2. EBT Cash Benefits Balance Inquiry (EBTBalanceInquiry):
-        a.    Initiate an EBT cash benefit balance inquiry transaction and
+        Test Card #4 – MSD only Visa
+        EBT Cash Benefits w Cash Back (EBTCashBackPurchase)
+            a.  Initiate an EBT sale transaction and swipe Test Card #4
+            b.  Select EBT Cash Benefits if prompted
+            c.  Enter $101.01 as the amount
+            d.  Enter $5.00 as the cash back amount
+            e.  The settlement amount is $106.01
+        2. EBT Cash Benefits Balance Inquiry (EBTBalanceInquiry)
+            a.    Initiate an EBT cash benefit balance inquiry transaction and
         swipe Test Card #4
     */
     @Test
     public void testCase12a() throws ApiException {
-        TerminalResponse response = _device.ebtPurchase(new BigDecimal("101.01"))
+        TerminalResponse response = _device.purchase(new BigDecimal("101.01"))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -353,7 +359,9 @@ public class HpaVerificationTests {
 
     @Test
     public void testCase12b() throws ApiException {
-        TerminalResponse response = _device.ebtBalance().execute();
+        TerminalResponse response = _device.balance()
+                .withPaymentMethodType(PaymentMethodType.EBT)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -363,7 +371,7 @@ public class HpaVerificationTests {
 
     @Test(expected = UnsupportedTransactionException.class)
     public void testCase12c() throws ApiException {
-        TerminalResponse response = _device.ebtWithdrawal(new BigDecimal("10")).execute();
+        TerminalResponse response = _device.withdrawal(new BigDecimal("10")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
@@ -375,7 +383,7 @@ public class HpaVerificationTests {
         TEST CASE #13 – Batch Close
        Objective End of Day, ensuring all approved transactions (offline or online) are settled. 
           Supported transactions: Reversal, Offline Decline, Transaction Certificate, Add Attachment, SendSAF, Batch Close, EMV PDL and Heartbeat
-          Procedure	Initiate a End of Day command
+          Procedure	Initiate an End of Day command
           Pass Criteria	EOD submission must be successful.
           References		HPA Specifications.    */
     @Test

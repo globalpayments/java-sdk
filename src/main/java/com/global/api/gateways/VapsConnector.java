@@ -122,8 +122,9 @@ public class VapsConnector extends GatewayConnectorConfig {
         PaymentMethodType paymentMethodType = null;
         NetworkMessage request = new NetworkMessage();
         paymentMethod = builder.getPaymentMethod();
-        if (paymentMethod != null)
-        paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
+        if(paymentMethod != null) {
+            paymentMethodType = builder.getPaymentMethod().getPaymentMethodType();
+        }
         TransactionType transactionType = builder.getTransactionType();
         boolean isPosSiteConfiguration = transactionType.equals(TransactionType.PosSiteConfiguration);
         boolean isVisaFleet2 = acceptorConfig.getSupportVisaFleet2dot0() != null && acceptorConfig.getVisaFleet2()!=null && acceptorConfig.getVisaFleet2();
@@ -131,6 +132,11 @@ public class VapsConnector extends GatewayConnectorConfig {
         EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging());
         if(!StringUtils.isNullOrEmpty(builder.getCurrency())) {
             currencyCode = builder.getCurrency().equalsIgnoreCase("USD") ? Iso4217_CurrencyCode.USD : Iso4217_CurrencyCode.CAD;
+        }
+
+        // if null set to false so there is always a value for this connector
+        if(builder.isAmountEstimated() == null) {
+            builder.withAmountEstimated(false);
         }
 
         // MTI
@@ -2642,7 +2648,8 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                 // original payment method
                 if(reference.getOriginalPaymentMethod() != null) {
-                    if(reference.getOriginalPaymentMethod() instanceof CreditCardData) {
+                    if(reference.getOriginalPaymentMethod() instanceof CreditCardData || reference.getOriginalPaymentMethod() instanceof
+                    EBTCardData) {
                         cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
                     }
                     else if (reference.getOriginalPaymentMethod() instanceof ITrackData) {
@@ -3181,6 +3188,10 @@ public class VapsConnector extends GatewayConnectorConfig {
         else if (paymentMethod instanceof GiftCard) {
             GiftCard giftCard = (GiftCard)paymentMethod;
             return giftCard.getCardType().equals("ValueLink") && type.equals(TransactionType.Void);
+        }
+        else if (paymentMethod instanceof EBTCardData && ((EBTCardData) paymentMethod).getCardType().equals(EbtCardType.FoodStamp.toString())
+                && type.equals(TransactionType.Capture)){
+            return true;
         }
         return false;
     }

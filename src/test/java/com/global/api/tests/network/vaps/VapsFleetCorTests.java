@@ -406,4 +406,55 @@ public class VapsFleetCorTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
+    //  AddFuel() & AddNonFuel()
+    @Test
+    public void test_001_sale_Fuel_nonFuel() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = card.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_002_sale_Fuel_nonFuel_track() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = track.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
 }

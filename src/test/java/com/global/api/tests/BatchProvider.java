@@ -142,23 +142,15 @@ public class BatchProvider implements IBatchProvider {
     }
 
     private void save() {
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(fileName));
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(String.format("%s|%s|%s|%s|%s\r\n", sequenceNumber, batchNumber, transactionCount, totalCredits, totalDebits));
 
-            for(String request: encodedRequests) {
+            for (String request : encodedRequests) {
                 bw.write(request + "\r\n");
             }
-        }
-        catch (IOException exc) { /* NOM NOM */ }
-        finally {
-            if (bw != null) {
-                try {
-                    bw.flush();
-                    bw.close();
-                } catch (IOException exc) { /* NOM NOM */ }
-            }
+        } catch (IOException exc) {
+            // Handle exception if needed
         }
     }
 }

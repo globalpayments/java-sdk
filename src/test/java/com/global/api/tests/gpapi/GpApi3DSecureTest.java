@@ -21,6 +21,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import static org.junit.jupiter.api.Assertions.*;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -977,7 +978,6 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                 httpClient.setDoInput(true);
                 httpClient.setDoOutput(true);
 
-                DataOutputStream out = new DataOutputStream(httpClient.getOutputStream());
 
                 HashMap<String, String> data = formData.get(0);
 
@@ -991,11 +991,14 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                     content += key + "=" + URLEncoder.encode(data.get(key), "UTF-8");
                 }
 
-                out.writeBytes(content);
-                out.flush();
-                out.close();
+                try (DataOutputStream out = new DataOutputStream(httpClient.getOutputStream())) {
+                    out.writeBytes(content.toString());
+                    out.flush();
+                }
 
-                return IOUtils.readFully(httpClient.getInputStream());
+                try (InputStream inputStream = httpClient.getInputStream()) {
+                    return IOUtils.readFully(inputStream);
+                }
 
             } catch (Exception e) {
                 throw new GatewayException("Error occurred while communicating with gateway.", e);

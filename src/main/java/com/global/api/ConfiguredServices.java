@@ -13,58 +13,27 @@ import lombok.Setter;
 import java.util.HashMap;
 
 public class ConfiguredServices implements IDisposable {
-    private IPaymentGateway gatewayConnector;
-    private IRecurringGateway recurringConnector;
+    @Getter @Setter private IPaymentGateway gatewayConnector;
+    @Getter @Setter private IRecurringGateway recurringConnector;
     @Getter @Setter private IReportingService reportingService;
-    private IDeviceInterface deviceInterface;
-    private DeviceController deviceController;
-    private TableServiceConnector tableServiceConnector;
-    private PayrollConnector payrollConnector;
+    @Getter private IDeviceInterface deviceInterface;
+    @Getter private DeviceController deviceController;
+    @Getter @Setter private TableServiceConnector tableServiceConnector;
+    @Getter @Setter private PayrollConnector payrollConnector;
     @Getter @Setter private IFraudCheckService fraudService;
     @Getter @Setter private IFileProcessingService FileProcessingService;
-    private HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
-    private IBillingProvider billingProvider;
+    @Setter @Getter private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;
-    @Getter @Setter
-    private IProPayProvider proPayProvider;
+    @Getter @Setter private IProPayProvider proPayProvider;
     @Getter @Setter private IPayFacProvider payFacProvider;
+    private final HashMap<Secure3dVersion, ISecure3dProvider> secure3dProviders;
     @Getter @Setter private IInstallmentService installmentService;
 
-
-    IPaymentGateway getGatewayConnector() {
-        return gatewayConnector;
-    }
-    public void setGatewayConnector(IPaymentGateway gatewayConnector) {
-        this.gatewayConnector = gatewayConnector;
-    }
-    IRecurringGateway getRecurringConnector() {
-        return recurringConnector;
-    }
-    public void setRecurringConnector(IRecurringGateway recurringConnector) {
-        this.recurringConnector = recurringConnector;
-    }
-    IDeviceInterface getDeviceInterface() {
-        return deviceInterface;
-    }
-    DeviceController getDeviceController() {
-        return deviceController;
-    }
     public void setDeviceController(DeviceController deviceController) throws ConfigurationException {
         this.deviceController = deviceController;
         deviceInterface = deviceController.configureInterface();
     }
-    TableServiceConnector getTableServiceConnector() {
-        return tableServiceConnector;
-    }
-    public void setTableServiceConnector(TableServiceConnector tableServiceConnector) {
-        this.tableServiceConnector = tableServiceConnector;
-    }
-    PayrollConnector getPayrollConnector() {
-        return payrollConnector;
-    }
-    public void setPayrollConnector(PayrollConnector payrollConnector) {
-        this.payrollConnector = payrollConnector;
-    }
+
     public ISecure3dProvider getSecure3dProvider(Secure3dVersion version) {
         if(secure3dProviders.containsKey(version)) {
             return secure3dProviders.get(version);
@@ -78,24 +47,13 @@ public class ConfiguredServices implements IDisposable {
         }
         return null;
     }
+
     public void setSecure3dProvider(Secure3dVersion version, ISecure3dProvider provider) {
         secure3dProviders.put(version, provider);
     }
-    public IBillingProvider getBillingProvider() {
-        return billingProvider;
-    }
-    public void setBillingProvider(IBillingProvider billingProvider) {
-        this.billingProvider = billingProvider;
-    }
-
-    public void setPayFacProvider(IPayFacProvider provider) {
-        if (this.payFacProvider == null) {
-            this.payFacProvider = provider;
-        }
-    }
 
     public ConfiguredServices() {
-        secure3dProviders = new HashMap<Secure3dVersion, ISecure3dProvider>();
+        secure3dProviders = new HashMap<>();
     }
 
     public void dispose() {

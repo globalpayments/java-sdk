@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 public class NwsCreditTests {
     private CreditCardData card;
     private CreditTrackData track;
-    private  NetworkGatewayConfig config;
+    private final NetworkGatewayConfig config;
 
     public NwsCreditTests() throws ApiException {
         Address address = new Address();
@@ -414,17 +414,6 @@ public class NwsCreditTests {
         assertEquals("003000", pmi.getProcessingCode());
         assertEquals("101", pmi.getFunctionCode());
 
-        Transaction recreated = Transaction.fromNetwork(
-                response.getAuthorizedAmount(),
-                response.getAuthorizationCode(),
-                response.getNtsData(),
-                track,
-                response.getMessageTypeIndicator(),
-                response.getSystemTraceAuditNumber(),
-                response.getOriginalTransactionTime(),
-                response.getProcessingCode()
-        );
-
         // check response
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
@@ -469,7 +458,7 @@ public class NwsCreditTests {
     public void test_028_reversal() throws ApiException {
         config.setMerchantType("5541");
         ServicesContainer.configureService(config);
-        Transaction response = null;
+        Transaction response;
 
         response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -534,7 +523,7 @@ public class NwsCreditTests {
 
     @Test //working
     public void test_028_void_cancel() throws ApiException {
-        Transaction response = null;
+        Transaction response;
 
         response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -835,8 +824,6 @@ public class NwsCreditTests {
         assertEquals("400", response.getResponseCode());
     }
 
-    /**  Visa CreditTestCases Ends */
-
     /** Amex CreditTestCases Starts */
     @Test
     public void test_006_authorization_amex() throws ApiException {
@@ -1072,8 +1059,6 @@ public class NwsCreditTests {
         assertEquals("400", response.getResponseCode());
     }
 
-    /**  Amex CreditTestCases Ends */
-
     /** Visa Purchasing CreditTestCases Starts */
     @Test
     public void test_006_authorization_visa_purchasing() throws ApiException {
@@ -1308,8 +1293,6 @@ public class NwsCreditTests {
         // check response
         assertEquals("400", response.getResponseCode());
     }
-
-    /**  Visa Purchasing CreditTestCases Ends */
 
     /** Discover CreditTestCases Starts */
 
@@ -1894,8 +1877,7 @@ public class NwsCreditTests {
         CreditTrackData paypaltrack = new CreditTrackData();
         paypaltrack.setValue("%B6506001000010029^TEST CARD/DISCOVER        ^2512101051012345678901999123123?;6506001000010029=25121010051012345678?");
 
-        Transaction response = null;
-        response = paypaltrack.authorize(new BigDecimal(10))
+        Transaction response = paypaltrack.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -2073,10 +2055,10 @@ public class NwsCreditTests {
     }
 
     @Test
-    public void test_014_swipe_authorize_Codecoverage() throws ApiException {
+    public void test_014_swipe_authorize_Codecoverage() {
 
         GatewayTimeoutException formatException = assertThrows(GatewayTimeoutException.class,
-                () -> card.authorize(0)
+                () -> card.authorize(new BigDecimal(0))
             .withCurrency("USD")
             .withModifier(TransactionModifier.Offline)
                 .withOfflineAuthCode("190")
@@ -2289,17 +2271,16 @@ public class NwsCreditTests {
         assertEquals(original, new String(buffer));
     }
     @Test
-    public void test_unsupported_transaction_code_coverage_only() throws ApiException {
+    public void test_unsupported_transaction_code_coverage_only() {
 
         BuilderException builderException = assertThrows(BuilderException.class, ()->{
             boolean tokenExpiry = track.updateTokenExpiry();
-            assertNotNull(tokenExpiry);
-
+            assertTrue(tokenExpiry);
         });
         assertEquals("Token cannot be null", builderException.getMessage());
     }
     @Test
-    public void test_unsupported_transaction_code_coverage_only_tokenize() throws ApiException {
+    public void test_unsupported_transaction_code_coverage_only_tokenize() {
 
         BuilderException builderException = assertThrows(BuilderException.class, ()->{
             String tokenize = track.tokenize();
@@ -2309,11 +2290,11 @@ public class NwsCreditTests {
         assertEquals("Token cannot be null", builderException.getMessage());
     }
     @Test
-    public void test_unsupported_transaction_code_coverage_only_delete_token() throws ApiException {
+    public void test_unsupported_transaction_code_coverage_only_delete_token() {
 
         BuilderException builderException = assertThrows(BuilderException.class, ()->{
             boolean tokenExpiry = track.deleteToken();
-            assertNotNull(tokenExpiry);
+            assertTrue(tokenExpiry);
 
         });
         assertEquals("Token cannot be null", builderException.getMessage());

@@ -64,7 +64,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         Transaction dccDetails =
                 card
                         .getDccRate()
-                        .withAmount(amount)
+                        .withAmount(new BigDecimal(amount))
                         .withCurrency(currency)
                         .execute();
         BigDecimal expectedDccAmountValue = getDccAmount(dccDetails);
@@ -73,7 +73,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         waitForGpApiReplication();
         Transaction response =
                 card
-                        .authorize(amount)
+                        .authorize(new BigDecimal(amount))
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
                         .execute();
@@ -171,7 +171,7 @@ public class GpApiDccCardNotPresentTest extends BaseGpApiTest {
         waitForGpApiReplication();
         Transaction transaction =
                 card
-                        .authorize(amount)
+                        .authorize(new BigDecimal(amount))
                         .withCurrency(currency)
                         .withDccRateData(dccDetails.getDccRateData())
                         .execute();

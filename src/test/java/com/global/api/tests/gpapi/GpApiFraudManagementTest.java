@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -219,7 +221,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     public void FraudManagementDataSubmissionFullCycle() throws ApiException {
         Transaction trn =
                 card
-                        .authorize(98.10)
+                        .authorize(new BigDecimal("98.10"))
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
@@ -272,7 +274,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     public void FraudManagementDataSubmissionFullCycle_HoldAndReleaseWithoutReasonCode() throws ApiException {
         Transaction trn =
                 card
-                        .authorize(98.10)
+                        .authorize(new BigDecimal("98.10"))
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
@@ -323,7 +325,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
         card.setCardHolderName("Lenny Bruce");
         Transaction trn =
                 card
-                        .authorize(10.10)
+                        .authorize(new BigDecimal("10.10"))
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Active)
@@ -599,7 +601,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
     public void FraudManagementDataSubmissionFullCycle_Authorize_ThenReleaseWithoutHold() throws ApiException {
         Transaction trn =
                 card
-                        .authorize(98.10)
+                        .authorize(new BigDecimal("98.10"))
                         .withCurrency(currency)
                         .withAddress(address)
                         .withFraudFilter(FraudFilterMode.Passive)
@@ -966,7 +968,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .and(SearchCriteria.RiskAssessmentResult, FraudFilterResult.PASS)
                         .execute();
 
-        assertTrue(!response.getResults().isEmpty());
+        assertFalse(response.getResults().isEmpty());
 
         TransactionSummary trnSummary = response.getResults().get(0);
         assertNotNull(trnSummary.getFraudManagementResponse());

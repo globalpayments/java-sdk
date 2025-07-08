@@ -75,6 +75,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
             }
         return null;
     }
+    public BigDecimal getTotalAmount() {
+        BigDecimal totalAmount = amount;
+
+        // add tip
+        if(gratuity != null) {
+            totalAmount = totalAmount.add(gratuity);
+        }
+
+        // add tax
+        if(taxAmount != null) {
+            totalAmount = totalAmount.add(taxAmount);
+        }
+
+        // add surcharge
+        if(surchargeAmount != null) {
+            totalAmount = totalAmount.add(surchargeAmount);
+        }
+
+        return totalAmount;
+    }
 
     public TerminalAuthBuilder withTokenRequest(Integer tokenRequest) {
         this.tokenRequest = tokenRequest;

@@ -34,13 +34,12 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return fleetCard;
     }
 
-    public AuthorizationBuilder authorize() { return authorize(null, false); }
+    public AuthorizationBuilder authorize() { return authorize(null); }
     public AuthorizationBuilder authorize(BigDecimal amount) {
-        return authorize(amount, false);
-    }
-
-    public AuthorizationBuilder authorize(double amount) {
-        return authorize(new BigDecimal(amount));
+        return new AuthorizationBuilder(TransactionType.Auth, this)
+                .withAmount(amount != null ? amount : threeDSecure != null ? threeDSecure.getAmount() : null)
+                .withCurrency(threeDSecure != null ? threeDSecure.getCurrency() : null)
+                .withOrderId(threeDSecure != null ? threeDSecure.getOrderId() : null);
     }
 
     public AuthorizationBuilder authorize(BigDecimal amount, boolean isEstimated) {
@@ -156,7 +155,7 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
     }
 
     /**
-     * Updates the token expiry date with the values proced to the card object
+     * Updates the token expiry date with the values provided to the card object
      * @return a boolean value indicating success/failure
      */
     @Override

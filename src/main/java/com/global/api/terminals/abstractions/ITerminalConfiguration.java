@@ -7,9 +7,37 @@ import com.global.api.logging.IRequestLogger;
 import com.global.api.terminals.IRequestIdProvider;
 
 public interface ITerminalConfiguration {
+    /** GENERIC SETTINGS **/
+
     ConnectionModes getConnectionMode();
 
     void setConnectionMode(ConnectionModes connectionMode);
+
+    int getTimeout();
+
+    void setTimeout(int timeout);
+
+    void validate() throws ConfigurationException;
+
+    DeviceType getDeviceType();
+
+    void setDeviceType(DeviceType type);
+
+    IRequestIdProvider getRequestIdProvider();
+
+    void setRequestIdProvider(IRequestIdProvider requestIdProvider);
+
+    @Deprecated
+    IRequestLogger getLogManagementProvider();
+
+    @Deprecated
+    void setLogManagementProvider(IRequestLogger logManagementProvider);
+
+    IRequestLogger getRequestLogger();
+
+    void setRequestLogger(IRequestLogger requestLogger);
+
+    /** TCP CONNECTION SETTINGS **/
 
     String getIpAddress();
 
@@ -18,6 +46,8 @@ public interface ITerminalConfiguration {
     int getPort();
 
     void setPort(int port);
+
+    /** SERIAL CONNECTION SETTINGS **/
 
     BaudRate getBaudRate();
 
@@ -35,25 +65,29 @@ public interface ITerminalConfiguration {
 
     void setDataBits(DataBits dataBits);
 
-    int getTimeout();
-
-    void setTimeout(int timeout);
-
-    void validate() throws ConfigurationException;
-
-    DeviceType getDeviceType();
-
-    void setDeviceType(DeviceType type);
-
-    IRequestIdProvider getRequestIdProvider();
-
-    void setRequestIdProvider(IRequestIdProvider requestIdProvider);
+    /** MITC CONNECTION SETTINGS **/
 
     GatewayConfig getGatewayConfig();
 
     void setGatewayConfig(GatewayConfig gatewayConfig);
 
-    IRequestLogger getLogManagementProvider();
+    /** DIAMOND CLOUD SETTINGS **/
+    String getSecretKey();
+    void setSecretKey(String secretKey);
 
-    void setLogManagementProvider(IRequestLogger logManagementProvider);
+    String getIsvId();
+    void setIsvId(String isvId);
+
+    String getServiceUrl();
+    void setServiceUrl(String serviceUrl);
+
+    String getPosId();
+    void setPosId(String posId);
+
+    String getRegion();
+    void setRegion(String region);
+
+    /** AIDL SETTINGS **/
+    IAidlService getAidlService();
+    void setAidlService(IAidlService service);
 }

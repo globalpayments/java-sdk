@@ -1,14 +1,12 @@
 package com.global.api.terminals.diamond.interfaces;
 
 import com.global.api.entities.Request;
-import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.gateways.SSLSocketFactoryEx;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
-import com.global.api.terminals.diamond.DiamondCloudConfig;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.IOUtils;
@@ -20,6 +18,7 @@ import org.apache.http.HttpStatus;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,14 +27,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.global.api.logging.PrettyLogger.generateRequestLog;
-import static com.global.api.logging.PrettyLogger.generateResponseLog;
-
 public class DiamondHttpInterface implements IDeviceCommInterface {
-    private final DiamondCloudConfig _settings;
+    private final ITerminalConfiguration settings;
     protected Map<String, String> headers;
     private String lastConnectionError = null;
     private String AuthorizationId;
@@ -43,136 +40,59 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
     private IMessageSentInterface onMessageSent;
     private IMessageReceivedInterface onMessageReceived;
 
-    public DiamondHttpInterface(ITerminalConfiguration settings) {
-        _settings = (DiamondCloudConfig) settings;
+    public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
+        this.onMessageSent = onMessageSent;
+    }
+    public void setMessageReceivedHandler(IMessageReceivedInterface onMessageReceived) {
+        this.onMessageReceived = onMessageReceived;
     }
 
-    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
+    public DiamondHttpInterface(ITerminalConfiguration settings) {
+        this.settings = settings;
     }
 
     public void connect() {
-
-        char[] isvIDAsArray = _settings.getIsvID().toCharArray();
-        char[] reversedIsvIDAsArray = getReversedArray(isvIDAsArray);
-        String reversedString = new String(reversedIsvIDAsArray);
+        char[] isvIdAsArray = settings.getIsvId().toCharArray();
+        char[] reversedIsvIdAsArray = getReversedArray(isvIdAsArray);
+        String reversedString = new String(reversedIsvIdAsArray);
         String data = reversedString + AuthorizationId;
-        String authorizationToken = null;
 
         try {
-            authorizationToken = getHMACSHA256Hash(data, _settings.getSecretKey());
+            String authorizationToken = getHMACSHA256Hash(data, settings.getSecretKey());
+
+            if (this.headers == null) {
+                this.headers = new HashMap<>();
+            }
+            this.headers.put("Authorization", "Bearer " + authorizationToken);
         } catch (Exception e) {
             lastConnectionError = e.getMessage();
         }
-
-        if (this.headers == null) {
-            this.headers = new HashMap<>();
-        }
-        this.headers.put("Authorization", "Bearer " + authorizationToken);
-    }
-
-    private char[] getReversedArray(char[] stringArray) {
-
-        if (stringArray == null) {
-            return null;
-        } else if (stringArray.length == 0) {
-            return stringArray;
-        }
-
-        char[] reversedArray = new char[stringArray.length];
-
-        for (int i = 0; i < stringArray.length; i++) {
-            reversedArray[i] = stringArray[stringArray.length - 1 - i];
-        }
-
-        return reversedArray;
-    }
-
-    private String repeat8times(String valueToRepeat) {
-        String repeated = "";
-        for (int i = 1; i < 8; i++) {
-            repeated = repeated + valueToRepeat;
-        }
-        return repeated;
-    }
-
-    private String getHMACSHA256Hash(String data, String apiSecret) throws NoSuchAlgorithmException, InvalidKeyException {
-
-        String preparedSecret = repeat8times(apiSecret);
-
-        byte[] preparedSecretBytes = preparedSecret.getBytes(StandardCharsets.UTF_8);
-        SecretKeySpec secretKey = new SecretKeySpec(preparedSecretBytes, "HmacSHA256");
-
-        Mac sha256HMAC = Mac.getInstance("HmacSHA256");
-        sha256HMAC.init(secretKey);
-        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        byte[] hashSignature = sha256HMAC.doFinal(dataBytes);
-
-        String hashSignatureAsString = Hex.encodeHexString(hashSignature);
-        return hashSignatureAsString;
     }
 
     public void disconnect() {
-        // TODO(mfranzoy): do we need to do anything here?
-    }
-
-    private String getVerb(JsonDoc bufferAsJsonDoc) throws GatewayException {
-
-        String verb = null;
-
-        JsonDoc verbData = bufferAsJsonDoc.get("verb");
-
-        if (verbData != null) {
-            verb = verbData.getStringOrNull("Method");
-            if (verb == null) {
-                throw new GatewayException("Payment type not supported!");
-            }
-        } else {
-            verb = bufferAsJsonDoc.getStringOrNull("verb");
-        }
-
-        if (verb == null) {
-            verb = Request.HttpMethod.Post.getValue();
-        }
-        return verb;
-    }
-
-    private void obtainAuthorizationId(JsonDoc queryParams) {
-        if (StringUtils.isNullOrEmpty(queryParams.getString("cloud_id"))) {
-            AuthorizationId = queryParams.getString("POS_ID");
-        } else {
-            AuthorizationId = queryParams.getString("cloud_id");
-        }
+        /* NOTHING TO IMPLEMENT */
     }
 
     public byte[] send(IDeviceMessage message) throws GatewayException, MessageException {
+        JsonDoc jsonMessage = JsonDoc.parse(new String(message.getSendBuffer(), StandardCharsets.UTF_8));
 
-        if (this.onMessageSent != null) {
-            this.onMessageSent.messageSent(message.toString());
-        }
-
-        String buffer = new String(message.getSendBuffer(), StandardCharsets.UTF_8);
-        JsonDoc bufferAsJsonDoc = JsonDoc.parse(buffer);
-
-        JsonDoc queryParams = bufferAsJsonDoc.get("queryParams");
+        // GET QUERY PARAMS & AUTHORIZATION ID
+        JsonDoc queryParams = jsonMessage.get("queryParams");
         obtainAuthorizationId(queryParams);
 
         connect();
-
         if (lastConnectionError != null) {
             throw new MessageException(String.format("Could not connect to the device. %s", lastConnectionError));
         }
 
-        String queryString = buildQueryString(queryParams);
-        String verb = getVerb(bufferAsJsonDoc);
-
-        JsonDoc data = bufferAsJsonDoc.get("body");
-
         try {
-            String serviceUrl = _settings.getServiceUrl();
-            String endpoint = bufferAsJsonDoc.getString("endpoint");
-
+            String serviceUrl = settings.getServiceUrl();
+            String endpoint = jsonMessage.getString("endpoint");
+            String queryString = buildQueryString(queryParams);
             String url = serviceUrl + endpoint + queryString;
+
+            String verb = getVerb(jsonMessage);
+            JsonDoc data = jsonMessage.get("body");
 
             HttpsURLConnection httpClient = (HttpsURLConnection) new URL((url).trim()).openConnection();
             httpClient.setRequestMethod(verb);
@@ -190,25 +110,28 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
 
             OutputStream out = null;
             try {
+                // LOG THE REQUEST
+                raiseOnMessageSent(requestJsonDoc.toString());
 
-                if (data != null) {
-                    out = httpClient.getOutputStream();
-                    out.write(data.toString().getBytes(StandardCharsets.UTF_8));
-                    out.flush();
-                }
-                _settings.getLogManagementProvider().RequestSent(generateRequestLog(requestJsonDoc));
+                // SEND THE REQUEST
+                out = httpClient.getOutputStream();
+                out.write(data.toString().getBytes(StandardCharsets.UTF_8));
+                out.flush();
 
+                // CHECK RESPONSE CODE
                 int statusResponse = httpClient.getResponseCode();
                 if (statusResponse != HttpStatus.SC_OK) {
-                    throw new ApiException("ERROR: status code " + statusResponse);
+                    throw new MessageException("ERROR: status code " + statusResponse);
                 }
-                _settings.getLogManagementProvider().RequestSent(generateRequestLog(requestJsonDoc, headers));
 
+                // READ RESPONSE
                 InputStream responseStream = httpClient.getInputStream();
                 String rawResponse = IOUtils.readFully(responseStream);
 
+                // LOG THE RESPONSE
+                raiseOnMessageReceived(rawResponse.getBytes());
+
                 checkResponse(rawResponse);
-                _settings.getLogManagementProvider().ResponseReceived(generateResponseLog(rawResponse));
 
                 return rawResponse.getBytes(StandardCharsets.UTF_8);
             } catch (Exception exc) {
@@ -220,24 +143,65 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
             }
 
         } catch (Exception e) {
-            throw new GatewayException("Device " + _settings.getDeviceType() + " error: " + e.getMessage());
+            throw new GatewayException("Device " + settings.getDeviceType() + " error: " + e.getMessage());
         }
     }
+
+    private void raiseOnMessageSent(String message) {
+        try {
+            if (onMessageSent != null) {
+                onMessageSent.messageSent(message);
+            }
+
+            if (settings.getRequestLogger() != null) {
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                JsonDoc msg = new JsonDoc();
+                msg.set("timestamp", timestamp.toString());
+                msg.set("type", "REQUEST");
+                msg.set("message", message);
+
+                settings.getRequestLogger().RequestSent(msg.toString());
+            }
+        }
+        catch(IOException exc) {
+            /* Logging should never interfere with processing */
+        }
+    }
+
+    private void raiseOnMessageReceived(byte[] message) {
+        try {
+            if(onMessageReceived != null) {
+                onMessageReceived.messageReceived(message);
+            }
+
+            if(settings.getRequestLogger() != null) {
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                JsonDoc msg = new JsonDoc();
+                msg.set("timestamp", timestamp.toString());
+                msg.set("type", "RESPONSE");
+                msg.set("message", new String(message));
+
+                settings.getRequestLogger().ResponseReceived(msg.toString());
+            }
+        }
+        catch(IOException exc) {
+            /* NOM NOM */
+        }
+    }
+
+    /* INTERNAL FUNCTIONS */
 
     private void checkResponse(String rawResponse) throws GatewayException {
         if (JsonDoc.isJson(rawResponse)) {
-            JsonDoc responseBodyJsonDoc = JsonDoc.parse(rawResponse);
-            if (responseBodyJsonDoc.has("status") && "error".equals(responseBodyJsonDoc.getStringOrNull("status"))) {
-                String code = responseBodyJsonDoc.getStringOrNull("code");
-                String responseMessage = responseBodyJsonDoc.getStringOrNull("message");
+            JsonDoc response = JsonDoc.parse(rawResponse);
+            if (response.has("status") && "error".equals(response.getStringOrNull("status"))) {
+                String code = response.getStringOrNull("code");
+                String responseMessage = response.getStringOrNull("message");
                 throw new GatewayException("Status Code: " + code + " - " + responseMessage);
             }
         }
-    }
-
-    @Override
-    public void setMessageSentHandler(IMessageSentInterface messageInterface) {
-        this.onMessageSent = messageInterface;
     }
 
     private String buildQueryString(JsonDoc queryStringParams) throws GatewayException {
@@ -276,4 +240,71 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
         }
     }
 
+    private char[] getReversedArray(char[] stringArray) {
+
+        if (stringArray == null) {
+            return null;
+        } else if (stringArray.length == 0) {
+            return stringArray;
+        }
+
+        char[] reversedArray = new char[stringArray.length];
+
+        for (int i = 0; i < stringArray.length; i++) {
+            reversedArray[i] = stringArray[stringArray.length - 1 - i];
+        }
+
+        return reversedArray;
+    }
+
+    private String repeat8times(String valueToRepeat) {
+        StringBuilder repeated = new StringBuilder();
+        for (int i = 1; i < 8; i++) {
+            repeated.append(valueToRepeat);
+        }
+        return repeated.toString();
+    }
+
+    private String getHMACSHA256Hash(String data, String apiSecret) throws NoSuchAlgorithmException, InvalidKeyException {
+
+        String preparedSecret = repeat8times(apiSecret);
+
+        byte[] preparedSecretBytes = preparedSecret.getBytes(StandardCharsets.UTF_8);
+        SecretKeySpec secretKey = new SecretKeySpec(preparedSecretBytes, "HmacSHA256");
+
+        Mac sha256HMAC = Mac.getInstance("HmacSHA256");
+        sha256HMAC.init(secretKey);
+        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+        byte[] hashSignature = sha256HMAC.doFinal(dataBytes);
+
+        return Hex.encodeHexString(hashSignature);
+    }
+
+    private String getVerb(JsonDoc bufferAsJsonDoc) throws GatewayException {
+        String verb;
+
+        JsonDoc verbData = bufferAsJsonDoc.get("verb");
+
+        if (verbData != null) {
+            verb = verbData.getStringOrNull("Method");
+            if (verb == null) {
+                throw new GatewayException("Payment type not supported!");
+            }
+        } else {
+            verb = bufferAsJsonDoc.getStringOrNull("verb");
+        }
+
+        if (verb == null) {
+            verb = Request.HttpMethod.Post.getValue();
+        }
+        return verb;
+    }
+
+    private void obtainAuthorizationId(JsonDoc queryParams) {
+        if (StringUtils.isNullOrEmpty(queryParams.getString("cloud_id"))) {
+            AuthorizationId = queryParams.getString("POS_ID");
+        } else {
+            AuthorizationId = queryParams.getString("cloud_id");
+        }
+    }
 }

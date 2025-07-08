@@ -27,11 +27,10 @@ import java.math.BigDecimal;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DiamondCloudTest extends BaseGpApiTest {
-
-    IDeviceInterface _device;
+    private final IDeviceInterface _device;
     RandomIdProvider _requestIdProvider;
     RequestConsoleLogger _logManagementProvider;
-    private String posID = "1342641186174645";
+    private final String posId = "1342641186174645";
 
     public DiamondCloudTest() throws ApiException {
         _requestIdProvider = new RandomIdProvider();
@@ -41,12 +40,12 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
-        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
+        diamondCloudConfig.setRequestLogger(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
-        diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
+        diamondCloudConfig.setIsvId("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
         diamondCloudConfig.setRegion(Region.US.toString());
-        diamondCloudConfig.setPosID(posID);
+        diamondCloudConfig.setPosId(posId);
 
         _device = DeviceService.create(diamondCloudConfig);
         Assert.assertNotNull(_device);
@@ -57,12 +56,12 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
-        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
+        diamondCloudConfig.setRequestLogger(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
-        diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
+        diamondCloudConfig.setIsvId("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
         diamondCloudConfig.setRegion(Region.EU.toString());
-        diamondCloudConfig.setPosID(posID);
+        diamondCloudConfig.setPosId(posId);
 
         IDeviceInterface device = DeviceService.create(diamondCloudConfig);
         Assert.assertNotNull(_device);
@@ -85,7 +84,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void creditSale() throws ApiException {
 
         TerminalResponse response = _device
-                .creditSale(new BigDecimal("2"))
+                .sale(new BigDecimal("2"))
                 .execute();
 
         Assert.assertNotNull(response);
@@ -106,7 +105,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
     @Test
     public void creditVoid() throws ApiException {
-        TerminalResponse response = _device.creditVoid()
+        TerminalResponse response = _device.voidTransaction()
                 .withTransactionId("Z9A58QWXA9N")
                 .execute();
 
@@ -117,7 +116,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
     @Test
     public void creditReturn() throws ApiException {
-        TerminalResponse response = _device.creditRefund(new BigDecimal("1"))
+        TerminalResponse response = _device.refund(new BigDecimal("1"))
                 .execute();
 
         Assert.assertNotNull(response);
@@ -127,7 +126,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
     @Test
     public void linkedRefund() throws ApiException, InterruptedException {
-        TerminalResponse response = _device.creditAuth(new BigDecimal("2.01"))
+        TerminalResponse response = _device.authorize(new BigDecimal("2.01"))
                 .execute();
 
         Assert.assertNotNull(response);
@@ -162,7 +161,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
     @Test
     public void authorize() throws ApiException {
-        TerminalResponse response = _device.creditAuth(new BigDecimal("2"))
+        TerminalResponse response = _device.authorize(new BigDecimal("2"))
                 .execute();
 
         Assert.assertNotNull(response);
@@ -174,7 +173,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void capture() throws ApiException {
         IDeviceInterface device = getEuDevice();
 
-        TerminalResponse response = device.creditCapture(new BigDecimal("2"))
+        TerminalResponse response = device.capture(new BigDecimal("2"))
                 .withTransactionId("Y7XEVE5YAB6")
                 .execute();
 
@@ -212,7 +211,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Ignore("This feature is not supported in EU region!")
     @Test
     public void ebtPurchase() throws ApiException {
-        TerminalResponse response = _device.ebtPurchase(new BigDecimal(1))
+        TerminalResponse response = _device.purchase(new BigDecimal(1))
                 .withPaymentMethodType(PaymentMethodType.EBT)
                 .execute();
 
@@ -224,7 +223,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Ignore("This feature is not supported in EU region!")
     @Test
     public void ebtBalance() throws ApiException {
-        TerminalResponse response = _device.ebtBalance()
+        TerminalResponse response = _device.balance()
                 .withPaymentMethodType(PaymentMethodType.EBT)
                 .execute();
 
@@ -236,7 +235,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Ignore("This feature is not supported in EU region!")
     @Test
     public void ebtReturn() throws ApiException {
-        TerminalResponse response = _device.ebtRefund(new BigDecimal("5.02"))
+        TerminalResponse response = _device.refund(new BigDecimal("5.02"))
                 .withPaymentMethodType(PaymentMethodType.EBT)
                 .execute();
 
@@ -249,7 +248,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Test
     public void giftBalance() throws ApiException {
         //Transaction type Balance for payment type not supported in EU
-        TerminalResponse response = _device.giftBalance()
+        TerminalResponse response = _device.balance()
                 .withCurrency(CurrencyType.Points)
                 .execute();
 
@@ -261,7 +260,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Ignore("This feature is not supported in EU region!")
     @Test
     public void giftReload() throws ApiException {
-        TerminalResponse response = _device.giftAddValue(new BigDecimal("1"))
+        TerminalResponse response = _device.addValue(new BigDecimal("1"))
                 .withCurrency(CurrencyType.Points)
                 .execute();
 
@@ -273,7 +272,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     @Ignore("This feature is not supported in EU region!")
     @Test
     public void giftRedeem() throws ApiException {
-        TerminalResponse response = _device.giftSale(new BigDecimal("1"))
+        TerminalResponse response = _device.sale(new BigDecimal("1"))
                 .withPaymentMethodType(PaymentMethodType.Gift)
                 .withCurrency(CurrencyType.Points)
                 .execute();
@@ -300,12 +299,12 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
-        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
+        diamondCloudConfig.setRequestLogger(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
-        diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
+        diamondCloudConfig.setIsvId("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
         diamondCloudConfig.setRegion(Region.EU.toString());
-        diamondCloudConfig.setPosID(posID);
+        diamondCloudConfig.setPosId(posId);
 
         DeviceCloudService service = new DeviceCloudService(diamondCloudConfig);
         String responseJson = "{\"IsvId\":\"154F070E3E474AB98B00D73ED81AAA93\",\"InvoiceId\":\"\",\"CloudTxnId\":\"XJ98K73YJ9N\",\"traceId\":\"\",\"followId\":\"\",\"Device\":\"1850747855_2\",\"PosId\":\"1342641186174645\",\"PaymentResponse\":{ \"PaymentResponse\":{ \"aosa\":null,\"applicationVersion\":\"1.6.2\",\"authorizationCode\":null,\"authorizationMessage\":\"000023\",\"authorizationMethod\":\"?\",\"authorizationType\":\"?\",\"cardBrandName\":\"MC CREDIT\",\"cardSource\":\"P\",\"cashbackAmount\":\"500\",\"currencyExchangeRate\":null,\"date\":\"2023.09.11\",\"dccCurrencyExponent\":null,\"dccText1\":null,\"dccText2\":null,\"errorMessage\":null,\"maskedCardNumber\":\"************0036\",\"merchantId\":\"888880000000373\",\"result\":\"1\",\"serverMessage\":null,\"slipNumber\":\"23\",\"terminalCurrency\":null,\"terminalId\":\"66677768\",\"terminalPrintingIndicator\":\"1\",\"time\":\"15:37:55\",\"tipAmount\":null,\"token\":null,\"transactionAmount\":\"1000\",\"transactionAmountInTerminalCurrency\":null,\"transactionCurrency\":\"EUR\",\"transactionTitle\":null,\"type\":\"1\",\"AC\":null,\"AID\":\"A0000000041010\",\"ATC\":null,\"TSI\":\"8000\",\"TVR\":\"0400000000\"},\"CloudInfo\":{\"Device\":\"1850747855_2\",\"TerminalType\":\"eService\",\"MqttClientId\":\"1bLU\",\"Command\":\"sale\",\"ApkVersion\":\"1.0.86.0629\",\"TerminalModel\":\"PAX_A920Pro\"},\"ResultId\":\"Zvx3hYCS9tXxfAVy\"}}";
@@ -314,7 +313,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
         Assert.assertEquals(json.getStringOrNull("CloudTxnId"), parsedResponse.getTransactionId());
         Assert.assertEquals(json.get("PaymentResponse").get("PaymentResponse").getStringOrNull("authorizationCode"), parsedResponse.getAuthorizationCode());
-        Assert.assertEquals(posID, parsedResponse.getTerminalRefNumber());
+        Assert.assertEquals(posId, parsedResponse.getTerminalRefNumber());
         Assert.assertEquals(json.get("PaymentResponse").get("CloudInfo").getStringOrNull("Command"), parsedResponse.getCommand());
     }
 
@@ -325,12 +324,12 @@ public class DiamondCloudTest extends BaseGpApiTest {
         diamondCloudConfig.setDeviceType(DeviceType.PAX_A920);
         diamondCloudConfig.setConnectionMode(ConnectionModes.DIAMOND_CLOUD);
         diamondCloudConfig.setRequestIdProvider(_requestIdProvider);
-        diamondCloudConfig.setLogManagementProvider(_logManagementProvider);
+        diamondCloudConfig.setRequestLogger(_logManagementProvider);
         diamondCloudConfig.setTimeout(15);
-        diamondCloudConfig.setIsvID("154F070E3E474AB98B00D73ED81AAA93");
+        diamondCloudConfig.setIsvId("154F070E3E474AB98B00D73ED81AAA93");
         diamondCloudConfig.setSecretKey("8003672638");
         diamondCloudConfig.setRegion(Region.EU.toString());
-        diamondCloudConfig.setPosID(posID);
+        diamondCloudConfig.setPosId(posId);
 
         DeviceCloudService service = new DeviceCloudService(diamondCloudConfig);
 
@@ -340,7 +339,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
 
         Assert.assertEquals(json.getStringOrNull("CloudTxnId"), parsedResponse.getTransactionId());
         Assert.assertEquals(json.get("PaymentResponse").get("CloudInfo").getStringOrNull("Command"), parsedResponse.getCommand());
-        Assert.assertEquals(posID, parsedResponse.getTerminalRefNumber());
+        Assert.assertEquals(posId, parsedResponse.getTerminalRefNumber());
         Assert.assertEquals(json.get("PaymentResponse").get("PaymentResponse").getStringOrNull("resultCode"), parsedResponse.getResponseCode());
         Assert.assertEquals(json.get("PaymentResponse").get("PaymentResponse").getStringOrNull("hostMessage"), parsedResponse.getResponseText());
     }
@@ -349,8 +348,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void creditSale_WithoutAmount() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditSale()
-                    .execute();
+            _device.sale(null).execute();
         } catch (BuilderException e) {
             errorFound = true;
             Assert.assertEquals("amount cannot be null for this transaction type.", e.getMessage());
@@ -366,7 +364,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
                 .execute();
 
         Assert.assertEquals("00", response.getDeviceResponseCode());
-        Assert.assertEquals(null, response.getStatus());
+        Assert.assertNull(response.getStatus());
     }
 
     @Test
@@ -387,8 +385,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void creditVoid_WithoutTransactionId() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditVoid()
-                    .execute();
+            _device.voidTransaction().execute();
         } catch (BuilderException e) {
             errorFound = true;
             Assert.assertEquals("transactionId cannot be null for this transaction type.", e.getMessage());
@@ -401,8 +398,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void creditReturn_WithoutAmount() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditRefund()
-                    .execute();
+            _device.refund().execute();
         } catch (BuilderException e) {
             errorFound = true;
             Assert.assertEquals("amount cannot be null for this transaction type.", e.getMessage());
@@ -415,8 +411,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void authorize_WithoutAmount() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditAuth()
-                    .execute();
+            _device.authorize(null).execute();
         } catch (BuilderException e) {
             errorFound = true;
             Assert.assertEquals("amount cannot be null for this transaction type.", e.getMessage());
@@ -429,7 +424,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void capture_WithoutAmount() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditCapture()
+            _device.capture()
                     .withTransactionId("BWMNKQK6EB5")
                     .execute();
         } catch (BuilderException e) {
@@ -444,7 +439,7 @@ public class DiamondCloudTest extends BaseGpApiTest {
     public void capture_WithoutTransactionId() throws ApiException {
         boolean errorFound = false;
         try {
-            _device.creditCapture(new BigDecimal("0.2"))
+            _device.capture(new BigDecimal("0.2"))
                     .execute();
         } catch (BuilderException e) {
             errorFound = true;

@@ -119,7 +119,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
         boolean errorFound = false;
         try {
             card
-                    .authorize(10)
+                    .authorize(new BigDecimal(10))
                     .withCurrency("EUR")
                     .withModifier(TransactionModifier.EncryptedMobile)
                     .withMaskedDataResponse(true)

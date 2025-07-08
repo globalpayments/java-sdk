@@ -7,15 +7,16 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.genius.GeniusController;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class MitcManageBuilder extends TerminalManageBuilder {
-
     public TransactionType followOnTransactionType;
     public boolean receipt = false;
+    @Getter
     public boolean allowDuplicates = false;
     public TransactionType originalTransType;
 
@@ -36,10 +37,6 @@ public class MitcManageBuilder extends TerminalManageBuilder {
     public MitcManageBuilder withAllowDuplicates(boolean value) {
         allowDuplicates = value;
         return this;
-    }
-
-    public boolean isAllowDuplicates() {
-        return allowDuplicates;
     }
 
     public MitcManageBuilder withReceipt(boolean value) {

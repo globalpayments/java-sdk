@@ -77,7 +77,7 @@ public class VapsVisaFleetEmvTest {
         config.setSecondaryPort(15031);
         config.setUniqueDeviceId("2001");
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());

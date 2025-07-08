@@ -245,8 +245,24 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
         switch(productDataFormat) {
             case HeartlandStandardFormat: {
-                    rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 3, '0'));
-                    for (DE63_ProductDataEntry entry : productDataEntries.values()) {
+                LinkedHashMap<String, DE63_ProductDataEntry> productDataCountEntries = new LinkedHashMap<>();
+                int count = 0;
+                if (getFuelProductCount() != 0 || getNonFuelProductCount() != 0) {
+                    count = getFuelProductCount() + getNonFuelProductCount();
+                    if (getFuelProductCount() != 0) {
+                        productDataCountEntries = new LinkedHashMap<>(getFuelProductDataEntries());
+                        productDataCountEntries.putAll(getNonFuelProductDataEntries());
+                    } else {
+                        productDataCountEntries = new LinkedHashMap<>(getNonFuelProductDataEntries());
+                    }
+                } else if (getProductDataEntries().size() != 0) {
+                    count = getProductCount();
+                    productDataCountEntries = new LinkedHashMap<>(productDataEntries);
+
+                }
+                rvalue = rvalue.concat(StringUtils.padLeft(count, 3, '0'));
+                if (productDataCountEntries.size() != 0) {
+                    for (DE63_ProductDataEntry entry : productDataCountEntries.values()) {
                         rvalue = rvalue.concat(entry.getCode() + "\\");
 
                         if (entry.getUnitOfMeasure() != null) {
@@ -259,6 +275,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                                 .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
                                 .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                     }
+                }
             }break;
             case ANSI_X9_TG23_Format: {
                 rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 2, '0'));

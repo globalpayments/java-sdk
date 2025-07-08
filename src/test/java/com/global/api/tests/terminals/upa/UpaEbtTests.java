@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
@@ -38,7 +39,7 @@ public class UpaEbtTests {
     public void ebtSale() throws ApiException
     {
         try {
-            TerminalResponse response = device.ebtPurchase(new BigDecimal("12.01"))
+            TerminalResponse response = device.purchase(new BigDecimal("12.01"))
                 .execute();
 
             assertNotNull(response);
@@ -51,11 +52,13 @@ public class UpaEbtTests {
         }
     }
 
+    @Test
     public void ebtBalanceInquiry() throws ApiException
     {
         try {
-            TerminalResponse response = device.ebtBalance()
-                .execute();
+            TerminalResponse response = device.balance()
+                    .withPaymentMethodType(PaymentMethodType.EBT)
+                    .execute();
 
             assertNotNull(response);
             assertEquals("00", response.getResponseCode());
@@ -73,8 +76,9 @@ public class UpaEbtTests {
         // tests currently result in RspCode 02; RspText CALL;
         // I think this is due to device/gateway config, not an issue with this SDK
         try {
-            TerminalResponse response = device.ebtRefund(new BigDecimal("1.23"))
-                .execute();
+            TerminalResponse response = device.refund(new BigDecimal("1.23"))
+                    .withPaymentMethodType(PaymentMethodType.EBT)
+                    .execute();
 
             assertNotNull(response);
             assertEquals("00", response.getResponseCode());

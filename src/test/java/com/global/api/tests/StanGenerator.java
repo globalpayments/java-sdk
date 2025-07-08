@@ -58,19 +58,10 @@ public class StanGenerator implements IStanProvider {
     }
 
     private void saveCurrNumber() {
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(fileName));
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             bw.write(currNumber + "");
         } catch (IOException exc) {
             /* NOM NOM */
-        } finally {
-            if (bw != null) {
-                try {
-                    bw.flush();
-                    bw.close();
-                } catch (IOException exc) { /* NOM NOM */ }
-            }
         }
     }
 }

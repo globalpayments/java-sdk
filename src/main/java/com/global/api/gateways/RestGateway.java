@@ -35,9 +35,9 @@ public class RestGateway extends Gateway {
                         detailedErrorCode
                 );
             } else if (parsed.has("error")) {
-                throw new GatewayException("Error occurred while communicating with gateway.", exc, exc.getResponseCode(), parsed.getString("message"));
+                throw new GatewayException("Error occurred while communicating with gateway.", exc.getResponseCode(), parsed.getString("message"), exc);
             }
-            throw new GatewayException("Error occurred while communicating with gateway.", exc, exc.getResponseCode(), exc.getResponseText());
+            throw new GatewayException("Error occurred while communicating with gateway.", exc.getResponseCode(), exc.getResponseText(), exc);
         }
     }
 

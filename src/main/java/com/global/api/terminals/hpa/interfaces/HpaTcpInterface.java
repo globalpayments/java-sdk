@@ -1,11 +1,10 @@
 package com.global.api.terminals.hpa.interfaces;
 
 import com.global.api.entities.exceptions.MessageException;
-import com.global.api.terminals.abstractions.IDeviceCommInterface;
+import com.global.api.terminals.DeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.messaging.IMessageReceivedInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.AutoResetEvent;
 import com.global.api.utils.Element;
 import com.global.api.utils.ElementTree;
@@ -17,24 +16,16 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HpaTcpInterface implements IDeviceCommInterface {
+public class HpaTcpInterface extends DeviceCommInterface {
     private Socket client;
     private DataOutputStream out;
     private InputStream in;
-    private AutoResetEvent await;
-    private ITerminalConfiguration settings;
+    private final AutoResetEvent await;
     private List<Byte> messageQueue;
     private String lastConnectionError;
 
-    private IMessageSentInterface onMessageSent;
-    private IMessageReceivedInterface onMessageReceived;
-
-    public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
     public HpaTcpInterface(ITerminalConfiguration settings) {
-        this.settings = settings;
+        super(settings);
         this.await = new AutoResetEvent(false);
 
         onMessageReceived = new IMessageReceivedInterface() {
@@ -157,11 +148,11 @@ public class HpaTcpInterface implements IDeviceCommInterface {
 
                 if(message.isAwaitResponse()) {
                     await.waitOne(settings.getTimeout());
-                    if(messageQueue.size() == 0) {
+                    if(messageQueue.isEmpty()) {
                         throw new MessageException("Device did not response within the timeout");
                     }
 
-                    return convertBytes(messageQueue.toArray(new Byte[messageQueue.size()]));
+                    return convertBytes(messageQueue.toArray(new Byte[0]));
                 }
                 else return null;
             }

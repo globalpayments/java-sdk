@@ -3007,6 +3007,11 @@ public class NwsConnector extends GatewayConnectorConfig {
                     throw new BuilderException("Cash back is not allowed for Food Stamp cards.");
                 }
             }
+
+            // if null set to false so there is always a value for this connector
+            if(authBuilder.isAmountEstimated() == null) {
+                authBuilder.withAmountEstimated(false);
+            }
         }
     }
 

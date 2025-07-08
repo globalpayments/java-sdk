@@ -10,7 +10,6 @@ import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.hpa.builders.HpaAdminBuilder;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -22,43 +21,28 @@ import com.global.api.utils.ElementTree;
 import com.global.api.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Objects;
 
 public class HpaController extends DeviceController implements IDisposable {
-    private IDeviceInterface _device;
-
-    private IMessageSentInterface onMessageSent;
-    void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
     public MessageFormat getFormat() {
-        if(settings != null)
+        if(settings != null) {
             return getConnectionModes() == ConnectionModes.TCP_IP ? MessageFormat.HPA : MessageFormat.Visa2nd;
+        }
         return MessageFormat.Visa2nd;
-    }
-
-    public IDeviceInterface configureInterface() {
-        if(_device == null)
-            _device = new HpaInterface(this);
-        return _device;
     }
 
     public HpaController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
-        switch(settings.getConnectionMode()) {
-            case TCP_IP:
-                _interface = new HpaTcpInterface(settings);
-                break;
-            default:
-                throw new ConfigurationException("Specified connection method not supported for HeartSIP.");
-        }
+    }
 
-        _interface.setMessageSentHandler(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if(onMessageSent != null)
-                    onMessageSent.messageSent(message);
-            }
-        });
+    @Override
+    protected void generateInterface() throws ConfigurationException {
+        _device = new HpaInterface(this);
+        if (Objects.requireNonNull(settings.getConnectionMode()) == ConnectionModes.TCP_IP) {
+            _interface = new HpaTcpInterface(settings);
+        } else {
+            throw new ConfigurationException("Specified connection method not supported for HeartSIP.");
+        }
     }
 
     private <T extends SipBaseResponse> T sendMessage(Class<T> clazz, String message, String... messageIds) throws ApiException {

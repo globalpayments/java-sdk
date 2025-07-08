@@ -21,15 +21,13 @@ import static org.junit.Assert.assertTrue;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HpaEndOfDayTests {
-    private IDeviceInterface device;
-    private String expectedMessage = "";
+    private final IDeviceInterface device;
 
     public HpaEndOfDayTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.HPA_ISC250);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
         deviceConfig.setIpAddress("10.12.220.39");
-        //deviceConfig.setIpAddress("192.168.0.94");
         deviceConfig.setPort(12345);
         deviceConfig.setTimeout(20000);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
@@ -37,19 +35,6 @@ public class HpaEndOfDayTests {
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
-
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if(!expectedMessage.equals("")) {
-                    assertEquals(expectedMessage, message);
-                }
-            }
-        });
-    }
-
-    @After
-    public void waitAndReset() {
-        expectedMessage = "";
     }
 
     @Test
@@ -68,7 +53,7 @@ public class HpaEndOfDayTests {
 
     @Test
     public void test_002_CreditTransaction() throws Exception {
-        TerminalResponse response = device.creditSale(new BigDecimal(10))
+        TerminalResponse response = device.sale(new BigDecimal(10))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -107,7 +92,7 @@ public class HpaEndOfDayTests {
 
     @Test
     public void test_006_CreditTransaction() throws Exception {
-        TerminalResponse response = device.creditSale(new BigDecimal(10))
+        TerminalResponse response = device.sale(new BigDecimal(10))
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
@@ -196,9 +181,7 @@ public class HpaEndOfDayTests {
 
         // BATCH REPORT
         IBatchReportResponse batchReport = response.getBatchReportResponse();
-        if(batchReport != null) {
-            // Check some values here
-        }
+        assertNotNull(batchReport);
     }
 
     @Test

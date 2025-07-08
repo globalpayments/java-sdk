@@ -5,6 +5,7 @@ import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.enums.CardType;
 import com.global.api.entities.enums.TerminalConfigType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.utils.EmvUtils;
 import com.global.api.utils.JsonDoc;
@@ -14,25 +15,13 @@ import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public class UpaTransactionResponse extends UpaResponseHandler {
-    private final Logger logger = Logger.getLogger(UpaTransactionResponse.class.getName());
-
     public UpaTransactionResponse(JsonDoc responseData) throws ApiException {
-        try {
-            parseResponse(responseData);
-        } catch (Exception e) {
-            throw new ApiException("Error parsing response.", e);
-        }
+        parseResponse(responseData);
 
-        JsonDoc response;
-        if (isGpApiResponse(responseData)) {
-            response = responseData.get("response");
-        } else {
-            response = responseData.get("data");
-            setTransactionType(responseData.getString("response"));
-        }
+        JsonDoc response = isGpApiResponse(responseData) ? responseData.get("response") : responseData.get("data");
+        setTransactionType(responseData.getString("response"));
 
         JsonDoc data = response.get("data");
         if (data != null) {
@@ -59,7 +48,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
                             break;
                     }
                 } catch (IllegalArgumentException e) {
-                    logger.info("Invalid command: " + getCommand());  // Handle invalid enum conversion
+                    throw new MessageException("Unknown command: " + getCommand(), e);
                 }
             }
 

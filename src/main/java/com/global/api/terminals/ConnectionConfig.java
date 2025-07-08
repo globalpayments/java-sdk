@@ -17,90 +17,45 @@ import com.global.api.terminals.pax.PaxController;
 import com.global.api.terminals.upa.UpaController;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
-import lombok.experimental.Accessors;
+import lombok.Setter;
 
-@Accessors(chain = true)
-@Getter
+@Getter @Setter
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
     private ConnectionModes connectionMode;
+    private DeviceType deviceType;
+    private String configName;
+    private IRequestIdProvider requestIdProvider;
+    private IRequestLogger requestLogger;
+    @Deprecated
+    private IRequestLogger logManagementProvider;
+
+    // TCP CONNECTIONS
+    private String ipAddress;
+    private int port;
+
+    // SERIAL CONNECTIONS
     private BaudRate baudRate;
     private Parity parity;
     private StopBits stopBits;
     private DataBits dataBits;
-    private String ipAddress;
-    private int port;
-    private DeviceType deviceType;
-    private IRequestIdProvider requestIdProvider;
+
+    // DIAMOND CLOUD CONNECTIONS
+    protected String secretKey;
+    protected String isvId;
+    protected String serviceUrl;
+    protected String posId;
+    protected String region;
+
+    // MEET IN THE CLOUD CONNECTIONS
     private MitcConfig geniusMitcConfig;
-    private IRequestLogger logManagementProvider;
-    private IAidlService iAidlService;
+    private GatewayConfig gatewayConfig;
+
+    // AIDL CONNECTIONS
+    private IAidlService aidlService;
 
     public ConnectionConfig() {
         timeout = 30000;
     }
-
-    private GatewayConfig gatewayConfig;
-    private String configName;
-
-    public void setConnectionMode(ConnectionModes connectionModes) {
-        this.connectionMode = connectionModes;
-    }
-
-    public void setAidlService(IAidlService aidlServiceMode) {
-        this.iAidlService = aidlServiceMode;
-    }
-
-    public void setBaudRate(BaudRate baudRate) {
-        this.baudRate = baudRate;
-    }
-
-    public void setParity(Parity parity) {
-        this.parity = parity;
-    }
-
-    public void setStopBits(StopBits stopBits) {
-        this.stopBits = stopBits;
-    }
-
-    public void setDataBits(DataBits dataBits) {
-        this.dataBits = dataBits;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setDeviceType(DeviceType deviceType) {
-        this.deviceType = deviceType;
-    }
-
-    public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
-        this.requestIdProvider = requestIdProvider;
-    }
-
-    public void setLogManagementProvider(IRequestLogger logManagementProvider) {
-        this.logManagementProvider = logManagementProvider;
-    }
-
-    public void setGeniusMitcConfig(MitcConfig geniusMitcConfig) {
-        this.geniusMitcConfig = geniusMitcConfig;
-    }
-
-    @Override
-    public void setGatewayConfig(GatewayConfig gatewayConfig) {
-        this.gatewayConfig = gatewayConfig;
-    }
-
-    @Override
-    public GatewayConfig getGatewayConfig() {
-        return gatewayConfig;
-    }
-
-
 
     public void configureContainer(ConfiguredServices services) throws ConfigurationException {
         switch (deviceType) {

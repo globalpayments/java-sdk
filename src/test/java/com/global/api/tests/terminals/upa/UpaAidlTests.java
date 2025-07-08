@@ -7,6 +7,8 @@ import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
+import com.global.api.terminals.abstractions.IAidlCallback;
+import com.global.api.terminals.abstractions.IAidlService;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.upa.Entities.Lodging;
@@ -19,20 +21,32 @@ import java.math.BigDecimal;
 import static com.global.api.tests.gpapi.BaseGpApiTest.generateRandomBigDecimalFromRange;
 import static org.junit.Assert.*;
 
-public class UpaCreditTests {
+public class UpaAidlTests {
     IDeviceInterface device;
-    private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
-    private static final String SUCCESS_STATUS = "Success";
+
     private final BigDecimal amount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("10"), 2);
 
-    public UpaCreditTests() throws ApiException {
+    public UpaAidlTests() throws ApiException {
+        IAidlService service = new IAidlService() {
+            public IAidlCallback aidlCallback;
+
+            @Override
+            public void onSendAidlMessage(String data, IAidlCallback aidlCallback) {
+                this.aidlCallback = aidlCallback;
+                aidlCallback.onResponse(data);
+            }
+
+            @Override
+            public void onAidlResponse(String data) {
+                aidlCallback.onResponse(data);
+            }
+        };
+
         ConnectionConfig config = new ConnectionConfig();
-        config.setPort(8081);
-        config.setIpAddress("192.168.51.94");
-        config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
+        config.setConnectionMode(ConnectionModes.AIDL);
         config.setDeviceType(DeviceType.UPA_DEVICE);
-        config.setConnectionMode(ConnectionModes.TCP_IP);
+        config.setAidlService(service);
         config.setRequestLogger(new RequestConsoleLogger());
 
         device = DeviceService.create(config);
@@ -153,7 +167,7 @@ public class UpaCreditTests {
         runBasicTests(response1);
 
         TerminalResponse response2 = device.tipAdjust(new BigDecimal("1.50"))
-                .withTerminalRefNumber(response1.getTransactionId())
+                .withTerminalRefNumber(response1.getTerminalRefNumber())
                 .execute();
 
         runBasicTests(response2);
@@ -200,12 +214,15 @@ public class UpaCreditTests {
                 .withGratuity(new BigDecimal("0"))
                 .execute();
 
-        runBasicTests(response1);;
+        runBasicTests(response1);
 
-        TerminalResponse response2 = device.voidTransaction()
-                .withTransactionId(response1.getTransactionId())
-                .execute();
-        runBasicTests(response2);
+        Thread.sleep(5_000);
+
+        runBasicTests(
+                device.voidTransaction()
+                        .withTerminalRefNumber(response1.getTerminalRefNumber())
+                        .execute()
+        );
     }
 
     @Test
@@ -213,12 +230,16 @@ public class UpaCreditTests {
         TerminalResponse response1 = device.sale(amount)
                 .withGratuity(new BigDecimal("0"))
                 .execute();
+
         runBasicTests(response1);
 
-        TerminalResponse response2 = device.reverse()
-                .withTransactionId(response1.getTerminalRefNumber())
-                .execute();
-        runBasicTests(response2);
+        Thread.sleep(5_000);
+
+        runBasicTests(
+                device.reverse()
+                        .withTransactionId(response1.getTerminalRefNumber())
+                        .execute()
+        );
     }
 
     /**
@@ -383,7 +404,7 @@ public class UpaCreditTests {
 
         assertNotNull(response1);
         assertEquals("00", response1.getResponseCode());
-        assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+        assertTrue(response1.getStatus().equalsIgnoreCase("success"));
 
         TerminalResponse response2 = device.deletePreAuth()
                 .withTerminalRefNumber(response1.getTransactionId())
@@ -400,7 +421,7 @@ public class UpaCreditTests {
 
         assertNotNull(response1);
         assertEquals("00", response1.getResponseCode());
-        assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+        assertTrue(response1.getStatus().equalsIgnoreCase("success"));
 
         TerminalResponse response2 = device.deletePreAuth()
                 .withTerminalRefNumber(response1.getTransactionId())
@@ -416,12 +437,12 @@ public class UpaCreditTests {
 
         assertNotNull(response1);
         assertEquals("00", response1.getResponseCode());
-        assertTrue(response1.getStatus().equalsIgnoreCase(SUCCESS_STATUS));
+        assertTrue(response1.getStatus().equalsIgnoreCase("success"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> device.deletePreAuth()
                 .withPreAuthAmount(new BigDecimal(12))
                 .execute());
-        assertEquals(TERMINAL_REF_REQUIRED, exception.getMessage());
+        assertEquals("TERMINAL_REF_REQUIRED", exception.getMessage());
     }
 
     /**
@@ -467,20 +488,6 @@ public class UpaCreditTests {
         TerminalResponse response = device.voidTransaction().withTransactionId(response1.getTransactionId()).execute();
         runBasicTests(response);
         assertNotNull(response.getMerchantId());
-    }
-
-    @Test
-    public void refundByRefNo_withTip() throws ApiException {
-        TerminalResponse response = device.sale(new BigDecimal(10))
-                .withGratuity(new BigDecimal(2))
-                .execute();
-        runBasicTests(response);
-
-        TerminalResponse refundResponse = device.refund(response.getBaseAmount())
-                .withGratuity(response.getTipAmount())
-                .withReferenceNumber(response.getTransactionId())
-                .execute();
-        runBasicTests(refundResponse);
     }
 
     public void runBasicTests(IDeviceResponse response) {

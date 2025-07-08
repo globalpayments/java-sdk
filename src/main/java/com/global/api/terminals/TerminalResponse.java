@@ -45,6 +45,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected CardType cardType;
     protected String currency;
     protected String expirationDate;
+    protected BigDecimal baseAmount;
     protected BigDecimal tipAmount;
     protected BigDecimal cashBackAmount;
     protected String avsResponseCode;

@@ -319,7 +319,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
 
     @Test
     @Order(17)
-    public void googlePay_InvalidToken() throws ApiException {
+    public void googlePay_InvalidToken() {
 
         assertThrows(ApiException.class, () -> {
             String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
@@ -383,7 +383,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
 
     @Test
     @Order(21)
-    public void applePay_InvalidToken() throws ApiException {
+    public void applePay_InvalidToken() {
 
         assertThrows(ApiException.class, () -> {
             String token = "{\"version\":\"EC_v1\",\"data\":\"dvMNzlcy6WNB\",\"header\":{\"ephemeralPublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdNhNAHy9kO2Kol33kIh7k6wh6E\",\"transactionId\":\"fd88874954acdb299c285f95a3202ad1f330d3fd4ebc22a864398684198644c3\",\"publicKeyHash\":\"h7WnNVz2gmpTSkHqETOWsskFPLSj31e3sPTS2cBxgrk\"}}";
@@ -399,7 +399,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
 
     @Test
     @Order(22)
-    public void applePay_Charge_WithoutToken() throws ApiException {
+    public void applePay_Charge_WithoutToken() {
 
         assertThrows(ApiException.class, () -> {
             card = new CreditCardData();
@@ -415,7 +415,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     public void Credit_SupplementaryData() throws ApiException {
         Transaction authorize =
                 card
-                        .authorize(10)
+                        .authorize(new BigDecimal(10))
                         .withCurrency("GBP")
                         .withSupplementaryData("taxInfo", "VATREF", "763637283332")
                         .withSupplementaryData("indentityInfo", "Passport", "PPS736353")
@@ -565,11 +565,11 @@ public class GpEcomCreditTest extends BaseGpEComTest {
                         .execute();
 
         String responseCode = response.getResponseCode(); // 00 == Success
-        String message = response.getResponseMessage(); // [ test system ] AUTHORISED
-        // get the response details to save to the DB for future transaction management requests
-        String orderId = response.getOrderId();
-        String authCode = response.getAuthorizationCode();
-        String paymentsReference = response.getTransactionId(); // pasref
+//        String message = response.getResponseMessage(); // [ test system ] AUTHORISED
+//        // get the response details to save to the DB for future transaction management requests
+//        String orderId = response.getOrderId();
+//        String authCode = response.getAuthorizationCode();
+//        String paymentsReference = response.getTransactionId(); // pasref
 
         assertNotNull(response);
         assertEquals("00", responseCode);
@@ -784,7 +784,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         cardTypesBlocked.setCommercialDebit(true);
         cardTypesBlocked.setConsumerDebit(true);
 
-        Transaction authorization = card.authorize(14)
+        Transaction authorization = card.authorize(new BigDecimal(14))
                 .withCurrency("USD")
                 .withBlockedCardType(cardTypesBlocked)
                 .execute();
@@ -922,7 +922,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         assertNotNull(authorize);
         assertEquals("00", authorize.getResponseCode());
         Transaction capture = authorize.capture(new BigDecimal(4))
-                .withSurchargeAmount(new BigDecimal(0.16), CreditDebitIndicator.Debit)
+                .withSurchargeAmount(new BigDecimal("0.16"), CreditDebitIndicator.Debit)
                 .execute();
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());

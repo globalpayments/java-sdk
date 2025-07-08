@@ -8,37 +8,34 @@ import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 public class CreditCardData extends Credit implements ICardData {
-    @Getter @Setter private String cardHolderName;
-    @Getter @Setter private boolean cardPresent = false;
+    @Setter private String cardHolderName;
+    @Setter private boolean cardPresent = false;
     private String cvn;
-    @Getter @Setter private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
-    @Getter @Setter private String eci;
-    @Getter @Setter private ManualEntryMethod entryMethod;
-    @Getter @Setter private Integer expMonth;
+    @Setter private CvnPresenceIndicator cvnPresenceIndicator = CvnPresenceIndicator.NotRequested;
+    @Setter private String eci;
+    @Setter private ManualEntryMethod entryMethod;
+    @Setter private Integer expMonth;
     private Integer expYear;
     private String number;
-    private boolean readerPresent = false;
-    @Getter @Setter private String tokenizationData;
+    @Setter boolean readerPresent = false;
+    @Setter private String tokenizationData;
 
-    public String getCvn() {
-        return cvn;
-    }
     public void setCvn(String cvn) {
-        if(cvn != null && !cvn.equals("")) {
+        if(cvn != null && !cvn.isEmpty()) {
             this.cvn = cvn;
             this.cvnPresenceIndicator = CvnPresenceIndicator.Present;
         }
     }
-    public Integer getExpYear() {
-        return expYear;
-    }
-    // NOTE: In .NET setExpYear() has a custom logic
     public void setExpYear(Integer expYear) {
-        this.expYear = expYear;
-    }
-    public String getNumber() {
-        return number;
+        if(expYear != null) {
+            // if it's 2 digit... make it 4
+            if(Math.floor(Math.log10(expYear)) + 1 == 2) {
+                this.expYear = expYear + 2000;
+            }
+            else this.expYear = expYear;
+        }
     }
     public void setNumber(String number) {
         this.number = number;
@@ -51,15 +48,12 @@ public class CreditCardData extends Credit implements ICardData {
     }
     public String getShortExpiry() {
         if(expMonth != null && expYear != null) {
-            return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+            if(expYear.toString().length() > 2) {
+                return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear.toString().substring(2, 4);
+            }
+            else return StringUtils.padLeft(expMonth.toString(), 2, '0') + expYear;
         }
         return null;
-    }
-    public boolean isReaderPresent() {
-        return readerPresent;
-    }
-    public void setReaderPresent(boolean readerPresent) {
-        this.readerPresent = readerPresent;
     }
 
     public CreditCardData() {

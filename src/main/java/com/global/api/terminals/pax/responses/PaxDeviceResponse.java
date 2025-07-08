@@ -47,7 +47,9 @@ public class PaxDeviceResponse extends PaxBaseResponse {
         // account
         if(accountResponse != null) {
             setMaskedCardNumber(StringUtils.padLeft(accountResponse.getAccountNumber(), 16, '*'));
-            setEntryMethod(accountResponse.getEntryMode().toString());
+            if(accountResponse.getEntryMode() != null) {
+                setEntryMethod(accountResponse.getEntryMode().toString());
+            }
             setExpirationDate(accountResponse.getExpireDate());
             if(accountResponse.getCardType() != null) {
                 setPaymentType(accountResponse.getCardType().replace('_', ' '));

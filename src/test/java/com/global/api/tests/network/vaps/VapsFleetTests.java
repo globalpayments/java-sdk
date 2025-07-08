@@ -1456,4 +1456,111 @@ public class VapsFleetTests {
         assertEquals("000", response.getResponseCode());
     }
 
+    //  AddFuel() & AddNonFuel()
+    @Test
+    public void test_001_manual_sale_Fuel_nonFuel() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Gallons, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = card.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    //  If add(), addFuel/addNonFuel method used then only addFuel/addNonFuel products will be added, other ignored
+    @Test
+    public void test_002_track_sale_Fuel_nonFuel() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.add(ProductCode.Ethanol_Unleaded_Mid_Grade, UnitOfMeasure.Kilograms, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.ImperialGallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = track.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_sale_nonFuel_Only() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = track.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_004_sale_Fuel_only() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.ImperialGallons, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
+
+        Transaction response = track.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
 }

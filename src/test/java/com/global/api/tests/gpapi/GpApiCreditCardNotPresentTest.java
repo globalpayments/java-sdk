@@ -11,7 +11,6 @@ import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
 import lombok.SneakyThrows;
-import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -330,7 +329,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("50020", e.getResponseText());
-            assertEquals("Status Code: 400 - Tokentype can only be MULTI", e.getMessage());
+            assertEquals("Status Code: 400 - TokenType can only be MULTI", e.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -351,7 +350,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
         } catch (GatewayException e) {
             exceptionCaught = true;
             assertEquals("50021", e.getResponseText());
-            assertEquals("Status Code: 400 - Mandatory Fields missing [card expdate] See Developers Guide", e.getMessage());
+            assertEquals("Status Code: 400 - Mandatory Fields missing [card ExpDate] See Developers Guide", e.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -374,7 +373,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     public void CreditAuthorization_CaptureLowerAmount() throws ApiException {
         Transaction transaction =
                 card
-                        .authorize(5)
+                        .authorize(new BigDecimal(5))
                         .withCurrency(currency)
                         .execute();
         assertTransactionResponse(transaction, TransactionStatus.Preauthorized);
@@ -932,8 +931,8 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
     @Test
     @Order(39)
     public void CreditSale_WithDynamicDescriptor() throws ApiException {
-        var dynamicDescriptor = "My company";
-        var response =
+        String dynamicDescriptor = "My company";
+        Transaction response =
                 card
                         .charge(50)
                         .withCurrency("EUR")

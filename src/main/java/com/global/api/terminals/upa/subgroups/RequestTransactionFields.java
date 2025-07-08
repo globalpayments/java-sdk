@@ -13,17 +13,18 @@ public class RequestTransactionFields {
     private String amount;
     private AutoSubstantiation autoSubstantiation;
     private String baseAmount;
+    private String cashBackAmount;
     private boolean commercialRequest;
-    private BigDecimal taxAmount;
-    private String tipAmount;
-    private Integer taxIndicator;
-    private BigDecimal cashBackAmount;
-    private String invoiceNbr;
-    private String totalAmount;
-    private String terminalRefNumber;
     private String gatewayRefNumber;
     private String giftTransactionType;
+    private String invoiceNbr;
     private String preAuthAmount;
+    private String surchargeAmount;
+    private String taxAmount;
+    private Integer taxIndicator;
+    private String tipAmount;
+    private String terminalRefNumber;
+    private String totalAmount;
 
     private static final String PREAUTH_AMOUNT = "preAuthAmount";
     private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
@@ -61,7 +62,8 @@ public class RequestTransactionFields {
     public void setParams(TerminalAuthBuilder builder) {
         if (builder.getAmount() != null) {
             if (builder.getTransactionType() == TransactionType.Refund || builder.getTransactionType() == TransactionType.Activate) {
-                this.totalAmount = StringUtils.toCurrencyString(builder.getAmount());
+                this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
+                this.totalAmount = StringUtils.toCurrencyString(builder.getTotalAmount());
             } else if (builder.getTransactionType() == TransactionType.Auth) {
                 this.amount = StringUtils.toCurrencyString(builder.getAmount());
             } else {
@@ -78,11 +80,15 @@ public class RequestTransactionFields {
         }
 
         if (builder.getCashBackAmount() != null) {
-            this.cashBackAmount = builder.getCashBackAmount();
+            this.cashBackAmount = StringUtils.toCurrencyString(builder.getCashBackAmount());
+        }
+
+        if(builder.getSurchargeAmount() != null) {
+            this.surchargeAmount = StringUtils.toCurrencyString(builder.getSurchargeAmount());
         }
 
         if (builder.getTaxAmount() != null) {
-            this.taxAmount = builder.getTaxAmount();
+            this.taxAmount = StringUtils.toCurrencyString(builder.getTaxAmount());
         }
 
         if (builder.getInvoiceNumber() != null) {
@@ -135,7 +141,7 @@ public class RequestTransactionFields {
         }
 
         if (taxAmount != null) {
-            params.set("taxAmount", taxAmount.toString());
+            params.set("taxAmount", taxAmount);
             hasContents = true;
         }
 
@@ -150,12 +156,17 @@ public class RequestTransactionFields {
         }
 
         if (cashBackAmount != null) {
-            params.set("cashBackAmount", cashBackAmount.toString());
+            params.set("cashBackAmount", cashBackAmount);
             hasContents = true;
         }
 
         if (invoiceNbr != null) {
             params.set("invoiceNbr", invoiceNbr);
+            hasContents = true;
+        }
+
+        if(surchargeAmount != null) {
+            params.set("surcharge", invoiceNbr);
             hasContents = true;
         }
 

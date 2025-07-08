@@ -13,10 +13,10 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.IEODResponse;
 import com.global.api.terminals.abstractions.ITerminalReport;
+import com.global.api.terminals.upa.UpaInterface;
 import com.global.api.terminals.upa.responses.BatchReportResponse;
 import com.global.api.tests.gpapi.BaseGpApiTest;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UpaMicTests extends BaseGpApiTest {
     RequestConsoleLogger _logManagementProvider;
-    private final IDeviceInterface device;
+    private final UpaInterface device;
 
     private final BigDecimal amount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("10"), 2);
 
@@ -47,9 +47,9 @@ public class UpaMicTests extends BaseGpApiTest {
         connectionConfig.setConnectionMode(ConnectionModes.MEET_IN_THE_CLOUD);
         connectionConfig.setTimeout(30000);
         connectionConfig.setRequestIdProvider(new RandomIdProvider());
-        connectionConfig.setLogManagementProvider(_logManagementProvider);
+        connectionConfig.setRequestLogger(_logManagementProvider);
 
-        device = DeviceService.create(connectionConfig);
+        device = (UpaInterface) DeviceService.create(connectionConfig);
         device.setEcrId("12");
     }
 
@@ -78,7 +78,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditSale_WithZeroTip() throws ApiException {
-        TerminalResponse response = device.creditSale(amount)
+        TerminalResponse response = device.sale(amount)
                 .withGratuity(new BigDecimal(0)) //Tip screen should not be displayed
                 .execute();
 
@@ -90,7 +90,7 @@ public class UpaMicTests extends BaseGpApiTest {
     public void CreditSale_WithTip() throws ApiException {
         BigDecimal tipAmount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("2"), 2);
 
-        TerminalResponse response = device.creditSale(amount)
+        TerminalResponse response = device.sale(amount)
                 .withGratuity(tipAmount)
                 .execute();
 
@@ -102,7 +102,7 @@ public class UpaMicTests extends BaseGpApiTest {
     @Test
     public void LineItem() throws InterruptedException {
         try {
-            IDeviceResponse response = device.addLineItem("Line Item #1", "10.00");
+            IDeviceResponse response = device.lineItem("Line Item #1", "10.00");
 
             assertNotNull(response);
             assertEquals("00", response.getDeviceResponseCode());
@@ -140,7 +140,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditAuth() throws ApiException {
-        TerminalResponse response = device.creditAuth(amount).execute();
+        TerminalResponse response = device.authorize(amount).execute();
 
         assertNotNull(response);
         assertEquals("TRANSACTION CANCELLED  COMMAND NOT SUPPORTED", response.getDeviceResponseText());
@@ -150,7 +150,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditAuthCompletion() throws ApiException {
-        TerminalResponse capture = device.creditCapture(new BigDecimal(10))
+        TerminalResponse capture = device.capture(new BigDecimal(10))
                 .withTerminalRefNumber("0215")
                 .execute();
 
@@ -170,7 +170,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditRefund_Linked() throws ApiException, InterruptedException {
-        TerminalResponse response = device.creditSale(amount)
+        TerminalResponse response = device.sale(amount)
                 .withGratuity(new BigDecimal(0))
                 .execute();
 
@@ -179,7 +179,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
         Thread.sleep(15000);
 
-        TerminalResponse refundResponse = device.creditRefund(amount)
+        TerminalResponse refundResponse = device.refund(amount)
                 .withReferenceNumber(response.getTransactionId())
                 .execute();
 
@@ -189,7 +189,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditVerify() throws ApiException {
-        TerminalResponse response = device.creditVerify().execute();
+        TerminalResponse response = device.verify().execute();
 
         assertNotNull(response);
         assertMitcUpaResponse(response);
@@ -214,7 +214,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
     @Test
     public void CreditVoid_WithTerminalRefNumber() throws ApiException, InterruptedException {
-        TerminalResponse response = device.creditSale(amount)
+        TerminalResponse response = device.sale(amount)
                 .withGratuity(new BigDecimal(0))
                 .execute();
 
@@ -223,7 +223,7 @@ public class UpaMicTests extends BaseGpApiTest {
 
         Thread.sleep(15000);
 
-        TerminalResponse voidResponse = device.creditVoid()
+        TerminalResponse voidResponse = device.voidTransaction()
                 .withTerminalRefNumber(response.getTerminalRefNumber())
                 .execute();
 
@@ -265,7 +265,7 @@ public class UpaMicTests extends BaseGpApiTest {
     public void CreditSale_WithoutAmount() throws ApiException {
         boolean exceptionCaught = false;
         try {
-            device.creditSale().execute();
+            device.sale(null).execute();
         } catch (BuilderException ex) {
             exceptionCaught = true;
             assertEquals("amount cannot be null for this transaction type.", ex.getMessage());
@@ -278,7 +278,7 @@ public class UpaMicTests extends BaseGpApiTest {
     public void CreditAuth_WithoutAmount() throws ApiException {
         boolean exceptionCaught = false;
         try {
-            device.creditAuth().execute();
+            device.authorize(null).execute();
         } catch (BuilderException ex) {
             exceptionCaught = true;
             assertEquals("amount cannot be null for this transaction type.", ex.getMessage());
@@ -291,7 +291,7 @@ public class UpaMicTests extends BaseGpApiTest {
     public void CreditCapture_WithoutTerminalRefNumber() throws ApiException {
         boolean exceptionCaught = false;
         try {
-            device.creditCapture().execute();
+            device.capture().execute();
         } catch (BuilderException ex) {
             exceptionCaught = true;
             assertEquals("terminalRefNumber cannot be null for this transaction type.", ex.getMessage());
@@ -304,7 +304,7 @@ public class UpaMicTests extends BaseGpApiTest {
     public void CreditRefund_WithoutAmount() throws ApiException {
         boolean exceptionCaught = false;
         try {
-            device.creditRefund().execute();
+            device.refund().execute();
         } catch (BuilderException ex) {
             exceptionCaught = true;
             assertEquals("amount cannot be null for this transaction type.", ex.getMessage());

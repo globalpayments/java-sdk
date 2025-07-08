@@ -13,10 +13,7 @@ import com.global.api.terminals.abstractions.ITerminalReport;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
-import com.global.api.terminals.abstractions.IUPAMessage;
 import com.global.api.terminals.enums.TerminalReportType;
-import com.global.api.terminals.messaging.IMessageReceivedInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaAidlInterface;
 import com.global.api.terminals.upa.interfaces.UpaMicInterface;
@@ -30,30 +27,16 @@ import com.global.api.terminals.upa.subgroups.RequestTransactionFields;
 import com.global.api.utils.JsonDoc;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class UpaController extends DeviceController {
-    private IDeviceInterface _device;
-    private IUPAMessage _upaInterface;
-    private IMessageSentInterface onMessageSent;
-    private IMessageSentInterface onMessageReceived;
-
-    private IDeviceMessage paramMsg;
-
-    void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
-    void setOnMessageReceivedHandler(IMessageSentInterface onMessageReceived) {
-        this.onMessageReceived = onMessageReceived;
-    }
     public UpaController(ConnectionConfig settings) throws ConfigurationException {
         super(settings);
+    }
 
-        if(_device == null) {
-            _device = new UpaInterface(this);
-        }
-
-        this.requestIdProvider = settings.getRequestIdProvider();
+    @Override
+    protected void generateInterface() throws ConfigurationException {
+        _device = new UpaInterface(this);
 
         if (settings.getConnectionMode() == ConnectionModes.TCP_IP) {
             _interface = new UpaTcpInterface(settings);
@@ -64,34 +47,10 @@ public class UpaController extends DeviceController {
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
-        _upaInterface = (IUPAMessage) _interface;
-
-        _interface.setMessageSentHandler(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if(onMessageSent != null)
-                    onMessageSent.messageSent(message);
-            }
-        });
-
-        _upaInterface.setMessageReceivedHandler(new IMessageReceivedInterface() {
-            @Override
-            public void messageReceived(byte[] message) {
-                if (onMessageReceived != null) {
-                    onMessageReceived.messageSent(new String(message, StandardCharsets.UTF_8));
-                }
-            }
-        });
     }
 
     public Integer getRequestId() {
         return this.requestIdProvider.getRequestId();
-    }
-
-    @Override
-    public IDeviceInterface configureInterface() {
-        if(_device == null)
-            _device = new UpaInterface(this);
-        return _device;
     }
 
     @Override
@@ -131,22 +90,16 @@ public class UpaController extends DeviceController {
 
         DeviceMessage message = TerminalUtilities.buildMessage(jsonDoc);
 
-        byte[] resp;
-      
         try {
-            resp = send(message);
+            byte[] resp = send(message);
+            JsonDoc responseObj = JsonDoc.parse(new String(resp, StandardCharsets.UTF_8));
+            return new UpaTransactionResponse(responseObj);
         } catch (ApiException e) {
-            if (e.getMessage().equals("Terminal did not respond in the given timeout.")) {
-                _device.cancel();                
+            if (e.getMessage().equals("Terminal did not respond in the given timeout")) {
+                _device.cancel();
             }
-            throw new ApiException(e.getMessage());
+            throw e;
         }
-
-        JsonDoc responseObj = JsonDoc.parse(
-                new String(resp, StandardCharsets.UTF_8)
-        );
-
-        return new UpaTransactionResponse(responseObj);
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
@@ -249,12 +202,10 @@ public class UpaController extends DeviceController {
         JsonDoc responseObj = JsonDoc.parse(
                 new String(resp, StandardCharsets.UTF_8)
         );
-        switch (builder.getTerminalReportType()) {
-            case GetBatchReport:
-                return new BatchReportResponse(responseObj);
-            default:
-                throw new GatewayException("Unknown report type!");
+        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport) {
+            return new BatchReportResponse(responseObj);
         }
+        throw new GatewayException("Unknown report type!");
     }
 
     private IDeviceMessage buildReportParams(TerminalReportBuilder builder) throws UnsupportedTransactionException {
@@ -270,14 +221,10 @@ public class UpaController extends DeviceController {
         baseRequest.set("EcrId", _device.getEcrId());
         baseRequest.set("requestId", requestId);
         JsonDoc dataParams = new JsonDoc();
-        switch (builder.getTerminalReportType()) {
-            case GetBatchReport:
-                if (builder.getTerminalSearchBuilder().getBatch() > 0) {
-                    dataParams.set("batch", builder.getTerminalSearchBuilder().getBatch());
-                }
-                break;
-            default:
-                break;
+        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport) {
+            if (builder.getTerminalSearchBuilder().getBatch() > 0) {
+                dataParams.set("batch", builder.getTerminalSearchBuilder().getBatch());
+            }
         }
 
 
@@ -289,11 +236,9 @@ public class UpaController extends DeviceController {
     }
 
     private String MapReportType(TerminalReportType type) throws UnsupportedTransactionException {
-        switch (type) {
-            case GetBatchReport:
-                return UpaMessageId.GetBatchReport.toString();
-            default:
-                throw new UnsupportedTransactionException("Unsupported report type");
+        if (Objects.requireNonNull(type) == TerminalReportType.GetBatchReport) {
+            return UpaMessageId.GetBatchReport.toString();
         }
+        throw new UnsupportedTransactionException("Unsupported report type");
     }
 }

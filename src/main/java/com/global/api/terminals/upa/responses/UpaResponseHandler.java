@@ -3,12 +3,15 @@ package com.global.api.terminals.upa.responses;
 import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.utils.JsonDoc;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @Getter @Setter
@@ -87,8 +90,6 @@ public class UpaResponseHandler extends TerminalResponse {
     private String responseCode;
     private String responseText;
     private String approvalCode;
-    private BigDecimal tipAmount;
-    private BigDecimal baseAmount;
     private BigDecimal cashBackAmount;
     private String referenceNumber;
     private String cardHolderName;
@@ -124,21 +125,51 @@ public class UpaResponseHandler extends TerminalResponse {
     public static final String INVALID_RESPONSE_FORMAT = "The response received is not in the proper format.";
 
     public void parseResponse(JsonDoc root) throws ApiException {
-        JsonDoc response;
-        if (!isGpApiResponse(root)) {
-            response = root.get("data");
-            if (response == null) {
-                return;
-            }
+        JsonDoc response = isGpApiResponse(root) ? root.get("response") : root.get("data");
+        if(response.get("cmdResult") == null) {
+            throw new MessageException(INVALID_RESPONSE_FORMAT);
+        }
+
+        checkResponse(response);
+        if(!isGpApiResponse(root)) {
+            status = response.get("cmdResult").getString("result");
             requestId = response.getString("requestId");
             command = response.getString("response");
-        } else {
-            response = root.get("response");
+        }
+        else {
             status = root.getStringOrNull("status");
             transactionId = requestId = root.getStringOrNull("id");
             responseText = root.get("action").getStringOrNull("result_code");
         }
         hydrateCmdResult(response);
+    }
+
+    private void checkResponse(JsonDoc response) throws GatewayException {
+        JsonDoc cmdResult = response.get("cmdResult");
+
+        if(cmdResult.getString("result").equalsIgnoreCase("failed")){
+            String errorCode = cmdResult.getString("errorCode");
+            String errorMessage = cmdResult.getString("errorMessage");
+
+            if (response.has("data")) {
+                JsonDoc data = response.get("data");
+                if (data.has("host")) {
+                    JsonDoc host = data.get("host");
+
+                    throw new GatewayException(
+                            "Unexpected Device Response :" + errorCode +" - " +  errorMessage,
+                            host.getString("gatewayResponseCode"),
+                            host.getString("gatewayResponseMessage"),
+                            host.getString("responseCode"),
+                            host.getString("responseText"),
+                            errorCode,
+                            errorMessage
+                        );
+                }
+            }
+
+            throw new GatewayException("Unexpected Device Response :" + errorCode +" - " +  errorMessage, errorCode, errorMessage);
+        }
     }
 
     protected static boolean isGpApiResponse(JsonDoc root) {
@@ -147,12 +178,10 @@ public class UpaResponseHandler extends TerminalResponse {
 
     protected void hydrateCmdResult(JsonDoc response) throws ApiException {
         JsonDoc cmdResult = response.get("cmdResult");
-        if (cmdResult == null) {
-            throw new ApiException(INVALID_RESPONSE_FORMAT);
-        }
         if (status == null) {
             status = cmdResult.getString("result");
         }
+
         String[] successStatusList = {"Success", "COMPLETE"};
         deviceResponseCode = Arrays.asList(successStatusList).contains(status) ? "00" : cmdResult.getString("errorCode");
         deviceResponseText = deviceResponseCode.equals("00") ? status : cmdResult.getString("errorMessage");

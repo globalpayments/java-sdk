@@ -8,7 +8,6 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 
 import org.junit.Test;
@@ -17,10 +16,9 @@ import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class PaxLevel2Tests {
-    private IDeviceInterface device;
+    private final IDeviceInterface device;
 
     public PaxLevel2Tests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
@@ -37,14 +35,7 @@ public class PaxLevel2Tests {
     // PoNumber
     @Test
     public void CheckPoNumber() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1000[FS][FS]1[FS][FS][FS]123456789[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("10")).withPoNumber("123456789").execute();
+        TerminalResponse response = device.sale(new BigDecimal("10")).withPoNumber("123456789").execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
@@ -52,14 +43,7 @@ public class PaxLevel2Tests {
     // CustomerCode
     @Test
     public void CheckCustomerCode() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1100[US][US][US][US]122[FS][FS]1[FS][FS][FS][US]123456789[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("11"))
+        TerminalResponse response = device.sale(new BigDecimal("11"))
                 .withCustomerCode("123456789")
                 .withTaxAmount(new BigDecimal("1.22"))
                 .execute();
@@ -69,15 +53,8 @@ public class PaxLevel2Tests {
 
     // TaxExempt
     @Test
-    public void CheckTaxExcemptTrue() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1200[FS][FS]1[FS][FS][FS][US]123456789[US]1[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("12"))
+    public void CheckTaExemptTrue() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal("12"))
                 .withCustomerCode("123456789")
                 .withTaxType(TaxType.TaxExempt)
                 .execute();
@@ -86,15 +63,8 @@ public class PaxLevel2Tests {
     }
 
     @Test
-    public void CheckTaxExcemptFalse() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1300[US][US][US][US]122[FS][FS]1[FS][FS][FS][US]987654321[US]0[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("13"))
+    public void CheckTaxExemptFalse() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal("13"))
                 .withTaxAmount(new BigDecimal("1.22"))
                 .withCustomerCode("987654321")
                 .withTaxType(TaxType.SalesTax)
@@ -106,14 +76,7 @@ public class PaxLevel2Tests {
     // TaxExemptId
     @Test
     public void CheckTaxExemptId() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1400[FS][FS]1[FS][FS][FS][US]987654321[US]1[US]987654321[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("14"))
+        TerminalResponse response = device.sale(new BigDecimal("14"))
                 .withCustomerCode("987654321")
                 .withTaxType(TaxType.TaxExempt, "987654321")
                 .execute();
@@ -124,14 +87,7 @@ public class PaxLevel2Tests {
     // All fields
     @Test
     public void checkAllFields() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                //assertTrue(message.startsWith("[STX]T00[FS]1.35[FS]01[FS]1500[FS][FS]1[FS][FS][FS]123456789[US]8675309[US]1[US]987654321[FS][FS][ETX]"));
-            }
-        });
-
-        TerminalResponse response = device.creditSale(new BigDecimal("15"))
+        TerminalResponse response = device.sale(new BigDecimal("15"))
                 .withPoNumber("123456789")
                 .withCustomerCode("8675309")
                 .withTaxType(TaxType.TaxExempt, "987654321").execute();

@@ -4,37 +4,23 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.sql.Timestamp;
 import java.util.*;
 
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.MessageException;
-import com.global.api.terminals.ConnectionConfig;
+import com.global.api.terminals.DeviceCommInterface;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
-import com.global.api.terminals.messaging.IMessageReceivedInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.utils.*;
 
-public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
+public class UpaTcpInterface extends DeviceCommInterface {
     private Socket client;
     private DataOutputStream out;
     private DataInputStream in;
-    private final ConnectionConfig settings;
-    private IMessageSentInterface onMessageSent;
-    private IMessageReceivedInterface onMessageReceived;
 
-    public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
-    public void setMessageReceivedHandler(IMessageReceivedInterface onMessageReceived) {
-        this.onMessageReceived = onMessageReceived;
-    }
-
-    public UpaTcpInterface(ConnectionConfig settings) {
-        this.settings = settings;
+    public UpaTcpInterface(ITerminalConfiguration settings) {
+        super(settings);
     }
 
     public void connect() {
@@ -135,50 +121,10 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
         }
         finally {
             disconnect();
-        }
-    }
-
-    private void raiseOnMessageSent(String message) {
-        try {
-            if (onMessageSent != null) {
-                onMessageSent.messageSent(message);
+            try {
+                Thread.sleep(500);
             }
-
-            if (settings.getRequestLogger() != null) {
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-                JsonDoc msg = new JsonDoc();
-                msg.set("timestamp", timestamp.toString());
-                msg.set("type", "REQUEST");
-                msg.set("message", message);
-
-                settings.getRequestLogger().RequestSent(msg.toString());
-            }
-        }
-        catch(IOException exc) {
-            /* Logging should never interfere with processing */
-        }
-    }
-
-    private void raiseOnMessageReceived(byte[] message) {
-        try {
-            if(onMessageReceived != null) {
-                onMessageReceived.messageReceived(message);
-            }
-
-            if(settings.getRequestLogger() != null) {
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-                JsonDoc msg = new JsonDoc();
-                msg.set("timestamp", timestamp.toString());
-                msg.set("type", "RESPONSE");
-                msg.set("message", new String(message));
-
-                settings.getRequestLogger().ResponseReceived(msg.toString());
-            }
-        }
-        catch(IOException exc) {
-            /* NOM NOM */
+            catch(InterruptedException exc) { /* NOM NOM */ }
         }
     }
 
@@ -200,7 +146,7 @@ public class UpaTcpInterface implements IDeviceCommInterface, IUPAMessage {
             return null;
         }
         catch(IOException exc) {
-            return null;
+            throw new MessageException(exc.getMessage(), exc);
         }
     }
 

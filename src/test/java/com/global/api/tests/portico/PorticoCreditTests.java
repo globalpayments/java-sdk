@@ -985,5 +985,18 @@ public class PorticoCreditTests {
         // TODO: This is insufficient to actually test.
         // TODO: The request needs to be checked for the absence of the <AmountIndicator/> tag
     }
+
+    @Test
+    public void credit_Auth_AmountIndicator_Null() throws ApiException {
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        // TODO: This is insufficient to actually test.
+        // TODO: The request needs to be checked for the absence of the <AmountIndicator/> tag
+    }
 }
 

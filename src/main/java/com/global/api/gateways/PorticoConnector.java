@@ -545,7 +545,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             et.subElement(root, "GatewayTxnId", builder.getTransactionId());
 
             // reversal & Capture
-            if (type.equals(TransactionType.Reversal)  || type.equals(TransactionType.Capture) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
+            if (type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // client transaction id
                 if(!type.equals(TransactionType.Capture)){
                     et.subElement(root, "ClientTxnId", builder.getClientTransactionId());
@@ -580,9 +580,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         }
                     }
                 }
-            }
 
-            if (type.equals(TransactionType.Reversal) || type.equals(TransactionType.Capture) || ((paymentType != null) && paymentType.equals(PaymentMethodType.ACH))) {
                 // tag data
                 if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                     Element tagData = et.subElement(root, "TagData");

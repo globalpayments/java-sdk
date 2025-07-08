@@ -12,6 +12,8 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.SummaryResponse;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
+import com.global.api.terminals.upa.UpaInterface;
+import com.global.api.terminals.upa.responses.UpaDeviceResponse;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
@@ -26,6 +28,7 @@ import org.junit.runners.MethodSorters;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -37,7 +40,7 @@ import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UpaAdminTests {
-    IDeviceInterface device;
+    UpaInterface device;
 
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
@@ -48,9 +51,8 @@ public class UpaAdminTests {
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.TCP_IP);
         config.setRequestLogger(new RequestConsoleLogger());
-//        config.setRequestLogger(new RequestFileLogger("AdminTests.txt"));
 
-        device = DeviceService.create(config);
+        device = (UpaInterface) DeviceService.create(config);
         assertNotNull(device);
         device.setOnMessageSent(System.out::println);
     }
@@ -62,12 +64,9 @@ public class UpaAdminTests {
     }
 
     @Test
-    public void test02_cancel() {
-        try {
-            device.cancel();
-        } catch (Exception e) {
-            fail();
-        }
+    public void test02_cancel() throws ApiException {
+        IDeviceResponse response = device.cancel();
+        runBasicTests(response);
     }
 
     /**
@@ -81,9 +80,9 @@ public class UpaAdminTests {
 
     @Test
     public void test03_lineItems() throws ApiException {
-        runBasicTests(device.addLineItem("Line Item 1", "111.11"));
-        runBasicTests(device.addLineItem("Line Item 2", null));
-        runBasicTests(device.addLineItem("Line Item 3", "333.33"));
+        runBasicTests(device.lineItem("Line Item 1", "111.11"));
+        runBasicTests(device.lineItem("Line Item 2", null));
+        runBasicTests(device.lineItem("Line Item 3", "333.33"));
 
         try {
             device.cancel();
@@ -92,25 +91,15 @@ public class UpaAdminTests {
         }
     }
 
-    /**
-     * For line item display left side text is mandatory & should not be null.
-     *
-     * @throws ApiException
-     */
     @Test
     public void test03_lineItems_leftSideTextMandatory() {
-        ApiException leftSideTextMandatory = assertThrows(ApiException.class, () -> device.addLineItem(null, "null"));
+        ApiException leftSideTextMandatory = assertThrows(ApiException.class, () -> device.lineItem(null, "null"));
         assertEquals("Left-side text is required.", leftSideTextMandatory.getMessage());
     }
 
-    /**
-     * For line item display right side text character should not exceed 10 length.
-     *
-     * @throws ApiException
-     */
     @Test
     public void test03_lineItems_rightSideTextLimit() {
-        ApiException rightSideTextLimit = assertThrows(ApiException.class, () -> device.addLineItem("Line Item ", "1111.1111111111"));
+        ApiException rightSideTextLimit = assertThrows(ApiException.class, () -> device.lineItem("Line Item ", "1111.1111111111"));
         assertEquals("Right-side text has 10 char limit.", rightSideTextLimit.getMessage());
     }
 
@@ -148,8 +137,6 @@ public class UpaAdminTests {
      * This test assumes there is one SAF transaction stored in the device prior to runtime.
      * The SAF transaction should be an $85.00 sale, which results in a $55.00 partial
      * authorization.
-     *
-     * @throws ApiException
      */
     @Test
     public void test_sendSAF_partial_auth() throws ApiException {
@@ -224,10 +211,6 @@ public class UpaAdminTests {
     }
 
     /**
-     ----------------------------------SAF test case end-----------------------------------------------------------------------
-     */
-
-    /**
      * ----------------------------------Get Signature test case start-----------------------------------------------------------------------
      */
     @Test
@@ -269,10 +252,6 @@ public class UpaAdminTests {
     }
 
     /**
-     ----------------------------------Get Signature test case end-----------------------------------------------------------------------
-     */
-
-    /**
      * ----------------------------------Register POS test case start-----------------------------------------------------------------------
      */
     @Test
@@ -297,21 +276,15 @@ public class UpaAdminTests {
 
     /**
      * Package Name of Application is required for Register POS command.
-     *
-     * @throws ApiException
      */
     @Test
-    public void test_registerPOS_packageNameRequired_Exception() throws ApiException {
+    public void test_registerPOS_packageNameRequired_Exception() {
         RegisterPOS data = new RegisterPOS();
         data.setLaunchOrder(1);
         data.setRemove(true);
         ApiException packageNameRequiredException = assertThrows(ApiException.class, () -> device.registerPOS(data));
         assertEquals("The package name of the application is required.", packageNameRequiredException.getMessage());
     }
-
-    /**
-     ----------------------------------Register POS test case end-----------------------------------------------------------------------
-     */
 
     /**
      * ----------------------------------Print Data test case start-----------------------------------------------------------------------
@@ -327,15 +300,18 @@ public class UpaAdminTests {
 
             byte[] bytes = new byte[(int) file.length()];
             int content = fis.read(bytes);
-            String base64Image = new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
+            if(content > 0) {
+                String base64Image = new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
 
-            PrintData data = new PrintData();
-            data.setContent(base64Image);
-            data.setLine1("Printing");
-            data.setLine2("Please Wait...");
+                PrintData data = new PrintData();
+                data.setContent(base64Image);
+                data.setLine1("Printing");
+                data.setLine2("Please Wait...");
 
-            IDeviceResponse response = device.printReceipt(data);
-            runBasicTests(response);
+                IDeviceResponse response = device.print(data);
+                runBasicTests(response);
+            }
+            else fail("No data returned");
         } finally {
             if (fis != null) {
                 fis.close();
@@ -354,32 +330,24 @@ public class UpaAdminTests {
 
     /**
      * Image content for PrintData command is mandatory.
-     *
-     * @throws ApiException
      */
     @Test
-    public void test_receipt_ImageDataShouldNotBeNull() throws ApiException {
+    public void test_receipt_ImageDataShouldNotBeNull() {
         PrintData data = new PrintData();
         data.setLine1("Printing");
         data.setLine2("Please Wait...");
         ApiException imageDataNotNullException = assertThrows(ApiException.class, () ->
-                device.printReceipt(data));
+                device.print(data));
         assertEquals("The image data cannot be null or empty.", imageDataNotNullException.getMessage());
 
     }
 
-    /**
-     ----------------------------------Print Data test case end-----------------------------------------------------------------------
-     */
-
 
     /**
      * Only TCP_IP mode supported for UPA.
-     *
-     * @throws ConfigurationException
      */
     @Test
-    public void test_unsupportedConnectionMode() throws ConfigurationException {
+    public void test_unsupportedConnectionMode() {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
         config.setIpAddress("192.168.2.96");
@@ -388,7 +356,7 @@ public class UpaAdminTests {
         config.setDeviceType(DeviceType.UPA_DEVICE);
         config.setConnectionMode(ConnectionModes.HTTP);
 
-        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> device = DeviceService.create(config));
+        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> device = (UpaInterface) DeviceService.create(config));
         assertEquals("Unsupported connection mode.", configurationException.getMessage());
     }
 
@@ -402,7 +370,7 @@ public class UpaAdminTests {
      * used to save the signature data in image format
      */
     public static void saveSignatureImage(byte[] signatureData, String imgFileName) throws IOException {
-        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imgFileName))) {
+        try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(Paths.get(imgFileName)))) {
             outputStream.write(signatureData);
             outputStream.flush();
         } catch (Exception e) {

@@ -9,6 +9,9 @@ import static com.global.api.entities.enums.GatewayProvider.GP_API;
 public class UpaDeviceResponse extends TerminalResponse {
     protected UpaMessageId messageId;
 
+    public UpaDeviceResponse(JsonDoc responseObj) {
+        this(responseObj, null);
+    }
     public UpaDeviceResponse(JsonDoc responseObj, UpaMessageId messageId) {
         this.messageId = messageId;
 

@@ -11,7 +11,6 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
-import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.abstractions.ITerminalReport;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
@@ -31,15 +30,16 @@ import lombok.Getter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+@Getter
 public class GeniusController extends DeviceController {
-
-    private IDeviceInterface _device;
-    @Getter
     private MitcGateway gateway;
 
     public GeniusController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
+    }
 
+    @Override
+    protected void generateInterface() throws ConfigurationException {
         _device = new GeniusInterface(this);
 
         if (settings.getConnectionMode() == ConnectionModes.MEET_IN_THE_CLOUD) {
@@ -47,13 +47,6 @@ public class GeniusController extends DeviceController {
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
-    }
-
-    @Override
-    public IDeviceInterface configureInterface() throws ConfigurationException {
-        if (_device == null)
-            _device = new GeniusInterface(this);
-        return _device;
     }
 
     public MitcResponse send(
@@ -195,7 +188,6 @@ public class GeniusController extends DeviceController {
         request.set("transaction", transaction);
 
         MitcRequestType requestType = null;
-
         if (builder.getTransactionType() == TransactionType.Sale) {
             requestType = MitcRequestType.CARD_PRESENT_SALE;
         } else if (builder.getTransactionType() == TransactionType.Refund) {

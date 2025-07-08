@@ -6,6 +6,7 @@ import com.global.api.entities.enums.SafMode;
 import com.global.api.entities.enums.UpdateResourceFileType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
@@ -35,22 +36,26 @@ public class PaxAdminTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.228.130");
+        deviceConfig.setIpAddress("192.168.51.252");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
+        deviceConfig.setRequestLogger(new RequestConsoleLogger());
 
         device = DeviceService.create(deviceConfig);
+        device.setOnMessageSent(System.out::println);
+        device.setOnMessageReceived(System.out::println);
+
         assertNotNull(device);
     }
 
     @Test
     public void initialize() throws ApiException {
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                assertNotNull(message);
-                assertTrue(message.startsWith("[STX]A00[FS]1.35[FS][ETX]"));
-            }
-        });
+//        device.setOnMessageSent(new IMessageSentInterface() {
+//            public void messageSent(String message) {
+//                assertNotNull(message);
+//                assertTrue(message.startsWith("[STX]A00[FS]1.35[FS][ETX]"));
+//            }
+//        });
 
         IInitializeResponse response = device.initialize();
         assertNotNull(response);

@@ -40,7 +40,7 @@ import static com.global.api.logging.PrettyLogger.toPrettyJson;
 public abstract class Gateway {
 
     private static final String AUTHORIZATION_HEADER_KEY = "Authorization";
-    private final String lSChar = System.getProperty("line.separator");
+    private final String lSChar = System.lineSeparator();
     protected HashMap<String, String> headers;
     protected HashMap<String, String> dynamicHeaders;
     protected int timeout;
@@ -169,7 +169,12 @@ public abstract class Gateway {
 
             try {
                 assert conn != null;
-                throw new GatewayException("Error occurred while communicating with gateway.", exc, String.valueOf(conn.getResponseCode()), getRawResponse(conn.getErrorStream(), "gzip".equalsIgnoreCase(conn.getContentEncoding())));
+                throw new GatewayException(
+                        "Error occurred while communicating with gateway.",
+                        String.valueOf(conn.getResponseCode()),
+                        getRawResponse(conn.getErrorStream(),
+                        "gzip".equalsIgnoreCase(conn.getContentEncoding())),
+                        exc);
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }
@@ -216,7 +221,7 @@ public abstract class Gateway {
     }
 
     public String getRawResponse(InputStream responseStream, Boolean isGzip) throws IOException {
-        String rawResponse = null;
+        String rawResponse;
 
         if (isGzip) {
 

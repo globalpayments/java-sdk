@@ -2,9 +2,9 @@ package com.global.api.terminals.pax.interfaces;
 
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.exceptions.MessageException;
+import com.global.api.terminals.DeviceCommInterface;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.*;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.utils.EnumUtils;
 
 import java.io.DataOutputStream;
@@ -12,22 +12,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-public class PaxTcpInterface implements IDeviceCommInterface {
+public class PaxTcpInterface extends DeviceCommInterface {
     private Socket client;
     private DataOutputStream out;
     private InputStream in;
-    private ITerminalConfiguration settings;
     private int nakCount = 0;
 
-
-    private IMessageSentInterface onMessageSent;
-
-    public void setMessageSentHandler(IMessageSentInterface onMessageSent) {
-        this.onMessageSent = onMessageSent;
-    }
-
     public PaxTcpInterface(ITerminalConfiguration settings) {
-        this.settings = settings;
+        super(settings);
     }
 
     public void connect() {
@@ -42,14 +34,14 @@ public class PaxTcpInterface implements IDeviceCommInterface {
                 else throw new IOException("Client failed to connect");
             }
             catch(IOException exc) {
-                //TODO: Handle this exception
+                /* NOM NOM */
             }
         }
     }
 
     public void disconnect() {
         try {
-            if (!client.isClosed()) {
+            if (client != null && !client.isClosed()) {
                 in.close();
                 out.close();
                 client.close();
@@ -65,8 +57,7 @@ public class PaxTcpInterface implements IDeviceCommInterface {
 
         byte[] buffer = message.getSendBuffer();
         try {
-            if(onMessageSent != null)
-                onMessageSent.messageSent(message.toString());
+            raiseOnMessageSent(message.toString());
 
             for(int i = 0; i < 3; i++) {
                 out.write(buffer);
@@ -96,9 +87,17 @@ public class PaxTcpInterface implements IDeviceCommInterface {
         try {
             if (code != ControlCodes.NAK) {
                 nakCount = 0;
-                out.write((int) code.getByte());
-            } else if (++nakCount == 3) {
-                sendControlCode(ControlCodes.EOT);
+                out.write(code.getByte());
+                raiseOnMessageSent(code.toString());
+            }
+            else {
+                if (++nakCount == 3) {
+                    sendControlCode(ControlCodes.EOT);
+                }
+                else {
+                    out.write(code.getByte());
+                    raiseOnMessageSent(code.toString());
+                }
             }
         } catch(IOException e) {
             throw new MessageException("Failed to send control code.");
@@ -114,6 +113,9 @@ public class PaxTcpInterface implements IDeviceCommInterface {
                 byte[] rec_buffer = new byte[bytesReceived];
                 System.arraycopy(buffer, 0, rec_buffer, 0, bytesReceived);
 
+                // log all responses regardless
+                raiseOnMessageReceived(rec_buffer);
+
                 ControlCodes code = EnumUtils.parse(ControlCodes.class, rec_buffer[0]); // queue.readCode();
                 if (code.equals(ControlCodes.NAK))
                     return null;
@@ -121,9 +123,9 @@ public class PaxTcpInterface implements IDeviceCommInterface {
                     throw new MessageException("Terminal returned EOT for the current message");
                 else if (code.equals(ControlCodes.ACK))
                     return getTerminalResponse();
-                else if (code.equals(ControlCodes.STX)) {
+                else if (code.equals(ControlCodes.STX))
                     return rec_buffer;
-                } else throw new MessageException(String.format("Unknown message received: %s", code));
+                else throw new MessageException(String.format("Unknown message received: %s", code));
             }
 
             return null;
@@ -136,14 +138,10 @@ public class PaxTcpInterface implements IDeviceCommInterface {
     private int awaitResponse(InputStream in, byte[] buffer) throws IOException {
         long t = System.currentTimeMillis();
         do {
-            if(in.available() > 0) {
+            if (in.available() > 0) {
                 return in.read(buffer);
             }
-
-            if (System.currentTimeMillis() - t >= settings.getTimeout())
-                break;
-        }
-        while(true);
+        } while (System.currentTimeMillis() - t < settings.getTimeout());
         throw new IOException("Terminal did not respond in the given timeout");
     }
 }

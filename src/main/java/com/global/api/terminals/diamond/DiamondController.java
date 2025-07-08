@@ -2,9 +2,7 @@ package com.global.api.terminals.diamond;
 
 import com.global.api.builders.validations.RequestBuilderValidations;
 import com.global.api.entities.enums.*;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.*;
 import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.DeviceMessage;
@@ -19,7 +17,7 @@ import com.global.api.terminals.diamond.entities.DiamondCloudRequest;
 import com.global.api.terminals.diamond.interfaces.DiamondHttpInterface;
 import com.global.api.terminals.diamond.interfaces.DiamondInterface;
 import com.global.api.terminals.diamond.responses.DiamondCloudResponse;
-import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
@@ -29,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class DiamondController extends DeviceController {
-
     private static final Map<String, String> ENDPOINT_EXCEPTIONS = new HashMap<>();
 
     static {
@@ -46,33 +43,19 @@ public class DiamondController extends DeviceController {
         ENDPOINT_EXCEPTIONS.put(DiamondCloudRequest.GIFT_REDEEM, Region.US.toString());
     }
 
-    private IDeviceInterface device;
-    private IMessageSentInterface onMessageSent;
-    private final DiamondCloudConfig _settings;
-
     public DiamondController(DiamondCloudConfig settings) throws ConfigurationException {
         super(settings);
-        _settings = settings;
+    }
 
-        if (device == null) {
-            device = new DiamondInterface(this);
-        }
-
-        this.requestIdProvider = settings.getRequestIdProvider();
-        this.logManagementProvider = settings.getLogManagementProvider();
+    @Override
+    protected void generateInterface() throws ConfigurationException {
+        _device = new DiamondInterface(this);
 
         if (settings.getConnectionMode() == ConnectionModes.DIAMOND_CLOUD) {
             _interface = new DiamondHttpInterface(settings);
         } else {
             throw new ConfigurationException("Unsupported connection mode.");
         }
-
-        _interface.setMessageSentHandler(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if (onMessageSent != null)
-                    onMessageSent.messageSent(message);
-            }
-        });
     }
 
     @Override
@@ -94,21 +77,18 @@ public class DiamondController extends DeviceController {
                 .Validate(builder, builder.getTerminalReportType());
 
         JsonDoc request = new JsonDoc();
-        switch (builder.getTerminalReportType()) {
-            case LocalDetailReport:
-                request.set("endpoint", "/" + _settings.getPosID() + "/details/" + builder.getTerminalSearchBuilder().getReferenceNumber());
+        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.LocalDetailReport) {
+            request.set("endpoint", "/" + settings.getPosId() + "/details/" + builder.getTerminalSearchBuilder().getReferenceNumber());
 
-                JsonDoc param = new JsonDoc();
-                param.set("POS_ID", _settings.getPosID())
-                        .set("cloud_id", builder.getTerminalSearchBuilder().getReferenceNumber());
+            JsonDoc param = new JsonDoc();
+            param.set("POS_ID", settings.getPosId())
+                    .set("cloud_id", builder.getTerminalSearchBuilder().getReferenceNumber());
 
-                request.set("queryParams", param);
+            request.set("queryParams", param);
 
-                request.set("verb", GpApiRequest.HttpMethod.Get.getValue());
-
-                break;
-            default:
-                throw new GatewayException("Report type not defined!");
+            request.set("verb", GpApiRequest.HttpMethod.Get.getValue());
+        } else {
+            throw new GatewayException("Report type not defined!");
         }
 
         String requestAsString = request.toString();
@@ -117,12 +97,6 @@ public class DiamondController extends DeviceController {
         DeviceMessage requestToDo = new DeviceMessage(payload);
 
         return doTransaction(requestToDo);
-    }
-
-    public IDeviceInterface configureInterface() {
-        if (device == null)
-            device = new DiamondInterface(this);
-        return device;
     }
 
     private DiamondCloudResponse doTransaction(IDeviceMessage request) throws ApiException {
@@ -137,12 +111,12 @@ public class DiamondController extends DeviceController {
         return new DiamondCloudResponse(jsonObject);
     }
 
-    private IDeviceMessage buildProcessTransaction(TerminalAuthBuilder builder) throws GatewayException {
+    private IDeviceMessage buildProcessTransaction(TerminalAuthBuilder builder) throws UnsupportedTransactionException, UnsupportedPaymentMethodException {
         JsonDoc body = new JsonDoc();
         JsonDoc request = new JsonDoc();
         JsonDoc param = new JsonDoc();
         String endpoint = "";
-        param.set("POS_ID", _settings.getPosID());
+        param.set("POS_ID", settings.getPosId());
         switch (builder.getTransactionType()) {
             case Sale:
                 request.set("verb", GpApiRequest.HttpMethod.Post.getValue());
@@ -181,7 +155,7 @@ public class DiamondController extends DeviceController {
                 body.set("amount", StringUtils.toNumeric(builder.getAmount()));
                 break;
             case Balance:
-                if (_settings.getRegion() != Region.EU.toString()) {
+                if (!Objects.equals(settings.getRegion(), Region.EU.toString())) {
                     request.set("verb", GpApiRequest.HttpMethod.Post.getValue());
                     if (builder.getPaymentMethodType() == PaymentMethodType.EBT) {
                         endpoint = DiamondCloudRequest.EBT_BALANCE;
@@ -190,8 +164,10 @@ public class DiamondController extends DeviceController {
                         endpoint = DiamondCloudRequest.GIFT_BALANCE;
                     }
                 } else {
-                    throw new GatewayException("Transaction type " + TransactionType.Balance + " for payment type not supported " +
-                            "in " + _settings.getRegion());
+                    throw new UnsupportedTransactionException("Transaction type "
+                            + TransactionType.Balance
+                            + " for payment type not supported "
+                            + "in " + settings.getRegion());
                 }
                 break;
             case BatchClose:
@@ -206,14 +182,14 @@ public class DiamondController extends DeviceController {
                 }
                 break;
             default:
-                throw new GatewayException("Transaction type " + builder.getTransactionType() + " not supported!");
+                throw new UnsupportedTransactionException("Transaction type " + builder.getTransactionType() + " not supported!");
         }
 
-        if (!validateEndpoint(endpoint)) {
-            throw new GatewayException("This feature is not supported in " + _settings.getRegion() + " region!");
+        if (isEndpointInvalid(endpoint)) {
+            throw new UnsupportedTransactionException("This feature is not supported in " + settings.getRegion() + " region!");
         }
 
-        request.set("endpoint", "/" + _settings.getPosID() + endpoint)
+        request.set("endpoint", "/" + settings.getPosId() + endpoint)
                 .set("body", body)
                 .set("queryParams", param);
 
@@ -222,12 +198,12 @@ public class DiamondController extends DeviceController {
         return new DeviceMessage(payload);
     }
 
-    private IDeviceMessage buildManageTransaction(TerminalManageBuilder builder) throws GatewayException {
+    private IDeviceMessage buildManageTransaction(TerminalManageBuilder builder) throws UnsupportedTransactionException, UnsupportedPaymentMethodException {
         JsonDoc body = new JsonDoc();
         JsonDoc request = new JsonDoc();
         JsonDoc param = new JsonDoc();
         String endpoint = "";
-        param.set("POS_ID", _settings.getPosID());
+        param.set("POS_ID", settings.getPosId());
         switch (builder.getTransactionType()) {
             case Void:
                 endpoint = DiamondCloudRequest.VOID;
@@ -243,7 +219,7 @@ public class DiamondController extends DeviceController {
                 break;
             case Capture:
                 endpoint = DiamondCloudRequest.CAPTURE;
-                if (_settings.getRegion() == Region.EU.toString()) {
+                if (Objects.equals(settings.getRegion(), Region.EU.toString())) {
                     endpoint = DiamondCloudRequest.CAPTURE_EU;
                 }
                 request.set("verb", GpApiRequest.HttpMethod.Post.getValue());
@@ -272,14 +248,14 @@ public class DiamondController extends DeviceController {
                 body.set("transaction_id", builder.getTransactionId());
                 break;
             default:
-                throw new GatewayException("Transaction type " + builder.getTransactionType() + " not supported!");
+                throw new UnsupportedTransactionException("Transaction type " + builder.getTransactionType() + " not supported!");
 
         }
 
-        if (!validateEndpoint(endpoint)) {
-            throw new GatewayException("This feature is not supported in " + _settings.getRegion() + " region!");
+        if (isEndpointInvalid(endpoint)) {
+            throw new UnsupportedTransactionException("This feature is not supported in " + settings.getRegion() + " region!");
         }
-        request.set("endpoint", "/" + _settings.getPosID() + endpoint)
+        request.set("endpoint", "/" + settings.getPosId() + endpoint)
                 .set("body", body)
                 .set("queryParams", param);
 
@@ -288,16 +264,14 @@ public class DiamondController extends DeviceController {
         return new DeviceMessage(payload);
     }
 
-    private boolean validateEndpoint(String endpoint) throws GatewayException {
+    private boolean isEndpointInvalid(String endpoint) throws UnsupportedPaymentMethodException {
         if (StringUtils.isNullOrEmpty(endpoint)) {
-            throw new GatewayException("Payment type not supported!");
+            throw new UnsupportedPaymentMethodException("Payment type not supported!");
         }
 
         if (ENDPOINT_EXCEPTIONS.containsKey(endpoint)) {
-            return Objects.equals(ENDPOINT_EXCEPTIONS.get(endpoint), _settings.getRegion());
+            return !Objects.equals(ENDPOINT_EXCEPTIONS.get(endpoint), settings.getRegion());
         }
-
-        return true;
+        return false;
     }
-
 }

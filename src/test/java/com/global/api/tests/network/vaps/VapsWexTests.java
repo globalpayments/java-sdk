@@ -68,7 +68,7 @@ public class VapsWexTests {
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
 //        config.setTerminalId("0000912197711");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -2733,6 +2733,72 @@ public class VapsWexTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    //AddFuel() & AddNonFuel()
+    @Test
+    public void test_001_sale_Fuel_nonFuel() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5"), new BigDecimal("50"), new BigDecimal("12"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("12"), new BigDecimal("50.00"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("1"));
+
+        Transaction response = card.charge(new BigDecimal("10.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_002_sale_Fuel_only() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("15"), new BigDecimal("50"), new BigDecimal("21"));
+        productData.addFuel(ProductCode.Ethanol_85, UnitOfMeasure.Units, new BigDecimal("6"), new BigDecimal("10"), new BigDecimal("11"));
+
+        Transaction response = card.charge(new BigDecimal("11.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
     }
 
 }

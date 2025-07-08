@@ -55,9 +55,6 @@ public class FileProcessingClient {
 
     private boolean sendRequest(GpApiRequest.HttpMethod verb, String filePath) throws Exception {
 
-        OutputStream out = null;
-        FileInputStream fis = null;
-
         try {
             String verbAsString = verb.getValue();
 
@@ -68,16 +65,17 @@ public class FileProcessingClient {
             httpClient.setDoOutput(true);
             setHeaders(httpClient);
 
-            out = httpClient.getOutputStream();
-
             File fileToUpload = new File(filePath);
-            fis = new FileInputStream(fileToUpload);
 
-            MultipartEntity multipartEntity = new MultipartEntity();
-            multipartEntity.addPart("file", new InputStreamBody(fis, "filename"));
-            multipartEntity.writeTo(out);
+            try (OutputStream out = httpClient.getOutputStream();
+                 FileInputStream fis = new FileInputStream(fileToUpload)) {
 
-            out.flush();
+                MultipartEntity multipartEntity = new MultipartEntity();
+                multipartEntity.addPart("file", new InputStreamBody(fis, "filename"));
+                multipartEntity.writeTo(out);
+
+                out.flush();
+            }
 
             int statusResponse = httpClient.getResponseCode();
             if (statusResponse != HttpStatus.SC_OK) {
@@ -87,17 +85,6 @@ public class FileProcessingClient {
             return true;
         } catch (Exception exc) {
             throw new GatewayException("Error occurred while sending the request.", exc);
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } finally {
-                if (fis != null) {
-                    fis.close();
-                }
-            }
-
         }
     }
 

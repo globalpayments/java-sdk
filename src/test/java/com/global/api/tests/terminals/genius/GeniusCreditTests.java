@@ -2,10 +2,7 @@ package com.global.api.tests.terminals.genius;
 
 import com.global.api.entities.Address;
 import com.global.api.entities.AutoSubstantiation;
-import com.global.api.entities.enums.ConnectionModes;
-import com.global.api.entities.enums.DeviceType;
-import com.global.api.entities.enums.Environment;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
@@ -46,16 +43,17 @@ public class GeniusCreditTests {
         config.setEnableLogging(true);
 
         device = DeviceService.create(config);
-        /*MitcConfig gatewayConfigTony = new MitcConfig(
+
+        /*
+        MitcConfig gatewayConfigTony = new MitcConfig(
                 "800000052971",
                 "80040245",
                 "kBySHIAkhL4UBFkVokFEUmDKWY1WGWUv",
                 "u1cYb2xoGONWkGfSxp8js1BGgMOkO0tyMUP732qbAWM",
                 "uITbt4dHj0f6Q2EVDwuWWA9cGiDAQnyD",
                 "cedevice::at63jh"
-        );*/
-
-
+        );
+        */
     }
 
     @Test
@@ -70,7 +68,7 @@ public class GeniusCreditTests {
         Address address = new Address();
         address.setPostalCode("84042");
 
-        TerminalResponse response = device.creditSale(BigDecimal.valueOf(28526))
+        TerminalResponse response = device.sale(BigDecimal.valueOf(28526))
                 .withClientTransactionId(getRandomNumber(6))
                 .withInvoiceNumber(getRandomNumber(8))
                 .withAutoSubstantiation(auto)
@@ -87,7 +85,7 @@ public class GeniusCreditTests {
     public void testRefundPrevSale() throws ApiException {
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse saleResponse = device.creditSale(BigDecimal.valueOf(100.00))
+        TerminalResponse saleResponse = device.sale(BigDecimal.valueOf(100.00))
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -105,7 +103,7 @@ public class GeniusCreditTests {
     /*Refund a card directly; doesn't target a previous transaction*/
     @Test
     public void testIndependentRefund() throws ApiException {
-        TerminalResponse refundResponse = device.creditRefund(BigDecimal.valueOf(100.28))
+        TerminalResponse refundResponse = device.refund(BigDecimal.valueOf(100.28))
                 .withClientTransactionId(getRandomNumber(20))
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -118,7 +116,7 @@ public class GeniusCreditTests {
     public void testVoidPrevSale() throws ApiException {
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse saleResponse = device.creditSale(BigDecimal.valueOf(100.00))
+        TerminalResponse saleResponse = device.sale(BigDecimal.valueOf(100.00))
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -126,7 +124,7 @@ public class GeniusCreditTests {
         assertNotNull(saleResponse);
         assertEquals("00", saleResponse.getResponseCode());
 
-        TerminalResponse refundResponse = device.creditVoid()
+        TerminalResponse refundResponse = device.voidTransaction()
                 .withClientTransactionId(clientTransId)
                 .execute();
 
@@ -138,7 +136,8 @@ public class GeniusCreditTests {
     public void testVoidPrevDebitSale() throws ApiException {
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse saleResponse = device.debitSale(BigDecimal.valueOf(100.00))
+        TerminalResponse saleResponse = device.sale(BigDecimal.valueOf(100.00))
+                .withPaymentMethodType(PaymentMethodType.Debit)
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -146,7 +145,7 @@ public class GeniusCreditTests {
         assertNotNull(saleResponse);
         assertEquals("00", saleResponse.getResponseCode());
 
-        TerminalResponse voidResponse = device.debitVoid()
+        TerminalResponse voidResponse = device.voidTransaction()
                 .withClientTransactionId(clientTransId)
                 .execute();
 
@@ -158,7 +157,7 @@ public class GeniusCreditTests {
     public void testVoidPrevRefund() throws ApiException {
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse response = device.creditRefund(BigDecimal.valueOf(100.00))
+        TerminalResponse response = device.refund(BigDecimal.valueOf(100.00))
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -166,7 +165,7 @@ public class GeniusCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        TerminalResponse voidResponse = device.voidRefund()
+        TerminalResponse voidResponse = device.voidTransaction()
                 .withClientTransactionId(clientTransId)
                 .execute();
 
@@ -179,7 +178,7 @@ public class GeniusCreditTests {
 
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse saleResponse = device.creditSale(BigDecimal.valueOf(100.00))
+        TerminalResponse saleResponse = device.sale(BigDecimal.valueOf(100.00))
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();
@@ -203,7 +202,7 @@ public class GeniusCreditTests {
 
         var clientTransId = "mapsToReference_id" + getRandomNumber(6);
 
-        TerminalResponse saleResponse = device.creditRefund(BigDecimal.valueOf(100.00))
+        TerminalResponse saleResponse = device.refund(BigDecimal.valueOf(100.00))
                 .withClientTransactionId(clientTransId)
                 .withInvoiceNumber(getRandomNumber(8))
                 .execute();

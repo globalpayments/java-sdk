@@ -19,11 +19,9 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 
 public class HpaGiftTests {
-    private static IDeviceInterface device;
-    private String expectedMessage = "";
+    private final IDeviceInterface device;
 
     public HpaGiftTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
@@ -37,12 +35,6 @@ public class HpaGiftTests {
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
 
-        device.setOnMessageSent(new IMessageSentInterface() {
-            public void messageSent(String message) {
-                if(!expectedMessage.equals(""))
-                    assertEquals(expectedMessage, message);
-            }
-        });
         device.openLane();
     }
     
@@ -57,14 +49,17 @@ public class HpaGiftTests {
     
     @Test
     public void giftSale() throws ApiException {
-        TerminalResponse response = device.giftSale(new BigDecimal("10")).execute();
+        TerminalResponse response = device.sale(new BigDecimal("10"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
     
     @Test
     public void giftSaleWithInvoiceNumber() throws ApiException {
-        TerminalResponse response = device.giftSale(new BigDecimal("10"))
+        TerminalResponse response = device.sale(new BigDecimal("10"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
                 .withInvoiceNumber("1234")
                 .execute();
         assertNotNull(response);
@@ -73,7 +68,8 @@ public class HpaGiftTests {
     
     @Test
     public void loyaltySale() throws ApiException {
-        TerminalResponse response = device.giftSale(new BigDecimal("10"))
+        TerminalResponse response = device.sale(new BigDecimal("10"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
                 .withCurrency(CurrencyType.Points)
                 .execute();
         assertNotNull(response);
@@ -82,17 +78,22 @@ public class HpaGiftTests {
     
     @Test(expected = BuilderException.class)
     public void giftSaleNoAmount() throws ApiException {
-        device.giftSale().execute();
+        device.sale(null)
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .execute();
     }
     
     @Test(expected = BuilderException.class)
     public void giftSaleNoCurrency() throws ApiException {
-        device.giftSale(new BigDecimal("10")).withCurrency(null).execute();
+        device.sale(new BigDecimal("10"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
+                .withCurrency(null)
+                .execute();
     }
     
     @Test
     public void giftAddValue() throws ApiException {
-        TerminalResponse response = device.giftAddValue(new BigDecimal("10"))
+        TerminalResponse response = device.addValue(new BigDecimal("10"))
                 .withAmount(new BigDecimal("10"))
                 .execute();
         assertNotNull(response);
@@ -101,7 +102,7 @@ public class HpaGiftTests {
     
     @Test
     public void loyaltyAddValue() throws ApiException {
-        TerminalResponse response = device.giftAddValue(new BigDecimal("10"))
+        TerminalResponse response = device.addValue(new BigDecimal("10"))
                 .withCurrency(CurrencyType.Points)
                 .withAmount(new BigDecimal("8"))
                 .execute();
@@ -111,24 +112,24 @@ public class HpaGiftTests {
     
     @Test(expected = BuilderException.class)
     public void giftAddValueNoAmount() throws ApiException {
-        device.giftAddValue().execute();
+        device.addValue().execute();
     }
     
     @Test(expected = BuilderException.class)
     public void giftAddValueNoCurrency() throws ApiException {
-        device.giftAddValue(new BigDecimal("10")).withCurrency(null).execute();
+        device.addValue(new BigDecimal("10")).withCurrency(null).execute();
     }
     
     @Test
     public void giftVoid() throws ApiException {
-        TerminalResponse saleResponse = device.giftSale()
-                .withAmount(new BigDecimal("10"))
+        TerminalResponse saleResponse = device.sale(new BigDecimal("10"))
+                .withPaymentMethodType(PaymentMethodType.Gift)
                 .execute();
         assertNotNull(saleResponse);
         assertEquals("00", saleResponse.getResponseCode());
         waitAndReset();
         
-        TerminalResponse  voidResponse = device.giftVoid()
+        TerminalResponse  voidResponse = device.voidTransaction()
                 .withTransactionId(saleResponse.getTransactionId())
                 .execute();
         assertNotNull(voidResponse);
@@ -137,24 +138,29 @@ public class HpaGiftTests {
     
     @Test(expected = BuilderException.class)
     public void giftVoidNoCurrency() throws ApiException {
-        device.giftVoid().withCurrency(null).withTransactionId("1").execute();
+        device.voidTransaction()
+                .withCurrency(null)
+                .withTransactionId("1")
+                .execute();
     }
     
     @Test(expected = BuilderException.class)
     public void giftVoidNoTransactionId() throws ApiException {
-        device.giftVoid().withTransactionId(null).execute();
+        device.voidTransaction()
+                .withTransactionId(null)
+                .execute();
     }
     
     @Test
     public void giftBalance() throws ApiException {
-        TerminalResponse response = device.giftBalance().execute();
+        TerminalResponse response = device.balance().execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
     
     @Test
     public void loyaltyBalance() throws ApiException {
-        TerminalResponse response = device.giftBalance()
+        TerminalResponse response = device.balance()
                 .withCurrency(CurrencyType.Points)
                 .execute();
         assertNotNull(response);
@@ -163,27 +169,27 @@ public class HpaGiftTests {
     
     @Test(expected = BuilderException.class)
     public void giftBalanceNoCurrency() throws ApiException {
-        device.giftBalance().withCurrency(null).execute();
+        device.balance().withCurrency(null).execute();
     }
     
     @Test
     public void testCase15a() throws ApiException {
-        TerminalResponse response = device.giftBalance().execute();
+        TerminalResponse response = device.balance().execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
-        assertEquals("10", response.getBalanceAmount());
+        assertEquals(new BigDecimal(10), response.getBalanceAmount());
     }
     
     @Test
     public void testCase15b() throws ApiException {
-        TerminalResponse response = device.giftAddValue().withAmount(new BigDecimal("10")).execute();
+        TerminalResponse response = device.addValue().withAmount(new BigDecimal("10")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
     
     @Test
     public void testCase15c() throws ApiException {
-        TerminalResponse response = device.giftSale(new BigDecimal("10")).execute();
+        TerminalResponse response = device.sale(new BigDecimal("10")).execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }

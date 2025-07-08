@@ -12,10 +12,8 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.enums.TerminalReportType;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
-import com.global.api.terminals.upa.builders.UpaTerminalManageBuilder;
 import com.global.api.terminals.upa.responses.*;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
@@ -31,35 +29,17 @@ import java.util.TimeZone;
 
 import static com.global.api.terminals.upa.Entities.Constants.READY_MESSAGE;
 
-public class UpaInterface extends DeviceInterface {
-    private static final String ERROR_MESSAGE = "This method is not supported by the currently configured device.";
-    private final UpaController controller;
-    private static final String PROMPT_ONE = "prompt1";
-    private static final String PROMPT_TWO = "prompt2";
-    private static final String DISPLAY_OPTION = "displayOption";
-    private static final String PARAMS = "params";
-    private static final String TRANSACTION_NUMBER = "tranNo";
-    private static final String REFERENCE_NUMBER = "referenceNumber";
-    private static final String TRANSACTION = "transaction";
-
-    public UpaInterface(UpaController _controller) {
-        super();
-        controller = _controller;
+public class UpaInterface extends DeviceInterface<UpaController> {
+    public UpaInterface(UpaController controller) {
+        super(controller);
     }
 
-    public IDeviceResponse addLineItem(String leftText, String rightText) throws ApiException {
-        return lineItem(leftText, rightText);
-    }
-
+    @Override
     public IDeviceResponse lineItem(String leftText, String rightText) throws ApiException {
         JsonDoc param = new JsonDoc();
 
         if (leftText != null && leftText.length() <= 20) {
-            if (leftText.length() > 20) {
-                throw new ApiException("Left-side text has 20 char limit.");
-            } else {
-                param.set("lineItemLeft", leftText);
-            }
+            param.set("lineItemLeft", leftText);
         } else {
             throw new ApiException("Left-side text is required.");
         }
@@ -77,22 +57,23 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.LineItemDisplay,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaDeviceResponse(responseObj, UpaMessageId.LineItemDisplay);
     }
 
-    public void cancel() throws ApiException {
-        cancel(1);
+    @Override
+    public IDeviceResponse cancel() throws ApiException {
+        return cancel(1);
     }
 
-    public void cancel(Integer cancelParam) throws ApiException {
+    public IDeviceResponse cancel(Integer cancelParam) throws ApiException {
         JsonDoc param = new JsonDoc();
         param.set("displayOption", cancelParam);
 
@@ -101,115 +82,25 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.CancelTransaction,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
-        controller.send(message);
+        JsonDoc response = sendRequest(message);
+        return new UpaDeviceResponse(response, UpaMessageId.CancelTransaction);
     }
 
-    public TerminalAuthBuilder creditAuth() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit);
-    }
-
-    public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Auth, PaymentMethodType.Credit)
-                .withAmount(amount);
-    }
-
-    public UpaTerminalManageBuilder creditCapture(BigDecimal amount) throws ApiException {
-        return capture(amount);
-    }
-
-    public UpaTerminalManageBuilder creditCapture() throws ApiException {
-        return capture();
-    }
-
-    public UpaTerminalManageBuilder capture() throws ApiException {
-        return capture(null);
-    }
-
-    public UpaTerminalManageBuilder capture(BigDecimal amount) throws ApiException {
-        return new UpaTerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit)
-                .withAmount(amount);
-    }
-
-    public TerminalAuthBuilder creditRefund() throws ApiException {
-        return refund();
-    }
-
-    public TerminalAuthBuilder creditRefund(BigDecimal amount) throws ApiException {
-        return refund(amount);
-    }
-
-    public TerminalAuthBuilder creditSale() throws ApiException {
-        return sale(null);
-    }
-
-    public TerminalAuthBuilder creditSale(BigDecimal amount) throws ApiException {
-        return sale(amount);
-    }
-
-    public TerminalAuthBuilder creditVerify() throws ApiException {
-        return verify();
-    }
-
-    public TerminalManageBuilder creditVoid() throws ApiException {
-        return Void();
-    }
-
-    public TerminalManageBuilder Void() throws ApiException {
-        return new UpaTerminalManageBuilder(TransactionType.Void, PaymentMethodType.Credit);
-    }
-
-    public TerminalAuthBuilder debitRefund() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Debit);
-    }
-
-    public TerminalAuthBuilder debitRefund(BigDecimal amount) throws ApiException {
-        return refund(amount).withPaymentMethodType(PaymentMethodType.Debit);
-    }
-
-    public TerminalAuthBuilder debitSale() throws ApiException {
-        return sale(null).withPaymentMethodType(PaymentMethodType.Debit);
-    }
-
-    public TerminalAuthBuilder debitSale(BigDecimal amount) throws ApiException {
-        return sale(amount).withPaymentMethodType(PaymentMethodType.Debit);
-    }
-
-    public TerminalAuthBuilder ebtBalance() throws ApiException {
-        return balance().withPaymentMethodType(PaymentMethodType.EBT);
-    }
-
-    public TerminalAuthBuilder ebtPurchase() throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT);
-    }
-
-    public TerminalAuthBuilder ebtPurchase(BigDecimal amount) throws ApiException {
-        return new TerminalAuthBuilder(TransactionType.Sale, PaymentMethodType.EBT)
-                .withAmount(amount);
-    }
-
-    public TerminalAuthBuilder ebtRefund() throws ApiException {
-        return ebtRefund(null);
-    }
-
-    public TerminalAuthBuilder ebtRefund(BigDecimal amount) throws ApiException {
-        return refund(amount).withPaymentMethodType(PaymentMethodType.EBT);
-    }
-
+    @Override
     public IEODResponse endOfDay() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.EODProcessing,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 null
         );
-
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaEODResponse(responseObj);
@@ -232,61 +123,61 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetBatchReport,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaReportResponse(responseObj);
     }
 
-    public IBatchReportResponse getBatchDetails() throws ApiException {
-        return getBatchDetails(null, false);
-    }
-
-    public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
-        return getBatchDetails(batchId, false);
-    }
-
+    @Override
     public IBatchReportResponse getBatchDetails(String batchId, boolean printReport) throws ApiException {
-        JsonDoc body = new JsonDoc();
-        JsonDoc param = new JsonDoc();
 
-        if (batchId != null) param.set("batch", batchId);
-        if (printReport) param.set("reportOutput", "Print|ReturnData");
+
+        JsonDoc param = new JsonDoc();
+        if (batchId != null) {
+            param.set("batch", batchId);
+        }
+        if (printReport) {
+            param.set("reportOutput", "Print|ReturnData");
+        }
+
+        JsonDoc body = new JsonDoc();
         body.set("params", param);
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetBatchDetails,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaReportResponse(responseObj);
     }
 
+    @Override
     public IBatchReportResponse getOpenTabDetails() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetOpenTabDetails,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 null
         );
 
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaReportResponse(responseObj);
@@ -296,24 +187,27 @@ public class UpaInterface extends DeviceInterface {
     public IBatchReportResponse findBatches() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.AvailableBatches,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 null
         );
 
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaReportResponse(responseObj);
     }
 
-    public void sendReady() throws ApiException {
+    @Override
+    public IDeviceResponse sendReady() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 READY_MESSAGE
         );
-        controller.send(message);
+
+        JsonDoc response = sendRequest(message);
+        return new UpaDeviceResponse(response);
     }
 
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
@@ -343,17 +237,17 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.RegisterPOS,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaDeviceResponse(responseObj, UpaMessageId.RegisterPOS);
     }
 
     @Override
-    public IDeviceResponse printReceipt(PrintData data) throws ApiException {
+    public IDeviceResponse print(PrintData data) throws ApiException {
         JsonDoc body = new JsonDoc();
         JsonDoc param = new JsonDoc();
 
@@ -383,12 +277,12 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.PrintData,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaDeviceResponse(responseObj, UpaMessageId.PrintData);
     }
@@ -396,12 +290,12 @@ public class UpaInterface extends DeviceInterface {
     public IDeviceResponse ping() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.Ping,
-                controller.getRequestId().toString(),
-                null // no body for ping
+                _controller.getRequestId().toString(),
+                null // no response for ping
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaDeviceResponse(responseObj, UpaMessageId.Ping);
@@ -428,9 +322,9 @@ public class UpaInterface extends DeviceInterface {
             param.set("logToConsole", ((DebugLogsOutput) logToConsole).getValue());
         }
         body.set("params", param);
-        String requestId = controller.getRequestId().toString();
+        String requestId = _controller.getRequestId().toString();
         DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.SetDebugLevel, requestId, body);
-        byte[] responseBytes = controller.send(message);
+        byte[] responseBytes = _controller.send(message);
         String responseString = new String(responseBytes, StandardCharsets.UTF_8);
         JsonDoc responseObj = JsonDoc.parse(responseString);
         return new UpaTransactionResponse(responseObj);
@@ -441,11 +335,11 @@ public class UpaInterface extends DeviceInterface {
     public IDeviceResponse getDebugLevel() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetDebugLevel,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 null
         );
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaTransactionResponse(responseObj);
     }
@@ -459,11 +353,11 @@ public class UpaInterface extends DeviceInterface {
             body.set("params", param);
         }
         DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetDebugInfo,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaTransactionResponse(responseObj);
     }
@@ -475,11 +369,11 @@ public class UpaInterface extends DeviceInterface {
         param.set("enable", enable ? 1 : 0);
         body.set("params", param);
         DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.BroadcastConfiguration,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaTransactionResponse(responseObj);
     }
@@ -492,8 +386,8 @@ public class UpaInterface extends DeviceInterface {
         param.set("slotNum", String.valueOf(udData.getSlot()));
         param.set("displayOption", udData.getDisplayOption() != null ? udData.getDisplayOption().getValue() : null);
         body.set("params", param);
-        DeviceMessage deviceMessage = TerminalUtilities.buildMessage(UpaMessageId.ExecuteUDDataFile, controller.getRequestId().toString(), body);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(deviceMessage), StandardCharsets.UTF_8));
+        DeviceMessage deviceMessage = TerminalUtilities.buildMessage(UpaMessageId.ExecuteUDDataFile, _controller.getRequestId().toString(), body);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(deviceMessage), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
@@ -501,7 +395,7 @@ public class UpaInterface extends DeviceInterface {
     public IDeviceResponse injectUDDataFile(UDData udData) throws ApiException, IOException {
         JsonDoc body = new JsonDoc();
         JsonDoc param = new JsonDoc();
-        String content = "";
+        String content;
         if (udData.getFileType().equals(UDFileType.HTML5)) {
             content = TerminalUtilities.buildStringFromFile(udData.getFilePath()).replace('\"', '\'');
         } else {
@@ -511,8 +405,8 @@ public class UpaInterface extends DeviceInterface {
         param.set("fileName", udData.getFileName());
         param.set("content", content);
         body.set("params", param);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.InjectUDDataFile, controller.getRequestId().toString(), body);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.InjectUDDataFile, _controller.getRequestId().toString(), body);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
 
     }
@@ -523,34 +417,32 @@ public class UpaInterface extends DeviceInterface {
         JsonDoc param = new JsonDoc();
         param.set("configType", String.valueOf(configType.getValue()));
         body.set("params", param);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetConfigContents, controller.getRequestId().toString(), body);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetConfigContents, _controller.getRequestId().toString(), body);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
 
-    @Override
     public IDeviceResponse getAppInfo() throws ApiException {
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetAppInfo, controller.getRequestId().toString(), null);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetAppInfo, _controller.getRequestId().toString(), null);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
-    @Override
     public IDeviceResponse clearDataLake() throws ApiException {
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.ClearDataLake, controller.getRequestId().toString(), null);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.ClearDataLake, _controller.getRequestId().toString(), null);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
 
     }
 
     @Override
     public IDeviceResponse returnToIdle() throws ApiException {
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.ReturnToIdle, controller.getRequestId().toString(), null);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.ReturnToIdle, _controller.getRequestId().toString(), null);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));//replace for json "response"
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));//replace for json "response"
         return new UpaTransactionResponse(responseObj);
     }
 
@@ -562,9 +454,9 @@ public class UpaInterface extends DeviceInterface {
         params.set("slotNum", String.valueOf(udData.getSlot()));
         params.set("file", udData.getFileName());
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.LoadUDDataFile, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.LoadUDDataFile, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
@@ -576,9 +468,9 @@ public class UpaInterface extends DeviceInterface {
         params.set("slotNum", String.valueOf(udData.getSlot()));
         params.set("file", udData.getFileName());
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.RemoveUDDataFile, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.RemoveUDDataFile, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UDScreenResponse(responseObj);
     }
 
@@ -591,9 +483,9 @@ public class UpaInterface extends DeviceInterface {
         params.set("prompt2", scanData.getPrompt2());
         params.set("displayOption", scanData.getDisplayOption() != null ? scanData.getDisplayOption().getValue() : null);
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.Scan, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.Scan, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
@@ -607,13 +499,12 @@ public class UpaInterface extends DeviceInterface {
         params.set("displayOption", printData.getDisplayOption() != null ? printData.getDisplayOption().getValue() : null);
         params.set("content", content);
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.PrintData, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.PrintData, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
-    @Override
     public IDeviceResponse setTimeZone(TimeZone timezone) throws ApiException {
         if (timezone == null) {
             throw new ApiException("...::: TimeZone is Mandatory :::...");
@@ -622,15 +513,14 @@ public class UpaInterface extends DeviceInterface {
         JsonDoc params = new JsonDoc();
         params.set("timeZone", timezone.getID());
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.SetTimeZone, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.SetTimeZone, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
-    @Override
     public IDeviceResponse getParams(ArrayList<String> parameters) throws ApiException {
-        if (parameters.isEmpty() || parameters == null) {
+        if (parameters == null || parameters.isEmpty()) {
             throw new ApiException("...::: Parameters are Mandatory :::...");
         }
         JsonDoc body = new JsonDoc();
@@ -638,21 +528,21 @@ public class UpaInterface extends DeviceInterface {
         String[] parametersArray = parameters.toArray(new String[0]);
         params.set("configuration", parametersArray);
         body.set("params", params);
-        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetParam, controller.getRequestId().toString(), body);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetParam, _controller.getRequestId().toString(), body);
         message.setAwaitResponse(true);
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         return new UpaTransactionResponse(responseObj);
     }
 
     public IDeviceResponse reboot() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.Reboot,
-                controller.getRequestId().toString(),
-                null // no body for reboot
+                _controller.getRequestId().toString(),
+                null // no response for reboot
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaDeviceResponse(responseObj, UpaMessageId.Reboot);
@@ -661,30 +551,30 @@ public class UpaInterface extends DeviceInterface {
     public IDeviceResponse reset() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.Restart,
-                controller.getRequestId().toString(),
-                null // no body for reboot
+                _controller.getRequestId().toString(),
+                null // no response for reboot
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaDeviceResponse(responseObj, UpaMessageId.Restart);
     }
 
     public TerminalManageBuilder reverse() throws ApiException {
-        return new UpaTerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit);
+        return new TerminalManageBuilder(TransactionType.Reversal, PaymentMethodType.Credit);
     }
 
     public ISAFResponse sendStoreAndForward() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.SendSAF,
-                controller.getRequestId().toString(),
-                null // no body for sendSAF
+                _controller.getRequestId().toString(),
+                null // no response for sendSAF
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaSafResponse(responseObj);
@@ -697,14 +587,6 @@ public class UpaInterface extends DeviceInterface {
 
     public TerminalManageBuilder deletePreAuth() {
         return new TerminalManageBuilder(TransactionType.DeleteOpenTab, PaymentMethodType.Credit);
-    }
-
-    public void setOnMessageSent(IMessageSentInterface onMessageSent) {
-        controller.setMessageSentHandler(onMessageSent);
-    }
-
-    public void setOnMessageReceived(IMessageSentInterface onMessageReceived) {
-        controller.setOnMessageReceivedHandler(onMessageReceived);
     }
 
     public TerminalAuthBuilder giftAddValue(BigDecimal amount) throws ApiException {
@@ -723,11 +605,11 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetParam,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
-        JsonDoc responseObj = JsonDoc.parse(new String(controller.send(message), StandardCharsets.UTF_8));
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
         if (responseObj == null) {
             throw new ApiException("No valid response from UPA!");
         }
@@ -754,25 +636,21 @@ public class UpaInterface extends DeviceInterface {
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetSAFReport,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         message.setAwaitResponse(true);
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         return new UpaSafResponse(responseObj);
     }
 
     /**
-     * Set Report params to run in the background for Android
-     *
-     * @param reportParams
-     * @return UpaSafResponse
-     * @throws ApiException
+     * Set Report params to run in the background for Android     *
      */
     @Override
     public ISAFResponse safSummaryReportInBackground(UpaSafReportParams reportParams) throws ApiException {
@@ -802,13 +680,13 @@ public class UpaInterface extends DeviceInterface {
         body.set("params", params);
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetSAFReport,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         message.setAwaitResponse(true);
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
 
         if (responseObj == null) {
@@ -823,23 +701,23 @@ public class UpaInterface extends DeviceInterface {
         JsonDoc transaction = new JsonDoc();
 
         if (transactionNumber != null) {
-            transaction.set(TRANSACTION_NUMBER, transactionNumber);
+            transaction.set("tranNo", transactionNumber);
         }
         if (referenceNumber != null) {
-            transaction.set(REFERENCE_NUMBER, referenceNumber);
+            transaction.set("referenceNumber", referenceNumber);
         }
-        body.set(TRANSACTION, transaction);
+        body.set("transaction", transaction);
 
 
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.DeleteSAF,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         message.setAwaitResponse(true);
         byte[] resp;
-        resp = controller.send(message);
+        resp = _controller.send(message);
         JsonDoc responseObj = JsonDoc.parse(
                 new String(resp, StandardCharsets.UTF_8)
         );
@@ -852,23 +730,23 @@ public class UpaInterface extends DeviceInterface {
         JsonDoc param = new JsonDoc();
 
         if (data.getPrompt1() != null) {
-            param.set(PROMPT_ONE, data.getPrompt1());
+            param.set("prompt1", data.getPrompt1());
         }
         if (data.getPrompt2() != null) {
-            param.set(PROMPT_TWO, data.getPrompt2());
+            param.set("prompt2", data.getPrompt2());
         }
         if (data.getDisplayOption() != null) {
-            param.set(DISPLAY_OPTION, data.getDisplayOption());
+            param.set("displayOption", data.getDisplayOption());
         }
-        body.set(PARAMS, param);
+        body.set("params", param);
         DeviceMessage message = TerminalUtilities.buildMessage(
                 UpaMessageId.GetSignature,
-                controller.getRequestId().toString(),
+                _controller.getRequestId().toString(),
                 body
         );
 
         JsonDoc responseObj = JsonDoc.parse(
-                new String(controller.send(message), StandardCharsets.UTF_8)
+                new String(_controller.send(message), StandardCharsets.UTF_8)
         );
         return new UpaSignatureResponse(responseObj);
     }
@@ -876,4 +754,13 @@ public class UpaInterface extends DeviceInterface {
     public TerminalReportBuilder getBatchReport() throws ApiException {
         return new TerminalReportBuilder(TerminalReportType.GetBatchReport);
     }
+
+    //<editor-fold description="Helper Methods">
+
+    private JsonDoc sendRequest(IDeviceMessage message) throws ApiException {
+        byte[] rawResponse = _controller.send(message);
+        return JsonDoc.parse(new String(rawResponse, StandardCharsets.UTF_8));
+    }
+
+    //</editor-fold>
 }

@@ -225,4 +225,9 @@ public class PorticoDebitTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
+    @Test
+    public void debitVoid() throws ApiException {
+
+    }
 }
