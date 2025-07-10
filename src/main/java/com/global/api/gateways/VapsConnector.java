@@ -55,6 +55,8 @@ public class VapsConnector extends GatewayConnectorConfig {
 
     BatchSummary summary = new BatchSummary();
 
+    private String SVS_VERSION = "0036";
+
     public void setAcceptorConfig(AcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
     }
@@ -162,7 +164,13 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
 
             // set data codes
-            dataCode.setCardDataInputMode(card.isReaderPresent() ? DE22_CardDataInputMode.KeyEntry : DE22_CardDataInputMode.Manual);
+            DE22_CardDataInputMode cardDataInputMode = acceptorConfig.getCardDataInputMode();
+            if(cardDataInputMode != null){
+                dataCode.setCardDataInputMode(cardDataInputMode);
+            } else {
+                dataCode.setCardDataInputMode(card.isReaderPresent() ? DE22_CardDataInputMode.KeyEntry : DE22_CardDataInputMode.Manual);
+            }
+
             dataCode.setCardHolderPresence(card.isCardPresent() ? DE22_CardHolderPresence.CardHolder_Present : DE22_CardHolderPresence.CardHolder_NotPresent);
             dataCode.setCardPresence(card.isCardPresent() ? DE22_CardPresence.CardPresent : DE22_CardPresence.CardNotPresent);
             if(!StringUtils.isNullOrEmpty(card.getCvn())) {
@@ -211,7 +219,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                 dataCode.setCardHolderPresence(DE22_CardHolderPresence.CardHolder_Present);
                 dataCode.setCardPresence(DE22_CardPresence.CardPresent);
                 if(tagData != null) {
-                    if(tagData.isContactlessMsd()){
+                    DE22_CardDataInputMode cardDataInputMode = acceptorConfig.getCardDataInputMode();
+                    if(cardDataInputMode != null){
+                        dataCode.setCardDataInputMode(cardDataInputMode);
+                    }
+                    else if(tagData.isContactlessMsd()){
                         dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactlessMsd);
                     }
                     else {
@@ -221,7 +233,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                 }
                 else {
-                    if(card.getEntryMethod().equals(EntryMethod.Proximity)) {
+                    DE22_CardDataInputMode cardDataInputMode = acceptorConfig.getCardDataInputMode();
+                    if(cardDataInputMode != null){
+                        dataCode.setCardDataInputMode(cardDataInputMode);
+                    }
+                    else if(card.getEntryMethod().equals(EntryMethod.Proximity)) {
                         dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactlessMsd);
                     }
                     else {
@@ -1199,20 +1215,22 @@ public class VapsConnector extends GatewayConnectorConfig {
                 if (encryptionData != null && encryptionData.getEncryptedKTB() != null) {
                     encryptedKTB = encryptionData.getEncryptedKTB();
                 }
-                boolean nonOriginalTransactions = (!("ValueLink").equals(card)) && (transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion) || transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)
+                boolean nonOriginalTransactions = (!("ValueLink").equals(card) && !("StoredValue").equals(card)) && (transactionType.equals(TransactionType.Capture) || transactionType.equals(TransactionType.PreAuthCompletion) || transactionType.equals(TransactionType.Reversal) || transactionType.equals(TransactionType.Void)
                         || transactionType.equals(TransactionType.Refund));
 
                 if (nonOriginalTransactions) {
                     if ((reference.getOriginalPaymentMethod() instanceof Credit || ((reference.getOriginalPaymentMethod() instanceof Debit
-                            || reference.getOriginalPaymentMethod() instanceof EBTTrackData) && !(transactionType.equals(TransactionType.Refund))) ||
-                             reference.getOriginalPaymentMethod() instanceof EBTCardData)) {
+                            || reference.getOriginalPaymentMethod() instanceof EBTTrackData) || reference.getOriginalPaymentMethod() instanceof GiftCard
+                            && !(transactionType.equals(TransactionType.Refund))) ||
+                            reference.getOriginalPaymentMethod() instanceof EBTCardData)) {
                         encryptedPan = ((IEncryptable) reference.getOriginalPaymentMethod()).getEncryptedPan();
                     }
                 }
                 if (encryptionData != null) {
 
                     EncryptionType encryptionType=acceptorConfig.getSupportedEncryptionType();
-                    if(encryptedKTB!=null && ((reference.getOriginalPaymentMethod() instanceof Debit || reference.getOriginalPaymentMethod() instanceof EBTTrackData) && transactionType.equals(TransactionType.Refund))){
+                    if(encryptedKTB!=null && ((reference.getOriginalPaymentMethod() instanceof Debit || reference.getOriginalPaymentMethod() instanceof EBTTrackData
+                            || reference.getOriginalPaymentMethod() instanceof GiftCard) && transactionType.equals(TransactionType.Refund))){
                         encryptionData.setKtb(encryptedKTB);
                     }
                     else if(encryptedPan != null && encryptionType.equals(EncryptionType.TDES)){
@@ -1353,7 +1371,8 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                 }
 //                DE 127
-                if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT) {
+                if (builder.getPaymentMethod() instanceof Debit || builder.getPaymentMethod() instanceof EBT
+                || builder.getPaymentMethod() instanceof GiftCard) {
                     DE127_ForwardingData forwardingData = new DE127_ForwardingData();
 
                     IPaymentMethod paymentMethod = builder.getPaymentMethod();
@@ -1899,7 +1918,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
                 else if(paymentMethod instanceof GiftCard) {
                     String cardType = ((GiftCard) paymentMethod).getCardType();
-                    if(cardType.equals("ValueLink")) {
+                    if(("ValueLink").equals(cardType)|| ("StoredValue").equals(cardType)|| ("HeartlandGift").equals(cardType)) {
                         mtiValue += "0";
                     }
                     else mtiValue += "2";
@@ -1990,11 +2009,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
                 }
                 else if(builder.getPaymentMethod() instanceof GiftCard) {
-                    GiftCard gift = (GiftCard)builder.getPaymentMethod();
-                    if(gift.getCardType().equals("ValueLink")) {
-                        processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
-                    }
-                    else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
+                    processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
                 }
                 else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
             } break;
@@ -2614,6 +2629,10 @@ public class VapsConnector extends GatewayConnectorConfig {
                     cardIssuerData.add(CardIssuerEntryTag.MASTERCARD_CIT_MIT_INDICATOR, builder.getCitMitIndicator().getValue());
                 }
             }
+            //G00 for SVS
+            if(paymentMethod instanceof GiftCard && ((GiftCard) paymentMethod).getCardType().equals("StoredValue")) {
+                cardIssuerData.add(CardIssuerEntryTag.SVSVersion, SVS_VERSION);
+            }
         }
 
         // NTE
@@ -2660,6 +2679,16 @@ public class VapsConnector extends GatewayConnectorConfig {
                             cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
                         }
                     }
+                    else if (reference.getOriginalPaymentMethod() instanceof GiftCard) {
+                        GiftCard giftCard = (GiftCard) reference.getOriginalPaymentMethod();
+
+                        if(giftCard.getTrackNumber() != null) {
+                            String nsiValue = giftCard.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1";
+                            cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, nsiValue);
+                        } else {
+                            cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator, "0");
+                        }
+                    }
                 }
                 // Mastercard Banknet Reference Number
                 if (reference.getMastercardBanknetRefNo() != null){
@@ -2687,7 +2716,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
 
                 // NSI
-                if(!(paymentMethod instanceof Debit || paymentMethod instanceof EBT)) {
+                if(!( paymentMethod instanceof Debit || paymentMethod instanceof EBT || paymentMethod instanceof GiftCard)) {
                     if(paymentMethod instanceof ITrackData) {
                         ITrackData track = (ITrackData)paymentMethod;
 
@@ -2696,6 +2725,45 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                     else {
                         cardIssuerData.add(CardIssuerEntryTag.SwipeIndicator,"0");
+                    }
+                }
+            }
+            IPaymentMethod paymentMethod = builder.getPaymentMethod();
+            if(paymentMethod instanceof Credit) {
+                Credit card = (Credit) paymentMethod;
+                if (card.getCardType() != null && card.getCardType().equals("MC")) {
+                    // IAU(Mastercard UCAF Data)
+                    String ucafData = authBuilder.getMasterCardUCAFData();
+                    if (authBuilder.getTransactionType().equals(TransactionType.Auth) && ucafData != null) {
+                        cardIssuerData.add(CardIssuerEntryTag.MastercardUCAFData, ucafData);
+                    }
+                    // IME(Mastercard E-comm indicator)
+                    DE62_IME_EcommerceData masterCardEComIndicator = authBuilder.getEcommerceData();
+                    if ((authBuilder.getTransactionType().equals(TransactionType.Auth) || authBuilder.getTransactionType().equals(TransactionType.Sale)) &&
+                            (masterCardEComIndicator != null && masterCardEComIndicator.getDe62ImeSubfield1() != null)) {
+                        cardIssuerData.add(CardIssuerEntryTag.MastercardECommerceIndicators, masterCardEComIndicator.getDe62ImeSubfield1().getValue());
+                    }
+                    String masterCardDSRPCryptogram = authBuilder.getMasterCardDSRPCryptogram();
+                    if(masterCardDSRPCryptogram != null){
+                        cardIssuerData.add(CardIssuerEntryTag.MastercardDSRPCryptogram,StringUtils.padLeft(masterCardDSRPCryptogram, 32, ' '));
+                    }
+                    String masterCardRemoteCommAcceptor = authBuilder.getMasterCardRemoteCommAcceptor();
+                    if(masterCardRemoteCommAcceptor != null){
+                        cardIssuerData.add(CardIssuerEntryTag.MastercardRemoteCommerceAcceptorIdentifier,masterCardRemoteCommAcceptor);
+                    }
+                    String masterCard3DSCryptogram = authBuilder.getMastercard3DSCryptogram();
+                    if(masterCard3DSCryptogram != null){
+                        cardIssuerData.add(CardIssuerEntryTag.Mastercard3DSCryptogram, StringUtils.padLeft(masterCard3DSCryptogram, 32, ' '));
+                    }
+                }
+            }
+                //IAD (Visa CAVV data for e-comm transaction)
+            if(paymentMethod instanceof Credit) {
+                Credit card = (Credit) paymentMethod;
+                if (card.getCardType()!=null && (card.getCardType().equals("Visa") || card.getCardType().equals("Discover") || card.getCardType().equals("Amex"))) {
+                    String cardIssuerAuthenticationData = authBuilder.getCardIssuerAuthenticationData();
+                    if (cardIssuerAuthenticationData != null) {
+                        cardIssuerData.add(CardIssuerEntryTag.CardIssuerAuthenticationData, StringUtils.padLeft(cardIssuerAuthenticationData, 40, ' '));
                     }
                 }
             }
@@ -2974,7 +3042,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
 
             if (acceptorConfig.getSupportedEncryptionType().equals(EncryptionType.TDES) && (paymentMethodType.equals(PaymentMethodType.EBT) ||
-                    paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.Credit))) {
+                    paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.Credit)||
+                    (paymentMethodType.equals(PaymentMethodType.Gift)))) {
                 impliedCapture.set(DataElementId.DE_014, request.getString(DataElementId.DE_014));
 
                 //DE127 changing field matrix and encrypted data as encrypted pan.
@@ -3341,9 +3410,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                     return EncryptedFieldMatrix.Track1;
                 else if (trackType == TrackNumber.TrackTwo)
                     return EncryptedFieldMatrix.Track2;
-            }else if(paymentMethod instanceof GiftCard && ((("ValueLink").equals(card)) || (!transactionType.equals(TransactionType.Capture)
+            }else if(paymentMethod instanceof GiftCard
+                    && ((("ValueLink").equals(card) || ("StoredValue").equals(card)) || (!transactionType.equals(TransactionType.Capture)
                     && !transactionType.equals(TransactionType.PreAuthCompletion)
-                    && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal)))) {
+                    && !transactionType.equals(TransactionType.Void) && !transactionType.equals(TransactionType.Reversal))))
+            {
                 TrackNumber trackType=((GiftCard)paymentMethod).getTrackNumber();
                 if (trackType == TrackNumber.TrackOne)
                     return EncryptedFieldMatrix.Track1;

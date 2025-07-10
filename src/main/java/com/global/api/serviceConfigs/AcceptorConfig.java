@@ -82,6 +82,21 @@ public class AcceptorConfig {
     private Boolean incrementalSupportIndicator;
     @Getter @Setter
     private String merchantId;
+    @Getter @Setter
+    private DE22_CardDataInputMode cardDataInputMode;
+    // DE48_40 - DE48_49
+    private Address address;
+
+    // DE127 - FORWARDING DATA
+    private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
+    @Getter @Setter
+    private ServiceType serviceType;
+    @Getter @Setter
+    private OperationType operationType;
+    @Getter@Setter
+    private TokenizationOperationType tokenizationOperationType;
+    @Getter @Setter
+    private TokenizationType tokenizationType;
 
     public Boolean getEchoSettlementData() {
         return echoSettlementData;
@@ -101,22 +116,6 @@ public class AcceptorConfig {
     public void setPerformDateCheck(Boolean performDateCheck) {
         this.performDateCheck = performDateCheck;
     }
-
-    // DE48_40 - DE48_49
-    private Address address;
-
-    // DE127 - FORWARDING DATA
-    private EncryptionType supportedEncryptionType = EncryptionType.TEP2;
-    @Getter @Setter
-    private ServiceType serviceType;
-    @Getter @Setter
-    private OperationType operationType;
-    @Getter@Setter
-    private TokenizationOperationType tokenizationOperationType;
-    @Getter @Setter
-    private TokenizationType tokenizationType;
-    @Getter @Setter
-    private DE22_CardDataInputMode cardDataInputMode;
 
     // DE32 - Acquiring Institution Identification Code
     public String getAcquiringInstitutionIdentificationCode() {

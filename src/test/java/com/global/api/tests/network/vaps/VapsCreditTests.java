@@ -11,6 +11,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
+import com.global.api.network.elements.DE62_IME_EcommerceData;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -58,9 +59,10 @@ public class VapsCreditTests {
         acceptorConfig.setCardHolderAuthenticationCapability(CardHolderAuthenticationCapability.PIN);
         acceptorConfig.setCardHolderAuthenticationEntity(CardHolderAuthenticationEntity.ByMerchant);
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Ecommerce);
 
         // hardware software config values
-        acceptorConfig.setHardwareLevel("34");
+        acceptorConfig.setHardwareLevel("S1");
         acceptorConfig.setSoftwareLevel("21205710");
 
         // pos configuration values
@@ -91,7 +93,7 @@ public class VapsCreditTests {
 
         // with merchant type
         config.setMerchantType("5542");
-        ServicesContainer.configureService(config, "ICR");
+        ServicesContainer.configureService(config);
 
         // VISA
         card = TestCards.VisaManual(true, true);
@@ -1148,7 +1150,139 @@ public class VapsCreditTests {
         assertEquals("201", pmi.getFunctionCode());
 
         assertEquals("000",capture.getResponseCode());
+    }
 
+    @Test
+    public void test_mastercard_authorization_ecommerce() throws ApiException {
+        DE62_IME_EcommerceData ecommerceData = new DE62_IME_EcommerceData();
+        ecommerceData.setDe62ImeSubfield1(DE62_IME_Subfield1.Val_210);
+
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withMasterCardDSRPCryptogram("45AB3994839NFDN930203N3N4B5B3J4N")
+                .withMasterCard3DSCryptogram("5TYD7GHN94H0J0F36N9H5C5D3L03BJ0N")
+                .withMasterCardEcommIndicatorsData(ecommerceData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_mastercard_authorization_ecommerce_IME() throws ApiException {
+        DE62_IME_EcommerceData ecommerceData = new DE62_IME_EcommerceData();
+        ecommerceData.setDe62ImeSubfield1(DE62_IME_Subfield1.Val_216);
+
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withMasterCardDSRPCryptogram("45AB3994839NFDN930203N3N4B5B3J4N")
+                .withMasterCardEcommIndicatorsData(ecommerceData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_mastercard_sale_ecommerce() throws ApiException {
+        DE62_IME_EcommerceData ecommerceData = new DE62_IME_EcommerceData();
+        ecommerceData.setDe62ImeSubfield1(DE62_IME_Subfield1.Val_210);
+
+        Transaction response = card.charge(new BigDecimal(10.456))
+                .withCurrency("USD")
+                .withMasterCardDSRPCryptogram("45AB3994839NFDN930203N3N4B5B3J4N")
+                .withMasterCard3DSCryptogram("5TYD7GHN94H0J0F36N9H5C5D3L03BJ0N")
+                .withMasterCardEcommIndicatorsData(ecommerceData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_visa_authorization_ecommerce_with_cavv_data() throws ApiException {
+        card = new CreditCardData();
+        card = TestCards.VisaManual();
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withCardIssueAuthenticationData("45AB3994839NFDN930203N3N4B5B3J4NO7G6T8F7")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_amex_authorization_ecommerce_with_cavv_data() throws ApiException {
+        card = new CreditCardData();
+        card = TestCards.AmexManual();
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withCardIssueAuthenticationData("45AB3994839NFDN930203N3N4B5B3J4NO7G6T8F7")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_discover_authorization_ecommerce_with_cavv_data() throws ApiException {
+        card = new CreditCardData();
+        card = TestCards.DiscoverManual();
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withCardIssueAuthenticationData("45AB3994839NFDN930203N3N4B5B3J4NO7G6T8F7")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
     }
 
     @Test

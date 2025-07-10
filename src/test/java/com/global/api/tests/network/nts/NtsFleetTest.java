@@ -3898,7 +3898,6 @@ public class NtsFleetTest {
                 .withFleetData(fleetData)
                 .withCardSequenceNumber("101")
                 .execute();
-        
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }

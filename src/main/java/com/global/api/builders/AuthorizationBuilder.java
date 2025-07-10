@@ -9,6 +9,7 @@ import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.gateways.IOpenBankingProvider;
 import com.global.api.gateways.IPaymentGateway;
+import com.global.api.network.elements.DE62_IME_EcommerceData;
 import com.global.api.network.elements.EWICData;
 import com.global.api.network.entities.*;
 import com.global.api.network.entities.gnap.GnapRequestData;
@@ -157,6 +158,14 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String followOnTimestamp;
     private String shiftNumber;
     private String transportData;
+    @Getter
+    private String masterCardDSRPCryptogram;
+    @Getter
+    private String masterCardRemoteCommAcceptor;
+    @Getter
+    private String mastercard3DSCryptogram;
+    @Getter
+    private String cardIssuerAuthenticationData;
 
     //Nts
     @Getter
@@ -202,6 +211,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String categoryIndicator;
 
     public boolean requestUniqueToken;
+    @Getter
+    private DE62_IME_EcommerceData ecommerceData;
+    @Getter
+    private String masterCardUCAFData;
 
     @Getter
     @Setter
@@ -1390,4 +1403,29 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
+
+    public AuthorizationBuilder withMasterCardDSRPCryptogram(String value){
+        this.masterCardDSRPCryptogram = value;
+        return this;
+    }
+    public AuthorizationBuilder withMasterCardRemoteCommAcceptor(String value){
+        this.masterCardRemoteCommAcceptor = value;
+        return this;
+    }
+    public AuthorizationBuilder withMasterCard3DSCryptogram(String value){
+        this.mastercard3DSCryptogram = value;
+        return this;
+    }
+    public AuthorizationBuilder withCardIssueAuthenticationData(String value){
+        this.cardIssuerAuthenticationData = value;
+        return this;
+    }
+    public AuthorizationBuilder withMasterCardEcommIndicatorsData(DE62_IME_EcommerceData ecommerceIndicator){
+        this.ecommerceData = ecommerceIndicator;
+        return this;
+    }
+    public AuthorizationBuilder withMasterCardUCAFData(String masterCardUCAFData){
+        this.masterCardUCAFData = masterCardUCAFData;
+        return this;
+    }
 }

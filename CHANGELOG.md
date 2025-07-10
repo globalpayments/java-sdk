@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V14.3.2 (07/08/2025)
+## Latest Version - V14.3.3 (07/10/2025)
+### Enhancements
+- [VAPS] - Added support for Vaps Giftcard 3DES encryption & ecommerce implementation.
+
+## V14.3.2 (07/08/2025)
 ### Bug Fixes
 - [VAPS] - Added addFuel & addNonFuel method for other fleet cards.(Issue 10353)
 - [VAPS] - Added condition for tag DE 62 NSI & DE 3 for EBT Manual Voice Capture transaction.

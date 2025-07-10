@@ -33,7 +33,7 @@ public enum CardIssuerEntryTag implements IStringConstant {
     GiftCardPurchase("IGS"),
     UniqueDeviceId("IID"),
     MastercardDSRPCryptogram("IMD"),
-    MastercardeCommerceIndicators("IME"),
+    MastercardECommerceIndicators("IME"),
     MastercardRemoteCommerceAcceptorIdentifier("IMU"),
     MASTERCARD_CIT_MIT_INDICATOR("IMC"),
     MastercardWalletID("IMW"),
@@ -59,7 +59,6 @@ public enum CardIssuerEntryTag implements IStringConstant {
     NTS_System("NTS"),
     VisaTransactionId("NV1"),
     HeartlandTimeRequest("HTR"),
-    MastercardECommerceIndicators("IME"),
     MastercardWalletId("IMW"),
     CheckInformation("C00"),
     CheckExpandedOrRawMICRData("C02"),
@@ -69,7 +68,9 @@ public enum CardIssuerEntryTag implements IStringConstant {
     ActualStan("IST"),
     DeclineCategoryCode("ICA"),
     WexAvailableProductRestrictions("WAP"),
-    StoreAndForwardFlag("GSF");
+    CardIssuerAuthenticationData("IAD"),
+    StoreAndForwardFlag("GSF"),
+    SVSVersion("G00");
 
     private final String value;
     CardIssuerEntryTag(String value) { this.value = value; }

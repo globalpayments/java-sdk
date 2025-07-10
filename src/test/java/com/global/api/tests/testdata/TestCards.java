@@ -603,7 +603,12 @@ public class TestCards {
 
     public static GiftCard SvsSwipe() {
         GiftCard rvalue = new GiftCard();
-        rvalue.setValue(";6006491260550227406=491211079130136?");
+          rvalue.setValue(";6006491499999907604=491211085296334?");
+        return rvalue;
+    }
+    public static GiftCard HeartlandGiftCardSwipe() {
+        GiftCard rvalue = new GiftCard();
+        rvalue.setValue(";7083550900000000574=99990015917200000?");
         return rvalue;
     }
 

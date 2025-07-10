@@ -37,7 +37,10 @@ public class VapsEncryption3DESTests {
     private EBTCardData ebtCardData;
     private EBTTrackData foodCard;
     private GiftCard giftCard;
-    private  AcceptorConfig acceptorConfig ;
+    private GiftCard heartlandGiftCardSwipe;
+    private GiftCard svs;
+    private AcceptorConfig acceptorConfig ;
+    private NetworkGatewayConfig config ;
 
     public VapsEncryption3DESTests() throws ApiException {
         Address address = new Address();
@@ -73,13 +76,16 @@ public class VapsEncryption3DESTests {
         acceptorConfig.setOperationType(OperationType.Decrypt);
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
-        config.setCompanyId("0044");
-        config.setTerminalId("0007998855611");
+        //Used for HGC and SVS card testing
+        config.setCompanyId("0009");
+        config.setTerminalId("0001237891001");
+//        config.setCompanyId("0044");
+//        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -164,8 +170,23 @@ public class VapsEncryption3DESTests {
         ebtCardData.setExpYear(2024);
         ebtCardData.setExpMonth(10);
 
+        heartlandGiftCardSwipe = new GiftCard();
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
 
-
+        svs = new GiftCard();
+        svs.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3",
+                "F000019990E00003"));
+        svs.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        svs.setTrackNumber(TrackNumber.TrackTwo);
+        svs.setEntryMethod(EntryMethod.Swipe);
+        svs.setExpiry("2501");
+        svs.setCardType("StoredValue");
     }
 
     //-----------------------------------------------Credit-------------------------------------------
@@ -1114,6 +1135,406 @@ public class VapsEncryption3DESTests {
                 .execute("ValueLink");
         assertNotNull(capture);
         assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
+    //-------------------------------HGC------------------------------------
+    @Test
+    public void test_001_GiftCard_auth_HGC() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config,"ICR");
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+
+        Transaction response = giftCard.authorize(new BigDecimal(10),true)
+                .withCurrency("USD")
+                .execute("ICR");
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("101",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_giftCard_sale_HGC() throws ApiException {
+        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("200",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void giftCard_activate_HGC() throws ApiException {
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+
+        Transaction response = heartlandGiftCardSwipe.activate(new BigDecimal(25.00))
+                .withCurrency("USD")
+                .execute();
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200",pmi.getMessageTransactionIndicator());
+        assertEquals("900060",pmi.getProcessingCode());
+        assertEquals("200",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_GiftCard_preAuthCompletion_HGC() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config,"ICR");
+        Transaction response = heartlandGiftCardSwipe.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("100",pmi.getFunctionCode());
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.preAuthCompletion(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(captureResponse);
+        pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("201",pmi.getFunctionCode());
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void giftCard_return_HGC() throws ApiException {
+        Transaction response = heartlandGiftCardSwipe.refund(new BigDecimal(35.24))
+                .withCurrency("USD")
+                .withClerkId("41256")
+                .execute();
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200",pmi.getMessageTransactionIndicator());
+        assertEquals("200060",pmi.getProcessingCode());
+        assertEquals("200",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_giftCard_sale_void_HGC() throws ApiException {
+        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // void the transaction test case #7
+        Transaction voidResponse = response.voidTransaction()
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_004_giftCard_sale_reversal_HGC() throws ApiException {
+        NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
+
+        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        response.setNtsData(ntsData);
+
+        // void the transaction test case #8
+        Transaction reverseResponse = response.reverse().execute();
+        assertNotNull(reverseResponse);
+        assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
+    }
+    @Test
+    public void test_GiftCard_auth_capture_HGC() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config,"ICR");
+        Transaction response = heartlandGiftCardSwipe.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // test_019
+        Transaction captureResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(captureResponse);
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_GiftCard_swipe_voice_capture_HGC() throws ApiException {
+        Transaction preResponse = heartlandGiftCardSwipe.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(preResponse);
+        assertEquals(preResponse.getResponseMessage(), "000", preResponse.getResponseCode());
+
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10), preResponse.getAuthorizationCode(),
+                new NtsData(FallbackCode.None, AuthorizerCode.Voice_Authorized),
+                heartlandGiftCardSwipe
+        );
+
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("006000", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_005_refund_HGC() throws ApiException {
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+
+        Transaction trans = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.None, AuthorizerCode.Interchange_Authorized),
+                heartlandGiftCardSwipe
+        );
+
+        Transaction response = trans.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withIssuerData(CardIssuerEntryTag.RetrievalReferenceNumber,"12123")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_balance_inquiry_HGC() throws ApiException {
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+        Transaction response = heartlandGiftCardSwipe.balanceInquiry()
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("316000", pmi.getProcessingCode());
+        assertEquals("108", pmi.getFunctionCode());
+
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void replenish_void_HGC() throws ApiException {
+        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+                "F000019990E00003"));
+        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        heartlandGiftCardSwipe.setExpiry("2501");
+        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+        Transaction response = heartlandGiftCardSwipe.addValue(new BigDecimal(10.00))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+
+        Transaction voidResponse = response.voidTransaction()
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_005_void_return_HGC() throws ApiException {
+        Transaction response = heartlandGiftCardSwipe.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction voidResponse = response.voidTransaction()
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_007_refund_capture_HGC() throws ApiException {
+
+        Transaction response = heartlandGiftCardSwipe.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(capture);
+        assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
+//    -----------------------------------SVS----------------------------------------------
+
+    @Test
+    public void test_001_GiftCard_auth_SVS() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config,"ICR");
+
+        Transaction response = svs.authorize(new BigDecimal(10),true)
+                .withCurrency("USD")
+                .execute("ICR");
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("101",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_003_giftCard_sale_SVS() throws ApiException {
+
+        Transaction response = svs.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200",pmi.getMessageTransactionIndicator());
+        assertEquals("006000",pmi.getProcessingCode());
+        assertEquals("200",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void giftCard_activate_SVS() throws ApiException {
+        Transaction response = svs.activate(new BigDecimal(10.00))
+                .withCurrency("USD")
+                .execute();
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200",pmi.getMessageTransactionIndicator());
+        assertEquals("900060",pmi.getProcessingCode());
+        assertEquals("200",pmi.getFunctionCode());
+
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_005_refund_SVS() throws ApiException {
+             Transaction trans = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.None, AuthorizerCode.Interchange_Authorized),
+                svs
+        );
+
+        Transaction response = trans.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .withIssuerData(CardIssuerEntryTag.RetrievalReferenceNumber,"12123")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_balance_inquiry_SVS() throws ApiException {
+        Transaction response = svs.balanceInquiry()
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("316000", pmi.getProcessingCode());
+        assertEquals("108", pmi.getFunctionCode());
+
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_auth_capture_SVS() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config,"ICR");
+        Transaction response = svs.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // test_019
+        Transaction captureResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute("ICR");
+        assertNotNull(captureResponse);
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
     }
 
     // ******************** EBT Track **************************
