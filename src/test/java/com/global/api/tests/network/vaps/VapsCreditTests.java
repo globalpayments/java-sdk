@@ -40,6 +40,7 @@ public class VapsCreditTests {
     private CreditCardData card;
     private CreditTrackData track;
     private AcceptorConfig acceptorConfig;
+    private NetworkGatewayConfig config;
 
     public VapsCreditTests() throws ApiException {
         Address address = new Address();
@@ -72,12 +73,12 @@ public class VapsCreditTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 
 
         // gateway config
-        NetworkGatewayConfig config = new NetworkGatewayConfig();
+        config = new NetworkGatewayConfig();
         config.setPrimaryEndpoint("test.txns-c.secureexchange.net");
         config.setPrimaryPort(15031);
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
@@ -1603,5 +1604,250 @@ public class VapsCreditTests {
         assertEquals(response.getResponseCode(),"000");
     }
 
+    @Test
+    public void test_sale_Discover_CashAtCheckout() throws ApiException {
+        acceptorConfig.setSupportsCashAtCheckout(true);
+        config.setAcceptorConfig(acceptorConfig);
+        track = TestCards.DiscoverSwipe();
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashAtCheckoutAmount(new BigDecimal(120))
+                .execute();
+        assertNotNull(response);
 
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("090000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    // Cash at checkout support for the Discover card only.
+    @Test
+    public void test_sale_Discover_CashAtCheckout_supportOnlyDiscoverCardException_negative() throws UnsupportedOperationException {
+        acceptorConfig.setSupportsCashAtCheckout(true);
+        config.setAcceptorConfig(acceptorConfig);
+        track = TestCards.VisaSwipe();
+        UnsupportedOperationException unsupportedOperationException = assertThrows(UnsupportedOperationException.class,
+                () -> track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withCashAtCheckoutAmount(new BigDecimal(120))
+                .execute());
+        assertTrue(unsupportedOperationException.getMessage().equals("Cash At Checkout supported for Discover card only."));
+    }
+
+    // Cash at checkout amount must be less than or equal to 120$.
+    @Test
+    public void test_sale_Discover_CashAtCheckout_amountLimitation_negative() throws UnsupportedOperationException {
+        acceptorConfig.setSupportsCashAtCheckout(true);
+        config.setAcceptorConfig(acceptorConfig);
+        track = TestCards.DiscoverSwipe();
+        UnsupportedOperationException unsupportedOperationException = assertThrows(UnsupportedOperationException.class,
+                () -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withCashAtCheckoutAmount(new BigDecimal(121))
+                        .execute());
+        assertTrue(unsupportedOperationException.getMessage().equals("The Cash at Checkout amount requested must be less than or equal to $120.00."));
+    }
+    @Test
+    public void test_authorization_accountVerification_visa() throws ApiException {
+        track = TestCards.VisaSwipe();
+        Transaction response = track.authorize(new BigDecimal(0))
+                .withCurrency("USD")
+                .withAvs(true)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("330000", pmi.getProcessingCode());
+        assertEquals("181", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_authorization_accountVerification_mastercard() throws ApiException {
+        track = TestCards.MasterCardSwipe();
+        Transaction response = track.authorize(new BigDecimal(0))
+                .withCurrency("USD")
+                .withAvs(true)
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("330000", pmi.getProcessingCode());
+        assertEquals("181", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_authorization_accountVerification_discover() throws ApiException {
+        track = TestCards.DiscoverSwipe();
+        Transaction response = track.authorize(new BigDecimal(0))
+                .withCurrency("USD")
+                .withAvs(true)
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("330000", pmi.getProcessingCode());
+        assertEquals("181", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_authorization_accountVerification_amex() throws ApiException {
+        track = TestCards.AmexSwipe();
+        Transaction response = track.authorize(new BigDecimal(0))
+                .withCurrency("USD")
+                .withAvs(true)
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("330000", pmi.getProcessingCode());
+        assertEquals("181", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_sale_reversal_Discover_with_fee() throws ApiException {
+        track = TestCards.DiscoverSwipe();
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+        Transaction reversal = response.reverse(new BigDecimal(1))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(reversal);
+
+        // check message data
+        pmi = reversal.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("400", pmi.getFunctionCode());
+        assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", reversal.getResponseCode());
+    }
+
+    @Test
+    public void test_auth_Discover_with_fee() throws ApiException {
+        track = TestCards.DiscoverSwipe();
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal(10))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_sale_Discover_CashAtCheckout_surchargeShouldNotBeMapped() throws ApiException {
+        acceptorConfig.setSupportsCashAtCheckout(true);
+        config.setAcceptorConfig(acceptorConfig);
+        track = TestCards.DiscoverSwipe();
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.Surcharge,new BigDecimal(10))
+                .withCashAtCheckoutAmount(new BigDecimal(120))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("090000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_sale_mc_track1Equivalent() throws ApiException {
+        track = TestCards.MasterCardTrack1Equivalent();
+        track.setTrackNumber(TrackNumber.TrackOne);
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_authorization_mc_track1Equivalent() throws ApiException {
+        track = TestCards.MasterCardTrack1Equivalent();
+        track.setTrackNumber(TrackNumber.TrackOne);
+        Transaction response = track.authorize(new BigDecimal(1))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_codeCoverage_emv_fallback_refund_by_card() throws ApiException {
+        Transaction response = track.refund(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withChipCondition(EmvChipCondition.ChipFailPreviousFail)
+                .execute();
+        assertNotNull(response);
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_authorization_operatingEnvironment_codeCoverage() throws ApiException {
+        acceptorConfig.isAttended();
+        Transaction response = track.authorize(new BigDecimal(0))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("330000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+    }
 }

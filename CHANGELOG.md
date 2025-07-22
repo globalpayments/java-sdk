@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.3.3 (07/10/2025)
+## Latest Version - V14.4.0 (07/21/2025)
+### Enhancements
+- [VAPS] - VAPS 8583 24.1 Includes update and enhancement of implementation guide, credit card, fleet cards and vaps processing.
+- [UPA] - Implementation of UPA - Correct reference mapping
+
+## V14.3.3 (07/10/2025)
 ### Enhancements
 - [VAPS] - Added support for Vaps Giftcard 3DES encryption & ecommerce implementation.
 

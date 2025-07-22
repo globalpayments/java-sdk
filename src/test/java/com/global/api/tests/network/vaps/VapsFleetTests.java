@@ -17,7 +17,6 @@ import com.global.api.network.entities.ProductData;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
-import com.global.api.paymentMethods.DebitTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.services.BatchService;
@@ -45,7 +44,7 @@ public class VapsFleetTests {
     NetworkGatewayConfig config;
 
     public VapsFleetTests() throws ApiException {
-        AcceptorConfig acceptorConfig = new AcceptorConfig();
+        acceptorConfig = new AcceptorConfig();
 
         // data code values
         acceptorConfig.setCardDataInputCapability(CardDataInputCapability.ContactlessEmv_ContactEmv_MagStripe_KeyEntry);
@@ -64,7 +63,7 @@ public class VapsFleetTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);
@@ -162,6 +161,8 @@ public class VapsFleetTests {
 
     @Test
     public void test_002_manual_sale_27_PDF0() throws ApiException {
+        card = TestCards.VisaFleetManual(true, true);
+
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
         productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
@@ -1070,12 +1071,11 @@ public class VapsFleetTests {
     public void test_026_swipe_sale_mc_product_all() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
-        productData.add("59", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add("59", UnitOfMeasure.Kilograms, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
         productData.add("09", UnitOfMeasure.Quarts, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
         productData.add("27", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
-        productData.add("23", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add("23", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
         productData.add("14", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
-        productData.add("33", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = track.charge(new BigDecimal(70))
                 .withCurrency("USD")
@@ -1427,6 +1427,558 @@ public class VapsFleetTests {
         assertNotNull(resubmitResp);
         assertEquals(resubmitResp.getResponseCode(),"000");
     }
+    @Test
+    public void test_voyager_sale_1Fuel_5NonFuel() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1.23"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_voyager_sale_1Fuel_4NonFuel() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("60"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_voyager_sale_1Fuel_3NonFuel() throws ApiException {
+        fleetData.setOdometerReading("112");
+        fleetData.setDriverId("11711");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("11"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("16"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("19"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_voyager_sale_1Fuel_2NonFuel() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_voyager_sale_1Fuel_1NonFuel() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_voyager_sale_2Fuel_7NonFuel_combining() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addFuel("06", UnitOfMeasure.Liters, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Groceries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_voyager_sale_onlyFuel() throws ApiException {
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_voyager_authorize_product_1F5NF() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+
+        Transaction response = track.authorize(new BigDecimal("10"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_voyager_capture() throws ApiException {
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.None, AuthorizerCode.Interchange_Authorized),
+                track
+        );
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        Transaction response = transaction.capture(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+    @Test
+    public void test_voyager_void() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+
+        Transaction sale = track.charge(new BigDecimal("12"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        Transaction response = sale.voidTransaction()
+                .withReferenceNumber("976660")
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_odometerAndDriverId() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_odometerAndVehicleNo() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setVehicleNumber("DF35671");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_odometerAndIDNo() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setIdNumber("35671");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_UnitOfMeasure_KW() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setIdNumber("35671");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Kilowatt_Hour, new BigDecimal("1.2"), new BigDecimal("10.44"), new BigDecimal("10.33"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_UnitOfMeasure_Hours() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setIdNumber("35671");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Hours, new BigDecimal("1.23"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_voyager_UnitOfMeasure_Minutes() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setIdNumber("35671");
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Minutes, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_codeCoverage_ICR_authorization() throws ApiException {
+        track = TestCards.MasterCardFleetSwipe();
+        Transaction response = track.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .execute("ICR");
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+//        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // partial approval cancellation
+        Transaction reversal = response.cancel()
+//                .withReferenceNumber(response.getReferenceNumber())
+                .execute();
+        assertNotNull(reversal);
+
+        pmi = reversal.getMessageInformation();
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4352", pmi.getMessageReasonCode());
+
+        assertEquals(reversal.getResponseMessage(), "400", reversal.getResponseCode());
+
+    }
+
+    @Test
+    public void test_codeCoverage_void_referenceNumber() throws ApiException {
+        card = TestCards.VisaFleetManual(true, true);
+        track = TestCards.VisaFleetSwipe();
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("014", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = track.charge(new BigDecimal("40"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+//        assertEquals("002", response.getResponseCode());
+        assertNotNull(response.getAuthorizedAmount());
+
+        BigDecimal authorizedAmount = response.getAuthorizedAmount();
+//        assertNotEquals(new BigDecimal("40"), authorizedAmount);
+
+        Transaction voidResponse = response.voidTransaction(authorizedAmount)
+                .withCurrency("USD")
+//                .withReferenceNumber(response.getReferenceNumber())
+                .withCustomerInitiated(true)
+                .withPartialApproval(true)
+                .execute();
+        assertNotNull(voidResponse);
+
+        PriorMessageInformation pmi = voidResponse.getMessageInformation();
+        assertNotNull(pmi);
+        // check message data
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4353", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_swipe_sale_DE22_cardCapture_CodeCoverage() throws ApiException {
+        acceptorConfig.setCardCaptureCapability(false);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setIdNumber("35671");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData.add("04", UnitOfMeasure.Minutes, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = track.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
 
     @Test
     public void test_012_swipe_sale_voyager_product_10321() throws ApiException {

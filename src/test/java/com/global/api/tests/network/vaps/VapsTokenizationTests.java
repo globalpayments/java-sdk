@@ -7,6 +7,7 @@ import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EbtCardType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.elements.DE127_ForwardingData;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
@@ -60,7 +61,7 @@ public class VapsTokenizationTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setVisaFleet2(false);
 
@@ -75,7 +76,7 @@ public class VapsTokenizationTests {
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
-        config.setTerminalId("0003698521408");
+        config.setTerminalId("0007998855611");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -919,4 +920,35 @@ public class VapsTokenizationTests {
         assertEquals("400", reversal.getResponseCode());
     }
 
+    @Test
+    public void tests_DE127_ForwardingData_parsing() {
+        String original = "01TOK216TD001G21100200  00009121977                     D7EB9013AD6E5962440994A6155221446250CC77A23ECD6DBAD5506337DB7C0E3A4BF39D97450709EE7D2C2FBB547E42ADC851E0B29ABC2DBB4EC4E07CC26526                                        ";
+
+        DE127_ForwardingData element = new DE127_ForwardingData().fromByteArray(original.getBytes());
+
+        assertNotNull(element.toByteArray());
+    }
+
+    // DE 127 response field validation
+    @Test
+    public void test_DE127_TokenEntryData_ServiceResponseField_Validation() throws ApiException {
+        card = TestCards.MasterCardManual();
+        card.setTokenizationData("5473500000000014");
+        acceptorConfig.setTokenizationOperationType(TokenizationOperationType.Tokenize);
+        Transaction response = card.fileAction()
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_DE127_TokenEntryData_DeTokenize() throws ApiException {
+        card = TestCards.MasterCardManual();
+        card.setTokenizationData("D7EB9013AD6E5962440994A6155221446250CC77A23ECD6DBAD5506337DB7C0E3A4BF39D97450709EE7D2C2FBB547E42ADC851E0B29ABC2DBB4EC4E07CC26526");
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
 }

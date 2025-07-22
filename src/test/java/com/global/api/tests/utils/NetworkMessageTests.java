@@ -437,7 +437,7 @@ public class NetworkMessageTests {
         assertEquals("Z", element.getTimezone());
         assertEquals(true, element.getSupportsPartialApproval());
         assertNull(element.getSupportsReturnBalance());
-        assertNull(element.getSupportsCashOver());
+        assertNull(element.getSupportsCashAtCheckOut());
         assertNull(element.getMobileDevice());
 
         byte[] buffer = element.toByteArray();
@@ -449,7 +449,7 @@ public class NetworkMessageTests {
         assertEquals("Z", element.getTimezone());
         assertEquals(false, element.getSupportsPartialApproval());
         assertEquals(true, element.getSupportsReturnBalance());
-        assertNull(element.getSupportsCashOver());
+        assertNull(element.getSupportsCashAtCheckOut());
         assertNull(element.getMobileDevice());
 
         buffer = element.toByteArray();

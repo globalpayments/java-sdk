@@ -1,8 +1,10 @@
 package com.global.api.terminals.upa.responses;
 
+import com.global.api.entities.AdditionalDuplicateData;
 import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayDuplicateException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.TerminalResponse;
@@ -11,10 +13,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-@Getter @Setter
+@Getter
+@Setter
 public class UpaResponseHandler extends TerminalResponse {
     public static final String RESPONSE_ID = "responseId";
     public static final String RESPONSE_DATE_TIME = "respDateTime";
@@ -43,10 +45,10 @@ public class UpaResponseHandler extends TerminalResponse {
     public static final String SERVICE_CODE = "serviceCode";
     public static final String DEVICE_SERIAL_NUM = "DeviceSerialNum";
     public static final String APP_VERSION = "AppVersion";
+    public static final String INVALID_RESPONSE_FORMAT = "The response received is not in the proper format.";
     public String OS_VERSION = "OsVersion";
     public String EMV_SDK_VERSION = "EmvSdkVersion";
     public String CTLS_SDK_VERSION = "CTLSSsdkVersion";
-
     private BigDecimal availableBalance;
     private String transactionId;
     private String terminalRefNumber;
@@ -122,21 +124,35 @@ public class UpaResponseHandler extends TerminalResponse {
     private int clerkId;
     private String invoiceNumber;
 
-    public static final String INVALID_RESPONSE_FORMAT = "The response received is not in the proper format.";
+    protected static boolean isGpApiResponse(JsonDoc root) {
+        return !root.has("data");
+    }
+
+    protected static AdditionalDuplicateData hydrateDuplicateData(JsonDoc duplicate) {
+        AdditionalDuplicateData data = new AdditionalDuplicateData();
+
+        data.setOriginalGatewayTxnId(duplicate.getString("referenceNumber"));
+        data.setOriginalRspDT(duplicate.getString("tranDate"));
+        data.setOriginalAuthCode(duplicate.getString("approvalCode"));
+        data.setOriginalAuthAmt(duplicate.getDecimal("totalAmount"));
+        data.setOriginalCardType(duplicate.getString("cardType"));
+        data.setOriginalCardNbrLast4(duplicate.getString("panLast4"));
+
+        return data;
+    }
 
     public void parseResponse(JsonDoc root) throws ApiException {
         JsonDoc response = isGpApiResponse(root) ? root.get("response") : root.get("data");
-        if(response.get("cmdResult") == null) {
+        if (response.get("cmdResult") == null) {
             throw new MessageException(INVALID_RESPONSE_FORMAT);
         }
 
         checkResponse(response);
-        if(!isGpApiResponse(root)) {
+        if (!isGpApiResponse(root)) {
             status = response.get("cmdResult").getString("result");
             requestId = response.getString("requestId");
             command = response.getString("response");
-        }
-        else {
+        } else {
             status = root.getStringOrNull("status");
             transactionId = requestId = root.getStringOrNull("id");
             responseText = root.get("action").getStringOrNull("result_code");
@@ -147,7 +163,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private void checkResponse(JsonDoc response) throws GatewayException {
         JsonDoc cmdResult = response.get("cmdResult");
 
-        if(cmdResult.getString("result").equalsIgnoreCase("failed")){
+        if (cmdResult.getString("result").equalsIgnoreCase("failed")) {
             String errorCode = cmdResult.getString("errorCode");
             String errorMessage = cmdResult.getString("errorMessage");
 
@@ -155,25 +171,35 @@ public class UpaResponseHandler extends TerminalResponse {
                 JsonDoc data = response.get("data");
                 if (data.has("host")) {
                     JsonDoc host = data.get("host");
+                    String gatewayResponseCode = host.getString("gatewayResponseCode");
+                    String gatewayResponseMessage = host.getString("gatewayResponseMessage");
+                    String responseCode = host.getString("responseCode");
+                    String responseText = host.getString("responseText");
+                    String transactionId = host.getString("referenceNumber");
+                    if (data.has("duplicate")) {
+                        throw new GatewayDuplicateException(
+                                hydrateDuplicateData(data.get("duplicate")),
+                                "Transaction refused due to duplicate checking - error:" + errorCode + " - " + errorMessage,
+                                gatewayResponseCode,
+                                gatewayResponseMessage,
+                                transactionId
+                        );
+                    }
 
                     throw new GatewayException(
-                            "Unexpected Device Response :" + errorCode +" - " +  errorMessage,
-                            host.getString("gatewayResponseCode"),
-                            host.getString("gatewayResponseMessage"),
-                            host.getString("responseCode"),
-                            host.getString("responseText"),
+                            "Unexpected Device Response :" + errorCode + " - " + errorMessage,
+                            gatewayResponseCode,
+                            gatewayResponseMessage,
+                            responseCode,
+                            responseText,
                             errorCode,
                             errorMessage
-                        );
+                    );
                 }
             }
 
-            throw new GatewayException("Unexpected Device Response :" + errorCode +" - " +  errorMessage, errorCode, errorMessage);
+            throw new GatewayException("Unexpected Device Response :" + errorCode + " - " + errorMessage, errorCode, errorMessage);
         }
-    }
-
-    protected static boolean isGpApiResponse(JsonDoc root) {
-        return !root.has("data");
     }
 
     protected void hydrateCmdResult(JsonDoc response) throws ApiException {
@@ -186,4 +212,5 @@ public class UpaResponseHandler extends TerminalResponse {
         deviceResponseCode = Arrays.asList(successStatusList).contains(status) ? "00" : cmdResult.getString("errorCode");
         deviceResponseText = deviceResponseCode.equals("00") ? status : cmdResult.getString("errorMessage");
     }
+
 }

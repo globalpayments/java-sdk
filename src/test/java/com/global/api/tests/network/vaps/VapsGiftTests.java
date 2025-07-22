@@ -6,6 +6,7 @@ import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.network.elements.DE22_PosDataCode;
 import com.global.api.network.entities.NtsData;
@@ -490,5 +491,18 @@ public class VapsGiftTests {
 
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_card_type_null_for_code_coverage_only() throws ApiException {
+        giftCard.setCardType(null);
+
+        BuilderException builderException = assertThrows(BuilderException.class,()->{
+            giftCard.charge(new BigDecimal(10.00))
+                    .withCurrency("USD")
+                    .execute();
+        });
+        assertEquals("The card type must be specified for Gift transactions.", builderException.getMessage());
+
     }
 }

@@ -12,10 +12,10 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
     private String timezone;
     private Boolean supportsPartialApproval;
     private Boolean supportsReturnBalance;
-    private Boolean supportsCashOver;
+    private Boolean supportsCashAtCheckOut;
     private Boolean mobileDevice;
     @Getter @Setter
-    private Boolean supportWexAdditionalProducts;
+    private Boolean supportWexAvailableProducts;
     @Getter @Setter
     private Boolean supportBankcard;
     @Getter @Setter
@@ -41,11 +41,11 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
     public void setSupportsReturnBalance(Boolean supportsReturnBalance) {
         this.supportsReturnBalance = supportsReturnBalance;
     }
-    public Boolean getSupportsCashOver() {
-        return supportsCashOver;
+    public Boolean getSupportsCashAtCheckOut() {
+        return supportsCashAtCheckOut;
     }
-    public void setSupportsCashOver(Boolean supportsCashOver) {
-        this.supportsCashOver = supportsCashOver;
+    public void setSupportsCashAtCheckOut(Boolean supportsCashAtCheckOut) {
+        this.supportsCashAtCheckOut = supportsCashAtCheckOut;
     }
     public Boolean getMobileDevice() {
         return mobileDevice;
@@ -60,9 +60,9 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         timezone = sp.readString(1);
         supportsPartialApproval = sp.readBoolean("Y");
         supportsReturnBalance = sp.readBoolean("Y");
-        supportsCashOver = sp.readBoolean("2");
+        supportsCashAtCheckOut = sp.readBoolean("2");
         mobileDevice = sp.readBoolean("Y");
-        supportWexAdditionalProducts = sp.readBoolean("Y");
+        supportWexAvailableProducts = sp.readBoolean("Y");
         supportTerminalPurchaseRestriction = sp.readStringConstant(1,PurchaseRestrictionCapability.class);
         supportVisaFleet2dot0 = sp.readStringConstant(1,PurchaseType.class);
         return this;
@@ -72,9 +72,9 @@ public class DE48_33_PosConfiguration implements IDataElement<DE48_33_PosConfigu
         String rvalue = StringUtils.isNullOrEmpty(timezone) ? " " : timezone;
         rvalue = rvalue.concat(supportsPartialApproval == null ? " " : supportsPartialApproval ? "Y" : "N");
         rvalue = rvalue.concat(supportsReturnBalance == null ? " " : supportsReturnBalance ? "Y" : "N");
-        rvalue = rvalue.concat(supportsCashOver == null ? " " : supportsCashOver ? "0" : "2");
+        rvalue = rvalue.concat(supportsCashAtCheckOut == null ? " " : supportsCashAtCheckOut ? "0" : "2");
         rvalue = rvalue.concat(mobileDevice == null ? " " : mobileDevice ? "Y" : "N");
-        rvalue = rvalue.concat(supportWexAdditionalProducts == null ? " " : supportWexAdditionalProducts ? "Y" : "N");
+        rvalue = rvalue.concat(supportWexAvailableProducts == null ? " " : supportWexAvailableProducts ? "Y" : "N");
         rvalue = rvalue.concat(supportTerminalPurchaseRestriction == null ? " " : supportTerminalPurchaseRestriction.getValue());
         rvalue = rvalue.concat(supportVisaFleet2dot0 == null ? " " : supportVisaFleet2dot0.getValue());
         return StringUtils.trimEnd(rvalue).getBytes();

@@ -28,12 +28,12 @@ public class ProductData {
     }
 
     public void addSaleTax(BigDecimal sale) {
-        productData.add(sale);
-    }
-    public void add(BigDecimal salesTax) {
-        productData.setSalesTax(salesTax);
+        productData.setSalesTax(sale);
     }
 
+    public void addDiscount(BigDecimal discount) {
+        productData.setDiscount(discount);
+    }
 
     public void add(ProductCode productCode, UnitOfMeasure unitOfMeasure, double quantity, double price) {
         add(productCode, unitOfMeasure, new BigDecimal(quantity), new BigDecimal(price), new BigDecimal(quantity * price));

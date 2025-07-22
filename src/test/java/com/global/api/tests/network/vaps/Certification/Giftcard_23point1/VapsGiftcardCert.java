@@ -1,4 +1,4 @@
-package com.global.api.tests.network.vaps.certification.Giftcard_23point1;
+package com.global.api.tests.network.vaps.Certification.Giftcard_23point1;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;

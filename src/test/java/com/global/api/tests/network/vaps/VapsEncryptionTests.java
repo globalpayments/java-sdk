@@ -73,6 +73,7 @@ public class VapsEncryptionTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
+        acceptorConfig.setSupportE3Encryption(true);
 
         // gateway config
         NetworkGatewayConfig config = new NetworkGatewayConfig();
@@ -102,18 +103,18 @@ public class VapsEncryptionTests {
 //        cashCard = TestCards.DiscoverSwipeEncryptedV2();
 
         // MASTERCARD
-//        card = TestCards.MasterCardManualEncrypted();
-//        cardWithCvn = TestCards.MasterCardManualEncrypted();
-//        cardWithCvn.setCvn("7803754");
+        card = TestCards.MasterCardManualEncrypted();
+        cardWithCvn = TestCards.MasterCardManualEncrypted();
+        cardWithCvn.setCvn("7803754");
 //        cashCard = TestCards.MasterCardSwipeEncryptedV2();
 
         track = TestCards.MasterCardSwipeEncryptedV2();
         track.setEncryptedPan("5473500844750014");
 
         // VISA
-        card = TestCards.VisaManualEncrypted();
-        cardWithCvn = TestCards.VisaManualEncrypted();
-        cardWithCvn.setCvn("7803754");
+//        card = TestCards.VisaManualEncrypted();
+//        cardWithCvn = TestCards.VisaManualEncrypted();
+//        cardWithCvn.setCvn("9072488");
         //cashCard = TestCards.VisaSwipeEncryptedV2();
 
         //track = TestCards.VisaSwipeEncryptedV2();
@@ -153,7 +154,7 @@ public class VapsEncryptionTests {
     }
 
     @Test
-    public void test_003_credit_manual_sale_cvn() throws ApiException {
+    public void test_003_credit_manual_sale_void_cvn() throws ApiException {
         Transaction response = cardWithCvn.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
@@ -164,6 +165,20 @@ public class VapsEncryptionTests {
         Transaction voidResponse = response.voidTransaction().execute();
         assertNotNull(voidResponse);
         assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_004_credit_manual_reverse_cvn() throws ApiException {
+        Transaction response = cardWithCvn.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // void the transaction test case #8
+        Transaction reverseResponse = response.reverse().execute();
+        assertNotNull(reverseResponse);
+        assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
     }
 
     @Test
@@ -178,6 +193,20 @@ public class VapsEncryptionTests {
         Transaction reverseResponse = response.reverse().execute();
         assertNotNull(reverseResponse);
         assertEquals(response.getResponseMessage(), "400", reverseResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_003_credit_manual_sale_void() throws ApiException {
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // void the transaction test case #7
+        Transaction voidResponse = response.voidTransaction().execute();
+        assertNotNull(voidResponse);
+        assertEquals(response.getResponseMessage(), "400", voidResponse.getResponseCode());
     }
 
     @Test
@@ -205,6 +234,14 @@ public class VapsEncryptionTests {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+        @Test
+    public void test_034_credit_swipe_auth_capture() throws ApiException {
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
         Transaction capture = response.capture(new BigDecimal(10))
                 .withCurrency("USD")
@@ -215,6 +252,15 @@ public class VapsEncryptionTests {
 
     @Test
     public void test_036_credit_swipe_sale() throws ApiException {
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_036_credit_swipe_sale_reversal() throws ApiException {
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();

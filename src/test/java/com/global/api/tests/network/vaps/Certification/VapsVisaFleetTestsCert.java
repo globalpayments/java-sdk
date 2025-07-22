@@ -53,7 +53,7 @@ public class VapsVisaFleetTestsCert {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
 //        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 //        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.NOCHIIPANDHOSTBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);

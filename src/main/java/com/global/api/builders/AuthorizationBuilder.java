@@ -211,6 +211,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String categoryIndicator;
 
     public boolean requestUniqueToken;
+    @Getter @Setter
+    private BigDecimal cashAtCheckoutAmount;
     @Getter
     private DE62_IME_EcommerceData ecommerceData;
     @Getter
@@ -1400,6 +1402,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withMasterCardIndicator(MasterCardCITMITIndicator citMitIndicator) {
         this.citMitIndicator = citMitIndicator;
+        return this;
+    }
+    public AuthorizationBuilder withCashAtCheckoutAmount(BigDecimal cashAtCheckoutAmount) {
+        this.cashAtCheckoutAmount = cashAtCheckoutAmount;
         return this;
     }
 

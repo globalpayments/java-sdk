@@ -3,11 +3,8 @@ package com.global.api.tests.network.vaps;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.network.elements.DE48_34_MessageConfiguration;
-import com.global.api.network.elements.DE48_MessageControl;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.ProductData;
-import com.global.api.network.entities.TransactionMatchingData;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
@@ -15,7 +12,6 @@ import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -51,7 +47,7 @@ public class VaspWexEmvTests {
         acceptorConfig.setPerformDateCheck(true);
         acceptorConfig.setEchoSettlementData(true);
         acceptorConfig.setIncludeLoyaltyData(false);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
 
         // gateway config
         NetworkGatewayConfig config = new NetworkGatewayConfig();

@@ -54,7 +54,7 @@ public class VapsWexTestCert {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 
         // gateway config

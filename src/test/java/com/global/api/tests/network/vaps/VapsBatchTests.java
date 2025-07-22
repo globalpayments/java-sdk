@@ -469,4 +469,16 @@ public class VapsBatchTests {
         assertEquals(resubmitBatch.getResponseMessage(), "580", resubmitBatch.getResponseCode());
 
     }
+    @Test
+    public void test_resubmitBatchClose_codeCoverage() throws ApiException {
+        Transaction batchClose = BatchService.closeBatch(1, new BigDecimal(10), BigDecimal.ZERO)
+                .withBatchNumber(batchProvider.getBatchNumber())
+                .execute();
+        assertNotNull(batchClose);
+        assertNotNull(batchClose.getTransactionToken());
+
+        Transaction resubmit = NetworkService.resubmitBatchClose(batchClose.getTransactionToken())
+                .execute();
+        assertNotNull(resubmit);
+    }
 }

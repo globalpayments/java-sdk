@@ -54,9 +54,9 @@ public class NwsVisaFleet2dot0Tests {
         acceptorConfig.setTimezone("S");
         acceptorConfig.setSupportsPartialApproval(false);
         acceptorConfig.setSupportsReturnBalance(true);
-        acceptorConfig.setSupportsCashOver(true);
+        acceptorConfig.setSupportsCashAtCheckout(true);
         acceptorConfig.setMobileDevice(false);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.HOSTBASEDPRODUCTRESTRICTION);
         acceptorConfig.setVisaFleet2(true);

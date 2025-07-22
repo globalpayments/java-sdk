@@ -142,7 +142,9 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                     entry.setTokenizationType(ed.readString(1));
                     entry.setTokenizedFieldMatrix(ed.readString(1));
                     entry.setTokenizationOperationType(ed.readString(1));
-                    ed.readString(7);
+                    entry.setServiceCodeOrigin(ed.readString(2));
+                    entry.setServiceResponseCode(ed.readString(3));
+                    ed.readString(2); // reserved
                     entry.setMerchantId(ed.readString(32));
                     entry.setTokenOrAcctNum(ed.readString(128));
                     entry.setExpiryDate(ed.readString(4));
@@ -203,7 +205,9 @@ public class DE127_ForwardingData implements IDataElement<DE127_ForwardingData> 
                             .concat(entry.getTokenizationType())
                             .concat(entry.getTokenizedFieldMatrix())
                             .concat(entry.getTokenizationOperationType())
-                            .concat(StringUtils.padRight("", 7, ' '))
+                            .concat(entry.getServiceCodeOrigin()!=null?entry.getServiceCodeOrigin():StringUtils.padRight("", 2, ' '))
+                            .concat(entry.getServiceResponseCode()!=null?entry.getServiceResponseCode():StringUtils.padRight("", 3, ' '))
+                            .concat(StringUtils.padRight("", 2, ' '))
                             .concat(StringUtils.padRight(entry.getMerchantId(),32,' '))
                             .concat(StringUtils.padRight(entry.getTokenOrAcctNum(),128,' '))
                             .concat(entry.getExpiryDate()!=null?entry.getExpiryDate():StringUtils.padRight("", 4, ' '))

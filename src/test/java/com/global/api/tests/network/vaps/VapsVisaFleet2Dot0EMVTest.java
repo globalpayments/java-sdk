@@ -24,14 +24,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class VapsVisaFleetEmvTest {
+public class VapsVisaFleet2Dot0EMVTest {
     private CreditTrackData card;
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
     private String tagData = "4F07A0000007681010820239008407A00000076810108A025A33950500800080009A032021039B02E8009C01005F280208405F2A0208405F3401029F02060000000001009F03060000000000009F0607A00000076810109F07023D009F080201539F090200019F0D05BC308088009F1A0208409F0E0500400000009F0F05BCB08098009F10200FA502A830B9000000000000000000000F0102000000000000000000000000009F2103E800259F2608DD53340458AD69B59F2701809F34031E03009F3501169F3303E0F8C89F360200019F37045876B0989F3901009F4005F000F0A0019F4104000000009F0A06000210840000";
     private String visaTagData = "4F07A0000000031010820239008407A00000000310107005123456789057124485580000080017D311220115886224023F5F201A546573742F4361726420313020202020202020202020202020205A0844855800000800175F24032212315F280208405F3401008C0F1234567890123451234567890123458D13123745524364726335524364726325374552438E0C00000000000000001F0000009F0702FF009F080200019F0D05F470C498009F0E0500000000009F0F05F470C498008F01019001119F4604123456789F4701239F5801129F5901019F6804123456789F6C0212349F6E04D8E0000082010112820201128203013482040112";
 
-    public VapsVisaFleetEmvTest() throws ApiException {
+    public VapsVisaFleet2Dot0EMVTest() throws ApiException {
         acceptorConfig = new AcceptorConfig();
 
 
@@ -56,9 +56,9 @@ public class VapsVisaFleetEmvTest {
         acceptorConfig.setTimezone("S");
         acceptorConfig.setSupportsPartialApproval(false);
         acceptorConfig.setSupportsReturnBalance(true);
-        acceptorConfig.setSupportsCashOver(true);
+        acceptorConfig.setSupportsCashAtCheckout(true);
         acceptorConfig.setMobileDevice(false);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
         acceptorConfig.setVisaFleet2(true);
@@ -77,7 +77,8 @@ public class VapsVisaFleetEmvTest {
         config.setSecondaryPort(15031);
         config.setUniqueDeviceId("2001");
         config.setCompanyId("0044");
-        config.setTerminalId("0000912197711");
+        config.setTerminalId("0007998855611");
+//        config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
@@ -109,6 +110,95 @@ public class VapsVisaFleetEmvTest {
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
+
+    @Test
+    public void test_1100_authorization_VehicleID_DE48_8() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("111222");
+        fleetData.setIdNumber("987654");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("13.90"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_1100_authorization_DE54() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_1100_authorization_DE54_GrossFuelPrice() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+        productData.addSaleTax(new BigDecimal("10.11"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("13.90"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_1100_authorization_DE54_GrossFuelPrice_F_NF() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("11.0091"), new BigDecimal("21"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("11.1101"), new BigDecimal("31"));
+
+        productData.addSaleTax(new BigDecimal("10.11"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("111222");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("13.90"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
     @Test
     public void test_VisaFleet_emv_Auth_1200_1() throws ApiException {
 
@@ -116,10 +206,10 @@ public class VapsVisaFleetEmvTest {
         fleetData.setDriverId("123456");
         fleetData.setOdometerReading("221123");
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe,ProductCodeSet.IssuerSpecific,ProductDataFormat.VISAFLEET2Dot0);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
 
-        Transaction response = card.authorize(new BigDecimal(31.75),true)
+        Transaction response = card.authorize(new BigDecimal(31.75), true)
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
@@ -136,8 +226,8 @@ public class VapsVisaFleetEmvTest {
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
-        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10"), new BigDecimal("31"), new BigDecimal("20"));
-        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("21"), new BigDecimal("10"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("11.0091"), new BigDecimal("31"), new BigDecimal("20.0901"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("11.0091"), new BigDecimal("21"), new BigDecimal("10.0011"));
 
 
         FleetData fleetData = new FleetData();
@@ -161,8 +251,8 @@ public class VapsVisaFleetEmvTest {
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
-        productData.addFuel("05", UnitOfMeasure.Quarts, new BigDecimal("10"), new BigDecimal("31"), new BigDecimal("20"));
-        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("21"), new BigDecimal("10"));
+        productData.addFuel("05", UnitOfMeasure.Quarts, new BigDecimal("11.0091"), new BigDecimal("31"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("11.1121"), new BigDecimal("21"));
 
 
         FleetData fleetData = new FleetData();
@@ -188,13 +278,13 @@ public class VapsVisaFleetEmvTest {
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
         productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10"), new BigDecimal("31"), new BigDecimal("20"));
         productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("21"), new BigDecimal("10"));
-        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"),new BigDecimal("12.74"));
-        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"),new BigDecimal("12.74"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"), new BigDecimal("12.74"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"), new BigDecimal("12.74"));
 
 
         FleetData fleetData = new FleetData();
@@ -217,8 +307,8 @@ public class VapsVisaFleetEmvTest {
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("02", UnitOfMeasure.Gallons, new BigDecimal("50.0001"), new BigDecimal("10.0110"), new BigDecimal("500.55"));
-        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10"), new BigDecimal("31"), new BigDecimal("20"));
-        productData.addNonFuel("DM", UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("21"), new BigDecimal("10"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.1231"), new BigDecimal("31"), new BigDecimal("20"));
+        productData.addNonFuel("DM", UnitOfMeasure.Units, new BigDecimal("10.0011"), new BigDecimal("21"), new BigDecimal("10"));
 
         productData.addSaleTax(new BigDecimal("11.0"));
 
@@ -237,14 +327,15 @@ public class VapsVisaFleetEmvTest {
     }
 
     @Test
-    public void test_45_authorization_NonFuel_DE54_43() throws ApiException {
+    public void test_45_authorization_NonFuel_DE54_43_discount() throws ApiException {
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
-        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10"), new BigDecimal("31"), new BigDecimal("20"));
-        productData.addNonFuel("DM", UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("21"), new BigDecimal("10"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.1211"), new BigDecimal("31"), new BigDecimal("20"));
+        productData.addNonFuel("DM", UnitOfMeasure.Units, new BigDecimal("10.1120"), new BigDecimal("21"), new BigDecimal("10"));
 
         productData.addSaleTax(new BigDecimal("11.0"));
+        productData.addDiscount(new BigDecimal("12.22"));
 
         FleetData fleetData = new FleetData();
         fleetData.setDriverId("123456");
@@ -299,7 +390,9 @@ public class VapsVisaFleetEmvTest {
         productData.addFuel("03", UnitOfMeasure.Gallons, new BigDecimal("11.1010"), new BigDecimal("2.2341"), new BigDecimal("24.80"));
 
         FleetData fleetData = new FleetData();
+        fleetData.setAdditionalPromptData1("001");//d
         fleetData.setAdditionalPromptData2("002");//e
+        fleetData.setEmployeeNumber("1212");//f
 
         Transaction response = card.authorize(new BigDecimal("24.80"), true)
                 .withCurrency("USD")
@@ -420,13 +513,16 @@ public class VapsVisaFleetEmvTest {
     }
 
     @Test
-    public void test_24_authorization_capture() throws ApiException {
+    public void test_24_authorization_capture_discount() throws ApiException {
 
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
         acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("03", UnitOfMeasure.Gallons, new BigDecimal("11.1011"), new BigDecimal("2.1221"));
+
+        productData.addSaleTax(new BigDecimal("20"));
+        productData.addDiscount(new BigDecimal("11.11"));
 
         FleetData fleetData = new FleetData();
         fleetData.setDriverId("123456");
@@ -445,7 +541,6 @@ public class VapsVisaFleetEmvTest {
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
-                .withTagData(visaTagData)
                 .execute();
         assertNotNull(captureResponse);
         // check response
@@ -498,7 +593,7 @@ public class VapsVisaFleetEmvTest {
         fleetData.setDriverId("123456");
         fleetData.setOdometerReading("221123");
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe,ProductCodeSet.IssuerSpecific,ProductDataFormat.VISAFLEET2Dot0);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.9999"), new BigDecimal("21.9999"));
         productData.addNonFuel("79", UnitOfMeasure.Units, new BigDecimal("100"), new BigDecimal("30"), new BigDecimal("30"));
         productData.addNonFuel("01", UnitOfMeasure.Units, new BigDecimal("145.67"), new BigDecimal("67.009"), new BigDecimal("30"));
@@ -635,7 +730,7 @@ public class VapsVisaFleetEmvTest {
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
-                .withTagData("VisaTagData")
+                .withTagData(visaTagData)
                 .execute();
         assertNotNull(captureResponse);
         // check response
@@ -746,6 +841,7 @@ public class VapsVisaFleetEmvTest {
                 .withCurrency("USD")
                 .withFleetData(fleetData)
                 .withProductData(productData)
+                .withTagData(visaTagData)
                 .execute();
         assertNotNull(preRresponse);
 
@@ -798,7 +894,7 @@ public class VapsVisaFleetEmvTest {
                 .withTagData(visaTagData)
                 .execute();
         assertNotNull(response);
-//        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
         Transaction capture = response.capture(response.getAuthorizedAmount())
                 .withCurrency("USD")
@@ -830,6 +926,140 @@ public class VapsVisaFleetEmvTest {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_visaFleet_auth_customerDataTag_DE48_8() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.HOSTBASEDPRODUCTRESTRICTION);
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config);
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("03", UnitOfMeasure.Gallons, new BigDecimal("11.1010"), new BigDecimal("2.2341"), new BigDecimal("24.80"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setAdditionalPromptData1("001");//d
+        fleetData.setAdditionalPromptData2("002");//e
+        fleetData.setEmployeeNumber("EM002");//f
+
+        Transaction response = card.authorize(new BigDecimal("24.80"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_visaFleet_preAuth_Completion_customerDataTag_DE48_8() throws ApiException {
+
+        FleetData fleetData = new FleetData();
+        fleetData.setAdditionalPromptData1("001");//d
+        fleetData.setAdditionalPromptData2("002");//e
+        fleetData.setEmployeeNumber("EM002");//f
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("51", UnitOfMeasure.Kilograms, 10, 10);
+        productData.addNonFuel("06", UnitOfMeasure.Gallons, 5, 10);
+        productData.addNonFuel("16", UnitOfMeasure.Pounds, 2, 20);
+        productData.addNonFuel("63", UnitOfMeasure.Liters, 5, 5);
+        productData.addNonFuel("32", UnitOfMeasure.Gallons, 5, 2);
+
+
+        Transaction preRresponse = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(preRresponse);
+
+        // check message data
+        PriorMessageInformation pmi = preRresponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", preRresponse.getResponseCode());
+
+        Transaction response = preRresponse.preAuthCompletion(new BigDecimal(20))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("202", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_24_authorization_productCodes() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("32", UnitOfMeasure.Gallons, new BigDecimal("11.1011"), new BigDecimal("2.1221"));
+        productData.addNonFuel("NZ", UnitOfMeasure.Gallons, 5, 10);
+        productData.addNonFuel("ZC", UnitOfMeasure.Pounds, 2, 20);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("23.56"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test //Tested with different product Codes
+    public void test_24_authorization_capture_productCodes() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("44", UnitOfMeasure.Gallons, new BigDecimal("11.1011"), new BigDecimal("2.1221"));
+        productData.addSaleTax(new BigDecimal("20"));
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("23.56"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.preAuthCompletion(new BigDecimal("23.56"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(captureResponse);
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
     }
 
 }

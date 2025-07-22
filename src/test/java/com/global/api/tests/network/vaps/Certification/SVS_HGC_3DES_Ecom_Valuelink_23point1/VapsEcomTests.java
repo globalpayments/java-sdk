@@ -1,4 +1,4 @@
-package com.global.api.tests.network.vaps.certification.SVS_HGC_3DES_Ecom_Valuelink_23point1;
+package com.global.api.tests.network.vaps.Certification.SVS_HGC_3DES_Ecom_Valuelink_23point1;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
@@ -61,7 +61,7 @@ public class VapsEcomTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
 
 

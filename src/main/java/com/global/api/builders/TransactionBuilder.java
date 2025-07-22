@@ -84,6 +84,72 @@ public abstract class TransactionBuilder<TResult> extends BaseBuilder<TResult> {
     private int pdlTimeout;
     protected EcommerceInfo ecommerceInfo;
     protected String merchantOrCustomerInitiatedFlag;
+    @Getter
+    private String safOrignDT;
+
+    public void setNtsRequestMessageHeader(NtsRequestMessageHeader ntsRequestMessageHeader) {
+        this.ntsRequestMessageHeader = ntsRequestMessageHeader;
+    }
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
+    }
+    public TransactionModifier getTransactionModifier() {
+        return transactionModifier;
+    }
+    public void setTransactionModifier(TransactionModifier transactionModifier) {
+        this.transactionModifier = transactionModifier;
+    }
+    public IPaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+    public void setPaymentMethod(IPaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    public HashMap<Host, ArrayList<HostError>> getSimulatedHostErrors() {
+        return simulatedHostErrors;
+    }
+
+    // network fields
+    public int getBatchNumber() { return batchNumber; }
+    public String getCompanyId() {
+        return companyId;
+    }
+    public FleetData getFleetData() {
+        return fleetData;
+    }
+    public LinkedHashMap<CardIssuerEntryTag, String> getIssuerData() {
+        return issuerData;
+    }
+    public Integer getFollowOnStan() {
+        return followOnStan;
+    }
+    public PriorMessageInformation getPriorMessageInformation() {
+        return priorMessageInformation;
+    }
+    public void setPriorMessageInformation(PriorMessageInformation priorMessageInformation) {
+        this.priorMessageInformation = priorMessageInformation;
+    }
+    public ProductData getProductData() {
+        return productData;
+    }
+    public int getSequenceNumber() {
+        return sequenceNumber;
+    }
+    public int getSystemTraceAuditNumber() {
+        return systemTraceAuditNumber;
+    }
+    public String getUniqueDeviceId() {
+        return uniqueDeviceId;
+    }
+    public TransactionMatchingData getTransactionMatchingData() {
+        return transactionMatchingData;
+    }
+    public boolean isTerminalError() {
+        return terminalError;
+    }
 
     public TransactionBuilder<TResult> withServiceCode(String serviceCode) {
         this.serviceCode = serviceCode;

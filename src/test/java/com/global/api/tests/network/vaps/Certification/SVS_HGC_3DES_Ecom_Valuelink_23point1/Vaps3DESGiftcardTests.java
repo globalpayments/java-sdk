@@ -1,4 +1,4 @@
-package com.global.api.tests.network.vaps.certification.SVS_HGC_3DES_Ecom_Valuelink_23point1;
+package com.global.api.tests.network.vaps.Certification.SVS_HGC_3DES_Ecom_Valuelink_23point1;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;

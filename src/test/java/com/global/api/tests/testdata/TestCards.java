@@ -272,6 +272,16 @@ public class TestCards {
         return rvalue;
     }
 
+    public static CreditTrackData MasterCardTrack1Equivalent() {
+        return MasterCardTrack1Equivalent(EntryMethod.Swipe);
+    }
+    public static CreditTrackData MasterCardTrack1Equivalent(EntryMethod entryMethod) {
+        CreditTrackData rvalue = new CreditTrackData();
+        rvalue.setValue("%B5413330089604111^UAT USA/TEST CARD 07      ^2512201012340917200000000000000?");
+        rvalue.setEntryMethod(entryMethod);
+        return rvalue;
+    }
+
     public static CreditTrackData MasterCardSwipeEncrypted() {
         return MasterCardSwipeEncrypted(EntryMethod.Swipe);
     }

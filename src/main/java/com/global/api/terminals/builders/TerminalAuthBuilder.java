@@ -57,6 +57,8 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private String cardBrandTransId;
     private DateTime shippingDate;
 	private boolean requireSecurityCode = true;
+    protected String terminalRefNumber;
+
 
     public String getAuthCode() {
         if(paymentMethod instanceof TransactionReference)
@@ -94,6 +96,15 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         }
 
         return totalAmount;
+    }
+
+    public String getTerminalRefNumber() {
+        return terminalRefNumber;
+    }
+
+    public TerminalAuthBuilder withTerminalRefNumber(String value) {
+        this.terminalRefNumber = value;
+        return this;
     }
 
     public TerminalAuthBuilder withTokenRequest(Integer tokenRequest) {

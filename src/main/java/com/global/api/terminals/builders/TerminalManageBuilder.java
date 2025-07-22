@@ -40,6 +40,8 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     private Lodging lodging;
     @Getter
     private BigDecimal preAuthAmount;
+    @Getter
+    protected String referenceNumber;
 
     public BigDecimal getAmount() {
         return amount;
@@ -178,6 +180,11 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         return this;
     }
 
+    public TerminalManageBuilder withReferenceNumber(String value) {
+        referenceNumber = value;
+        return this;
+    }
+
     public TerminalManageBuilder withTransactionModifier(TransactionModifier modifier) {
         this.transactionModifier = modifier;
         return this;
@@ -200,7 +207,7 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     }
 
     public void setupValidations() {
-        this.validations.of(EnumSet.of(TransactionType.Capture, TransactionType.Void)).check("transactionId").isNotNull();
+        this.validations.of(TransactionType.Void).check("transactionId","terminalRefNumber");
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
         this.validations.of(TransactionType.Capture).check("transactionId").isNotNull()
                 .check("amount").isNotNull();

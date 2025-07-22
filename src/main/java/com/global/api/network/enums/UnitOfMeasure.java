@@ -14,7 +14,10 @@ public enum UnitOfMeasure implements IStringConstant {
     Units("U"),
     Ounces("Z"),
     ImperialGallons("I"),
-    NoFuelPurchased(" ");
+    NoFuelPurchased(" "),
+    Kilowatt_Hour("6"),
+    Minutes("7"),
+    Hours("8");
 
     private final String value;
     UnitOfMeasure(String value) { this.value = value; }

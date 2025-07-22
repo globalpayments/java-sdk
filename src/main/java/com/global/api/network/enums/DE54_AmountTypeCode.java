@@ -10,7 +10,9 @@ public enum DE54_AmountTypeCode implements IStringConstant {
     NETFUELPRICE("42"),
     GROSSNONFUELPRICE("43"),
     NETNONFUELPRICE("44"),
+    //Need to remove TAXRATEFORFUEL, but this is used in NWS so will wait for NWS changes.
     TAXRATEFORFUEL("45"),
+    GROSSFUELPRICE("46"),
     WIC_GenericDiscountAmount("52"),
     AmountTax("56"),
     AmountDiscount("57"),

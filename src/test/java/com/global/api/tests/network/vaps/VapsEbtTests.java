@@ -70,7 +70,7 @@ public class VapsEbtTests {
         acceptorConfig.setSupportsDiscoverNetworkReferenceId(true);
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
 
         // gateway config
         config = new NetworkGatewayConfig();
@@ -170,6 +170,7 @@ public class VapsEbtTests {
         trackData.setPinBlock("62968D2481D231E1A504010024A00014");
 
         Transaction response = trackData.balanceInquiry(InquiryType.Cash)
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -193,6 +194,7 @@ public class VapsEbtTests {
 
         Transaction response = trackData.charge(new BigDecimal(10))
                 .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .execute();
         assertNotNull(response);
 
@@ -608,6 +610,145 @@ public class VapsEbtTests {
             assertNotNull(response);
         });
         assertEquals("Authorizations are not allowed for EBT cards.", unsupportedTransactionException.getMessage());
+    }
+    @Test
+    public void test_EBT_CashBenefits_balance_inquiry() throws ApiException {
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111123=491200000000?");
+        trackData.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        Transaction response = trackData.balanceInquiry(InquiryType.Cash)
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal("1.1"))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("318100", pmi.getProcessingCode());
+        assertEquals("108", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_EBT_CashBenefits_sale() throws ApiException {
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        Transaction response = trackData.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal("1.1"))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_EBT_CashBenefits_void() throws ApiException {
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.CashBenefit);
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        Transaction response = trackData.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal("1.1"))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        Transaction voidResponse = response.voidTransaction(new BigDecimal("10"))
+                .execute();
+        assertNotNull(voidResponse);
+    }
+
+    @Test
+    public void test_EBT_FeeAmount_Support_CashBenefitsOnly_Exception() throws UnsupportedOperationException {
+        EBTTrackData trackData = new EBTTrackData(EbtCardType.FoodStamp);
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        UnsupportedOperationException foodStampNotSupportedException = assertThrows(UnsupportedOperationException.class, ()-> {
+            trackData.charge(new BigDecimal("10"))
+                    .withCurrency("USD")
+                    .withFee(FeeType.TransactionFee, new BigDecimal("1.1"))
+                    .execute();
+        });
+        assertTrue(foodStampNotSupportedException.getMessage().equals("For EBT,Fee Amount supported for Cash Benefits card only"));
+
+    }
+    @Test
+    public void test_sale_DataCollect_TransactionFee() throws ApiException {
+        Transaction response = cashCard.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal("1"))
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        // check the dataCollect
+        Transaction dataCollect = response.getPreAuthCompletion();
+
+        // check message data
+        pmi = dataCollect.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("1379", pmi.getMessageReasonCode());
+        assertEquals("201", pmi.getFunctionCode());
+    }
+    @Test
+    public void test_codeCoverage_cashcard_refund_by_card() throws ApiException {
+        Transaction response = foodCard.refund(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("200080", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_card_type_null_for_code_coverage_only() throws ApiException {
+        EBTTrackData trackData = new EBTTrackData();
+        trackData.setValue(";9840000921111111149=491200000000?");
+        trackData.setPinBlock("AFEC374574FC90623D010000116001EE");
+
+        BuilderException builderException = assertThrows(BuilderException.class,()->{
+            trackData.charge(new BigDecimal("10"))
+                    .withCurrency("USD")
+                    .withFee(FeeType.TransactionFee,new BigDecimal("1.1"))
+                    .execute();
+        });
+        assertEquals("The card type must be specified for EBT transactions.", builderException.getMessage());
+
     }
 
     @Test

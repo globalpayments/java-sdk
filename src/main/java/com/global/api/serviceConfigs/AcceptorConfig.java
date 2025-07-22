@@ -34,7 +34,7 @@ public class AcceptorConfig {
     private String timezone;
     private Boolean supportsPartialApproval;
     private Boolean supportsReturnBalance;
-    private Boolean supportsCashOver;
+    private Boolean supportsCashAtCheckout;
     private Boolean mobileDevice;
     private Boolean supportsShutOffAmount;
     private Boolean supportsDiscoverNetworkReferenceId;
@@ -43,7 +43,7 @@ public class AcceptorConfig {
     private Boolean capableAmexRemainingBalance;
     private Boolean capableVoid;
     @Getter @Setter
-    private Boolean supportWexAdditionalProducts;
+    private Boolean supportWexAvailableProducts;
     @Getter @Setter
     private Boolean capableVisaFleetTwoPointO;
     @Getter @Setter
@@ -97,6 +97,8 @@ public class AcceptorConfig {
     private TokenizationOperationType tokenizationOperationType;
     @Getter @Setter
     private TokenizationType tokenizationType;
+    @Getter @Setter
+    private boolean supportE3Encryption;
 
     public Boolean getEchoSettlementData() {
         return echoSettlementData;
@@ -228,11 +230,11 @@ public class AcceptorConfig {
     public void setSupportsReturnBalance(Boolean supportsReturnBalance) {
         this.supportsReturnBalance = supportsReturnBalance;
     }
-    public Boolean getSupportsCashOver() {
-        return supportsCashOver;
+    public Boolean getSupportsCashAtCheckout() {
+        return supportsCashAtCheckout;
     }
-    public void setSupportsCashOver(Boolean supportsCashOver) {
-        this.supportsCashOver = supportsCashOver;
+    public void setSupportsCashAtCheckout(Boolean supportsCashAtCheckout) {
+        this.supportsCashAtCheckout = supportsCashAtCheckout;
     }
     public Boolean getSupportsDiscoverNetworkReferenceId() {
         return supportsDiscoverNetworkReferenceId;
@@ -285,7 +287,7 @@ public class AcceptorConfig {
         return (!StringUtils.isNullOrEmpty(timezone)
                 || supportsPartialApproval != null
                 || supportsReturnBalance != null
-                || supportsCashOver != null
+                || supportsCashAtCheckout != null
                 || mobileDevice != null);
     }
     public boolean hasPosConfiguration_IssuerData() {
@@ -297,7 +299,7 @@ public class AcceptorConfig {
                 || supportsEmvPin != null
                 || mobileDevice != null
                 || pinlessDebit != null
-                || supportWexAdditionalProducts != null);
+                || supportWexAvailableProducts != null);
     }
     public boolean hasPosConfiguration_MessageData(){
         return performDateCheck != null
@@ -326,7 +328,7 @@ public class AcceptorConfig {
                 .concat(supportsEmvPin != null ? supportsEmvPin ? "Y" : "N" : "N")
                 .concat(mobileDevice != null ? mobileDevice ? "Y" : "N" : "N")
                 .concat(pinlessDebit != null ? pinlessDebit ? "Y" : "N" : "N")
-                .concat(supportWexAdditionalProducts != null ? supportWexAdditionalProducts ? "Y" : "N" : "N")
+                .concat(supportWexAvailableProducts != null ? supportWexAvailableProducts ? "Y" : "N" : "N")
                 .concat(supportTerminalPurchaseRestriction != null ? "Y" : "N");
         return rvalue;
     }

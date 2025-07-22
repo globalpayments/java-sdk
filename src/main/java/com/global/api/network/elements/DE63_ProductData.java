@@ -23,12 +23,17 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     @Setter
     @Getter
     private BigDecimal salesTax;
+    @Setter
+    @Getter
+    private BigDecimal discount;
     private LinkedHashMap<String, DE63_ProductDataEntry> productDataEntries;
     @Getter@Setter
     private LinkedHashMap<String, DE63_ProductDataEntry> fuelProductDataEntries;
     @Getter@Setter
     private LinkedHashMap<String, DE63_ProductDataEntry> nonFuelProductDataEntries;
     private String EMPTY_STRING ="  ";
+    private static final String VOYAGER_FLEET = "VoyagerFleet";
+    private static final String FUEL_PRODUCT_COUNT_EXCEPTION = "Number of Fuel product should not more than 1";
 
     public ProductDataFormat getProductDataFormat() {
         return productDataFormat;
@@ -83,16 +88,24 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         nonFuelProductDataEntries.put(entry.getCode(), entry);
     }
 
-        public void add(BigDecimal salesTax) {
-        setSalesTax(salesTax);
-    }
-
     public BigDecimal getFuelAmount() {
         BigDecimal sumAmount = BigDecimal.ZERO;
         for (DE63_ProductDataEntry fuelDataEntry : fuelProductDataEntries.values()) {
             sumAmount = sumAmount.add(fuelDataEntry.getAmount());
         }
         return sumAmount.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getFuelWithTax(){
+        BigDecimal sumAmount = BigDecimal.ZERO;
+
+        for (DE63_ProductDataEntry fuelDataEntry : fuelProductDataEntries.values()) {
+            sumAmount = sumAmount.add(fuelDataEntry.getAmount());
+        }
+        if(salesTax!=null) {
+            sumAmount = sumAmount.add(salesTax);
+        }
+        return sumAmount.setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getNonFuelAmount(){
@@ -245,35 +258,122 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
         switch(productDataFormat) {
             case HeartlandStandardFormat: {
-                LinkedHashMap<String, DE63_ProductDataEntry> productDataCountEntries = new LinkedHashMap<>();
-                int count = 0;
-                if (getFuelProductCount() != 0 || getNonFuelProductCount() != 0) {
-                    count = getFuelProductCount() + getNonFuelProductCount();
-                    if (getFuelProductCount() != 0) {
-                        productDataCountEntries = new LinkedHashMap<>(getFuelProductDataEntries());
-                        productDataCountEntries.putAll(getNonFuelProductDataEntries());
+                if ((cardType != null) && ((cardType).equals(VOYAGER_FLEET))) {
+                    if (getFuelProductCount() > 1) {
+                        throw new UnsupportedOperationException(FUEL_PRODUCT_COUNT_EXCEPTION);
                     } else {
-                        productDataCountEntries = new LinkedHashMap<>(getNonFuelProductDataEntries());
+                        int totalProductCount = getFuelProductCount() + getNonFuelProductCount();
+                        if(totalProductCount>6){
+                            rvalue = rvalue.concat(StringUtils.padLeft(6, 3, '0'));
+                        }else{
+                            rvalue = rvalue.concat(StringUtils.padLeft(totalProductCount, 3, '0'));
+                        }
+                        if (getFuelProductCount() != 0) {
+                            for (DE63_ProductDataEntry entry : fuelProductDataEntries.values()) {
+                                rvalue = rvalue.concat(entry.getCode() + "\\");
+
+                                if (entry.getUnitOfMeasure() != null) {
+                                    rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
+                                }
+                                if (entry.getQuantity() != null) {
+                                    rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+                                }
+                                rvalue = rvalue.concat("\\")
+                                        .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
+                                        .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
+                            }
+                        }
+                        if (getNonFuelProductCount() != 0) {
+                            String rvalue2 = (33 + "\\"); //Misc code for VoyagerFleet
+                            String unitOfMeasure = "";
+                            BigDecimal quantRollup = new BigDecimal(0);
+                            BigDecimal priceRollup = new BigDecimal(0);
+                            BigDecimal amountRollup = new BigDecimal(0);
+                            int i = 1;
+                            int rollUpCutOff ;
+                            if (getFuelProductCount() == 0) {
+                                rollUpCutOff = 6;
+                            } else {
+                                rollUpCutOff = 5;
+                            }
+                            LinkedHashMap<String, DE63_ProductDataEntry> decreasingOrderNonFuelEntries = getDecreasingOrderNonFuelEntries();
+                            for (DE63_ProductDataEntry entry : decreasingOrderNonFuelEntries.values()) {
+                                if (i < rollUpCutOff) {
+                                    i=i+1;
+                                    rvalue = rvalue.concat(entry.getCode() + "\\");
+
+                                    if (entry.getUnitOfMeasure() != null) {
+                                        rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
+                                    }
+                                    if (entry.getQuantity() != null) {
+                                        rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+                                    }
+                                    rvalue = rvalue.concat("\\")
+                                            .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
+                                            .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
+                                } else {
+                                    if (totalProductCount == 6) {
+                                        rvalue2 = entry.getCode();
+                                        rvalue2 = rvalue2.concat("\\");
+                                    }
+                                    if (entry.getUnitOfMeasure() != null) {
+                                        unitOfMeasure = entry.getUnitOfMeasure().getValue();
+                                    }
+                                    if (entry.getQuantity() != null) {
+                                        quantRollup = quantRollup.add(entry.getQuantity());
+                                    }
+                                    priceRollup = priceRollup.add(entry.getPrice());
+                                    amountRollup = amountRollup.add(entry.getAmount());
+                                    i=i+1;
+                                }
+
+                            }
+                            if (i>rollUpCutOff) {
+                                if (unitOfMeasure != null) {
+                                    rvalue2 = rvalue2.concat(unitOfMeasure);
+                                }
+
+                                rvalue2 = rvalue2.concat(StringUtils.toFractionalNumeric(quantRollup));
+                                rvalue2 = rvalue2.concat("\\")
+                                        .concat(StringUtils.toFractionalNumeric(priceRollup) + "\\")
+                                        .concat(StringUtils.toNumeric(amountRollup) + "\\");
+
+                                rvalue = rvalue.concat(rvalue2);
+                            }
+                        }
                     }
-                } else if (getProductDataEntries().size() != 0) {
-                    count = getProductCount();
-                    productDataCountEntries = new LinkedHashMap<>(productDataEntries);
-
                 }
-                rvalue = rvalue.concat(StringUtils.padLeft(count, 3, '0'));
-                if (productDataCountEntries.size() != 0) {
-                    for (DE63_ProductDataEntry entry : productDataCountEntries.values()) {
-                        rvalue = rvalue.concat(entry.getCode() + "\\");
+                else {
+                    LinkedHashMap<String, DE63_ProductDataEntry> productDataCountEntries = new LinkedHashMap<>();
+                    int count = 0;
+                    if (getFuelProductCount() != 0 || getNonFuelProductCount() != 0) {
+                        count = getFuelProductCount() + getNonFuelProductCount();
+                        if (getFuelProductCount() != 0) {
+                            productDataCountEntries = new LinkedHashMap<>(getFuelProductDataEntries());
+                            productDataCountEntries.putAll(getNonFuelProductDataEntries());
+                        } else {
+                            productDataCountEntries = new LinkedHashMap<>(getNonFuelProductDataEntries());
+                        }
+                    } else if (getProductDataEntries().size() != 0) {
+                        count = getProductCount();
+                        productDataCountEntries = new LinkedHashMap<>(productDataEntries);
 
-                        if (entry.getUnitOfMeasure() != null) {
-                            rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
+                    }
+                    rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 3, '0'));
+                    if (productDataCountEntries.size() != 0) {
+                        for (DE63_ProductDataEntry entry : productDataEntries.values()) {
+                            rvalue = rvalue.concat(entry.getCode() + "\\");
+
+                            if (entry.getUnitOfMeasure() != null) {
+                                rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
+                            }
+                            if (entry.getQuantity() != null) {
+                                rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+                            }
+                            rvalue = rvalue.concat("\\")
+                                    .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
+                                    .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                         }
-                        if (entry.getQuantity() != null) {
-                            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
-                        }
-                        rvalue = rvalue.concat("\\")
-                                .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
-                                .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                     }
                 }
             }break;
@@ -343,16 +443,30 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                     }
                     if (getNonFuelProductCount() != 0 && getNonFuelProductCount() <= 8) {
                         for (DE63_ProductDataEntry entry : nonFuelProductDataEntries.values()) {
-                            rvalue = rvalue.concat(entry.getCode() + "\\")
-                                    .concat("\\")   //Quantity
-                                    .concat("\\")   //Price
-                                    .concat("\\"); //Amount
+                            rvalue = rvalue.concat(entry.getCode() + "\\");
+                            rvalue = rvalue.concat(" "); //Unit Of Measure
+
+                            if (entry.getQuantity() != null) {
+                                rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+
+                            }
+                            rvalue = rvalue.concat("\\")
+                                    .concat("\\") //Price
+                                    .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                         }
                     }
                     break;
                 }
         }
         return rvalue.getBytes();
+    }
+
+    private LinkedHashMap<String, DE63_ProductDataEntry> getDecreasingOrderNonFuelEntries() {
+        LinkedHashMap<String, DE63_ProductDataEntry> decreasingOrderNonFuelEntries = nonFuelProductDataEntries.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue((entry1, entry2) -> entry2.getPrice().compareTo(entry1.getPrice())))
+                .collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), Map::putAll);
+        return decreasingOrderNonFuelEntries;
     }
 
     public String toString() {

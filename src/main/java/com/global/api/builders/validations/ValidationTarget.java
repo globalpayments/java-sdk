@@ -38,6 +38,12 @@ public class ValidationTarget {
         return clause;
     }
 
+    public void check(String propertyName1, String propertyName2) {
+        if (propertyName1 == null || propertyName2 == null) {
+            throw new IllegalArgumentException("TransactionId or TerminalRefNumber must not be null");
+        }
+    }
+
     public ValidationClause when(String propertyName) {
         precondition = new ValidationClause(parent, this, propertyName, true);
         return precondition;

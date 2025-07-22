@@ -5,10 +5,10 @@ import com.global.api.entities.enums.IStringConstant;
 public enum DE48_CustomerDataType implements IStringConstant {
     UnencryptedIdNumber("0"),
     Vehicle_Number("1"),
-    Vehicle_Number_Code3("3"),
-    Id_Number_Code3("3"),
     VehicleTag("2"),
     DriverId_EmployeeNumber("3"),
+    Vehicle_Number_Code3("3"),
+    Id_Number_Code3("3"),
     Odometer_Reading("4"),
     DriverLicense_Number("5"),
     DriverLicense_State_Province("6"),

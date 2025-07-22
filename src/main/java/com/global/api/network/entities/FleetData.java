@@ -37,7 +37,7 @@ public class FleetData {
     private String additionalPromptData2;
     @Setter @Getter
     private String employeeNumber;
-    @Getter @Setter
+    @Setter @Getter
     private String idNumber;
     public String getTrailerReferHours() {
         return trailerReferHours;

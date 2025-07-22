@@ -2421,9 +2421,9 @@ public class NwsConnector extends GatewayConnectorConfig {
                 posConfiguration.setTimezone(posConfiguration.getTimezone());
                 posConfiguration.setSupportsPartialApproval(acceptorConfig.getSupportsPartialApproval());
                 posConfiguration.setSupportsReturnBalance(acceptorConfig.getSupportsReturnBalance());
-                posConfiguration.setSupportsCashOver(acceptorConfig.getSupportsCashOver());
+                posConfiguration.setSupportsCashAtCheckOut(acceptorConfig.getSupportsCashAtCheckout());
                 posConfiguration.setMobileDevice(acceptorConfig.getMobileDevice());
-                posConfiguration.setSupportWexAdditionalProducts(acceptorConfig.getSupportWexAdditionalProducts());
+                posConfiguration.setSupportWexAvailableProducts(acceptorConfig.getSupportWexAvailableProducts());
                 posConfiguration.setSupportTerminalPurchaseRestriction(acceptorConfig.getSupportTerminalPurchaseRestriction());
                 posConfiguration.setSupportVisaFleet2dot0(acceptorConfig.getSupportVisaFleet2dot0());
                 messageControl.setPosConfiguration(posConfiguration);

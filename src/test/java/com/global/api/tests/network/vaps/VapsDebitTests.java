@@ -20,7 +20,6 @@ import com.global.api.network.entities.PriorMessageInformation;
 import com.global.api.network.enums.*;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
-import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
@@ -34,12 +33,9 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -78,7 +74,7 @@ public class VapsDebitTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setPinlessDebit(false);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
 
         // gateway config
         config = new NetworkGatewayConfig();

@@ -6,8 +6,10 @@ import com.global.api.entities.BatchSummary;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EntryMethod;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.network.entities.*;
 import com.global.api.network.enums.*;
+import com.global.api.network.enums.nts.AvailableProductsCapability;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.AcceptorConfig;
@@ -29,6 +31,7 @@ public class VapsWexTests {
     private Address address;
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
+    private CreditTrackData card;
     public VapsWexTests() throws ApiException {
         acceptorConfig = new AcceptorConfig();
 
@@ -37,7 +40,7 @@ public class VapsWexTests {
         acceptorConfig.setTerminalOutputCapability(TerminalOutputCapability.Printing_Display);
 
         // hardware software config values
-        acceptorConfig.setHardwareLevel("34");
+        acceptorConfig.setHardwareLevel("S1");
         acceptorConfig.setSoftwareLevel("21205710");
 
         // Address details.
@@ -57,8 +60,9 @@ public class VapsWexTests {
         acceptorConfig.setSupportsAvsCnvVoidReferrals(true);
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportsEmvPin(true);
-        acceptorConfig.setSupportWexAdditionalProducts(true);
+        acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
 
         // gateway config
         config = new NetworkGatewayConfig();
@@ -67,16 +71,18 @@ public class VapsWexTests {
         config.setSecondaryEndpoint("test.txns.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
+        config.setTerminalId("0007998855611");
 //        config.setTerminalId("0000912197711");
         config.setTerminalId("0000912197711");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
-        config.setMerchantType("4214");
+        config.setMerchantType("5541");
         ServicesContainer.configureService(config);
 
-        ServicesContainer.configureService(config, "outside");
+        card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121004658100000");
     }
 
     @Test
@@ -126,7 +132,7 @@ public class VapsWexTests {
     @Test
     public void test_002_3000_V202_ON_O_WX2_1100() throws ApiException {
         CreditTrackData card = new CreditTrackData();
-        card.setValue("6900460420006149231=19020013000200000");
+        card.setValue("6900460420006149249=27121015193720000");
 
         FleetData fleetData = new FleetData();
         fleetData.setServicePrompt("00");
@@ -170,7 +176,7 @@ public class VapsWexTests {
         fleetData.setDriverId("5500");
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
-        productData.add("102", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.add("001", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = card.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -263,9 +269,9 @@ public class VapsWexTests {
         card.setValue("6900460420006149231=19021013011200001");
 
         FleetData fleetData = new FleetData();
-        fleetData.setServicePrompt("11");
-        fleetData.setOdometerReading("100");
-        fleetData.setVehicleNumber("1");
+        fleetData.setUserId("101231");
+        fleetData.setUnitNumber("GST98765432");
+        fleetData.setTripNumber("GST98765432");
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
         productData.add("074", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
@@ -274,7 +280,7 @@ public class VapsWexTests {
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
-                .execute("outside");
+                .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "100", response.getResponseCode());
     }
@@ -2735,6 +2741,705 @@ public class VapsWexTests {
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
 
+    @Test
+    public void test_sale_wex_productCodes1() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=22124012203100001");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("10");
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("5500");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("156", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_sale_wex_productCodes2() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460430001234566=24121004658100000");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_capture_1220_productCode() throws ApiException {
+        config.setMerchantType("5542");
+        ServicesContainer.configureService(config, "outside");
+
+        CreditTrackData card = new CreditTrackData();
+        card.setValue("6900460420006149231=19021003073200002");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("12");
+        fleetData.setOdometerReading("123456");
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("074", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction response = card.authorize(new BigDecimal(1), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute("outside");
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("017", UnitOfMeasure.Units, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+
+        Transaction capture = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute("outside");
+        assertNotNull(capture);
+        assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
+    }
+
+    @Test
+    public void test_sale_wexFleet_Prompts() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46581");
+        fleetData.setHubometerNumber("12345");
+        fleetData.setOdometerReading("12345");
+        fleetData.setJobNumber("GM12345");
+        fleetData.setDepartment("GMP12345");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_driverIdValidation_6Digit() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("46581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_driverIdValidation_4Digit() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("3733");
+        fleetData.setVehicleNumber("46581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_driverIdValidation_negative_3Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373");
+        fleetData.setVehicleNumber("46581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        BuilderException lengthValidation = assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute());
+        assertTrue("Driver Id length must be 4 or 6.".equals(lengthValidation.getMessage()));
+    }
+    @Test
+    public void test_sale_wexFleet_driverIdValidation_negative_5Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("37343");
+        fleetData.setVehicleNumber("46581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        BuilderException lengthValidation = assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+        assertTrue("Driver Id length must be 4 or 6.".equals(lengthValidation.getMessage()));
+    }
+    @Test
+    public void test_sale_wexFleet_enteredData_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setEnteredData("AN581AN581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_enteredData_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setEnteredData("AN581AN581234");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_department_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setEnteredData("AN581AN581");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_department_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setEnteredData("AN581AN581234");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_hubometer_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setHubometerNumber("987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_hubometer_negative_10Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setHubometerNumber("9876543218");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_jobNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setJobNumber("G987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_jobNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setJobNumber("GMP9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_maintenanceNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setMaintenanceNumber("G987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_maintenanceNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setMaintenanceNumber("GMP9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_odometer_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setOdometerReading("987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_odometer_negative_10Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setOdometerReading("9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_trailerHours_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setTrailerReferHours("987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_trailerHours_negative_10Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setTrailerReferHours("9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_trailerNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setTrailerNumber("GST987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_trailerNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setTrailerNumber("GST9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_tripNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setTripNumber("GST987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_tripNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setTripNumber("GST9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_unitNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setUnitNumber("GST987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_unitNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setUnitNumber("GST9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_userId_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setUserId("GST987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_userId_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setUserId("GST9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_workOrPurchaseOrderNo_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setWorkOrderPoNumber("GST987654");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_workOrPurchaseOrderNo_negative_13Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setWorkOrderPoNumber("GST9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_vehicleId_validation() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("98765423");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_vehicleId_negative_10Digit() throws BuilderException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373434");
+        fleetData.setVehicleNumber("9876543210");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+    @Test
+    public void test_sale_wexFleet_NoOfPrompt() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("98765423");
+        fleetData.setWorkOrderPoNumber("GST987654");
+        fleetData.setEnteredData("1234");
+        fleetData.setDepartment("GMP12345");
+        fleetData.setIdNumber("1001");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wexFleet_moreThanSixPrompt_negative() throws UnsupportedOperationException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("98765423");
+        fleetData.setWorkOrderPoNumber("GST987654");
+        fleetData.setUserId("GST9876543");
+        fleetData.setUnitNumber("GST98765432");
+        fleetData.setTripNumber("GST98765432");
+        fleetData.setDepartment("GST98");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> card.charge(new BigDecimal("10"))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .execute());
+    }
+
+    @Test
+    public void test_sale_AvailableProductCapability_codeCoverage() throws ApiException {
+        acceptorConfig.setAvailableProductCapability(AvailableProductsCapability.DeviceIsAvailableProductsCapable);
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("98765423");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+    }
+    @Test
+    public void test_sale_wex_prompt_count_codeCoverage() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("373395");
+        fleetData.setVehicleNumber("98765423");
+        fleetData.setWorkOrderPoNumber("GST987654");
+        fleetData.setUserId("GST9876543");
+        fleetData.setUnitNumber("GST98765432");
+        fleetData.setTripNumber("GST98765432");
+        fleetData.setDepartment("GST98");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        UnsupportedOperationException unsupportedOperationException = assertThrows(UnsupportedOperationException.class,
+                () -> card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute());
+        assertTrue(unsupportedOperationException.getMessage().equals("WEX has only six possible prompts per transaction."));
+
+    }
+    @Test
+    public void test_DriverID_length_codeCoverage() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("37");
+        fleetData.setVehicleNumber("98765423");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () -> card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute());
+        assertTrue(builderException.getMessage().equals("Driver Id length must be 4 or 6."));
+    }
+
+    @Test
+    public void test_transactionMatchingData_null_codeCoverage() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("37");
+        fleetData.setVehicleNumber("98765423");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+
+        BuilderException builderException = assertThrows(BuilderException.class,
+                () ->   card.refund(new BigDecimal(53.72))
+                        .withCurrency("USD")
+                        .withProductData(productData)
+                        .withFleetData(fleetData)
+                        .withTransactionMatchingData(null)
+                        .execute());
+        assertTrue(builderException.getMessage().equals("Transaction mapping data object required for WEX refunds."));
+
+    }
     //AddFuel() & AddNonFuel()
     @Test
     public void test_001_sale_Fuel_nonFuel() throws ApiException {

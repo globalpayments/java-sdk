@@ -32,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 public class VapsConnector extends GatewayConnectorConfig {
     private AcceptorConfig acceptorConfig;
@@ -52,6 +54,14 @@ public class VapsConnector extends GatewayConnectorConfig {
     private NetworkProcessingFlag processingFlag;
 
     private boolean lrcFailure;
+
+    private static final String DISCOVER = "Discover";
+    private static final String CASH_AT_CHECKOUT_EXCEPTION = "The Cash at Checkout amount requested must be less than or equal to $120.00.";
+    private static final String SUPPORTS_DISCOVER_ONLY_EXCEPTION = "Cash At Checkout supported for Discover card only.";
+    private static final int AMEX_DISCOVER_CVV_LENGTH =4;
+    private static final int MC_VISA_CVV_LENGTH =3;
+    private static final String FEE_AMOUNT_SUPPORTS_EBT_CASH_BENEFITS_ONLY = "For EBT,Fee Amount supported for Cash Benefits card only";
+
 
     BatchSummary summary = new BatchSummary();
 
@@ -130,6 +140,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         TransactionType transactionType = builder.getTransactionType();
         boolean isPosSiteConfiguration = transactionType.equals(TransactionType.PosSiteConfiguration);
         boolean isVisaFleet2 = acceptorConfig.getSupportVisaFleet2dot0() != null && acceptorConfig.getVisaFleet2()!=null && acceptorConfig.getVisaFleet2();
+        boolean isDiscoverCashAtCheckout = acceptorConfig.getSupportsCashAtCheckout() != null && builder.getCashAtCheckoutAmount() != null && builder.getTransactionType().equals(TransactionType.Sale);
         Iso4217_CurrencyCode currencyCode = Iso4217_CurrencyCode.USD;
         EmvData tagData = EmvUtils.parseTagData(builder.getTagData(), isEnableLogging());
         if(!StringUtils.isNullOrEmpty(builder.getCurrency())) {
@@ -315,7 +326,11 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(functionCode.equals("100")) {
                 request.set(DataElementId.DE_004, StringUtils.toDecimal(builder.getAmount(), 12));
             }else{
-                request.set(DataElementId.DE_004, StringUtils.toNumeric(builder.getAmount(), 12));
+                if (isDiscoverCashAtCheckout){
+                    request.set(DataElementId.DE_004, StringUtils.toDecimal((builder.getCashAtCheckoutAmount().add(builder.getAmount())), 12));
+                }else {
+                    request.set(DataElementId.DE_004, StringUtils.toNumeric(builder.getAmount(), 12));
+                }
             }
             // DE 7: Date and Time, Transmission - n10 (MMDDhhmmss) // C
             request.set(DataElementId.DE_007, DateTime.now(DateTimeZone.UTC).toString("MMddhhmmss"));
@@ -435,8 +450,14 @@ public class VapsConnector extends GatewayConnectorConfig {
             46.6 CURRENCY CODE, RECONCILIATION FEE n3
          */
         if(!isPosSiteConfiguration) {
-            if (paymentMethodType.equals(paymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT) || paymentMethodType.equals(paymentMethodType.Credit) ) {
-                if (builder.getFeeAmount() != null) {
+            EbtCardType card = null;
+            if (paymentMethod instanceof EBT) {
+                EBT ebtCard = (EBT) paymentMethod;
+                card = ebtCard.getEbtCardType();
+            }
+            if (paymentMethodType.equals(paymentMethodType.Debit) || ((paymentMethodType.equals(PaymentMethodType.EBT) && card.equals(EbtCardType.CashBenefit)) || paymentMethodType.equals(paymentMethodType.Credit))) {
+
+                if (builder.getFeeAmount() != null && !isDiscoverCashAtCheckout) {
                     DE46_FeeAmounts feeAmounts = new DE46_FeeAmounts();
                     feeAmounts.setFeeTypeCode(builder.getFeeType());
                     feeAmounts.setCurrencyCode(currencyCode);
@@ -444,6 +465,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                     feeAmounts.setReconciliationCurrencyCode(currencyCode);
                     request.set(DataElementId.DE_046, feeAmounts);
                 }
+            }
+            else if (paymentMethodType.equals(PaymentMethodType.EBT) && card.equals(EbtCardType.FoodStamp) && builder.getFeeAmount() != null){
+                throw new UnsupportedOperationException(FEE_AMOUNT_SUPPORTS_EBT_CASH_BENEFITS_ONLY);
             }
         }
 
@@ -525,13 +549,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
             if (builder.getProductData() != null) {
                 DE63_ProductData productData = builder.getProductData().toDataElement();
+                productData.setCardType(card.getCardType());
 
                 if (card.getCardType().equals("VisaFleet") && (isVisaFleet2)) {
-                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
-                    } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
-                    }
                     if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelWithTax());
                         amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelAmount());
@@ -540,12 +560,23 @@ public class VapsConnector extends GatewayConnectorConfig {
                         amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
                     }
                     if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
+                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
+                        amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelWithTax());
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                        amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
+                    }
+                    if(productData.getDiscount()!=null){
+                        amountsAdditional.put(DE54_AmountTypeCode.AmountDiscount, DE3_AccountType.Unspecified, currencyCode,productData.getDiscount());
+                    }
+                    if(productData.getSalesTax()!=null){
+                        amountsAdditional.put(DE54_AmountTypeCode.AmountTax, DE3_AccountType.Unspecified, currencyCode,productData.getSalesTax());
                     }
                     request.set(DataElementId.DE_054, amountsAdditional);
                 }
+            }else if (isDiscoverCashAtCheckout){
+                amountsAdditional.put(DE54_AmountTypeCode.AmountCash, DE3_AccountType.Unspecified, currencyCode, getCashAtCheckoutAmount(builder,card));
+                request.set(DataElementId.DE_054, amountsAdditional);
             }
         }
         // DE 55: Integrated Circuit Card (ICC) Data - LLLVAR b..512
@@ -1076,31 +1107,37 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             request.set(DataElementId.DE_054, amountsAdditional);
         }
-        else if (paymentMethod instanceof Credit) {
-            Credit card = (Credit) paymentMethod;
-            DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
-            if (builder.getProductData() != null) {
-                DE63_ProductData productData = builder.getProductData().toDataElement();
+        else if (paymentMethod instanceof TransactionReference) {
+            TransactionReference reference = (TransactionReference) paymentMethod;
+            if (reference.getOriginalPaymentMethod() instanceof Credit) {
+                Credit card = (Credit) reference.getOriginalPaymentMethod();
+                DE54_AmountsAdditional amountsAdditional = new DE54_AmountsAdditional();
+                if (builder.getProductData() != null) {
+                    DE63_ProductData productData = builder.getProductData().toDataElement();
 
-                if (!StringUtils.isNullOrEmpty(card.getCardType()) && card.getCardType().equals("VisaFleet") && (isVisaFleet2)) {
-                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
-                    } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                    if (card.getCardType().equals("VisaFleet") && (isVisaFleet2)) {
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelWithTax());
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelAmount());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                            amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                        }
+                        if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelWithTax());
+                        } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
+                            amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
+                        }
+                        if(productData.getDiscount()!=null){
+                            amountsAdditional.put(DE54_AmountTypeCode.AmountDiscount, DE3_AccountType.Unspecified, currencyCode,productData.getDiscount());
+                        }
+                        if(productData.getSalesTax()!=null){
+                            amountsAdditional.put(DE54_AmountTypeCode.AmountTax, DE3_AccountType.Unspecified, currencyCode,productData.getSalesTax());
+                        }
+                        request.set(DataElementId.DE_054, amountsAdditional);
                     }
-                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelWithTax());
-                        amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getNonFuelAmount());
-                    } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.GROSSNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
-                        amountsAdditional.put(DE54_AmountTypeCode.NETNONFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
-                    }
-                    if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(1));
-                    } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
-                        amountsAdditional.put(DE54_AmountTypeCode.TAXRATEFORFUEL, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
-                    }
-                    request.set(DataElementId.DE_054, amountsAdditional);
                 }
             }
         }
@@ -1156,6 +1193,15 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE 63: Product Data - LLLVAR ans…999
         if(builder.getProductData() != null) {
             DE63_ProductData productData = builder.getProductData().toDataElement();
+            if (paymentMethod instanceof TransactionReference) {
+                TransactionReference reference = (TransactionReference) paymentMethod;
+                if (reference.getOriginalPaymentMethod() instanceof Credit) {
+                    Credit card = (Credit) reference.getOriginalPaymentMethod();
+                    if (card.getCardType() != null) {
+                        productData.setCardType(card.getCardType());
+                    }
+                }
+            }
                 request.set(DataElementId.DE_063, productData);
             }
 
@@ -1242,16 +1288,18 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                     EncryptedFieldMatrix encryptedField=getEncryptionField(((TransactionReference) paymentMethod).getOriginalPaymentMethod(),encryptionType, transactionType);
                     forwardingData.setEncryptedField(encryptedField);
-                    forwardingData.addEncryptionData(encryptionType, encryptionData);
 
                         // check for encrypted cid -- THIS MAY NOT BE VALID FOR FOLLOW ON TRANSACTIONS WHERE THE CVN SHOULD NOT BE STORED
-//                    if (reference.getOriginalPaymentMethod() instanceof ICardData) {
-//                        String encryptedCvn = ((ICardData) paymentMethod).getCvn();
-//                        if (!StringUtils.isNullOrEmpty(encryptedCvn)) {
-//                            forwardingData.addEncryptionData(encryptionData.getKtb(), encryptedCvn);
-//                        }
-//                    }
-
+                    if (reference.getOriginalPaymentMethod() instanceof ICardData) {
+                        String encryptedCvn = ((ICardData) reference.getOriginalPaymentMethod()).getCvn();
+                        if (!StringUtils.isNullOrEmpty(encryptedCvn)) {
+                            forwardingData.addEncryptionData(encryptionType, encryptionData,encryptedCvn);
+                        } else {
+                            forwardingData.addEncryptionData(encryptionType, encryptionData);
+                        }
+                    } else {
+                        forwardingData.addEncryptionData(encryptionType, encryptionData);
+                    }
                         request.set(DataElementId.DE_127, forwardingData);
                     }
                 }
@@ -1994,7 +2042,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             } break;
             case Auth: {
                 AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
-                if(authBuilder.getAmount().equals(BigDecimal.ZERO) && authBuilder.getBillingAddress() != null && !authBuilder.isAmountEstimated()){
+                if((authBuilder.getAmount().equals(BigDecimal.ZERO) && authBuilder.getBillingAddress() != null && !authBuilder.isAmountEstimated())
+                   || isAccountVerified(authBuilder)){
                     processingCode.setTransactionType(DE3_TransactionType.AddressOrAccountVerification);
                     processingCode.setToAccount(DE3_AccountType.Unspecified);
                     processingCode.setFromAccount(DE3_AccountType.Unspecified);
@@ -2009,7 +2058,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                     processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
                 }
                 else if(builder.getPaymentMethod() instanceof GiftCard) {
-                    processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
+                    GiftCard gift = (GiftCard)builder.getPaymentMethod();
+                    if(gift.getCardType().equals("ValueLink")) {
+                        processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
+                    }
+                    else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
                 }
                 else processingCode.setTransactionType(DE3_TransactionType.AvailableFundsInquiry);
             } break;
@@ -2024,7 +2077,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             } break;
             case Sale: {
                 AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
-                if(authBuilder.getCashBackAmount() != null) {
+                if(authBuilder.getCashBackAmount() != null
+                        || (authBuilder.getCashAtCheckoutAmount() != null && paymentMethod instanceof Credit && ((Credit) paymentMethod).getCardType().equals(DISCOVER)) && acceptorConfig.getSupportsCashAtCheckout() != null) {
                     processingCode.setTransactionType(DE3_TransactionType.GoodsAndServiceWithCashDisbursement);
                 }
                 else {
@@ -2057,8 +2111,11 @@ public class VapsConnector extends GatewayConnectorConfig {
             else if(card.getCardType().equals("VisaReadyLink")) {
                 accountType = DE3_AccountType.PinDebitAccount;
             }
-            else {
-                accountType = DE3_AccountType.CreditAccount;
+            else if (builder instanceof AuthorizationBuilder){
+                AuthorizationBuilder authorizationBuilder =(AuthorizationBuilder)builder;
+                if (authorizationBuilder.getCashAtCheckoutAmount() != null && card.getCardType().equals(DISCOVER)){
+                    accountType = DE3_AccountType.Unspecified;
+                }else accountType = DE3_AccountType.CreditAccount;
             }
         }
         else if(paymentMethod instanceof Debit) {
@@ -2155,7 +2212,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     if(authBuilder.isAmountEstimated()) {
                         return "101";
                     }
-                    else if(authBuilder.getAmount().equals(BigDecimal.ZERO) && authBuilder.getBillingAddress() != null) {
+                    else if((authBuilder.getAmount().equals(BigDecimal.ZERO) && authBuilder.getBillingAddress() != null) || isAccountVerified(authBuilder)) {
                         return "181";
                     }
                 }
@@ -2317,7 +2374,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         return reasonCode;
     }
-    private <T extends TransactionBuilder<Transaction>> DE48_MessageControl mapMessageControl(T builder) throws BatchFullException {
+    private <T extends TransactionBuilder<Transaction>> DE48_MessageControl mapMessageControl(T builder) throws BatchFullException, BuilderException {
         DE48_MessageControl messageControl = new DE48_MessageControl();
         boolean isTimeRequest=builder.getTransactionType().equals(TransactionType.TimeRequest);
 
@@ -2423,51 +2480,103 @@ public class VapsConnector extends GatewayConnectorConfig {
                     customerData.setEmvFlag(true);
                 }
             }
+            if (builder.getPaymentMethod() instanceof Credit && ((Credit) builder.getPaymentMethod()).getCardType().equals("WexFleet")) {
+                FleetData wexFleetData = builder.getFleetData();
+                if (wexFleetData != null) {
+                    if (getWexFleetPromptCount(wexFleetData) > 6){
+                        throw new UnsupportedOperationException("WEX has only six possible prompts per transaction.");
+                    }
+                    if (builder.getPaymentMethod() instanceof CreditTrackData) {
+                        String trackData = ((CreditTrackData) builder.getPaymentMethod()).getTrackData();
+                        String ISONumber = trackData.substring(3, 5);
+                        if (ISONumber.equals(00) && fleetData.getDriverId() == null) {
+                            throw new BuilderException("Driver ID must not be null.");
+                        }
+                    }
+                    customerData.set(DE48_CustomerDataType.EnteredData_Numeric, restrictWexPromptToMaxLength(wexFleetData.getEnteredData(), 12, DE48_CustomerDataType.EnteredData_Numeric));
+                    customerData.set(DE48_CustomerDataType.Department, restrictWexPromptToMaxLength(wexFleetData.getDepartment(), 12, DE48_CustomerDataType.Department));
+                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, validateWexDriverIDLength(wexFleetData.getDriverId(), 10));
+                    customerData.set(DE48_CustomerDataType.HubometerNumber, restrictWexPromptToMaxLength(wexFleetData.getHubometerNumber(), 9, DE48_CustomerDataType.HubometerNumber));
+                    customerData.set(DE48_CustomerDataType.JobNumber, restrictWexPromptToMaxLength(wexFleetData.getJobNumber(), 12, DE48_CustomerDataType.JobNumber));
+                    customerData.set(DE48_CustomerDataType.MaintenanceNumber, restrictWexPromptToMaxLength(wexFleetData.getMaintenanceNumber(), 12, DE48_CustomerDataType.MaintenanceNumber));
+                    customerData.set(DE48_CustomerDataType.Odometer_Reading, restrictWexPromptToMaxLength(wexFleetData.getOdometerReading(), 9, DE48_CustomerDataType.Odometer_Reading));
+                    customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, restrictWexPromptToMaxLength(wexFleetData.getTrailerReferHours(), 6, DE48_CustomerDataType.TrailerHours_ReferHours));
+                    customerData.set(DE48_CustomerDataType.TrailerNumber, restrictWexPromptToMaxLength(wexFleetData.getTrailerNumber(), 12, DE48_CustomerDataType.EnteredData_Numeric));
+                    customerData.set(DE48_CustomerDataType.TripNumber, restrictWexPromptToMaxLength(wexFleetData.getTripNumber(), 12, DE48_CustomerDataType.TripNumber));
+                    customerData.set(DE48_CustomerDataType.UnitNumber, restrictWexPromptToMaxLength(wexFleetData.getUnitNumber(), 12, DE48_CustomerDataType.UnitNumber));
+                    customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, restrictWexPromptToMaxLength(wexFleetData.getUserId(), 12, DE48_CustomerDataType.UnencryptedIdNumber));
+                    customerData.set(DE48_CustomerDataType.Vehicle_Number, restrictWexPromptToMaxLength(wexFleetData.getVehicleNumber(), 8, DE48_CustomerDataType.Vehicle_Number));
+                    customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, restrictWexPromptToMaxLength(fleetData.getWorkOrderPoNumber(), 12, DE48_CustomerDataType.WORKORDER_PONUMBER));
+                    customerData.set(DE48_CustomerDataType.ServicePrompt, fleetData.getServicePrompt());
+                }
 
-            DE48_CardType cardType = mapCardType(builder.getPaymentMethod(), builder.getTransactionType());
-            customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
-            if(cardType != null && cardType.getValue().trim().equals("VF")){
-                customerData.set(DE48_CustomerDataType.Vehicle_Number_Code3, fleetData.getVehicleNumber() == null ? fleetData.getVehicleNumber() : StringUtils.padLeft(fleetData.getVehicleNumber(),6,'0'));
-                customerData.set(DE48_CustomerDataType.Id_Number_Code3, fleetData.getIdNumber() == null ? fleetData.getIdNumber() : StringUtils.padLeft(fleetData.getIdNumber(),6,'0'));
-                customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId() == null ? fleetData.getDriverId() : StringUtils.padLeft(fleetData.getDriverId(),6,'0'));
-                customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading() == null ? fleetData.getOdometerReading() : StringUtils.padLeft(fleetData.getOdometerReading(),6,'0'));
-            }else {
-                customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
-                customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
-                customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
+            } else {
+                DE48_CardType cardType = mapCardType(builder.getPaymentMethod(), builder.getTransactionType());
+                customerData.set(DE48_CustomerDataType.UnencryptedIdNumber, fleetData.getUserId());
+                if (cardType != null && cardType.getValue().trim().equals("VT")) {
+                    customerData.set(DE48_CustomerDataType.Vehicle_Number_Code3, fleetData.getVehicleNumber());
+                    customerData.set(DE48_CustomerDataType.Id_Number_Code3, fleetData.getIdNumber());
+                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
+                    customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
+                }
+                else if(cardType != null && cardType.getValue().trim().equals("VF")){
+                    customerData.set(DE48_CustomerDataType.Vehicle_Number_Code3, fleetData.getVehicleNumber() == null ? fleetData.getVehicleNumber() : StringUtils.padLeft(fleetData.getVehicleNumber(),6,'0'));
+                    customerData.set(DE48_CustomerDataType.Id_Number_Code3, fleetData.getIdNumber() == null ? fleetData.getIdNumber() : StringUtils.padLeft(fleetData.getIdNumber(),6,'0'));
+                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId() == null ? fleetData.getDriverId() : StringUtils.padLeft(fleetData.getDriverId(),6,'0'));
+                    customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading() == null ? fleetData.getOdometerReading() : StringUtils.padLeft(fleetData.getOdometerReading(),6,'0'));
+                }
+                else {
+                    customerData.set(DE48_CustomerDataType.Vehicle_Number, fleetData.getVehicleNumber());
+                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, fleetData.getDriverId());
+                    customerData.set(DE48_CustomerDataType.Odometer_Reading, fleetData.getOdometerReading());
+                }
+                customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
+                customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
+                customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, fleetData.getWorkOrderPoNumber());
+                customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());
+                customerData.set(DE48_CustomerDataType.EnteredData_Numeric, fleetData.getEnteredData());
+                customerData.set(DE48_CustomerDataType.ServicePrompt, fleetData.getServicePrompt());
+                customerData.set(DE48_CustomerDataType.JobNumber, fleetData.getJobNumber());
+                customerData.set(DE48_CustomerDataType.Department, fleetData.getDepartment());
+                customerData.set(DE48_CustomerDataType.TripNumber, fleetData.getTripNumber());
+                customerData.set(DE48_CustomerDataType.UnitNumber, fleetData.getUnitNumber());
+                customerData.set(DE48_CustomerDataType.MaintenanceNumber, fleetData.getMaintenanceNumber());
+                customerData.set(DE48_CustomerDataType.TrailerNumber, fleetData.getTrailerNumber());
+                customerData.set(DE48_CustomerDataType.HubometerNumber, fleetData.getHubometerNumber());
+                customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA1, fleetData.getAdditionalPromptData1());
+                customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA2, fleetData.getAdditionalPromptData2());
+                customerData.set(DE48_CustomerDataType.EMPLOYEENUMBER, fleetData.getEmployeeNumber());
+                customerData.set(DE48_CustomerDataType.Id_Number_Code3, fleetData.getIdNumber());
             }
-            customerData.set(DE48_CustomerDataType.VehicleTag, fleetData.getVehicleTag());
-            customerData.set(DE48_CustomerDataType.DriverLicense_Number, fleetData.getDriversLicenseNumber());
-            customerData.set(DE48_CustomerDataType.WORKORDER_PONUMBER, fleetData.getWorkOrderPoNumber());
-            customerData.set(DE48_CustomerDataType.TrailerHours_ReferHours, fleetData.getTrailerReferHours());
-            customerData.set(DE48_CustomerDataType.EnteredData_Numeric, fleetData.getEnteredData());
-            customerData.set(DE48_CustomerDataType.ServicePrompt, fleetData.getServicePrompt());
-            customerData.set(DE48_CustomerDataType.JobNumber, fleetData.getJobNumber());
-            customerData.set(DE48_CustomerDataType.Department, fleetData.getDepartment());
-            customerData.set(DE48_CustomerDataType.TripNumber, fleetData.getTripNumber());
-            customerData.set(DE48_CustomerDataType.UnitNumber, fleetData.getUnitNumber());
-            customerData.set(DE48_CustomerDataType.MaintenanceNumber,fleetData.getMaintenanceNumber());
-            customerData.set(DE48_CustomerDataType.TrailerNumber,fleetData.getTrailerNumber());
-            customerData.set(DE48_CustomerDataType.HubometerNumber,fleetData.getHubometerNumber());
-            customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA1,fleetData.getAdditionalPromptData1());
-            customerData.set(DE48_CustomerDataType.ADDITIONALPROMPTDATA2,fleetData.getAdditionalPromptData2());
-            customerData.set(DE48_CustomerDataType.EMPLOYEENUMBER,fleetData.getEmployeeNumber());
         }
 
         // cvn number
         if(builder.getPaymentMethod() instanceof ICardData) {
-            ICardData card = (ICardData)builder.getPaymentMethod();
-            IEncryptable encryption = null;
-            if(builder.getPaymentMethod() instanceof IEncryptable) {
-                encryption = (IEncryptable) builder.getPaymentMethod();
-            }
-
-            if(!StringUtils.isNullOrEmpty(card.getCvn())) {
-                String cvn = card.getCvn();
-                if(encryption != null && encryption.getEncryptionData() != null) {
-                    cvn = StringUtils.padLeft(card.getCvn(), card.getCvn().length(), ' ');
+            ICardData card = (ICardData) builder.getPaymentMethod();
+            if (acceptorConfig.isSupportE3Encryption() && builder.getPaymentMethod() instanceof CreditCardData
+            &&  !StringUtils.isNullOrEmpty(card.getCvn())) {
+                String cardType = card.getCardType();
+                String cvn;
+                if (cardType.equals(CardType.AMEX) || cardType.equalsIgnoreCase("Discover")) {
+                    cvn = StringUtils.padLeft(' ', AMEX_DISCOVER_CVV_LENGTH, ' ');
+                    customerData.set(DE48_CustomerDataType.CardPresentSecurityCode, cvn);
                 }
-                customerData.set(DE48_CustomerDataType.CardPresentSecurityCode, cvn);
+                else if (cardType.equalsIgnoreCase("MC") || cardType.equalsIgnoreCase("Visa")) {
+                    cvn = StringUtils.padLeft(' ', MC_VISA_CVV_LENGTH, ' ');
+                    customerData.set(DE48_CustomerDataType.CardPresentSecurityCode, cvn);
+                }
+            } else {
+                IEncryptable encryption = null;
+                if(builder.getPaymentMethod() instanceof IEncryptable) {
+                    encryption = (IEncryptable) builder.getPaymentMethod();
+                }
+                if(!StringUtils.isNullOrEmpty(card.getCvn())) {
+                    String cvn = card.getCvn();
+                    if(encryption != null && encryption.getEncryptionData() != null) {
+                        cvn = StringUtils.padLeft(card.getCvn(), card.getCvn().length(), ' ');
+                    }
+                    customerData.set(DE48_CustomerDataType.CardPresentSecurityCode, cvn);
+                }
             }
         }
 
@@ -2503,9 +2612,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             posConfiguration.setTimezone(posConfiguration.getTimezone());
             posConfiguration.setSupportsPartialApproval(acceptorConfig.getSupportsPartialApproval());
             posConfiguration.setSupportsReturnBalance(acceptorConfig.getSupportsReturnBalance());
-            posConfiguration.setSupportsCashOver(acceptorConfig.getSupportsCashOver());
+            posConfiguration.setSupportsCashAtCheckOut(acceptorConfig.getSupportsCashAtCheckout());
             posConfiguration.setMobileDevice(acceptorConfig.getMobileDevice());
-            posConfiguration.setSupportWexAdditionalProducts(acceptorConfig.getSupportWexAdditionalProducts());
+            posConfiguration.setSupportWexAvailableProducts(acceptorConfig.getSupportWexAvailableProducts());
             posConfiguration.setSupportTerminalPurchaseRestriction(acceptorConfig.getSupportTerminalPurchaseRestriction());
             posConfiguration.setSupportVisaFleet2dot0(acceptorConfig.getSupportVisaFleet2dot0());
             messageControl.setPosConfiguration(posConfiguration);
@@ -2542,7 +2651,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         // DE48-40 Addresses
         if(builder instanceof AuthorizationBuilder) {
             AuthorizationBuilder authBuilder = (AuthorizationBuilder)builder;
-            if(authBuilder.getBillingAddress() != null) {
+            if(authBuilder.getBillingAddress() != null && !isAccountVerified(authBuilder)) {
                 DE48_Address billing = new DE48_Address();
                 billing.setAddress(authBuilder.getBillingAddress());
                 billing.setAddressUsage(DE48_AddressUsage.Billing);
@@ -3032,6 +3141,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         impliedCapture.set(DataElementId.DE_041, request.getString(DataElementId.DE_041));
         impliedCapture.set(DataElementId.DE_042, request.getString(DataElementId.DE_042));
         impliedCapture.set(DataElementId.DE_043, request.getString(DataElementId.DE_043));
+        impliedCapture.set(DataElementId.DE_046, request.getString(DataElementId.DE_046));
         impliedCapture.set(DataElementId.DE_054, request.getString(DataElementId.DE_054));
         impliedCapture.set(DataElementId.DE_063, request.getDataElement(DataElementId.DE_063, DE63_ProductData.class));
         impliedCapture.set(DataElementId.DE_127, request.getString(DataElementId.DE_127));
@@ -3498,5 +3608,65 @@ public class VapsConnector extends GatewayConnectorConfig {
         setTokenizationOperationType(forwardingData, tokenOperationType);
         forwardingData.addTokenizationData(tokenizationType);
 
+    }
+    private BigDecimal getCashAtCheckoutAmount(AuthorizationBuilder builder,Credit card){
+        BigDecimal cashAtCheckoutAmount;
+        float cashAtCheckoutLimit = 120F;
+        if (card.getCardType().equals(DISCOVER)){
+            if (builder.getCashAtCheckoutAmount().floatValue() <= cashAtCheckoutLimit){
+                cashAtCheckoutAmount = builder.getCashAtCheckoutAmount();
+            }else throw new UnsupportedOperationException(CASH_AT_CHECKOUT_EXCEPTION);
+        }
+        else throw new UnsupportedOperationException(SUPPORTS_DISCOVER_ONLY_EXCEPTION);
+
+        return cashAtCheckoutAmount;
+    }
+    private boolean isAccountVerified(AuthorizationBuilder builder){
+        if (builder.getAmount() != null && builder.getAmount().equals(BigDecimal.ZERO) && builder.isAvs()){
+            return true;
+        }else
+            return false;
+    }
+    public static String restrictWexPromptToMaxLength(String wexPrompt, int maxLength, DE48_CustomerDataType de48CustomerDataType) throws BuilderException {
+        if (!StringUtils.isNullOrEmpty(wexPrompt)) {
+            if (wexPrompt.length() > maxLength)
+                throw new BuilderException(de48CustomerDataType + " length should not exceed " + maxLength);
+            return wexPrompt;
+        }
+        return wexPrompt;
+    }
+    private static String validateWexDriverIDLength(String wexDriverId,int length) throws BuilderException {
+        if(!StringUtils.isNullOrEmpty(wexDriverId)){
+            if(wexDriverId.length() != 4 && wexDriverId.length() != 6)
+                throw new BuilderException("Driver Id length must be 4 or 6.");
+            else
+                return StringUtils.padRight(wexDriverId,length, ' ');
+        }
+        return wexDriverId;
+    }
+    private static int getWexFleetPromptCount(FleetData wexFleetData){
+        int noOfPrompt =0;
+
+        List<String> promptCode = new ArrayList<>();
+        promptCode.add(wexFleetData.getEnteredData());
+        promptCode.add(wexFleetData.getDepartment());
+        promptCode.add(wexFleetData.getDriverId());
+        promptCode.add(wexFleetData.getHubometerNumber());
+        promptCode.add(wexFleetData.getJobNumber());
+        promptCode.add(wexFleetData.getMaintenanceNumber());
+        promptCode.add(wexFleetData.getOdometerReading());
+        promptCode.add(wexFleetData.getTrailerReferHours());
+        promptCode.add(wexFleetData.getTrailerNumber());
+        promptCode.add(wexFleetData.getTripNumber());
+        promptCode.add(wexFleetData.getUnitNumber());
+        promptCode.add(wexFleetData.getUserId());
+        promptCode.add(wexFleetData.getVehicleNumber());
+        promptCode.add(wexFleetData.getWorkOrderPoNumber());
+        promptCode.add(wexFleetData.getServicePrompt());
+
+        noOfPrompt = Math.toIntExact(promptCode.stream().filter(Objects::nonNull).count());
+        promptCode.clear();
+
+        return noOfPrompt;
     }
 }

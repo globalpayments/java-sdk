@@ -10,12 +10,13 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
 public class RequestTransactionFields {
+    private boolean allowDuplicate;
     private String amount;
     private AutoSubstantiation autoSubstantiation;
     private String baseAmount;
     private String cashBackAmount;
     private boolean commercialRequest;
-    private String gatewayRefNumber;
+    private String referenceNumber;
     private String giftTransactionType;
     private String invoiceNbr;
     private String preAuthAmount;
@@ -27,7 +28,7 @@ public class RequestTransactionFields {
     private String totalAmount;
 
     private static final String PREAUTH_AMOUNT = "preAuthAmount";
-    private static final String TERMINAL_REF_REQUIRED = "Terminal reference number is required";
+    private static final String REFERENCE_REQUIRED = "Reference number is required";
 
     public void setParams(TerminalManageBuilder builder) {
         if(builder.getTransactionType().equals(TransactionType.DeleteOpenTab)){
@@ -46,8 +47,8 @@ public class RequestTransactionFields {
             this.tipAmount = StringUtils.toCurrencyString(builder.getGratuity());
         }
 
-        if (builder.getTransactionId() != null && !builder.getTransactionType().equals(TransactionType.Capture)) {
-            this.gatewayRefNumber = builder.getTransactionId();
+        if (builder.getTransactionId() != null && builder.getTransactionType().equals(TransactionType.Capture)) {
+            this.referenceNumber = builder.getTransactionId();
         }
 
         if (builder.getAmount() != null) {
@@ -69,6 +70,10 @@ public class RequestTransactionFields {
             } else {
                 this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
             }
+        }
+
+        if (builder.isAllowDuplicates()) {
+            this.allowDuplicate = true;
         }
 
         if (builder.getAutoSubstantiation() != null) {
@@ -95,12 +100,12 @@ public class RequestTransactionFields {
             this.invoiceNbr = builder.getInvoiceNumber();
         }
 
-        if (builder.getReferenceNumber() != null) {
-            this.terminalRefNumber = builder.getReferenceNumber();
+        if (builder.getTerminalRefNumber() != null) {
+            this.terminalRefNumber = builder.getTerminalRefNumber();
         }
 
         if (builder.getTransactionId() != null) {
-            this.gatewayRefNumber = builder.getTransactionId();
+            this.referenceNumber = builder.getTransactionId();
         }
 
         if (builder.isCommercialRequest()) {
@@ -120,13 +125,17 @@ public class RequestTransactionFields {
         JsonDoc params = new JsonDoc();
         boolean hasContents = false;
 
+        if (allowDuplicate) {
+            params.set("allowDuplicate", "1");
+        }
+
         if (amount != null) {
             params.set("amount", amount);
             hasContents = true;
         }
 
-        if (gatewayRefNumber != null) {
-            params.set("tranNo", gatewayRefNumber);
+        if (referenceNumber != null) {
+            params.set("referenceNumber", referenceNumber);
             hasContents = true;
         }
 
@@ -171,7 +180,7 @@ public class RequestTransactionFields {
         }
 
         if (terminalRefNumber != null) {
-            params.set("referenceNumber", terminalRefNumber);
+            params.set("tranNo", terminalRefNumber);
             hasContents = true;
         }
 
@@ -211,10 +220,10 @@ public class RequestTransactionFields {
     }
 
     public void getDeletePreAuthRequestParam(TerminalManageBuilder builder){
-        if (builder.getTerminalRefNumber() == null) {
-            throw new IllegalArgumentException(TERMINAL_REF_REQUIRED);
+        if (builder.getTransactionId() == null) {
+            throw new IllegalArgumentException(REFERENCE_REQUIRED);
         }
-            this.terminalRefNumber = builder.getTerminalRefNumber();
+            this.referenceNumber = builder.getTransactionId();
 
             if (builder.getPreAuthAmount() != null) {
                 this.preAuthAmount = builder.getPreAuthAmount().toString();
@@ -223,10 +232,10 @@ public class RequestTransactionFields {
 
     private void getVoidRequestParam(TerminalManageBuilder builder) {
         if (builder.getTerminalRefNumber() != null) {
-            this.gatewayRefNumber = builder.getTerminalRefNumber();
+            this.terminalRefNumber = builder.getTerminalRefNumber();
         }
         if (builder.getTransactionId() != null) {
-            this.terminalRefNumber = builder.getTransactionId();
+            this.referenceNumber = builder.getTransactionId();
         }
     }
 }
