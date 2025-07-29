@@ -1,5 +1,6 @@
 package com.global.api.mapping;
 
+import com.global.api.BankResponse;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -348,6 +349,9 @@ public class GpApiMapping {
                 } else if (paymentMethodApm.getString("provider") != null) {
                     apm.setProviderName(paymentMethodApm.getString("provider"));
                 }
+            }
+            if (paymentMethodApm.getString("provider") != null && paymentMethodApm.getString("provider").equalsIgnoreCase("BANK_PAYMENT")) {
+                mapBankResponse(paymentMethodApm, apm);
             }
             apm.setAck(paymentMethodApm.getString("ack"));
             apm.setSessionToken(paymentMethodApm.getString("session_token"));
@@ -1795,5 +1799,18 @@ public class GpApiMapping {
             }
         }
         return  installment;
+    }
+
+    private static void mapBankResponse(JsonDoc paymentMethodApm, AlternativePaymentResponse apm) {
+        var obResponse = new BankResponse();
+        if (paymentMethodApm.has("bank")) {
+            JsonDoc bank = paymentMethodApm.get("bank");
+            obResponse.setName(bank.getString("name"));
+            obResponse.setIdentifierCode(bank.getString("identifier_code"));
+            obResponse.setIban(bank.getString("iban"));
+            obResponse.setCode(bank.getString("code"));
+            obResponse.setAccountNumber(bank.getString("account_number"));
+            apm.setBank(obResponse);
+        }
     }
 }

@@ -473,4 +473,40 @@ public abstract class DeviceInterface<TResult extends DeviceController> implemen
 
     @Override
     public void dispose() { /* NOM NOM */  }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public TerminalManageBuilder updateTaxInfo(BigDecimal taxAmount) throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public IDeviceResponse communicationCheck() throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public IDeviceResponse logOn() throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public TerminalManageBuilder updateLodgingDetails(BigDecimal amount) throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
 }

@@ -47,5 +47,10 @@ public enum UpaMessageId {
     RemoveUDDataFile,
     PrintData,
     AvailableBatches,
-    DeletePreAuth;
+    DeletePreAuth,
+    CommunicationCheck,
+    Logon,
+    UpdateTaxInfo,
+    UpdateLodgingDetails,
+    ForceSale;
 }

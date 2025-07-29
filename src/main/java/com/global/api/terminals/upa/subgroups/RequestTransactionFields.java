@@ -3,6 +3,7 @@ package com.global.api.terminals.upa.subgroups;
 import java.math.BigDecimal;
 
 import com.global.api.entities.AutoSubstantiation;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
@@ -10,7 +11,6 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
 public class RequestTransactionFields {
-    private boolean allowDuplicate;
     private String amount;
     private AutoSubstantiation autoSubstantiation;
     private String baseAmount;
@@ -22,10 +22,13 @@ public class RequestTransactionFields {
     private String preAuthAmount;
     private String surchargeAmount;
     private String taxAmount;
-    private Integer taxIndicator;
+    private String taxIndicator;
     private String tipAmount;
     private String terminalRefNumber;
     private String totalAmount;
+    private String purchaseOrder;
+    private String allowDuplicate;
+    private String confirmAmount;
 
     private static final String PREAUTH_AMOUNT = "preAuthAmount";
     private static final String REFERENCE_REQUIRED = "Reference number is required";
@@ -57,6 +60,15 @@ public class RequestTransactionFields {
         if (builder.getPreAuthAmount() != null) {
             this.preAuthAmount = StringUtils.toCurrencyString(builder.getPreAuthAmount());
         }
+        if (builder.getPurchaseOrder() != null) {
+            this.purchaseOrder = builder.getPurchaseOrder();
+        }
+        if (builder.getTaxIndicator() != null) {
+            this.taxIndicator = builder.getTaxIndicator().toString();
+        }
+        if (builder.getTaxAmount() != null) {
+            this.taxAmount = builder.getTaxAmount().toString();
+        }
 
     }
 
@@ -70,10 +82,6 @@ public class RequestTransactionFields {
             } else {
                 this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
             }
-        }
-
-        if (builder.isAllowDuplicates()) {
-            this.allowDuplicate = true;
         }
 
         if (builder.getAutoSubstantiation() != null) {
@@ -119,15 +127,29 @@ public class RequestTransactionFields {
         if (builder.getPreAuthAmount() != null) {
             this.preAuthAmount = builder.getPreAuthAmount().toString();
         }
+
+        if (builder.getTaxIndicator() != null) {
+            this.taxIndicator = builder.getTaxIndicator().toString();
+        }
+
+        if (builder.getTransactionModifier() == TransactionModifier.ForceSale) {
+            if (builder.isAllowDuplicates()) {
+                this.allowDuplicate = "1";
+            } else {
+                this.allowDuplicate = "0";
+            }
+
+        }
+
+        if (builder.getConfirmAmount() != null) {
+            this.confirmAmount = builder.getConfirmAmount();
+        }
     }
 
     public JsonDoc getElementsJson() {
         JsonDoc params = new JsonDoc();
         boolean hasContents = false;
 
-        if (allowDuplicate) {
-            params.set("allowDuplicate", "1");
-        }
 
         if (amount != null) {
             params.set("amount", amount);
@@ -181,6 +203,20 @@ public class RequestTransactionFields {
 
         if (terminalRefNumber != null) {
             params.set("tranNo", terminalRefNumber);
+            hasContents = true;
+        }
+        if (purchaseOrder != null) {
+            params.set("purchaseOrder", purchaseOrder);
+            hasContents = true;
+        }
+
+        if (allowDuplicate != null) {
+            params.set("allowDuplicate", allowDuplicate);
+            hasContents = true;
+        }
+
+        if (confirmAmount != null) {
+            params.set("confirmAmount", confirmAmount);
             hasContents = true;
         }
 

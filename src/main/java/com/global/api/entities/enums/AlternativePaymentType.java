@@ -140,8 +140,9 @@ public enum AlternativePaymentType implements IStringConstant{
 	UK_DIRECT_DEBIT("ukdirectdebit"),
 	PAYBYBANKAPP("paybybankapp"),
 	ALIPAY("alipay"),
-	BLIK("blik");
-	
+	BLIK("blik"),
+	OB("ob");
+
     String value;
     AlternativePaymentType(String value) { this.value = value; }
     public byte[] getBytes() { return value.getBytes(); }

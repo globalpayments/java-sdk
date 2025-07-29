@@ -13,7 +13,6 @@ import com.global.api.terminals.SummaryResponse;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
 import com.global.api.terminals.upa.UpaInterface;
-import com.global.api.terminals.upa.responses.UpaDeviceResponse;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
@@ -45,7 +44,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.51.94");
+        config.setIpAddress("10.163.225.111");
         config.setTimeout(30_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -562,6 +561,28 @@ public class UpaAdminTests {
         assertFalse(response.getOsVersion().isEmpty());
         assertFalse(response.getEmvSdkVersion().isEmpty());
         assertFalse(response.getCtlsSdkVersion().isEmpty());
+    }
+
+    @Test
+    public void test_communicationCheck() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.communicationCheck();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("CommunicationCheck", response.getCommand());
+    }
+
+    @Test
+    public void test_logOn() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.logOn();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("Logon", response.getCommand());
     }
 
 }

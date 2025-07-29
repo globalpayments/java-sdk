@@ -1,6 +1,12 @@
 # Changelog
 
-## Latest Version - V14.4.0 (07/21/2025)
+## Latest Version - V14.4.1 (07/29/2025)
+### Enhancements
+- [UPA] - Added missing commands: UpdateTaxInfo, ForceSale, CommunicationCheck, Logon and UpdateLodgingDetails.
+- [PAX] - Tip Request value is set to 0 when gratuity is null for Pax.
+- [GPAPI] - Added SDK support for Payu as a payment APM.
+
+## V14.4.0 (07/21/2025)
 ### Enhancements
 - [VAPS] - VAPS 8583 24.1 Includes update and enhancement of implementation guide, credit card, fleet cards and vaps processing.
 - [UPA] - Implementation of UPA - Correct reference mapping

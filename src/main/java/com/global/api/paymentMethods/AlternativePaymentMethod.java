@@ -1,6 +1,7 @@
 package com.global.api.paymentMethods;
 
 import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.entities.BankList;
 import com.global.api.entities.enums.AlternativePaymentType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionModifier;
@@ -27,6 +28,7 @@ public class AlternativePaymentMethod implements IPaymentMethod, IChargable, INo
     private String providerReference;
     // Accepted values ENABLE/DISABLE
     private String addressOverrideMode;
+    private BankList bank;
 
     public AlternativePaymentMethod() {
         this.paymentMethodType = PaymentMethodType.APM;

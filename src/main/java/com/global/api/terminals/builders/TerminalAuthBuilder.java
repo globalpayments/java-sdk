@@ -59,6 +59,11 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
 	private boolean requireSecurityCode = true;
     protected String terminalRefNumber;
 
+    private String ecrId;
+    private String confirmAmount;
+    private Integer taxIndicator;
+    private TransactionModifier transactionModifier;
+    private BigDecimal tipAmount;
 
     public String getAuthCode() {
         if(paymentMethod instanceof TransactionReference)
@@ -309,5 +314,30 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .check("currency").isEqualTo(CurrencyType.CashBenefits);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund).check("allowDuplicates").isEqualTo(false);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates").isEqualTo(false);
+    }
+
+    public TerminalAuthBuilder withEcrId(String ecrId) {
+        this.ecrId = ecrId;
+        return this;
+    }
+
+    public TerminalAuthBuilder withConfirmAmount(String confirmAmount) {
+        this.confirmAmount = confirmAmount;
+        return this;
+    }
+
+    public TerminalAuthBuilder withTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+        return this;
+    }
+
+    public TerminalAuthBuilder withTaxIndicator(Integer taxIndicator) {
+        this.taxIndicator = taxIndicator;
+        return this;
+    }
+
+    public TerminalAuthBuilder withTransactionModifier(TransactionModifier transactionModifier) {
+        this.transactionModifier = transactionModifier;
+        return this;
     }
 }

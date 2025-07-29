@@ -1,5 +1,6 @@
 package com.global.api.entities;
 
+import com.global.api.BankResponse;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -59,4 +60,5 @@ public class AlternativePaymentResponse {
     private String authProtectionEligibilityType;
     private String authReference;
     private BigDecimal feeAmount;
+    private BankResponse bank;
 }

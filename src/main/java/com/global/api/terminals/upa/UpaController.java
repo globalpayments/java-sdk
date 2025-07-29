@@ -1,11 +1,15 @@
 package com.global.api.terminals.upa;
 
 import com.global.api.entities.enums.ConnectionModes;
+import com.global.api.entities.enums.ManualEntryMethod;
+import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.terminals.*;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
@@ -103,7 +107,7 @@ public class UpaController extends DeviceController {
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod());
 
         Integer requestId = builder.getRequestId();
 
@@ -140,18 +144,29 @@ public class UpaController extends DeviceController {
         return json;
     }
 
-    private UpaMessageId mapTransactionType(TransactionType type) throws UnsupportedTransactionException {
+    private UpaMessageId mapTransactionType(TransactionType type, TransactionModifier transactionModifier, IPaymentMethod paymentMethod) throws UnsupportedTransactionException {
         switch (type) {
             case Auth:
                 return UpaMessageId.PreAuth;
             case Sale:
+                if ((paymentMethod instanceof CreditCardData) && ((CreditCardData) paymentMethod).getEntryMethod() == ManualEntryMethod.Phone)
+                    return UpaMessageId.ForceSale;
                 return UpaMessageId.Sale;
             case Void:
                 return UpaMessageId.Void;
             case Refund:
                 return UpaMessageId.Refund;
             case Edit:
-                return UpaMessageId.TipAdjust;
+                switch (transactionModifier) {
+                    case UpdateTaxInfo:
+                        return UpaMessageId.UpdateTaxInfo;
+                    case UpdateLodgingDetails:
+                        return UpaMessageId.UpdateLodgingDetails;
+                    case TipAdjust:
+                        return UpaMessageId.TipAdjust;
+                    default:
+                        break;
+                }
             case Verify:
                 return UpaMessageId.CardVerify;
             case Reversal:
@@ -171,7 +186,7 @@ public class UpaController extends DeviceController {
 
     @Override
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType());
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod());
 
         Integer requestId = builder.getRequestId();
 
@@ -181,7 +196,10 @@ public class UpaController extends DeviceController {
         RequestTransactionFields requestTransactionFields = new RequestTransactionFields();
         requestTransactionFields.setParams(builder);
 
-        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, null,null);
+        RequestLodgingFields requestLodgingFields = new RequestLodgingFields();
+        requestLodgingFields.setParams(builder);
+
+        return doTransaction(messageId, requestId, requestParamFields, requestTransactionFields, null,requestLodgingFields);
     }
 
     @Override

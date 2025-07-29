@@ -2,10 +2,7 @@ package com.global.api.terminals.builders;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Customer;
-import com.global.api.entities.enums.CurrencyType;
-import com.global.api.entities.enums.PaymentMethodType;
-import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.enums.TransactionType;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
@@ -40,6 +37,12 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     private Lodging lodging;
     @Getter
     private BigDecimal preAuthAmount;
+    @Getter
+    protected Integer taxIndicator;
+    @Getter
+    protected String purchaseOrder;
+    protected String ecrId;
+    protected TaxType taxType;
     @Getter
     protected String referenceNumber;
 
@@ -213,6 +216,32 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
                 .check("amount").isNotNull();
         this.validations.of(TransactionType.Auth).with(TransactionModifier.Incremental).check("transactionId").isNotNull();
         this.validations.of(TransactionType.Refund).check("transactionId").isNotNull();
+    }
+
+    @Override
+    public TerminalManageBuilder withTaxAmount(BigDecimal taxAmount) {
+        this.taxAmount = taxAmount;
+        return this;
+    }
+
+    public TerminalManageBuilder withTaxIndicator(Integer taxIndicator) {
+        this.taxIndicator = taxIndicator;
+        return this;
+    }
+
+    public TerminalManageBuilder withPurchaseOrder(String purchaseOrder) {
+        this.purchaseOrder = purchaseOrder;
+        return this;
+    }
+
+    public TerminalManageBuilder withEcrId(String ecrId){
+        this.ecrId = ecrId;
+        return this;
+    }
+
+    public TerminalManageBuilder withTaxType(TaxType taxType) {
+        this.taxType = taxType;
+        return this;
     }
 
 }

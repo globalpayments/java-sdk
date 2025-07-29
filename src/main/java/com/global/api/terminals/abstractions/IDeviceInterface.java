@@ -254,4 +254,12 @@ public interface IDeviceInterface extends IDisposable {
     TerminalAuthBuilder withdrawal() throws ApiException;
 
     TerminalAuthBuilder withdrawal(BigDecimal amount) throws ApiException;
+
+    TerminalManageBuilder updateTaxInfo(BigDecimal amount) throws ApiException; //UPA
+
+    IDeviceResponse communicationCheck() throws ApiException; //UPA
+
+    IDeviceResponse logOn() throws ApiException;
+
+    TerminalManageBuilder updateLodgingDetails(BigDecimal amount) throws ApiException;
 }

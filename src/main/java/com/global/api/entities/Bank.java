@@ -8,7 +8,8 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 public class Bank {
-    public String code;
-    public String name;
-    public Address address;
+    private BankList name;
+    private String code;
+    private Address address;
+
 }

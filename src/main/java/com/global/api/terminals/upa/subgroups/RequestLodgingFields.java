@@ -1,6 +1,7 @@
 package com.global.api.terminals.upa.subgroups;
 
 import com.global.api.terminals.builders.TerminalAuthBuilder;
+import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class RequestLodgingFields {
-    private Integer folioNumber;
+    private String folioNumber;
     private Integer stayDuration;
     private String checkInDate;
     private String checkOutDate;
@@ -29,7 +30,7 @@ public class RequestLodgingFields {
     public void setParams(TerminalAuthBuilder builder) {
         if (builder.getLodging() != null) {
             if (builder.getLodging().getFolioNumber() != null) {
-                this.folioNumber = builder.getLodging().getFolioNumber();
+                this.folioNumber = builder.getLodging().getFolioNumber().toString();
             }
 
             if (builder.getLodging().getStayDuration() != null) {
@@ -98,16 +99,52 @@ public class RequestLodgingFields {
         }
 
         if (extraChargeTypes != null) {
-            lodging.set(EXTRA_CHARGE_TYPES, Arrays.toString(extraChargeTypes));
+            lodging.set(EXTRA_CHARGE_TYPES, extraChargeTypes);
             hasContents = true;
         }
 
         if (extraChargeTotal != null){
-            lodging.set(EXTRA_CHARGE_TOTAL,extraChargeTotal);
+            lodging.set(EXTRA_CHARGE_TOTAL,extraChargeTotal.toString());
             hasContents = true;
         }
 
         return hasContents ? lodging : null;
     }
 
+    public void setParams(TerminalManageBuilder builder) {
+        if (builder.getLodging() != null) {
+            if (builder.getLodging().getFolioNumber() != null) {
+                this.folioNumber = builder.getLodging().getFolioNumber().toString();
+            }
+
+            if (builder.getLodging().getStayDuration() != null) {
+                this.stayDuration = builder.getLodging().getStayDuration();
+            }
+
+            if (builder.getLodging().getCheckInDate() != null) {
+                this.checkInDate =builder.getLodging().getCheckInDate();
+            }
+
+            if (builder.getLodging().getCheckOutDate() != null) {
+                this.checkOutDate = builder.getLodging().getCheckOutDate();
+            }
+
+            if (builder.getLodging().getDailyRate() != null) {
+                this.dailyRate = builder.getLodging().getDailyRate();
+            }
+
+            if (builder.getLodging().getPreferredCustomer() != null) {
+                this.preferredCustomer = builder.getLodging().getPreferredCustomer();
+            }
+
+            if (builder.getLodging().getExtraChargeTypes() != null) {
+                this.extraChargeTypes = builder.getLodging().getExtraChargeTypes();
+            }
+
+            if (builder.getLodging().getExtraChargeTotal() != null) {
+                this.extraChargeTotal = builder.getLodging().getExtraChargeTotal();
+            }
+
+        }
+    }
 }

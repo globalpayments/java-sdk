@@ -1,13 +1,11 @@
 package com.global.api.tests.gpEcom;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.BankList;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.Channel;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.BuilderException;
-import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.*;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
@@ -28,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class GpEcomApmTest extends BaseGpEComTest {
 
-    static final BigDecimal amount = new BigDecimal(10);
+    static final BigDecimal amount = new BigDecimal(0.01);
     static final String currency = "EUR";
     static final String returnUrl = "https://www.example.com/returnUrl";
     static final String statusUpdateUrl = "https://www.example.com/statusUrl";
@@ -430,4 +428,113 @@ public class GpEcomApmTest extends BaseGpEComTest {
 
     }
 
+    @Test
+    public void testPayuApmForSale() throws ApiException {
+        GpApiPayuInitializationTest();
+
+        AlternativePaymentMethod paymentMethodDetails =
+                new AlternativePaymentMethod()
+                        .setAlternativePaymentMethodType(OB)
+                        .setReturnUrl(returnUrl)
+                        .setStatusUpdateUrl(statusUpdateUrl)
+                        .setDescriptor(descriptor)
+                        .setCountry("PL")
+                        .setAccountHolderName(accountName)
+                        .setBank(BankList.MBANK);
+
+        Transaction response =
+                paymentMethodDetails
+                        .charge(amount)
+                        .withCurrency("PLN")
+                        .withDescription(chargeDescription)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertNotNull(response.getAlternativePaymentResponse());
+        assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
+        assertEquals("BANK_PAYMENT",response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+    }
+
+    @Test
+    public void testPayuApmForSaleWithoutReturnUrl() throws ApiException {
+        GpApiPayuInitializationTest();
+
+        boolean errorFound = false;
+        try {
+            AlternativePaymentMethod paymentMethodDetails =
+                    new AlternativePaymentMethod()
+                            .setAlternativePaymentMethodType(OB)
+                            .setStatusUpdateUrl(statusUpdateUrl)
+                            .setDescriptor(descriptor)
+                            .setCountry("PL")
+                            .setAccountHolderName(accountName)
+                            .setBank(BankList.MBANK);
+
+            Transaction response =
+                    paymentMethodDetails
+                            .charge(amount)
+                            .withCurrency("PLN")
+                            .withDescription(chargeDescription)
+                            .execute();
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("returnUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+
+    }
+    @Test
+    public void testPayuApmForSaleWithoutStatusUrl() throws ApiException {
+        GpApiPayuInitializationTest();
+        boolean errorFound = false;
+        try {
+            AlternativePaymentMethod paymentMethodDetails =
+                    new AlternativePaymentMethod()
+                            .setAlternativePaymentMethodType(OB)
+                            .setReturnUrl(returnUrl)
+                            .setDescriptor(descriptor)
+                            .setCountry("PL")
+                            .setAccountHolderName(accountName)
+                            .setBank(BankList.MBANK);
+
+            Transaction response =
+                    paymentMethodDetails
+                            .charge(amount)
+                            .withCurrency("PLN")
+                            .withDescription(chargeDescription)
+                            .execute();
+        } catch (BuilderException ex) {
+            errorFound = true;
+            assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
+        } finally {
+            assertTrue(errorFound);
+        }
+
+    }
+
+    public void GpApiPayuInitializationTest() throws ApiException {
+        String APP_ID = "ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD";
+        String APP_KEY = "4NpIQJDCIDzfTKhA";
+
+        GpApiConfig  gpApiConfig = new GpApiConfig()
+                .setAppId(APP_ID)
+                .setAppKey(APP_KEY);
+        gpApiConfig.setChannel(Channel.CardNotPresent);
+
+        gpApiConfig.setServiceUrl("https://apis.globalpay.com/ucp");
+
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+        gpApiConfig.setCountry("PL");
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+        ServicesContainer.configureService(gpApiConfig);
+
+    }
 }

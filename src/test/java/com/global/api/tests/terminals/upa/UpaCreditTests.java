@@ -1,13 +1,12 @@
 package com.global.api.tests.terminals.upa;
 
 import com.global.api.entities.AutoSubstantiation;
-import com.global.api.entities.enums.ConnectionModes;
-import com.global.api.entities.enums.DeviceType;
-import com.global.api.entities.enums.StoredCredentialInitiator;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayDuplicateException;
 import com.global.api.logging.RequestConsoleLogger;
+import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
@@ -16,6 +15,7 @@ import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ public class UpaCreditTests {
     private static final String REFERENCE_REQUIRED = "Reference number is required";
     private static final String SUCCESS_STATUS = "Success";
     private final BigDecimal amount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("10"), 2);
-
+    private final CreditCardData card;
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
@@ -41,6 +41,14 @@ public class UpaCreditTests {
 
         device = DeviceService.create(config);
         assertNotNull(device);
+
+        card = new CreditCardData();
+        card.setNumber("4111111111111111");
+        card.setExpMonth(DateTime.now().getMonthOfYear());
+        card.setExpYear(DateTime.now().getYear() + 1);
+        card.setCvn("123");
+        card.setCardHolderName("Joe Smith");
+        card.setEntryMethod(ManualEntryMethod.Mail);
     }
 
     @Test
@@ -542,5 +550,100 @@ public class UpaCreditTests {
         assertEquals("00", response.getDeviceResponseCode());
         assertEquals("Success", response.getDeviceResponseText());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
+    }
+    @Test
+    public void test_updateTaxInfo() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        TerminalResponse saleResponse = device.sale(amount)
+                .withGratuity(new BigDecimal("0"))
+                .withEcrId("13")
+                .execute();
+        runBasicTests(saleResponse);
+        TerminalResponse response =  device.updateTaxInfo(saleResponse.getTransactionAmount())
+                .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
+                .withTaxType(TaxType.TaxExempt)
+                .withTaxAmount(BigDecimal.valueOf(12.56))
+                .withTaxIndicator(0)
+                .withPurchaseOrder("001")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("UpdateTaxInfo", response.getCommand());
+    }
+
+    @Test
+    public void test_updateTaxInfo_withNonCommercialCard() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        // Perform a sale transaction with a non-commercial card
+        TerminalResponse saleResponse = device.sale(amount)
+                .withGratuity(new BigDecimal("0"))
+                .withEcrId("13")
+                .execute();
+        runBasicTests(saleResponse);
+        GatewayException exception = assertThrows(GatewayException.class, () -> device.updateTaxInfo(saleResponse.getTransactionAmount())
+                .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
+                .withTaxType(TaxType.TaxExempt)
+                .withTaxAmount(BigDecimal.valueOf(12.56))
+                .withTaxIndicator(0)
+                .withPurchaseOrder("001")
+                .execute());
+
+        assertEquals("Unexpected Device Response :CPC001 - NOT A COMMERCIAL CARD. CANNOT UPDATE TAX.", exception.getMessage());
+    }
+
+    @Test
+    public void test_forceSale() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        card.setEntryMethod(ManualEntryMethod.Phone);
+
+        TerminalResponse response = (TerminalResponse) device.sale(amount)
+                .withTipAmount(BigDecimal.valueOf(1234.56))
+                .withGratuity(new BigDecimal("0"))
+                .withInvoiceNumber("123456789012345")
+                .withTaxIndicator(0)
+                .withAllowDuplicates(true)
+                .withConfirmAmount("Y")
+                .withTransactionModifier(TransactionModifier.ForceSale)
+                .withEcrId("12")
+                .withPaymentMethod(card)
+                .withClerkId(1234)
+                .withTaxAmount(BigDecimal.valueOf(1234.56))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("ForceSale", response.getCommand());
+    }
+
+    @Test
+    public void test_updateLodgingDetails() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        TerminalResponse saleResponse = device.sale(amount)
+                .withGratuity(new BigDecimal("0"))
+                .withEcrId("13")
+                .execute();
+        runBasicTests(saleResponse);
+
+        Lodging lodging = new Lodging();
+        int[] extraChargeTypesArray = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        lodging.setFolioNumber(1);
+        lodging.setExtraChargeTypes(extraChargeTypesArray);
+        lodging.setExtraChargeTotal(new BigDecimal("1.00"));
+
+
+        TerminalResponse response = device.updateLodgingDetails(saleResponse.getTransactionAmount())
+                .withLodging(lodging)
+                .withEcrId("13")
+                .withTransactionId(saleResponse.getTransactionId())
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("UpdateLodgingDetails", response.getCommand());
     }
 }

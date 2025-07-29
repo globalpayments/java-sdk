@@ -124,6 +124,14 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setIssuerResponseCode(host.getString("IssuerResp"));
         setIsoResponseCode(host.getString("IsoRespCode"));
         setBankResponseCode(host.getString("BankRespCode"));
+        if(host.getDouble("taxAmount") != null) {
+            setTaxAmount(host.getDouble("taxAmount"));
+        }
+        setCashBackAmount(host.getDecimal("cashbackAmount"));
+        if(host.getDouble("baseDue") != null) {
+            setBaseDue(host.getDouble("baseDue"));
+        }
+
 
         if (getTransactionAmount() == null) {
             BigDecimal amount = host.getDecimal("amount");
@@ -193,6 +201,10 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setTransactionType(payment.getString("transactionType"));
         setSequenceNo(payment.getString("PosSequenceNbr"));
         setApplicationName(payment.getString("appName"));
+        if(payment.getString(CLERK_ID) != null && !payment.getString(CLERK_ID).isEmpty()) {
+            setClerkId(Integer.parseInt(payment.getString(CLERK_ID)));
+        }
+        setSignatureLine(payment.getString("signatureLine"));
 
     }
 
@@ -202,6 +214,9 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         }
         if (transaction.getDecimal("tipAmount") != null) {
             setTipAmount(transaction.getDecimal("tipAmount"));
+        }
+        if (transaction.getDecimal(EXTRA_CHARGE_TOTAL) != null) {
+            setExtraChargeTotal(transaction.getDecimal(EXTRA_CHARGE_TOTAL));
         }
     }
 

@@ -15,10 +15,7 @@ import com.global.api.utils.masking.MaskValueUtil;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
@@ -441,11 +438,16 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             var alternatepaymentMethod = (AlternativePaymentMethod) builderPaymentMethod;
 
             paymentMethod.set("name", alternatepaymentMethod.getAccountHolderName());
-
             var apm = new JsonDoc()
                     .set("provider", alternatepaymentMethod.getAlternativePaymentMethodType().getValue())
                     .set("address_override_mode", alternatepaymentMethod.getAddressOverrideMode());
-
+            if (alternatepaymentMethod.getAlternativePaymentMethodType().name().equalsIgnoreCase("OB")) {
+                    var bank = new JsonDoc()
+                            .set("name", alternatepaymentMethod.getBank().getValue());
+                    var banktransfer = new JsonDoc()
+                            .set("bank", bank);
+                    paymentMethod.set("bank_transfer", banktransfer);
+            }
             paymentMethod.set("apm", apm);
         }
 
@@ -1118,4 +1120,5 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 .set("grace_period_count", installmentData.getGracePeriodCount());
         return installment;
     }
+
 }

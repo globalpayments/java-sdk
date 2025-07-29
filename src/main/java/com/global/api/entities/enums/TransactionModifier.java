@@ -25,7 +25,11 @@ public enum TransactionModifier implements IFlag {
     DeletePreAuth,
     BankPayment,
     BuyNowPayLater,
-    Merchant;
+    Merchant,
+    TipAdjust,
+    UpdateTaxInfo,
+    ForceSale,
+    UpdateLodgingDetails;
 
     public long getLongValue() {
         return 1 << this.ordinal();

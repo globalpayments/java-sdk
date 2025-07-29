@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @Getter
@@ -49,6 +50,9 @@ public class UpaResponseHandler extends TerminalResponse {
     public String OS_VERSION = "OsVersion";
     public String EMV_SDK_VERSION = "EmvSdkVersion";
     public String CTLS_SDK_VERSION = "CTLSSsdkVersion";
+    public static final String EXTRA_CHARGE_TOTAL = "extraChargeTotal";
+    public static final String CLERK_ID = "clerkId";
+
     private BigDecimal availableBalance;
     private String transactionId;
     private String terminalRefNumber;
@@ -123,6 +127,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private String qpsQualified;
     private int clerkId;
     private String invoiceNumber;
+    private BigDecimal extraChargeTotal;
 
     protected static boolean isGpApiResponse(JsonDoc root) {
         return !root.has("data");
@@ -143,12 +148,12 @@ public class UpaResponseHandler extends TerminalResponse {
 
     public void parseResponse(JsonDoc root) throws ApiException {
         JsonDoc response = isGpApiResponse(root) ? root.get("response") : root.get("data");
-        if (response.get("cmdResult") == null) {
+        if(response.get("cmdResult") == null) {
             throw new MessageException(INVALID_RESPONSE_FORMAT);
         }
 
         checkResponse(response);
-        if (!isGpApiResponse(root)) {
+        if(!isGpApiResponse(root)) {
             status = response.get("cmdResult").getString("result");
             requestId = response.getString("requestId");
             command = response.getString("response");
@@ -163,7 +168,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private void checkResponse(JsonDoc response) throws GatewayException {
         JsonDoc cmdResult = response.get("cmdResult");
 
-        if (cmdResult.getString("result").equalsIgnoreCase("failed")) {
+        if(cmdResult.getString("result").equalsIgnoreCase("failed")){
             String errorCode = cmdResult.getString("errorCode");
             String errorMessage = cmdResult.getString("errorMessage");
 
@@ -194,13 +199,14 @@ public class UpaResponseHandler extends TerminalResponse {
                             responseText,
                             errorCode,
                             errorMessage
-                    );
+                        );
                 }
             }
 
-            throw new GatewayException("Unexpected Device Response :" + errorCode + " - " + errorMessage, errorCode, errorMessage);
+            throw new GatewayException("Unexpected Device Response :" + errorCode +" - " +  errorMessage, errorCode, errorMessage);
         }
     }
+
 
     protected void hydrateCmdResult(JsonDoc response) throws ApiException {
         JsonDoc cmdResult = response.get("cmdResult");
@@ -212,5 +218,4 @@ public class UpaResponseHandler extends TerminalResponse {
         deviceResponseCode = Arrays.asList(successStatusList).contains(status) ? "00" : cmdResult.getString("errorCode");
         deviceResponseText = deviceResponseCode.equals("00") ? status : cmdResult.getString("errorMessage");
     }
-
 }

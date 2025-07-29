@@ -763,4 +763,36 @@ public class UpaInterface extends DeviceInterface<UpaController> {
     }
 
     //</editor-fold>
+
+    @Override
+    public TerminalManageBuilder updateTaxInfo(BigDecimal amount) {
+
+        return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
+                .withTransactionModifier(TransactionModifier.UpdateTaxInfo)
+                .withTaxAmount(amount);
+    }
+
+    @Override
+    public IDeviceResponse communicationCheck() throws ApiException {
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.CommunicationCheck, _controller.getRequestId().toString(), null);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    @Override
+    public IDeviceResponse logOn() throws ApiException {
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.Logon, _controller.getRequestId().toString(), null);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    @Override
+    public TerminalManageBuilder updateLodgingDetails(BigDecimal amount) {
+
+        return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
+                .withTransactionModifier(TransactionModifier.UpdateLodgingDetails)
+                .withAmount(amount);
+    }
 }

@@ -7,6 +7,8 @@ import com.global.api.entities.enums.TransactionType;
 import com.global.api.terminals.TerminalResponse;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends TransactionBuilder<TerminalResponse> {
     protected PaymentMethodType paymentMethodType;
@@ -40,5 +42,9 @@ public abstract class TerminalBuilder<T extends TerminalBuilder<T>> extends Tran
     TerminalBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type);
         paymentMethodType = paymentType;
+    }
+    public TerminalBuilder withTaxAmount(BigDecimal taxAmount) {
+        this.taxAmount = taxAmount;
+        return this;
     }
 }

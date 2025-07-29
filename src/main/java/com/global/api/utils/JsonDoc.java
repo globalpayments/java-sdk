@@ -50,6 +50,14 @@ public class JsonDoc implements IRawRequestBuilder {
         }
         return this;
     }
+    public <T> JsonDoc set(String key, T value) {
+        if(value != null) {
+            if(encoder != null)
+                dict.put(key, encoder.encode(value));
+            else dict.put(key, value);
+        }
+        return this;
+    }
     public JsonDoc set(String key, IStringConstant value) {
         if(value != null)
             return set(key, value.getValue(), false);
@@ -217,6 +225,13 @@ public class JsonDoc implements IRawRequestBuilder {
         String value = getString(name);
         if(!StringUtils.isNullOrEmpty(value)) {
             return new BigDecimal(value);
+        }
+        return null;
+    }
+    public Double getDouble(String name) {
+        String value = getString(name);
+        if(!StringUtils.isNullOrEmpty(value)) {
+            return new Double(value);
         }
         return null;
     }
