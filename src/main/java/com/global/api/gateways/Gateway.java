@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public abstract class Gateway {
     private String contentType;
     private boolean enableLogging;
     private IRequestLogger requestLogger;
-    private StringBuilder logEntry = new StringBuilder();
+    private ThreadLocal<StringBuilder> _logEntry = ThreadLocal.withInitial(StringBuilder::new);
     private ThreadLocal<Map<String, String>> maskedRequestData;
 
     public Gateway(String contentType) {
@@ -71,6 +72,7 @@ public abstract class Gateway {
     protected GatewayResponse sendRequest(String verb, String endpoint, String data, HashMap<String, String> queryStringParams) throws GatewayException {
         HttpsURLConnection conn = null;
         try {
+            StringBuilder logEntry = _logEntry.get();
             String queryString = buildQueryString(queryStringParams);
             if (webProxy != null) {
                 conn = (HttpsURLConnection) new URL((serviceUrl + endpoint + queryString).trim()).openConnection(webProxy);
@@ -113,7 +115,8 @@ public abstract class Gateway {
             }
 
             if (!verb.equals("GET")) {
-                byte[] request = data.getBytes();
+                //Encode using UTF-8 instead of the default. This avoids the JVM default charset issues
+                byte[] request = data != null ? data.getBytes(StandardCharsets.UTF_8) : new byte[0];
 
                 conn.setDoOutput(true);
                 conn.addRequestProperty("Content-Length", String.valueOf(request.length));
@@ -161,6 +164,7 @@ public abstract class Gateway {
                 return response;
             }
         } catch (Exception exc) {
+            StringBuilder logEntry = _logEntry.get();
             if (this.enableLogging || this.requestLogger != null) {
                 logEntry.append("Exception:").append(lSChar).append(exc.getMessage());
 
@@ -178,6 +182,9 @@ public abstract class Gateway {
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }
+        } finally {
+            //clean up per thread
+            _logEntry.remove();
         }
     }
 
@@ -261,7 +268,7 @@ public abstract class Gateway {
 
             try (InputStream responseStream = conn.getInputStream();
                  OutputStream out = conn.getOutputStream()) {
-
+                StringBuilder logEntry = _logEntry.get();
                 if (this.enableLogging || this.requestLogger != null) {
                     logEntry.append("Request: ").append(content).append(lSChar);
 
@@ -286,6 +293,8 @@ public abstract class Gateway {
             }
         } catch (Exception exc) {
             throw new GatewayException("Error occurred while communicating with gateway.", exc);
+        } finally {
+            _logEntry.remove();
         }
     }
 
@@ -373,6 +382,7 @@ public abstract class Gateway {
     }
 
     private void generateRequestLog() {
+        StringBuilder logEntry = _logEntry.get();
         if (enableLogging) {    // At least we need to print in console
             if (requestLogger == null) {
                 new RequestConsoleLogger().RequestSent(logEntry.toString());
@@ -397,10 +407,11 @@ public abstract class Gateway {
                 }
             }
         }
-        logEntry.delete(0, logEntry.length());
+        logEntry.setLength(0);
     }
 
     private void generateResponseLog() {
+        StringBuilder logEntry = _logEntry.get();
         if (enableLogging) {    // At least we need to print in console
             if (requestLogger == null) {
                 new RequestConsoleLogger().ResponseReceived(logEntry.toString());
@@ -425,8 +436,7 @@ public abstract class Gateway {
                 }
             }
         }
-
-        logEntry.delete(0, logEntry.length());
+        logEntry.setLength(0);
     }
 
     private String maskFieldsIfNeeded(String data) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## Latest Version - V14.4.2 (08/05/2025)
+### Bug Fixes
+- [GPAPI] - Fix for multithreading and also a known issue where getBytes to use StandardCharsets.UTF_8 instead of default.
+
 ## Latest Version - V14.4.1 (07/29/2025)
 ### Enhancements
 - [UPA] - Added missing commands: UpdateTaxInfo, ForceSale, CommunicationCheck, Logon and UpdateLodgingDetails.

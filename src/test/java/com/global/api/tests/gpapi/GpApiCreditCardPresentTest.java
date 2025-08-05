@@ -24,12 +24,12 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.parallel.Execution;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiCreditCardPresentTest extends BaseGpApiTest {
@@ -1104,6 +1104,45 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
             assertTrue(exceptionCaught);
         }
     }
+
+    @Test
+    @Order(45)
+    public void runMultipleTransactionsThread() throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        List<Future<Boolean>> futures = new ArrayList<>();
+        int numTransactions = 20;
+        BigDecimal baseAmount = new BigDecimal("11.00");
+        BigDecimal increment = new BigDecimal("0.01");
+
+        for (int i = 0; i < numTransactions; i++) {
+            BigDecimal newAmount = baseAmount.add(increment.multiply(BigDecimal.valueOf(i))) ; //0.01 increments
+            futures.add(executor.submit(() -> {
+                try {
+                    Transaction response = creditTrackData
+                            .charge(newAmount)
+                            .withCurrency(currency)
+                            .execute();
+                    assertTransactionResponse(response, TransactionStatus.Captured);
+                    return true;
+                } catch (ApiException e) {
+                    System.err.printf("Transaction failed for amount %.2f: %s%n", amount, e.getMessage());
+                    return false;
+                }
+            }));
+        }
+
+        for(Future<Boolean> future : futures) {
+            try {
+                future.get();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+    }
+
     //endregion
 
     @AfterEach
