@@ -1887,7 +1887,11 @@ public class NTSUserData {
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getQuantity(), 12,4));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 12, 4));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,4));
-                sb.append(StringUtils.toFormatDigit(productData.getNetFuelAmount(), 12,4));
+                if (purchaseType != null && (Integer.parseInt(purchaseType.getValue()) == 1 || Integer.parseInt(purchaseType.getValue()) == 3)) {
+                    sb.append(StringUtils.toFormatDigit(productData.getNetFuelAmount() != null ? productData.getNetFuelAmount() : BigDecimal.ZERO, 12, 4));
+                } else {
+                    sb.append(StringUtils.toFormatDigit(BigDecimal.ZERO, 12, 4));
+                }
             } else {
                 sb.append(String.format("%4s", " "));
                 sb.append(String.format("%1s", " "));
@@ -1905,7 +1909,11 @@ public class NTSUserData {
             sb.append(StringUtils.toFormatDigit(grossNonFuelAmount, 12, 4));
         }
         if (purchaseType.equals(PurchaseType.NonFuel) || purchaseType.equals(PurchaseType.FuelAndNonFuel)) {
-            sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount(), 12, 4));
+            if (purchaseType != null && (Integer.parseInt(purchaseType.getValue()) == 2 || Integer.parseInt(purchaseType.getValue()) == 3)) {
+                sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount() != null ? productData.getNetNonFuelAmount() : BigDecimal.ZERO, 12, 4));
+            } else {
+                sb.append(StringUtils.toFormatDigit(BigDecimal.ZERO, 12, 4));
+            }
         }
         else
             sb.append(String.format("%012d", 0));
