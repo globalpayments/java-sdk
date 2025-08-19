@@ -4,14 +4,17 @@ import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.enums.Target;
 import com.global.api.entities.exceptions.GatewayComsException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
 import com.global.api.gateways.events.*;
+import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import com.global.api.utils.GnapUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -46,6 +49,10 @@ public class NetworkGateway {
     @Getter @Setter
     private Target target;
     private ExecutorService executorService = null;
+    @Getter @Setter
+    private int connectionTimeout;
+    @Getter @Setter
+    public NetworkGatewayConfig config;
 
     public String getPrimaryEndpoint() {
         return primaryEndpoint;
@@ -85,7 +92,7 @@ public class NetworkGateway {
         if(target.equals(Target.GNAP))
         {
             GnapUtils.enableLogging(enableLogging);
-        }else if(target.equals(Target.NTS)){
+        } else if(target.equals(Target.NTS)){
             NtsUtils.enableLogging();
         }
     }
@@ -126,6 +133,7 @@ public class NetworkGateway {
             try {
                 // connection started
                 connectionEvent.setConnectionStarted(connectionStarted);
+                logResponse(connectionEvent.getEventMessage());
 
                 // check for simulated connection error
                 if(!isForcedError(HostError.Connection)) {
@@ -137,14 +145,17 @@ public class NetworkGateway {
                             return 0;
                         };
                         Future<Integer> future = executorService.submit(task);
-                        future.get(5000, TimeUnit.MILLISECONDS);
+                        future.get(connectionTimeout, TimeUnit.MILLISECONDS);
                         client.startHandshake();
                         raiseGatewayEvent(new SslHandshakeEvent(connectorName, null));
-                    } catch (TimeoutException | InterruptedException e) {
+                        logResponse(new SslHandshakeEvent(connectorName, null).getEventMessage());
+                    }
+                    catch (TimeoutException | InterruptedException e) {
                         throw new GatewayTimeoutException();
                     }
                     catch(Exception exc) {
                         raiseGatewayEvent(new SslHandshakeEvent(connectorName, exc));
+                        logResponse(new SslHandshakeEvent(connectorName, exc).getEventMessage());
                         if(client != null && client.isConnected()) {
                             disconnect();
                         }
@@ -154,6 +165,7 @@ public class NetworkGateway {
                 if(client != null && client.isConnected()) {
                     // connection completed
                     raiseGatewayEvent(new ConnectionCompleteEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)));
+                    logResponse(new ConnectionCompleteEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)).getEventMessage());
 
                     out = new DataOutputStream(client.getOutputStream());
                     in = client.getInputStream();
@@ -163,6 +175,7 @@ public class NetworkGateway {
                 else {
                     // connection fail over
                     raiseGatewayEvent(new FailOverEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)));
+                    logResponse(new FailOverEvent(connectorName, connectionStarted, DateTime.now(DateTimeZone.UTC)).getEventMessage());
 
                     if(connectionFaults++ != 3) {
                         if(endpoint.equals(primaryEndpoint) && secondaryEndpoint != null) {
@@ -203,7 +216,8 @@ public class NetworkGateway {
     }
 
 
-    public byte[] send(IDeviceMessage message) throws GatewayTimeoutException, GatewayComsException {
+    @SneakyThrows
+    public byte[] send(IDeviceMessage message) throws GatewayException {
     /*
     1) if the initial attempt to connect fails (on both hosts) a GatewayComsException is thrown
     2) if the send/receive fails, no exception is thrown (timeout flag is tripped) and fail over occurs
@@ -220,6 +234,7 @@ public class NetworkGateway {
             for (int i = 0; i < 2; i++) {
                 raiseGatewayEvent(new RequestSentEvent(connectorName));
                 DateTime requestSent = DateTime.now(DateTimeZone.UTC);
+                logResponse(new RequestSentEvent(connectorName).getEventMessage());
                 try {
                     if (!isForcedError(HostError.SendFailure)) {
                         out.write(buffer);
@@ -229,6 +244,7 @@ public class NetworkGateway {
 
                     if (rvalue != null && !isForcedError(HostError.Timeout)) {
                         raiseGatewayEvent(new ResponseReceivedEvent(connectorName, requestSent));
+                        logResponse(new ResponseReceivedEvent(connectorName, requestSent).getEventMessage());
                         return rvalue;
                     }
                     timeout = true;
@@ -239,6 +255,7 @@ public class NetworkGateway {
                 // did not get a response, switch endpoints and try again
                 if (!currentHost.equals(Host.Secondary) && !StringUtils.isNullOrEmpty(secondaryEndpoint) && i < 1) {
                     raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver));
+                    logResponse(new TimeoutEvent(connectorName, GatewayEventType.TimeoutFailOver).getEventMessage());
 
                     disconnect();
                     connect(getSecondaryEndpoint(), getSecondaryPort());
@@ -246,6 +263,7 @@ public class NetworkGateway {
             }
 
             raiseGatewayEvent(new TimeoutEvent(connectorName, GatewayEventType.Timeout));
+            logResponse(new TimeoutEvent(connectorName, GatewayEventType.Timeout).getEventMessage());
             if (timeout) {
                 throw new GatewayTimeoutException();
             } else throw new GatewayComsException();
@@ -259,6 +277,7 @@ public class NetworkGateway {
             shutdownExecutorService();
             // remove the force timeout
             raiseGatewayEvent(new DisconnectEvent(connectorName));
+            logResponse(new DisconnectEvent(connectorName).getEventMessage());
 
             // remove simulated errors
             if (simulatedHostErrors != null) {
@@ -267,7 +286,7 @@ public class NetworkGateway {
         }
     }
 
-    private byte[] getGatewayResponse() throws IOException, GatewayTimeoutException {
+    private byte[] getGatewayResponse() throws IOException, GatewayException {
         byte[] buffer = new byte[2048];
 
         int bytesReceived = awaitResponse(in, buffer);
@@ -280,50 +299,66 @@ public class NetworkGateway {
 
         return null;
     }
-
-    private int awaitResponse(InputStream in, byte[] buffer) throws GatewayTimeoutException {
+    private int awaitResponse(InputStream in, byte[] buffer) throws GatewayException {
         Callable<Integer> task = () -> {
-        long t = System.currentTimeMillis();
-
-        int position = 0;
-        Integer messageLength = null;
-        do {
-            if(messageLength == null) {
-                byte[] lengthBuffer = new byte[2];
-                int length = in.read(lengthBuffer, 0, 2);
-                if(length == 2) {
-                    if(target!=null && target.equals(Target.GNAP)) {
-                        messageLength = new BigInteger(lengthBuffer).intValue();
-                    }else{
-                        messageLength = new BigInteger(lengthBuffer).intValue() - 2;
+            long startTime = System.currentTimeMillis();
+            int position = 0;
+            Integer messageLength = null;
+            do {
+                try {
+                    if (messageLength == null) {
+                        byte[] lengthBuffer = new byte[2];
+                        int length = in.read(lengthBuffer, 0, 2);
+                        if (length == 2) {
+                            messageLength = target != null && target.equals(Target.GNAP)
+                                    ? new BigInteger(lengthBuffer).intValue()
+                                    : new BigInteger(lengthBuffer).intValue() - 2;
+                        }
+                        else {
+                            throw new IOException("Failed to read message length.");
+                        }
                     }
-                }
-            }
 
-            if(messageLength != null) {
-                int currLength = in.read(buffer, position, messageLength);
-                if (currLength == messageLength) {
-                    return messageLength;
-                }
-                else {
-                    position += currLength;
-                }
-            }
+                    if (messageLength != null) {
+                        int currLength = in.read(buffer, position, messageLength - position);
+                        if (currLength == -1) {
+                            throw new IOException("End of stream reached unexpectedly.");
+                        }
+                        position += currLength;
 
-            try {
-                Thread.sleep(50);
-            }
-            catch(InterruptedException e) { break; }
-        }
-        while((System.currentTimeMillis() - t) <= 20000);
+                        if (position == messageLength) {
+                            return messageLength;
+                        }
+                    }
 
-        throw new GatewayTimeoutException();
+                    Thread.sleep(50);
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new GatewayException("Thread interrupted while waiting for response.");
+                }
+                catch (IOException e) {
+                    throw new GatewayException("Error while reading response: " + e.getMessage());
+                }
+
+            } while ((System.currentTimeMillis() - startTime) <= timeout);
+
+            throw new GatewayTimeoutException("Response timed out after " + timeout + " milliseconds.");
         };
+
         Future<Integer> future = executorService.submit(task);
         try {
-            return future.get( timeout, TimeUnit.MILLISECONDS);
-        }  catch (TimeoutException | InterruptedException | ExecutionException e) {
-            throw new GatewayTimeoutException();
+            return future.get(timeout, TimeUnit.MILLISECONDS);
+        }
+        catch (TimeoutException e) {
+            throw new GatewayTimeoutException("Response timed out after " + timeout + " milliseconds.");
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new GatewayException("Thread interrupted while waiting for response.");
+        }
+        catch (ExecutionException e) {
+            throw new GatewayException("Error while executing response task: " + e.getCause().getMessage());
         }
     }
 
@@ -333,7 +368,8 @@ public class NetworkGateway {
             if(!executorService.awaitTermination(1,TimeUnit.SECONDS)){
                 executorService.shutdownNow();
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             executorService.shutdownNow();
         }
     }
@@ -343,9 +379,12 @@ public class NetworkGateway {
             new Thread(new Runnable() {
                 public void run() {
                     gatewayEventHandler.eventRaised(event);
-                    NtsUtils.log(event.getEventMessage());
                 }
             }).start();
         }
+    }
+
+    protected void logResponse(String response) throws IOException {
+        config.getRequestLogger().ResponseReceived(response);
     }
 }

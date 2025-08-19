@@ -10,4 +10,7 @@ public class GatewayTimeoutException extends GatewayException {
     public GatewayTimeoutException(String message,String gatewayRspCode, String gatewayRspText, String gatewayTxnId) {
         super(message, gatewayRspCode, gatewayRspText, gatewayTxnId);
     }
+    public GatewayTimeoutException(String message) {
+        super(message);
+    }
 }
