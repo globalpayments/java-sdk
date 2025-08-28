@@ -149,11 +149,20 @@ public class UpaAdminTests {
         assertNotNull(approvedTransactions);
 
         // transaction record specifics:
-        SummaryResponse summaryResponse = (SummaryResponse) approvedTransactions.values().toArray()[0];
-        TransactionSummary transRecord = summaryResponse.getTransactions().get(0);
-        assertEquals(new BigDecimal("55.00"), transRecord.getAuthorizedAmount());
-        assertEquals(new BigDecimal("85.00"), transRecord.getRequestAmount());
-        assertNotNull(transRecord.getMaskedCardNumber());
+        if (!approvedTransactions.isEmpty()) {
+            SummaryResponse summaryResponse = (SummaryResponse) approvedTransactions.values().toArray()[0];
+            if (!summaryResponse.getTransactions().isEmpty()) {
+                TransactionSummary transRecord = summaryResponse.getTransactions().get(0);
+                assertEquals(new BigDecimal("55.00"), transRecord.getAuthorizedAmount());
+                assertEquals(new BigDecimal("85.00"), transRecord.getRequestAmount());
+                assertNotNull(transRecord.getMaskedCardNumber());
+            } else {
+                fail("No transactions found in SummaryResponse.");
+            }
+        } else {
+            fail("No approved transactions found.");
+        }
+
     }
 
     @Test

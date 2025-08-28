@@ -4,10 +4,7 @@ import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.ManualEntryMethod;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.entities.exceptions.GatewayException;
-import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.exceptions.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.terminals.*;
@@ -30,6 +27,7 @@ import com.global.api.terminals.upa.subgroups.RequestProcessingIndicatorsFields;
 import com.global.api.terminals.upa.subgroups.RequestTransactionFields;
 import com.global.api.utils.JsonDoc;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -107,7 +105,7 @@ public class UpaController extends DeviceController {
     }
 
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod());
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod(), builder.getGratuity());
 
         Integer requestId = builder.getRequestId();
 
@@ -144,7 +142,7 @@ public class UpaController extends DeviceController {
         return json;
     }
 
-    private UpaMessageId mapTransactionType(TransactionType type, TransactionModifier transactionModifier, IPaymentMethod paymentMethod) throws UnsupportedTransactionException {
+    private UpaMessageId mapTransactionType(TransactionType type, TransactionModifier transactionModifier, IPaymentMethod paymentMethod, BigDecimal gratuity) throws UnsupportedTransactionException, BuilderException {
         switch (type) {
             case Auth:
                 return UpaMessageId.PreAuth;
@@ -167,6 +165,11 @@ public class UpaController extends DeviceController {
                     default:
                         break;
                 }
+                if (isTipAdjust(type, gratuity)) {
+                    return UpaMessageId.TipAdjust;
+                }else {
+                    throw  new BuilderException("A tip amount must be included for this transaction type.");
+                }
             case Verify:
                 return UpaMessageId.CardVerify;
             case Reversal:
@@ -183,10 +186,14 @@ public class UpaController extends DeviceController {
                 throw new UnsupportedTransactionException("Selected gateway does not support this transaction type");            
         }
     }
+    private boolean isTipAdjust(TransactionType transType, BigDecimal gratuity) {
+        return (transType == TransactionType.Edit && (gratuity != null && gratuity.compareTo(BigDecimal.ZERO) > 0));
+    }
+
 
     @Override
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
-        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod());
+        UpaMessageId messageId = mapTransactionType(builder.getTransactionType(), builder.getTransactionModifier(), builder.getPaymentMethod(), builder.getGratuity());
 
         Integer requestId = builder.getRequestId();
 

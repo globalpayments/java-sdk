@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.4.4 (08/19/2025)
+## Latest Version - V14.4.5 (08/28/2025)
+### Bug Fixes
+- [UPA] - Added condition for building proper request format for Tip adjust transaction and Added DebitTest class for all supported transactions.
+- [UPA] - Send SAF partial auth test case changes.
+
+## V14.4.4 (08/19/2025)
 ### Bug Fixes
 - [VAPS] - Improved timeout handling and added additional logging for timeout issue (10350).
 
