@@ -168,6 +168,18 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         }
         setTokenResponseMessage(host.getString(TOKEN_RESPONSE_MESSAGE));
         setCustomHash(host.getString(CUSTOM_HASH));
+
+        if (host.getInt("batchSeqNbr") != null) {
+            setBatchSeqNbr(host.getInt("batchSeqNbr"));
+        }
+
+        if (host.getString("batchId") != null) {
+            setBatchId(host.getString("batchId"));
+        }
+        if (host.getString("gatewayResponseCode") != null) {
+            setGatewayResponseCode(host.getString("gatewayResponseCode"));
+        }
+
     }
 
     protected void hydratePaymentData(JsonDoc payment) {

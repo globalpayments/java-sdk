@@ -1,7 +1,16 @@
 # Changelog
 
-## Latest Version - V14.4.5 (08/28/2025)
+## Latest Version - V14.4.6 (09/04/2025)
+### Enhancements
+- [GPAPI] - Added all production scenario's testcases for Blik and PayU APM.
+- [UPA] - SI missing commands added: InjectCarouselLogo, RemoveCarouselLogo, GetLastEOD, ManageToken.
+- [Vaps] - Fixed issue 10369: Implemented logic to combine non-fuel products when the count exceeds 8 for VF2.0.
+
 ### Bug Fixes
+- [UPA] - Modified so allowDuplicates can be set independently of ForceSale.
+
+## V14.4.5 (08/28/2025)
+### Bug Fixes 
 - [UPA] - Added condition for building proper request format for Tip adjust transaction and Added DebitTest class for all supported transactions.
 - [UPA] - Send SAF partial auth test case changes.
 

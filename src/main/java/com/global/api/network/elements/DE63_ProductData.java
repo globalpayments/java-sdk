@@ -417,8 +417,8 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
             }
             break;
             case VISAFLEET2Dot0:
-                if(getFuelProductCount()>1 || getNonFuelProductCount()>8){
-                    throw new UnsupportedOperationException("Number of Fuel/NonFuel product should not more than 1 and 8");
+                if(getFuelProductCount()>1 ){
+                    throw new UnsupportedOperationException("Number of Fuel product should not more than 1");
                 }
                 else {
                     int totalProductCount = getFuelProductCount() + getNonFuelProductCount();
@@ -441,21 +441,44 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                                     .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                         }
                     }
-                    if (getNonFuelProductCount() != 0 && getNonFuelProductCount() <= 8) {
+                    if (getNonFuelProductCount() != 0) {
+                        int nonFuelCount = getNonFuelProductCount();
+                        int index = 0;
+                        int rollup = Math.min(nonFuelCount, 8) - 1;
+                        BigDecimal combinedQuantity = BigDecimal.ZERO;
+                        BigDecimal combinedAmount = BigDecimal.ZERO;
+
                         for (DE63_ProductDataEntry entry : nonFuelProductDataEntries.values()) {
-                            rvalue = rvalue.concat(entry.getCode() + "\\");
-                            rvalue = rvalue.concat(" "); //Unit Of Measure
+                            if (index < rollup || nonFuelCount <= 8) {
+                                rvalue = rvalue.concat(entry.getCode() + "\\");
+                                rvalue = rvalue.concat(" "); // Unit Of Measure
 
-                            if (entry.getQuantity() != null) {
-                                rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
-
+                                if (entry.getQuantity() != null) {
+                                    rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+                                }
+                                rvalue = rvalue.concat("\\")
+                                        .concat("\\") // Price
+                                        .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
+                            } else {
+                                // Combine remaining products
+                                if (entry.getQuantity() != null) {
+                                    combinedQuantity = combinedQuantity.add(entry.getQuantity());
+                                }
+                                combinedAmount = combinedAmount.add(entry.getAmount());
                             }
+                            index++;
+                        }
+
+                        // Add combined product as the 8th product if there are more than 8 products
+                        if (nonFuelCount > 8) {
+                            rvalue = rvalue.concat("ZC\\"); // Combined product code
+                            rvalue = rvalue.concat(" "); // Unit Of Measure
+                            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(combinedQuantity));
                             rvalue = rvalue.concat("\\")
-                                    .concat("\\") //Price
-                                    .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
+                                    .concat("\\") // Price
+                                    .concat(StringUtils.toNumeric(combinedAmount) + "\\");
                         }
                     }
-                    break;
                 }
         }
         return rvalue.getBytes();

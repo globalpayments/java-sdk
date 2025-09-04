@@ -1062,4 +1062,119 @@ public class VapsVisaFleet2Dot0EMVTest {
         assertEquals("000", captureResponse.getResponseCode());
     }
 
+    @Test //Combine product more than 8 NonFuel product
+    public void test_1100_authorization_combine_NF() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.0000"), new BigDecimal("100"), new BigDecimal("100"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("300"), new BigDecimal("300"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("400"), new BigDecimal("400"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.5000"), new BigDecimal("20.50"), new BigDecimal("20.50"));
+
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test //Combine nonFuel product more than 8 NonFuel product
+    public void test_1100_authorization_combine_F_NF() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.0000"), new BigDecimal("100"), new BigDecimal("100"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("300"), new BigDecimal("300"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("400"), new BigDecimal("400"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.5000"), new BigDecimal("20.50"), new BigDecimal("20.50"));
+
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test //-ve scenario
+    public void test_1100_authorization_combine_NF1() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.0000"), new BigDecimal("100"), new BigDecimal("100"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("300"), new BigDecimal("300"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("400"), new BigDecimal("400"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test //-ve scenario
+    public void test_1100_authorization_combine_NF2() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
 }

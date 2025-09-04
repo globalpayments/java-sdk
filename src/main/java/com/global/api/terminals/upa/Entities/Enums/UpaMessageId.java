@@ -52,5 +52,9 @@ public enum UpaMessageId {
     Logon,
     UpdateTaxInfo,
     UpdateLodgingDetails,
-    ForceSale;
+    ForceSale,
+    InjectCarouselLogo,
+    RemoveCarouselLogo,
+    GetLastEOD,
+    ManageToken;
 }

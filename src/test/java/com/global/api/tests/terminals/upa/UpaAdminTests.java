@@ -6,12 +6,17 @@ import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.SummaryResponse;
-import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.abstractions.IBatchReportResponse;
+import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.abstractions.ISAFResponse;
+import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
+import com.global.api.terminals.upa.Entities.TokenInfo;
 import com.global.api.terminals.upa.UpaInterface;
 import com.global.api.terminals.upa.responses.UpaTransactionResponse;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
@@ -44,7 +49,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("10.163.225.111");
+        config.setIpAddress("192.168.51.94");
         config.setTimeout(30_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -594,4 +599,169 @@ public class UpaAdminTests {
         assertEquals("Logon", response.getCommand());
     }
 
+    @Test
+    public void test_injectCarouselLogo() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "brand_logo_test.png").toString();
+        UDData udData = new UDData();
+        udData.setFileName("brand_logo_test.png");
+        udData.setFilePath(filePath);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.injectCarouselLogo(udData);
+
+        assertNotNull(response);
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void test_injectCarouselLogo_shouldThrowException_whenFileNameDoesNotStartWithBrandLogo() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "test.html").toString();
+        UDData udData = new UDData();
+        udData.setFileName("test.html");
+        udData.setFilePath(filePath);
+        MessageException exception = assertThrows(MessageException.class, () ->  device.injectCarouselLogo(udData));
+
+        assertEquals("FileName must start with 'brand_logo_'.", exception.getMessage());
+    }
+
+    @Test
+    public void test_injectCarouselLogo_shouldThrowException_whenFileExtensionIsInvalid() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "brand_logo_test.html").toString();
+        UDData udData = new UDData();
+        udData.setFileName("brand_logo_test.html");
+        udData.setFilePath(filePath);
+        MessageException exception = assertThrows(MessageException.class, () ->  device.injectCarouselLogo(udData));
+
+        assertEquals("FileName must have a valid extension (.jpg, .jpeg, .bmp, .png, .gif).", exception.getMessage());
+    }
+
+    @Test
+    public void test_removeCarouselLogo() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "brand_logo_test.png").toString();
+        UDData udData = new UDData();
+        udData.setFileName("brand_logo_test.png");
+        udData.setFilePath(filePath);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.removeCarouselLogo(udData);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void test_removeCarouselLogo_shouldThrowException_whenFileNameHasNoExtension() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "brand_logo_test.png").toString();
+        UDData udData = new UDData();
+        udData.setFileName("brand_logo_test");
+        udData.setFilePath(filePath);
+        MessageException exception = assertThrows(MessageException.class, () -> device.removeCarouselLogo(udData));
+
+        assertEquals("FileName must include a file extension and must not contain a file path.", exception.getMessage());
+    }
+
+    @Test
+    public void test_removeCarouselLogo_shouldThrowException_whenFileNameContainsFilePath() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String currentDirectory = System.getProperty("user.dir");
+        String filePath = Paths.get(currentDirectory, "src", "test", "java", "com", "global", "api", "tests", "terminals", "upa", "fileExamples", "brand_logo_test.png").toString();
+        UDData udData = new UDData();
+        udData.setFileName(filePath + "brand_logo_test.png");
+        udData.setFilePath(filePath);
+        MessageException exception = assertThrows(MessageException.class, () -> device.removeCarouselLogo(udData));
+
+        assertEquals("FileName must include a file extension and must not contain a file path.", exception.getMessage());
+    }
+
+    @Test
+    public void test_manageToken_shouldUpdateTokenExpirationDateAndReturnSuccessStatus() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String token = "Kbl04e1ddX6JVyjp55ZO0011";
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(token);
+        tokenInfo.setExpiryMonth("12");
+        tokenInfo.setExpiryYear("2026");
+
+        UpaTransactionResponse response = (UpaTransactionResponse) device.manageToken(tokenInfo);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+    }
+
+    @Test
+    public void test_manageToken_shouldThrowException_whenExpiryMonthIsInvalid() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String token = "Kbl04e1ddX6JVyjp55ZO0011";
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(token);
+        tokenInfo.setExpiryMonth("14");
+        tokenInfo.setExpiryYear("2026");
+
+        MessageException exception = assertThrows(MessageException.class, () -> device.manageToken(tokenInfo));
+
+        assertEquals("ExpiryMonth must be an integer between 1 and 12.", exception.getMessage());
+    }
+
+    @Test
+    public void test_manageToken_shouldThrowException_whenExpiryYearInvalid() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String token = "Kbl04e1ddX6JVyjp55ZO0011";
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(token);
+        tokenInfo.setExpiryMonth("07");
+        tokenInfo.setExpiryYear("17885");
+
+        MessageException exception = assertThrows(MessageException.class, () -> device.manageToken(tokenInfo));
+
+        assertEquals("ExpiryYear must be a 4-digit positive integer greater than 1999.", exception.getMessage());
+    }
+
+    @Test
+    public void test_manageToken_shouldThrowException_whenTokenIsInvalid() {
+        device.setOnMessageSent(Assert::assertNotNull);
+        String token = "Kbl04e1ddX6JVyjp55ZO0011hF23G3445";
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(token);
+        tokenInfo.setExpiryMonth("07");
+        tokenInfo.setExpiryYear("2026");
+
+        MessageException exception = assertThrows(MessageException.class, () -> device.manageToken(tokenInfo));
+
+        assertEquals("Token must be alphanumeric and between 1 and 24 characters in length.", exception.getMessage());
+    }
+
+    @Test
+    public void test_getLastEod() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaTransactionResponse response = (UpaTransactionResponse) device.getLastEod();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("GetLastEOD", response.getCommand());
+    }
+
+    @Test
+    public void test_deleteSaf() throws ApiException {
+        ISAFResponse response = device.sendStoreAndForward();
+
+        runBasicTests(response);
+
+        Map<SummaryType, SummaryResponse> declinedTransactions = response.getDeclined();
+        assertNotNull(declinedTransactions);
+
+        // transaction record specifics:
+        SummaryResponse summaryResponse = (SummaryResponse) declinedTransactions.values().toArray()[0];
+        TransactionSummary transRecord = summaryResponse.getTransactions().get(0);
+        ISAFResponse safDeleteResponse = device.safDelete(transRecord.getTransactionId(), transRecord.getSafReferenceNumber());
+        runBasicTests(safDeleteResponse);
+    }
 }

@@ -13,11 +13,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-@Getter
-@Setter
+@Getter @Setter
 public class UpaResponseHandler extends TerminalResponse {
     public static final String RESPONSE_ID = "responseId";
     public static final String RESPONSE_DATE_TIME = "respDateTime";
@@ -127,6 +125,8 @@ public class UpaResponseHandler extends TerminalResponse {
     private String qpsQualified;
     private int clerkId;
     private String invoiceNumber;
+    private int batchSeqNbr;
+    private String batchId;
     private BigDecimal extraChargeTotal;
 
     protected static boolean isGpApiResponse(JsonDoc root) {
@@ -206,7 +206,6 @@ public class UpaResponseHandler extends TerminalResponse {
             throw new GatewayException("Unexpected Device Response :" + errorCode +" - " +  errorMessage, errorCode, errorMessage);
         }
     }
-
 
     protected void hydrateCmdResult(JsonDoc response) throws ApiException {
         JsonDoc cmdResult = response.get("cmdResult");

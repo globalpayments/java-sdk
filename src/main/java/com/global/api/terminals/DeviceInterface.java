@@ -4,6 +4,7 @@ import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.abstractions.*;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
@@ -15,6 +16,7 @@ import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 import com.global.api.terminals.pax.responses.SAFSummaryReport;
 import com.global.api.terminals.pax.responses.SAFUploadResponse;
+import com.global.api.terminals.upa.Entities.TokenInfo;
 import com.global.api.terminals.upa.subgroups.SignatureData;
 import com.global.api.terminals.upa.subgroups.UpaSafReportParams;
 import lombok.Getter;
@@ -508,5 +510,21 @@ public abstract class DeviceInterface<TResult extends DeviceController> implemen
     @Override
     public TerminalManageBuilder updateLodgingDetails(BigDecimal amount) throws ApiException {
         throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    public IDeviceResponse injectCarouselLogo(UDData uDData) throws ApiException {
+        throw new MessageException(ERROR_MESSAGE);
+    }
+
+    public IDeviceResponse removeCarouselLogo(UDData uDData) throws ApiException {
+        throw new MessageException(ERROR_MESSAGE);
+    }
+
+    public IDeviceResponse manageToken(TokenInfo tokenInfo) throws ApiException {
+        throw new MessageException(ERROR_MESSAGE);
+    }
+
+    public IDeviceResponse getLastEod() throws ApiException {
+        throw new MessageException(ERROR_MESSAGE);
     }
 }

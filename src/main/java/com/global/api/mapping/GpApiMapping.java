@@ -208,9 +208,6 @@ public class GpApiMapping {
                     transaction.setPaymentMethodType(PaymentMethodType.ACH);
                 } else if (paymentMethod.has("apm")) {
                     transaction.setPaymentMethodType(PaymentMethodType.APM);
-                    if (paymentMethod.get("apm").getString("provider") != null && paymentMethod.get("apm").getString("provider").equalsIgnoreCase(BLIK)) {
-                        mapAPMResponse(json, transaction);
-                    }
                 }
             }
 
@@ -603,12 +600,6 @@ public class GpApiMapping {
         bnplResponse.setRedirectUrl(response.get("payment_method").getString("redirect_url"));
         bnplResponse.setProviderName(response.get("payment_method").get("bnpl").getString("provider"));
         transaction.setBNPLResponse(bnplResponse);
-    }
-    private static void mapAPMResponse(JsonDoc response, Transaction transaction) {
-        var alternativePaymentResponse = new AlternativePaymentResponse();
-        alternativePaymentResponse.setRedirectUrl(response.get("payment_method").getString("redirect_url"));
-        alternativePaymentResponse.setProviderName(response.get("payment_method").get("apm").getString("provider"));
-        transaction.setAlternativePaymentResponse(alternativePaymentResponse);
     }
 
     private static TransactionSummary createTransactionSummary(JsonDoc doc) throws GatewayException {

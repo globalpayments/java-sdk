@@ -4,6 +4,7 @@ import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.DeviceInterface;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
@@ -14,6 +15,7 @@ import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
+import com.global.api.terminals.upa.Entities.TokenInfo;
 import com.global.api.terminals.upa.responses.*;
 import com.global.api.terminals.upa.subgroups.RegisterPOS;
 import com.global.api.terminals.upa.subgroups.SignatureData;
@@ -794,5 +796,155 @@ public class UpaInterface extends DeviceInterface<UpaController> {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
                 .withTransactionModifier(TransactionModifier.UpdateLodgingDetails)
                 .withAmount(amount);
+    }
+    /**
+     * Injects a carousel logo into the device.
+     *
+     * @param udData The {@link UDData} object containing the file name and file path of the logo to be injected.
+     * @return An {@link IDeviceResponse} object containing the response from the device.
+     * @throws ApiException If an error occurs during the injection process.
+     * @throws MessageException If the file name is invalid or does not meet the required criteria.
+     * <p>
+     * The file name must:
+     * - Start with the prefix `brand_logo_`.
+     * - Have a valid extension (.jpg, .jpeg, .bmp, .png, .gif).
+     * - Not be empty.
+     */
+    @Override
+    public IDeviceResponse injectCarouselLogo(UDData udData) throws ApiException {
+
+        if (udData.getFileName().isEmpty()) {
+            throw new MessageException(udData.getFileName() + " is a mandatory parameter.");
+        }
+        // Check prefix
+        if (!udData.getFileName().toLowerCase().startsWith("brand_logo_")) {
+            throw new MessageException("FileName must start with 'brand_logo_'.");
+        }
+        // Check extension
+        if (!udData.getFileName().matches("^brand_logo_[^\\\\/:*?\"<>|]+\\.(jpg|jpeg|bmp|png|gif)$")) {
+            throw new MessageException("FileName must have a valid extension (.jpg, .jpeg, .bmp, .png, .gif).");
+        }
+
+        // Extract file extension from FileName
+        String extension = udData.getFileName().substring(udData.getFileName().lastIndexOf('.') + 1).toLowerCase();
+        if (extension.isEmpty()) {
+            throw new MessageException("FileName must include a valid file extension.");
+        }
+
+        String content = "";
+        content = "data:image/" + extension + ";base64," + TerminalUtilities.buildToBase64Content(udData.getFilePath(), UpaMessageId.InjectCarouselLogo, true);
+
+        JsonDoc param = new JsonDoc();
+        param.set("fileName", udData.getFileName());
+        param.set("content", content);
+
+        JsonDoc body = new JsonDoc();
+        body.set("params", param);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.InjectCarouselLogo, _controller.getRequestId().toString(), body);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    /**
+     * Removes a carousel logo from the device.
+     *
+     * @param udData The {@link UDData} object containing the file name of the logo to be removed.
+     * @return An {@link IDeviceResponse} object containing the response from the device.
+     * @throws ApiException If an error occurs during the removal process.
+     * @throws MessageException If the file name is invalid or does not meet the required criteria.
+     *
+     * <p>
+     * The file name must:
+     * - Include a valid file extension (e.g., .jpg, .jpeg, .bmp, .png, .gif).
+     * - Not contain a file path or invalid characters.
+     * </p>
+     */
+    @Override
+    public IDeviceResponse removeCarouselLogo(UDData udData) throws ApiException {
+
+        if (udData.getFileName().isEmpty()) {
+            throw new MessageException(udData.getFileName() + " is a mandatory parameter.");
+        }
+        // Ensure fileName includes an extension and does not contain a file path
+        if (!udData.getFileName().matches("^[^\\\\/:*?\"<>|]+\\.[a-zA-Z0-9]+$")) {
+            throw new MessageException("FileName must include a file extension and must not contain a file path.");
+        }
+
+        JsonDoc param = new JsonDoc();
+        param.set("fileName", udData.getFileName());
+
+        JsonDoc body = new JsonDoc();
+        body.set("params", param);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.RemoveCarouselLogo, _controller.getRequestId().toString(), body);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    /**
+     * Manages a token by validating its details and sending a request to the device.
+     *
+     * @param tokenInfo The {@link TokenInfo} object containing the token details.
+     *                  - `expiryMonth`: The expiration month of the token (1-12).
+     *                  - `expiryYear`: The expiration year of the token (4-digit, greater than 1999).
+     *                  - `token`: The token value (alphanumeric, 1-24 characters).
+     * @return An {@link IDeviceResponse} object containing the response from the device.
+     * @throws ApiException If an error occurs during the process.
+     * @throws MessageException If the token details are invalid (e.g., invalid month, year, or token length).
+     */
+    @Override
+    public IDeviceResponse manageToken(TokenInfo tokenInfo) throws ApiException {
+        int expiryMonth;
+        try {
+            expiryMonth = Integer.parseInt(tokenInfo.getExpiryMonth());
+            if (expiryMonth < 1 || expiryMonth > 12) {
+                throw new MessageException("ExpiryMonth must be an integer between 1 and 12.");
+            }
+        } catch (NumberFormatException e) {
+            throw new MessageException("ExpiryMonth must be an integer between 1 and 12.");
+        }
+
+        int expiryYear;
+        try {
+            expiryYear = Integer.parseInt(tokenInfo.getExpiryYear());
+            if (expiryYear <= 1999 || tokenInfo.getExpiryYear().length() != 4) {
+                throw new MessageException("ExpiryYear must be a 4-digit positive integer greater than 1999.");
+            }
+        } catch (NumberFormatException e) {
+            throw new MessageException("ExpiryYear must be a 4-digit positive integer greater than 1999.");
+        }
+        // Validate token length: AN(1-24)
+        if (tokenInfo.getToken() == null || tokenInfo.getToken().isEmpty() || tokenInfo.getToken().length() > 24) {
+            throw new MessageException("Token must be alphanumeric and between 1 and 24 characters in length.");
+        }
+
+        JsonDoc params = new JsonDoc();
+        params.set("tokenValue", tokenInfo.getToken());
+        params.set("expiryMonth", tokenInfo.getExpiryMonth());
+        params.set("expiryYear", tokenInfo.getExpiryYear());
+
+        JsonDoc body = new JsonDoc();
+        body.set("params", params);
+
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.ManageToken, _controller.getRequestId().toString(), body);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    /**
+     * Retrieves the details of the last End of Day (EOD) process.
+     *
+     * @return An {@link IDeviceResponse} object containing the response from the device.
+     * @throws ApiException If an error occurs during the retrieval process.
+     */
+    @Override
+    public IDeviceResponse getLastEod() throws ApiException {
+
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetLastEOD, _controller.getRequestId().toString(), null);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
     }
 }

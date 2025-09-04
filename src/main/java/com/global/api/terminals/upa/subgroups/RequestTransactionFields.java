@@ -131,14 +131,11 @@ public class RequestTransactionFields {
         if (builder.getTaxIndicator() != null) {
             this.taxIndicator = builder.getTaxIndicator().toString();
         }
-
-        if (builder.getTransactionModifier() == TransactionModifier.ForceSale) {
-            if (builder.isAllowDuplicates()) {
-                this.allowDuplicate = "1";
-            } else {
-                this.allowDuplicate = "0";
-            }
-
+        
+        if (builder.isAllowDuplicates()) {
+            this.allowDuplicate = "1";
+        } else {
+            this.allowDuplicate = "0";
         }
 
         if (builder.getConfirmAmount() != null) {
