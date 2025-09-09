@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
 
@@ -969,7 +970,12 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
         private String submitFormData(String formUrl, List<HashMap<String, String>> formData) throws GatewayException {
             HttpsURLConnection httpClient;
             try {
-                httpClient = (HttpsURLConnection) new URL((formUrl).trim()).openConnection();
+                URL url = new URL((formUrl).trim());
+                //this if block is added to mitigate the risk of SSRF attacks
+                if (!url.getHost().endsWith("gpe.cz")){
+                    throw new IllegalArgumentException("Untrusted URL: " + formUrl);
+                }
+                httpClient = (HttpsURLConnection) url.openConnection();
 
                 httpClient.setRequestMethod("POST");
                 httpClient.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");

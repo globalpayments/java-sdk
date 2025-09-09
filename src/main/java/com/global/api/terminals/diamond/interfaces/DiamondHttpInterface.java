@@ -108,38 +108,35 @@ public class DiamondHttpInterface implements IDeviceCommInterface {
                     .set("content_length", data.toString().length())
                     .set("content", data);
 
-            OutputStream out = null;
             try {
                 // LOG THE REQUEST
                 raiseOnMessageSent(requestJsonDoc.toString());
 
                 // SEND THE REQUEST
-                out = httpClient.getOutputStream();
-                out.write(data.toString().getBytes(StandardCharsets.UTF_8));
-                out.flush();
+                try (OutputStream out = httpClient.getOutputStream()) {
+                    out.write(data.toString().getBytes(StandardCharsets.UTF_8));
+                    out.flush();
 
-                // CHECK RESPONSE CODE
-                int statusResponse = httpClient.getResponseCode();
-                if (statusResponse != HttpStatus.SC_OK) {
-                    throw new MessageException("ERROR: status code " + statusResponse);
+                    // CHECK RESPONSE CODE
+                    int statusResponse = httpClient.getResponseCode();
+                    if (statusResponse != HttpStatus.SC_OK) {
+                        throw new MessageException("ERROR: status code " + statusResponse);
+                    }
+
+                    // READ RESPONSE
+                    try (InputStream responseStream = httpClient.getInputStream()) {
+                        String rawResponse = IOUtils.readFully(responseStream);
+
+                        // LOG THE RESPONSE
+                        raiseOnMessageReceived(rawResponse.getBytes());
+
+                        checkResponse(rawResponse);
+
+                        return rawResponse.getBytes(StandardCharsets.UTF_8);
+                    }
                 }
-
-                // READ RESPONSE
-                InputStream responseStream = httpClient.getInputStream();
-                String rawResponse = IOUtils.readFully(responseStream);
-
-                // LOG THE RESPONSE
-                raiseOnMessageReceived(rawResponse.getBytes());
-
-                checkResponse(rawResponse);
-
-                return rawResponse.getBytes(StandardCharsets.UTF_8);
             } catch (Exception exc) {
                 throw new GatewayException("Error occurred while sending the request.", exc);
-            } finally {
-                if (out != null) {
-                    out.close();
-                }
             }
 
         } catch (Exception e) {

@@ -32,14 +32,17 @@ public class TestUtil {
             while ((i = fis.read()) != -1) {
                 c = i;
             }
-            try (FileOutputStream fos = new FileOutputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt")) {
-                if (c == 99) {
-                    fos.write(0);
-                } else {
-                    fos.write(++c);
-                }
-                fos.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream("C://Users/" + userName + "/Documents/GnapTransCounter.txt")) {
+            if (c == 99) {
+                fos.write(0);
+            } else {
+                fos.write(++c);
             }
+            fos.flush();
         } catch (IOException ex) {
             ex.printStackTrace();
         }

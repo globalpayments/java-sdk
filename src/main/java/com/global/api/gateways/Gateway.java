@@ -173,12 +173,14 @@ public abstract class Gateway {
 
             try {
                 assert conn != null;
-                throw new GatewayException(
-                        "Error occurred while communicating with gateway.",
-                        String.valueOf(conn.getResponseCode()),
-                        getRawResponse(conn.getErrorStream(),
-                        "gzip".equalsIgnoreCase(conn.getContentEncoding())),
-                        exc);
+                try (InputStream errorStream = conn.getErrorStream()) {
+                    throw new GatewayException(
+                            "Error occurred while communicating with gateway.",
+                            String.valueOf(conn.getResponseCode()),
+                            getRawResponse(errorStream,
+                                    "gzip".equalsIgnoreCase(conn.getContentEncoding())),
+                            exc);
+                }
             } catch (IOException e) {   // Legacy GatewayException
                 throw new GatewayException("Error occurred while communicating with gateway.", exc);
             }

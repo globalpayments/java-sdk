@@ -192,6 +192,13 @@ public class ElementTree {
             InputSource is = new InputSource(new StringReader(xml));
             // Create a DocumentBuilderFactory and configure it to prevent XXE attacks.
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            // Disable external entities to prevent XXE attacks
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            dbf.setXIncludeAware(false);
+            dbf.setExpandEntityReferences(false);
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             ElementTree rvalue = new ElementTree(namespaces);
             rvalue.setDocument(docBuilder.parse(is));

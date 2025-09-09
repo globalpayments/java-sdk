@@ -39,18 +39,18 @@ public class PaxHttpInterface extends DeviceCommInterface {
             throw new ApiException(e.getMessage(), e);
         }
 
-        try{
+        try {
             client.setDoInput(true);
             client.setDoOutput(true);
             client.setRequestMethod("GET");
             client.addRequestProperty("Content-Type", "text/xml; charset=UTF-8");
 
-            InputStream responseStream = client.getInputStream();
-
-            byte[] response = IOUtils.readFully(responseStream).getBytes();
-            raiseOnMessageReceived(response);
-            return response;
-        } catch(IOException e){
+            try (InputStream responseStream = client.getInputStream()) {
+                byte[] response = IOUtils.readFully(responseStream).getBytes();
+                raiseOnMessageReceived(response);
+                return response;
+            }
+        } catch(IOException e) {
             throw new MessageException("Failed to send message. Check inner exception for more details.", e);
         }
     }

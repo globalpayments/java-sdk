@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V14.4.6 (09/04/2025)
+## Latest Version - V14.4.7 (09/10/2025)
+### Enhancements
+- [Macroscope] - Fixed macroscope issues as per scan report.
+
+## V14.4.6 (09/04/2025)
 ### Enhancements
 - [GPAPI] - Added all production scenario's testcases for Blik and PayU APM.
 - [UPA] - SI missing commands added: InjectCarouselLogo, RemoveCarouselLogo, GetLastEOD, ManageToken.
