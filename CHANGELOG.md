@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.4.7 (09/10/2025)
+## V14.4.8 (09/12/2025)
+### Enhancements
+- [TransIT] - Added support for the TransIT gateway
+- [UPA] - Fixed issues with Duplicate Transaction exception handling
+
+## V14.4.7 (09/10/2025)
 ### Enhancements
 - [Macroscope] - Fixed macroscope issues as per scan report.
 

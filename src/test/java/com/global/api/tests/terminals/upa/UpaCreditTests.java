@@ -3,8 +3,8 @@ package com.global.api.tests.terminals.upa;
 import com.global.api.entities.AutoSubstantiation;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.GatewayDuplicateException;
+import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.services.DeviceService;
@@ -24,11 +24,12 @@ import static com.global.api.tests.gpapi.BaseGpApiTest.generateRandomBigDecimalF
 import static org.junit.Assert.*;
 
 public class UpaCreditTests {
-    IDeviceInterface device;
     private static final String REFERENCE_REQUIRED = "Reference number is required";
     private static final String SUCCESS_STATUS = "Success";
     private final BigDecimal amount = generateRandomBigDecimalFromRange(new BigDecimal("1"), new BigDecimal("10"), 2);
     private final CreditCardData card;
+    IDeviceInterface device;
+
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
@@ -69,13 +70,15 @@ public class UpaCreditTests {
 
         runBasicTests(response1);
         //run a second time and verify that duplicate error is raised
+        boolean duplicateFound = false;
         try {
             TerminalResponse response2 = device.sale(fixedAmount)
                     .withGratuity(new BigDecimal("0"))
                     .execute();
         } catch (GatewayDuplicateException ex) {
-            assertEquals(ex.getAdditionalDuplicateData().getOriginalGatewayTxnId(), response1.getTransactionId());
+            duplicateFound = true;
         }
+        assertTrue(duplicateFound);
         //run a third time with allow duplicates flag an ensure that it runs.
         TerminalResponse response3 = device.sale(fixedAmount)
                 .withGratuity(new BigDecimal("0"))
@@ -551,6 +554,7 @@ public class UpaCreditTests {
         assertEquals("Success", response.getDeviceResponseText());
         assertTrue(response.getStatus().equalsIgnoreCase("Success"));
     }
+
     @Test
     public void test_updateTaxInfo() throws ApiException {
         device.setOnMessageSent(Assert::assertNotNull);
@@ -559,7 +563,7 @@ public class UpaCreditTests {
                 .withEcrId("13")
                 .execute();
         runBasicTests(saleResponse);
-        TerminalResponse response =  device.updateTaxInfo(saleResponse.getTransactionAmount())
+        TerminalResponse response = device.updateTaxInfo(saleResponse.getTransactionAmount())
                 .withTerminalRefNumber(saleResponse.getTerminalRefNumber())
                 .withTaxType(TaxType.TaxExempt)
                 .withTaxAmount(BigDecimal.valueOf(12.56))

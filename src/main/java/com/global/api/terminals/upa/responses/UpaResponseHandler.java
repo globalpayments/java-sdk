@@ -15,7 +15,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-@Getter @Setter
+@Getter
+@Setter
 public class UpaResponseHandler extends TerminalResponse {
     public static final String RESPONSE_ID = "responseId";
     public static final String RESPONSE_DATE_TIME = "respDateTime";
@@ -45,12 +46,11 @@ public class UpaResponseHandler extends TerminalResponse {
     public static final String DEVICE_SERIAL_NUM = "DeviceSerialNum";
     public static final String APP_VERSION = "AppVersion";
     public static final String INVALID_RESPONSE_FORMAT = "The response received is not in the proper format.";
+    public static final String EXTRA_CHARGE_TOTAL = "extraChargeTotal";
+    public static final String CLERK_ID = "clerkId";
     public String OS_VERSION = "OsVersion";
     public String EMV_SDK_VERSION = "EmvSdkVersion";
     public String CTLS_SDK_VERSION = "CTLSSsdkVersion";
-    public static final String EXTRA_CHARGE_TOTAL = "extraChargeTotal";
-    public static final String CLERK_ID = "clerkId";
-
     private BigDecimal availableBalance;
     private String transactionId;
     private String terminalRefNumber;
@@ -148,12 +148,12 @@ public class UpaResponseHandler extends TerminalResponse {
 
     public void parseResponse(JsonDoc root) throws ApiException {
         JsonDoc response = isGpApiResponse(root) ? root.get("response") : root.get("data");
-        if(response.get("cmdResult") == null) {
+        if (response.get("cmdResult") == null) {
             throw new MessageException(INVALID_RESPONSE_FORMAT);
         }
 
         checkResponse(response);
-        if(!isGpApiResponse(root)) {
+        if (!isGpApiResponse(root)) {
             status = response.get("cmdResult").getString("result");
             requestId = response.getString("requestId");
             command = response.getString("response");
@@ -168,7 +168,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private void checkResponse(JsonDoc response) throws GatewayException {
         JsonDoc cmdResult = response.get("cmdResult");
 
-        if(cmdResult.getString("result").equalsIgnoreCase("failed")){
+        if (cmdResult.getString("result").equalsIgnoreCase("failed")) {
             String errorCode = cmdResult.getString("errorCode");
             String errorMessage = cmdResult.getString("errorMessage");
 
@@ -189,6 +189,14 @@ public class UpaResponseHandler extends TerminalResponse {
                                 gatewayResponseMessage,
                                 transactionId
                         );
+                    } else if (responseText.toLowerCase().contains("duplicate")) {
+                        throw new GatewayDuplicateException(
+                                new AdditionalDuplicateData(),
+                                "Transaction refused due to duplicate checking - error:" + errorCode + " - " + errorMessage,
+                                gatewayResponseCode,
+                                gatewayResponseMessage,
+                                transactionId
+                        );
                     }
 
                     throw new GatewayException(
@@ -199,11 +207,11 @@ public class UpaResponseHandler extends TerminalResponse {
                             responseText,
                             errorCode,
                             errorMessage
-                        );
+                    );
                 }
             }
 
-            throw new GatewayException("Unexpected Device Response :" + errorCode +" - " +  errorMessage, errorCode, errorMessage);
+            throw new GatewayException("Unexpected Device Response :" + errorCode + " - " + errorMessage, errorCode, errorMessage);
         }
     }
 

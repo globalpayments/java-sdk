@@ -13,9 +13,10 @@ public enum ServiceEndpoints implements IStringConstant {
     TABLE_SERVICE_TEST("https://www.freshtxt.com/api31/"),
     GP_API_PRODUCTION("https://apis.globalpay.com/ucp"),
     GP_API_TEST("https://apis.sandbox.globalpay.com/ucp"),
-    BILLPAY_TEST("https://testing.heartlandpaymentservices.net"),
-    BILLPAY_CERTIFICATION("https://staging.heartlandpaymentservices.net"),
-    BILLPAY_PRODUCTION("https://heartlandpaymentservices.net"),
+    GP_API_QA("https://apis-uat.globalpay.com/ucp"),
+    BILLPAY_TEST("https://testing.heartlandpaymentservices.net/"),
+    BILLPAY_CERTIFICATION("https://staging.heartlandpaymentservices.net/"),
+    BILLPAY_PRODUCTION("https://heartlandpaymentservices.net/"),
     TRANSACTION_API_PRODUCTION("https://api.paygateway.com/transactions"),
     TRANSACTION_API_TEST("https://api.pit.paygateway.com/transactions"),
     OPEN_BANKING_TEST("https://api.sandbox.globalpay-ecommerce.com/openbanking"),
@@ -29,13 +30,24 @@ public enum ServiceEndpoints implements IStringConstant {
     GENIUS_TERMINAL_TEST("https://transport.merchantware.net/v4/transportService.asmx"),
     GENIUS_MITC_PRODUCTION("https://api.paygateway.com/transactions"),
     GENIUS_MITC_TEST("https://api.pit.paygateway.com/transactions"),
+    TRANSIT_MULTIPASS_PRODUCTION("https://gateway.transit-pass.com/servlets/TransNox_API_Server"),
+    TRANSIT_MULTIPASS_TEST("https://stagegw.transnox.com/servlets/TransNox_API_Server"),
     PROPAY_TEST("https://xmltest.propay.com/API/PropayAPI.aspx"),
     PROPAY_TEST_CANADIAN("https://xmltestcanada.propay.com/API/PropayAPI.aspx"),
     PROPAY_PRODUCTION("https://epay.propay.com/API/PropayAPI.aspx"),
     PROPAY_PRODUCTION_CANADIAN("https://www.propaycanada.ca/API/PropayAPI.aspx");
 
     String value;
-    ServiceEndpoints(String value) { this.value = value; }
-    public String getValue() { return this.value; }
-    public byte[] getBytes() { return this.value.getBytes(); }
+
+    ServiceEndpoints(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
+
+    public byte[] getBytes() {
+        return this.value.getBytes();
+    }
 }

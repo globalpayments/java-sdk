@@ -30,6 +30,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private static final String TAG_DATA_INVALID = "Please ensure that the Tag data is not empty or composed only of spaces.";
     private static final String EMPTY_MESSAGE = "";
     private static final String WEX_FALLBACK = "FALLBACK";
+    public boolean requestUniqueToken;
     private AccountType accountType;
     private String alias;
     private AliasAction aliasAction;
@@ -45,12 +46,17 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private AutoSubstantiation autoSubstantiation;
     private InquiryType balanceInquiryType;
     private Address billingAddress;
-    @Getter @Setter private BlockedCardType cardTypesBlocking;
+    @Getter
+    @Setter
+    private BlockedCardType cardTypesBlocking;
     private String cardBrandTransactionId;
     private String cardHolderLanguage;
     private BigDecimal cashBackAmount;
     private String clerkId;
     private String clientTransactionId;
+    @Getter
+    @Setter
+    private CommercialData commercialData;
     private BigDecimal convenienceAmount;
     private String currency;
     private String customerId;
@@ -143,7 +149,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Setter
     private CreditDebitIndicator creditDebitIndicator;
     private boolean hasEmvFallbackData;
-
     private String tagData;
     private String timestamp;
     private StoredCredentialInitiator transactionInitiator;
@@ -151,7 +156,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Setter
     private BNPLShippingMethod BNPLShippingMethod;
     private List<Bill> bills;
-
     // network fields
     private BigDecimal feeAmount;
     private FeeType feeType;
@@ -166,16 +170,9 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private String mastercard3DSCryptogram;
     @Getter
     private String cardIssuerAuthenticationData;
-
     //Nts
     @Getter
     private NtsUtilityMessageRequest ntsUtilityMessageRequest;
-
-    public AuthorizationBuilder withNtsUtilityMessageRequest(NtsUtilityMessageRequest value) {
-        ntsUtilityMessageRequest = value;
-        return this;
-    }
-
     @Getter
     private NtsPDLData ntsPDLData;
     @Getter
@@ -209,18 +206,33 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     @Setter
     private String categoryIndicator;
-
-    public boolean requestUniqueToken;
-    @Getter @Setter
+    @Getter
+    @Setter
+    private String lastRegisteredDate;
+    @Getter
+    @Setter
     private BigDecimal cashAtCheckoutAmount;
     @Getter
     private DE62_IME_EcommerceData ecommerceData;
     @Getter
     private String masterCardUCAFData;
-
     @Getter
     @Setter
     private InstallmentData installmentData;
+
+    public AuthorizationBuilder(TransactionType type) {
+        this(type, null);
+    }
+
+    public AuthorizationBuilder(TransactionType type, IPaymentMethod paymentMethod) {
+        super(type);
+        withPaymentMethod(paymentMethod);
+    }
+
+    public AuthorizationBuilder withNtsUtilityMessageRequest(NtsUtilityMessageRequest value) {
+        ntsUtilityMessageRequest = value;
+        return this;
+    }
 
     public AuthorizationBuilder withNtsProductData(NtsProductData ntsProductData) {
         this.ntsProductData = ntsProductData;
@@ -242,6 +254,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
+    public AuthorizationBuilder withLastRegisteredDate(String lrd) {
+        this.lastRegisteredDate = lrd;
+        return this;
+    }
+
     public AuthorizationBuilder withMcUCAF(String mcUCAF) {
         this.mcUCAF = mcUCAF;
         return this;
@@ -256,6 +273,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.mcSLI = mcSLI;
         return this;
     }
+
     public AuthorizationBuilder withNtsMailData(NtsMailData value) {
         ntsMailData = value;
         return this;
@@ -275,6 +293,7 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         transactionTime = value;
         return this;
     }
+
     public AuthorizationBuilder withPurchaseRestrictionFlag(PurchaseRestrictionFlag purchaseRestrictionFlag) {
         this.purchaseRestrictionFlag = purchaseRestrictionFlag;
         return this;
@@ -807,6 +826,19 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
+    public AuthorizationBuilder withEmvFallbackData(EmvFallbackCondition condition, EmvLastChipRead lastRead, String appVersion) {
+        this.emvFallbackCondition = condition;
+        this.emvLastChipRead = lastRead;
+        if (appVersion != null) {
+            this.paymentApplicationVersion = appVersion;
+        }
+        return this;
+    }
+    
+    public AuthorizationBuilder withEmvFallbackData(EmvFallbackCondition condition, EmvLastChipRead lastRead) {
+        return withEmvFallbackData(condition, lastRead, null);
+    }
+
     public AuthorizationBuilder withFraudFilter(FraudFilterMode fraudFilterMode) {
         return withFraudFilter(fraudFilterMode, null);
     }
@@ -1218,15 +1250,6 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         return this;
     }
 
-    public AuthorizationBuilder(TransactionType type) {
-        this(type, null);
-    }
-
-    public AuthorizationBuilder(TransactionType type, IPaymentMethod paymentMethod) {
-        super(type);
-        withPaymentMethod(paymentMethod);
-    }
-
     public Transaction execute(String configName) throws ApiException {
         super.execute(configName);
 
@@ -1404,33 +1427,39 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         this.citMitIndicator = citMitIndicator;
         return this;
     }
+
     public AuthorizationBuilder withCashAtCheckoutAmount(BigDecimal cashAtCheckoutAmount) {
         this.cashAtCheckoutAmount = cashAtCheckoutAmount;
         return this;
     }
 
 
-    public AuthorizationBuilder withMasterCardDSRPCryptogram(String value){
+    public AuthorizationBuilder withMasterCardDSRPCryptogram(String value) {
         this.masterCardDSRPCryptogram = value;
         return this;
     }
-    public AuthorizationBuilder withMasterCardRemoteCommAcceptor(String value){
+
+    public AuthorizationBuilder withMasterCardRemoteCommAcceptor(String value) {
         this.masterCardRemoteCommAcceptor = value;
         return this;
     }
-    public AuthorizationBuilder withMasterCard3DSCryptogram(String value){
+
+    public AuthorizationBuilder withMasterCard3DSCryptogram(String value) {
         this.mastercard3DSCryptogram = value;
         return this;
     }
-    public AuthorizationBuilder withCardIssueAuthenticationData(String value){
+
+    public AuthorizationBuilder withCardIssueAuthenticationData(String value) {
         this.cardIssuerAuthenticationData = value;
         return this;
     }
-    public AuthorizationBuilder withMasterCardEcommIndicatorsData(DE62_IME_EcommerceData ecommerceIndicator){
+
+    public AuthorizationBuilder withMasterCardEcommIndicatorsData(DE62_IME_EcommerceData ecommerceIndicator) {
         this.ecommerceData = ecommerceIndicator;
         return this;
     }
-    public AuthorizationBuilder withMasterCardUCAFData(String masterCardUCAFData){
+
+    public AuthorizationBuilder withMasterCardUCAFData(String masterCardUCAFData) {
         this.masterCardUCAFData = masterCardUCAFData;
         return this;
     }
