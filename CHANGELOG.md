@@ -1,5 +1,12 @@
 # Changelog
 
+## Latest Version - V14.4.9 (09/18/2025)
+### Enhancements
+- [UPA] - FI-SI missing commands added: SaveConfigFile, SetLogoCarouselInterval, GetBatteryPercentage.
+
+### Bug Fixes
+- [Pax] - Gift card addValue functionality fixed for Pax devices.
+
 ## V14.4.8 (09/12/2025)
 ### Enhancements
 - [TransIT] - Added support for the TransIT gateway

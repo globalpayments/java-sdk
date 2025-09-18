@@ -2,6 +2,7 @@ package com.global.api.terminals.upa;
 
 import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
+import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
@@ -762,6 +763,49 @@ public class UpaInterface extends DeviceInterface<UpaController> {
     private JsonDoc sendRequest(IDeviceMessage message) throws ApiException {
         byte[] rawResponse = _controller.send(message);
         return JsonDoc.parse(new String(rawResponse, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public IDeviceResponse saveConfigFile(UpaConfigContent upaConfigContent) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc params = new JsonDoc();
+        if( upaConfigContent == null || upaConfigContent.getFileContent() == null || (upaConfigContent.getLength()<0 && upaConfigContent.getLength() >999999)  || upaConfigContent.getConfigType() == null) {
+            throw new ApiException("Invalid UpaConfigContent: null or missing required fields.");
+        }
+        params.set("configType", String.valueOf(upaConfigContent.getConfigType()));
+        params.set("fileContents", String.valueOf(upaConfigContent.getFileContent()));
+        params.set("length", upaConfigContent.getLength());
+        params.set("reinitialize", upaConfigContent.getReinitialize().getValue());
+        body.set("params", params);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.SaveConfigFile, _controller.getRequestId().toString(), body);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    @Override
+    public IDeviceResponse setLogoCarouselInterval(int intervalTime,boolean isFullScreen) throws ApiException {
+        JsonDoc body = new JsonDoc();
+        JsonDoc params = new JsonDoc();
+        if(intervalTime < 0 || intervalTime > 9) {
+            throw new ApiException("Interval time must be between 0 to 9 seconds.");
+        }
+        params.set("intervalTime",intervalTime);
+        params.set("isFullScreen",isFullScreen);
+        body.set("params", params);
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.SetLogoCarouselInterval, _controller.getRequestId().toString(), body);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+
+        return new UpaTransactionResponse(responseObj);
+    }
+
+    @Override
+    public IDeviceResponse getBatteryPercentage() throws ApiException {
+        DeviceMessage message = TerminalUtilities.buildMessage(UpaMessageId.GetBatteryPercentage, _controller.getRequestId().toString(),null);
+        message.setAwaitResponse(true);
+        JsonDoc responseObj = JsonDoc.parse(new String(_controller.send(message), StandardCharsets.UTF_8));
+        return new UpaTransactionResponse(responseObj);
     }
 
     //</editor-fold>

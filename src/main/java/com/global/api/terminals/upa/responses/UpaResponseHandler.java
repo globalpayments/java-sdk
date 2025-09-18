@@ -128,6 +128,7 @@ public class UpaResponseHandler extends TerminalResponse {
     private int batchSeqNbr;
     private String batchId;
     private BigDecimal extraChargeTotal;
+    private int batteryPercentage;
 
     protected static boolean isGpApiResponse(JsonDoc root) {
         return !root.has("data");

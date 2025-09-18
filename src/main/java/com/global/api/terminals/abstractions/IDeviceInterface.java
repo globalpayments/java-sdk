@@ -2,6 +2,7 @@ package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
+import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.TerminalResponse;
@@ -258,4 +259,10 @@ public interface IDeviceInterface extends IDisposable {
     IDeviceResponse logOn() throws ApiException;
 
     TerminalManageBuilder updateLodgingDetails(BigDecimal amount) throws ApiException;
+
+    IDeviceResponse saveConfigFile(UpaConfigContent upaConfigContent) throws ApiException;
+
+    IDeviceResponse setLogoCarouselInterval(int intervalTime,boolean isFullScreen) throws ApiException;
+
+    IDeviceResponse getBatteryPercentage() throws ApiException;
 }

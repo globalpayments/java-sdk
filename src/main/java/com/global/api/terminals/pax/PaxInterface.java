@@ -5,7 +5,11 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.DeviceInterface;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.*;
+import com.global.api.terminals.abstractions.IBatchCloseResponse;
+import com.global.api.terminals.abstractions.IDeviceResponse;
+import com.global.api.terminals.abstractions.IInitializeResponse;
+import com.global.api.terminals.abstractions.ISignatureResponse;
+import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.pax.responses.*;
@@ -218,5 +222,16 @@ class PaxInterface extends DeviceInterface<PaxController> {
     public TerminalManageBuilder tipAdjust(BigDecimal amount) {
         return new TerminalManageBuilder(TransactionType.Edit, PaymentMethodType.Credit)
                 .withGratuity(amount);
+    }
+
+
+    public TerminalAuthBuilder addValue() throws ApiException {
+        return addValue(null);
+    }
+
+    public TerminalAuthBuilder addValue(BigDecimal amount) throws ApiException {
+        return new TerminalAuthBuilder(TransactionType.AddValue, PaymentMethodType.Gift)
+                .withCurrency(CurrencyType.Currency)
+                .withAmount(amount);
     }
 }

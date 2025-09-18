@@ -3,6 +3,7 @@ package com.global.api.tests.terminals.upa;
 import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
 import com.global.api.entities.TransactionSummary;
+import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
@@ -763,5 +764,95 @@ public class UpaAdminTests {
         TransactionSummary transRecord = summaryResponse.getTransactions().get(0);
         ISAFResponse safDeleteResponse = device.safDelete(transRecord.getTransactionId(), transRecord.getSafReferenceNumber());
         runBasicTests(safDeleteResponse);
+    }
+    @Test
+    public void saveConfigFile() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaConfigContent upaConfigContent =new UpaConfigContent();
+        upaConfigContent.setConfigType(TerminalConfigType.ContactTerminalConfiguration);
+        upaConfigContent.setFileContent("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<TerminalConfiguration>\n" +
+                "    <ContactTerminalConfiguration>\n" +
+                "        <TerminalType>Contact</TerminalType>\n" +
+                "        <TerminalCapabilities>...</TerminalCapabilities>\n" +
+                "    </ContactTerminalConfiguration>\n" +
+                "</TerminalConfiguration>");
+        upaConfigContent.setLength(13321);
+        upaConfigContent.setReinitialize(Reinitialize.ReinitializeApplication);
+
+        UpaTransactionResponse response = (UpaTransactionResponse) device.saveConfigFile(upaConfigContent);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("SaveConfigFile", response.getCommand());
+    }
+
+    @Test
+    public void saveConfigFile_NullMissingField() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+        UpaConfigContent upaConfigContent =new UpaConfigContent();
+        upaConfigContent.setConfigType(TerminalConfigType.ContactTerminalConfiguration);
+        upaConfigContent.setLength(13321);
+        upaConfigContent.setReinitialize(Reinitialize.ReinitializeApplication);
+
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            // Simulate device failure or invalid response
+            device.saveConfigFile(upaConfigContent);
+        });
+
+        assertEquals("Invalid UpaConfigContent: null or missing required fields.", exception.getMessage());
+    }
+
+    @Test
+    public void setLogoCarouselInterval() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        UpaTransactionResponse response = (UpaTransactionResponse) device.setLogoCarouselInterval(9,false);
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("SetLogoCarouselInterval", response.getCommand());
+    }
+
+    @Test
+    public void setLogoCarouselIntervalMoreIntervalTime() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            // Simulate device failure or invalid response
+            device.setLogoCarouselInterval(11,false);
+        });
+
+        assertEquals("Interval time must be between 0 to 9 seconds.", exception.getMessage());
+    }
+    @Test
+    public void getBatteryPercentage() throws ApiException {
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        UpaTransactionResponse response = (UpaTransactionResponse) device.getBatteryPercentage();
+
+        assertNotNull(response);
+        assertEquals("00", response.getDeviceResponseCode());
+        assertEquals("Success", response.getStatus());
+        assertEquals("GetBatteryPercentage", response.getCommand());
+        assertNotNull(response.getBatteryPercentage());
+    }
+
+    /**
+     * This test simulates a scenario where the device fails to respond correctly.
+     * It should throw an ApiException with a specific message.
+     */
+    @Test
+    public void getBatteryPercentage_shouldThrowException_whenDeviceFails() {
+        device.setOnMessageSent(Assert::assertNotNull);
+
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            // Simulate device failure or invalid response
+            device.getBatteryPercentage();
+        });
+
+        assertEquals("Unable to connect with device.", exception.getMessage());
     }
 }

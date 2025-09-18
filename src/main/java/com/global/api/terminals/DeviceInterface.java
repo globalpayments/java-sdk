@@ -2,6 +2,7 @@ package com.global.api.terminals;
 
 import com.global.api.entities.PrintData;
 import com.global.api.entities.ScanData;
+import com.global.api.entities.UpaConfigContent;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.MessageException;
@@ -526,5 +527,32 @@ public abstract class DeviceInterface<TResult extends DeviceController> implemen
 
     public IDeviceResponse getLastEod() throws ApiException {
         throw new MessageException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public IDeviceResponse saveConfigFile(UpaConfigContent upaConfigContent) throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public IDeviceResponse setLogoCarouselInterval(int intervalTime,boolean isFullScreen) throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    /**
+     * @return
+     * @throws ApiException
+     */
+    @Override
+    public IDeviceResponse getBatteryPercentage() throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
     }
 }

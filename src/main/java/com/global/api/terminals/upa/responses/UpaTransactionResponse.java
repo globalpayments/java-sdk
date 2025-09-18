@@ -23,6 +23,13 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         JsonDoc response = isGpApiResponse(responseData) ? responseData.get("response") : responseData.get("data");
         setTransactionType(responseData.getString("response"));
 
+        if(Optional.ofNullable(getCommand()).isPresent()) {
+            if(getCommand().equals("GetBatteryPercentage"))
+            {
+                response = responseData.get("data");
+                setBatteryPercentage(response.get("cmdResult").getInt("BatteryLevel"));
+            }
+        }
         JsonDoc data = response.get("data");
         if (data != null) {
             if (Optional.ofNullable(getCommand()).isPresent()) {

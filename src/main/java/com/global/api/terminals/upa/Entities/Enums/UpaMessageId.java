@@ -56,5 +56,8 @@ public enum UpaMessageId {
     InjectCarouselLogo,
     RemoveCarouselLogo,
     GetLastEOD,
-    ManageToken;
+    ManageToken,
+    SaveConfigFile,
+    SetLogoCarouselInterval,
+    GetBatteryPercentage;
 }

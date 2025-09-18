@@ -12,7 +12,6 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
-
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -26,8 +25,8 @@ public class PaxGiftTests {
     public PaxGiftTests() throws ApiException {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
-        deviceConfig.setConnectionMode(ConnectionModes.HTTP);
-        deviceConfig.setIpAddress("10.12.220.172");
+        deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
+        deviceConfig.setIpAddress("192.168.0.122");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
 
@@ -107,6 +106,7 @@ public class PaxGiftTests {
     //</editor-fold>
 
     //<editor-fold desc="GiftAddValue">
+
     @Test
     public void giftAddValueManual() throws ApiException {
         GiftCard card = new GiftCard();
@@ -125,6 +125,16 @@ public class PaxGiftTests {
     public void giftAddValue() throws ApiException {
         TerminalResponse response = device.addValue()
                 .withAmount(new BigDecimal(10))
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void giftCardAddValue() throws ApiException {
+        TerminalResponse response = device.addValue()
+                .withAmount(new BigDecimal(20))
                 .execute();
 
         assertNotNull(response);
