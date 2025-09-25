@@ -5408,6 +5408,53 @@ public class NtsFleetTest {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Test
+    public void test_VF2PointO_auth_tag42() throws ApiException {
+        //flag 10 representing the VF 2.0 support
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        fleetData.setAdditionalPromptData2("198765");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        //product data for tag 9
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 09.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), new BigDecimal(0));
+        productData.setNetFuelAmount(new BigDecimal(10));
+        productData.setNetNonFuelAmount(new BigDecimal(10));
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.ChipBased)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getTransactionReference().getHostBasedRestrictionResponse());
+    }
 
 
 }

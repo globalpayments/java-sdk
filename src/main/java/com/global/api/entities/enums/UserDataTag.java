@@ -42,6 +42,7 @@ public enum UserDataTag implements IStringConstant{
 	EvmData("EvmData"),
 	ReceiptText("ReceiptText"),
 	PurchaseRestrictionFlag("41"),
+	HostBasedRestrictionResponse("42"),
 	ExtendedFleetPromptData("43");
 	
 	String value;

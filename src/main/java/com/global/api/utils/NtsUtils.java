@@ -189,6 +189,7 @@ public class NtsUtils implements IRequestLogger {
             reference.setMastercardBanknetSettlementDate(userData.getOrDefault(UserDataTag.MasterCardSettlementDate, ""));
             reference.setVisaTransactionId(userData.getOrDefault(UserDataTag.VisaTransactionId, ""));
             reference.setDiscoverNetworkRefId(userData.getOrDefault(UserDataTag.DiscoverNetworkRefId, ""));
+            reference.setHostBasedRestrictionResponse(userData.getOrDefault(UserDataTag.HostBasedRestrictionResponse, ""));
         }
         if (sequenceNumber!= null){
             reference.setSequenceNumber(sequenceNumber);

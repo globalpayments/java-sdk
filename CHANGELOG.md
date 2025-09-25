@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V14.4.9 (09/18/2025)
+## Latest Version - V14.4.10 (09/25/2025)
+### Bug Fixes
+- [NTS] - Added method to set & get the Tag 42 from the response object(Issue 10371).
+
+## V14.4.9 (09/18/2025)
 ### Enhancements
 - [UPA] - FI-SI missing commands added: SaveConfigFile, SetLogoCarouselInterval, GetBatteryPercentage.
 
