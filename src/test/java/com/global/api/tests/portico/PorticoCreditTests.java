@@ -998,5 +998,32 @@ public class PorticoCreditTests {
         // TODO: This is insufficient to actually test.
         // TODO: The request needs to be checked for the absence of the <AmountIndicator/> tag
     }
+
+    @Test
+    public void creditIncrementalAuth() throws ApiException {
+        // Initial authorization
+        Transaction authResponse = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .execute();
+
+        // Incremental authorization
+        Transaction incrementalAuthResponse = Transaction.fromId(authResponse.getTransactionId())
+                .additionalAuth(new BigDecimal(10))
+                .execute();
+
+        assertEquals("00", incrementalAuthResponse.getResponseCode());
+
+        // Reporting settlement amount
+        TransactionSummary reportResponse = ReportingService.transactionDetail(authResponse.getTransactionId())
+                .execute();
+        assertEquals(new BigDecimal("20.00"), reportResponse.getSettlementAmount());
+
+        // Capture
+        Transaction captureResponse = Transaction.fromId(authResponse.getTransactionId())
+                .capture()
+                .execute();
+        assertEquals("00", captureResponse.getResponseCode());
+    }
 }
 

@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - V14.4.10 (09/25/2025)
+## Latest Version - V14.4.11 (10/02/2025)
+### Bug Fixes
+- [VAPS] - Updated code for addFuel/addNonFuel method for fleet cards.
+- [UPA] - Fixed issue with UPA gift card addValue transaction.
+
+### Enhancements
+- [Portico] - Corrected mapping for Credit incremental auth in PorticoConnector.
+
+## V14.4.10 (09/25/2025)
 ### Bug Fixes
 - [NTS] - Added method to set & get the Tag 42 from the response object(Issue 10371).
 

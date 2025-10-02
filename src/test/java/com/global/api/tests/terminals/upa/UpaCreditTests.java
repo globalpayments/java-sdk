@@ -33,7 +33,7 @@ public class UpaCreditTests {
     public UpaCreditTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.144.111");
+        config.setIpAddress("10.27.188.113");
         config.setTimeout(30000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -607,7 +607,7 @@ public class UpaCreditTests {
                 .withGratuity(new BigDecimal("0"))
                 .withInvoiceNumber("123456789012345")
                 .withTaxIndicator(0)
-                .withAllowDuplicates(true)
+                //.withAllowDuplicates(true)
                 .withConfirmAmount("Y")
                 .withTransactionModifier(TransactionModifier.ForceSale)
                 .withEcrId("12")

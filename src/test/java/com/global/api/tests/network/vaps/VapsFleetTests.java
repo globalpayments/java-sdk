@@ -65,7 +65,7 @@ public class VapsFleetTests {
         acceptorConfig.setSupportedEncryptionType(EncryptionType.TEP2);
         acceptorConfig.setSupportWexAvailableProducts(true);
         acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
-        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.NOCHIIPANDHOSTBASEDPRODUCTRESTRICTION);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setVisaFleet2(false);
 
@@ -101,7 +101,7 @@ public class VapsFleetTests {
         fleetData.setDriverId("11411");
 
         productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
-        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
+        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         // VISA
 //        card = TestCards.VisaFleetManual(true, true);
@@ -164,7 +164,8 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
-        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
 
         Transaction response = card.charge(new BigDecimal("111.2"))
                 .withCurrency("USD")
@@ -190,7 +191,11 @@ public class VapsFleetTests {
         track = TestCards.VisaFleetSwipe();
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
-        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Quarts, new BigDecimal("21.12"), new BigDecimal("21.00"), new BigDecimal("51.2"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
+        productData.addNonFuel(ProductCode.Lamps, UnitOfMeasure.Kilograms, new BigDecimal("15.12"), new BigDecimal("21.00"), new BigDecimal("14.2"));
+        productData.addNonFuel(ProductCode.Cigarettes_Tobacco, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("12.2"));
 
         Transaction response = card.charge(new BigDecimal("111.2"))
                 .withCurrency("USD")
@@ -562,9 +567,11 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("000004");
         fleetData.setDriverId("123456");
         fleetData.setVehicleNumber("005365");
+        fleetData.setServicePrompt("00");
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.add("02", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.addFuel("02", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.addNonFuel("28", UnitOfMeasure.Kilograms, new BigDecimal(1), new BigDecimal(5), new BigDecimal(5));
 
         Transaction response = track.charge(new BigDecimal("40"))
                 .withCurrency("USD")
@@ -744,7 +751,7 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.add("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")

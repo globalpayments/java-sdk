@@ -359,9 +359,9 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                         productDataCountEntries = new LinkedHashMap<>(productDataEntries);
 
                     }
-                    rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 3, '0'));
-                    if (productDataCountEntries.size() != 0) {
-                        for (DE63_ProductDataEntry entry : productDataEntries.values()) {
+                    rvalue = rvalue.concat(StringUtils.padLeft(count, 3, '0'));
+                    if (!productDataCountEntries.isEmpty()) {
+                        for (DE63_ProductDataEntry entry : productDataCountEntries.values()) {
                             rvalue = rvalue.concat(entry.getCode() + "\\");
 
                             if (entry.getUnitOfMeasure() != null) {

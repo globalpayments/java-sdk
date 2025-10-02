@@ -169,7 +169,7 @@ public class VapsMCFleetTestsCert {
         assertEquals("000", response.getResponseCode());
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.HeartlandStandardFormat);
-        productData.addFuel("21", UnitOfMeasure.Liters, new BigDecimal(1.01), new BigDecimal(20), new BigDecimal(20));
+        productData.addFuel("21", UnitOfMeasure.Liters, new BigDecimal(10.1), new BigDecimal(20), new BigDecimal(20));
         productData.addNonFuel("88", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(30), new BigDecimal(30));
         productData.addNonFuel("68", UnitOfMeasure.OtherOrUnknown, new BigDecimal(10), new BigDecimal(40), new BigDecimal(50));
 
@@ -257,8 +257,9 @@ public class VapsMCFleetTestsCert {
     @Test
     public void test_003_swipe_sale_refund() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
-        productData.addFuel(ProductCode.Ethanol_Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("31.12"), new BigDecimal("20.00"), new BigDecimal("311.2"));
-        productData.addNonFuel(ProductCode.Regular_Leaded, UnitOfMeasure.ImperialGallons, new BigDecimal("11.08"), new BigDecimal("05.00"), new BigDecimal("181"));
+        productData.addFuel(ProductCode.Ethanol_Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("31.12"), new BigDecimal("20.00"), new BigDecimal("11.2"));
+        productData.addNonFuel(ProductCode.Regular_Leaded, UnitOfMeasure.ImperialGallons, new BigDecimal("11.08"), new BigDecimal("05.00"), new BigDecimal("81"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.ImperialGallons, new BigDecimal("11.08"), new BigDecimal("05.00"), new BigDecimal("55"));
 
         Transaction response = track.charge(new BigDecimal("10"))
                 .withCurrency("USD")

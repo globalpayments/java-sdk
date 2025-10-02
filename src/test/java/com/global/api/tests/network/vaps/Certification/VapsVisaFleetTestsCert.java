@@ -182,7 +182,7 @@ public class VapsVisaFleetTestsCert {
         assertEquals("000", response.getResponseCode());
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.HeartlandStandardFormat);
-        productData.addFuel("01", UnitOfMeasure.Liters, new BigDecimal(1.01), new BigDecimal(20), new BigDecimal(20));
+        productData.addFuel("01", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.addNonFuel("78", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(30), new BigDecimal(30));
 
         Transaction capture = response.capture(new BigDecimal(10))

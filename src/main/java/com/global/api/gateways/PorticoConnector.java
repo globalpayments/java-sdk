@@ -520,7 +520,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     || type.equals(TransactionType.Refund)
                     || paymentType.equals(PaymentMethodType.Gift)
                     || paymentType.equals(PaymentMethodType.ACH)
-                    || type.equals(TransactionType.Increment))
+                    || type.equals(TransactionType.Auth))
                 root = et.subElement(transaction, "Block1");
             else root = transaction;
 
@@ -1114,7 +1114,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     if (paymentMethodType.equals(PaymentMethodType.Credit)) {
                         if (modifier.equals(TransactionModifier.Additional))
                             return "CreditAdditionalAuth";
-                        else if (modifier.equals(TransactionModifier.Incremental))
+                        else if (builder instanceof ManagementBuilder)
                             return "CreditIncrementalAuth";
                         else if (modifier.equals(TransactionModifier.Offline))
                             return "CreditOfflineAuth";

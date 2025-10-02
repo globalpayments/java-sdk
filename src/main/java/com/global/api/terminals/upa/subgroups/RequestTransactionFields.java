@@ -73,15 +73,15 @@ public class RequestTransactionFields {
     }
 
     public void setParams(TerminalAuthBuilder builder) {
-        if (builder.getAmount() != null) {
-            if (builder.getTransactionType() == TransactionType.Refund || builder.getTransactionType() == TransactionType.Activate) {
-                this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
-                this.totalAmount = StringUtils.toCurrencyString(builder.getTotalAmount());
-            } else if (builder.getTransactionType() == TransactionType.Auth) {
-                this.amount = StringUtils.toCurrencyString(builder.getAmount());
-            } else {
-                this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
-            }
+        if (builder.getAmount() != null && builder.getTransactionType() == TransactionType.Refund) {
+            this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
+            this.totalAmount = StringUtils.toCurrencyString(builder.getTotalAmount());
+        } else if (builder.getAmount() != null && builder.getTransactionType() == TransactionType.Activate) {
+            this.totalAmount = StringUtils.toCurrencyString(builder.getTotalAmount());
+        } else if (builder.getTransactionType() == TransactionType.Auth) {
+            this.amount = StringUtils.toCurrencyString(builder.getAmount());
+        } else {
+            this.baseAmount = StringUtils.toCurrencyString(builder.getAmount());
         }
 
         if (builder.getAutoSubstantiation() != null) {
@@ -131,11 +131,13 @@ public class RequestTransactionFields {
         if (builder.getTaxIndicator() != null) {
             this.taxIndicator = builder.getTaxIndicator().toString();
         }
-        
-        if (builder.isAllowDuplicates()) {
-            this.allowDuplicate = "1";
-        } else {
-            this.allowDuplicate = "0";
+        if (!builder.getTransactionType().equals(TransactionType.Activate) && builder.isAllowDuplicates()) {
+
+            if (builder.isAllowDuplicates()) {
+                this.allowDuplicate = "1";
+            } else {
+                this.allowDuplicate = "0";
+            }
         }
 
         if (builder.getConfirmAmount() != null) {
