@@ -23,9 +23,8 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         JsonDoc response = isGpApiResponse(responseData) ? responseData.get("response") : responseData.get("data");
         setTransactionType(responseData.getString("response"));
 
-        if(Optional.ofNullable(getCommand()).isPresent()) {
-            if(getCommand().equals("GetBatteryPercentage"))
-            {
+        if (Optional.ofNullable(getCommand()).isPresent()) {
+            if (getCommand().equals("GetBatteryPercentage")) {
                 response = responseData.get("data");
                 setBatteryPercentage(response.get("cmdResult").getInt("BatteryLevel"));
             }
@@ -131,11 +130,11 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setIssuerResponseCode(host.getString("IssuerResp"));
         setIsoResponseCode(host.getString("IsoRespCode"));
         setBankResponseCode(host.getString("BankRespCode"));
-        if(host.getDouble("taxAmount") != null) {
+        if (host.getDouble("taxAmount") != null) {
             setTaxAmount(host.getDouble("taxAmount"));
         }
         setCashBackAmount(host.getDecimal("cashbackAmount"));
-        if(host.getDouble("baseDue") != null) {
+        if (host.getDouble("baseDue") != null) {
             setBaseDue(host.getDouble("baseDue"));
         }
 
@@ -206,6 +205,9 @@ public class UpaTransactionResponse extends UpaResponseHandler {
                 case "AMERICAN EXPRESS":
                     cardType = CardType.AMEX;
                     break;
+                case "DEBIT":
+                    cardType = CardType.DEBIT;
+                    break;
                 default:
                     break;
             }
@@ -220,7 +222,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setTransactionType(payment.getString("transactionType"));
         setSequenceNo(payment.getString("PosSequenceNbr"));
         setApplicationName(payment.getString("appName"));
-        if(payment.getString(CLERK_ID) != null && !payment.getString(CLERK_ID).isEmpty()) {
+        if (payment.getString(CLERK_ID) != null && !payment.getString(CLERK_ID).isEmpty()) {
             setClerkId(Integer.parseInt(payment.getString(CLERK_ID)));
         }
         setSignatureLine(payment.getString("signatureLine"));

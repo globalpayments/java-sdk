@@ -2110,12 +2110,14 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             else if(card.getCardType().equals("VisaReadyLink")) {
                 accountType = DE3_AccountType.PinDebitAccount;
-            }
-            else if (builder instanceof AuthorizationBuilder){
-                AuthorizationBuilder authorizationBuilder =(AuthorizationBuilder)builder;
-                if (authorizationBuilder.getCashAtCheckoutAmount() != null && card.getCardType().equals(DISCOVER)){
+            } else if ((builder instanceof AuthorizationBuilder) && (card.getCardType().equals(DISCOVER)) &&
+                    (type.equals(TransactionType.Sale))) {
+                AuthorizationBuilder authorizationBuilder = (AuthorizationBuilder) builder;
+                if (authorizationBuilder.getCashAtCheckoutAmount() != null) {
                     accountType = DE3_AccountType.Unspecified;
-                }else accountType = DE3_AccountType.CreditAccount;
+                } else accountType = DE3_AccountType.CreditAccount;
+            } else {
+                accountType = DE3_AccountType.CreditAccount;
             }
         }
         else if(paymentMethod instanceof Debit) {

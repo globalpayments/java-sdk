@@ -1850,4 +1850,193 @@ public class VapsCreditTests {
         assertEquals("330000", pmi.getProcessingCode());
         assertEquals("100", pmi.getFunctionCode());
     }
+
+    /** Manual Transactions */
+    @Test
+    public void test_001_manual_authorization() throws ApiException {
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.Manual);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Manual);
+
+        card = TestCards.MasterCardManual();
+        Transaction response = card.authorize(new BigDecimal(10.456),true)
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_002_manual_sale() throws ApiException {
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.Manual);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Manual);
+
+        card = TestCards.DiscoverManual();
+        Transaction response = card.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_001_manual_authorization_Capture() throws ApiException {
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.Manual);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Manual);
+
+        card = TestCards.MasterCardManual();
+
+        Transaction response = card.authorize(new BigDecimal(10.456))
+                .withCurrency("USD")
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("100", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+        NtsData ntsData = new NtsData();
+        response.setNtsData(ntsData);
+        response.setAuthorizationCode("123456");
+        Transaction captureResponse = response.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(captureResponse);
+
+        // check message data
+        pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("1376", pmi.getMessageReasonCode());
+        assertEquals("202", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_002_manual_authCapture_Visa() throws ApiException {
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.Manual);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Manual);
+        card = TestCards.DiscoverManual();
+
+        Transaction response = card.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+//         check response
+        assertEquals("000", response.getResponseCode());
+
+        NtsData ntsData = new NtsData();
+        response.setNtsData(ntsData);
+        response.setAuthorizationCode("123456");
+        Transaction captureResponse = response.capture(new BigDecimal(12))
+                .withCurrency("USD")
+                .withUniqueDeviceId("1011")
+                .execute();
+        assertNotNull(captureResponse);
+
+        // check message data
+        pmi = captureResponse.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("1379", pmi.getMessageReasonCode());
+        assertEquals("202", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_011_manual_void() throws ApiException {
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.KeyEntry);
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.Manual);
+        card = TestCards.AmexManual();
+        Transaction sale = card.charge(new BigDecimal(12))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(sale);
+        assertEquals("000", sale.getResponseCode());
+
+        Transaction response = sale.voidTransaction()
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1420", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("441", pmi.getFunctionCode());
+        assertEquals("4351", pmi.getMessageReasonCode());
+
+        // check response
+        assertEquals("400", response.getResponseCode());
+    }
+
+    @Test
+    public void test_009_manual_stand_in_capture() throws ApiException {
+        acceptorConfig.setCardDataInputMode(DE22_CardDataInputMode.KeyEntry);
+        acceptorConfig.setCardDataInputCapability(CardDataInputCapability.KeyEntry);
+        card = TestCards.AmexManual();
+        Transaction transaction = Transaction.fromNetwork(
+                new BigDecimal(10),
+                "TYPE04",
+                new NtsData(FallbackCode.Received_IssuerTimeout, AuthorizerCode.Terminal_Authorized),
+                card
+        );
+
+        Transaction response = transaction.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1220", pmi.getMessageTransactionIndicator());
+        assertEquals("003000", pmi.getProcessingCode());
+        assertEquals("201", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
 }

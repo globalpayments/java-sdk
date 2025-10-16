@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V14.4.11 (10/02/2025)
+## Latest Version - V14.4.12 (10/16/2025)
+### Bug Fixes
+- [VAPS] - Added changes regarding DE 3 account Type for credit capture transactions.
+- [UPA] - Added Indicator for Debit card type.
+
+## V14.4.11 (10/02/2025)
 ### Bug Fixes
 - [VAPS] - Updated code for addFuel/addNonFuel method for fleet cards.
 - [UPA] - Fixed issue with UPA gift card addValue transaction.
