@@ -12,15 +12,10 @@ import com.global.api.entities.gpApi.entities.UserAccount;
 import com.global.api.entities.payFac.Person;
 import com.global.api.entities.payFac.UserReference;
 import com.global.api.entities.reporting.*;
-import com.global.api.paymentMethods.CreditCardData;
-import com.global.api.paymentMethods.Installment;
-import com.global.api.paymentMethods.InstallmentData;
-import com.global.api.paymentMethods.RecurringPaymentMethod;
-import com.global.api.paymentMethods.eCheck;
+import com.global.api.paymentMethods.*;
 import com.global.api.utils.EnumUtils;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
-import com.google.gson.JsonElement;
 import lombok.var;
 import org.joda.time.DateTime;
 
@@ -575,22 +570,70 @@ public class GpApiMapping {
         return summary;
     }
 
-    private static PayByLinkResponse mapPayByLinkResponse(JsonDoc doc) {
-        return
-                new PayByLinkResponse()
-                        .setId(doc.getString("id"))
-                        .setAccountName(doc.getString("account_name"))
-                        .setUrl(doc.getString("url"))
-                        .setStatus(PayByLinkStatus.valueOf(doc.getString("status")))
-                        .setType(PayByLinkType.valueOf(doc.getString("type")))
-                        .setUsageMode(PaymentMethodUsageMode.valueOf(doc.getString("usage_mode")))
-                        .setUsageLimit(doc.getInt("usage_limit"))
-                        .setReference(doc.getString("reference"))
-                        .setName(doc.getString("name"))
-                        .setDescription(doc.getString("description"))
-                        .setIsShippable(getIsShippable(doc))
-                        .setViewedCount(doc.getString("viewed_count"))
-                        .setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
+    private static PayByLinkResponse mapPayByLinkResponse(JsonDoc doc) throws GatewayException {
+
+        PayByLinkResponse payByLinkResponse = new PayByLinkResponse();
+        payByLinkResponse.setId(doc.getString("id"));
+        payByLinkResponse.setAccountName(doc.getString("account_name"));
+        payByLinkResponse.setUrl(doc.getString("url"));
+        payByLinkResponse.setStatus(PayByLinkStatus.valueOf(doc.getString("status")));
+        payByLinkResponse.setType(PayByLinkType.valueOf(doc.getString("type")));
+        payByLinkResponse.setUsageMode(PaymentMethodUsageMode.valueOf(doc.getString("usage_mode")));
+        payByLinkResponse.setUsageLimit(doc.getInt("usage_limit"));
+        payByLinkResponse.setReference(doc.getString("reference"));
+        payByLinkResponse.setName(doc.getString("name"));
+        payByLinkResponse.setDescription(doc.getString("description"));
+        payByLinkResponse.setIsShippable(getIsShippable(doc));
+        payByLinkResponse.setViewedCount(doc.getString("viewed_count"));
+        payByLinkResponse.setExpirationDate(doc.getString("expiration_date") != null ? new DateTime(doc.getDate("expiration_date")) : null);
+        payByLinkResponse.setAppEmail(doc.getString("app_email"));
+        payByLinkResponse.setAppId(doc.getString("app_ids"));
+        payByLinkResponse.setImages(doc.getStringArrayList("images"));
+
+        // Map ActionSummary
+        var action = doc.get("action");
+
+        if (action != null) {
+            ActionSummary actionSummary = new ActionSummary();
+            actionSummary.setId(action.getString("id"));
+            actionSummary.setType(action.getString("type"));
+            actionSummary.setTimeCreated(parseGpApiDateTime(action.getString("time_created")));
+            actionSummary.setResponseCode(action.getString("result_code"));
+            actionSummary.setAppId(action.getString("app_id"));
+            actionSummary.setAppName(action.getString("app_name"));
+
+            payByLinkResponse.setActionSummary(actionSummary);
+
+            // Map Transactions
+            var transaction = doc.get("transactions");
+
+            if (transaction != null) {
+                payByLinkResponse.setChannel(transaction.getString("channel"));
+                payByLinkResponse.setCurrency(transaction.getString("currency"));
+                payByLinkResponse.setAmount(transaction.getDouble("amount"));
+                payByLinkResponse.setCountry(transaction.getString("country"));
+                payByLinkResponse.setAllowedPaymentMethods(getAllowedPaymentMethods(transaction).stream()
+                        .map(PaymentMethodName::name)
+                        .toArray(String[]::new));
+            }
+
+            // Map Order and nested Transaction Configuration if present
+            JsonDoc order = doc.get("order");
+            if (order != null) {
+                payByLinkResponse.setOrderAmount(order.getDouble("amount"));
+                payByLinkResponse.setOrderCurrency(order.getString("currency"));
+                payByLinkResponse.setOrderReference(order.getString("reference"));
+
+                JsonDoc transactionConfig = order.get("transaction_configuration");
+
+                if (transactionConfig != null) {
+                    payByLinkResponse.setChannel(transactionConfig.getString("channel") != null ? transactionConfig.getString("channel") : payByLinkResponse.getChannel());
+                    payByLinkResponse.setCountry(transactionConfig.getString("country") != null ? transactionConfig.getString("country") : payByLinkResponse.getCountry());
+                }
+            }
+        }
+
+        return payByLinkResponse;
     }
 
     private static void mapBNPLResponse(JsonDoc response, Transaction transaction) {

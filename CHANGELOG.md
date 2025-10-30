@@ -1,5 +1,12 @@
 # Changelog
 
+
+## Latest Version - V14.4.13 (10/30/2025)
+### Enhancements
+- [GPAPI] - Added support for generating Hosted Payment Page (HPP) links via Pay By Link.
+- [Portico] - Add in DataFormat to the Encryption Class.
+
+
 ## Latest Version - V14.4.12 (10/16/2025)
 ### Bug Fixes
 - [VAPS] - Added changes regarding DE 3 account Type for credit capture transactions.

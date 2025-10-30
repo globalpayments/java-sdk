@@ -17,6 +17,7 @@ import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.PayByLinkService;
 import com.global.api.services.Secure3dService;
 import com.global.api.utils.GenerationUtils;
+
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -39,10 +40,12 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     private final CreditCardData card;
     private final PayByLinkData payByLink;
     private final Address shippingAddress;
+    private final Address billingAddress;
     private final BrowserData browserData;
     private BigDecimal amount = new BigDecimal("2.11");
     private final String currency = "GBP";
     private String payByLinkId = null;
+    private Customer newCustomer;
 
     public GpApiPayByLinkTest() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
@@ -55,6 +58,16 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         config.setAccessTokenInfo(accessTokenInfo);
 
         ServicesContainer.configureService(config);
+
+        GpApiConfig config2 = gpApiSetup("hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo", "cQOKHoAAvNIcEN8s", Channel.CardNotPresent);
+        config2.setCountry("US");
+        AccessTokenInfo accessTokenInfo2 =
+                new AccessTokenInfo()
+                        .setTransactionProcessingAccountName("GPECOM_Transaction_Processing_CNP");
+
+        config2.setAccessTokenInfo(accessTokenInfo2);
+
+        ServicesContainer.configureService(config2, "PayByLink");
 
         payByLink = new PayByLinkData();
         payByLink.setType(PayByLinkType.PAYMENT);
@@ -69,6 +82,19 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         payByLink.setReturnUrl("https://www.example.com/returnUrl");
         payByLink.setStatusUpdateUrl("https://www.example.com/statusUrl");
         payByLink.setCancelUrl("https://www.example.com/returnUrl");
+
+
+        newCustomer = new Customer();
+        newCustomer.setFirstName("James");
+        newCustomer.setLastName("Mason");
+        newCustomer.setEmail("jamesmason@example.com");
+        newCustomer.setLanguage("en");
+        newCustomer.setStatus("NEW");
+
+        PhoneNumber phoneNumber = new PhoneNumber();
+        phoneNumber.setCountryCode("44");
+        phoneNumber.setNumber("7853283864");
+        newCustomer.setPhone(phoneNumber);
 
         card = new CreditCardData();
         card.setNumber("4263970000005262");
@@ -85,6 +111,15 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
         shippingAddress.setPostalCode("5001");
         shippingAddress.setState("IL");
         shippingAddress.setCountryCode("840");
+        shippingAddress.setCountry("US");
+
+        billingAddress = new Address();
+        billingAddress.setStreetAddress1("Apartment 852");
+        billingAddress.setStreetAddress2("Complex 741");
+        billingAddress.setStreetAddress3("no");
+        billingAddress.setCity("Chicago");
+        billingAddress.setPostalCode("5001");
+        billingAddress.setCountry("US");
 
         browserData = new BrowserData();
         browserData.setAcceptHeader("text/html,application/xhtml+xml,application/xml;q=9,image/webp,img/apng,*/*;q=0.8");
@@ -186,37 +221,94 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
     @Test
     @Order(5)
-    public void CreatePayByLink() throws ApiException {
+    public void CreatePayByLink_WithNewCustomer() throws ApiException {
         PayByLinkData payByLink = new PayByLinkData();
 
-        payByLink.setType(PayByLinkType.PAYMENT);
+        payByLink.setType(PayByLinkType.HOSTED_PAYMENT_PAGE);
         payByLink.setUsageMode(PaymentMethodUsageMode.SINGLE);
-        payByLink.setAllowedPaymentMethods(new String[]{PaymentMethodName.Card.getValue(Target.GP_API)});
+        payByLink.setAllowedPaymentMethods(new String[]{PaymentMethodName.Card.getValue(Target.GP_API), PaymentMethodName.BankPayment.getValue(Target.GP_API)});
         payByLink.setUsageLimit(1);
-        payByLink.setName("Mobile Bill Payment");
-        payByLink.isShippable(true);
+        payByLink.setName("Mobile");
+        payByLink.isShippable(false);
         payByLink.setShippingAmount(new BigDecimal("1.23"));
-        payByLink.setExpirationDate(DateTime.now().plusDays(10));
-        payByLink.setImages(new ArrayList<>());
         payByLink.setReturnUrl("https://www.example.com/returnUrl");
         payByLink.setStatusUpdateUrl("https://www.example.com/statusUrl");
         payByLink.setCancelUrl("https://www.example.com/returnUrl");
+        payByLink.setIsDccEnabled(false);
+        payByLink.setPaymentMethodConfiguration(getPaymentMethodConfiguration());
+        payByLink.setExpirationDate(DateTime.now().plusDays(10));
+
+        newCustomer.setIsShippingAddressSameAsBilling(false);
 
         BigDecimal amount = new BigDecimal("10.01");
         Transaction response =
                 PayByLinkService
                         .create(payByLink, amount)
-                        .withCurrency("GBP")
-                        .withClientTransactionId(GenerationUtils.generateRecurringKey())
-                        .withDescription("March and April Invoice")
-                        .execute();
+                        .withCurrency("USD")
+                        .withClientTransactionId("TestOrder-123")
+                        .withDescription("HPP_Links_Test")
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withCustomer(newCustomer)
+                        .withPhoneNumber("99", "1801555999", PhoneNumberType.Shipping)
+                        .execute("PayByLink");
 
         assertEquals("SUCCESS", response.getResponseCode());
         assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
-        assertEquals(amount, response.getBalanceAmount());
         assertNotNull(response.getPayByLinkResponse().getUrl());
         assertNotNull(response.getPayByLinkResponse().getId());
-        assertTrue(response.getPayByLinkResponse().getIsShippable());
+    }
+
+    @Test
+    public void CreateHPPPayByLink_WithExistingActiveCustomer_ReturnsSuccess() throws ApiException {
+        PayByLinkData payByLink = new PayByLinkData();
+
+        payByLink.setType(PayByLinkType.HOSTED_PAYMENT_PAGE);
+        payByLink.setUsageMode(PaymentMethodUsageMode.SINGLE);
+        payByLink.setAllowedPaymentMethods(new String[]{PaymentMethodName.Card.getValue(Target.GP_API), PaymentMethodName.BankPayment.getValue(Target.GP_API)});
+        payByLink.setUsageLimit(1);
+        payByLink.setName("Mobile");
+        payByLink.isShippable(false);
+        payByLink.setShippingAmount(new BigDecimal("1.23"));
+        payByLink.setReturnUrl("https://www.example.com/returnUrl");
+        payByLink.setStatusUpdateUrl("https://www.example.com/statusUrl");
+        payByLink.setCancelUrl("https://www.example.com/returnUrl");
+        payByLink.setIsDccEnabled(false);
+        payByLink.setPaymentMethodConfiguration(getPaymentMethodConfiguration());
+        payByLink.setExpirationDate(DateTime.now().plusDays(10));
+
+        newCustomer.setId("PYR_4f23b94af9294efb8b839e9d1b3f74e1");
+        newCustomer.setStatus("ACTIVE");
+        newCustomer.setIsShippingAddressSameAsBilling(false);
+
+        BigDecimal amount = new BigDecimal("10.01");
+        Transaction response =
+                PayByLinkService
+                        .create(payByLink, amount)
+                        .withCurrency("USD")
+                        .withClientTransactionId("TestOrder-123")
+                        .withDescription("HPP_Links_Test")
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withCustomer(newCustomer)
+                        .withPhoneNumber("99", "1801555999", PhoneNumberType.Shipping)
+                        .execute("PayByLink");
+
+        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
+        assertNotNull(response.getPayByLinkResponse().getUrl());
+        assertNotNull(response.getPayByLinkResponse().getId());
+    }
+
+    private static PaymentMethodConfiguration getPaymentMethodConfiguration() {
+        PaymentMethodConfiguration paymentMethodConfiguration = new PaymentMethodConfiguration();
+        paymentMethodConfiguration.setStorageMode(StorageMode.OFF);
+        paymentMethodConfiguration.setExemptStatus("LOW_VALUE");
+        paymentMethodConfiguration.setIsBillingAddressRequired(false);
+        paymentMethodConfiguration.setIsShippableAddressEnabled(true);
+        paymentMethodConfiguration.setIsAddressOverrideAllowed(false);
+        paymentMethodConfiguration.setChallengeRequestIndicator(ChallengeRequestIndicator.NoChallengeRequested);
+        return paymentMethodConfiguration;
     }
 
     @Test

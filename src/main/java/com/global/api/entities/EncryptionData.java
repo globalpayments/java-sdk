@@ -11,6 +11,7 @@ public class EncryptionData {
     @Getter
     @Setter
     private String encryptedKTB;
+    private String dataFormat;
 
     public String getVersion() {
         return version;
@@ -33,8 +34,17 @@ public class EncryptionData {
     public String getKtb() {
         return ktb;
     }
+
     public void setKtb(String ktb) {
         this.ktb = ktb;
+    }
+
+    public void setDataFormat(String dataFormat) {
+        this.dataFormat = dataFormat;
+    }
+
+    public String getDataFormat() {
+        return dataFormat;
     }
 
     public static EncryptionData version1() {

@@ -3,11 +3,13 @@ package com.global.api.entities;
 import com.global.api.entities.enums.PayByLinkStatus;
 import com.global.api.entities.enums.PayByLinkType;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
+import com.global.api.entities.reporting.ActionSummary;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Accessors(chain = true)
@@ -44,6 +46,28 @@ public class PayByLinkResponse {
     // Images that will be displayed to the customer on the payment page.
     private List<String> images;
     private String[] allowedPaymentMethods;
+    // The email address associated with the application that created the link.
+    private String appEmail;
+    // The unique identifier of the application that created the link.
+    private String appId;
+    // The shipping amount to be charged, if applicable.
+    private Double shippingAmount;
+    // The channel through which the payment link was created or is intended to be used.
+    private String channel;
+    // The currency code (ISO 4217) for the payment.
+    private String currency;
+    // The amount to be paid by the customer.
+    private Double amount;
+    // The country code (ISO 3166-1 alpha-2) associated with the payment or merchant.
+    private String country;
+    // The total order amount, if different from the payment amount.
+    private Double orderAmount;
+    // The currency code (ISO 4217) for the order.
+    private String orderCurrency;
+    // The merchant's reference for the order.
+    private String orderReference;
+    // A summary of the action performed, including metadata about the transaction.
+    private ActionSummary actionSummary;
 
     public Boolean isShippable() {
         return isShippable;

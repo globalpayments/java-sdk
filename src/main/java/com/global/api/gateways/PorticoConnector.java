@@ -393,6 +393,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(enc, "EncryptedTrackNumber", encryptionData.getTrackNumber());
                 et.subElement(enc, "KTB", encryptionData.getKtb());
                 et.subElement(enc, "KSN", encryptionData.getKsn());
+                et.subElement(enc, "DataFormat", encryptionData.getDataFormat());
             }
         }
 
@@ -577,6 +578,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                             et.subElement(enc, "EncryptedTrackNumber", encryptionData.getTrackNumber());
                             et.subElement(enc, "KTB", encryptionData.getKtb());
                             et.subElement(enc, "KSN", encryptionData.getKsn());
+                            et.subElement(enc, "DataFormat", encryptionData.getDataFormat());
                         }
                     }
                 }
@@ -799,7 +801,12 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(enc, "EncryptedTrackNumber", encryptionData.getTrackNumber());
                 et.subElement(enc, "KTB", encryptionData.getKtb());
                 et.subElement(enc, "KSN", encryptionData.getKsn());
-                et.subElement(enc, "DataFormat", "1");
+                String dataFormat = encryptionData.getDataFormat();
+                if (dataFormat != null && !dataFormat.trim().isEmpty()) {
+                    et.subElement(enc, "DataFormat", dataFormat);
+                } else {
+                    et.subElement(enc, "DataFormat", "1");
+                }
             }
         }
 

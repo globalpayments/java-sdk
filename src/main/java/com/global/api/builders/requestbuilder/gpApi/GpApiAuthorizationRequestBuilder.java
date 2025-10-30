@@ -15,7 +15,10 @@ import com.global.api.utils.masking.MaskValueUtil;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
@@ -567,21 +570,67 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("status", PayByLinkStatus.ACTIVE.toString())
                             .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null);
 
-            var transactions =
-                    new JsonDoc()
-                            .set("amount", StringUtils.toNumeric(builder.getAmount()))
-                            .set("channel", gateway.getGpApiConfig().getChannel())
-                            .set("currency", builder.getCurrency())
-                            .set("country", gateway.getGpApiConfig().getCountry())
-                            .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
+            if (!payByLinkData.getType().equals(PayByLinkType.HOSTED_PAYMENT_PAGE)) {
 
+                var transactions =
+                        new JsonDoc()
+                                .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                                .set("channel", gateway.getGpApiConfig().getChannel())
+                                .set("currency", builder.getCurrency())
+                                .set("country", gateway.getGpApiConfig().getCountry())
+                                .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
+                requestData.set("transactions", transactions);
+            }
             var notifications =
                     new JsonDoc()
                             .set("cancel_url", payByLinkData.getCancelUrl())
                             .set("return_url", payByLinkData.getReturnUrl())
                             .set("status_url", payByLinkData.getStatusUpdateUrl());
 
-            requestData.set("transactions", transactions);
+            if (payByLinkData.getType().equals(PayByLinkType.HOSTED_PAYMENT_PAGE)) {
+
+                var transactionConfiguration =
+                        new JsonDoc()
+                                .set("channel", gateway.getGpApiConfig().getChannel())
+                                .set("country", gateway.getGpApiConfig().getCountry())
+                                .set("currency_conversion_mode", payByLinkData.getIsDccEnabled() ? "YES" : "NO")
+                                .set("capture_mode", getCaptureMode(builder))
+                                .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
+
+                var authentication = new JsonDoc()
+                        .set("preference", payByLinkData.getPaymentMethodConfiguration().getChallengeRequestIndicator())
+                        .set("exempt_status", payByLinkData.getPaymentMethodConfiguration().getExemptStatus())
+                        .set("billing_address_required", payByLinkData.getPaymentMethodConfiguration().getIsBillingAddressRequired() ? "YES" : "NO");
+
+                var apm = new JsonDoc()
+                        .set("shipping_address_enabled", payByLinkData.getPaymentMethodConfiguration().getIsShippableAddressEnabled() ? "YES" : "NO")
+                        .set("address_override", payByLinkData.getPaymentMethodConfiguration().getIsAddressOverrideAllowed() ? "YES" : "NO");
+
+                var paymentMethodConfiguration =
+                        new JsonDoc()
+                                .set("authentication", authentication)
+                                .set("apm", apm)
+                                .set("storage_mode", payByLinkData.getPaymentMethodConfiguration().getStorageMode());
+
+                var shippingAddress = GetBasicAddressInformation(builder.getShippingAddress(), true);
+
+                var shippingPhone = setPhoneInformation(builder.getShippingPhone());
+
+                var order =
+                        new JsonDoc()
+                                .set("amount", StringUtils.toNumeric(builder.getAmount()))
+                                .set("currency", builder.getCurrency())
+                                .set("reference", builder.getClientTransactionId() != null ? builder.getClientTransactionId() : java.util.UUID.randomUUID().toString())
+                                .set("transaction_configuration", transactionConfiguration)
+                                .set("payment_method_configuration", paymentMethodConfiguration)
+                                .set("shipping_address", shippingAddress)
+                                .set("shipping_phone", shippingPhone);
+                requestData.set("order", order);
+
+                var payer = setPayerInformation(builder);
+                requestData.set("payer", payer);
+            }
+
             requestData.set("notifications", notifications);
 
             return (GpApiRequest)
@@ -692,6 +741,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason()))
                             .set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
             data.set("stored_credential", storedCredential);
+
             //set installment data
             if(builder.getInstallmentData() != null && builder.getStoredCredential().getType().equals(StoredCredentialType.Installment)) {
                 data.set("installment", setInstallmentData(builder.getInstallmentData()));
@@ -704,6 +754,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         .setEndpoint(merchantUrl + GpApiRequest.TRANSACTION_ENDPOINT)
                         .setRequestBody(data.toString())
                         .setMaskedData(maskedData);
+    }
+
+    private static JsonDoc setPhoneInformation(PhoneNumber phoneNumber) {
+        return new JsonDoc()
+                .set("subscriber_number", phoneNumber.getNumber())
+                .set("country_code", phoneNumber.getCountryCode());
     }
 
     private static JsonDoc setNotificationUrls(AuthorizationBuilder builder) {
@@ -742,7 +798,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         payer.set("reference", payerReference);
 
         if (builder.getPaymentMethod() instanceof eCheck) {
-            JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress());
+            JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress(), false);
 
             if (!billingAddress.getKeys().isEmpty()) {
                 payer.set("billing_address", billingAddress);
@@ -783,7 +839,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     .set("email", builder.getCustomerData().getEmail())
                     .set("date_of_birth", builder.getCustomerData().getDateOfBirth());
 
-            JsonDoc billing_address = GetBasicAddressInformation(builder.getBillingAddress());
+            JsonDoc billing_address = GetBasicAddressInformation(builder.getBillingAddress(), false);
 
             if (builder.getCustomerData() != null) {
                 billing_address
@@ -819,6 +875,22 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     payer.set("documents", documents);
                 }
             }
+        } else if (builder.getPayByLinkData().getType() == PayByLinkType.HOSTED_PAYMENT_PAGE) {
+
+            var billingAddress = GetBasicAddressInformation(builder.getBillingAddress(), true);
+            if (builder.getCustomerData().getPhone() != null) {
+                JsonDoc mobilePhone = setPhoneInformation(builder.getCustomerData().getPhone());
+                payer.set("mobile_phone", mobilePhone);
+            }
+            payer
+                    .set("status", builder.getCustomer().getStatus())
+                    .set("name", builder.getCustomer().getFirstName() + " " + builder.getCustomer().getLastName())
+                    .set("first_name", builder.getCustomer().getFirstName())
+                    .set("last_name", builder.getCustomer().getLastName())
+                    .set("language", builder.getCustomer().getLanguage())
+                    .set("email", builder.getCustomer().getEmail())
+                    .set("address_match_indicator", builder.getCustomer().getIsShippingAddressSameAsBilling() ? "YES" : "NO")
+                    .set("billing_address", billingAddress);
         }
 
         return payer;
@@ -905,7 +977,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         }
     }
 
-    private static JsonDoc GetBasicAddressInformation(Address address) {
+    private static JsonDoc GetBasicAddressInformation(Address address, boolean isHppPayByLink) {
 
         JsonDoc basicAddressInformation = new JsonDoc();
 
@@ -913,10 +985,11 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             basicAddressInformation
                     .set("line_1", address.getStreetAddress1())
                     .set("line_2", address.getStreetAddress2())
+                    .set("line_3", address.getStreetAddress3())
                     .set("city", address.getCity())
                     .set("postal_code", address.getPostalCode())
                     .set("state", address.getState())
-                    .set("country", address.getCountryCode());
+                    .set("country", isHppPayByLink ? address.getCountry() : address.getCountryCode());
         }
 
         return basicAddressInformation;
@@ -1109,6 +1182,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 return "UNKNOWN";
         }
     }
+
 
     private static JsonDoc setInstallmentData(InstallmentData installmentData)
     {

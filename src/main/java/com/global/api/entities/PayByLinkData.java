@@ -41,6 +41,10 @@ public class PayByLinkData {
     // The merchant URL that the customer will be redirected to if they chose to cancel
     private String cancelUrl;
 
+    private Boolean isDccEnabled;
+
+    private PaymentMethodConfiguration paymentMethodConfiguration;
+
     public Boolean isShippable() {
         return isShippable;
     }
