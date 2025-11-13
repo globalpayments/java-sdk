@@ -14,6 +14,7 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String status;
     protected String command;
     protected String version;
+    protected String message;
 
     // Functional
     protected String deviceResponseCode;

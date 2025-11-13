@@ -109,7 +109,7 @@ public class PorticoRecurringTests {
         customer.setStatus("Active");
         customer.setFirstName("Bill");
         customer.setLastName("Johnson");
-        customer.setCompany("Heartland Payment Systems");
+        customer.setCompany("GlobalPayments Payment Systems");
         customer.setAddress(address);
         customer.setHomePhone("9876543210");
         customer.setWorkPhone("9876543210");

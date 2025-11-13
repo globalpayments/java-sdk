@@ -70,7 +70,7 @@ public class NWSPOSSiteConfigTest {
         posSiteConfiguration = new POSSiteConfigurationData(Target.NWS);
         posSiteConfiguration.setMessageVersion("001");
         posSiteConfiguration.setCompanyName("Test Company");
-        posSiteConfiguration.setHeartlandCompanyId("0044");
+        posSiteConfiguration.setGlobalPaymentsCompanyId("0044");
         posSiteConfiguration.setMerchantFranchiseName("Test Merchant");
         posSiteConfiguration.setMerchantIdUnitPlusTid("0000912197711");
         posSiteConfiguration.setMerchantAddressStreet("My Street");
@@ -83,9 +83,9 @@ public class NWSPOSSiteConfigTest {
         posSiteConfiguration.setMethodOfOperation("A");
         posSiteConfiguration.setPosVendor("VERIFONE");
         posSiteConfiguration.setPosProductNameOrModel("RUBY 2 C1");
-        posSiteConfiguration.setHeartlandPosTerminalType("88");
-        posSiteConfiguration.setHeartlandPosSoftwareVersion("1.1.1.1");
-        posSiteConfiguration.setHeartlandTerminalSpecVersion("0212");
+        posSiteConfiguration.setGlobalPaymentsPosTerminalType("88");
+        posSiteConfiguration.setGlobalPaymentsPosSoftwareVersion("1.1.1.1");
+        posSiteConfiguration.setGlobalPaymentsTerminalSpecVersion("0212");
         posSiteConfiguration.setPosHardwareVersion("34");
         posSiteConfiguration.setPosSoftwareVersion("21205710");
         posSiteConfiguration.setPosOperatingSystem("V2");
@@ -123,8 +123,8 @@ public class NWSPOSSiteConfigTest {
         posSiteConfiguration.setModemRouterVendor("Modem Vendor 1");
         posSiteConfiguration.setModemRouterProductNameOrModel("Modem product 1");
         posSiteConfiguration.setModemPhoneNumber("123-123-1234");
-        posSiteConfiguration.setHeartlandPrimaryDialNumberOrIpPort("123-123-1234");
-        posSiteConfiguration.setHeartlandSecondaryDialNumberOrIpPort("123-123-1234");
+        posSiteConfiguration.setGlobalPaymentsPrimaryDialNumberOrIpPort("123-123-1234");
+        posSiteConfiguration.setGlobalPaymentsSecondaryDialNumberOrIpPort("123-123-1234");
         posSiteConfiguration.setDispenserInterfaceVendor("Interface v1");
         posSiteConfiguration.setDispenserInterfaceProductNameOrModel("dispenser m1");
         posSiteConfiguration.setDispenserInterfaceSoftwareVersion("0001");

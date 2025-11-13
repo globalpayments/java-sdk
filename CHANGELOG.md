@@ -1,13 +1,22 @@
 # Changelog
 
 
-## Latest Version - V14.4.13 (10/30/2025)
+## Latest Version - V15.0.0 (11/12/2025)
+### Enhancements
+- [GPAPI] - Added ContractReference field in Stored Credential object.
+- [Rebranding] - Rebranding from Heartland to Global Payments.
+- [Macroscope] - Fixed macroscope issues as per scan report
+
+### Bug Fixes
+- [UPA] - Resolved POS can't wake UPA issue on Sunmi
+
+## V14.4.13 (10/30/2025)
 ### Enhancements
 - [GPAPI] - Added support for generating Hosted Payment Page (HPP) links via Pay By Link.
 - [Portico] - Add in DataFormat to the Encryption Class.
 
 
-## Latest Version - V14.4.12 (10/16/2025)
+## V14.4.12 (10/16/2025)
 ### Bug Fixes
 - [VAPS] - Added changes regarding DE 3 account Type for credit capture transactions.
 - [UPA] - Added Indicator for Debit card type.

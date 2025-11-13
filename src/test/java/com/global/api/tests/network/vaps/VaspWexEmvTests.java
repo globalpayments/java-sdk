@@ -254,7 +254,7 @@ public class VaspWexEmvTests {
         CreditTrackData card = new CreditTrackData();
         card.setValue("6900460420006149231=27120014844120000");
 
-        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel,ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel,ProductCodeSet.GlobalPayments);
         productData.add("400", UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal(21000), new BigDecimal(10));
 
         Transaction response = card.authorize(new BigDecimal(10))
@@ -393,7 +393,7 @@ public class VaspWexEmvTests {
         CreditTrackData card = new CreditTrackData();
         card.setValue("6900460420006149231=27120014844120000");
 
-        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel,ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel,ProductCodeSet.GlobalPayments);
         productData.add("01", UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal(21000), new BigDecimal(10));
 
         Transaction response = card.authorize(new BigDecimal(10))

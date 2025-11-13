@@ -21,7 +21,7 @@ public abstract class GatewayConnectorConfig extends NetworkGateway implements I
 	protected ConnectionType connectionType = ConnectionType.ISDN;
 	//protected IGatewayEventHandler gatewayEventHandler;
 	protected String merchantType;
-	protected MessageType messageType = MessageType.Heartland_POS_8583;
+	protected MessageType messageType = MessageType.GlobalPayments_POS_8583;
 	protected String nodeIdentification;
 	protected ProtocolType protocolType;
 	protected IStanProvider stanProvider;

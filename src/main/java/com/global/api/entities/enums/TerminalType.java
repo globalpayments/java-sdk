@@ -61,7 +61,7 @@ public enum TerminalType implements IStringConstant{
 	VerifoneIntegDial("58"),
 	VerifoneVx610("59"),
 	VerifoneVx670("60"),
-	HeartlandHost("61"),
+	GlobalPaymentsHost("61"),
 	VerifoneVx520("62"),
 	VerifoneVx680("63"),
 	VerifoneOmni395("64"),

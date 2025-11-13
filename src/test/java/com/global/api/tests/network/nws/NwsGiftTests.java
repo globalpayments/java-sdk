@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 
 public class NwsGiftTests {
     private GiftCard giftCard;
-    private GiftCard heartLandGiftCard;
+    private GiftCard globalPaymentsGiftCard;
     private AcceptorConfig acceptorConfig;
     private NetworkGatewayConfig config;
 
@@ -104,7 +104,7 @@ public class NwsGiftTests {
 
         // HMS
         giftCard = TestCards.HMSManual();
-        heartLandGiftCard = TestCards.HMSSwipe();
+        globalPaymentsGiftCard = TestCards.HMSSwipe();
 
         //GIFT CARD
 //        giftCard = TestCards.GiftCard2Manual();
@@ -349,10 +349,10 @@ public class NwsGiftTests {
 
     /**  SVS TestCases End   */
 
-    /** Heartland Gift TestCases Start */
+    /** GlobalPayments Gift TestCases Start */
     @Test
-    public void giftCard_activate_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.activate(new BigDecimal(10))
+    public void giftCard_activate_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.activate(new BigDecimal(10))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -361,8 +361,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_add_value_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.addValue(new BigDecimal(25))
+    public void giftCard_add_value_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.addValue(new BigDecimal(25))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -370,8 +370,8 @@ public class NwsGiftTests {
         assertEquals("000", response.getResponseCode());
     }
     @Test
-    public void giftCard_authorize_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.authorize(new BigDecimal(10.00))
+    public void giftCard_authorize_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.authorize(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -379,16 +379,16 @@ public class NwsGiftTests {
         assertEquals("000", response.getResponseCode());
     }
     @Test
-    public void giftCard_balance_inquiry_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.balanceInquiry()
+    public void giftCard_balance_inquiry_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.balanceInquiry()
                 .withClerkId("41256")
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
     @Test
-    public void giftCard_cash_out_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.cashOut()
+    public void giftCard_cash_out_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.cashOut()
                 .withClerkId("41256")
                 .execute();
         assertNotNull(response);
@@ -396,8 +396,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_auth_capture_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.authorize(new BigDecimal(50), true)
+    public void giftCard_auth_capture_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.authorize(new BigDecimal(50), true)
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -408,7 +408,7 @@ public class NwsGiftTests {
                 new BigDecimal(50),
                 response.getAuthorizationCode(),
                 response.getNtsData(),
-                heartLandGiftCard,
+                globalPaymentsGiftCard,
                 response.getMessageTypeIndicator(),
                 response.getSystemTraceAuditNumber(),
                 response.getOriginalTransactionTime()
@@ -422,12 +422,12 @@ public class NwsGiftTests {
         assertEquals("000", captureResponse.getResponseCode());
     }
     @Test
-    public void giftCard_voice_captureheartLandGiftCard() throws ApiException {
+    public void giftCard_voice_captureGlobalPaymentsGiftCard() throws ApiException {
         Transaction trans = Transaction.fromNetwork(
                 new BigDecimal(10),
                 "TYPE04",
                 NtsData.voiceAuthorized(),
-                heartLandGiftCard
+                globalPaymentsGiftCard
         );
 
         Transaction response = trans.capture()
@@ -438,8 +438,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_sale_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.charge(new BigDecimal(10.00))
+    public void giftCard_sale_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -447,8 +447,8 @@ public class NwsGiftTests {
         assertEquals("000", response.getResponseCode());
     }
     @Test
-    public void giftCard_return_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.refund(new BigDecimal(12))
+    public void giftCard_return_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.refund(new BigDecimal(12))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -457,8 +457,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_void_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.charge(new BigDecimal(25.00))
+    public void giftCard_void_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.charge(new BigDecimal(25.00))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -471,8 +471,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_reload_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.addValue(new BigDecimal(10.00))
+    public void giftCard_reload_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.addValue(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -480,8 +480,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void giftCard_recharge_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.addValue(new BigDecimal(10.00))
+    public void giftCard_recharge_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.addValue(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -489,8 +489,8 @@ public class NwsGiftTests {
     }
 
     @Test
-    public void test_giftCard_void_heartLandGiftCard() throws ApiException {
-        Transaction response = heartLandGiftCard.charge(new BigDecimal(10.00))
+    public void test_giftCard_void_globalPaymentsGiftCard() throws ApiException {
+        Transaction response = globalPaymentsGiftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -501,7 +501,7 @@ public class NwsGiftTests {
                 new BigDecimal(10),
                 response.getAuthorizationCode(),
                 ntsData,
-                heartLandGiftCard,
+                globalPaymentsGiftCard,
                 response.getMessageTypeIndicator(),
                 response.getSystemTraceAuditNumber(),
                 response.getOriginalTransactionTime()
@@ -515,10 +515,10 @@ public class NwsGiftTests {
         assertEquals("400", voidResponse.getResponseCode());
     }
     @Test
-    public void test001_giftCard_reversal_heartLandGiftCard() throws ApiException {
+    public void test001_giftCard_reversal_globalPaymentsGiftCard() throws ApiException {
         NtsData ntsData = new NtsData(FallbackCode.Received_IssuerUnavailable,AuthorizerCode.Terminal_Authorized);
 
-        Transaction response = heartLandGiftCard.charge(new BigDecimal(10.00))
+        Transaction response = globalPaymentsGiftCard.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .withClerkId("41256")
                 .execute();
@@ -541,7 +541,7 @@ public class NwsGiftTests {
 
     }
 
-    /** Heartland GiftCard testCases End */
+    /** GlobalPayments GiftCard testCases End */
 
     @Test
     public void value_link_card_type_test() throws ApiException {

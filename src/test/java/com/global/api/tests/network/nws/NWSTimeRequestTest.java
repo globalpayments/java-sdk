@@ -65,6 +65,6 @@ public class NWSTimeRequestTest {
     public void test_000_TimeRequest() throws ApiException {
         Transaction response = NetworkService.timeRequest()
                 .execute();
-        assertNotNull(response.getIssuerData().get(CardIssuerEntryTag.HeartlandTimeRequest));
+        assertNotNull(response.getIssuerData().get(CardIssuerEntryTag.GlobalPaymentsTimeRequest));
     }
 }

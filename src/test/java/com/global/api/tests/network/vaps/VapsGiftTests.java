@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 
 public class VapsGiftTests {
     private GiftCard giftCard;
-    private GiftCard heartlandGiftCardSwipe;
+    private GiftCard globalPaymentsGiftCardSwipe;
     private NetworkGatewayConfig config;
     private AcceptorConfig acceptorConfig;
 
@@ -79,7 +79,7 @@ public class VapsGiftTests {
 
         // SVS
         giftCard = TestCards.SvsSwipe();
-        heartlandGiftCardSwipe = TestCards.HeartlandGiftCardSwipe();
+        globalPaymentsGiftCardSwipe = TestCards.GlobalPaymentsGiftCardSwipe();
     }
 
     @Test
@@ -330,7 +330,7 @@ public class VapsGiftTests {
     }
 
     @Test
-    public void heartland_giftCard_add_value() throws ApiException {
+    public void globalpayments_giftCard_add_value() throws ApiException {
 
         giftCard = TestCards.GiftCard2Manual();
         Transaction trans = Transaction.fromNetwork(
@@ -347,11 +347,11 @@ public class VapsGiftTests {
         assertEquals("000", response.getResponseCode());
     }
 
-//    -----------------------------------Heartland GiftCards--------------------------------------------
+//    -----------------------------------GlobalPayments GiftCards--------------------------------------------
     @Test
     public void giftCard_activate_HGC() throws ApiException {
 
-        Transaction response = heartlandGiftCardSwipe.activate(new BigDecimal(25.00))
+        Transaction response = globalPaymentsGiftCardSwipe.activate(new BigDecimal(25.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -360,7 +360,7 @@ public class VapsGiftTests {
 
     @Test
     public void giftCard_sale_HGC() throws ApiException {
-        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10.00))
+        Transaction response = globalPaymentsGiftCardSwipe.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -368,19 +368,19 @@ public class VapsGiftTests {
     }
     @Test
     public void giftCard_balance_inquiry_HGC() throws ApiException {
-        Transaction response = heartlandGiftCardSwipe.balanceInquiry()
+        Transaction response = globalPaymentsGiftCardSwipe.balanceInquiry()
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());
     }
 
     @Test // Authorize is an outside transaction
-    public void heartlandGiftCard_authorize() throws ApiException {
+    public void globalpaymentsGiftCard_authorize() throws ApiException {
         acceptorConfig.setOperatingEnvironment(OperatingEnvironment.OnPremises_CardAcceptor_Unattended);
 
         config.setMerchantType("5542");
         ServicesContainer.configureService(config,"ICR");
-        Transaction response = heartlandGiftCardSwipe.authorize(new BigDecimal(50), true)
+        Transaction response = globalPaymentsGiftCardSwipe.authorize(new BigDecimal(50), true)
                 .withCurrency("USD")
                 .execute("ICR");
         assertNotNull(response);
@@ -406,7 +406,7 @@ public class VapsGiftTests {
                 new BigDecimal(50),
                 "TYPE04",
                 new NtsData(),
-                heartlandGiftCardSwipe
+                globalPaymentsGiftCardSwipe
         );
 
         Transaction response = trans.refund(new BigDecimal(5))
@@ -420,7 +420,7 @@ public class VapsGiftTests {
     @Test
     public void giftCard_reversible_HGC() throws ApiException {
 
-        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10.00))
+        Transaction response = globalPaymentsGiftCardSwipe.charge(new BigDecimal(10.00))
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -430,7 +430,7 @@ public class VapsGiftTests {
                 new BigDecimal(10),
                 response.getAuthorizationCode(),
                 new NtsData(FallbackCode.Received_IssuerTimeout,AuthorizerCode.Terminal_Authorized),
-                heartlandGiftCardSwipe,
+                globalPaymentsGiftCardSwipe,
                 response.getMessageTypeIndicator(),
                 response.getSystemTraceAuditNumber(),
                 response.getOriginalTransactionTime(),
@@ -446,7 +446,7 @@ public class VapsGiftTests {
 
     @Test
     public void HGC_balance_inquiry() throws ApiException {
-        Transaction response = heartlandGiftCardSwipe.balanceInquiry()
+        Transaction response = globalPaymentsGiftCardSwipe.balanceInquiry()
                 .execute();
         assertNotNull(response);
         assertEquals("000", response.getResponseCode());

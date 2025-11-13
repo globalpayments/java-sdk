@@ -10,12 +10,12 @@ public class ProductData {
     private DE63_ProductData productData;
 
     public ProductData(ServiceLevel serviceLevel) {
-        this(serviceLevel, ProductCodeSet.Heartland);
+        this(serviceLevel, ProductCodeSet.GlobalPayments);
     }
 
     public ProductData(ServiceLevel serviceLevel, ProductCodeSet productCodeSet) {
         productData = new DE63_ProductData();
-        productData.setProductDataFormat(ProductDataFormat.HeartlandStandardFormat);
+        productData.setProductDataFormat(ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.setProductCodeSet(productCodeSet);
         productData.setServiceLevel(serviceLevel);
     }

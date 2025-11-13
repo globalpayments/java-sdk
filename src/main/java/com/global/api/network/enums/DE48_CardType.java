@@ -168,7 +168,7 @@ public enum DE48_CardType implements IStringConstant {
     Staples_1("ST"),
     Sunoco("SU"),
     SVSStoredValue("SV"),
-    HeartlandGiftCard_Proprietary("SW"),
+    GlobalPaymentsGiftCard_Proprietary("SW"),
     ShazamDebit("SZ"),
     TechAmerica("TA"),
     SpsTestCard("TC"),

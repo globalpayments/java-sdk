@@ -75,7 +75,7 @@ public class VapsFleetCorTests {
         fleetData.setDriverId("11411");
 
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add("001", UnitOfMeasure.Gallons, 1, 10);
 
 //        FuelMan Fleet
@@ -177,7 +177,7 @@ public class VapsFleetCorTests {
     //Void
     @Test
     public void test_006_swipe_void() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add("001", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction sale = track.charge(new BigDecimal(10))
@@ -410,7 +410,7 @@ public class VapsFleetCorTests {
     //  AddFuel() & AddNonFuel()
     @Test
     public void test_001_sale_Fuel_nonFuel() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
@@ -435,7 +435,7 @@ public class VapsFleetCorTests {
 
     @Test
     public void test_002_sale_Fuel_nonFuel_track() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
 

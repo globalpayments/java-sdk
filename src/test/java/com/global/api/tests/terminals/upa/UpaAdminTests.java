@@ -50,7 +50,7 @@ public class UpaAdminTests {
     public UpaAdminTests() throws ApiException {
         ConnectionConfig config = new ConnectionConfig();
         config.setPort(8081);
-        config.setIpAddress("192.168.51.94");
+        config.setIpAddress("192.168.0.115");
         config.setTimeout(30_000);
         config.setRequestIdProvider(new RandomIdProvider());
         config.setDeviceType(DeviceType.UPA_DEVICE);
@@ -119,7 +119,8 @@ public class UpaAdminTests {
 
     @Test
     public void test05_sendReady() throws ApiException {
-        device.sendReady();
+        IDeviceResponse iDeviceResponse = device.sendReady();
+        assertNotNull(iDeviceResponse);
     }
 
     @Test

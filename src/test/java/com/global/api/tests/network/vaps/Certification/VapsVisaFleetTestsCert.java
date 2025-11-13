@@ -81,7 +81,7 @@ public class VapsVisaFleetTestsCert {
         fleetData.setOdometerReading("1111");
         fleetData.setDriverId("11411");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
     }
@@ -135,7 +135,7 @@ public class VapsVisaFleetTestsCert {
         // check response
         assertEquals("000", response.getResponseCode());
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel("01", UnitOfMeasure.Liters, new BigDecimal("1.01"), new BigDecimal(20), new BigDecimal(20));
         productData.addNonFuel("78", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(30), new BigDecimal(30));
 
@@ -181,7 +181,7 @@ public class VapsVisaFleetTestsCert {
         // check response
         assertEquals("000", response.getResponseCode());
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel("01", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.addNonFuel("78", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(30), new BigDecimal(30));
 
@@ -213,7 +213,7 @@ public class VapsVisaFleetTestsCert {
     public void test_002_sale_VisaFleet() throws ApiException {
         track = TestCards.VisaFleetSwipe();
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
         Transaction response = track.charge(new BigDecimal("12"))
@@ -238,7 +238,7 @@ public class VapsVisaFleetTestsCert {
     public void test_002_sale_VisaFleet_retransmit() throws ApiException {
         track = TestCards.VisaFleetSwipe();
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Ethanol_Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("31.12"), new BigDecimal("10.00"), new BigDecimal("311.2"));
 
         Transaction response = track.charge(new BigDecimal("10"))
@@ -266,7 +266,7 @@ public class VapsVisaFleetTestsCert {
 
     @Test
     public void test_003_swipe_refund() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Ethanol_Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("31.12"), new BigDecimal("10.00"), new BigDecimal("311.2"));
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("10.12"), new BigDecimal("20.00"), new BigDecimal("200.2"));
 
@@ -297,7 +297,7 @@ public class VapsVisaFleetTestsCert {
 
     @Test
     public void test_003_swipe_refund_retransmit() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Ethanol_Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("31.12"), new BigDecimal("10.00"), new BigDecimal("311.2"));
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.ImperialGallons, new BigDecimal("11.12"), new BigDecimal("21.00"), new BigDecimal("200.2"));
         productData.addNonFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Units, new BigDecimal("10"), new BigDecimal("20.00"), new BigDecimal("200"));

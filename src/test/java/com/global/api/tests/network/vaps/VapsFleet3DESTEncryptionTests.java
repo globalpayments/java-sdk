@@ -115,7 +115,7 @@ public class VapsFleet3DESTEncryptionTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
     }
@@ -143,7 +143,7 @@ public class VapsFleet3DESTEncryptionTests {
 
     @Test
     public void test_002_manual_sale_27_PDF0() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
         Transaction response = card.charge(new BigDecimal("111.2"))

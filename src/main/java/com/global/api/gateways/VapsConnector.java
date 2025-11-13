@@ -427,7 +427,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         /* DE 43: Card Acceptor Name/Location - LLVAR ans.. 99
             43.1 NAME-STREET-CITY ans..83 Name\street\city\
             43.2 POSTAL-CODE ans10
-            43.3 REGION ans3 Two letter state/province code for the United States and Canada. Refer to the Heartland Integrator’s Guide.
+            43.3 REGION ans3 Two letter state/province code for the United States and Canada. Refer to the GlobalPayments Integrator’s Guide.
             43.4 COUNTRY-CODE a3 See A.30.1 ISO 3166-1: Country Codes, p. 809.
          */
         if(acceptorConfig.getAddress() != null && !(transactionType.equals(TransactionType.PosSiteConfiguration))) {
@@ -488,15 +488,15 @@ public class VapsConnector extends GatewayConnectorConfig {
             48-13 RFID DATA LLVAR ans..99 C Data received from RFID transponder.
             48-14 PIN ENCRYPTION METHODOLOGY ans2 C Used to identify the type of encryption methodology.
             48-15, 48-32 RESERVED FOR ANSI USE LLVAR ans..99 These are reserved for future use.
-            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the Heartland system capabilities and configuration of the POS application.
+            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the GlobalPayments system capabilities and configuration of the POS application.
             48-34 MESSAGE CONFIGURATION LLVAR ans..99 C Information regarding the POS originating message and the host generated response message.
             48-35 NAME 1 LLVAR ans..99 D
             48-36 NAME 2 LLVAR ans..99 D
             48-37 SECONDARY ACCOUNT NUMBER LLVAR ans..28 C Second Account Number for manually entered transactions requiring 2 account numbers.
-            48-38 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-38 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
             48-39 PRIOR MESSAGE INFORMATION LLVAR ans..99 C Information regarding the status of the prior message sent by the POS.
             48-40, 48-49 ADDRESS 1 THROUGH ADDRESS 10 LLVAR ans..99 D One or more types of addresses.
-            48-50, 48-64 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-50, 48-64 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
          */
         // DE48-5
 //        messageControl.setShiftNumber(builder.getShiftNumber());
@@ -987,7 +987,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         /* DE 43: Card Acceptor Name/Location - LLVAR ans.. 99
             43.1 NAME-STREET-CITY ans..83 Name\street\city\
             43.2 POSTAL-CODE ans10
-            43.3 REGION ans3 Two letter state/province code for the United States and Canada. Refer to the Heartland Integrator’s Guide.
+            43.3 REGION ans3 Two letter state/province code for the United States and Canada. Refer to the GlobalPayments Integrator’s Guide.
             43.4 COUNTRY-CODE a3 See A.30.1 ISO 3166-1: Country Codes, p. 809.
          */
         if(acceptorConfig.getAddress() != null) {
@@ -1033,15 +1033,15 @@ public class VapsConnector extends GatewayConnectorConfig {
             48-13 RFID DATA LLVAR ans..99 C Data received from RFID transponder.
             48-14 PIN ENCRYPTION METHODOLOGY ans2 C Used to identify the type of encryption methodology.
             48-15, 48-32 RESERVED FOR ANSI USE LLVAR ans..99 These are reserved for future use.
-            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the Heartland system capabilities and configuration of the POS application.
+            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the GlobalPayments system capabilities and configuration of the POS application.
             48-34 MESSAGE CONFIGURATION LLVAR ans..99 C Information regarding the POS originating message and the host generated response message.
             48-35 NAME 1 LLVAR ans..99 D
             48-36 NAME 2 LLVAR ans..99 D
             48-37 SECONDARY ACCOUNT NUMBER LLVAR ans..28 C Second Account Number for manually entered transactions requiring 2 account numbers.
-            48-38 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-38 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
             48-39 PRIOR MESSAGE INFORMATION LLVAR ans..99 C Information regarding the status of the prior message sent by the POS.
             48-40, 48-49 ADDRESS 1 THROUGH ADDRESS 10 LLVAR ans..99 D One or more types of addresses.
-            48-50, 48-64 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-50, 48-64 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
          */
         DE48_MessageControl messageControl = mapMessageControl(builder);
         request.set(DataElementId.DE_048, messageControl);
@@ -1477,7 +1477,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
         // EH.9: Protocol Type
         if(protocolType.equals(ProtocolType.Async)) {
-            if (messageType.equals(MessageType.Heartland_POS_8583) || messageType.equals(MessageType.Heartland_NTS)) {
+            if (messageType.equals(MessageType.GlobalPayments_POS_8583) || messageType.equals(MessageType.GlobalPayments_NTS)) {
                 buffer.append(0x07);
             }
             else {
@@ -1966,7 +1966,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                 }
                 else if(paymentMethod instanceof GiftCard) {
                     String cardType = ((GiftCard) paymentMethod).getCardType();
-                    if(("ValueLink").equals(cardType)|| ("StoredValue").equals(cardType)|| ("HeartlandGift").equals(cardType)) {
+                    if(("ValueLink").equals(cardType)|| ("StoredValue").equals(cardType)|| ("GlobalPaymentsGift").equals(cardType)) {
                         mtiValue += "0";
                     }
                     else mtiValue += "2";
@@ -1985,10 +1985,10 @@ public class VapsConnector extends GatewayConnectorConfig {
         /* TRANSACTION ORIGINATOR
             0 POS application
             1 POS application repeat
-            2 Heartland system
-            3 Heartland system repeat
-            4 POS application or Heartland system
-            5 Reserved for Heartland use
+            2 GlobalPayments system
+            3 GlobalPayments system repeat
+            4 POS application or GlobalPayments system
+            5 Reserved for GlobalPayments use
             6–9 Reserved for ISO use
         */
         switch (builder.getTransactionType()) {
@@ -2397,15 +2397,15 @@ public class VapsConnector extends GatewayConnectorConfig {
             48-13 RFID DATA LLVAR ans..99 C Data received from RFID transponder.
             48-14 PIN ENCRYPTION METHODOLOGY ans2 C Used to identify the type of encryption methodology.
             48-15, 48-32 RESERVED FOR ANSI USE LLVAR ans..99 These are reserved for future use.
-            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the Heartland system capabilities and configuration of the POS application.
+            48-33 POS CONFIGURATION LLVAR ans..99 C Values that indicate to the GlobalPayments system capabilities and configuration of the POS application.
             48-34 MESSAGE CONFIGURATION LLVAR ans..99 C Information regarding the POS originating message and the host generated response message.
             48-35 NAME 1 LLVAR ans..99 D
             48-36 NAME 2 LLVAR ans..99 D
             48-37 SECONDARY ACCOUNT NUMBER LLVAR ans..28 C Second Account Number for manually entered transactions requiring 2 account numbers.
-            48-38 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-38 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
             48-39 PRIOR MESSAGE INFORMATION LLVAR ans..99 C Information regarding the status of the prior message sent by the POS.
             48-40, 48-49 ADDRESS 1 THROUGH ADDRESS 10 LLVAR ans..99 D One or more types of addresses.
-            48-50, 48-64 RESERVED FOR HEARTLAND USE LLVAR ans..99 F
+            48-50, 48-64 RESERVED FOR GlobalPayments USE LLVAR ans..99 F
          */
         // DE48-2 - Hardware/Software Config
         DE48_2_HardwareSoftwareConfig hardwareSoftwareConfig = new DE48_2_HardwareSoftwareConfig();
@@ -2960,8 +2960,8 @@ public class VapsConnector extends GatewayConnectorConfig {
             else if(card.getCardType().equals("StoredValue")) {
                 return DE48_CardType.SVSStoredValue;
             }
-            else if(card.getCardType().equals("HeartlandGift")) {
-                return DE48_CardType.HeartlandGiftCard_Proprietary;
+            else if(card.getCardType().equals("GlobalPaymentsGift")) {
+                return DE48_CardType.GlobalPaymentsGiftCard_Proprietary;
             }
         }
         else if(paymentMethod instanceof EBT) {

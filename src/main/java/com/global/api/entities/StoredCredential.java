@@ -17,4 +17,5 @@ public class StoredCredential {
     private StoredCredentialSequence sequence;
     private StoredCredentialReason reason;
     private String schemeId;
+    private String contractReference;
 }

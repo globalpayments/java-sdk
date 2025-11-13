@@ -2,13 +2,13 @@
     <img src="https://developer.globalpay.com/static/media/logo.dab7811d.svg" alt="Global Payments logo" title="Global Payments" align="right" width="225" />
 </a>
 
-# Heartland & Global Payments Java SDK - End to End example.
+# Global Payments Java SDK - End to End example.
 
 This sample code is not specific to the Global Payments SDK and is intended as a simple example and
 should not be treated as Production-ready code. You'll need to add your own message parsing and
 security in line with your application or website
 
-This is a java web application that uses Heartland & Global Payments Java SDK. 
+This is a java web application that uses Global Payments Java SDK. 
 
 ## General
 
@@ -21,11 +21,11 @@ This is a java web application that uses Heartland & Global Payments Java SDK.
   
 ### What is this example
 
-* This is a functional java web application that shows the basics on how to use the Heartland & Global Payments Java SDK
+* This is a functional java web application that shows the basics on how to use the Global Payments Java SDK
 
 ### Requirements
 
-* Same requirements that you need for Heartland & Global Payments Java SDK, plus:
+* Same requirements that you need for Global Payments Java SDK, plus:
 * A Java Web Server that listen over https.
 * Update the method 'getBaseUrl' in 'ApplicationParameters' class to return your application base url. 
 It should not be localhost or 127.0.0.1.

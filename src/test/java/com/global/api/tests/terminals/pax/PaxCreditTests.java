@@ -70,7 +70,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse response = device.sale(amount)
@@ -101,7 +101,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse response = device.sale(amount)
@@ -143,7 +143,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse response = device.authorize(amount)
@@ -181,7 +181,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse saleResponse = device.sale(amount)
@@ -248,7 +248,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse response = device.verify()
@@ -279,7 +279,7 @@ public class PaxCreditTests {
         card.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setPostalCode("95124");
 
         TerminalResponse saleResponse = device.sale(amount)

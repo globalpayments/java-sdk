@@ -16,7 +16,7 @@ public class POSSiteConfigurationData {
     private String transactionDate = DateTime.now().toString("YYYYMMdd");
     private String transactionTime = DateTime.now().toString("hhmmss");
     private String companyName;
-    private String heartlandCompanyId;
+    private String globalPaymentsCompanyId;
     private String merchantFranchiseName;
     private String merchantIdUnitPlusTid;
     private String merchantAddressStreet;
@@ -30,12 +30,12 @@ public class POSSiteConfigurationData {
     private String methodOfOperation;
     private String posVendor;
     private String posProductNameOrModel;
-    private String heartlandPosTerminalType;
-    private String heartlandPosSoftwareVersion;
-    private String heartlandTerminalSpec = "N";
-    private String heartlandTerminalSpecVersion;
-    private String heartlandPaymentEngine = "V";
-    private String heartlandPaymentVertical = "C";
+    private String globalPaymentsPosTerminalType;
+    private String globalPaymentsPosSoftwareVersion;
+    private String globalPaymentsTerminalSpec = "N";
+    private String globalPaymentsTerminalSpecVersion;
+    private String globalPaymentsPaymentEngine = "V";
+    private String globalPaymentsPaymentVertical = "C";
     private String posHardwareVersion;
     private String posSoftwareVersion;
     private String posOperatingSystem;
@@ -75,8 +75,8 @@ public class POSSiteConfigurationData {
     private String modemRouterVendor;
     private String modemRouterProductNameOrModel;
     private String modemPhoneNumber;
-    private String heartlandPrimaryDialNumberOrIpPort;
-    private String heartlandSecondaryDialNumberOrIpPort;
+    private String globalPaymentsPrimaryDialNumberOrIpPort;
+    private String globalPaymentsSecondaryDialNumberOrIpPort;
     private String dispenserInterfaceVendor;
     private String dispenserInterfaceProductNameOrModel;
     private String dispenserInterfaceSoftwareVersion;
@@ -105,12 +105,12 @@ public class POSSiteConfigurationData {
         this.target = target;
         if (this.target == Target.VAPS ){
             merchantType = "5542";
-            heartlandTerminalSpec = "P";
-            heartlandPaymentEngine = "V";
+            globalPaymentsTerminalSpec = "P";
+            globalPaymentsPaymentEngine = "V";
         }else if (this.target == Target.NWS ){
             merchantType = "5542";
-            heartlandTerminalSpec = "P";
-            heartlandPaymentEngine = "N";
+            globalPaymentsTerminalSpec = "P";
+            globalPaymentsPaymentEngine = "N";
         }
     }
 }

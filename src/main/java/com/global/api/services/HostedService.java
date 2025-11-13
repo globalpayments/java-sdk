@@ -15,6 +15,7 @@ import com.global.api.utils.JsonDoc;
 import com.global.api.utils.JsonEncoders;
 
 import java.math.BigDecimal;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class HostedService {
                 transactionId,
                 merchantResponseUrl != null ? authCode : paymentMethod);
 
-        if (!hash.equals(sha1Hash))
+        if (!MessageDigest.isEqual(hash.getBytes(), sha1Hash.getBytes()))
             throw new ApiException("Incorrect hash. Please check your code and the Developers Documentation.");
 
         HashMap<String, String> rvalues = new HashMap<String, String>();

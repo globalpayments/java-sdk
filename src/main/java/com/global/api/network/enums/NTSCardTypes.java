@@ -20,7 +20,7 @@ public enum NTSCardTypes implements IStringConstant {
     VisaFleet("24",31),
     VoyagerFleet("28",31),
     SuperAmericaCoBranded("29",40),
-    StoredValueOrHeartlandGiftCard("31",30),
+    StoredValueOrGlobalPaymentsGiftCard("31",30),
     ValueLink("32",30),
     FuelmanFleet("33",20),
     FleetWide("34",20),

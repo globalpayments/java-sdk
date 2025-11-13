@@ -58,7 +58,7 @@ public enum CardIssuerEntryTag implements IStringConstant {
     TerminalError("NTE"),
     NTS_System("NTS"),
     VisaTransactionId("NV1"),
-    HeartlandTimeRequest("HTR"),
+    GlobalPaymentsTimeRequest("HTR"),
     MastercardWalletId("IMW"),
     CheckInformation("C00"),
     CheckExpandedOrRawMICRData("C02"),

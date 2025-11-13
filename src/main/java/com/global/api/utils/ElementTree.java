@@ -120,6 +120,9 @@ public class ElementTree {
             // Enable secure processing mode in the TransformerFactory to prevent XML External Entity (XXE) attacks.
             // This will disable the resolution of external entities in the processed XML documents.
             tFact.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            // Disable external DTDs and entities explicitly for additional security.
+            tFact.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tFact.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
             Transformer trans = tFact.newTransformer();
             StringWriter writer = new StringWriter();
             StreamResult result = new StreamResult(writer);
@@ -136,6 +139,7 @@ public class ElementTree {
 
         try {
             TransformerFactory tFact = TransformerFactory.newInstance();
+            tFact.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             Transformer trans = tFact.newTransformer();
 
             StringWriter writer = new StringWriter();

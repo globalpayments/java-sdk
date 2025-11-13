@@ -616,7 +616,7 @@ public class TestCards {
           rvalue.setValue(";6006491499999907604=491211085296334?");
         return rvalue;
     }
-    public static GiftCard HeartlandGiftCardSwipe() {
+    public static GiftCard GlobalPaymentsGiftCardSwipe() {
         GiftCard rvalue = new GiftCard();
         rvalue.setValue(";7083550900000000574=99990015917200000?");
         return rvalue;

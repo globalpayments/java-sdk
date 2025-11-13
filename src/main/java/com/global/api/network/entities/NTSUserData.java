@@ -711,7 +711,7 @@ public class NTSUserData {
             case Visa:
             case AmericanExpress:
             case Discover:
-            case StoredValueOrHeartlandGiftCard:
+            case StoredValueOrGlobalPaymentsGiftCard:
             case MastercardPurchasing:
             case PinDebit:
                 // Preparing product data fuel
@@ -889,7 +889,7 @@ public class NTSUserData {
             case Visa:
             case AmericanExpress:
             case Discover:
-            case StoredValueOrHeartlandGiftCard:
+            case StoredValueOrGlobalPaymentsGiftCard:
             case MastercardPurchasing:
             case PinDebit:
                 if(paymentMethod instanceof TransactionReference){

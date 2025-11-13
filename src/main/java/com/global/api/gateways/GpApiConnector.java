@@ -104,7 +104,12 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     private String getReleaseVersion() {
         String version = "";
         try {
-            Document pomXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("pom.xml"));
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setExpandEntityReferences(false);
+            Document pomXml = factory.newDocumentBuilder().parse(new File("pom.xml"));
             Element pomRoot = (Element) pomXml.getElementsByTagName("project").item(0);
             version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
         } catch (Exception ex) {

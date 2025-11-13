@@ -246,7 +246,7 @@ public class TestAccountData {
                 List<DeviceAttributeInfo> deviceAttributeInfo=new ArrayList<>();
 
                 DeviceAttributeInfo info1=new DeviceAttributeInfo();
-                info1.setName("Heartland.AMD.OfficeKey");
+                info1.setName("GlobalPayments.AMD.OfficeKey");
                 info1.setValue("123456");
 
                 deviceAttributeInfo.add(info1);

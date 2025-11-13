@@ -83,7 +83,7 @@ public class NwsFleetTests {
         fleetData = new FleetData();
         //fleetData.setServicePrompt("0");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         // VISA
@@ -1137,7 +1137,7 @@ public class NwsFleetTests {
     @Test
     public void test_020_sale_reversal() throws ApiException {
 
-//        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+//        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
 //        productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
 //        productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
@@ -1217,7 +1217,7 @@ public class NwsFleetTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
         productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
@@ -1318,7 +1318,7 @@ public class NwsFleetTests {
     @Test
     public void test_020_fuel_reversal() throws ApiException {
 
-//        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+//        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
 //        productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
 //        productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
@@ -1442,7 +1442,7 @@ public class NwsFleetTests {
 //        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
 //        productData.add("001", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
         productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
@@ -1849,7 +1849,7 @@ public class NwsFleetTests {
     }
     @Test
     public void test_002_manual_sale_27_PDF0_code_coverage_only() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.ANSI_X9_TG23_Format);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.ANSI_X9_TG23_Format);
         productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
 
         Transaction response = card.charge(new BigDecimal("111.2"))

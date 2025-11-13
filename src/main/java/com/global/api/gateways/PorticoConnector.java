@@ -1432,7 +1432,13 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     private String getReleaseVersion() {
         String version = "";
         try {
-            Document pomXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File("pom.xml"));
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            // Disable external entity processing
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            dbf.setExpandEntityReferences(false);
+            Document pomXml = dbf.newDocumentBuilder().parse(new File("pom.xml"));
             org.w3c.dom.Element pomRoot = (org.w3c.dom.Element) pomXml.getElementsByTagName("project").item(0);
             version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
         } catch (Exception ex) {

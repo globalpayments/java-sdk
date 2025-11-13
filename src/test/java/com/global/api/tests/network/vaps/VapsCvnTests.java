@@ -229,7 +229,7 @@ public class VapsCvnTests {
         CreditCardData card = TestCards.MasterCardFleetManual(false, false);
         card.setCvn("107");
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         FleetData fleetData = new FleetData();
@@ -249,7 +249,7 @@ public class VapsCvnTests {
         CreditCardData card = TestCards.VisaManual(false, false);
         card.setCvn("110");
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         FleetData fleetData = new FleetData();

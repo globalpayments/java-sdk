@@ -107,7 +107,7 @@ public class NTSPOSConfigurationMessageTest {
         POSSiteConfigurationData posSiteConfiguration = new POSSiteConfigurationData();
         posSiteConfiguration.setMessageVersion("1");
         posSiteConfiguration.setCompanyName("Test Company");
-        posSiteConfiguration.setHeartlandCompanyId("045");
+        posSiteConfiguration.setGlobalPaymentsCompanyId("045");
         posSiteConfiguration.setMerchantFranchiseName("Test Merchant");
         posSiteConfiguration.setMerchantIdUnitPlusTid("1245#dcdc");
         posSiteConfiguration.setMerchantAddressStreet("My Street");
@@ -120,9 +120,9 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setMethodOfOperation("A");
         posSiteConfiguration.setPosVendor("VERIFONE");
         posSiteConfiguration.setPosProductNameOrModel("RUBY 2 C1");
-        posSiteConfiguration.setHeartlandPosTerminalType("88");
-        posSiteConfiguration.setHeartlandPosSoftwareVersion("1.1.1.1");
-        posSiteConfiguration.setHeartlandTerminalSpecVersion("31");
+        posSiteConfiguration.setGlobalPaymentsPosTerminalType("88");
+        posSiteConfiguration.setGlobalPaymentsPosSoftwareVersion("1.1.1.1");
+        posSiteConfiguration.setGlobalPaymentsTerminalSpecVersion("31");
         posSiteConfiguration.setPosHardwareVersion("0212");
         posSiteConfiguration.setPosSoftwareVersion("1.1.1");
         posSiteConfiguration.setPosOperatingSystem("V2");
@@ -160,8 +160,8 @@ public class NTSPOSConfigurationMessageTest {
         posSiteConfiguration.setModemRouterVendor("Modem Vendor 1");
         posSiteConfiguration.setModemRouterProductNameOrModel("Modem product 1");
         posSiteConfiguration.setModemPhoneNumber("123-123-1234");
-        posSiteConfiguration.setHeartlandPrimaryDialNumberOrIpPort("123-123-1234");
-        posSiteConfiguration.setHeartlandSecondaryDialNumberOrIpPort("123-123-1234");
+        posSiteConfiguration.setGlobalPaymentsPrimaryDialNumberOrIpPort("123-123-1234");
+        posSiteConfiguration.setGlobalPaymentsSecondaryDialNumberOrIpPort("123-123-1234");
         posSiteConfiguration.setDispenserInterfaceVendor("Interface v1");
         posSiteConfiguration.setDispenserInterfaceProductNameOrModel("dispenser m1");
         posSiteConfiguration.setDispenserInterfaceSoftwareVersion("0001");

@@ -29,8 +29,8 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         NtsUtils.log("COMPANY NAME", requestData.getCompanyName());
         request.addRange(StringUtils.padRight(requestData.getCompanyName(), 15, ' '), 15);
 
-        NtsUtils.log("HEARTLAND COMPANY ID", requestData.getHeartlandCompanyId());
-        request.addRange(StringUtils.padLeft(requestData.getHeartlandCompanyId(), 5, ' '), 5);
+        NtsUtils.log("GLOBAL PAYMENTS COMPANY ID", requestData.getGlobalPaymentsCompanyId());
+        request.addRange(StringUtils.padLeft(requestData.getGlobalPaymentsCompanyId(), 5, ' '), 5);
 
         NtsUtils.log("MERCHANT / FRANCHISE NAME", requestData.getMerchantFranchiseName());
         request.addRange(StringUtils.padRight(requestData.getMerchantFranchiseName(), 20, ' '), 20);
@@ -71,23 +71,23 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         NtsUtils.log("POS PRODUCT NAME or MODEL", requestData.getPosProductNameOrModel());
         request.addRange(StringUtils.padRight(requestData.getPosProductNameOrModel(), 15, ' '), 15);
 
-        NtsUtils.log("HEARTLAND POS TERMINAL TYPE", requestData.getHeartlandPosTerminalType());
-        request.addRange(StringUtils.padLeft(requestData.getHeartlandPosTerminalType(), 3, '0'), 3);
+        NtsUtils.log("GLOBAL PAYMENTS POS TERMINAL TYPE", requestData.getGlobalPaymentsPosTerminalType());
+        request.addRange(StringUtils.padLeft(requestData.getGlobalPaymentsPosTerminalType(), 3, '0'), 3);
 
-        NtsUtils.log("HEARTLAND POS SOFTWARE VERSION", requestData.getHeartlandPosSoftwareVersion());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandPosSoftwareVersion(), 8, ' '), 8);
+        NtsUtils.log("GLOBAL PAYMENTS POS SOFTWARE VERSION", requestData.getGlobalPaymentsPosSoftwareVersion());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsPosSoftwareVersion(), 8, ' '), 8);
 
-        NtsUtils.log("HEARTLAND TERMINAL SPEC", requestData.getHeartlandTerminalSpec());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandTerminalSpec(),1,' '), 1);
+        NtsUtils.log("GLOBAL PAYMENTS TERMINAL SPEC", requestData.getGlobalPaymentsTerminalSpec());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsTerminalSpec(),1,' '), 1);
 
-        NtsUtils.log("HEARTLAND NTS TERMINAL SPEC VERSION", requestData.getHeartlandTerminalSpecVersion());
-        request.addRange(StringUtils.padLeft(requestData.getHeartlandTerminalSpecVersion(), 4, '0'), 4);
+        NtsUtils.log("GLOBAL PAYMENTS NTS TERMINAL SPEC VERSION", requestData.getGlobalPaymentsTerminalSpecVersion());
+        request.addRange(StringUtils.padLeft(requestData.getGlobalPaymentsTerminalSpecVersion(), 4, '0'), 4);
 
-        NtsUtils.log("HEARTLAND PAYMENT ENGINE", requestData.getHeartlandPaymentEngine());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandPaymentEngine(),1,' '), 1);
+        NtsUtils.log("GLOBAL PAYMENTS PAYMENT ENGINE", requestData.getGlobalPaymentsPaymentEngine());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsPaymentEngine(),1,' '), 1);
 
-        NtsUtils.log("HEARTLAND PAYMENT VERTICAL", requestData.getHeartlandPaymentVertical());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandPaymentVertical(),1,' '), 1);
+        NtsUtils.log("GLOBAL PAYMENTS PAYMENT VERTICAL", requestData.getGlobalPaymentsPaymentVertical());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsPaymentVertical(),1,' '), 1);
 
         NtsUtils.log("POS HARDWARE VERSION", requestData.getPosHardwareVersion());
         request.addRange(StringUtils.padRight(requestData.getPosHardwareVersion(), 4, ' '), 4);
@@ -206,11 +206,11 @@ public class NtsPOSSiteConfigurationRequest implements INtsRequestMessage {
         NtsUtils.log("MODEM PHONE NUMBER", requestData.getModemPhoneNumber());
         request.addRange(StringUtils.padRight(requestData.getModemPhoneNumber(), 12, ' '), 12);
 
-        NtsUtils.log("HEARTLAND PRIMARY DIAL NUMBER or IP/PORT", requestData.getHeartlandPrimaryDialNumberOrIpPort());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandPrimaryDialNumberOrIpPort(), 21, ' '), 21);
+        NtsUtils.log("GLOBAL PAYMENTS PRIMARY DIAL NUMBER or IP/PORT", requestData.getGlobalPaymentsPrimaryDialNumberOrIpPort());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsPrimaryDialNumberOrIpPort(), 21, ' '), 21);
 
-        NtsUtils.log("HEARTLAND SECONDARY DIAL NUMBER or IP/PORT", requestData.getHeartlandSecondaryDialNumberOrIpPort());
-        request.addRange(StringUtils.padRight(requestData.getHeartlandSecondaryDialNumberOrIpPort(), 21, ' '), 21);
+        NtsUtils.log("GLOBAL PAYMENTS SECONDARY DIAL NUMBER or IP/PORT", requestData.getGlobalPaymentsSecondaryDialNumberOrIpPort());
+        request.addRange(StringUtils.padRight(requestData.getGlobalPaymentsSecondaryDialNumberOrIpPort(), 21, ' '), 21);
 
         NtsUtils.log("DISPENSER INTERFACE VENDOR ", requestData.getDispenserVendor());
         request.addRange(StringUtils.padRight(requestData.getDispenserVendor(), 15, ' '), 15);

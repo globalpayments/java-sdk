@@ -14,7 +14,7 @@ public enum AuthorizerCode implements IStringConstant {
     ReservedAuthorized("D"),
     Synchrony("S"),
     Chase_Net("C"),
-    Heartland_Gift("G");
+    GlobalPayments_Gift("G");
 
     private final String value;
     AuthorizerCode(String value) { this.value = value; }

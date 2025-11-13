@@ -8,7 +8,6 @@ package com.example.applicationparameters;
 public class ApplicationParameters {
 
     private static final String APP_ID = "UJqPrAhrDkGzzNoFInpzKqoI8vfZtGRV";
-    private static final String APP_KEY = "zCFrbrn0NKly9sB4";
 
     // TODO Return here the base URL of your application
     public static String getBaseUrl() {
@@ -20,7 +19,9 @@ public class ApplicationParameters {
     }
 
     public static String getAppKey() {
-        return APP_KEY;
+        Properties properties = new Properties();
+        String appKey = prop.getProperty("3ds2.appKey");
+        return appKey;
     }
 
 }

@@ -3,7 +3,7 @@ package com.global.api.network.enums;
 import com.global.api.entities.enums.IStringConstant;
 
 public enum ProductCodeSet implements IStringConstant {
-    Heartland("0"),
+    GlobalPayments("0"),
     ClientSpecific("1"),
     IssuerSpecific("2"),
     Conexxus_3_Digit("3"),

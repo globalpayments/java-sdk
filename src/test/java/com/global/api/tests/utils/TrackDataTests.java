@@ -244,22 +244,22 @@ public class TrackDataTests {
     }
 
     @Test
-    public void heartlandGift_track1() {
+    public void globalPaymentsGift_track1() {
         GiftCard track = new GiftCard();
-        track.setValue("B5022440000001113^HEARTLAND GIFT TEST^20121019999888877712");
+        track.setValue("B5022440000001113^GlobalPayments GIFT TEST^20121019999888877712");
 
-        assertEquals("HeartlandGift", track.getCardType());
+        assertEquals("GlobalPaymentsGift", track.getCardType());
         assertEquals("5022440000001113", track.getPan());
         assertEquals("2012", track.getExpiry());
         assertNotNull(track.getTrackData());
     }
 
     @Test
-    public void heartlandGift_track2() {
+    public void globalPaymentsGift_track2() {
         GiftCard track = new GiftCard();
         track.setValue("70835500000001113=20121019999888877712");
 
-        assertEquals("HeartlandGift", track.getCardType());
+        assertEquals("GlobalPaymentsGift", track.getCardType());
         assertEquals("70835500000001113", track.getPan());
         assertEquals("2012", track.getExpiry());
         assertNotNull(track.getTrackData());

@@ -16,11 +16,11 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class GpInstallmentTest extends BaseGpApiTest {
+public class GpApiCreateInstallmentTest extends BaseGpApiTest {
 
     private Installment new_installment;
 
-    public GpInstallmentTest() throws ApiException {
+    public GpApiCreateInstallmentTest() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         config.setAppId("bcTDtE6wV2iCfWPqXv0FMpU86YDqvTnc");
         config.setAppKey("jdf2vlLCA13A3Fsz");

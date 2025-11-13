@@ -292,10 +292,10 @@ public class NetworkMessageTests {
 
     @Test
     public void DE43_CardAcceptorData_tests() {
-        String original = "Heartland\\701 4TH AVE S\\Minneapolis\\55415     MN USA";
+        String original = "GlobalPayments\\701 4TH AVE S\\Minneapolis\\55415     MN USA";
 
         DE43_CardAcceptorData element = new DE43_CardAcceptorData().fromByteArray(original.getBytes());
-        assertEquals("Heartland", element.getAddress().getName());
+        assertEquals("GlobalPayments", element.getAddress().getName());
         assertEquals("701 4TH AVE S", element.getAddress().getStreetAddress1());
         assertEquals("Minneapolis", element.getAddress().getCity());
         assertEquals("55415", element.getAddress().getPostalCode());
@@ -654,12 +654,12 @@ public class NetworkMessageTests {
     }
 
     @Test
-    public void DE63_ProductData_HeartlandStandardFormat_tests() {
+    public void DE63_ProductData_GlobalPaymentsStandardFormat_tests() {
         String original = "00O00182\\\\\\75\\";
 
         DE63_ProductData element = new DE63_ProductData().fromByteArray(original.getBytes());
-        assertEquals(ProductDataFormat.HeartlandStandardFormat, element.getProductDataFormat());
-        assertEquals(ProductCodeSet.Heartland, element.getProductCodeSet());
+        assertEquals(ProductDataFormat.GlobalPaymentsStandardFormat, element.getProductDataFormat());
+        assertEquals(ProductCodeSet.GlobalPayments, element.getProductCodeSet());
         assertEquals(ServiceLevel.Other_NonFuel, element.getServiceLevel());
         assertEquals(1, element.getProductCount());
 

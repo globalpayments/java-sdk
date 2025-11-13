@@ -100,7 +100,7 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         // VISA
@@ -163,7 +163,7 @@ public class VapsFleetTests {
     public void test_002_manual_sale_27_PDF0() throws ApiException {
         card = TestCards.VisaFleetManual(true, true);
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
 
@@ -190,7 +190,7 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland,ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Quarts, new BigDecimal("21.12"), new BigDecimal("21.00"), new BigDecimal("51.2"));
         productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
@@ -2018,7 +2018,7 @@ public class VapsFleetTests {
     //  AddFuel() & AddNonFuel()
     @Test
     public void test_001_manual_sale_Fuel_nonFuel() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Gallons, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
@@ -2046,7 +2046,7 @@ public class VapsFleetTests {
     //  If add(), addFuel/addNonFuel method used then only addFuel/addNonFuel products will be added, other ignored
     @Test
     public void test_002_track_sale_Fuel_nonFuel() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.add(ProductCode.Ethanol_Unleaded_Mid_Grade, UnitOfMeasure.Kilograms, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.ImperialGallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
@@ -2073,7 +2073,7 @@ public class VapsFleetTests {
 
     @Test
     public void test_003_sale_nonFuel_Only() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
@@ -2098,7 +2098,7 @@ public class VapsFleetTests {
 
     @Test
     public void test_004_sale_Fuel_only() throws ApiException {
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland, ProductDataFormat.HeartlandStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));

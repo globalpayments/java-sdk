@@ -13,8 +13,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class DE63_ProductData implements IDataElement<DE63_ProductData> {
-    private ProductDataFormat productDataFormat = ProductDataFormat.HeartlandStandardFormat;
-    private ProductCodeSet productCodeSet = ProductCodeSet.Heartland;
+    private ProductDataFormat productDataFormat = ProductDataFormat.GlobalPaymentsStandardFormat;
+    private ProductCodeSet productCodeSet = ProductCodeSet.GlobalPayments;
     private ServiceLevel serviceLevel = ServiceLevel.SelfServe;
     private int productCount;
     @Setter
@@ -137,7 +137,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         serviceLevel = sp.readStringConstant(1, ServiceLevel.class);
 
         switch(productDataFormat) {
-            case HeartlandStandardFormat: {
+            case GlobalPaymentsStandardFormat: {
                 productCount = sp.readInt(3);
                 for(int i = 0; i < productCount; i++) {
                     String code = sp.readToChar('\\');
@@ -179,7 +179,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                     productDataEntries.put(code, entry);
                 }
             } break;
-            case Heartland_ProductCoupon_Format: {
+            case GlobalPayments_ProductCoupon_Format: {
                 productCount = sp.readInt(2);
                 for(int i = 0; i < productCount; i++) {
                     ProductCodeSet set = sp.readStringConstant(1, ProductCodeSet.class);
@@ -257,7 +257,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                 .concat(serviceLevel.getValue());
 
         switch(productDataFormat) {
-            case HeartlandStandardFormat: {
+            case GlobalPaymentsStandardFormat: {
                 if ((cardType != null) && ((cardType).equals(VOYAGER_FLEET))) {
                     if (getFuelProductCount() > 1) {
                         throw new UnsupportedOperationException(FUEL_PRODUCT_COUNT_EXCEPTION);
@@ -393,7 +393,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                             .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
                 }
             } break;
-            case Heartland_ProductCoupon_Format: {
+            case GlobalPayments_ProductCoupon_Format: {
                 rvalue = rvalue.concat(StringUtils.padLeft(getProductCount(), 3, '0'));
                 for(DE63_ProductDataEntry entry: productDataEntries.values()) {
                     rvalue = rvalue.concat(entry.getCode()+ "\\");

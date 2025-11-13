@@ -106,7 +106,7 @@ public class CheckCertification {
 
     @Test
     public void checks_005CorporatePersonalChecking() throws ApiException {
-        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Personal, AccountType.Checking, "Heartland Pays");
+        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Personal, AccountType.Checking, "GlobalPayments Pays");
         check.setAccountNumber("1357902468");
         check.setRoutingNumber("122000030");
         check.setCheckHolderName("Jane Doe");
@@ -126,7 +126,7 @@ public class CheckCertification {
 
     @Test
     public void checks_006CorporateBuisnessChecking() throws ApiException {
-        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Business, AccountType.Checking, "Heartland Pays");
+        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Business, AccountType.Checking, "GlobalPayments Pays");
         check.setAccountNumber("1357902468");
         check.setRoutingNumber("122000030");
         check.setCheckHolderName("Jane Doe");
@@ -141,7 +141,7 @@ public class CheckCertification {
 
     @Test
     public void checks_007CorporatePersonalSavings() throws ApiException {
-        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Personal, AccountType.Savings, "Heartland Pays");
+        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Personal, AccountType.Savings, "GlobalPayments Pays");
         check.setAccountNumber("1357902468");
         check.setRoutingNumber("122000030");
         check.setCheckHolderName("Jane Doe");
@@ -156,7 +156,7 @@ public class CheckCertification {
 
     @Test
     public void checks_008CorporateBuisnessSavings() throws ApiException {
-        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Business, AccountType.Savings, "Heartland Pays");
+        eCheck check = TestChecks.certification(SecCode.Ccd, CheckType.Business, AccountType.Savings, "GlobalPayments Pays");
         check.setAccountNumber("1357902468");
         check.setRoutingNumber("122000030");
         check.setCheckHolderName("Jane Doe");

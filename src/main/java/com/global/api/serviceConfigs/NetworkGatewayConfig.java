@@ -24,7 +24,7 @@ public class NetworkGatewayConfig extends Configuration {
     private ConnectionType connectionType = ConnectionType.ISDN;
     private IGatewayEventHandler gatewayEventHandler;
     private String merchantType;
-    private MessageType messageType = MessageType.Heartland_POS_8583;
+    private MessageType messageType = MessageType.GlobalPayments_POS_8583;
     private String nodeIdentification;
     private Integer primaryPort;
     private ProtocolType protocolType = ProtocolType.TCP_IP;

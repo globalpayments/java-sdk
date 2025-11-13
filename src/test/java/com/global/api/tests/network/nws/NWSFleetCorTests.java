@@ -75,7 +75,7 @@ public class NWSFleetCorTests {
         fleetData.setOdometerReading("125630");
         fleetData.setDriverId("11411");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.PREMIUM_DIESEL_BLEND, UnitOfMeasure.Gallons, 1, 10);
 
         //FleetWide
@@ -160,7 +160,7 @@ public class NWSFleetCorTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
         productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
@@ -381,7 +381,7 @@ public class NWSFleetCorTests {
 //        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
 //        productData.add("001", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Heartland);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments);
         productData.add("05", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
         productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 

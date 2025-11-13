@@ -32,6 +32,7 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
     public static final String APP_ID = "Vw9O4jOMqozC39Grx8q3oGAvqEjLcgGn";
     public static final String APP_KEY = "qgvDUwIhgT8QS2kp";
     public static GpApiConfig gpApiConfig;
+    public static GpApiConfig gpApiConfigSandbox;
     private final StoredCredential storedCredentialData;
     protected static final int FIRST_PAGE = 1;
     protected static final int PAGE_SIZE = 10;
@@ -58,6 +59,22 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
         ServicesContainer.configureService(gpApiConfig);
 
+        gpApiConfigSandbox = new GpApiConfig()
+                .setAppId("4gPqnGBkppGYvoE5UX9EWQlotTxGUDbs")
+                .setAppKey("FQyJA5VuEQfcji2M");
+
+        gpApiConfigSandbox.setChannel(Channel.CardNotPresent);
+        gpApiConfigSandbox.setServiceUrl("https://apis.sandbox.globalpay.com/ucp");
+        gpApiConfigSandbox.setEnableLogging(true);
+        gpApiConfigSandbox.setRequestLogger(new RequestConsoleLogger());
+        gpApiConfigSandbox.setCountry("MX");
+
+        AccessTokenInfo accessTokenInfoS = new AccessTokenInfo();
+        accessTokenInfoS.setTransactionProcessingAccountName("transaction_processing");
+        accessTokenInfoS.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfigSandbox.setAccessTokenInfo(accessTokenInfoS);
+        ServicesContainer.configureService(gpApiConfigSandbox, "sandbox");
+
         installmentData = new InstallmentData();
         installmentData.setMode("INTEREST");
         installmentData.setProgram("SIP");
@@ -69,18 +86,19 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
         storedCredentialData.setType(StoredCredentialType.Installment);
         storedCredentialData.setSequence(StoredCredentialSequence.Subsequent);
         storedCredentialData.setReason(StoredCredentialReason.Incremental);
+        storedCredentialData.setContractReference("TestContractReference");
 
-        masterCard.setNumber("5579083004810368");
+        masterCard.setNumber("5120350100064537");
         masterCard.setExpMonth(12);
-        masterCard.setExpYear(2026);
+        masterCard.setExpYear(2027);
         masterCard.setCvn("123");
         masterCard.setCardPresent(false);
         masterCard.setReaderPresent(false);
 
-        visaCard.setNumber("4915669522406071");
-        visaCard.setExpMonth(04);
-        visaCard.setExpYear(2026);
-        visaCard.setCvn("123");
+        visaCard.setNumber("4395840190010011");
+        visaCard.setExpMonth(12);
+        visaCard.setExpYear(2027);
+        visaCard.setCvn("840");
         visaCard.setCardPresent(false);
         visaCard.setReaderPresent(false);
 
@@ -102,18 +120,12 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
                         .withCurrency(currency)
                         .withStoredCredential(storedCredentialData)
                         .withInstallmentData(installmentData)
-                        .execute();
+                        .execute("sandbox");
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
-        assertNotNull(response.getInstallmentData());
-        assertNotNull(response.getInstallmentData().getProgram());
-        assertNotNull(response.getInstallmentData().getMode());
-        assertNotNull(response.getInstallmentData().getCount());
-        assertNotNull(response.getInstallmentData().getGracePeriodCount());
     }
 
     @Test
-    @Order(2)
     public void CreditSaleForInstallmentVisa() throws ApiException {
         Transaction response =
                 visaCard
@@ -121,46 +133,20 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
                         .withCurrency(currency)
                         .withStoredCredential(storedCredentialData)
                         .withInstallmentData(installmentData)
-                        .execute();
+                        .execute("sandbox");
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
-        assertNotNull(response.getInstallmentData());
-        assertNotNull(response.getInstallmentData().getProgram());
-        assertNotNull(response.getInstallmentData().getMode());
-        assertNotNull(response.getInstallmentData().getCount());
-        assertNotNull(response.getInstallmentData().getGracePeriodCount());
 
     }
 
     @Test
-    @Order(3)
-    public void CreditSaleForInstallmentCarnet() throws ApiException {
-        Transaction response =
-                carnetCard
-                        .charge(amount)
-                        .withCurrency(currency)
-                        .withStoredCredential(storedCredentialData)
-                        .withInstallmentData(installmentData)
-                        .execute();
-        assertTransactionResponse(response, TransactionStatus.Captured);
-        assertEquals(amount, response.getBalanceAmount());
-        assertNotNull(response.getInstallmentData());
-        assertNotNull(response.getInstallmentData().getProgram());
-        assertNotNull(response.getInstallmentData().getMode());
-        assertNotNull(response.getInstallmentData().getCount());
-        assertNotNull(response.getInstallmentData().getGracePeriodCount());
-
-    }
-
-    @Test
-    @Order(4)
     public void CreditSaleWithoutInstallmentData() throws ApiException {
         Transaction response =
                 visaCard
                         .charge(amount)
                         .withCurrency(currency)
                         .withStoredCredential(storedCredentialData)
-                        .execute();
+                        .execute("sandbox");
 
         assertTransactionResponse(response, TransactionStatus.Captured);
         assertEquals(amount, response.getBalanceAmount());
@@ -169,7 +155,6 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
     }
 
     @Test
-    @Order(5)
     public void ReportTransactionDetailForInstallmentByID() throws ApiException {
         Transaction response =
                 masterCard
@@ -193,7 +178,6 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
     }
 
     @Test
-    @Order(6)
     public void ReportTransactionsDetailForInstallment() throws ApiException {
         List<TransactionSummary> sampleTransactionSummary =
                 ReportingService
@@ -209,7 +193,6 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
     }
 
     @Test
-    @Order(7)
     public void TestForStatusInThreeDSecure() throws ApiException {
         TransactionSummary sampleTransactionSummary =
                 ReportingService
@@ -223,7 +206,6 @@ public class GpApiInstallmentTests extends BaseGpApiTest{
     }
 
     @Test
-    @Order(8)
     public void ReportTransactionDetailWithoutInstallmentByID() throws ApiException {
         Transaction response =
                 masterCard

@@ -301,8 +301,8 @@ public class NtsUtils implements IRequestLogger {
 
             if (card.getCardType().equals("ValueLink")) {
                 return NTSCardTypes.ValueLink;
-            } else if (card.getCardType().equals("HeartlandGift") || card.getCardType().equals("StoredValue")) {
-                return NTSCardTypes.StoredValueOrHeartlandGiftCard;
+            } else if (card.getCardType().equals("GlobalPaymentsGift") || card.getCardType().equals("StoredValue")) {
+                return NTSCardTypes.StoredValueOrGlobalPaymentsGiftCard;
             }
         } else if (paymentMethod instanceof EBT) {
             EBT card = (EBT) paymentMethod;

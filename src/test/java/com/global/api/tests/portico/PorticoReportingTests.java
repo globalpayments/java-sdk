@@ -229,7 +229,7 @@ public class PorticoReportingTests {
         creditCardData.setCvn("123");
 
         Address address = new Address();
-        address.setStreetAddress1("1 Heartland Way");
+        address.setStreetAddress1("1 GlobalPayments Way");
         address.setCity("Jeffersonville");
         address.setState("IN");
         address.setPostalCode("47130");

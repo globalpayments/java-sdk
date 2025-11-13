@@ -93,6 +93,7 @@ public class UpaTcpInterface extends DeviceCommInterface {
                                 throw new MessageException("Device is busy.");
                             case Constants.READY_MESSAGE: {
                                 readyReceived = true;
+                                responseMessage = trimControlCodes(response);
                             } break;
                             case Constants.DATA_MESSAGE: {
                                 // Set readyReceived for reboot messages

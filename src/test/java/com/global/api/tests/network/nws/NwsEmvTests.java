@@ -84,7 +84,7 @@ public class NwsEmvTests {
         fleetData = new FleetData();
         fleetData.setServicePrompt("0");
 
-        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Heartland);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
 

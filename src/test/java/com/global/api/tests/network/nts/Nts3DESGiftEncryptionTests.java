@@ -127,7 +127,7 @@ public class Nts3DESGiftEncryptionTests {
         giftCard.setTrackNumber(TrackNumber.TrackTwo);
         giftCard.setEntryMethod(EntryMethod.Swipe);
 //        giftCard.setCardType("StoredValue");
-        giftCard.setCardType("HeartlandGift");
+        giftCard.setCardType("GlobalPaymentsGift");
         giftCard.setExpiry("2501");
     }
 

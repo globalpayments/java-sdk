@@ -739,7 +739,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     new JsonDoc()
                             .set("model", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getType()))
                             .set("reason", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getReason()))
-                            .set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()));
+                            .set("sequence", EnumUtils.getMapping(Target.GP_API, builder.getStoredCredential().getSequence()))
+                            .set("contract_reference", builder.getStoredCredential().getContractReference());
             data.set("stored_credential", storedCredential);
 
             //set installment data

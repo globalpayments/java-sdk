@@ -864,7 +864,7 @@ public class NtsConnector extends GatewayConnectorConfig {
      * @return True: if card type is non bank card.
      */
     private static boolean isNonBankCard(NTSCardTypes cardType) {
-        return (cardType.equals(NTSCardTypes.StoredValueOrHeartlandGiftCard)
+        return (cardType.equals(NTSCardTypes.StoredValueOrGlobalPaymentsGiftCard)
                 || cardType.equals(NTSCardTypes.WexFleet)
                 || cardType.equals(NTSCardTypes.VoyagerFleet)
                 || cardType.equals(NTSCardTypes.FleetOne)
@@ -889,7 +889,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                         || cardType == NTSCardTypes.Visa
                         || cardType == NTSCardTypes.AmericanExpress
                         || cardType == NTSCardTypes.Discover
-                        || cardType == NTSCardTypes.StoredValueOrHeartlandGiftCard
+                        || cardType == NTSCardTypes.StoredValueOrGlobalPaymentsGiftCard
                         || cardType == NTSCardTypes.PinDebit
                         || cardType == NTSCardTypes.MastercardPurchasing
         );
@@ -904,7 +904,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             return false;
         else if (transactionType.equals(TransactionType.Reversal)
                 && !cardType.equals(NTSCardTypes.WexFleet)
-                && !cardType.equals(NTSCardTypes.StoredValueOrHeartlandGiftCard))
+                && !cardType.equals(NTSCardTypes.StoredValueOrGlobalPaymentsGiftCard))
             return false;
         else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.EBT))
             return false;

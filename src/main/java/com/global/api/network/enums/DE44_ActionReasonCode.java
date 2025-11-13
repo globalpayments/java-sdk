@@ -75,7 +75,7 @@ public enum DE44_ActionReasonCode implements IStringConstant {
     IoError_ResourceUnavailable("0711"),
     TransactionNotRecognized("0712"),
     UnmatchedPreAuthorizationCompletion("0713"),
-    DuplicateHeartlandGiftCardTransaction("0714"),
+    DuplicateGlobalPaymentsGiftCardTransaction("0714"),
     TransactionNotAllowed("0715"),
     UnexpectedTrackDataReceived("0716"),
     ServiceProviderError("0717"),

@@ -25,7 +25,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class Vaps3DESGiftcardTests {
     private GiftCard valueLink;
-    private GiftCard heartlandGiftCardSwipe;
+    private GiftCard globalPaymentsGiftCardSwipe;
     private GiftCard svs;
     private AcceptorConfig acceptorConfig ;
     private NetworkGatewayConfig config ;
@@ -94,17 +94,17 @@ public class Vaps3DESGiftcardTests {
         valueLink.setExpiry("2501");
         valueLink.setCardType("ValueLink");
 
-        // Heartland Giftcard
-        heartlandGiftCardSwipe = new GiftCard();
-        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3",
+        // GlobalPayments Giftcard
+        globalPaymentsGiftCardSwipe = new GiftCard();
+        globalPaymentsGiftCardSwipe.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3",
                 "F000019990E00003"));
-        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
-        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
-        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
-        heartlandGiftCardSwipe.setExpiry("2501");
-        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+        globalPaymentsGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        globalPaymentsGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        globalPaymentsGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        globalPaymentsGiftCardSwipe.setExpiry("2501");
+        globalPaymentsGiftCardSwipe.setCardType("GlobalPaymentsGift");
 
-        heartlandGiftCardSwipe = TestCards.HeartlandGiftCardSwipe();
+        globalPaymentsGiftCardSwipe = TestCards.GlobalPaymentsGiftCardSwipe();
         svs = new GiftCard();
         svs.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3",
                 "F000019990E00003"));
@@ -293,9 +293,9 @@ public class Vaps3DESGiftcardTests {
     }
 
     @Test
-    public void test_01_heartlandGiftCard_activate() throws ApiException {
+    public void test_01_globalPaymentsGiftCard_activate() throws ApiException {
 
-        Transaction response = heartlandGiftCardSwipe.activate(new BigDecimal(25.00))
+        Transaction response = globalPaymentsGiftCardSwipe.activate(new BigDecimal(25.00))
                 .withCurrency("USD")
                 .execute();
         PriorMessageInformation pmi = response.getMessageInformation();
@@ -309,7 +309,7 @@ public class Vaps3DESGiftcardTests {
     }
     @Test
     public void test_balance_inquiry_HGC() throws ApiException {
-        Transaction response = heartlandGiftCardSwipe.balanceInquiry()
+        Transaction response = globalPaymentsGiftCardSwipe.balanceInquiry()
                 .withCurrency("USD")
                 .execute();
         assertNotNull(response);
@@ -322,16 +322,16 @@ public class Vaps3DESGiftcardTests {
         assertEquals("000", response.getResponseCode());
     }
     @Test
-    public void test_04_heartlandGiftCard_auth_HGC() throws ApiException {
-        heartlandGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
+    public void test_04_globalPaymentsGiftCard_auth_HGC() throws ApiException {
+        globalPaymentsGiftCardSwipe.setEncryptionData(EncryptionData.setKtbAndKsn("3A2067D00508DBE43E3342CC77B0575E04D9191B380C88036DD82D54C834DCB4",
                 "F000019990E00003"));
-        heartlandGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
-        heartlandGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
-        heartlandGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
-        heartlandGiftCardSwipe.setExpiry("2501");
-        heartlandGiftCardSwipe.setCardType("HeartlandGift");
+        globalPaymentsGiftCardSwipe.setEncryptedPan("49FE802FA87C5984BBE68AE7A3277200");
+        globalPaymentsGiftCardSwipe.setTrackNumber(TrackNumber.TrackTwo);
+        globalPaymentsGiftCardSwipe.setEntryMethod(EntryMethod.Swipe);
+        globalPaymentsGiftCardSwipe.setExpiry("2501");
+        globalPaymentsGiftCardSwipe.setCardType("GlobalPaymentsGift");
 
-        Transaction response = heartlandGiftCardSwipe.authorize(new BigDecimal(10),true)
+        Transaction response = globalPaymentsGiftCardSwipe.authorize(new BigDecimal(10),true)
                 .withCurrency("USD")
                 .execute();
 
@@ -345,8 +345,8 @@ public class Vaps3DESGiftcardTests {
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
     }
     @Test
-    public void test_05_heartlandGiftCard_purchase() throws ApiException {
-        Transaction response = heartlandGiftCardSwipe.charge(new BigDecimal(10))
+    public void test_05_globalPaymentsGiftCard_purchase() throws ApiException {
+        Transaction response = globalPaymentsGiftCardSwipe.charge(new BigDecimal(10))
                 .withCurrency("USD")
                 .execute();
 
@@ -365,7 +365,7 @@ public class Vaps3DESGiftcardTests {
                 new BigDecimal(10),
                 "TYPE04",
                 new NtsData(),
-                heartlandGiftCardSwipe
+                globalPaymentsGiftCardSwipe
         );
 
         Transaction response = trans.refund(new BigDecimal(10))
