@@ -199,7 +199,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     }
 
     public GpApiTokenResponse getAccessToken() throws GatewayException {
-        GpApiRequest request = gpApiConfig.getAccessTokenProvider().signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions());
+        GpApiRequest request = gpApiConfig.getAccessTokenProvider().signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions(),gpApiConfig.getPorticoTokenConfig());
 
         String rawResponse = null;
 

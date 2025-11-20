@@ -196,13 +196,28 @@ public class ElementTree {
             InputSource is = new InputSource(new StringReader(xml));
             // Create a DocumentBuilderFactory and configure it to prevent XXE attacks.
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            // Disable external entities to prevent XXE attacks
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            dbf.setXIncludeAware(false);
-            dbf.setExpandEntityReferences(false);
+
+            if (isAndroid()) {
+                safeSet(() -> dbf.setFeature("http://xml.org/sax/features/external-general-entities", false));
+                safeSet(() -> dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false));
+                safeSet(() -> dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false));
+
+                // These usually throw UnsupportedOperationException on Android,
+                // but call them in case future versions add support. Ignore safely
+                safeSet(() -> dbf.setXIncludeAware(false));
+                safeSet(() -> dbf.setExpandEntityReferences(false));
+            } else {
+                    // Disable external entities to prevent XXE attacks
+                    dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                    dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                    dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                    dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                    dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+                    dbf.setXIncludeAware(false);
+                    dbf.setExpandEntityReferences(false);
+            }
+
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             ElementTree rvalue = new ElementTree(namespaces);
             rvalue.setDocument(docBuilder.parse(is));
@@ -219,6 +234,34 @@ public class ElementTree {
         }
     }
 
+    private static boolean isAndroid() {
+        try {
+            Class.forName("android.os.Build");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    @FunctionalInterface
+    private interface CheckedRunnable {
+        void run() throws Exception;
+    }
+
+    /**
+     * Executes a configuration action on the XML parser and suppresses any
+     * exceptions that occur. Used on Android where certain XML features are
+     * not supported and may throw UnsupportedOperationException.
+     *
+     * @param action A lambda containing the parser configuration call.
+     */
+    private static void safeSet(CheckedRunnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            System.out.println("Suppressed unsupported parser feature: " + e.getMessage());
+        }
+    }
 
     private void init(HashMap<String, String> namespaces) {
         try {

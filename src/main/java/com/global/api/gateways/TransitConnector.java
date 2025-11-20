@@ -1,9 +1,6 @@
 package com.global.api.gateways;
 
-import com.global.api.builders.AuthorizationBuilder;
-import com.global.api.builders.ManagementBuilder;
-import com.global.api.builders.Secure3dBuilder;
-import com.global.api.builders.TransactionBuilder;
+import com.global.api.builders.*;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -28,7 +25,7 @@ import java.util.Date;
 
 @Accessors(chain = true)
 @Setter
-public class TransitConnector extends XmlGateway implements IPaymentGateway, ISecure3dProvider {
+public class TransitConnector extends XmlGateway implements IPaymentGateway, ISecure3dProvider, IReportingService {
     private AcceptorConfig acceptorConfig;
     private String deviceId;
     private String developerId;
@@ -51,6 +48,12 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
     @Override
     public boolean supportsOpenBanking() {
         return false;
+    }
+
+    @Override
+    public String doTransaction(String request) throws GatewayException {
+        String rawResponse = super.doTransaction(request);
+        return rawResponse;
     }
 
     public String generateKey(String userId, String password) throws ApiException {
@@ -86,7 +89,9 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 .set("transactionKey", transactionKey)
                 .set("transactionAmount", StringUtils.toNumeric(builder.getAmount()))
                 .set("tokenRequired", builder.isRequestMultiUseToken() ? "Y" : "N")
-                .set("externalReferenceID", builder.getClientTxnId());
+                .set("externalReferenceID", builder.getClientTransactionId())
+                .set("currencyCode", builder.getCurrency())
+                .set("orderNumber", builder.getInvoiceNumber());
 
         if (builder.isAllowDuplicates()) {
             request.setAllowDuplicates(true);
@@ -128,6 +133,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
             request.set("cardNumber", cardNumber)
                     .set("expirationDate", card.getShortExpiry())
                     .set("cvv2", card.getCvn())
+                    .set("cardHolderName", card.getCardHolderName())
                     .set("cardPresentDetail", card.isCardPresent() ? "CARD_PRESENT" : "CARD_NOT_PRESENT")
                     .set("cardholderPresentDetail", cardholderPresentDetail)
                     .set("cardDataInputMode", cardDataInputMode)
@@ -159,8 +165,16 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         if (builder.getPaymentMethod() instanceof IPinProtected) {
             IPinProtected pinProtected = (IPinProtected) builder.getPaymentMethod();
             if (!StringUtils.isNullOrEmpty(pinProtected.getPinBlock())) {
-                request.set("pin", pinProtected.getPinBlock())
-                        .set("pinKsn", pinProtected.getPinBlock().substring(16));
+                request.set("pin", pinProtected.getPinBlock());
+            }
+
+            // Get KSN from EncryptionData (similar to Portico)
+            if (builder.getPaymentMethod() instanceof IEncryptable) {
+                IEncryptable encryptable = (IEncryptable) builder.getPaymentMethod();
+                EncryptionData encryptionData = encryptable.getEncryptionData();
+                if (encryptionData != null && encryptionData.getKsn() != null) {
+                    request.set("pinKsn", encryptionData.getKsn());
+                }
             }
         }
 
@@ -474,5 +488,229 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
 
     public Secure3dVersion getVersion() {
         return version;
+    }
+
+    @Override
+    public <T> T processReport(ReportBuilder<T> builder, Class<T> clazz) throws ApiException {
+        ElementTree et = new ElementTree();
+        ReportType reportType = builder.getReportType();
+
+        Element root = et.element("GetReportData");
+
+        et.subElement(root, "deviceID", deviceId);
+        et.subElement(root, "transactionKey", transactionKey);
+
+        et.subElement(root, "reportName", mapReportType(reportType));
+
+        if (builder instanceof TransactionReportBuilder) {
+            TransactionReportBuilder<T> trb = (TransactionReportBuilder<T>) builder;
+            Element searchCriteria = et.subElement(root, "searchCriteria");
+
+            if (trb.getTransactionId() != null) {
+                Element condition = et.subElement(searchCriteria, "condition");
+                et.subElement(condition, "columnName", "transactionID");
+                et.subElement(condition, "operator", "Equals");
+                et.subElement(condition, "value", trb.getTransactionId());
+            } else if (trb.getStartDate() != null || trb.getEndDate() != null) {
+                Element dateRange = et.subElement(searchCriteria, "dateRange");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                if (trb.getStartDate() != null) {
+                    et.subElement(dateRange, "fromDate", sdf.format(trb.getStartDate()));
+                }
+                if (trb.getEndDate() != null) {
+                    et.subElement(dateRange, "toDate", sdf.format(trb.getEndDate()));
+                }
+            }
+
+            if (reportType.equals(ReportType.FindTransactions) && trb.getSearchBuilder() != null) {
+                if (trb.getSearchBuilder().getCardNumberLastFour() != null) {
+                    Element condition = et.subElement(searchCriteria, "condition");
+                    et.subElement(condition, "columnName", "cardNumber");
+                    et.subElement(condition, "operator", "Equals");
+                    et.subElement(condition, "value", trb.getSearchBuilder().getCardNumberLastFour());
+                }
+
+                if (trb.getSearchBuilder().getInvoiceNumber() != null) {
+                    Element condition = et.subElement(searchCriteria, "condition");
+                    et.subElement(condition, "columnName", "invoiceNumber");
+                    et.subElement(condition, "operator", "Equals");
+                    et.subElement(condition, "value", trb.getSearchBuilder().getInvoiceNumber());
+                }
+
+                if (trb.getSearchBuilder().getClientTransactionId() != null) {
+                    Element condition = et.subElement(searchCriteria, "condition");
+                    et.subElement(condition, "columnName", "externalReferenceID");
+                    et.subElement(condition, "operator", "Equals");
+                    et.subElement(condition, "value", trb.getSearchBuilder().getClientTransactionId());
+                }
+            }
+
+            if (reportType.equals(ReportType.BatchDetail) && trb.getBatchId() != 0) {
+                Element condition = et.subElement(searchCriteria, "condition");
+                et.subElement(condition, "columnName", "batchNumber");
+                et.subElement(condition, "operator", "Equals");
+                et.subElement(condition, "value", String.valueOf(trb.getBatchId()));
+            }
+        }
+
+        if (reportType.equals(ReportType.TransactionDetail) || reportType.equals(ReportType.FindTransactions)) {
+            Element optionalColumns = et.subElement(root, "optionalColumns");
+            et.subElement(optionalColumns, "columnName", "transactionID");
+            et.subElement(optionalColumns, "columnName", "salesTax");
+            et.subElement(optionalColumns, "columnName", "transactionType");
+            et.subElement(optionalColumns, "columnName", "externalReferenceID");
+            et.subElement(optionalColumns, "columnName", "batchNumber");
+            et.subElement(optionalColumns, "columnName", "commercialCardIndicator");
+            et.subElement(optionalColumns, "columnName", "POnumber");
+        }
+
+        if (developerId != null) {
+            et.subElement(root, "developerID", developerId);
+        }
+        String rawResponse = doTransaction(et.toString(root));
+        return mapReportResponse(rawResponse, reportType, clazz);
+    }
+
+    private String mapReportType(ReportType type) throws UnsupportedTransactionException {
+        switch (type) {
+            case TransactionDetail:
+            case FindTransactions:
+            case Activity:
+                return "conciseTransactionDetailsReport";
+            case BatchDetail:
+                return "batchReport";
+            case OpenAuths:
+                return "authReport";
+            default:
+                throw new UnsupportedTransactionException("Report type " + type + " is not supported for Transit gateway");
+        }
+    }
+
+    private <T> T mapReportResponse(String rawResponse, ReportType reportType, Class<T> clazz) throws ApiException {
+        Element response = ElementTree.parse(rawResponse).get("GetReportDataResponse");
+
+        String status = response.getString("status");
+        String responseCode = response.getString("responseCode");
+        String responseMessage = response.getString("responseMessage");
+
+        if (!"PASS".equals(status)) {
+            throw new GatewayException(
+                    String.format("Report request failed: %s - %s", responseCode, responseMessage),
+                    responseCode,
+                    responseMessage
+            );
+        }
+
+        try {
+            T rvalue = clazz.newInstance();
+
+            Element reportData = response.get("reportData");
+            if (reportData == null) {
+                return rvalue;
+            }
+
+            if (reportType.equals(ReportType.TransactionDetail)) {
+                Element[] rows = reportData.getAll("ROW");
+                if (rows != null && rows.length > 0) {
+                    TransactionSummary summary = hydrateTransitTransactionSummary(rows[0]);
+                    summary.setGatewayResponseCode(responseCode);
+                    summary.setGatewayResponseMessage(responseMessage);
+                    summary.setStatus(status);
+                    rvalue = (T) summary;
+                }
+            } else if (reportType.equals(ReportType.FindTransactions) ||
+                    reportType.equals(ReportType.BatchDetail) ||
+                    reportType.equals(ReportType.OpenAuths) ||
+                    reportType.equals(ReportType.Activity)) {
+                Element[] rows = reportData.getAll("ROW");
+                if (rvalue instanceof TransactionSummaryList) {
+                    for (Element row : rows) {
+                        TransactionSummary summary = hydrateTransitTransactionSummary(row);
+                        summary.setGatewayResponseCode(responseCode);
+                        summary.setGatewayResponseMessage(responseMessage);
+                        summary.setStatus(status);
+                        ((TransactionSummaryList) rvalue).add(summary);
+                    }
+                } else if (rvalue instanceof TransactionSummary && rows != null && rows.length > 0) {
+                    TransactionSummary summary = hydrateTransitTransactionSummary(rows[0]);
+                    summary.setGatewayResponseCode(responseCode);
+                    summary.setGatewayResponseMessage(responseMessage);
+                    summary.setStatus(status);
+                    rvalue = (T) summary;
+                }
+            }
+
+            return rvalue;
+        } catch (Exception e) {
+            throw new ApiException("Error mapping report response: " + e.getMessage(), e);
+        }
+    }
+
+    private TransactionSummary hydrateTransitTransactionSummary(Element row) {
+        TransactionSummary summary = new TransactionSummary();
+
+        String transactionId = row.getString("transactionID");
+        if (transactionId == null) {
+            transactionId = row.getString("transactionId");
+        }
+        summary.setTransactionId(transactionId);
+
+        String dateStr = row.getString("transactionDate");
+        String timeStr = row.getString("transactionTime");
+        if (dateStr != null && timeStr != null) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date transactionDateTime = sdf.parse(dateStr + " " + timeStr);
+                summary.setTransactionDate(new org.joda.time.DateTime(transactionDateTime));
+            } catch (Exception e) {
+                summary.setTransactionDate(row.getDateTime("transactionDate"));
+            }
+        } else {
+            summary.setTransactionDate(row.getDateTime("transactionDate"));
+        }
+
+        summary.setAmount(row.getDecimal("amount"));
+        summary.setSettlementAmount(row.getDecimal("amount"));
+        summary.setGratuityAmount(row.getDecimal("tipAmount"));
+        summary.setTaxAmount(row.getDecimal("salesTax"));
+
+        summary.setAuthCode(row.getString("approvalCode"));
+        summary.setInvoiceNumber(row.getString("invoiceNumber"));
+        summary.setStatus(row.getString("transactionStatus"));
+        summary.setCardType(row.getString("cardType"));
+        summary.setMaskedCardNumber(row.getString("cardNumber"));
+        summary.setAvsResponseCode(row.getString("avsResponse"));
+
+        // Cardholder info
+        summary.setCardHolderName(row.getString("consumerName"));
+        summary.setEmail(row.getString("consumerEmailID"));
+
+        // Transaction type mapping
+        String transactionType = row.getString("transactionType");
+        summary.setTransactionType(transactionType);
+
+        // Reference numbers
+        summary.setClientTransactionId(row.getString("externalReferenceID"));
+
+        // Batch info
+        summary.setBatchSequenceNumber(row.getString("batchNumber"));
+
+        // Commercial card
+        String commercialIndicator = row.getString("commercialCardIndicator");
+        // Note: TransactionSummary doesn't have setCommercialIndicator, skip for now
+        summary.setPoNumber(row.getString("POnumber"));
+
+        // Additional fields
+        Integer deviceIdInt = row.getInt("deviceID");
+        if (deviceIdInt != null) {
+            summary.setDeviceId(deviceIdInt);
+        }
+
+        return summary;
+    }
+
+    @Override
+    public <T> T surchargeEligibilityLookup(SurchargeEligibilityBuilder builder, Class clazz) throws ApiException {
+        return null;
     }
 }

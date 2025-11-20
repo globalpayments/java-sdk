@@ -1,7 +1,14 @@
 # Changelog
 
 
-## Latest Version - V15.0.0 (11/12/2025)
+## Latest Version - V15.0.1 (11/19/2025)
+### Enhancements
+- [GPAPI] - Added support to enable authentication with Portico credentials via GP-API.
+
+### Bug Fixes:
+- [Portico] - Resolved crashing on the ElementTree when using Android.
+
+## V15.0.0 (11/12/2025)
 ### Enhancements
 - [GPAPI] - Added ContractReference field in Stored Credential object.
 - [Rebranding] - Rebranding from Heartland to Global Payments.

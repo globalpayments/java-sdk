@@ -5,6 +5,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.gpApi.GpApiSessionInfo;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.entities.gpApi.entities.PorticoTokenConfig;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.gateways.IAccessTokenProvider;
 import com.global.api.utils.StringUtils;
@@ -77,6 +78,8 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     // When true the header key: "x-gp-sdk" with value: "java;version=X.Y.Z" will be not be inserted on GpApiConnector requests
     private boolean isAndroid;
+
+    public PorticoTokenConfig porticoTokenConfig;
 
     public GpApiConfig() {
         super(GatewayProvider.GP_API);
