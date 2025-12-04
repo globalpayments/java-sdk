@@ -24,10 +24,10 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PorticoCreditTests {
+    private final CreditTrackData track;
+    private final String clientTxnID;
+    private final CommercialData commercialData;
     private CreditCardData card;
-    private CreditTrackData track;
-    private String clientTxnID;
-    private CommercialData commercialData;
 
     public PorticoCreditTests() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -49,10 +49,10 @@ public class PorticoCreditTests {
         track.setValue("<E1050711%B4012001000000016^VI TEST CREDIT^251200000000000000000000?|LO04K0WFOmdkDz0um+GwUkILL8ZZOP6Zc4rCpZ9+kg2T3JBT4AEOilWTI|+++++++Dbbn04ekG|11;4012001000000016=25120000000000000000?|1u2F/aEhbdoPixyAPGyIDv3gBfF|+++++++Dbbn04ekG|00|||/wECAQECAoFGAgEH2wYcShV78RZwb3NAc2VjdXJlZXhjaGFuZ2UubmV0PX50qfj4dt0lu9oFBESQQNkpoxEVpCW3ZKmoIV3T93zphPS3XKP4+DiVlM8VIOOmAuRrpzxNi0TN/DWXWSjUC8m/PI2dACGdl/hVJ/imfqIs68wYDnp8j0ZfgvM26MlnDbTVRrSx68Nzj2QAgpBCHcaBb/FZm9T7pfMr2Mlh2YcAt6gGG1i2bJgiEJn8IiSDX5M2ybzqRT86PCbKle/XCTwFFe1X|>;");
         track.setEncryptionData(EncryptionData.version1());
 
-        int randomID = new Random().nextInt(999999 - 10000)+10000;
+        int randomID = new Random().nextInt(999999 - 10000) + 10000;
         clientTxnID = Integer.toString(randomID);
 
-        commercialData = new CommercialData(TaxType.SalesTax, TransactionModifier.Level_III) ;
+        commercialData = new CommercialData(TaxType.SalesTax, TransactionModifier.Level_III);
         commercialData.setPoNumber("9876543210");
         commercialData.setTaxAmount(new BigDecimal(10));
         commercialData.setDestinationPostalCode("85212");
@@ -73,7 +73,7 @@ public class PorticoCreditTests {
 
         commercialLineItem.setDescription("PRODUCT 1 NOTES");
         commercialLineItem.setProductCode("PRDCD1");
-        commercialLineItem.setUnitCost(new BigDecimal(0.01));
+        commercialLineItem.setUnitCost(new BigDecimal("0.01"));
         commercialLineItem.setQuantity(new BigDecimal(1));
         commercialLineItem.setUnitOfMeasure("METER");
         commercialLineItem.setTotalAmount(new BigDecimal(10));
@@ -133,6 +133,7 @@ public class PorticoCreditTests {
         assertEquals("00", response.getResponseCode());
         assertEquals(clientTxnID, response.getClientTransactionId());
     }
+
     @Test
     public void creditSaleWithCardHolderLanguage() throws ApiException {
         Transaction response = card.charge(new BigDecimal(15))
@@ -176,6 +177,7 @@ public class PorticoCreditTests {
         String response = card.tokenize();
         assertNotNull(response);
     }
+
     @Test
     public void creditTokenizationWithVerify() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -188,6 +190,7 @@ public class PorticoCreditTests {
         String response = card.tokenize(true, "tokenConfig");
         assertNotNull(response);
     }
+
     @Test
     public void creditTokenizationWithoutVerify() throws ApiException {
         PorticoConfig config = new PorticoConfig();
@@ -376,7 +379,8 @@ public class PorticoCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test @Disabled
+    @Test
+    @Disabled
     public void creditSwipeAddValue() throws ApiException {
         Transaction response = track.addValue(new BigDecimal(16))
                 .withCurrency("USD")
@@ -463,7 +467,7 @@ public class PorticoCreditTests {
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
-        assertEquals(clientTxnID,response.getClientTransactionId());
+        assertEquals(clientTxnID, response.getClientTransactionId());
     }
 
     @Test
@@ -637,7 +641,7 @@ public class PorticoCreditTests {
 
         Transaction nextResponse = card.charge(new BigDecimal(15))
                 .withCurrency("USD")
-                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(nextResponse);
@@ -657,7 +661,7 @@ public class PorticoCreditTests {
 
         Transaction nextResponse = card.verify()
                 .withAllowDuplicates(true)
-                .withCardBrandStorage(StoredCredentialInitiator.Merchant,response.getCardBrandTransactionId())
+                .withCardBrandStorage(StoredCredentialInitiator.Merchant, response.getCardBrandTransactionId())
                 .execute();
         assertNotNull(nextResponse);
         assertEquals("00", nextResponse.getResponseCode());
@@ -703,11 +707,12 @@ public class PorticoCreditTests {
         Transaction nextResponse = card.charge(new BigDecimal(14))
                 .withCurrency("USD")
                 .withAllowDuplicates(false)
-                .withCardBrandStorage(StoredCredentialInitiator.CardHolder,response.getCardBrandTransactionId())
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder, response.getCardBrandTransactionId())
                 .execute();
         assertNotNull(nextResponse);
         assertNotNull(nextResponse.getAdditionalDuplicateData());
     }
+
     @Test
     public void creditSale_Pinblock() throws ApiException {
         track.setPinBlock("abcjhvcjbvhjxbvjxh");
@@ -732,14 +737,15 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("APPROVAL", response.getResponseMessage());
     }
+
     @Test
     public void creditSale_Without_ChipCondition() throws ApiException {
         track.setPinBlock("abcjhvcjbvhjxbvjxh");
         GatewayException exception = assertThrows(GatewayException.class,
                 () -> track.charge(new BigDecimal(15))
-                .withCurrency("USD")
-                .withAllowDuplicates(true)
-                .execute());
+                        .withCurrency("USD")
+                        .withAllowDuplicates(true)
+                        .execute());
         assertEquals("Unexpected Gateway Response: 34 - Transaction rejected because the provided data was invalid. When sending EMVData block either chip card TLV tag data or EMVChipCondition must be specified.", exception.getMessage());
     }
 
@@ -837,6 +843,7 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
     }
+
     @Test
     public void CreditCapture_ClerkId() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(14)).withCurrency("USD").withAllowDuplicates(true)
@@ -852,6 +859,7 @@ public class PorticoCreditTests {
         assertNotNull(capture);
         assertEquals("00", capture.getResponseCode());
     }
+
     @Test
     public void ClerkId_Negative() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(14))
@@ -862,15 +870,16 @@ public class PorticoCreditTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        BuilderException exc = assertThrows(BuilderException.class,()-> {
+        BuilderException exc = assertThrows(BuilderException.class, () -> {
             response.capture(new BigDecimal(16))
                     .withGratuity(new BigDecimal(2))
                     .withClerkId("C3008_ID0983634567ndhgfds45678908765432wqsdcvn 87723")
                     .execute();
 
         });
-        assertEquals("length should not be more than 50 digits",exc.getMessage());
+        assertEquals("length should not be more than 50 digits", exc.getMessage());
     }
+
     @Test
     public void creditAuthorizationWithCOF_categoryIndicator() throws ApiException {
         Transaction response = card.authorize(new BigDecimal(14))
@@ -884,7 +893,7 @@ public class PorticoCreditTests {
         Transaction nextResponse = card.authorize(new BigDecimal(14))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
-                .withCardBrandStorage(StoredCredentialInitiator.CardHolder, response.getCardBrandTransactionId(),"07")
+                .withCardBrandStorage(StoredCredentialInitiator.CardHolder, response.getCardBrandTransactionId(), "07")
                 .execute();
         assertNotNull(nextResponse);
         assertEquals("00", nextResponse.getResponseCode());

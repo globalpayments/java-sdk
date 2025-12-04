@@ -187,6 +187,13 @@ public class VapsConnector extends GatewayConnectorConfig {
             if(!StringUtils.isNullOrEmpty(card.getCvn())) {
                 dataCode.setCardHolderAuthenticationMethod(DE22_CardHolderAuthenticationMethod.OnCard_SecurityCode);
             }
+            if(card instanceof EBTCardData) {
+                if (tagData != null) {
+                    dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactEmv);
+                } else if (builder.getEmvChipCondition() != null) {
+                    dataCode.setCardDataInputMode(DE22_CardDataInputMode.MagStripe_Fallback);
+                }
+            }
         }
         else if(paymentMethod instanceof ITrackData) {
             ITrackData card = (ITrackData)builder.getPaymentMethod();
@@ -226,7 +233,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
 
             // set data codes
-            if(paymentMethodType.equals(PaymentMethodType.Credit) || paymentMethodType.equals(PaymentMethodType.Debit)) {
+            if(paymentMethodType.equals(PaymentMethodType.Credit) || paymentMethodType.equals(PaymentMethodType.Debit) || paymentMethodType.equals(PaymentMethodType.EBT)) {
                 dataCode.setCardHolderPresence(DE22_CardHolderPresence.CardHolder_Present);
                 dataCode.setCardPresence(DE22_CardPresence.CardPresent);
                 if(tagData != null) {
@@ -248,17 +255,19 @@ public class VapsConnector extends GatewayConnectorConfig {
                     if(cardDataInputMode != null){
                         dataCode.setCardDataInputMode(cardDataInputMode);
                     }
-                    else if(card.getEntryMethod().equals(EntryMethod.Proximity)) {
+                    else if(card.getEntryMethod() != null && card.getEntryMethod().equals(EntryMethod.Proximity)) {
                         dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactlessMsd);
                     }
                     else {
                         if(builder.getEmvChipCondition() != null) {
                             dataCode.setCardDataInputMode(DE22_CardDataInputMode.MagStripe_Fallback);
+                        } else if(card instanceof EBTTrackData){
+                            dataCode.setCardDataInputMode(DE22_CardDataInputMode.MagStripe);
                         }
                         else dataCode.setCardDataInputMode(DE22_CardDataInputMode.UnalteredTrackData);
                     }
                 }
-            }
+           }
         }
         else if(paymentMethod instanceof GiftCard) {
             GiftCard giftCard = (GiftCard)paymentMethod;
@@ -1905,6 +1914,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         switch(builder.getTransactionType()) {
             case Auth:
             case Balance:
+            case Decline:
             case Verify: {
                 mtiValue += "1";
             } break;
@@ -1952,6 +1962,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             case LoadReversal:
             case Reversal:
             case PosSiteConfiguration:
+            case Decline:
             case Void: {
                 mtiValue += "2";
             } break;
@@ -2088,6 +2099,7 @@ public class VapsConnector extends GatewayConnectorConfig {
             case Verify: {
                 processingCode.setTransactionType(DE3_TransactionType.BalanceInquiry);
             } break;
+            case Decline:
             default: {
                 processingCode.setTransactionType(DE3_TransactionType.GoodsAndService);
             }
@@ -2258,6 +2270,9 @@ public class VapsConnector extends GatewayConnectorConfig {
             }
             case PosSiteConfiguration:{
                 return "692";
+            }
+            case Decline:{
+                return "190";
             }
             default: {
                 return "000";

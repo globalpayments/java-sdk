@@ -3,6 +3,7 @@ package com.global.api.tests.terminals.pax;
 import com.global.api.entities.Address;
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.DeviceType;
+import com.global.api.entities.enums.SafMode;
 import com.global.api.entities.enums.StoredCredentialInitiator;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -311,12 +312,12 @@ public class PaxCreditTests {
                 .withGratuity(new BigDecimal("1.50"))
                 .execute();
         assertNotNull(response);
-        assertEquals(new BigDecimal(amt + "1.50"), response.getTransactionAmount());
+        assertEquals(amt.add(new BigDecimal("1.50")), response.getTransactionAmount());
         assertEquals("00", response.getResponseCode());
     }
 
     @Test
-    public void creditSale_TipAdjust() throws ApiException {
+    public void creditSale_TipAdjustWithTransactionId() throws ApiException {
         TerminalResponse response = device.sale(new BigDecimal("13.50"))
                 .withAllowDuplicates(true)
                 .execute();
@@ -324,11 +325,27 @@ public class PaxCreditTests {
         assertEquals("00", response.getResponseCode());
 
         TerminalResponse tipResponse = device.tipAdjust(new BigDecimal("11.50"))
-                .withTransactionId(response.getTransactionId())
+                .withReferenceNumber(response.getTransactionId())
                 .execute();
         assertNotNull(tipResponse);
         assertEquals("00", tipResponse.getResponseCode());
     }
+
+    @Test
+    public void creditSale_TipAdjustWithTerminalRefNumber() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal("13.50"))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TerminalResponse tipResponse = device.tipAdjust(new BigDecimal("11.50"))
+                .withTerminalRefNumber(response.getTerminalRefNumber())
+                .execute();
+        assertNotNull(tipResponse);
+        assertEquals("00", tipResponse.getResponseCode());
+    }
+
 
     @Test @Ignore
     public void creditAuth_With_TransactionIdentifier() throws ApiException {
@@ -423,6 +440,24 @@ public class PaxCreditTests {
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_TipAdjustForSAF() throws ApiException {
+        device.setStoreAndForwardMode(SafMode.STAY_OFFLINE);
+
+        TerminalResponse response = device.sale(new BigDecimal("13.50"))
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getResponseText());
+
+        TerminalResponse tipResponse = device.tipAdjust(new BigDecimal("11.50"))
+                .withTerminalRefNumber(response.getTerminalRefNumber())
+                .execute();
+        assertNotNull(tipResponse);
+        assertEquals("00", tipResponse.getResponseCode());
     }
 
     public void logStuff() {

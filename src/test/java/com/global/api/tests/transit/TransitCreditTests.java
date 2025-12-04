@@ -3,6 +3,7 @@ package com.global.api.tests.transit;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
 import com.global.api.entities.BatchSummary;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.EmvFallbackCondition;
 import com.global.api.entities.enums.EmvLastChipRead;
@@ -24,10 +25,13 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TransitCreditTests {
     private static final BigDecimal AMOUNT = new BigDecimal("12.35");
+    private static final String emvTagData = "9F360202AB9F2608067DECBF9BF2CA5A9F02060000000013008407A00000000310109F0607A0000000031010500B56495341204352454449549F3501225F24032212319F1E0831323032353234379F03060000000000009F34035E03009F37040A410B949F100706010A03A0A0009F1A0208405F2A0208409B0268009F120B56697361204372656469749A032511189F2701809F4104001103219F21031119219F39010582021C009F5301529F33036028C8950580400080009F090200965F3401018A025A319C01004F07A0000000031010";
     private final CreditCardData card;
     private final CreditTrackData track;
     private final CreditCardData tokenizedCard;
@@ -580,5 +584,297 @@ public class TransitCreditTests {
             config.setAcceptorConfig(new AcceptorConfig());
             ServicesContainer.configureService(config);
         });
+    }
+
+    @Test
+    @Disabled
+    public void creditSale_MSRCardData_Track2Only_WithContactless() throws ApiException {
+        // Test MSR card data with Track 2 only and contactless entry
+        CreditTrackData msrCard = new CreditTrackData();
+
+        // Simulating encoded track 2 data (base64 encoded)
+        msrCard.setValue("ABC123XYZ456==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("FFCBAD3E4F2B8==");
+        msrCard.setEncryptionData(encryptionData);
+
+        // Set entry method for contactless
+        msrCard.setEntryMethod(EntryMethod.Proximity);
+        Transaction response = msrCard.charge(new BigDecimal("25.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditSale_EMVCardData_WithTrack2Equivalent() throws ApiException {
+        // Test EMV card data with track2 equivalent data
+        CreditTrackData emvCard = new CreditTrackData();
+
+        // Track2 equivalent data (base64 encoded)
+        emvCard.setValue("DEF789GHI012==");
+        emvCard.setPan(null); // Explicitly set PAN to null as per implementation
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("AABBCCDD1234==");
+        emvCard.setEncryptionData(encryptionData);
+
+        // Set entry method for contactless EMV
+        emvCard.setEntryMethod(EntryMethod.Proximity);
+
+        // EMV tag data
+
+        Transaction response = emvCard.charge(new BigDecimal("30.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditSale_FallbackScenario_WithChipCondition() throws ApiException {
+        // Test fallback scenario where chip failed
+        CreditTrackData fallbackCard = new CreditTrackData();
+
+        // Track 2 data for fallback
+        fallbackCard.setValue("JKL345MNO678==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("1122334455667788==");
+        fallbackCard.setEncryptionData(encryptionData);
+
+        // For fallback, we use ChipCondition instead of tag data
+        Transaction response = fallbackCard.charge(new BigDecimal("35.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withEmvFallbackData(EmvFallbackCondition.ChipReadFailure, EmvLastChipRead.FAILED)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditSale_SCRCardData_WithTagData() throws ApiException {
+        // Test SCR (Swipe Card Reader) scenario with EMV tag data
+        CreditTrackData scrCard = new CreditTrackData();
+
+        // Track 2 data
+        scrCard.setValue("PQR901STU234==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("9988776655443322==");
+        scrCard.setEncryptionData(encryptionData);
+
+        // SCR uses tag data similar to contactless
+
+        Transaction response = scrCard.charge(new BigDecimal("40.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditSale_ContactlessMSR_ProximityWithTagData() throws ApiException {
+        // Test Contactless MSR with proximity entry and tag data
+        CreditTrackData contactlessMsr = new CreditTrackData();
+
+        // Track 2 only
+        contactlessMsr.setValue("VWX567YZA890==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("FEDCBA9876543210==");
+        contactlessMsr.setEncryptionData(encryptionData);
+
+        // Set proximity entry method
+        contactlessMsr.setEntryMethod(EntryMethod.Proximity);
+
+        // Contactless MSR uses tag data
+
+        Transaction response = contactlessMsr.charge(new BigDecimal("50.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditAuth_MSRCardData_Track2Only_WithContactless() throws ApiException {
+        // Test MSR card data with Track 2 only and contactless entry
+        CreditTrackData msrCard = new CreditTrackData();
+
+        // Simulating encoded track 2 data (base64 encoded)
+        msrCard.setValue("ABC123XYZ456==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("FFCBAD3E4F2B8==");
+        msrCard.setEncryptionData(encryptionData);
+
+        // Set entry method for contactless
+        msrCard.setEntryMethod(EntryMethod.Proximity);
+        Transaction response = msrCard.authorize(new BigDecimal("25.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditAuth_EMVCardData_WithTrack2Equivalent() throws ApiException {
+        // Test EMV card data with track2 equivalent data
+        CreditTrackData emvCard = new CreditTrackData();
+
+        // Track2 equivalent data (base64 encoded)
+        emvCard.setValue("DEF789GHI012==");
+        emvCard.setPan(null); // Explicitly set PAN to null as per implementation
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("AABBCCDD1234==");
+        emvCard.setEncryptionData(encryptionData);
+
+        // Set entry method for contactless EMV
+        emvCard.setEntryMethod(EntryMethod.Proximity);
+
+        // EMV tag data
+
+        Transaction response = emvCard.authorize(new BigDecimal("30.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditAuth_FallbackScenario_WithChipCondition() throws ApiException {
+        // Test fallback scenario where chip failed
+        CreditTrackData fallbackCard = new CreditTrackData();
+
+        // Track 2 data for fallback
+        fallbackCard.setValue("JKL345MNO678==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("1122334455667788==");
+        fallbackCard.setEncryptionData(encryptionData);
+
+        // For fallback, we use ChipCondition instead of tag data
+        Transaction response = fallbackCard.authorize(new BigDecimal("35.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withEmvFallbackData(EmvFallbackCondition.ChipReadFailure, EmvLastChipRead.FAILED)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditAuth_SCRCardData_WithTagData() throws ApiException {
+        // Test SCR (Swipe Card Reader) scenario with EMV tag data
+        CreditTrackData scrCard = new CreditTrackData();
+
+        // Track 2 data
+        scrCard.setValue("PQR901STU234==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("9988776655443322==");
+        scrCard.setEncryptionData(encryptionData);
+
+        // SCR uses tag data similar to contactless
+
+        Transaction response = scrCard.authorize(new BigDecimal("40.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Disabled
+    public void creditAuth_ContactlessMSR_ProximityWithTagData() throws ApiException {
+        // Test Contactless MSR with proximity entry and tag data
+        CreditTrackData contactlessMsr = new CreditTrackData();
+
+        // Track 2 only
+        contactlessMsr.setValue("VWX567YZA890==");
+
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setTrackNumber("2");
+        encryptionData.setKsn("FEDCBA9876543210==");
+        contactlessMsr.setEncryptionData(encryptionData);
+
+        // Set proximity entry method
+        contactlessMsr.setEntryMethod(EntryMethod.Proximity);
+
+        // Contactless MSR uses tag data
+
+        Transaction response = contactlessMsr.authorize(new BigDecimal("50.00"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withTagData(emvTagData)
+                .withPaymentApplicationVersion("abc123")
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
     }
 }

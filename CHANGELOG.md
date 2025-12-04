@@ -1,9 +1,20 @@
 # Changelog
 
 
-## Latest Version - V15.0.1 (11/19/2025)
+## Latest Version - V15.1.0 (12/03/2025)
+### Enhancements
+- [PAX] - Added the ability to void Interac Debit (Canada) transactions on PAX devices.
+- [PAX] - Enabling process tips under offline conditions and receive tip revenue on PAX device.
+- [VAPS] - Added Support for EBT EMV.
+- [Transit] - Updates support for chip data in card present sales
+
+### Bug Fixes
+- [PAX] - Bug fix for the CreditSaleWithGratuity
+
+## V15.0.1 (11/19/2025)
 ### Enhancements
 - [GPAPI] - Added support to enable authentication with Portico credentials via GP-API.
+- [Transit] - Added reporting and fixed debit transactions
 
 ### Bug Fixes:
 - [Portico] - Resolved crashing on the ElementTree when using Android.

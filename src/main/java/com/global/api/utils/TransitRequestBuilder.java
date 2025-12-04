@@ -23,11 +23,13 @@ public class TransitRequestBuilder {
     private List<CommercialLineItem> productDetails;
     private AdditionalTaxDetails additionalTaxDetails;
     private Boolean allowDuplicates;
+    private Boolean hasPin;
 
     public TransitRequestBuilder(String root) {
         this.root = root;
         this.values = new HashMap<>();
         this.et = new ElementTree();
+        this.hasPin = false;
     }
 
     private String get(String key) {
@@ -102,12 +104,58 @@ public class TransitRequestBuilder {
         return this;
     }
 
+    public Boolean getHasPin() {
+        return this.hasPin || false;
+    }
+
+    public TransitRequestBuilder setHasPin(Boolean hasPin) {
+        this.hasPin = hasPin;
+        return this;
+    }
+
     public <T extends TransactionBuilder<Transaction>> String buildRequest(T builder) {
         Element transaction = et.element(root);
 
 
         for (String element : buildRequestMap(builder)) {
-            if ("productDetails".equals(element) && hasProductDetails()) {
+            if ("emvTags".equals(element) && get("emvTags") != null) {
+                // Parse the EMV tag data and create individual tag elements
+                Element emvTagsElement = et.subElement(transaction, "emvTags");
+                String tagData = get("emvTags");
+
+                // Parse the hex string into individual TLV (Tag-Length-Value) entries
+                while (tagData != null && tagData.length() > 0) {
+                    // Determine tag length (2 or 4 characters)
+                    int tagLength;
+                    if (tagData.startsWith("9F") || tagData.startsWith("5F") || tagData.startsWith("82") || tagData.startsWith("DF")) {
+                        tagLength = 4;
+                    } else {
+                        tagLength = 2;
+                    }
+
+                    // Check if we have enough data for tag + length
+                    if (tagData.length() < tagLength + 2) {
+                        break;
+                    }
+
+                    // Extract tag and length
+                    String lengthHex = tagData.substring(tagLength, tagLength + 2);
+                    int valueLength = Integer.parseInt(lengthHex, 16);
+
+                    // Check if we have enough data for the complete TLV
+                    int tlvLength = tagLength + 2 + (valueLength * 2);
+                    if (tagData.length() < tlvLength) {
+                        break;
+                    }
+
+                    // Extract the complete TLV entry
+                    String tlvEntry = tagData.substring(0, tlvLength);
+                    tagData = tagData.substring(tlvLength);
+
+                    // Create tag element with the complete TLV as text content
+                    et.subElement(emvTagsElement, "tag", tlvEntry);
+                }
+            } else if ("productDetails".equals(element) && hasProductDetails()) {
                 for (CommercialLineItem item : productDetails) {
                     Element productElement = et.subElement(transaction, "productDetails");
 
@@ -173,7 +221,7 @@ public class TransitRequestBuilder {
             case Auth:
             case Sale:
                 if (builder.getPaymentMethod() instanceof com.global.api.paymentMethods.Debit) {
-                    return buildList("deviceID|transactionKey|manifest|cardDataSource|transactionAmount|tip|salesTax|additionalTaxDetails|currencyCode|track2Data|track3Data|emulatedTrackData|emvTags|emvFallbackCondition|lastChipRead|paymentAppVersion|emcContactlessToContactChip|pin|pinKsn|secureCode|digitalPaymentCryptogram|programProtocol|directoryServerTransactionID|paymentAccountReference|panReferenceIdentifier|nfcTags|ksn|transactionMID|externalReferenceID|operatorID|orderNumber|cardOnFile|merchantReportID|encryptionType|tokenRequired|healthCareAccountType|prescriptionAmount|visionAmount|dentalAmount|clinicAmount|isQualifiedIIAS|rxNumber|couponID|providerID|providerToken|locationID|notifyEmailID|customerCode|firstName|lastName|transTotalDiscountAmount|transDiscountName|transDiscountAmount|transDiscountPercentage|priority|stackable|productDetails|productDiscountName|productDiscountAmount|productDiscountPercentage|productDiscountType|priority|stackable|productTaxName|productTaxAmount|productTaxPercentage|productTaxType|productVariation|modifierName|modifierValue|modifierPrice|productNotes|softDescriptor|developerID|registeredUserIndicator|lastRegisteredChangeDate|laneID|authorizationIndicator|terminalCapability|terminalOperatingEnvironment|cardholderAuthenticationMethod|terminalAuthenticationCapability|terminalOutputCapability|maxPinLength|terminalCardCaptureCapability|cardholderPresentDetail|cardPresentDetail|cardDataInputMode|cardholderAuthenticationEntity|cardDataOutputCapability|splitTenderPayment|splitTenderID|splitTenderConsolidatedReceipt|noIndividualTransactionReceipt");
+                    return buildList("deviceID|transactionKey|manifest|cardDataSource|transactionAmount|tip|salesTax|additionalTaxDetails|shippingCharges|dutyCharges|surcharge|additionalAmountType|additionalAmount|additionalAmountSign|currencyCode|cardNumber|expirationDate|cvv2|track1Data|track2Data|track3Data|emulatedTrackData|cardHolderName|secureCode|securityProtocol|ucafCollectionIndicator|digitalPaymentCryptogram|programProtocol|directoryServerTransactionID|paymentAccountReference|panReferenceIdentifier|eciIndicator|cardOnFileTransactionIdentifier|emvTags|pin|pinKsn|emvFallbackCondition|lastChipRead|paymentAppVersion|emvContactlessToContactChip|nfcTags|walletSource|checkOutID|addressLine1|zip|transactionMID|externalReferenceID|operatorID|orderNumber|cardOnFile|partialAuthSupport|merchantReportID|encryptionType|ksn|tokenRequired|healthCareAccountType|prescriptionAmount|visionAmount|dentalAmount|clinicAmount|isQualifiedIIAS|rxNumber|couponID|providerID|providerToken|locationID|notifyEmailID|orderID|customerCode|firstName|lastName|customerPhone|transTotalDiscountAmount|transDiscountName|transDiscountAmount|transDiscountPercentage|priority|stackable|productDetails|productCode|productName|price|quantity|measurementUnit|productDiscountName|productDiscountAmount|productDiscountPercentage|productDiscountType|priority|stackable|productTaxName|productTaxAmount|productTaxPercentage|productTaxType|productVariation|modifierName|modifierValue|modifierPrice|productNotes|productDiscountIndicator|productCommodityCode|alternateTaxID|creditIndicator|orderNotes|orderServiceTimestamp|commercialCardLevel|purchaseOrder|chargeDescriptor|customerVATNumber|customerRefID|orderDate|summaryCommodityCode|vatInvoice|chargeDescriptor2|chargeDescriptor3|chargeDescriptor4|supplierReferenceNumber|shipFromZip|shipToZip|destinationCountryCode|orderID|tokenRequesterID|softDescriptor|terminalCapability|terminalOperatingEnvironment|cardholderAuthenticationMethod|terminalAuthenticationCapability|terminalOutputCapability|maxPinLength|terminalCardCaptureCapability|cardholderPresentDetail|cardPresentDetail|cardDataInputMode|cardholderAuthenticationEntity|cardDataOutputCapability|mPosAcceptanceDeviceType|developerID|paymentFacilitatorIdentifier|paymentFacilitatorName|subMerchantIdentifier|subMerchantName|subMerchantCountryCode|subMerchantStateCode|subMerchantCity|subMerchantPostalCode|subMerchantEmailId|subMerchantPhone|isRecurring|billingType|paymentCount|currentPaymentCount|isoIdentifier|registeredUserIndicator|lastRegisteredChangeDate|laneID|authorizationIndicator|companyName|title|homePhone|mobilePhone|workPhone|fax|otherPhone|addressLine2|city|state|country|shippingFirstName|shippingLastName|shippingAddressLine1|shippingAddressLine2|shippingCity|shippingState|shippingZip|shippingCountry|shippingPhoneNumber|shippingEmailID|splitTenderPayment|splitTenderID|splitTenderConsolidatedReceipt|noIndividualTransactionReceipt");
                 }
                 return buildList("deviceID|transactionKey|manifest|cardDataSource|transactionAmount|tip|salesTax|additionalTaxDetails|shippingCharges|dutyCharges|surcharge|additionalAmountType|additionalAmount|additionalAmountSign|currencyCode|cardNumber|expirationDate|cvv2|track1Data|track2Data|track3Data|emulatedTrackData|cardHolderName|secureCode|securityProtocol|ucafCollectionIndicator|digitalPaymentCryptogram|programProtocol|directoryServerTransactionID|paymentAccountReference|panReferenceIdentifier|eciIndicator|cardOnFileTransactionIdentifier|emvTags|pin|pinKsn|emvFallbackCondition|lastChipRead|paymentAppVersion|emvContactlessToContactChip|nfcTags|walletSource|checkOutID|addressLine1|zip|transactionMID|externalReferenceID|operatorID|orderNumber|cardOnFile|merchantReportID|encryptionType|ksn|tokenRequired|healthCareAccountType|prescriptionAmount|visionAmount|dentalAmount|clinicAmount|isQualifiedIIAS|rxNumber|couponID|providerID|providerToken|locationID|notifyEmailID|orderID|customerCode|firstName|lastName|customerPhone|transTotalDiscountAmount|transDiscountName|transDiscountAmount|transDiscountPercentage|priority|stackable|productDetails|productDiscountName|productDiscountAmount|productDicsountPercentage|productDiscountType|priority|stackable|productTaxName|productTaxAmount|productTaxPercentage|productTaxType|productVariation|modifierName|modifierValue|modifierPrice|productNotes|productDiscountIndicator|orderNotes|orderServiceTimestamp|commercialCardLevel|purchaseOrder|chargeDescriptor|customerVATNumber|customerRefID|orderDate|summaryCommodityCode|vatInvoice|chargeDescriptor2|chargeDescriptor3|chargeDescriptor4|supplierReferenceNumber|shipFromZip|shipToZip|destinationCountryCode|orderID|tokenRequesterID|softDescriptor|terminalCapability|terminalOperatingEnvironment|cardholderAuthenticationMethod|terminalAuthenticationCapability|terminalOutputCapability|maxPinLength|terminalCardCaptureCapability|cardholderPresentDetail|cardPresentDetail|cardDataInputMode|cardholderAuthenticationEntity|cardDataOutputCapability|mPosAcceptanceDeviceType|developerID|paymentFacilitatorIdentifier|paymentFacilitatorName|subMerchantIdentifier|subMerchantName|subMerchantCountryCode|subMerchantStateCode|subMerchantCity|subMerchantPostalCode|subMerchantEmailId|subMerchantPhone|isoIdentifier|isRecurring|billingType|paymentCount|currentPaymentCount|isoIdentifier|registeredUserIndicator|lastRegisteredChangeDate|laneID|authorizationIndicator|splitTenderPayment|splitTenderID|splitTenderConsolidatedReceipt|noIndividualTransactionReceipt");
 

@@ -88,6 +88,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 .set("deviceID", deviceId)
                 .set("transactionKey", transactionKey)
                 .set("transactionAmount", StringUtils.toNumeric(builder.getAmount()))
+                .set("currencyCode", builder.getCurrency())
                 .set("tokenRequired", builder.isRequestMultiUseToken() ? "Y" : "N")
                 .set("externalReferenceID", builder.getClientTransactionId())
                 .set("currencyCode", builder.getCurrency())
@@ -141,17 +142,103 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                     .set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL");
         } else if (builder.getPaymentMethod() instanceof ITrackData) {
             ITrackData track = (ITrackData) builder.getPaymentMethod();
-            String trackField = TrackNumber.TrackTwo.equals(track.getTrackNumber()) ? "track2Data" : "track1Data";
-            request.set(trackField, track.getTrackData());
+
+            // track data
+            String trackData = null;
+            TrackNumber trackNumber = track.getTrackNumber();
+
+            // For encrypted data, check if track number is in EncryptionData
+            boolean isEncrypted = false;
+            if (track instanceof IEncryptable) {
+                EncryptionData encryptionData = ((IEncryptable) track).getEncryptionData();
+                if (encryptionData != null) {
+                    isEncrypted = true;
+                    if (!StringUtils.isNullOrEmpty(encryptionData.getTrackNumber())) {
+                        // Use track number from encryption data
+                        if ("1".equals(encryptionData.getTrackNumber())) {
+                            trackNumber = TrackNumber.TrackOne;
+                        } else if ("2".equals(encryptionData.getTrackNumber())) {
+                            trackNumber = TrackNumber.TrackTwo;
+                        }
+                    }
+                }
+            }
+
+            // Use getValue() for encrypted data, getTrackData() for plain text
+            if (isEncrypted) {
+                trackData = track.getValue();  // Full encrypted blob
+            } else {
+                trackData = track.getTrackData();  // Parsed/clean track data
+            }
+
+            if (!StringUtils.isNullOrEmpty(trackData)) {
+                if (TrackNumber.TrackOne.equals(trackNumber)) {
+                    request.set("track1Data", trackData);
+                } else if (TrackNumber.TrackTwo.equals(trackNumber)) {
+                    request.set("track2Data", trackData);
+                }
+            }
+
+            // Set card presence details
             request.set("cardPresentDetail", "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
                     .set("cardDataInputMode", "MAGNETIC_STRIPE_READER_INPUT")
                     .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED");
 
+            //figure out if pin present
+            if (builder.getPaymentMethod() instanceof IPinProtected) {
+                IPinProtected pinProtected = (IPinProtected) builder.getPaymentMethod();
+                if (!StringUtils.isNullOrEmpty(pinProtected.getPinBlock())) {
+                    request.setHasPin(true);
+                }
+            }
+
+            // encrypted data
+            if (track instanceof IEncryptable) {
+                EncryptionData encryptionData = ((IEncryptable) track).getEncryptionData();
+                if (encryptionData != null) {
+                    // Map encryption type based on version
+                    String encryptionType = null;
+                    if ("05".equals(encryptionData.getVersion())) {
+                        encryptionType = "TDES";
+                    } else if ("01".equals(encryptionData.getVersion())) {
+                        encryptionType = "VOLTAGE";
+                    }
+
+                    if (encryptionType != null) {
+                        request.set("encryptionType", encryptionType);
+                    }
+
+                    // Add KSN if present
+                    if (!StringUtils.isNullOrEmpty(encryptionData.getKsn()) && !request.getHasPin()) {
+                        request.set("ksn", encryptionData.getKsn());
+                    }
+                }
+            }
+
+            // emv tags
+            if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
+                // Parse the tag data and add it to the request
+                request.set("emvTags", builder.getTagData());
+            }
+
+            // emv fallback
             if (builder.hasEmvFallbackData()) {
                 request.set("emvFallbackCondition", EnumUtils.getMapping(Target.Transit, builder.getEmvFallbackCondition()))
                         .set("lastChipRead", EnumUtils.getMapping(Target.Transit, builder.getEmvLastChipRead()))
                         .set("paymentAppVersion", builder.getPaymentApplicationVersion() != null ? builder.getPaymentApplicationVersion() : "unspecified");
+            }
+
+            // chip condition fallback
+            if (builder.getEmvChipCondition() != null) {
+                String emvFallbackCondition = null;
+                if (builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess) {
+                    emvFallbackCondition = "ICC_TERMINAL_ERROR";
+                }
+                if (emvFallbackCondition != null) {
+                    request.set("emvFallbackCondition", emvFallbackCondition);
+                    request.set("paymentAppVersion", "unspecified");
+                }
             }
         }
 
@@ -166,16 +253,17 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
             IPinProtected pinProtected = (IPinProtected) builder.getPaymentMethod();
             if (!StringUtils.isNullOrEmpty(pinProtected.getPinBlock())) {
                 request.set("pin", pinProtected.getPinBlock());
-            }
-
-            // Get KSN from EncryptionData (similar to Portico)
-            if (builder.getPaymentMethod() instanceof IEncryptable) {
-                IEncryptable encryptable = (IEncryptable) builder.getPaymentMethod();
-                EncryptionData encryptionData = encryptable.getEncryptionData();
-                if (encryptionData != null && encryptionData.getKsn() != null) {
-                    request.set("pinKsn", encryptionData.getKsn());
+                // Get KSN from EncryptionData
+                if (builder.getPaymentMethod() instanceof IEncryptable) {
+                    IEncryptable encryptable = (IEncryptable) builder.getPaymentMethod();
+                    EncryptionData encryptionData = encryptable.getEncryptionData();
+                    if (encryptionData != null && encryptionData.getKsn() != null) {
+                        request.set("pinKsn", encryptionData.getKsn());
+                    }
                 }
             }
+
+
         }
 
         if (builder.getPaymentMethod() instanceof Credit) {

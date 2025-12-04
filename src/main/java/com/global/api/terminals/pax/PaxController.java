@@ -163,6 +163,7 @@ public class PaxController extends DeviceController {
         TraceRequest trace = new TraceRequest();
         if(requestId != null) {
             trace.setReferenceNumber(requestId.toString());
+            trace.setTransactionNumber(builder.getTerminalRefNumber());
         }
         ExtDataSubGroup extData = new ExtDataSubGroup();
 
@@ -190,6 +191,8 @@ public class PaxController extends DeviceController {
         switch(builder.getPaymentMethodType()) {
             case Credit:
                 return doCredit(transType, amounts, account, trace, new AvsRequest(), new CashierSubGroup(), new CommercialRequest(), new EcomSubGroup(), extData);
+            case Debit:
+                return doDebit(transType, amounts, account, trace, new CashierSubGroup(),extData);
             case Gift:
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
                 return doGift(messageId, transType, amounts, account, trace, new CashierSubGroup(), extData);

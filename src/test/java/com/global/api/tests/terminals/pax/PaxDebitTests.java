@@ -82,7 +82,7 @@ public class PaxDebitTests {
     }
 
     @Test
-    public void debitVoid() throws ApiException {
+    public void debitVoidWithTransactionId() throws ApiException {
         TerminalResponse response = device.sale(new BigDecimal(10))
                 .withPaymentMethodType(PaymentMethodType.Debit)
                 .withAllowDuplicates(true)
@@ -90,9 +90,26 @@ public class PaxDebitTests {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
-        TerminalResponse voidResponse = device.Void()
+        TerminalResponse voidResponse = device.voidTransaction()
                 .withPaymentMethodType(PaymentMethodType.Debit)
-                .withTransactionId(response.getTransactionId())
+                .withReferenceNumber(response.getTransactionId())
+                .execute();
+        assertNotNull(voidResponse);
+        assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void debitVoidWithTerminalReferenceNumber() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal(10))
+                .withPaymentMethodType(PaymentMethodType.Debit)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TerminalResponse voidResponse = device.voidTransaction()
+                .withPaymentMethodType(PaymentMethodType.Debit)
+                .withTerminalRefNumber(response.getTerminalRefNumber())
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
