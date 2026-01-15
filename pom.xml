@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.heartlandpaymentsystems</groupId>
+  <groupId>com.globalpay</groupId>
   <artifactId>globalpayments-sdk</artifactId>
-  <version>15.1.0</version>
+  <version>15.1.1</version>
   <packaging>jar</packaging>
   <name>Global Payments SDK</name>
   <description>API for processing payments through Global Payments</description>
-  <url>https://developer.heartlandpaymentsystems.com</url>
+  <url>https://developer.globalpay.com</url>
   <licenses>
     <license>
       <name>MIT License</name>
@@ -19,7 +19,7 @@
       <name>Team GSD</name>
       <email>entapp_devportal@e-hps.com</email>
       <organization>Global Payments</organization>
-      <organizationUrl>http://www.heartlandpaymentsystems.com</organizationUrl>
+      <organizationUrl>http://www.globalpay.com</organizationUrl>
     </developer>
   </developers>
   <scm>

@@ -14,7 +14,6 @@ import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -217,7 +216,8 @@ public class PaxCreditTests {
         assertEquals("00", returnResponse.getResponseCode());
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void creditRefundByToken() throws ApiException {
         // TODO: Needs new token value
         String token = "GLl8b708JHBbLdMfHf6H4460";
@@ -347,7 +347,8 @@ public class PaxCreditTests {
     }
 
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void creditAuth_With_TransactionIdentifier() throws ApiException {
         TerminalResponse preResponse = device.authorize(amount)
                 .withAllowDuplicates(true)
@@ -366,7 +367,8 @@ public class PaxCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
-    @Test @Ignore
+    @Test
+    @Ignore
     public void creditSale_WithCardBrandInfo() throws ApiException {
         TerminalResponse response = device.sale(amount)
                 .withAllowDuplicates(true)
@@ -409,12 +411,11 @@ public class PaxCreditTests {
     }
 
     /**
-     *
      * This test should demonstrate that the device IS prompting for a tip
      * when a gratuity amount isn't provided to the builder. This assumes that
      * the device has been configured for gratuity, which is something that is
      * set at the terminal file level.
-     *   **Requires end-user confirmation**
+     * **Requires end-user confirmation**
      */
     @Test
     public void testTipPrompt() throws ApiException {
@@ -430,7 +431,7 @@ public class PaxCreditTests {
      * tip when a gratuity amount IS provided to the builder. This assumes that
      * the device is configured for gratuity which is something that is set at
      * the terminal file level.
-     *   **Requires end-user confirmation**
+     * **Requires end-user confirmation**
      */
     @Test
     public void testTipNoPrompt() throws ApiException {
@@ -458,6 +459,19 @@ public class PaxCreditTests {
                 .execute();
         assertNotNull(tipResponse);
         assertEquals("00", tipResponse.getResponseCode());
+    }
+
+    @Test
+    public void creditSale_ManualTipAdjust() throws ApiException {
+        BigDecimal amt = amount;
+        TerminalResponse response = device.sale(amt)
+                .withAllowDuplicates(true)
+                .withGratuityPrompt(true)
+                .execute();
+        // We need to add 1 dollar gratuity
+        assertNotNull(response);
+        assertEquals(amt.add(new BigDecimal("1")), response.getTransactionAmount());
+        assertEquals("00", response.getResponseCode());
     }
 
     public void logStuff() {

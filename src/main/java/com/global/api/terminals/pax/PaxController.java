@@ -12,33 +12,29 @@ import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.TerminalUtilities;
-import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.builders.TerminalReportBuilder;
-import com.global.api.terminals.builders.TerminalSearchBuilder;
-import com.global.api.terminals.messaging.IMessageReceivedInterface;
-import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
+import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.builders.TerminalSearchBuilder;
 import com.global.api.terminals.pax.interfaces.PaxHttpInterface;
 import com.global.api.terminals.pax.interfaces.PaxTcpInterface;
 import com.global.api.terminals.pax.responses.*;
 import com.global.api.terminals.pax.subgroups.*;
 import com.global.api.utils.StringUtils;
-import lombok.Setter;
 
 import java.util.ArrayList;
 
 public class PaxController extends DeviceController {
-    public ConnectionModes getConnectionMode() {
-        if(settings != null)
-            return settings.getConnectionMode();
-        return ConnectionModes.SERIAL;
-    }
-
     public PaxController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
+    }
+
+    public ConnectionModes getConnectionMode() {
+        if (settings != null)
+            return settings.getConnectionMode();
+        return ConnectionModes.SERIAL;
     }
 
     @Override
@@ -61,7 +57,7 @@ public class PaxController extends DeviceController {
     //<editor-fold desc="OVERRIDES">
     public TerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
         Integer requestId = builder.getRequestId();
-        if(requestId == null && requestIdProvider != null) {
+        if (requestId == null && requestIdProvider != null) {
             requestId = requestIdProvider.getRequestId();
         }
         // create subgroups
@@ -69,7 +65,7 @@ public class PaxController extends DeviceController {
         AccountRequest account = new AccountRequest();
         AvsRequest avs = new AvsRequest();
         TraceRequest trace = new TraceRequest();
-        if(requestId != null) {
+        if (requestId != null) {
             trace.setReferenceNumber(requestId.toString());
         }
         CashierSubGroup cashier = new CashierSubGroup();
@@ -86,24 +82,21 @@ public class PaxController extends DeviceController {
         // account subgroup
         if (builder.getPaymentMethod() != null) {
             if (builder.getPaymentMethod() instanceof CreditCardData) {
-                CreditCardData card = (CreditCardData)builder.getPaymentMethod();
+                CreditCardData card = (CreditCardData) builder.getPaymentMethod();
                 if (StringUtils.isNullOrEmpty(card.getToken())) {
                     account.setAccountNumber(card.getNumber());
                     account.setExpd(card.getShortExpiry());
                     if (builder.getTransactionType() != TransactionType.Verify && builder.getTransactionType() != TransactionType.Refund)
                         account.setCvvCode(card.getCvn());
-                }
-                else extData.set(PaxExtData.TOKEN, card.getToken());
-            }
-            else if (builder.getPaymentMethod() instanceof TransactionReference) {
-                TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
+                } else extData.set(PaxExtData.TOKEN, card.getToken());
+            } else if (builder.getPaymentMethod() instanceof TransactionReference) {
+                TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
                 if (!StringUtils.isNullOrEmpty(reference.getAuthCode()))
                     trace.setAuthCode(reference.getAuthCode());
                 if (!StringUtils.isNullOrEmpty(reference.getTransactionId()))
                     extData.set(PaxExtData.HOST_REFERENCE_NUMBER, reference.getTransactionId());
-            }
-            else if (builder.getPaymentMethod() instanceof GiftCard) {
-                GiftCard card = (GiftCard)builder.getPaymentMethod();
+            } else if (builder.getPaymentMethod() instanceof GiftCard) {
+                GiftCard card = (GiftCard) builder.getPaymentMethod();
                 account.setAccountNumber(card.getNumber());
             }
         }
@@ -132,8 +125,12 @@ public class PaxController extends DeviceController {
         if (builder.isSignatureCapture())
             extData.set(PaxExtData.SIGNATURE_CAPTURE, "1");
 
-        if (builder.getGratuity() == null)
+        if (builder.isGratuityPrompt())
+            extData.set(PaxExtData.TIP_REQUEST, "1");
+        
+        if (!builder.isGratuityPrompt())
             extData.set(PaxExtData.TIP_REQUEST, "0");
+
 
         PaxTxnType transType = mapTransactionType(builder.getTransactionType(), builder.isRequestMultiUseToken());
         switch (builder.getPaymentMethodType()) {
@@ -145,7 +142,7 @@ public class PaxController extends DeviceController {
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
                 return doGift(messageId, transType, amounts, account, trace, cashier, extData);
             case EBT:
-                if(builder.getCurrency() != null)
+                if (builder.getCurrency() != null)
                     account.setEbtType(builder.getCurrency().getValue().substring(0, 1));
                 return doEbt(transType, amounts, account, trace, cashier);
             default:
@@ -155,13 +152,13 @@ public class PaxController extends DeviceController {
 
     public TerminalResponse manageTransaction(TerminalManageBuilder builder) throws ApiException {
         Integer requestId = builder.getRequestId();
-        if(requestId == null && requestIdProvider != null) {
+        if (requestId == null && requestIdProvider != null) {
             requestId = requestIdProvider.getRequestId();
         }
         AmountRequest amounts = new AmountRequest();
         AccountRequest account = new AccountRequest();
         TraceRequest trace = new TraceRequest();
-        if(requestId != null) {
+        if (requestId != null) {
             trace.setReferenceNumber(requestId.toString());
             trace.setTransactionNumber(builder.getTerminalRefNumber());
         }
@@ -175,24 +172,23 @@ public class PaxController extends DeviceController {
             amounts.setTransactionAmount(StringUtils.toNumeric(builder.getAmount()));
         }
 
-        if(builder.getPaymentMethod() != null) {
-            if(builder.getPaymentMethod() instanceof TransactionReference) {
-                TransactionReference reference = (TransactionReference)builder.getPaymentMethod();
-                if(!StringUtils.isNullOrEmpty(reference.getTransactionId()))
+        if (builder.getPaymentMethod() != null) {
+            if (builder.getPaymentMethod() instanceof TransactionReference) {
+                TransactionReference reference = (TransactionReference) builder.getPaymentMethod();
+                if (!StringUtils.isNullOrEmpty(reference.getTransactionId()))
                     extData.set(PaxExtData.HOST_REFERENCE_NUMBER, builder.getTransactionId());
-            }
-            else if (builder.getPaymentMethod() instanceof GiftCard) {
-                GiftCard card = (GiftCard)builder.getPaymentMethod();
+            } else if (builder.getPaymentMethod() instanceof GiftCard) {
+                GiftCard card = (GiftCard) builder.getPaymentMethod();
                 account.setAccountNumber(card.getNumber());
             }
         }
 
         PaxTxnType transType = mapTransactionType(builder.getTransactionType());
-        switch(builder.getPaymentMethodType()) {
+        switch (builder.getPaymentMethodType()) {
             case Credit:
                 return doCredit(transType, amounts, account, trace, new AvsRequest(), new CashierSubGroup(), new CommercialRequest(), new EcomSubGroup(), extData);
             case Debit:
-                return doDebit(transType, amounts, account, trace, new CashierSubGroup(),extData);
+                return doDebit(transType, amounts, account, trace, new CashierSubGroup(), extData);
             case Gift:
                 PaxMsgId messageId = builder.getCurrency() == CurrencyType.Currency ? PaxMsgId.T06_DO_GIFT : PaxMsgId.T08_DO_LOYALTY;
                 return doGift(messageId, transType, amounts, account, trace, new CashierSubGroup(), extData);
@@ -203,7 +199,7 @@ public class PaxController extends DeviceController {
         }
     }
 
-    public  LocalDetailReportResponse processReport(TerminalReportBuilder builder) throws ApiException {
+    public LocalDetailReportResponse processReport(TerminalReportBuilder builder) throws ApiException {
         byte[] response = send(buildReportTransaction(builder));
         return new LocalDetailReportResponse(response);
     }
@@ -214,7 +210,7 @@ public class PaxController extends DeviceController {
 
         ExtDataSubGroup additionalData = new ExtDataSubGroup();
         if (criteria.getMerchantId() != null) {
-            additionalData.set(PaxExtData.MERCHANT_ID,(criteria.getMerchantId()));
+            additionalData.set(PaxExtData.MERCHANT_ID, (criteria.getMerchantId()));
         }
         if (criteria.getMerchantName() != null) {
             additionalData.set(PaxExtData.MERCHANT_NAME, criteria.getMerchantName());
@@ -224,7 +220,7 @@ public class PaxController extends DeviceController {
                 messageId,
                 "00",  // EDC TYPE SET TO ALL
                 ControlCodes.FS,
-                (criteria.getTransactionType() != null)? criteria.getTransactionType() : "",
+                (criteria.getTransactionType() != null) ? criteria.getTransactionType() : "",
                 ControlCodes.FS,
                 (criteria.getCardType() != null) ? criteria.getCardType() : "",
                 ControlCodes.FS,
@@ -279,9 +275,9 @@ public class PaxController extends DeviceController {
         ArrayList<Object> commands = new ArrayList<>();
         commands.add(transactionType);
         commands.add(ControlCodes.FS);
-        if(subGroups.length > 0){
+        if (subGroups.length > 0) {
             commands.add(subGroups[0]);
-            for(int i = 1; i < subGroups.length; i++){
+            for (int i = 1; i < subGroups.length; i++) {
                 commands.add(ControlCodes.FS);
                 commands.add(subGroups[i]);
             }
@@ -297,7 +293,7 @@ public class PaxController extends DeviceController {
     }
 
     public GiftResponse doGift(PaxMsgId messageId, PaxTxnType transactionType, AmountRequest amounts, AccountRequest accounts, TraceRequest trace, CashierSubGroup cashier, ExtDataSubGroup extData) throws ApiException {
-        byte[] response = doTransaction(messageId, transactionType, amounts, accounts, trace, cashier,extData);
+        byte[] response = doTransaction(messageId, transactionType, amounts, accounts, trace, cashier, extData);
         return new GiftResponse(response);
     }
 

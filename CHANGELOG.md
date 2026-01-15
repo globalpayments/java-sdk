@@ -1,7 +1,12 @@
 # Changelog
 
+## Latest Version - V15.1.1 (01/15/2026)
+### Bug Fixes
+- Resolved method mismatch issue for setEnableLogging method from the Configuration class.
+- [Pax] - Added explicit controls for tip prompt screen
+- [VAPS/NTS] - Added backward compatible code for token decryption. (Issue-10374)
 
-## Latest Version - V15.1.0 (12/03/2025)
+## V15.1.0 (12/03/2025)
 ### Enhancements
 - [PAX] - Added the ability to void Interac Debit (Canada) transactions on PAX devices.
 - [PAX] - Enabling process tips under offline conditions and receive tip revenue on PAX device.

@@ -18,6 +18,7 @@ import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.NtsTestCards;
+import com.global.api.tests.testdata.TestCards;
 import org.joda.time.DateTime;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -644,7 +645,7 @@ public class Nts3DESCreditEncryptionTests {
     }
     @Test
     public void test_SVS_active_001() throws ApiException {
-
+        giftCard = TestCards.SvsSwipe();
         Transaction response = giftCard.activate(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(header)
@@ -660,6 +661,7 @@ public class Nts3DESCreditEncryptionTests {
     @Test
     public void test_SVS_Pre_Authorization_008() throws ApiException {
         acceptorConfig.setOperatingEnvironment(OperatingEnvironment.Attended);
+        giftCard = TestCards.SvsSwipe();
         Transaction response = giftCard.authorize(new BigDecimal(10))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(header)

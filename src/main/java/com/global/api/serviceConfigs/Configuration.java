@@ -8,27 +8,25 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.logging.IRequestLogger;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@Accessors(chain = true)
 @Getter @Setter
 public abstract class Configuration {
+    protected int connectionTimeout = 5000;
+    protected HashMap<String, String> dynamicHeaders;
     protected boolean enableLogging = false;
-    protected IRequestLogger requestLogger;
     protected Environment environment = Environment.TEST;
+    protected IRequestLogger requestLogger;
     protected String serviceUrl;
-    protected Proxy webProxy;
     protected HashMap<Host, ArrayList<HostError>> simulatedHostErrors;
     protected int timeout = 30000;
     protected boolean validated;
-    protected HashMap<String, String> dynamicHeaders;
-    protected int connectionTimeout = 5000;
-
-
-    public int getTimeout() { return timeout; }
-    public void setTimeout(int timeout) { this.timeout = timeout; }
+    protected Proxy webProxy;
 
     public abstract void configureContainer(ConfiguredServices services) throws ConfigurationException;
 

@@ -36,6 +36,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -1325,6 +1327,7 @@ public class VapsDebitTests {
                 .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber()) //Original Stan DE 56 M
                 .withTransactionTime(response.getOriginalTransactionTime()) //Original Transaction Time DE 56 M
                 .withBatchNumber(batch.getBatchNumber())
+                .withPaymentMethod(track) //Original Payment method
                 .withSequenceNumber(batch.getSequenceNumber())
                 .build();
 
@@ -1744,5 +1747,27 @@ public class VapsDebitTests {
         assertNotNull(dataCollectResponse);
         // check response
         assertEquals("000", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_token_testing_PKCS5_NoPadding() throws ApiException {
+        String date = DateTime.now().toString("yyMMddhhmmss");
+        List<String> tokenArr = new ArrayList<>();
+        tokenArr.add("6q3vD8flL4Lf1nicXedQK360Rg5pcUUEiFwVv8uX1o4cOofAP/qzEmaAAQiyljiO1ksiDM2IdC59r5PwcSjsEN9NsyKOkjX31kp3KsBK7be3dt/5qg/X84ojh4/g1rtvttbvjbeM733KvMfa3U4t/9w3XuCY5ngMiGmlEVy19g2jr/4RGCBwqmVqCBCdeORQgZiZSYYDRIFDyXGhhUzZxkVeA7K3PD7KYIOXiqs8z0zDU6n/7Ux+868Zn161ZfUfqM71bAyMBR9a2tZOxioRQFSyNj3Ez0EhMY+vI17BAjzHXOvNCuHagQop5sh65F6THg14e/4PWE8wHjp9p33Z4o0uumSxrQWrQDBBK70e2Sgg4FbHDsFXutZxR/v/FdU7uIO49p9SsajD5rHXS6xVu/AhZc24857LM7WShy07nG3pVZ1q8D/qm/yL98SIa1boMjPrEPFQE1egaIx8vRxdO3nkeLPTyjoxE3MQWJq7ycBn6AyBnQ1Lfl4joqU2j4TOr2yRS5cpzLB4+Sp5a6W8v98mPDR3n2f9ZN6AXw579uu5UXIjVT4GnOV3Wfk/pCbkJruJDiHLqoAcAvNPzWSTnTLSeoUwrVHOYXwl23xzdDc6PHVJJ4J2CC1y7Cn/as5UbA1JrQ==");
+        tokenArr.add("6q3vD8flL4Lf1nicXedQK360Rg5pcUUEiFwVv8uX1o4cOofAP/qzEmaAAQiyljiO1ksiDM2IdC59r5PwcSjsEN9NsyKOkjX31kp3KsBK7f21Zs/4qg/X84ojh43g1rtvttbvjbeM73LIrNfV3U4t/9w3XuCY5ngMiGmlEVy19g2jr/4RGCBwqmVqCBCdeORQgZiZSYYDRIFDyXGhhUzZxkVeA7K3PD7KYIOXiqs8z0zDU6n/7Ux+868Zn161ZfUfqM71bAyMBR9a2tZOxioRQFSyNj3Ez0EhMY+vI17BAjzHXOvNCuHagQop5sh65F6THg14e/4PWE8wHjp9p33Z4o0uumSxrQWrQDBBK70e2Sgg4FbHDsFXutZxR/v/FdU7uIO49p9SsajD5rHXS6xVu/AhZc24857LM7WShy07nG3pVZ1r8i/qm/yL98SIa1boMjPrEPFQE1egaIx8vRxdO3nkeLPTyjoxE3MQWJq7ycBn6AyBnQ1Lfl4joqU2j4TMr2yRS5cpzLB4+Sp5a6W8vd8mPDR3n2f9ZN6AUAxr5uS5UXIjVT4GnOV3Wfk/pCbkJruJDiHLqoAcAvNPzWSTnTLSeoUwrVHOYXwl23xzdDc6PHVJGp8wtSNOnlEd0wIHVIzfdw==");
+        tokenArr.add("6q3vD8flL4Lf1micXedQK360Rg5pcUUEiFwVv8uX1o4cOofAP/qzEmaAAQiyljiO1ksiDM2IdC59r5PwcSjsEN9NsyKOkjX31kp3KsBK7f21WMv6qg/X84ojh4vg1rtvttbvjbeM73LIktPX3U4t/9w3XuCY5ngMiGmlEVy19g2jr/4RGCBwqmVqCBCdeORXg5iBWYIERJFDyXHphkvZ1kFZA7K3PD6OYpO9yak82wrCfbXg7Ux+pKwY71uyYPottbz+XRmMAUtB2NYd3F8WIkiNJRDVyTFLKY+nTkPrO1zeKejzH+begRc8zMh85GenGg5gbOsOCiEzGEJksljnloErsmayrQWrRBlFNaNr53w74lniCsZ16cpxR933GN0NtIa4vZxFsbjDyLLrV4FB7/Axfc2m5rTLM7C4mSoVti/rRbdv8D75r/iM8PmUaFb4MjPzAOlCOUekaqZ9vhx3OnvaQv7R9SkFF3QQWJqFyYNnxhiOnyNPOl4zqqU2j5CEr0KBRJcH3LB4jV5Qd7W498UaBQNto06Uft/8ZxZqgtOhJVgjVRAdpP4BId8giiLrOKmwdAcA0+c7iJnmi2RF1JnSpFM=");
+        tokenArr.add("6q3vD8flL4Lf1micXedQK360Rg5pcUUEiFwVv8uX1o4cOofAP/qzEmaAAQiyljiO1ksiDM2IdC59r5PwcSjsEN9NsyKOkjX31kp3KsBK7f22dsu+qg/X84ojg8bg1rtvttbvjbeM73LLvNef3U4t/9w3XuCY5ngMiGmlEVy19g2jr/4RGCBwqmVqCBCdeORXg5iBWYIERJFDyXHphkvZ1kFZA7K3PD6OYpO9yak82wrCfbXg7Ux+pKwY71uyYPottbz+XRmMAUtB2NYd3F8WIkiNJRDVyTFLKY+nTkPrO1zeKejzH+begRc8zMh85GenGg5gbOsOCiEzGEJksljnloErsmayrQWrRBlFNaNr53w74lniCsZ16cpxR933GN0NtIa4vZx7sbjDyLLrV4FB7/Axfc2m5rTLM7C4mSoVti/rRbdv8D75r/iM8PmUaFb4MjPzAOlCOUekaqZ9vhxzeXvaQv7R9SkFF3QQWJqFzcBnxhiOnyNPOl4zqqU1oZTMr0KBRJcH3LB4jV5Qd7W498UaBQNto06Uft/8ZxZqgtOhJVgjVRAdpP4BId8giiLrOKmwdBwfCjy1wkAn1f6gr+I8tzI=");
+        tokenArr.add("8Hwkp+hTBDuWHJH570KHuLn6Sq7VifHPmGCnRu+LUVDr/hEDZH5Ak973uo0PhdE7HEK/G4/6PkvwuDS+Q+KxRKuXaCPjVlply3jxg9gfEtPl1efkIpqGPy/Y6dRdrR9UYOOZ5UXlhWHuregd6+7bW+ndEWnbDq3KiU0EOsSgL3/JsQ5flLTVgm5VkZeLeh6cty1LJ2TmGMdL/c56G40pOyugrFytP8w4psfRpEXpimwYHPOR7SgLbkDeP1k8UOL9qzrKc4rrgUo8ICwrt7kpVe6Dx0//5+RzKfLtGj9Vpyd8OOUGJnbVX4rvfqMp4VA5Hg7dvXU/FojJzs6NXVV8jo4jH/U/aXSENFdrxHKIJF+S6Rv1GTxxNUIV5hcVSeEdzjpikrdMvc7Ln+EdKLnXVQ86qPJt+Kdg0+P0wCQXABZaB9dm9K1p6AAg6YwNiaSyT9BzOQAeT2qRdDyzeHdPzg0gwWVjPQTRsEGwq2CXR9RQ7uggyHmf5iRWp9I7oS1hrA+9UwBZ9XvJkCHoQmKNvBzFsYKTeJAYT21QsnqzpJSaKc1X5PNNZuNmC5l0t+XFddtczmOePYAAly4JJdaBgw==");
+        tokenArr.add("8Hwkp+hTBDuWHJH570KHuLn6Sq7VifHPmGCnRu+LUVDr/hEDZH5Ak973uo0PhdE7HEK/G4/6PkvwuDS+Q+KxRKuXaCPjVlply3jxg9gfEtN5SqH/oNvailx0Vlq8Ery1Cpoicoo2KzMHFhSZ7fkYs4t2mgGuUm9uhMhnmbcip/0z8yYy1rR8nNpO9gJwGMGZw0N+RWQD8KtuHZ1mr4u+Hk6m1u76PXaeVeKyb0yzaLBJkPrmj6jLifd+A+yeMEyDnHd8dqfIlcgUiM4oFVaJ7f+NZqtGJoUPQUtaW29LUvX5mCglBBCJyBfc3OunKbCNxANxGrAJra77EuRgaaQZb9nIySCG6wQ+MeWhzX8h3pSDgyn7OMKdoZHSNqDXxRFNAElF68DwYZTlQ0Cvybh+U2P3iRbf2U4U/v94TVhn7dp/l+P65ybS7eF0Z+akkB7aaYOgD3E9HB8Cdqb9knzVEWnEUunc9awP/2ltt7ZOREyt5cWD4EoYG/AaWHzI7hMnF4AJhEbxsLt8SYd91NlUlIAvOgaeHuokelUaQZvNfTmCCUiJ8dtdP5hcNrHpblg5iO9FVq7NFcleDDM9ICiv3A==");
+        tokenArr.add("8Hwkp+hTBDuWHJH570KHuLn6Sq7VifHPmGCnRu+LUVDr/hEDZH5Ak973uo0PhdE7HEK/G4/6PkvwuDS+Q+KxRC+FXsDSGxhMSPsK70x3W0yqN2b14PsNrePRK9lyHGie+k9f4R6aIfAhlMGdV29KucnZEeMOOWfJadVrLyv4rNPsHbrWO2bVuCIEPrLquRNKdBLaj00UKFb6r7caIfzmfBVqKlL6QL5Wo/vDimX9zSovXKWLXb/3OEd4BYFQrzQy+3ShbT/t6jq79F+Tug+DQL1houUelNS3MiKH+srYwwLUXIdQSjkgeP1rPradiLOsUafcZjlaGp8OZYUMSh4hOBmAEqlPB84SEyXATvvlvsaoFLvgIRLmDTWThY5WhZnn064Dv35BGgZP2q9Y3CXRNI6dRO43gaj5zZuHFpmcoMUvlGos/0C+y9ftB2xw/YNZX/8KZn+zMsl5BlpJcsmAg7ORBt0YpDhYTA25gzMq3VpeMUu/viLQDEgNNCQHd2D4+oe4YrqnTi9CAycbRdPkRo2mVTkO1cB4BUnNwHAexhJ6h0XBqZvMffzXH+7wtlQhF1RAuT1tAIOGPXleaV0ZKQ==");
+
+        for (String token : tokenArr) {
+            Transaction resubmitDataCollect = NetworkService.resubmitDataCollect(token)
+                    .withTimestamp(date)
+                    .execute();
+            assertNotNull(resubmitDataCollect);
+        }
+
+
     }
 }

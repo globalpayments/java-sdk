@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -111,6 +113,7 @@ public class NtsCreditTest {
         config.setSecondaryEndpoint("test.txns-e.secureexchange.net");
         config.setSecondaryPort(15031);
         config.setEnableLogging(true);
+        config.setCompanyId("045");
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
         config.setAcceptorConfig(acceptorConfig);
@@ -5176,4 +5179,18 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                 .withEcommerceAuthIndicator("S")
                 .execute());
     }
+
+    @Test
+    public void testing_token_with_diff_encode_decode_algo() throws ApiException {
+        List<String> arr = new ArrayList<>();
+        arr.add("HxMRkEr8M35HmDVSdJ+hXE+zllsFHrEO5JnEOwfVOKqqtdSBJpRoQRHV0TmmOBWmeDUIMdJmZRarxzzf70fjHXXOevcF2yG8SmLaxtT/scrw3dnCW6d1fVXP9hYi156c3LNAAE+uZrGHZq02+adVVjqnnGbDOVCBtMqSFnIxefkYTFDFJMQ5fa6SYclqtLFQt/moqoSqxdTfOkLAG5dVIBUfcTXjL1NFP78d2Vl1Ala7C7aYRFkppkGw4kV1ZqPhwiZDtYZjRqsUXsW5Flll5c20DnzEfrX3l7k2flRUYvoKVLyKFHuktAnVU8rWaPTBBtD1A+yCnR1JxDcOn7EbOjkVOr3zBJS1o4txk/zX10D325weXo1KTfQ3B8k3VX6XqI7wkC/zLJC+aaE1LapOFq1SHc1tf9U/o+CEewZzloy4BnOHYaxWPvjjwU+TTDscrvq6jRX6VpuCMLrqAFSKenGoheHVMKWkr9xvwbAsJa7E0hf/wykfL6eP96vPG0Bg4QKHfcN2/oWoQpZmo8cPCQ==");
+        arr.add("sm3ZxN7zPbSYHIjOzbbi2NTl0Jg46CuIgv10nHgsp9VMVvH1YHuqtYeD0nywAddbdDrqryAQs1aFWgRIl7f4Iwt0i3CsLXEFktQVkyIqibv3QTTRBS57EMUqbOw1Y+KGhz0yoq21UmMtv2RlW6ZIIpFY1/VES9emE/zT4OvwqKAK64mf8kj6CHyKcGGVpPmezOHRYBJgaoCJIyxQiVd1sG+LHapZHafud7gYbO5XbThsAYO5KuOC+cIQ+HCJP0LE0U8WhD4KSq6pWnxxyl+kFk3GigcUbTdGJ2YaUYbRVtNrofWj3PO0RhXSs2XsNOs+3bYRnpUOTtErxQVBpZ8ec8732e0hcWv7Wks5SZSsx+WgHOMsc2amjU8pHTglCs1c8YKbwCmAlXj1ZhI04itQg8QJuVJVWOy+nkC+IM98t2whomL1Shd/5CSKqZVKX/0KQzh7RVUmXj3STAnWBFFe1OP7m21MEz2ejwDA2PkC8OZDuwqmTSW2ixMsiUnmf7AZWHrb4YMExbT43C9OmoeOijFZodmHiwlB");
+        for (String token : arr) {
+            Transaction capture = NetworkService.resubmitDataCollect(token)
+                    .withForceToHost(true)
+                    .execute();
+            assertNotNull(capture);
+        }
+    }
+
 }

@@ -2,6 +2,7 @@ package com.global.api.terminals.abstractions;
 
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.serviceConfigs.Configuration;
 import com.global.api.serviceConfigs.GatewayConfig;
 import com.global.api.logging.IRequestLogger;
 import com.global.api.terminals.IRequestIdProvider;
@@ -15,7 +16,7 @@ public interface ITerminalConfiguration {
 
     int getTimeout();
 
-    void setTimeout(int timeout);
+    Configuration setTimeout(int timeout);
 
     void validate() throws ConfigurationException;
 
@@ -27,15 +28,9 @@ public interface ITerminalConfiguration {
 
     void setRequestIdProvider(IRequestIdProvider requestIdProvider);
 
-    @Deprecated
-    IRequestLogger getLogManagementProvider();
-
-    @Deprecated
-    void setLogManagementProvider(IRequestLogger logManagementProvider);
-
     IRequestLogger getRequestLogger();
 
-    void setRequestLogger(IRequestLogger requestLogger);
+    Configuration setRequestLogger(IRequestLogger requestLogger);
 
     /** TCP CONNECTION SETTINGS **/
 
@@ -79,7 +74,7 @@ public interface ITerminalConfiguration {
     void setIsvId(String isvId);
 
     String getServiceUrl();
-    void setServiceUrl(String serviceUrl);
+    Configuration setServiceUrl(String serviceUrl);
 
     String getPosId();
     void setPosId(String posId);

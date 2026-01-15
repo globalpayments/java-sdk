@@ -7,6 +7,7 @@ import org.apache.commons.codec.binary.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
@@ -97,12 +98,22 @@ public class PayrollEncoder implements IRequestEncoder {
             System.arraycopy(secretKey.getEncoded(), 32, iv, 0, 16);
 
             SecretKeySpec secret = new SecretKeySpec(key, "AES");
-            AlgorithmParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, secret, gcmSpec);
-            byte[] decode = Base64.decodeBase64(value.toString());
-            byte[] results = cipher.doFinal(decode);
-            return new String(results);
+            try {
+                AlgorithmParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(Cipher.DECRYPT_MODE, secret, gcmSpec);
+                byte[] decode = Base64.decodeBase64(value.toString());
+                byte[] results = cipher.doFinal(decode);
+                return new String(results);
+            } catch (Exception exc) {
+                // Fallback to AES/CBC/PKCS5Padding
+                AlgorithmParameterSpec cbcSpec = new IvParameterSpec(iv);
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                cipher.init(Cipher.DECRYPT_MODE, secret, cbcSpec);
+                byte[] decode = Base64.decodeBase64(value.toString());
+                byte[] results = cipher.doFinal(decode);
+                return new String(results);
+            }
         }
         catch(Exception exc) {
             return value.toString();

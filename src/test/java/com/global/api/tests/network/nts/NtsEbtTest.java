@@ -449,7 +449,7 @@ public class NtsEbtTest {
         foodTrack.setEntryMethod(EntryMethod.Swipe);
 
         Transaction response = foodTrack.charge()
-                .withAmount(new BigDecimal(1000))
+                .withAmount(new BigDecimal(10))
                 .withSurchargeAmount(new BigDecimal(1))
                 .withCurrency("USD")
                 .withNtsRequestMessageHeader(ntsRequestMessageHeader)

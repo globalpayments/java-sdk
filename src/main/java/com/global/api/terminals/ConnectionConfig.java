@@ -25,9 +25,6 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private DeviceType deviceType;
     private String configName;
     private IRequestIdProvider requestIdProvider;
-    private IRequestLogger requestLogger;
-    @Deprecated
-    private IRequestLogger logManagementProvider;
 
     // TCP CONNECTIONS
     private String ipAddress;
@@ -42,7 +39,6 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     // DIAMOND CLOUD CONNECTIONS
     protected String secretKey;
     protected String isvId;
-    protected String serviceUrl;
     protected String posId;
     protected String region;
 

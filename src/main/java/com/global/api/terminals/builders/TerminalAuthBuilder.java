@@ -10,10 +10,9 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.TerminalResponse;
-import com.global.api.terminals.upa.Entities.Lodging;
 import com.global.api.terminals.upa.Entities.Enums.UpaCardTypeFilter;
+import com.global.api.terminals.upa.Entities.Lodging;
 import lombok.Getter;
-import lombok.Setter;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
@@ -21,9 +20,10 @@ import java.util.EnumSet;
 
 @Getter
 public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
+    protected BigDecimal amount;
+    protected String terminalRefNumber;
     private Address address;
     private boolean allowDuplicates;
-    protected BigDecimal amount;
     private String authCode;
     private AutoSubstantiation autoSubstantiation;
     private StoredCredentialInitiator cardBrandStorage;
@@ -33,6 +33,7 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private CurrencyType currency;
     private String customerCode;
     private BigDecimal gratuity;
+    private boolean gratuityPrompt;
     private String invoiceNumber;
     private String poNumber;
     private boolean requestMultiUseToken;
@@ -56,47 +57,56 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private EnumSet<UpaCardTypeFilter> cardTypeFilter;
     private String cardBrandTransId;
     private DateTime shippingDate;
-	private boolean requireSecurityCode = true;
-    protected String terminalRefNumber;
-
+    private boolean requireSecurityCode = true;
     private String ecrId;
     private String confirmAmount;
     private Integer taxIndicator;
     private TransactionModifier transactionModifier;
     private BigDecimal tipAmount;
 
+    public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
+        super(type, paymentType);
+    }
+
+    public TerminalAuthBuilder(TransactionType type) {
+        super(type, null);
+    }
+
     public String getAuthCode() {
-        if(paymentMethod instanceof TransactionReference)
-            return ((TransactionReference)paymentMethod).getAuthCode();
+        if (paymentMethod instanceof TransactionReference)
+            return ((TransactionReference) paymentMethod).getAuthCode();
         return null;
     }
+
     public String getTransactionId() {
-        if(paymentMethod instanceof TransactionReference) {
+        if (paymentMethod instanceof TransactionReference) {
             return ((TransactionReference) paymentMethod).getTransactionId();
         }
         return transactionId;
     }
+
     public String getTokenValue() {
         if (paymentMethod instanceof CreditCardData) {
-            return ((CreditCardData)paymentMethod).getToken();
-            }
+            return ((CreditCardData) paymentMethod).getToken();
+        }
         return null;
     }
+
     public BigDecimal getTotalAmount() {
         BigDecimal totalAmount = amount;
 
         // add tip
-        if(gratuity != null) {
+        if (gratuity != null) {
             totalAmount = totalAmount.add(gratuity);
         }
 
         // add tax
-        if(taxAmount != null) {
+        if (taxAmount != null) {
             totalAmount = totalAmount.add(taxAmount);
         }
 
         // add surcharge
-        if(surchargeAmount != null) {
+        if (surchargeAmount != null) {
             totalAmount = totalAmount.add(surchargeAmount);
         }
 
@@ -116,173 +126,209 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         this.tokenRequest = tokenRequest;
         return this;
     }
+
     public TerminalAuthBuilder withTokenValue(String tokenValue) {
         this.tokenValue = tokenValue;
         return this;
     }
+
     public TerminalAuthBuilder withAddress(Address address) {
         this.address = address;
         return this;
     }
+
     public TerminalAuthBuilder withAllowDuplicates(boolean allowDuplicates) {
         this.allowDuplicates = allowDuplicates;
         return this;
     }
+
     public TerminalAuthBuilder withAmount(BigDecimal amount) {
         this.amount = amount;
         return this;
     }
+
     public TerminalAuthBuilder withAuthCode(String value) {
         if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
-        ((TransactionReference)paymentMethod).setAuthCode(value);
+        ((TransactionReference) paymentMethod).setAuthCode(value);
         this.authCode = value;
         return this;
     }
+
     public TerminalAuthBuilder withAutoSubstantiation(AutoSubstantiation healthcare) {
         this.autoSubstantiation = healthcare;
         return this;
     }
+
     public TerminalAuthBuilder withCashBack(BigDecimal value) {
         this.cashBackAmount = value;
         return this;
     }
+
     public TerminalAuthBuilder withCardBrandStorage(StoredCredentialInitiator value) {
         this.cardBrandStorage = value;
         return this;
     }
+
     public TerminalAuthBuilder withCardBrandStorage(StoredCredentialInitiator initiatorValue, String cardBrandTransId) {
         this.cardBrandStorage = initiatorValue;
         this.cardBrandTransactionId = cardBrandTransId;
         return this;
     }
+
     public TerminalAuthBuilder withCommercialRequest(boolean value) {
         this.commercialRequest = value;
         return this;
     }
+
     public TerminalAuthBuilder withCurrency(CurrencyType value) {
         this.currency = value;
         return this;
     }
+
     public TerminalAuthBuilder withCustomerCode(String value) {
         this.customerCode = value;
         return this;
     }
+
     public TerminalAuthBuilder withGratuity(BigDecimal gratuity) {
         this.gratuity = gratuity;
         return this;
     }
+
+    public TerminalAuthBuilder withGratuityPrompt(boolean gratuityPrompt) {
+        this.gratuityPrompt = gratuityPrompt;
+        return this;
+    }
+
     public TerminalAuthBuilder withInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
         return this;
     }
+
     public TerminalAuthBuilder withPaymentMethod(IPaymentMethod method) {
         paymentMethod = method;
         return this;
     }
+
     public TerminalAuthBuilder withPoNumber(String value) {
         this.poNumber = value;
         return this;
     }
+
     public TerminalAuthBuilder withRequestMultiUseToken(boolean requestMultiUseToken) {
         this.requestMultiUseToken = requestMultiUseToken;
         return this;
     }
+
     public TerminalAuthBuilder withSignatureCapture(boolean signatureCapture) {
         this.signatureCapture = signatureCapture;
         return this;
     }
+
     public TerminalAuthBuilder withTaxAmount(BigDecimal value) {
         this.taxAmount = value;
         return this;
     }
+
     public TerminalAuthBuilder withTaxType(TaxType value) {
         return withTaxType(value, null);
     }
+
     public TerminalAuthBuilder withTaxType(TaxType value, String taxExemptId) {
         this.taxExempt = (value.equals(TaxType.TaxExempt)) ? "1" : "0";
         this.taxExemptId = taxExemptId;
         return this;
     }
+
     public TerminalAuthBuilder withToken(String value) {
         if (paymentMethod == null || !(paymentMethod instanceof CreditCardData))
             paymentMethod = new CreditCardData();
-        ((CreditCardData)paymentMethod).setToken(value);
+        ((CreditCardData) paymentMethod).setToken(value);
         return this;
     }
+
     public TerminalAuthBuilder withTransactionId(String value) {
         if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
-        ((TransactionReference)paymentMethod).setTransactionId(value);
+        ((TransactionReference) paymentMethod).setTransactionId(value);
         this.transactionId = value;
         return this;
     }
+
     public TerminalAuthBuilder withAllowPartialAuth(boolean value) {
         this.allowPartialAuth = value;
         return this;
     }
+
     public TerminalAuthBuilder withStoredCredentialInitiator(StoredCredentialInitiator value) {
         this.storedCredentialInitiator = value;
         return this;
     }
+
     public TerminalAuthBuilder withClientTransactionId(String value) {
         this.clientTransactionId = value;
         return this;
     }
+
     public TerminalAuthBuilder withCardTypeFilter(EnumSet<UpaCardTypeFilter> cardTypeFilter) {
         this.cardTypeFilter = cardTypeFilter;
         return this;
     }
+
     public TerminalAuthBuilder withGiftTransactionType(TransactionType value) {
         this.giftTransactionType = value;
         return this;
     }
+
     public TerminalAuthBuilder withDirectMarketInvoiceNumber(String directMarketInvoiceNumber) {
         this.directMarketInvoiceNumber = directMarketInvoiceNumber;
         return this;
     }
+
     public TerminalAuthBuilder withDirectMarketShipMonth(Integer directMarketShipMonth) {
         this.directMarketShipMonth = directMarketShipMonth;
         return this;
     }
+
     public TerminalAuthBuilder withDirectMarketShipDay(Integer directMarketShipDay) {
         this.directMarketShipDay = directMarketShipDay;
         return this;
     }
-    public TerminalAuthBuilder withLodging(Lodging lodging){
+
+    public TerminalAuthBuilder withLodging(Lodging lodging) {
         this.lodging = lodging;
         return this;
     }
-    public TerminalAuthBuilder withPreAuthAmount(BigDecimal preAuthAmount){
+
+    public TerminalAuthBuilder withPreAuthAmount(BigDecimal preAuthAmount) {
         this.preAuthAmount = preAuthAmount;
         return this;
     }
+
     public TerminalAuthBuilder withProcessCPC(boolean processCPC) {
         this.processCPC = processCPC;
         return this;
     }
+
     public TerminalAuthBuilder withPaymentMethodType(PaymentMethodType value) {
         this.paymentMethodType = value;
         return this;
     }
+
     public TerminalAuthBuilder withRequireSecurityCode(boolean requireSecurityCode) {
         this.requireSecurityCode = requireSecurityCode;
         return this;
     }
+
     public TerminalAuthBuilder withCardBrandTransId(String value) {
         cardBrandTransId = value;
         return this;
     }
+
     public TerminalAuthBuilder withShippingDate(DateTime value) {
         shippingDate = value;
         return this;
-    }
-
-    public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
-        super(type, paymentType);
-    }
-    public TerminalAuthBuilder(TransactionType type) {
-        super(type, null);
     }
 
     public TerminalResponse execute(String configName) throws ApiException {
