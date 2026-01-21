@@ -53,7 +53,7 @@ To install via [Maven](https://maven.apache.org/guides/introduction/introduction
 
 You can find the latest SDK documentation along with code examples and test cards on the [Global Payments](https://developer.realexpayments.com) and [Heartland](https://developer.heartlandpaymentsystems.com/documentation) Developer Hubs.
 
-In addition you can find working examples in the our example code repository.
+In addition you can find working examples in our example code repository.
 
 *Quick Tip*: The included [test suite](https://github.com/globalpayments/java-sdk/tree/master/src/test/java/com/global/api/tests) can be a great source of code samples for using the SDK!
 
