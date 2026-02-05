@@ -120,6 +120,7 @@ public class EmvUtils {
         knownTags.put("9F5B", "Issuer Script Results");
         knownTags.put("9F58", "Consecutive Transaction Counter Limit (CTCL)");
         knownTags.put("9F59", "Consecutive Transaction Counter Upper Limit (CTCUL)");
+        knownTags.put("9F66", "Terminal Transaction Qualifiers");
         knownTags.put("9F68", "Card Additional Processes");
         knownTags.put("9F6C", "Card Transaction Qualifiers");
 

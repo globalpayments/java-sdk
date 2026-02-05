@@ -385,6 +385,6 @@ public class NetworkGateway {
     }
 
     protected void logResponse(String response) throws IOException {
-        config.getRequestLogger().ResponseReceived(response);
+        config.getNetworkRequestLogger().ResponseReceived(response);
     }
 }

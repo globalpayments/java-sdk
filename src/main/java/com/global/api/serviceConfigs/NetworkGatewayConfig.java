@@ -8,6 +8,7 @@ import com.global.api.entities.enums.TerminalType;
 import com.global.api.gateways.NtsConnector;
 import com.global.api.gateways.NwsConnector;
 import com.global.api.gateways.events.IGatewayEventHandler;
+import com.global.api.logging.INetworkRequestLogger;
 import com.global.api.network.abstractions.IBatchProvider;
 import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.enums.*;
@@ -15,6 +16,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.VapsConnector;
 import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
+import lombok.Getter;
 import lombok.Setter;
 
 public class NetworkGatewayConfig extends Configuration {
@@ -51,6 +53,8 @@ public class NetworkGatewayConfig extends Configuration {
     @Setter
     private TerminalType terminalType;
     private String ewicMerchantId;
+    @Setter @Getter
+    private static INetworkRequestLogger networkRequestLogger;
 
     public NetworkGatewayConfig() {
         this(Target.VAPS);
@@ -224,8 +228,8 @@ public class NetworkGatewayConfig extends Configuration {
             // event handler
             gateway.setGatewayEventHandler(gatewayEventHandler);
 
-            if (requestLogger == null) {
-                requestLogger = new NtsUtils();
+            if(networkRequestLogger == null) {
+                networkRequestLogger = new NtsUtils();
             }
             gateway.setConfig(this);
 

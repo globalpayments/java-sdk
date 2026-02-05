@@ -14,7 +14,6 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String status;
     protected String command;
     protected String version;
-    protected String message;
 
     // Functional
     protected String deviceResponseCode;
@@ -81,10 +80,12 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationIdentifier;
     protected String transactionCurrencyCode;
     protected String sequenceNo;
+    protected String posSequenceNbr;
     protected String applicationInterchangeProfile;
     protected String dedicatedFileName;
     protected String authorizedResponse;
     protected String terminalVerificationResult;
+    protected String terminalTransactionQualifiers;
     protected String transactionPin;
     protected String transactionDate;
     protected String transactionStatusInfo;

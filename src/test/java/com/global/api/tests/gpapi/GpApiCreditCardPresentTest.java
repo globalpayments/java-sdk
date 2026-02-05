@@ -1,19 +1,19 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
-import com.global.api.entities.EncryptionData;
-import com.global.api.entities.LodgingData;
-import com.global.api.entities.LodgingItems;
-import com.global.api.entities.Transaction;
+import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
+import com.global.api.tests.testdata.TestCards;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.var;
@@ -39,6 +39,9 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     private final BigDecimal amount = new BigDecimal("12.02");
     private final String currency = "USD";
     private final String tagData;
+    private final CommercialData commercialData;
+    private final OrderDetails orderDetails;
+    private final PayerDetails payerDetails;
 
     public GpApiCreditCardPresentTest() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
@@ -55,6 +58,56 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         card.setExpYear(expYear);
         card.setCvn("123");
         card.setCardPresent(true);
+
+        String APP_ID_LevelII = "inWHoqkWgfSz7AxYmq1FhijeiAHanlx2";
+        String APP_KEY_LevelII = "oDDqEZre9pn5TUgZ";
+        GpApiConfig gpApiConfig = new GpApiConfig()
+                .setAppId(APP_ID_LevelII)
+                .setAppKey(APP_KEY_LevelII);
+        gpApiConfig.setChannel(Channel.CardPresent);
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("GP API Exchange Retail");
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+        ServicesContainer.configureService(gpApiConfig,"LevelII");
+
+        commercialData = new CommercialData(TaxType.SalesTax, TransactionModifier.LevelII) ;
+        commercialData.setPoNumber("9876543210");
+        commercialData.setTaxAmount(new BigDecimal(10));
+
+        orderDetails=new OrderDetails();
+
+        orderDetails.setLocalTaxPercentage("10");
+        orderDetails.setBuyerRecipientName("john john");
+        orderDetails.setStateTaxIdReference("12344");
+        orderDetails.setMerchantTaxIdReference("122345");
+
+        orderDetails.setTaxes(Arrays.asList(
+                new OrderDetails.Tax("GST", "10"),
+                new OrderDetails.Tax("HST", "10"),
+                new OrderDetails.Tax("PST", "10"),
+                new OrderDetails.Tax("QST", "10")
+        ));
+
+
+        payerDetails = new PayerDetails();
+        payerDetails.setTaxIdReference("12345");
+        payerDetails.setName("Sushant Deshmukh");
+        payerDetails.setEmail("sushantd@gp.com");
+        payerDetails.setCountry("US");
+        payerDetails.setLandlinePhone("7708298755");
+        payerDetails.setMobilePhone("7708298755");
+        payerDetails.setBillingAddress(new Address()
+                .setStreetAddress1("3550")
+                .setStreetAddress2("Lenox Road")
+                .setCity("Atlanta")
+                .setState("GA")
+                .setPostalCode("30326")
+                .setCountry("USA")
+        );
     }
 
     //region Create sale using Credit track data
@@ -1141,6 +1194,41 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
+    }
+
+    @Test
+    public void testShouldReturnLevel2CommercialLevel_WhenLevelIIDataProvided() throws ApiException {
+        CreditTrackData track = initCreditTrackData();
+        Address address = new Address("6860", "75024");
+
+        Transaction chargeResponse = track.charge(new BigDecimal("111.06"))
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCommercialRequest(true)
+                .withCommercialData(commercialData)
+                .withOrderDetails(orderDetails)
+                .withPayerDetails(payerDetails)
+                .execute("LevelII");
+
+        assertNotNull(chargeResponse);
+        assertEquals("LEVEL_2", chargeResponse.getCardDetails().getCommercialLevel());
+    }
+
+    @Test
+    public void testShouldReturnLevel1CommercialLevel_WhenNoCommercialLevelDataProvided() throws ApiException {
+        CreditTrackData track = initCreditTrackData();
+        Address address = new Address("6860", "75024");
+
+        Transaction chargeResponse = track.charge(new BigDecimal("111.06"))
+                .withCurrency("USD")
+                .withAddress(address)
+                .withCommercialRequest(true)
+                .withOrderDetails(orderDetails)
+                .withPayerDetails(payerDetails)
+                .execute("LevelII");
+
+        assertNotNull(chargeResponse);
+        assertEquals("LEVEL_1", chargeResponse.getCardDetails().getCommercialLevel());
     }
 
     //endregion

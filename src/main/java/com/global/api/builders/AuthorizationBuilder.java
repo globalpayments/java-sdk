@@ -219,6 +219,8 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     @Setter
     private InstallmentData installmentData;
+    @Getter@Setter
+    private PayerDetails payerDetails;
 
     public AuthorizationBuilder(TransactionType type) {
         this(type, null);
@@ -251,6 +253,16 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withEcommerceData2(String ecommerceData2) {
         this.ecommerceData2 = ecommerceData2;
+        return this;
+    }
+
+    public AuthorizationBuilder withCommercialData(CommercialData data) {
+        this.commercialData = data;
+        if (data.getCommercialIndicator().equals(TransactionModifier.LevelII)) {
+            this.transactionModifier = TransactionModifier.LevelII;
+        } else {
+            this.transactionModifier = TransactionModifier.Level_III;
+        }
         return this;
     }
 
@@ -1042,6 +1054,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
     public AuthorizationBuilder withOrderDetails(OrderDetails value) {
         this.orderDetails = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withPayerDetails(PayerDetails value) {
+        this.payerDetails = value;
         return this;
     }
 

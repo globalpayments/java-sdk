@@ -25,8 +25,7 @@ import static com.global.api.entities.enums.TransactionType.Refund;
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
-import static com.global.api.utils.StringUtils.isNullOrEmpty;
-import static com.global.api.utils.StringUtils.toNumeric;
+import static com.global.api.utils.StringUtils.*;
 
 public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<AuthorizationBuilder> {
 
@@ -701,6 +700,50 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 .set("risk_assessment", builder.getFraudFilterMode() != null ? mapFraudManagement(builder) : null)
                 .set("link", !StringUtils.isNullOrEmpty(builder.getPaymentLinkId()) ?
                         new JsonDoc().set("id", builder.getPaymentLinkId()) : null);
+
+        if (builder.getCommercialData() != null) {
+            var commercialData = builder.getCommercialData();
+            data.set("tax_amount", StringUtils.toNumeric(commercialData.getTaxAmount()))
+                    .set("tax_mode", commercialData.getTaxType().getValue())
+                    .set("purchase_order_number", commercialData.getPoNumber());
+
+            var payerDetails = builder.getPayerDetails();
+            JsonDoc payer = new JsonDoc()
+                    .set("tax_id_reference", payerDetails.getTaxIdReference())
+                    .set("name", payerDetails.getName())
+                    .set("email", payerDetails.getEmail())
+                    .set("country", payerDetails.getCountry())
+                    .set("landline_phone", payerDetails.getLandlinePhone())
+                    .set("mobile_phone", payerDetails.getMobilePhone());
+
+            var billingAddressDetails = payerDetails.getBillingAddress();
+            JsonDoc billingAddress = new JsonDoc()
+                    .set("line_1", billingAddressDetails.getStreetAddress1())
+                    .set("line_2", billingAddressDetails.getStreetAddress2())
+                    .set("city", billingAddressDetails.getCity())
+                    .set("state", billingAddressDetails.getState())
+                    .set("postal_code", billingAddressDetails.getPostalCode())
+                    .set("country", billingAddressDetails.getCountry());
+
+            payer.set("billing_address", billingAddress);
+            if (!payer.getKeys().isEmpty()) {
+                data.set("payer", payer);
+            }
+
+            var orderDetails = builder.getOrderDetails();
+            if (orderDetails != null) {
+                JsonDoc order = new JsonDoc()
+                        .set("taxes", orderDetails.getTaxes())
+                        .set("local_tax_percentage", orderDetails.getLocalTaxPercentage())
+                        .set("buyer_recipient_name", orderDetails.getBuyerRecipientName())
+                        .set("state_tax_id_reference", orderDetails.getStateTaxIdReference())
+                        .set("merchant_tax_id_reference", orderDetails.getMerchantTaxIdReference());
+                if (!order.getKeys().isEmpty()) {
+                    data.set("order", order);
+                }
+            }
+        }
+
 
         if (builderPaymentMethod instanceof CreditCardData && (((CreditCardData) builderPaymentMethod).getMobileType() == MobilePaymentMethodType.CLICK_TO_PAY)) {
             data.set("masked", builder.getMaskedDataResponse() ? "YES" : "NO");

@@ -38,4 +38,6 @@ public class Card {
 
     private String funding;
 
+    private String commercialLevel;
+
 }

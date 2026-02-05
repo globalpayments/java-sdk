@@ -283,6 +283,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     et.subElement(block1, "MessageAuthenticationCode", builder.getMessageAuthenticationCode());
                     et.subElement(block1, "PosSequenceNbr", builder.getPosSequenceNumber());
                     et.subElement(block1, "ReversalReasonCode", builder.getReversalReasonCode());
+
+                    if (type.equals(TransactionType.Reversal) && !StringUtils.isNullOrEmpty(builder.getGatewayTxnId())) {
+                        et.subElement(block1, "GatewayTxnId", builder.getGatewayTxnId());
+                    }
+
                     if (!StringUtils.isNullOrEmpty(builder.getTagData())) {
                         Element tagData = et.subElement(block1, "TagData");
                         et.subElement(tagData, "TagValues", builder.getTagData()).set("source", "chip");

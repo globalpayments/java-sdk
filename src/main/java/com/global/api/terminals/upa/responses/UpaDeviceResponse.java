@@ -20,7 +20,6 @@ public class UpaDeviceResponse extends TerminalResponse {
             return;
         }
         JsonDoc data = responseObj.get("data");
-        message = responseObj.getStringOrNull("message");
         if (data != null) {
             JsonDoc cmdResult = data.get("cmdResult");
 
@@ -32,7 +31,7 @@ public class UpaDeviceResponse extends TerminalResponse {
         } else {
             requestId = responseObj.getStringOrNull("id");
             deviceResponseText = responseObj.getStringOrNull("status");
-            if (deviceResponseText != null && deviceResponseText.equalsIgnoreCase("COMPLETE")) deviceResponseCode = "00";
+            if (deviceResponseText.equalsIgnoreCase("COMPLETE")) deviceResponseCode = "00";
         }
     }
 }

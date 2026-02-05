@@ -10,7 +10,12 @@ import lombok.experimental.Accessors;
 public class PayerDetails {
     private String firstName;
     private String lastName;
+    private String name;
     private String email;
+    private String country;
+    private String landlinePhone;
+    private String mobilePhone;
     private Address billingAddress;
     private Address shippingAddress;
+    private String taxIdReference;
 }

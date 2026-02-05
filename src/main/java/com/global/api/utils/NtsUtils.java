@@ -5,23 +5,22 @@ import com.global.api.builders.ManagementBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
-import com.global.api.gateways.NtsConnector;
-import com.global.api.logging.IRequestLogger;
+import com.global.api.logging.INetworkRequestLogger;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
+import com.global.api.serviceConfigs.NetworkGatewayConfig;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class NtsUtils implements IRequestLogger {
+public class NtsUtils implements INetworkRequestLogger {
 
     // Logger
     private static boolean isEnableLogging = false;
@@ -77,19 +76,19 @@ public class NtsUtils implements IRequestLogger {
      */
     public static void log(String fieldName, String value) {
         if (isEnableLogging) {
-            System.out.println( StringUtils.padRight(fieldName.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : " + value);
+            NetworkGatewayConfig.getNetworkRequestLogger().logMessage(fieldName, value);
         }
     }
 
     public static <E extends Enum<E>> void log(String fieldName, E value) {
         if (isEnableLogging && value != null) {
-            System.out.println( StringUtils.padRight(fieldName.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : [ " + value.name() + " - " + ((IStringConstant) value).getValue() + " ]");
+            NetworkGatewayConfig.getNetworkRequestLogger().logMessage(fieldName, value);
         }
     }
 
     public static void log(String value) {
         if (isEnableLogging) {
-            System.out.println(value);
+            NetworkGatewayConfig.getNetworkRequestLogger().logInfo(value);
         }
     }
 
@@ -680,6 +679,19 @@ public class NtsUtils implements IRequestLogger {
         msg.set("type", "RESPONSE");
         msg.set("message",response);
         System.out.println("\n" + msg);
+    }
+
+    @Override
+    public void logInfo(String message) {
+        System.out.println(message);
+    }
+    @Override
+    public void logMessage(String message, String value) {
+        System.out.println( StringUtils.padRight(message.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : " + value);
+    }
+    @Override
+    public <E extends Enum<E>> void logMessage(String fieldName, E value) {
+        System.out.println( StringUtils.padRight(fieldName.toUpperCase(Locale.ENGLISH), 20, ' ')  + " : [ " + value.name() + " - " + ((IStringConstant) value).getValue() + " ]");
     }
 
 }

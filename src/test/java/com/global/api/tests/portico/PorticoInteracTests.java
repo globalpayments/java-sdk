@@ -1,6 +1,7 @@
 package com.global.api.tests.portico;
 
 import com.global.api.ServicesContainer;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
@@ -183,6 +184,39 @@ public class PorticoInteracTests {
     }
 
     @Test
+    public void debitInteracReversalWithTrackData() throws ApiException {
+        DebitTrackData track = new DebitTrackData();
+        track.setValue("KvMX32RXSXhxyVdVfof6bmbYixlKtw3a8haWWmbsJa0=");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        EncryptionData enc = new EncryptionData();
+        enc.setVersion("05");
+        enc.setTrackNumber("2");
+        enc.setDataFormat("2");
+        enc.setKsn("//89P4IAAAAB4A==");
+        track.setEncryptionData(enc);
+
+        String sTagsData = "9F4005FF80F050019F02060000000020009F03060000000000009F26086C4AED3B6DFC1E394F07A00000027710109F0607A000000277101082025C009F1E0800000000000000009F3602007A9F34030400029F2701809F3901059F3303E078C89F1A0201249F350122950502000080005F2A0201249A032512179B02E8009F21031352539C01009F37043BB88A1B5F3401018407A00000027710109F090200019F0702AB009F101615048504030000000000820000000000000000000000";
+
+        Transaction response = track.charge(new BigDecimal("22.20"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withPosSequenceNumber("000010010610")
+                .withTagData(sTagsData)
+                .execute();
+        assertNotNull(response);
+
+        Transaction reversalResponse = track.reverse(new BigDecimal("22.20"))
+                .withCurrency("USD")
+                .withPosSequenceNumber("000010010620")
+                .withTagData(sTagsData)
+                .withGatewayTxnId(response.getTransactionId())
+                .withReversalReasonCode(ReversalReasonCode.CustomerCancellation)
+                .execute();
+        assertNotNull(reversalResponse);
+    }
+
+    @Test
     public void debitAuth() throws ApiException {
         Transaction response =
                 track
@@ -206,7 +240,7 @@ public class PorticoInteracTests {
                         .authorize(new BigDecimal("14.01"))
                         .withCurrency("USD")
                         .withAllowDuplicates(true)
-                        .withCardHolderLanguage("ENGLISH")
+                        .withCardHolderLanguage("en-CA")
                         .withPosSequenceNumber("000010010180")
                         .withTagData(tagData)
                         .withAccountType(AccountType.Savings)
@@ -234,6 +268,47 @@ public class PorticoInteracTests {
         assertNotNull(capture);
 
         assertEquals("00", capture.getResponseCode());
+    }
+
+    @Test
+    public void debitAddToBatchWithEncryptionData() throws ApiException {
+        DebitTrackData track = new DebitTrackData();
+        track.setValue("KvMX32RXSXhxyVdVfof6bmbYixlKtw3a8haWWmbsJa0=");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        EncryptionData enc = new EncryptionData();
+        enc.setVersion("05");
+        enc.setTrackNumber("2");
+        enc.setDataFormat("2");
+        enc.setKsn("//89P4IAAAAB4A==");
+
+        track.setEncryptionData(enc);
+
+        String TagsData = "9F4005FF80F050019F02060000000020009F03060000000000009F26086C4AED3B6DFC1E394F07A00000027710109F0607A000000277101082025C009F1E0800000000000000009F3602007A9F34030400029F2701809F3901059F3303E078C89F1A0201249F350122950502000080005F2A0201249A032512179B02E8009F21031352539C01009F37043BB88A1B5F3401018407A00000027710109F090200019F0702AB009F101615048504030000000000820000000000000000000000";
+        Transaction response =
+                track
+                        .authorize(new BigDecimal("14.01"))
+                        .withCurrency("CAD")
+                        .withAllowDuplicates(true)
+                        .withPosSequenceNumber("000010010490")
+                        .withTagData(TagsData)
+                        .withCardHolderLanguage("en-CA")
+                        .withAllowDuplicates(false)
+                        .withAccountType(AccountType.Savings)
+                        .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction captureResponse = Transaction.fromId(response.getTransactionId(), PaymentMethodType.Debit)
+                .capture(new BigDecimal("14.01"))
+                .withPosSequenceNumber("000010010500")
+                .withAccountType(AccountType.Savings)
+                .withTagData(TagsData)
+                .execute();
+        assertNotNull(captureResponse);
+
+        assertEquals("00", captureResponse.getResponseCode());
     }
 
     @Test

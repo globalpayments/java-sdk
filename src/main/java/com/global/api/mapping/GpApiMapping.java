@@ -158,6 +158,8 @@ public class GpApiMapping {
                     cardDetails.setIssuer(paymentMethodObj.getString("issuer"));
                     cardDetails.setFunding(paymentMethodObj.getString("funding"));
                     cardDetails.setBinCountry(paymentMethodObj.getString("country"));
+                    cardDetails.setCommercialLevel(paymentMethodObj.getString("commercial_level"));
+
                     transaction.setCardDetails(cardDetails);
 
                     transaction.setCardType(paymentMethodObj.getString("brand"));

@@ -2,7 +2,7 @@ package com.global.api.entities.enums;
 
 public enum TaxType implements IStringConstant {
     NotUsed("NOTUSED"),
-    SalesTax("SALESTAX"),
+    SalesTax("SALES_TAX"),
     TaxExempt("TAXEXEMPT");
 
     String value;

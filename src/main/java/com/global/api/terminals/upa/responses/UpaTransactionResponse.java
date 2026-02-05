@@ -220,7 +220,7 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         setPinVerified(payment.getString("PinVerified"));
         setAccountType(payment.getString("AccountType"));
         setTransactionType(payment.getString("transactionType"));
-        setSequenceNo(payment.getString("PosSequenceNbr"));
+        setPosSequenceNbr(payment.getString("PosSequenceNbr"));
         setApplicationName(payment.getString("appName"));
         if (payment.getString(CLERK_ID) != null && !payment.getString(CLERK_ID).isEmpty()) {
             setClerkId(Integer.parseInt(payment.getString(CLERK_ID)));
@@ -323,6 +323,11 @@ public class UpaTransactionResponse extends UpaResponseHandler {
         additionalTerminalCapabilities = emv.getString("9F40");
         if (emv.getString("9F41") != null) {
             transactionSequenceCounter = emv.getString("9F41");
+        }
+
+        String ttq = emv.getString("9F66");
+        if (!StringUtils.isNullOrEmpty(ttq) && ttq.length() == 8) {
+            terminalTransactionQualifiers = emv.getString("9F66");
         }
         tacDefault = emv.getString(TAC_DEFAULT);
         tacDenial = emv.getString(TAC_DENIAL);

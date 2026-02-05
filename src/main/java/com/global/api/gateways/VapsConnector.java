@@ -1532,7 +1532,7 @@ public class VapsConnector extends GatewayConnectorConfig {
     private <T extends TransactionBuilder<Transaction>> Transaction sendRequest(NetworkMessage request, T builder, byte[] orgCorr1, byte[] orgCorr2) throws ApiException {
         byte[] sendBuffer = request.buildMessage();
         if(isEnableLogging()) {
-            System.out.println("Request Breakdown:\r\n" + request.toString());
+            config.getNetworkRequestLogger().logInfo("Request Breakdown:\r\n" + request);
         }
         IDeviceMessage message = buildMessage(sendBuffer, orgCorr1, orgCorr2, false);
         TransactionType transactionType = null;
@@ -1706,7 +1706,7 @@ public class VapsConnector extends GatewayConnectorConfig {
 
                 // log out the breakdown
                 if(isEnableLogging()) {
-                    System.out.println("\r\nResponse Breakdown:\r\n" + message.toString());
+                    config.getNetworkRequestLogger().logInfo("\r\nResponse Breakdown:\r\n" + message);
                 }
 
                 DE3_ProcessingCode processingCode = message.getDataElement(DataElementId.DE_003, DE3_ProcessingCode.class);
