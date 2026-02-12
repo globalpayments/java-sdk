@@ -83,7 +83,7 @@ public class ServicesContainer implements IDisposable {
         if (configurations.containsKey(configName))
             return configurations.get(configName).getProPayProvider();
 
-        throw new ConfigurationException("PayProProvider is not configured");
+        throw new ConfigurationException("ProPayProvider is not configured");
     }
 
     public IPayFacProvider getPayFac(String configName) throws ConfigurationException {
