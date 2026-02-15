@@ -138,6 +138,7 @@ public class GpApiMapping {
                 transaction.setMultiCapture(getIsMultiCapture(json));
                 transaction.setFingerPrint(paymentMethod.getString("fingerprint"));
                 transaction.setFingerPrintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
+                transaction.setPaymentMethodResult(paymentMethod.getString("result"));
 
                 if (paymentMethod.has("bnpl")) {
                     mapBNPLResponse(json, transaction);
