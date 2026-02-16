@@ -526,6 +526,11 @@ public class GpApiMapping {
             summary.setInstallmentData(setInstallmentData(installment));
         }
 
+        if(doc.has("fees"))  {
+            JsonDoc fees = doc.get("fees");
+            summary.setFeeTotalAmount(fees.getDecimal("total_amount_decimal"));
+        }
+
         summary.setFraudManagementResponse(doc.has("risk_assessment") ? mapFraudManagementReport(doc.get("risk_assessment")) : null);
 
         return summary;
