@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V15.1.2 (02/05/2026)
+## Latest Version - V15.1.3 (02/19/2026)
+### Enhancements
+- [GPAPI] - Implemented Payers Functionality : GET Payer by ID API & GET List of Payers API.
+
+### Bug Fixes:
+- [VAPS] - Resolved NPE issue of Wex Preauth encryption transaction by adding the null check(Issue-10380).
+
+## V15.1.2 (02/05/2026)
 ### Enhancements:
 [Portico] - Add GatewayTxnId for Interac DebitReversal.
 [GPAPI] - Added all required fields for getting level2 data from GP-API.

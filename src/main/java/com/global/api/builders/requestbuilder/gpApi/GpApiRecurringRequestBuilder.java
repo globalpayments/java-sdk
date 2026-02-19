@@ -50,6 +50,18 @@ public class GpApiRecurringRequestBuilder implements IRequestBuilder {
                     requestDataPayer = preparePayerRequest();
                 }
                 break;
+            case Search:
+                endpoint = merchantUrl + GpApiRequest.PAYERS_ENDPOINT;
+                verb = GpApiRequest.HttpMethod.Get;
+                break;
+
+            case Fetch:
+                endpoint = merchantUrl + GpApiRequest.PAYERS_ENDPOINT + "/";
+                if (this.builder.getKey() != null) {
+                    endpoint = endpoint + this.builder.getKey();
+                }
+                verb = GpApiRequest.HttpMethod.Get;
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported transaction type: " + ((RecurringBuilder<?>) builder).getTransactionType());
         }

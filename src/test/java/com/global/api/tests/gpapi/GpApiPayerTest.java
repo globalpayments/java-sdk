@@ -15,6 +15,9 @@ import com.global.api.utils.GenerationUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.*;
@@ -310,6 +313,34 @@ public class GpApiPayerTest extends BaseGpApiTest {
         String merchantId = config.getMerchantId();
         GatewayException exception = assertThrows(GatewayException.class, card::tokenize);
         assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: merchant_id - "+ merchantId +", account_id - , account_name - ", exception.getMessage());
+    }
+
+    @Test
+    public void getPayersList() throws Exception {
+        List<Customer> response = Customer.findAll();
+        assertNotNull(response);
+        assertFalse(response.isEmpty());
+    }
+
+    @Test
+    public void getPayer() throws Exception {
+        String id = "PYR_065ed270611f44488e521bec34e4dcb9";
+        newCustomer.setId(id);
+
+        Customer response = Customer.get(id);
+        assertNotNull(response);
+        assertEquals(newCustomer.getId(), response.getId());
+    }
+
+    @Test
+    public void getPayerWithWrongId() {
+        String id = "PYR_065ed270611f44488e521bec34e4dcb8";
+
+        ApiException exception = assertThrows(ApiException.class, () -> {
+
+            Customer.get(id);
+        });
+        assertEquals("Status Code: 400 - id value is invalid. Please check the format and data provided is correct.", exception.getMessage());
     }
 
     public GpApiConfig gpApiPayerInitializeTest(String merchantId) throws ConfigurationException {

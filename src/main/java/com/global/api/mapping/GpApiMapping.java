@@ -1223,26 +1223,86 @@ public class GpApiMapping {
         actionSummary.setMerchantName(doc.getString("merchant_name"));
         return actionSummary;
     }
-    public static <T> T mapRecurringEntity(String rawResponse, T recurringEntity) {
-        T result = null;
-        if (rawResponse != null && !rawResponse.isEmpty()) {
-            JsonDoc json = JsonDoc.parse(rawResponse);
-            if (recurringEntity instanceof Customer) {
-                Customer payer = (Customer) recurringEntity;
-                payer.setId(json.getString("id"));
-                if (json.has("payment_methods")) {
-                    payer.setPaymentMethods(new ArrayList<>());
-                    for (JsonDoc payment : json.getEnumerator("payment_methods")) {
-                        RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod();
-                        paymentMethod.setId(payment.getString("id"));
-                        paymentMethod.setKey(payment.getString("default"));
-                        payer.getPaymentMethods().add(paymentMethod);
+    public static <T> T mapRecurringEntity(String rawResponse, T recurringEntity, Class<T> clazz ) throws ApiException {
+        try {
+            T type = clazz.newInstance();
+            T result = null;
+            if (rawResponse != null && !rawResponse.isEmpty()) {
+                JsonDoc json = JsonDoc.parse(rawResponse);
+                if (recurringEntity instanceof Customer) {
+                    Customer payer = (Customer) recurringEntity;
+                    payer.setId(json.getString("id"));
+                    if (json.has("payment_methods")) {
+                        payer.setPaymentMethods(new ArrayList<>());
+                        for (JsonDoc payment : json.getEnumerator("payment_methods")) {
+                            RecurringPaymentMethod paymentMethod = new RecurringPaymentMethod();
+                            paymentMethod.setId(payment.getString("id"));
+                            paymentMethod.setKey(payment.getString("default"));
+                            payer.getPaymentMethods().add(paymentMethod);
+                        }
                     }
+                    return (T) payer;
+                } else if (type instanceof CustomerCollection) {
+                    for (JsonDoc customer : json.getEnumerator("payers")) {
+                        ((CustomerCollection) type).add(hydrateCustomer(customer, Customer.class));
+                    }
+                    return type;
                 }
-                return (T) payer;
             }
+            return result;
+        } catch (Exception e) {
+            throw new ApiException(e.getMessage(), e);
         }
-        return result;
+    }
+
+    private static <T> T hydrateCustomer(JsonDoc response, Class<T> clazz) {
+        try {
+            T customer = clazz.newInstance();
+            if(customer instanceof Customer) {
+
+                ((Customer)customer).setId(response.getString("id"));
+                ((Customer)customer).setFirstName(response.getString("first_name"));
+                ((Customer)customer).setLastName(response.getString("last_name"));
+                ((Customer)customer).setKey(response.getString("reference"));
+                ((Customer)customer).setTimeCreated(response.getString("time_created"));
+                ((Customer)customer).setTimeLastUpdated(response.getString("time_last_updated"));
+                ((Customer)customer).setEmail(response.getString("email"));
+                ((Customer)customer).setLanguage(response.getString("language"));
+
+
+                if(response.has("paymentMethods")) {
+                    List<RecurringPaymentMethod> paymentMethods = new ArrayList<RecurringPaymentMethod>();
+                    for(JsonDoc paymentResponse : response.getEnumerator("paymentMethods")) {
+                        RecurringPaymentMethod paymentMethod = hydratePaymentMethod(paymentResponse, RecurringPaymentMethod.class);
+                        if(paymentMethod != null)
+                            paymentMethods.add(paymentMethod);
+                    }
+                    ((Customer)customer).setPaymentMethods(paymentMethods);
+                }
+                return customer;
+            }
+            return null;
+        }
+        catch(Exception e) {
+            return null;
+        }
+    }
+
+    private static <T> T hydratePaymentMethod(JsonDoc response, Class<T> clazz){
+        try{
+            T payment = clazz.newInstance();
+            if(payment instanceof RecurringPaymentMethod) {
+
+                ((RecurringPaymentMethod)payment).setId(response.getString("id"));
+                ((RecurringPaymentMethod)payment).setDefaultPaymentMethod(response.getString("default"));
+
+                return payment;
+            }
+            return null;
+        }
+        catch(Exception e) {
+            return null;
+        }
     }
 
 

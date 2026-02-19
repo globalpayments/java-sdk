@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.globalpay</groupId>
   <artifactId>globalpayments-sdk</artifactId>
-  <version>15.1.2</version>
+  <version>15.1.3</version>
   <packaging>jar</packaging>
   <name>Global Payments SDK</name>
   <description>API for processing payments through Global Payments</description>

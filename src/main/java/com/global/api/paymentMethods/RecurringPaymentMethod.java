@@ -29,6 +29,7 @@ public class RecurringPaymentMethod extends RecurringEntity<RecurringPaymentMeth
     private ThreeDSecure threeDSecure;
     @Getter @Setter private StoredCredential storedCredential;
     @Getter @Setter private String token;
+    @Getter @Setter private String defaultPaymentMethod;
 
     public Address getAddress() {
         return address;

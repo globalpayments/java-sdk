@@ -48,7 +48,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     public final boolean hasBuiltInMerchantManagementService() {
         return true;
     }
-    public boolean supportsRetrieval() throws ApiException { throw new ApiException("NOT IMPLEMENTED"); }
+    public boolean supportsRetrieval() throws ApiException { return true; }
     public boolean supportsUpdatePaymentDetails() throws ApiException { throw new ApiException("NOT IMPLEMENTED"); }
 
 
@@ -61,7 +61,8 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         GpApiRequest request = new GpApiRecurringRequestBuilder().buildRequest(builder, this);
         if (request != null){
             String response = doTransaction(request.getVerb().getValue(), request.getEndpoint(), request.getRequestBody());
-            return (T) GpApiMapping.mapRecurringEntity(response, builder.getEntity());
+            return  GpApiMapping.mapRecurringEntity(response, (T) builder.getEntity(), clazz);
+
         }
         return result;
     }

@@ -40,6 +40,8 @@ public class Customer extends RecurringEntity<Customer> {
     private List<CustomerDocument> documents;
     private List<RecurringPaymentMethod> paymentMethods;
     private Boolean isShippingAddressSameAsBilling;
+    private String timeCreated;
+    private String timeLastUpdated;
 
     public Customer() {
         //super(Customer.class);

@@ -2505,9 +2505,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                     if (builder.getPaymentMethod() instanceof CreditTrackData) {
                         String trackData = ((CreditTrackData) builder.getPaymentMethod()).getTrackData();
-                        String ISONumber = trackData.substring(3, 5);
-                        if (ISONumber.equals(00) && fleetData.getDriverId() == null) {
-                            throw new BuilderException("Driver ID must not be null.");
+                        if(!StringUtils.isNullOrEmpty(trackData)) {
+                            String ISONumber = trackData.substring(3, 5);
+                            if (ISONumber.equals(00) && fleetData.getDriverId() == null) {
+                                throw new BuilderException("Driver ID must not be null.");
+                            }
                         }
                     }
                     customerData.set(DE48_CustomerDataType.EnteredData_Numeric, restrictWexPromptToMaxLength(wexFleetData.getEnteredData(), 12, DE48_CustomerDataType.EnteredData_Numeric));

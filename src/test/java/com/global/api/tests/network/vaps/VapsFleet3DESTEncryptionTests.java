@@ -634,4 +634,35 @@ public class VapsFleet3DESTEncryptionTests {
         assertEquals("000", response.getResponseCode());
     }
 
+    @Test
+    public void test_wex_manual_preAuth() throws ApiException {
+
+        CreditTrackData track = new CreditTrackData();
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setEncryptionData(EncryptionData.setKSNAndEncryptedData("EC7EB2F7BD67A2784F1AD9270EFFD90DD121B8653623911C6BC7B427F726A49F834CA051A6C1CC9CBB17910A1DBA209796BB6D08B8C374A2912AB018A679FA5A0A0EDEADF349FED3", "F000019990E00003"));
+        track.setCardType("WexFleet");
+        track.setEntryMethod(EntryMethod.Swipe);
+        track.setTrackNumber(TrackNumber.TrackOne);
+        track.setEncryptedPan("3A2067D00508DBE43E3342CC77B0575E17401487FC0B377F");
+        track.setExpiry("2510");
+        track.setFleetCard(true);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setPurchaseDeviceSequenceNumber("00");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("1411");
+
+        Transaction response = track.authorize(new BigDecimal(10), true).withCurrency("USD").withFee(FeeType.TransactionFee, new BigDecimal(1)).withFleetData(fleetData).execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1100", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("101", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
 }
