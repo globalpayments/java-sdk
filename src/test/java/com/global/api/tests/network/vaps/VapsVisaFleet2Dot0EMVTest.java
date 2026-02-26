@@ -964,6 +964,7 @@ public class VapsVisaFleet2Dot0EMVTest {
 
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("51", UnitOfMeasure.Kilograms, 10, 10);
+        productData.addFuel("51", UnitOfMeasure.Kilograms, 10, 13);
         productData.addNonFuel("06", UnitOfMeasure.Gallons, 5, 10);
         productData.addNonFuel("16", UnitOfMeasure.Pounds, 2, 20);
         productData.addNonFuel("63", UnitOfMeasure.Liters, 5, 5);
@@ -1162,6 +1163,98 @@ public class VapsVisaFleet2Dot0EMVTest {
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
         productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test //Tested with same product Codes
+    public void test_24_authorization_capture_same_productCodes() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+        acceptorConfig.setSupportTerminalPurchaseRestriction(PurchaseRestrictionCapability.CHIPBASEDPRODUCTRESTRICTION);
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("44", UnitOfMeasure.Gallons, new BigDecimal("11"), new BigDecimal("11"));
+        productData.addFuel("44", UnitOfMeasure.Kilograms, new BigDecimal("5"), new BigDecimal("5"));
+        productData.addNonFuel("NZ", UnitOfMeasure.Liters, 5, 2);
+        productData.addNonFuel("NZ", UnitOfMeasure.Liters, 10, 2);
+
+        productData.addSaleTax(new BigDecimal("20"));
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("23.56"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction captureResponse = response.preAuthCompletion(new BigDecimal("23.56"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(captureResponse);
+        // check response
+        assertEquals("000", captureResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_1100_authorization_combine_F4() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.10"), new BigDecimal("2.1010"));
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.10"), new BigDecimal("2.1010"));
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.10"), new BigDecimal("2.1010"));
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.10"), new BigDecimal("2.1010"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_1100_authorization_combine_NF11() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.Fuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("30.12"), new BigDecimal("2.1010"),new BigDecimal("63.2812"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("10.10"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Liters, new BigDecimal("5.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("3.12"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
+        productData.addNonFuel("78", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("2.1010"));
 
         FleetData fleetData = new FleetData();
         fleetData.setDriverId("123456");

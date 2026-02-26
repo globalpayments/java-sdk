@@ -82,12 +82,26 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         productDataEntries.put(entry.getCode(), entry);
     }
     public void addFuel(DE63_ProductDataEntry entry) {
+        if (fuelProductDataEntries.containsKey(entry.getCode())) {
+            DE63_ProductDataEntry existingEntry = fuelProductDataEntries.get(entry.getCode());
+            existingEntry.setQuantity(existingEntry.getQuantity().add(entry.getQuantity()));
+            existingEntry.setPrice(existingEntry.getPrice());
+            existingEntry.setAmount(existingEntry.getAmount().add(entry.getAmount()));
+        } else {
         fuelProductDataEntries.put(entry.getCode(), entry);
-    }
-    public void addNonFuel(DE63_ProductDataEntry entry) {
-        nonFuelProductDataEntries.put(entry.getCode(), entry);
+        }
     }
 
+    public void addNonFuel(DE63_ProductDataEntry entry) {
+        if (nonFuelProductDataEntries.containsKey(entry.getCode())) {
+            DE63_ProductDataEntry existingEntry = nonFuelProductDataEntries.get(entry.getCode());
+            existingEntry.setQuantity(existingEntry.getQuantity().add(entry.getQuantity()));
+            existingEntry.setPrice(existingEntry.getPrice());
+            existingEntry.setAmount(existingEntry.getAmount().add(entry.getAmount()));
+        } else {
+            nonFuelProductDataEntries.put(entry.getCode(), entry);
+        }
+    }
     public BigDecimal getFuelAmount() {
         BigDecimal sumAmount = BigDecimal.ZERO;
         for (DE63_ProductDataEntry fuelDataEntry : fuelProductDataEntries.values()) {

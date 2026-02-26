@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V15.1.3 (02/19/2026)
+## Latest Version - V15.1.4 (02/26/2026)
+### Bug Fixes:
+- [VAPS] - Updated code for fuel/nonfuel method to aggregate same host products for fleet cards.(Issue 10383)
+
+## V15.1.3 (02/19/2026)
 ### Enhancements
 - [GPAPI] - Implemented Payers Functionality : GET Payer by ID API & GET List of Payers API.
 
