@@ -3,6 +3,7 @@ package com.global.api.tests.network.vaps;
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.network.elements.DE54_AmountsAdditional;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -14,11 +15,13 @@ import com.global.api.serviceConfigs.AcceptorConfig;
 import com.global.api.serviceConfigs.NetworkGatewayConfig;
 import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
+import com.global.api.utils.StringUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -1268,6 +1271,198 @@ public class VapsVisaFleet2Dot0EMVTest {
                 .execute();
         assertNotNull(response);
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_01_auth_DE54_amountType42_and46_F() throws ApiException {
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("11.7532"), new BigDecimal("1.7545"));
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_02_auth_DE54_amountType42_and46_F() throws ApiException {
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("7.50"), new BigDecimal("3.14"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("11.23"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_03_auth_DE54_amountType42_and46_F() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("12"), new BigDecimal("1"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("15.12"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_04_auth_DE54_amountType42_and46_F() throws ApiException {
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("1.00"), new BigDecimal("19.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("19.95"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_05_auth_amountType42_and46_F_NF() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.0000"), new BigDecimal("10"), new BigDecimal("100"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("20.11"), new BigDecimal("20.11"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("32"), new BigDecimal("64.00"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("40.33"), new BigDecimal("80.66"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("31.75"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+    @Test
+    public void test_06_auth_capture_amountType42_and46_F_NF() throws ApiException {
+
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("15.1134"), new BigDecimal("2.1010"));
+        productData.addNonFuel("79", UnitOfMeasure.Quarts, new BigDecimal("10.0000"), new BigDecimal("10"), new BigDecimal("100"));
+        productData.addNonFuel("DN", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("20.11"), new BigDecimal("20.11"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("32"), new BigDecimal("64.00"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("40.33"), new BigDecimal("80.66"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("50"), new BigDecimal("150"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("500"), new BigDecimal("500"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("200"), new BigDecimal("200"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+
+        Transaction response = card.authorize(new BigDecimal("11.12"), true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal("11.12"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(capture);
+    }
+
+    @Test
+    public void test_DE_54_amountType42_netFuelPrice_4decimalPoint() throws ApiException {
+        BigDecimal amount = multiplyToTwoDecimals(new BigDecimal("7.5400"), new BigDecimal("3.1416"));
+
+        DE54_AmountsAdditional element = new DE54_AmountsAdditional();
+        element.put(DE54_AmountTypeCode.NETFUELPRICE,DE3_AccountType.Unspecified,Iso4217_CurrencyCode.USD,amount);
+
+        String de54str = element.toString();
+        // last 12 byte represent the amount
+        assertEquals(StringUtils.toFormatDigit(amount,12,4), de54str.substring(de54str.length() -12));
+    }
+    @Test
+    public void test_DE_54_amountType42_grossFuelPrice_4decimalPoint() throws ApiException {
+        BigDecimal amount = multiplyToTwoDecimals(new BigDecimal("7.5400"), new BigDecimal("3.1416"));
+
+        DE54_AmountsAdditional element = new DE54_AmountsAdditional();
+        element.put(DE54_AmountTypeCode.GROSSFUELPRICE,DE3_AccountType.Unspecified,Iso4217_CurrencyCode.USD,amount);
+
+        String de54str = element.toString();
+        // last 12 byte represent the amount
+        assertEquals(StringUtils.toFormatDigit(amount,12,4), de54str.substring(de54str.length() -12));
+    }
+
+    @Test
+    public void test_DE_54_amountType44_netNonFuelPrice_2decimalPoint() throws ApiException {
+        BigDecimal amount = multiplyToTwoDecimals(new BigDecimal("7.5400"), new BigDecimal("3.1416"));
+
+        DE54_AmountsAdditional element = new DE54_AmountsAdditional();
+        element.put(DE54_AmountTypeCode.NETNONFUELPRICE,DE3_AccountType.Unspecified,Iso4217_CurrencyCode.USD,amount);
+
+        String de54str = element.toString();
+        // last 12 byte represent the amount
+        assertEquals(StringUtils.toFormatDigit(amount,12,2), de54str.substring(de54str.length() -12));
+    }
+    @Test
+    public void test_DE_54_amountType43_grossNonFuelPrice_2decimalPoint() throws ApiException {
+        BigDecimal amount = multiplyToTwoDecimals(new BigDecimal("7.5300"), new BigDecimal("2.1234"));
+
+        DE54_AmountsAdditional element = new DE54_AmountsAdditional();
+        element.put(DE54_AmountTypeCode.GROSSNONFUELPRICE,DE3_AccountType.Unspecified,Iso4217_CurrencyCode.USD,amount);
+
+        String de54str = element.toString();
+        // last 12 byte represent the amount
+        assertEquals(StringUtils.toFormatDigit(amount,12,2), de54str.substring(de54str.length() -12));
+    }
+
+    private BigDecimal multiplyToTwoDecimals(BigDecimal quantity, BigDecimal price) {
+        return quantity.multiply(price).setScale(4, RoundingMode.HALF_UP);
     }
 
 }

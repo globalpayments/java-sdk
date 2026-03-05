@@ -119,7 +119,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         if(salesTax!=null) {
             sumAmount = sumAmount.add(salesTax);
         }
-        return sumAmount.setScale(2, RoundingMode.HALF_UP);
+        return sumAmount.setScale(4, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getNonFuelAmount(){

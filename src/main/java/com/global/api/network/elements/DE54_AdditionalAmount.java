@@ -55,8 +55,18 @@ public class DE54_AdditionalAmount {
         String rvalue = accountType.getValue()
                 .concat(amountType.getValue())
                 .concat(currencyCode.getValue())
-                .concat("D")
-                .concat(StringUtils.toNumeric(amount, 12));
+                .concat("D");
+        if (isAmountTypeCodeFuel()) {
+            rvalue = rvalue.concat(StringUtils.toFormatDigit(amount, 12, 4));
+        } else {
+            rvalue = rvalue.concat(StringUtils.toNumeric(amount, 12));
+        }
         return rvalue.getBytes();
     }
+
+    private boolean isAmountTypeCodeFuel() {
+        return DE54_AmountTypeCode.NETFUELPRICE.equals(amountType) ||
+                DE54_AmountTypeCode.GROSSFUELPRICE.equals(amountType);
+    }
+
 }

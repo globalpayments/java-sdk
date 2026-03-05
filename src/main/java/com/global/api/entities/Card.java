@@ -40,4 +40,16 @@ public class Card {
 
     private String commercialLevel;
 
+    private String category;
+
+    private String authCode;
+
+    private String avsResponseCode;
+
+    private String avsAddressResponse;
+
+    private String avsResponseMessage;
+
+    private CardIssuerResponse cardIssuerResponse;
+
 }

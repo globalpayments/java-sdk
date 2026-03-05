@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - V15.1.4 (02/26/2026)
+## Latest Version - V15.1.5 (03/05/2026)
+### Enhancements
+- [GPAPI] - Add optional fields like category , first name, last name for Level 2 data.
+
+### Bug Fixes:
+- [VAPS] - Added support to get DE 54 Amount type 42 & 46 up to 4 decimal point.(Issue 10385)
+- [Transit] - Fixes for TransIT EMV tag data.
+
+## V15.1.4 (02/26/2026)
 ### Bug Fixes:
 - [VAPS] - Updated code for fuel/nonfuel method to aggregate same host products for fleet cards.(Issue 10383)
 

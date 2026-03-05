@@ -32,6 +32,7 @@ public class CommercialData {
     private TaxType taxType ;
     private String summaryCommodityCode ;
     private String vat_InvoiceNumber ;
+    protected String cardType = "Unknown";
 
     public CommercialData(TaxType taxType) {
         new CommercialData(taxType, TransactionModifier.LevelII);

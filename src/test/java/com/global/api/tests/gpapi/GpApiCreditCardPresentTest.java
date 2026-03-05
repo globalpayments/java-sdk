@@ -74,9 +74,10 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
         ServicesContainer.configureService(gpApiConfig,"LevelII");
 
-        commercialData = new CommercialData(TaxType.SalesTax, TransactionModifier.LevelII) ;
+        commercialData = new CommercialData(TaxType.Sales_Tax, TransactionModifier.LevelII) ;
         commercialData.setPoNumber("9876543210");
         commercialData.setTaxAmount(new BigDecimal(10));
+        commercialData.setCardType("CORPORATE");
 
         orderDetails=new OrderDetails();
 
@@ -94,6 +95,8 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
 
         payerDetails = new PayerDetails();
+        payerDetails.setFirstName("Jane");
+        payerDetails.setLastName("Doe");
         payerDetails.setTaxIdReference("12345");
         payerDetails.setName("Sushant Deshmukh");
         payerDetails.setEmail("sushantd@gp.com");
@@ -1201,7 +1204,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         CreditTrackData track = initCreditTrackData();
         Address address = new Address("6860", "75024");
 
-        Transaction chargeResponse = track.charge(new BigDecimal("111.06"))
+        Transaction chargeResponse = track.charge(new BigDecimal("112.34"))
                 .withCurrency("USD")
                 .withAddress(address)
                 .withCommercialRequest(true)
@@ -1212,6 +1215,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
         assertNotNull(chargeResponse);
         assertEquals("LEVEL_2", chargeResponse.getCardDetails().getCommercialLevel());
+        assertEquals("BUSINESS", chargeResponse.getCardDetails().getCategory());
     }
 
     @Test
@@ -1219,7 +1223,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         CreditTrackData track = initCreditTrackData();
         Address address = new Address("6860", "75024");
 
-        Transaction chargeResponse = track.charge(new BigDecimal("111.06"))
+        Transaction chargeResponse = track.charge(new BigDecimal("112.34"))
                 .withCurrency("USD")
                 .withAddress(address)
                 .withCommercialRequest(true)

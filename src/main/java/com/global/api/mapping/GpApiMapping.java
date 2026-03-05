@@ -19,6 +19,7 @@ import com.global.api.utils.StringUtils;
 import lombok.var;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -134,7 +135,7 @@ public class GpApiMapping {
             transaction.setBatchSummary(batchSummary);
             if (json.has("payment_method")) {
                 JsonDoc paymentMethod = json.get("payment_method");
-
+                transaction.setEntryMode(paymentMethod.getString("entry_mode"));
                 transaction.setMultiCapture(getIsMultiCapture(json));
                 transaction.setFingerPrint(paymentMethod.getString("fingerprint"));
                 transaction.setFingerPrintIndicator(paymentMethod.getString("fingerprint_presence_indicator"));
@@ -159,6 +160,15 @@ public class GpApiMapping {
                     cardDetails.setFunding(paymentMethodObj.getString("funding"));
                     cardDetails.setBinCountry(paymentMethodObj.getString("country"));
                     cardDetails.setCommercialLevel(paymentMethodObj.getString("commercial_level"));
+                    cardDetails.setCategory(paymentMethodObj.getString("category"));
+                    cardDetails.setBrandReference(paymentMethodObj.getString("brand_reference"));
+                    cardDetails.setAuthCode(paymentMethodObj.getString("authcode"));
+                    cardDetails.setAvsResponseCode(paymentMethodObj.getString("avs_postal_code_result"));
+                    cardDetails.setAvsAddressResponse(paymentMethodObj.getString("avs_address_result"));
+                    cardDetails.setAvsResponseMessage(paymentMethodObj.getString("avs_action"));
+                    if (paymentMethod.has("card") && paymentMethod.get("card").has("provider")) {
+                        cardDetails.setCardIssuerResponse(mapCardIssuerResponse(paymentMethodObj.get("provider")));
+                    }
 
                     transaction.setCardDetails(cardDetails);
 
@@ -260,8 +270,13 @@ public class GpApiMapping {
                 JsonDoc installment = json.get("installment");
                 transaction.setInstallmentData(setInstallmentData(installment));
             }
-        }
+            if(json.has("tax_amount") || json.has("tax_mode") || json.has("purchase_order_number")) {
+                transaction.setTaxMode(json.getString("tax_mode"));
+                transaction.setTaxAmount(new BigDecimal(json.getString("tax_amount")));
+                transaction.setPurchaseOrderNumber(json.getString("purchase_order_number"));
+            }
 
+        }
         return transaction;
     }
 

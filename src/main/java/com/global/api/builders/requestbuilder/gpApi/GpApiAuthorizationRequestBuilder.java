@@ -36,7 +36,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         String merchantUrl = gateway.getMerchantUrl();
         JsonDoc paymentMethod =
                 new JsonDoc()
-                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue())); // [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
+                        .set("entry_mode", getEntryMode(builder, gateway.getGpApiConfig().getChannel().getValue()));// [MOTO, ECOM, IN_APP, CHIP, SWIPE, MANUAL, CONTACTLESS_CHIP, CONTACTLESS_SWIPE]
+
+        if (builder.getPayerDetails() != null && (!StringUtils.isNullOrEmpty(builder.getPayerDetails().getFirstName()) || !StringUtils.isNullOrEmpty(builder.getPayerDetails().getLastName()))) {
+            paymentMethod.set("first_name", builder.getPayerDetails().getFirstName())
+                    .set("last_name", builder.getPayerDetails().getLastName());
+        }
 
         paymentMethod.set("narrative", !StringUtils.isNullOrEmpty(builder.getDynamicDescriptor()) ? builder.getDynamicDescriptor() : null);
 
@@ -283,6 +288,10 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
                                 .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "")
                                 .set("authcode", builder.getOfflineAuthCode());
+
+                if(builder.getCommercialData() !=null && builder.getCommercialData().getCardType() != null){
+                    card.set("category", builder.getCommercialData().getCardType());
+                }
 
                 if (builderTransactionType == TransactionType.Verify) {
                     paymentMethod.set("card", card);

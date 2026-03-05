@@ -7,10 +7,7 @@ import com.global.api.entities.CreditDebitIndicator;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Target;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TransitRequestBuilder {
     private final ElementTree et;
@@ -123,37 +120,11 @@ public class TransitRequestBuilder {
                 Element emvTagsElement = et.subElement(transaction, "emvTags");
                 String tagData = get("emvTags");
 
-                // Parse the hex string into individual TLV (Tag-Length-Value) entries
-                while (tagData != null && tagData.length() > 0) {
-                    // Determine tag length (2 or 4 characters)
-                    int tagLength;
-                    if (tagData.startsWith("9F") || tagData.startsWith("5F") || tagData.startsWith("82") || tagData.startsWith("DF")) {
-                        tagLength = 4;
-                    } else {
-                        tagLength = 2;
-                    }
-
-                    // Check if we have enough data for tag + length
-                    if (tagData.length() < tagLength + 2) {
-                        break;
-                    }
-
-                    // Extract tag and length
-                    String lengthHex = tagData.substring(tagLength, tagLength + 2);
-                    int valueLength = Integer.parseInt(lengthHex, 16);
-
-                    // Check if we have enough data for the complete TLV
-                    int tlvLength = tagLength + 2 + (valueLength * 2);
-                    if (tagData.length() < tlvLength) {
-                        break;
-                    }
-
-                    // Extract the complete TLV entry
-                    String tlvEntry = tagData.substring(0, tlvLength);
-                    tagData = tagData.substring(tlvLength);
-
-                    // Create tag element with the complete TLV as text content
-                    et.subElement(emvTagsElement, "tag", tlvEntry);
+                // Get the individual tags from EmvUtils and add them to the xml
+                EmvData emvData = EmvUtils.parseTagData(tagData, true);
+                LinkedHashMap<String, TlvData> tagsMap = emvData.getAcceptedTags();
+                for (Map.Entry<String, TlvData> entry : tagsMap.entrySet()) {
+                    et.subElement(emvTagsElement, "tag", new String(entry.getKey() + entry.getValue().getLength() + entry.getValue().getValue()));
                 }
             } else if ("productDetails".equals(element) && hasProductDetails()) {
                 for (CommercialLineItem item : productDetails) {

@@ -123,6 +123,14 @@ public class Transaction {
     private TokenData tokenData;
     @Getter @Setter
     private InstallmentData installmentData;
+    @Getter @Setter
+    private String entryMode;
+    @Getter @Setter
+    private String taxMode;
+    @Getter @Setter
+    private BigDecimal taxAmount;
+    @Getter @Setter
+    private String purchaseOrderNumber;
 
     public Customer getCustomerData() {
         return customerData;
