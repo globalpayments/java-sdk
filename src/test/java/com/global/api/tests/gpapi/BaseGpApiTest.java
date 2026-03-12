@@ -22,6 +22,8 @@ public class BaseGpApiTest {
     public static final String APP_KEY = "FQyJA5VuEQfcji2M";
     public static final String MITC_UPA_APP_ID = "aCgePu6PqA8sDdkjLYgmrHs89JAXvbvO";
     public static final String MITC_UPA_APP_KEY = "DY0ZeWiUCHACK7dz";
+    public static final String EU_APP_ID = "QlI6DivlPcXboV1AAG3NGtf340bJO6A34SqUa5REJojQMzat";
+    public static final String EU_APP_KEY = "G3Gdx6biXAXgJJFaMnuLo0hlBCCMH18rCXnPzySl37nwctMAmrV1EykuXi6GQCrh";
     static final String APP_ID_FOR_MERCHANT = "A1feRdMmEB6m0Y1aQ65H0bDi9ZeAEB2t";
     static final String APP_KEY_FOR_MERCHANT = "5jPt1OpB6LLitgi7";
     // ================================================================================

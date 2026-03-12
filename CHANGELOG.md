@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V15.1.5 (03/05/2026)
+## Latest Version - V15.1.6 (03/12/2026)
+### Enhancements
+- [GPAPI] - Added EU Data Residency Support.
+
+## Version - V15.1.5 (03/05/2026)
 ### Enhancements
 - [GPAPI] - Add optional fields like category , first name, last name for Level 2 data.
 
@@ -21,10 +25,10 @@
 
 ## V15.1.2 (02/05/2026)
 ### Enhancements:
-[Portico] - Add GatewayTxnId for Interac DebitReversal.
-[GPAPI] - Added all required fields for getting level2 data from GP-API.
-[10376] - Logging Enhancement : provided way to push sdk logs to client logger.
-[UPA] - Add 9F66 and PosSequenceNbr. SequenceNo is now 5F34 only.
+- [Portico] - Add GatewayTxnId for Interac DebitReversal.
+- [GPAPI] - Added all required fields for getting level2 data from GP-API.
+- [10376] - Logging Enhancement : provided way to push sdk logs to client logger.
+- [UPA] - Add 9F66 and PosSequenceNbr. SequenceNo is now 5F34 only.
 
 ### Bug Fixes
 [UPA] - reverted code added for sendReady command failure as this was fixed while updating the UPA version.

@@ -81,16 +81,27 @@ public class GpApiConfig extends GatewayConfig {
 
     public PorticoTokenConfig porticoTokenConfig;
 
+    @Accessors(chain = true)
+    private DataResidency dataResidency = DataResidency.NONE;
+
     public GpApiConfig() {
         super(GatewayProvider.GP_API);
     }
 
     public void configureContainer(ConfiguredServices services) {
         if (StringUtils.isNullOrEmpty(serviceUrl)) {
-            if (environment.equals(Environment.TEST)) {
-                serviceUrl = ServiceEndpoints.GP_API_TEST.getValue();
+
+            boolean isEuResidency = dataResidency.equals(DataResidency.EU);
+            boolean isTestEnvironment = environment.equals(Environment.TEST);
+
+            if (isEuResidency) {
+                serviceUrl = isTestEnvironment
+                        ? ServiceEndpoints.GP_API_TEST_EU.getValue()
+                        : ServiceEndpoints.GP_API_PRODUCTION_EU.getValue();
             } else {
-                serviceUrl = ServiceEndpoints.GP_API_PRODUCTION.getValue();
+                serviceUrl = isTestEnvironment
+                        ? ServiceEndpoints.GP_API_TEST.getValue()
+                        : ServiceEndpoints.GP_API_PRODUCTION.getValue();
             }
         }
 
