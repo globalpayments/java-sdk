@@ -1,11 +1,18 @@
 # Changelog
 
-## Latest Version - V15.1.6 (03/12/2026)
-### Enhancements
+## Latest Version - V15.1.7 (03/26/2026)
+### Bug Fixes:
+- [Synk] - Critical and high level security issues resolved. No impact on any connectors.
+
+### Enhancements:
+- [Vaps] -  Combined 3DES and tokenization based on the VAPS spec update 24.1.
+
+## Version - V15.1.6 (03/12/2026)
+### Enhancements:
 - [GPAPI] - Added EU Data Residency Support.
 
 ## Version - V15.1.5 (03/05/2026)
-### Enhancements
+### Enhancements:
 - [GPAPI] - Add optional fields like category , first name, last name for Level 2 data.
 
 ### Bug Fixes:
