@@ -8,6 +8,7 @@ import com.global.api.utils.MultipartForm;
 import com.global.api.utils.StringUtils;
 
 import java.util.Date;
+import org.joda.time.DateTime;
 
 public class Ticket extends TableServiceResponse {
     private int bumpStatusId;
@@ -101,7 +102,7 @@ public class Ticket extends TableServiceResponse {
         MultipartForm content = new MultipartForm()
                 .set("checkID", checkId)
                 .set("bumpStatusID", bumpStatusId)
-                .set("bumpTime", bumpTime != null ? bumpTime : new Date());
+                .set("bumpTime", bumpTime != null ? bumpTime : DateTime.now().toDate());
 
         TableServiceResponse response = sendRequest(TableServiceResponse.class, "pos/bumpStatus", content);
         this.bumpStatusId = bumpStatusId;
@@ -114,7 +115,7 @@ public class Ticket extends TableServiceResponse {
     public TableServiceResponse clearTable(Date clearTime) throws ApiException {
         MultipartForm content = new MultipartForm()
                 .set("checkID", checkId)
-                .set("clearTime", clearTime == null ? new Date() : clearTime);
+                .set("clearTime", clearTime == null ? DateTime.now().toDate() : clearTime);
 
         return sendRequest(TableServiceResponse.class, "pos/clearTable", content);
     }
@@ -125,7 +126,7 @@ public class Ticket extends TableServiceResponse {
     public TableServiceResponse openOrder(Date openTime) throws ApiException {
         MultipartForm content = new MultipartForm()
                 .set("checkID", checkId)
-                .set("openTime", openTime == null ? new Date() : openTime);
+                .set("openTime", openTime == null ? DateTime.now().toDate() : openTime);
 
         return sendRequest(TableServiceResponse.class, "pos/openOrder", content);
     }
@@ -152,7 +153,7 @@ public class Ticket extends TableServiceResponse {
         MultipartForm content = new MultipartForm()
                 .set("checkID", checkId)
                 .set("bumpStatusID", bumpStatusId)
-                .set("settleTime", settleTime == null ? new Date() : settleTime);
+                .set("settleTime", settleTime == null ? DateTime.now().toDate() : settleTime);
 
         TableServiceResponse response = sendRequest(TableServiceResponse.class, "pos/settleCheck", content);
         if(bumpStatusId != null)

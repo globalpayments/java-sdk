@@ -369,4 +369,9 @@ public class JsonDoc implements IRawRequestBuilder {
             return false;
         }
     }
+
+    public boolean isEmpty() {
+        return dict == null || dict.isEmpty();
+    }
+
 }

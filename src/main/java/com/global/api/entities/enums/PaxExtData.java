@@ -42,7 +42,9 @@ public enum PaxExtData implements IStringConstant {
     FPS("FPS"),
     MERCHANT_ID( "MerchantId"),
     MERCHANT_NAME( "MerchantName"),
-    SEQUENCE_NUMBER("SN");
+    SEQUENCE_NUMBER("SN"),
+    PIN_STATUS_NUMBER("PINSTATUSNUM"),
+    USER_LANGUAGE_STATUS("USERLANGUAGESTATUS");
 
     String value;
     PaxExtData(String value) { this.value = value; }

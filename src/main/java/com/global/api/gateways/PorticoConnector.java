@@ -11,6 +11,7 @@ import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
 import com.global.api.utils.*;
 import lombok.Setter;
+import org.joda.time.DateTime;
 import lombok.experimental.Accessors;
 import org.w3c.dom.Document;
 
@@ -1435,6 +1436,10 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 
     // Get the SDK release version
     private String getReleaseVersion() {
+        if ("true".equalsIgnoreCase(System.getProperty("sdk.testing"))) {
+            return "";
+        }
+
         String version = "";
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -1474,7 +1479,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
             }
         };
 
-        return dateFormat.format(new Date()).replace("::", ":");
+        return dateFormat.format(DateTime.now().toDate()).replace("::", ":");
     }
 
     private int getSecure3DVersion(Secure3dVersion version) {

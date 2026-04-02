@@ -12,13 +12,51 @@ public class Terms {
      * Represents the reference to the installment option being offered.
      * This field is applicable only if the installment.getProgram() is SIP.
      */
-    private String id;
-    /**
-     * Indicates if installment.term.time_unit_number is days, months or years
-     */
+    private String name;
+
+    private String reference;
+
+    private String mode;
+
+    private String count;
+
+    private String gracePeriodCount;
+
+    private String currency;
+
     private String timeUnit;
-    /**
-     * Indicates the total number of payments to be made over the course of the installment payment plan.
-     */
+
+    private String costPercentage;
+
+    private String totalPlanCost;
+
+    private String planAmount;
+
+    private String id;
+
     private List<Integer> timeUnitNumbers;
+
+    private String maxTimeUnitNumber;
+
+    private String maxAmount;
+
+    private String language;
+
+    private String version;
+
+    private Fees fees;
+
+    private List<TermsAndConditions> termsAndConditions;
+
+    private boolean isNullOrEmpty(String value) {
+        return value == null || value.isEmpty();
+    }
+
+    public boolean isEmpty() {
+        return isNullOrEmpty(id) &&
+                isNullOrEmpty(timeUnit) &&
+                (timeUnitNumbers == null || timeUnitNumbers.isEmpty()) &&
+                isNullOrEmpty(maxTimeUnitNumber);
+    }
+
 }

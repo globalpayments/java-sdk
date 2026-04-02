@@ -18,9 +18,14 @@ public class AccountResponse {
     private String cvdApprovalCode;
     private String cvdMessage;
     private boolean cardPresent;
+    private String accountType;
 
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public String getAccountType() {
+        return accountType;
     }
     public PaxEntryMode getEntryMode() {
         return entryMode;
@@ -71,6 +76,7 @@ public class AccountResponse {
             cvdApprovalCode = data[8];
             cvdMessage = data[9];
             cardPresent = data[10].equals("0");
+            accountType=data[11];
         }
         catch (IndexOutOfBoundsException e) {
             // Nom nom

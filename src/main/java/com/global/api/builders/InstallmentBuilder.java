@@ -18,6 +18,11 @@ public abstract class InstallmentBuilder extends BaseBuilder<Installment> {
     private IInstallmentEntity entity;
 
     /**
+     * Represents the installmentId
+     */
+    private String installmentId;
+
+    /**
      * Represents the parameterized constructor to set the installment Entity value
      *
      * @param entity
@@ -26,6 +31,13 @@ public abstract class InstallmentBuilder extends BaseBuilder<Installment> {
 
         if (entity != null) {
             this.entity = entity;
+        }
+    }
+
+    public InstallmentBuilder(String installmentId) {
+
+        if (installmentId != null) {
+            this.installmentId = installmentId;
         }
     }
 

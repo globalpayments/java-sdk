@@ -1,10 +1,7 @@
 package com.global.api.tests.terminals.pax;
 
 import com.global.api.entities.Address;
-import com.global.api.entities.enums.ConnectionModes;
-import com.global.api.entities.enums.DeviceType;
-import com.global.api.entities.enums.SafMode;
-import com.global.api.entities.enums.StoredCredentialInitiator;
+import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.logging.RequestConsoleLogger;
@@ -508,5 +505,41 @@ public class PaxCreditTests {
             printer.println(Arrays.toString(message) + newLine + newLine);
             printer.close();
         });
+    }
+
+    @Test
+    public void creditSaleWithMerchantId() throws ApiException {
+        TerminalResponse response = device.sale(amount)
+                .withAllowDuplicates(true)
+                .withGratuity(new BigDecimal("1.00"))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNullandNotEmpty(response.getMerchantId());
+    }
+
+    @Test
+    public void debitRefundByTransactionId_withMerchantId() throws ApiException {
+        TerminalResponse saleResponse = device.sale(amount)
+                .withPaymentMethodType(PaymentMethodType.Credit)
+                .withAllowDuplicates(true)
+                .withRequestMultiUseToken(true)
+                .execute();
+        assertNotNull(saleResponse);
+        assertEquals("00", saleResponse.getResponseCode());
+
+        TerminalResponse refundResponse = device.refund(saleResponse.getTransactionAmount())
+                .withPaymentMethodType(PaymentMethodType.Credit)
+                .withTransactionId(saleResponse.getTransactionId())
+                .execute();
+        assertNotNull(refundResponse);
+        assertEquals("00", refundResponse.getResponseCode());
+        assertNotNullandNotEmpty(refundResponse.getMerchantId());
+    }
+
+    private void assertNotNullandNotEmpty(String merchantId) {
+        if (merchantId == null || merchantId.trim().isEmpty()) {
+            throw new AssertionError("merchantId must not be null or empty");
+        }
     }
 }

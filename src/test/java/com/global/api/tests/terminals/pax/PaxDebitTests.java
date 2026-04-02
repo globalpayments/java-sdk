@@ -5,6 +5,7 @@ import com.global.api.entities.enums.DeviceType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
@@ -25,9 +26,10 @@ public class PaxDebitTests {
         ConnectionConfig deviceConfig = new ConnectionConfig();
         deviceConfig.setDeviceType(DeviceType.PAX_DEVICE);
         deviceConfig.setConnectionMode(ConnectionModes.TCP_IP);
-        deviceConfig.setIpAddress("192.168.51.252");
+        deviceConfig.setIpAddress("192.168.1.27");
         deviceConfig.setPort(10009);
         deviceConfig.setRequestIdProvider(new RandomIdProvider());
+        deviceConfig.setRequestLogger(new RequestConsoleLogger());
 
         device = DeviceService.create(deviceConfig);
         assertNotNull(device);
@@ -113,5 +115,40 @@ public class PaxDebitTests {
                 .execute();
         assertNotNull(voidResponse);
         assertEquals("00", voidResponse.getResponseCode());
+    }
+
+    @Test
+    public void debitSale_withMerchantId() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal(10))
+                .withPaymentMethodType(PaymentMethodType.Debit)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNullandNotEmpty(response.getMerchantId());
+    }
+
+    @Test
+    public void debitRefundByTransactionId_withMerchantId() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal(11))
+                .withPaymentMethodType(PaymentMethodType.Debit)
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        TerminalResponse refundResponse = device.refund(new BigDecimal(11))
+                .withPaymentMethodType(PaymentMethodType.Debit)
+                .withTransactionId(response.getTransactionId())
+                .execute();
+        assertNotNull(refundResponse);
+        assertEquals("00", refundResponse.getResponseCode());
+        assertNotNullandNotEmpty(refundResponse.getMerchantId());
+    }
+
+    private void assertNotNullandNotEmpty(String merchantId) {
+        if (merchantId == null || merchantId.trim().isEmpty()) {
+            throw new AssertionError("merchantId must not be null or empty");
+        }
     }
 }

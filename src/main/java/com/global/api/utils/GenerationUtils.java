@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
+import org.joda.time.DateTime;
 import java.util.UUID;
 
 import com.global.api.entities.enums.ShaHashType;
@@ -131,7 +132,7 @@ public class GenerationUtils {
     static public String generateTimestamp(String timestamp) {
         if(timestamp != null)
             return timestamp;
-        return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        return new SimpleDateFormat("yyyyMMddHHmmss").format(DateTime.now().toDate());
     }
 
     /**

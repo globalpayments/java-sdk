@@ -160,7 +160,8 @@ public class CardUtils {
     }
 
     public static boolean isReadyLink(String pan) {
-        if(!StringUtils.isNullOrEmpty(pan)) {
+        //PW: Check the pan length to prevent a StringIndexOutOfBoundsException
+        if(!StringUtils.isNullOrEmpty(pan) && pan.length() >= 6) {
             String compareValue = pan.substring(0, 6);
             return readyLinkBinMap.contains(compareValue);
         }

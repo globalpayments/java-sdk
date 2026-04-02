@@ -1,6 +1,16 @@
 # Changelog
 
-## Latest Version - V15.1.7 (03/26/2026)
+## Latest Version - V15.1.8 (04/02/2026)
+### Enhancements:
+- [Transit] - Updated cardDataInputMode for transit card reader transactions.
+- [Transit] - Added authenticationIndicator for transit card reader transactions.
+- [GPAPI] - Added support for visa installments in GPAPI via GPECOM.
+- [PAX] - Adding missing fields for canadian receipts.
+
+### Bug Fixes:
+- [General] - Fixed StringIndexOutOfBoundsException exception that could occur inside CardUtils.isReadyLink().
+
+## Version - V15.1.7 (03/26/2026)
 ### Bug Fixes:
 - [Synk] - Critical and high level security issues resolved. No impact on any connectors.
 

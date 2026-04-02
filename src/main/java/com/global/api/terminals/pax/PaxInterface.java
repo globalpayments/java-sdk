@@ -18,6 +18,7 @@ import org.apache.commons.codec.binary.Base64;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.joda.time.DateTime;
 import java.util.Objects;
 
 class PaxInterface extends DeviceInterface<PaxController> {
@@ -170,7 +171,7 @@ class PaxInterface extends DeviceInterface<PaxController> {
     public IBatchCloseResponse batchClose() throws ApiException {
         byte[] response = _controller.send(TerminalUtilities.buildRequest(
                 PaxMsgId.B00_BATCH_CLOSE,
-                new SimpleDateFormat("yyyyMMddhhmmss").format(new Date())));
+                new SimpleDateFormat("yyyyMMddhhmmss").format(DateTime.now().toDate())));
         return new BatchCloseResponse(response);
     }
     //</editor-fold>

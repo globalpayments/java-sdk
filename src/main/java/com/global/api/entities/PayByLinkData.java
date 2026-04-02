@@ -3,6 +3,7 @@ package com.global.api.entities;
 import com.global.api.entities.enums.PayByLinkStatus;
 import com.global.api.entities.enums.PayByLinkType;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
+import com.global.api.paymentMethods.InstallmentData;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -42,6 +43,8 @@ public class PayByLinkData {
     private String cancelUrl;
 
     private Boolean isDccEnabled;
+
+    private InstallmentData installmentData;
 
     private PaymentMethodConfiguration paymentMethodConfiguration;
 

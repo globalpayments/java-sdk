@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.joda.time.DateTime;
 
 @Accessors(chain = true)
 @Setter
@@ -179,11 +180,21 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 }
             }
 
+            String cardDataInputMode = "MAGNETIC_STRIPE_READER_INPUT";
+            if (track.getEntryMethod() == EntryMethod.ContactEMV) {
+                cardDataInputMode = "ONLINE_CHIP";
+            } else if (track.getEntryMethod() == EntryMethod.Proximity) {
+                cardDataInputMode = "ONLINE_CHIP";
+            } else if (track.getEntryMethod() == EntryMethod.MagneticStripeAndMSRFallback) {
+                cardDataInputMode = "TRACK_DATA_READ_UNALTERED_CHIP_CAPABLE_TERMINAL_CHIP_DATA_NOT_READ";
+            }
+
             // Set card presence details
             request.set("cardPresentDetail", "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
-                    .set("cardDataInputMode", "MAGNETIC_STRIPE_READER_INPUT")
-                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED");
+                    .set("cardDataInputMode", cardDataInputMode)
+                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED")
+                    .set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL");
 
             //figure out if pin present
             if (builder.getPaymentMethod() instanceof IPinProtected) {
@@ -507,7 +518,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
     public String createManifest() throws ApiException {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("MMddyyyy");
-            String dateFormatString = sdf.format(new Date());
+            String dateFormatString = sdf.format(DateTime.now().toDate());
 
             String plainText = StringUtils.padRight(merchantId, 20, ' ') +
                     StringUtils.padRight(deviceId, 24, ' ') +

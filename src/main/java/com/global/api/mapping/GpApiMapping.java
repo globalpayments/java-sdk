@@ -1830,6 +1830,7 @@ public class GpApiMapping {
     private static InstallmentData setInstallmentData(JsonDoc installment)
     {
         var installmentData = new InstallmentData();
+        installmentData.setId(installment.getString("id"));
         installmentData.setProgram(installment.getString("program"));
         installmentData.setMode(installment.getString("mode"));
         installmentData.setCount(installment.getString("count"));
@@ -1865,25 +1866,21 @@ public class GpApiMapping {
             installment.setReference(json.getString("reference"));
             installment.setProgram(json.getString("program"));
 
-            if (json.has("payment_method")) {
-                JsonDoc paymentMethodJson = json.get("payment_method");
-                installment.setResult(paymentMethodJson.getString("result"));
-                installment.setEntryMode(paymentMethodJson.getString("entry_mode"));
-                installment.setMessage(paymentMethodJson.getString("message"));
-                if (paymentMethodJson.has("card")) {
-                    JsonDoc cardJson = paymentMethodJson.get("card");
-                    Card card = new Card();
-                    if (cardJson != null) {
+                if (json.has("payment_method")) {
+                    JsonDoc paymentMethodJson = json.get("payment_method");
+                    installment.setEntryMode(paymentMethodJson.getString("entry_mode"));
+
+                    if (paymentMethodJson.has("card")) {
+                        JsonDoc cardJson = paymentMethodJson.get("card");
+                        Card card = new Card();
                         card.setBrand(cardJson.getString("brand"));
                         card.setMaskedNumberLast4(cardJson.getString("masked_number_last4"));
-                        card.setBrandReference(cardJson.getString("brand_reference"));
-                        installment.setAuthCode(cardJson.getString("authcode"));
-
+                        card.setCardExpMonth(cardJson.getString("expiry_month"));
+                        card.setCardExpYear(cardJson.getString("expiry_year"));
+                        installment.setCard(card);
                     }
-                    installment.setCard(card);
                 }
 
-            }
             if (json.has("action")) {
                 JsonDoc actionJson = json.get("action");
                 Action action = new Action();
@@ -1896,20 +1893,66 @@ public class GpApiMapping {
                 installment.setAction(action);
             }
 
-            List<Terms> termsList = new ArrayList();
             if (json.has("terms")) {
                 List<JsonDoc> terms = json.getEnumerator("terms");
+                List<Terms> termsList = new ArrayList<>();
                 for (JsonDoc termObject : terms) {
                     Terms term = new Terms();
-                    term.setId(termObject.getString("id"));
+                    term.setName(termObject.getString("name"));
+                    term.setReference(termObject.getString("reference"));
+                    term.setMode(termObject.getString("mode"));
                     term.setTimeUnit(termObject.getString("time_unit"));
-                    term.setTimeUnitNumbers((List<Integer>) termObject.get("time_unit_numbers"));
+                    term.setCount(termObject.getString("count"));
+                    term.setCostPercentage(termObject.getString("cost_percentage"));
+                    term.setTotalPlanCost(termObject.getString("total_plan_cost"));
+                    term.setPlanAmount(termObject.getString("plan_amount"));
+                    term.setCurrency(termObject.getString("currency"));
+                    term.setVersion(termObject.getString("version"));
+
+                    // Add terms_and_conditions if present
+                    if (termObject.has("terms_and_conditions")) {
+                        List<JsonDoc> tacList = termObject.getEnumerator("terms_and_conditions");
+                        List<TermsAndConditions> termsAndConditionsList = new ArrayList<>();
+                        for (JsonDoc tac : tacList) {
+                            TermsAndConditions termsAndConditions = new TermsAndConditions();
+                            termsAndConditions.setUrl(tac.getString("url"));
+                            termsAndConditions.setVersion(tac.getString("version"));
+                            termsAndConditions.setDescription(tac.getString("description"));
+                            termsAndConditions.setLanguage(tac.getString("language"));
+                            termsAndConditionsList.add(termsAndConditions);
+                        }
+                        term.setTermsAndConditions(termsAndConditionsList);
+                    }
+
+                    if (termObject.has("fees")) {
+                        JsonDoc feesJson = termObject.get("fees");
+                        Fees fees = new Fees();
+                        if (feesJson.has("fee_info")) {
+                            List<JsonDoc> feeInfoList = feesJson.getEnumerator("fee_info");
+                            List<FeeInfo> feeInfos = new ArrayList<>();
+                            for (JsonDoc feeInfoJson : feeInfoList) {
+                                FeeInfo feeInfo = new FeeInfo();
+                                feeInfo.setType(feeInfoJson.getString("type"));
+                                feeInfo.setInterestRate(feeInfoJson.getString("interest_rate"));
+                                feeInfo.setFlatAmount(feeInfoJson.getString("flat_amount"));
+                                feeInfos.add(feeInfo);
+                            }
+                            fees.setFeeInfo(feeInfos);
+                        }
+                        fees.setTotalAmount(feesJson.getString("total_amount"));
+                        fees.setTotalSubsequentAmount(feesJson.getString("total_subsequent_amount"));
+                        fees.setSubsequentAmount(feesJson.getString("subsequent_amount"));
+                        fees.setTotalUpfrontAmount(feesJson.getString("total_upfront_amount"));
+                        fees.setUpfrontAmount(feesJson.getString("upfront_amount"));
+                        term.setFees(fees);
+                    }
+
                     termsList.add(term);
                 }
                 installment.setTerms(termsList);
             }
         }
-        return  installment;
+        return installment;
     }
 
     private static void mapBankResponse(JsonDoc paymentMethodApm, AlternativePaymentResponse apm) {

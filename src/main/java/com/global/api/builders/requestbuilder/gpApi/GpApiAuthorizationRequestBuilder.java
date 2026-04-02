@@ -635,6 +635,25 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("shipping_phone", shippingPhone);
                 requestData.set("order", order);
 
+                // Visa installments configuration for HPP
+                if (builder.getPayByLinkData() != null && builder.getPayByLinkData().getInstallmentData() != null) {
+                    InstallmentData installments = builder.getPayByLinkData().getInstallmentData();
+                    JsonDoc installmentsData = new JsonDoc();
+
+                    if (installments.getFundingMode() != null && !installments.getFundingMode().isEmpty()) {
+                        installmentsData.set("funding_mode", installments.getFundingMode());
+                    }
+
+                    if (installments.getTerms() != null) {
+                        JsonDoc terms = new JsonDoc()
+                                .set("max_time_unit_number", installments.getTerms().getMaxTimeUnitNumber() != null ? installments.getTerms().getMaxTimeUnitNumber() : null)
+                                .set("max_amount", installments.getTerms().getMaxAmount() != null ? installments.getTerms().getMaxAmount() : null);
+                        installmentsData.set("terms", terms);
+                    }
+
+                    requestData.set("installments", installmentsData);
+                }
+
                 var payer = setPayerInformation(builder);
                 requestData.set("payer", payer);
             }
@@ -782,6 +801,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 builderPaymentMethod instanceof BNPL ||
                 builderPaymentMethod instanceof BankPayment) {
             data.set("notifications", setNotificationUrls(builder));
+        }
+
+        if (builder.getInstallmentData() != null &&
+                builder.getInstallmentData().getProgram() != null &&
+                builder.getInstallmentData().getProgram().equals("VIS")) {
+            data.set("installment", setVisaInstallmentData(builder.getInstallmentData()));
         }
 
         // Stored Credential
@@ -1247,5 +1272,26 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 .set("grace_period_count", installmentData.getGracePeriodCount());
         return installment;
     }
+
+    private static JsonDoc setVisaInstallmentData(InstallmentData installmentData)
+    {
+        JsonDoc installment = new JsonDoc();
+        installment
+                .set("program", installmentData.getProgram())
+                .set("mode", installmentData.getMode())
+                .set("count", installmentData.getCount())
+                .set("grace_period_count", installmentData.getGracePeriodCount())
+                .set("reference", installmentData.getReference())
+                .set("funding_mode", installmentData.getFundingMode())
+                .set("eligible_plans", installmentData.getEligiblePlans())
+                .set("terms", new JsonDoc()
+                        .set("max_time_unit_number", installmentData.getTerms() != null ? installmentData.getTerms().getMaxTimeUnitNumber() : null)
+                        .set("max_amount", installmentData.getTerms() != null ? installmentData.getTerms().getMaxAmount() : null)
+                        .set("language", installmentData.getTerms() != null ? installmentData.getTerms().getLanguage() : null)
+                        .set("version", installmentData.getTerms() != null ? installmentData.getTerms().getVersion() : null));
+        return installment;
+    }
+
+
 
 }

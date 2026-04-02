@@ -4,6 +4,7 @@ import com.global.api.entities.Action;
 import com.global.api.entities.Card;
 import com.global.api.entities.IInstallmentEntity;
 import com.global.api.entities.Terms;
+import com.global.api.entities.enums.EligiblePlans;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.services.InstallmentService;
 import lombok.Getter;
@@ -111,6 +112,22 @@ public class Installment implements IInstallmentEntity {
      * Represents the Credit Card Details
      */
     private CreditCardData creditCardData;
+
+    /**
+     * Provider for the installment program (e\.g\., VISA, MASTERCARD, etc\.)
+     */
+    private String provider;
+    /**
+     * Funding mode for the installment plan\.
+     * Allowed values: MERCHANT\_FUNDED, CONSUMER\_FUNDED, HYBRID\_FUNDED, BILATERAL, ANY \(default\)
+     */
+    private String fundingMode;
+    /**
+     * Used to retrieve two installment plans only\.
+     */
+    private EligiblePlans eligiblePlans;
+
+    private Terms installmentTerms;
 
     /**
      * Creates an installment

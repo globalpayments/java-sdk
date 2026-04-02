@@ -58,6 +58,7 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setCvvResponseCode(accountResponse.getCvdApprovalCode());
             setCvvResponseText(accountResponse.getCvdMessage());
             setCardPresent(accountResponse.isCardPresent());
+            setAccountType(accountResponse.getAccountType());
         }
 
         // trace data
@@ -96,6 +97,11 @@ public class PaxDeviceResponse extends PaxBaseResponse {
 
             // newer additions
             setSequenceNo(extDataResponse.get(PaxExtData.SEQUENCE_NUMBER));
+            setCardHolderLanguage(extDataResponse.get(PaxExtData.USER_LANGUAGE_STATUS));
+            setMerchantId(extDataResponse.get(PaxExtData.MERCHANT_ID));
+            setPinVerified(extDataResponse.get(PaxExtData.PIN_STATUS_NUMBER));
+            setTransactionStatusInfo(extDataResponse.get(PaxExtData.SIGNATURE_STATUS));
+
         }
 
         PaxTxnType transType = ReverseStringEnumMap.parse(getTransactionType(), PaxTxnType.class);

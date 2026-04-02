@@ -11,6 +11,7 @@ import com.global.api.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.Date;
+import org.joda.time.DateTime;
 
 public class TableService {
     private String configName = "default";
@@ -66,7 +67,7 @@ public class TableService {
         MultipartForm content = new MultipartForm()
                 .set("tableNumber", tableNumber)
                 .set("checkID", checkId)
-                .set("startTime", startTime == null ? new Date() : startTime);
+                .set("startTime", startTime == null ? DateTime.now().toDate() : startTime);
 
         Ticket response = sendRequest(Ticket.class, "pos/assignCheck", content);
         response.setTableNumber(tableNumber);
