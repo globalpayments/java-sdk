@@ -6,19 +6,22 @@ import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.*;
 import com.global.api.gateways.NtsConnector;
+import com.global.api.logging.IRequestLogger;
 import com.global.api.network.entities.nts.*;
 import com.global.api.network.enums.AuthorizerCode;
 import com.global.api.network.enums.NTSCardTypes;
 import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class NtsUtils {
+public class NtsUtils implements IRequestLogger {
 
     // Logger
     private static boolean isEnableLogging = false;
@@ -655,6 +658,27 @@ public class NtsUtils {
         char paddingCharacter = '0';
         rvalue = rvalue + paddingCharacter;
         return StringUtils.padLeft(rvalue, length, paddingCharacter);
+    }
+
+    @Override
+    public void RequestSent(String request) throws IOException {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        JsonDoc msg = new JsonDoc();
+        msg.set("timestamp", timestamp.toString());
+        msg.set("type", "REQUEST");
+        msg.set("message",request);
+        System.out.println("\n" + msg);
+    }
+    @Override
+    public void ResponseReceived(String response) throws IOException {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        JsonDoc msg = new JsonDoc();
+        msg.set("timestamp", timestamp.toString());
+        msg.set("type", "RESPONSE");
+        msg.set("message",response);
+        System.out.println("\n" + msg);
     }
 
 }

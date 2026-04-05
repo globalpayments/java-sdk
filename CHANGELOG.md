@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V14.4.3 (08/07/2025)
+## Latest Version - V14.4.4 (08/19/2025)
+### Bug Fixes
+- [VAPS] - Improved timeout handling and added additional logging for timeout issue (10350).
+
+## V14.4.3 (08/07/2025)
 ### Bug Fixes
 - [NTS] - Fixed issue 10366 NullPointerException in P66 VISA 2.0 by refactoring conditions for NetFuelAmount and NetNonFuelAmount.
 

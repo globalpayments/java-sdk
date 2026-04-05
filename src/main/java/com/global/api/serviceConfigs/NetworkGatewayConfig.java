@@ -13,6 +13,7 @@ import com.global.api.network.abstractions.IStanProvider;
 import com.global.api.network.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.VapsConnector;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import lombok.Setter;
 
@@ -192,6 +193,7 @@ public class NetworkGatewayConfig extends Configuration {
             gateway.setSecondaryPort(secondaryPort);
             gateway.setTimeout(timeout);
             gateway.setTarget(target);
+            gateway.setConnectionTimeout(connectionTimeout);
             gateway.setEnableLogging(enableLogging);
             gateway.setSimulatedHostErrors(simulatedHostErrors);
 
@@ -221,6 +223,11 @@ public class NetworkGatewayConfig extends Configuration {
 
             // event handler
             gateway.setGatewayEventHandler(gatewayEventHandler);
+
+            if (requestLogger == null) {
+                requestLogger = new NtsUtils();
+            }
+            gateway.setConfig(this);
 
             services.setGatewayConnector(gateway);
         }

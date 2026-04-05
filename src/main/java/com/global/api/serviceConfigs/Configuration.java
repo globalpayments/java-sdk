@@ -24,6 +24,8 @@ public abstract class Configuration {
     protected int timeout = 30000;
     protected boolean validated;
     protected HashMap<String, String> dynamicHeaders;
+    protected int connectionTimeout = 5000;
+
 
     public int getTimeout() { return timeout; }
     public void setTimeout(int timeout) { this.timeout = timeout; }

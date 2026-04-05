@@ -84,11 +84,13 @@ public class VapsDebitTests {
         config.setSecondaryPort(15031);
         config.setCompanyId("0044");
         config.setTerminalId("0007998855611");
+//        config.setTerminalId("0003698521408");
         config.setAcceptorConfig(acceptorConfig);
         config.setEnableLogging(true);
         config.setStanProvider(StanGenerator.getInstance());
         config.setBatchProvider(BatchProvider.getInstance());
         config.setMerchantType("5541");
+        config.setTimeout(20000);
         ServicesContainer.configureService(config);
 
         // with merchant type
