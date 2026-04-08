@@ -204,13 +204,12 @@ public class UpaInterface extends DeviceInterface<UpaController> {
     }
 
     @Override
-    public IDeviceResponse sendReady() throws ApiException {
+    public void sendReady() throws ApiException {
         DeviceMessage message = TerminalUtilities.buildMessage(
                 READY_MESSAGE
         );
 
-        JsonDoc response = sendRequest(message);
-        return new UpaDeviceResponse(response);
+        _controller.send(message);
     }
 
     public IDeviceResponse registerPOS(RegisterPOS data) throws ApiException {
