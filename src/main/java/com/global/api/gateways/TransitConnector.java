@@ -4,6 +4,7 @@ import com.global.api.builders.*;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
+import com.global.api.entities.exceptions.GatewayDuplicateException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.network.NetworkMessageHeader;
@@ -90,7 +91,6 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 .set("transactionKey", transactionKey)
                 .set("transactionAmount", StringUtils.toNumeric(builder.getAmount()))
                 .set("currencyCode", builder.getCurrency())
-                .set("tokenRequired", builder.isRequestMultiUseToken() ? "Y" : "N")
                 .set("externalReferenceID", builder.getClientTransactionId())
                 .set("currencyCode", builder.getCurrency())
                 .set("orderNumber", builder.getInvoiceNumber());
@@ -180,17 +180,18 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 }
             }
 
-            String cardDataInputMode = "MAGNETIC_STRIPE_READER_INPUT";
+            String cardDataInputMode = "MAGNETIC_STRIPE_READER_INPUT_TRACK_DATA_CAPTURED_PASSED_UNALTERED";
             if (track.getEntryMethod() == EntryMethod.ContactEMV) {
                 cardDataInputMode = "ONLINE_CHIP";
             } else if (track.getEntryMethod() == EntryMethod.Proximity) {
-                cardDataInputMode = "ONLINE_CHIP";
+                cardDataInputMode = "PAN_AUTO_ENTRY_CONTACTLESS_CHIP_CARD";
             } else if (track.getEntryMethod() == EntryMethod.MagneticStripeAndMSRFallback) {
                 cardDataInputMode = "TRACK_DATA_READ_UNALTERED_CHIP_CAPABLE_TERMINAL_CHIP_DATA_NOT_READ";
             }
 
             // Set card presence details
-            request.set("cardPresentDetail", "CARD_PRESENT")
+            request.set("cardPresentDetail", track.getEntryMethod() == EntryMethod.Proximity ?
+                            "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
                     .set("cardDataInputMode", cardDataInputMode)
                     .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED")
@@ -396,6 +397,22 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         String responseMessage = root.getString("responseMessage");
 
         if (!"PASS".equals(status)) {
+            boolean isDuplicateResponse = "D0008".equals(responseCode)
+                    || "D0003".equals(responseCode)
+                    || "D0001".equals(responseCode);
+            if (isDuplicateResponse) {
+                AdditionalDuplicateData duplicateData = hydrateDuplicateData(root);
+                if (duplicateData == null) {
+                    duplicateData = new AdditionalDuplicateData();
+                }
+                throw new GatewayDuplicateException(
+                        duplicateData,
+                        String.format("Unexpected Gateway Response: %s - %s", responseCode, responseMessage),
+                        responseCode,
+                        responseMessage,
+                        root.getString("transactionID")
+                );
+            }
             throw new GatewayException(
                     String.format("Unexpected Gateway Response: %s - %s", responseCode, responseMessage),
                     responseCode,
@@ -419,6 +436,11 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         trans.setBalanceAmount(StringUtils.toAmount(root.getString("balanceAmount")));
         trans.setCardBrandTransactionId(root.getString("cardTransactionIdentifier"));
 
+        AdditionalDuplicateData duplicateData = hydrateDuplicateData(root);
+        if (duplicateData != null) {
+            trans.setAdditionalDuplicateData(duplicateData);
+        }
+
         // batch response
         if (root.has("batchInfo")) {
             Element batchInfo = root.get("batchInfo");
@@ -435,6 +457,27 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         }
 
         return trans;
+    }
+
+    private AdditionalDuplicateData hydrateDuplicateData(Element root) {
+        if (!root.has("previouslyApprovedTransaction")) {
+            return null;
+        }
+        Element previous = root.get("previouslyApprovedTransaction");
+        if (previous == null) {
+            return null;
+        }
+
+        AdditionalDuplicateData duplicateData = new AdditionalDuplicateData();
+        duplicateData.setOriginalGatewayTxnId(previous.getString("transactionID"));
+        duplicateData.setOriginalAuthCode(previous.getString("authCode"));
+        duplicateData.setOriginalRefNbr(previous.getString("hostReferenceNumber"));
+        duplicateData.setOriginalRspDT(previous.getString("transactionTimestamp"));
+        duplicateData.setOriginalClientTxnId(previous.getString("externalReferenceID"));
+        duplicateData.setOriginalAuthAmt(StringUtils.toAmount(previous.getString("processedAmount")));
+        duplicateData.setOriginalCardType(previous.getString("cardType"));
+        duplicateData.setOriginalCardNbrLast4(previous.getString("maskedCardNumber"));
+        return duplicateData;
     }
 
     private <T extends TransactionBuilder<Transaction>> String mapTransactionType(T builder) throws UnsupportedTransactionException {

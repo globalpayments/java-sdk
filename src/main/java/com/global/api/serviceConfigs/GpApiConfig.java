@@ -95,9 +95,13 @@ public class GpApiConfig extends GatewayConfig {
             boolean isTestEnvironment = environment.equals(Environment.TEST);
 
             if (isEuResidency) {
-                serviceUrl = isTestEnvironment
-                        ? ServiceEndpoints.GP_API_TEST_EU.getValue()
-                        : ServiceEndpoints.GP_API_PRODUCTION_EU.getValue();
+                if (environment.equals(Environment.QA)) {
+                    serviceUrl = ServiceEndpoints.GP_API_QA_EU.getValue();
+                } else {
+                    serviceUrl = isTestEnvironment
+                            ? ServiceEndpoints.GP_API_TEST_EU.getValue()
+                            : ServiceEndpoints.GP_API_PRODUCTION_EU.getValue();
+                }
             } else {
                 serviceUrl = isTestEnvironment
                         ? ServiceEndpoints.GP_API_TEST.getValue()

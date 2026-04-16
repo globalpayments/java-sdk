@@ -322,7 +322,7 @@ public class PaxCreditTests {
         assertEquals("00", response.getResponseCode());
 
         TerminalResponse tipResponse = device.tipAdjust(new BigDecimal("11.50"))
-                .withReferenceNumber(response.getTransactionId())
+                .withTransactionId(response.getTransactionId())
                 .execute();
         assertNotNull(tipResponse);
         assertEquals("00", tipResponse.getResponseCode());

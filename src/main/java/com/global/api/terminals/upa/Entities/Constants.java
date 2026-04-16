@@ -21,6 +21,7 @@ public class Constants {
     public static final String TIMEOUT_MESSAGE = "TO";
     public static final String READY_MESSAGE = "READY";
     public static final String DATA_MESSAGE = "MSG";
+    public static final String COMPLETE_RESPONSE = "COMPLETE";
 
     // JSON API data response fields
     public static final String COMMAND_USED = "response";

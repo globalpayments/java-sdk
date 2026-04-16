@@ -15,17 +15,16 @@ import com.global.api.utils.masking.MaskValueUtil;
 import lombok.var;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.global.api.builders.requestbuilder.gpApi.GpApiManagementRequestBuilder.getDccId;
 import static com.global.api.entities.enums.TransactionType.Refund;
 import static com.global.api.gateways.GpApiConnector.getDateIfNotNull;
 import static com.global.api.gateways.GpApiConnector.getValueIfNotNull;
 import static com.global.api.utils.EnumUtils.mapDigitalWalletType;
-import static com.global.api.utils.StringUtils.*;
+import static com.global.api.utils.StringUtils.isNullOrEmpty;
+import static com.global.api.utils.StringUtils.toNumeric;
 
 public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<AuthorizationBuilder> {
 
@@ -793,7 +792,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             data.set("order", order);
         }
 
-        if (builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL) {
+        if (builderPaymentMethod instanceof AlternativePaymentMethod || builderPaymentMethod instanceof BNPL || builderPaymentMethod instanceof CreditCardData) {
             setOrderInformation(builder, data);
         }
 
@@ -1226,13 +1225,69 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             }
         }
 
-        order.set("shipping_address", shippingAddress);
+        if (!shippingAddress.getKeys().isEmpty()) {
+            order.set("shipping_address", shippingAddress);
+        }
+
+        //set supplementary data
+        if (builder.getPaymentMethod() instanceof CreditCardData) {
+
+            var supplementaryDataList = new ArrayList<HashMap<String, Object>>();
+            if (builder.getSupplementaryData() != null) {
+                HashMap<String, ArrayList<String[]>> suppData = builder.getSupplementaryData();
+                for (String type : suppData.keySet()) {
+                    ArrayList<String[]> fields = suppData.get(type);
+
+                    List<String> flatList = fields.stream()
+                            .flatMap(Arrays::stream)
+                            .collect(Collectors.toList());
+                    var supplementaryData = new HashMap<String, Object>();
+                    if (type != null && !flatList.isEmpty()) {
+                        supplementaryData.put("type", type);
+                        supplementaryData.put("fields", flatList);
+
+                        supplementaryDataList.add(supplementaryData);
+                    }
+                }
+
+                order.set("supplementary_data", supplementaryDataList);
+            }
+
+            if (builder.getMiscProductData() != null) {
+                setItemDetailsListForCreditCardVisaAft(builder, order);
+            }
+        }
 
         if (!requestBody.has("order") && !order.getKeys().isEmpty()) {
             requestBody.set("order", order);
         }
 
         return requestBody;
+    }
+
+    private static void setItemDetailsListForCreditCardVisaAft(AuthorizationBuilder builder, JsonDoc order) {
+
+        if (builder.getMiscProductData() != null) {
+            var items = new ArrayList<HashMap<String, Object>>();
+            for (var product : builder.getMiscProductData()) {
+                Integer qta = product.getQuantity() != null ? product.getQuantity() : 0;
+                BigDecimal taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : new BigDecimal(0);
+                BigDecimal unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : new BigDecimal(0);
+
+                var item = new HashMap<String, Object>();
+
+                item.put("reference", product.getProductId());
+                item.put("label", product.getProductName());
+                item.put("description", product.getDescription());
+                item.put("quantity", qta);
+                item.put("unit_amount", StringUtils.toNumeric(unitAmount));
+                item.put("unit_currency", product.getUnitCurrency());
+                item.put("tax_amount", StringUtils.toNumeric(taxAmount));
+
+                items.add(item);
+            }
+            order.set("items", items);
+        }
     }
 
     private static String getCvvIndicator(CvnPresenceIndicator cvnPresenceIndicator) {

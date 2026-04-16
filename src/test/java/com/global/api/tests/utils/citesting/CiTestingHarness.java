@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.joda.time.DateTimeZone;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -55,6 +56,7 @@ public class CiTestingHarness {
         }
 
         DateTimeUtils.setCurrentMillisFixed(Long.parseLong(generatedIds.get(TIMESTAMP_KEY)));
+        DateTimeZone.setDefault(DateTimeZone.UTC);
     }
 
     public String getTestingUrl() {

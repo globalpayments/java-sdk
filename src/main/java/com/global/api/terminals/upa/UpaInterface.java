@@ -14,6 +14,7 @@ import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.enums.TerminalReportType;
+import com.global.api.terminals.upa.Entities.Constants;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.Entities.Enums.UpaSafReportDataType;
 import com.global.api.terminals.upa.Entities.TokenInfo;
@@ -762,6 +763,11 @@ public class UpaInterface extends DeviceInterface<UpaController> {
 
     private JsonDoc sendRequest(IDeviceMessage message) throws ApiException {
         byte[] rawResponse = _controller.send(message);
+        if (rawResponse == null || rawResponse.length == 0) {
+            JsonDoc jsonDoc = new JsonDoc();
+            jsonDoc.set("status", Constants.COMPLETE_RESPONSE);
+            return jsonDoc;
+        }
         return JsonDoc.parse(new String(rawResponse, StandardCharsets.UTF_8));
     }
 

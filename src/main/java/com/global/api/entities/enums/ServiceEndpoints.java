@@ -15,6 +15,7 @@ public enum ServiceEndpoints implements IStringConstant {
     GP_API_TEST("https://apis.sandbox.globalpay.com/ucp"),
     GP_API_QA("https://apis-uat.globalpay.com/ucp"),
     GP_API_TEST_EU("https://apis.sandbox.eu.globalpay.com/ucp"),
+    GP_API_QA_EU("https://apis.qa.eu.globalpay.com/ucp"),
     GP_API_PRODUCTION_EU("https://apis.eu.globalpay.com/ucp"),
     BILLPAY_TEST("https://testing.heartlandpaymentservices.net/"),
     BILLPAY_CERTIFICATION("https://staging.heartlandpaymentservices.net/"),

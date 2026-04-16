@@ -1,6 +1,17 @@
 # Changelog
 
-## Latest Version - V15.1.8 (04/02/2026)
+## Latest Version - V15.1.9 (04/16/2026)
+### Enhancements:
+- [Transit] - Add information about duplicate transactions.
+- [Transit] - Cleaning up of card present transactions 
+- [PAX] - Fix testing for tip adjust.
+- [UPA] - Resolved Sunmi device sendReady wake-up issue for Genius integration
+- [GPAPI] - Visa AFTs , addition of supplementary fields
+
+### Bug Fixes:
+-[GPAPI] -  Added QA EU Data Residency Endpoint Support
+
+## Version - V15.1.8 (04/02/2026)
 ### Enhancements:
 - [Transit] - Updated cardDataInputMode for transit card reader transactions.
 - [Transit] - Added authenticationIndicator for transit card reader transactions.

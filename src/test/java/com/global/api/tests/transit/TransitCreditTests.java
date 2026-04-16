@@ -12,6 +12,7 @@ import com.global.api.entities.enums.GatewayProvider;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.entities.exceptions.GatewayDuplicateException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
@@ -876,5 +877,25 @@ public class TransitCreditTests {
 
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void duplicate_isRejected_whenAllowDuplicatesFalse() throws ApiException {
+        BigDecimal uniqueAmount = new BigDecimal("1." + String.format("%02d", System.currentTimeMillis() % 100));
+        String invoice = "DUP" + System.currentTimeMillis();
+
+        card.charge(uniqueAmount)
+                .withCurrency("USD")
+                .withInvoiceNumber(invoice)
+                .execute();
+
+        GatewayDuplicateException thrown = assertThrows(GatewayDuplicateException.class, () ->
+                card.charge(uniqueAmount)
+                        .withCurrency("USD")
+                        .withInvoiceNumber(invoice)
+                        .execute()
+        );
+
+        assertEquals(thrown.getResponseText().toLowerCase().contains("duplicate"), true);
     }
 }

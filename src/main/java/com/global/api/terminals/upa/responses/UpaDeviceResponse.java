@@ -31,7 +31,7 @@ public class UpaDeviceResponse extends TerminalResponse {
         } else {
             requestId = responseObj.getStringOrNull("id");
             deviceResponseText = responseObj.getStringOrNull("status");
-            if (deviceResponseText.equalsIgnoreCase("COMPLETE")) deviceResponseCode = "00";
+            if (deviceResponseText != null && deviceResponseText.equalsIgnoreCase("COMPLETE")) deviceResponseCode = "00";
         }
     }
 }
