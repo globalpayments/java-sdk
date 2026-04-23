@@ -188,7 +188,7 @@ public class GpApiCreateInstallmentTest extends BaseGpApiTest {
         CreditCardData card = new CreditCardData();
         card.setNumber("5546259023665054");
         card.setExpMonth(05);
-        card.setExpYear(2025);
+        card.setExpYear(2030);
         card.setCvn("123");
         card.setCardPresent(false);
         card.setReaderPresent(false);

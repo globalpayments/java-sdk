@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V15.1.9 (04/16/2026)
+## Latest Version - V15.1.10 (04/23/2026)
+### Enhancements:
+- [GPECOM] - Added supplementary data fields for Visa AFT transactions.
+
+### Bug Fixes:
+- [GPAPI] - Resolved test failures in GPAPICreateInstallment.
+
+## Version - V15.1.9 (04/16/2026)
 ### Enhancements:
 - [Transit] - Add information about duplicate transactions.
 - [Transit] - Cleaning up of card present transactions 

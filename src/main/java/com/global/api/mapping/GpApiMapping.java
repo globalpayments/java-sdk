@@ -1868,7 +1868,9 @@ public class GpApiMapping {
 
                 if (json.has("payment_method")) {
                     JsonDoc paymentMethodJson = json.get("payment_method");
+                    installment.setResult(paymentMethodJson.getString("result"));
                     installment.setEntryMode(paymentMethodJson.getString("entry_mode"));
+                    installment.setMessage(paymentMethodJson.getString("message"));
 
                     if (paymentMethodJson.has("card")) {
                         JsonDoc cardJson = paymentMethodJson.get("card");
@@ -1878,6 +1880,7 @@ public class GpApiMapping {
                         card.setCardExpMonth(cardJson.getString("expiry_month"));
                         card.setCardExpYear(cardJson.getString("expiry_year"));
                         installment.setCard(card);
+                        installment.setAuthCode(cardJson.getString("authcode"));
                     }
                 }
 

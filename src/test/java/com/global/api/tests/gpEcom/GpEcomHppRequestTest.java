@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpEcomHppRequestTest {
@@ -2189,6 +2191,140 @@ public class GpEcomHppRequestTest {
         JsonDoc jsonResponse = JsonDoc.parse(json);
 
         assertEquals(expectedPayments, jsonResponse.getString("PM_METHODS"));
+    }
+
+    @Test
+    @Order(70)
+    public void visaAFTWithSupplementaryDataHPP() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+        config.setEnableLogging(true);
+
+        HostedService service = new HostedService(config);
+
+        Address billingAddress = new Address();
+        billingAddress.setCountry("US");
+        billingAddress.setPostalCode("50001");
+
+        Customer customer = new Customer();
+        customer.setId("e193c21a-ce64-4820-b5b6-8f46715de931");
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setDateOfBirth("01011980");
+        customer.setCustomerPassword("VerySecurePassword");
+        customer.setEmail("text@example.com");
+        customer.setDomainName("example.com");
+        customer.setHomePhone("+35312345678");
+        customer.setDeviceFingerPrint("devicefingerprint");
+
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerExists(true);
+        testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
+        testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
+        testHostedPaymentData.setCustomerNumber("a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa");
+        testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
+        testHostedPaymentData.setOfferToSaveCard(true);
+
+        Map<String, String> supplementaryData = new HashMap<>();
+        supplementaryData.put("VD_SENDER_NAME", "BOBBINS BOBBY");
+        supplementaryData.put("VD_SENDER_ADDRESS", "10 High Street");
+        supplementaryData.put("VD_SENDER_CITY", "NOTTINGHAM");
+        supplementaryData.put("VD_SENDER_COUNTRY", "GBR");
+        supplementaryData.put("VD_ACCOUNT_TYPE", "03");
+        supplementaryData.put("VD_RECIPIENT_ACCOUNTNUMBER", "12345678");
+
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withTimestamp("20170725154824")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withCustomerData(customer)
+                .withHostedPaymentData(testHostedPaymentData)
+                .withCustomerId("123456")
+                .withSupplementaryData(supplementaryData)
+                .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(hppJson);
+        assertNotNull(jsonResponse.getString("VD_SENDER_NAME"));
+        assertNotNull(jsonResponse.getString("VD_SENDER_ADDRESS"));
+        assertNotNull(jsonResponse.getString("VD_SENDER_CITY"));
+        assertNotNull(jsonResponse.getString("VD_SENDER_COUNTRY"));
+        assertNotNull(jsonResponse.getString("VD_ACCOUNT_TYPE"));
+        assertNotNull(jsonResponse.getString("VD_RECIPIENT_ACCOUNTNUMBER"));
+
+    }
+
+    @Test
+    @Order(71)
+    public void visaAFTWithoutSupplementaryDataHPP() throws ApiException {
+        HostedPaymentConfig hostedConfig = new HostedPaymentConfig();
+        hostedConfig.setResponseUrl("https://www.example.com/response");
+        hostedConfig.setVersion(HppVersion.Version2);
+
+        GpEcomConfig config = new GpEcomConfig();
+        config.setMerchantId("MerchantId");
+        config.setAccountId("internet");
+        config.setSharedSecret("secret");
+        config.setServiceUrl("https://pay.sandbox.realexpayments.com/pay");
+        config.setHostedPaymentConfig(hostedConfig);
+        config.setEnableLogging(true);
+
+        HostedService service = new HostedService(config);
+
+        Address billingAddress = new Address();
+        billingAddress.setCountry("US");
+        billingAddress.setPostalCode("50001");
+
+        Customer customer = new Customer();
+        customer.setId("e193c21a-ce64-4820-b5b6-8f46715de931");
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setDateOfBirth("01011980");
+        customer.setCustomerPassword("VerySecurePassword");
+        customer.setEmail("text@example.com");
+        customer.setDomainName("example.com");
+        customer.setHomePhone("+35312345678");
+        customer.setDeviceFingerPrint("devicefingerprint");
+
+        HostedPaymentData testHostedPaymentData = new HostedPaymentData();
+        testHostedPaymentData.setCustomerExists(true);
+        testHostedPaymentData.setCustomerKey("376a2598-412d-4805-9f47-c177d5605853");
+        testHostedPaymentData.setPaymentKey("ca46344d-4292-47dc-9ced-e8a42ce66977");
+        testHostedPaymentData.setCustomerNumber("a028774f-beff-47bc-bd6e-ed7e04f5d758a028774f-btefa");
+        testHostedPaymentData.setProductId("a0b38df5-b23c-4d82-88fe-2e9c47438972-b23c-4d82-88f");
+        testHostedPaymentData.setOfferToSaveCard(true);
+
+        Map<String, String> supplementaryData = new HashMap<>();
+
+
+        String hppJson = service.authorize(new BigDecimal("1"))
+                .withCurrency("EUR")
+                .withOrderId("GTI5Yxb0SumL_TkDMCAxQA")
+                .withTimestamp("20170725154824")
+                .withAddress(billingAddress, AddressType.Billing)
+                .withCustomerData(customer)
+                .withHostedPaymentData(testHostedPaymentData)
+                .withCustomerId("123456")
+                .withSupplementaryData(supplementaryData)
+                .serialize();
+
+        JsonDoc jsonResponse = JsonDoc.parse(hppJson);
+        assertNull(jsonResponse.getString("VD_SENDER_NAME"));
+        assertNull(jsonResponse.getString("VD_SENDER_ADDRESS"));
+        assertNull(jsonResponse.getString("VD_SENDER_CITY"));
+        assertNull(jsonResponse.getString("VD_SENDER_COUNTRY"));
+        assertNull(jsonResponse.getString("VD_ACCOUNT_TYPE"));
+        assertNull(jsonResponse.getString("VD_RECIPIENT_ACCOUNTNUMBER"));
+
     }
 
 }

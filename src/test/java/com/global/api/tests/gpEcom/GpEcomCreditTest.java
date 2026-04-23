@@ -22,6 +22,8 @@ import java.util.ArrayList;
 public class GpEcomCreditTest extends BaseGpEComTest {
     private CreditCardData card;
 
+    private static final String VISA_AFT_SERVICE = "visaAft";
+
     // Similar to ApiCaseTest.php file in the PHP-SDK
     public GpEcomCreditTest() throws ApiException {
         GpEcomConfig config = gpEComSetup();
@@ -915,7 +917,7 @@ public class GpEcomCreditTest extends BaseGpEComTest {
     @Test
     @Order(38)
     public void creditCaptureWithSurchargeAmount() throws ApiException {
-        Transaction authorize = card.authorize(new BigDecimal(10))
+        Transaction authorize = card.authorize(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withAllowDuplicates(true)
                 .execute();
@@ -947,4 +949,100 @@ public class GpEcomCreditTest extends BaseGpEComTest {
         }
     }
 
+    @Test
+    @Order(40)
+    public void visaAFTWithSupplementaryDataEcom() throws ApiException {
+        configureChannel("ECOM");
+        Transaction response = executeVisaAFTAuthorization("USD");
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Order(41)
+    public void visaAFTWithSupplementaryDataMoto() throws ApiException {
+        configureChannel("MOTO");
+        Transaction response = executeVisaAFTAuthorization("USD");
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    @Order(42)
+    public void storedCredentialReceiptInWithSupplementaryDataEcom() throws ApiException {
+        configureChannel("ECOM");
+        Transaction response = executeStoredCredentialVisaAFT();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    @Order(43)
+    public void storedCredentialReceiptInWithSupplementaryDataMoto() throws ApiException {
+        configureChannel("MOTO");
+        Transaction response = executeStoredCredentialVisaAFT();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNull(response.getSchemeId());
+    }
+
+    @Test
+    @Order(44)
+    public void storedCredentialReceiptIn_InvalidCustomerKey() {
+        assertThrows(GatewayException.class, () -> {
+            RecurringPaymentMethod storedCard = new RecurringPaymentMethod("invalidCustomer", "invalidPayment");
+
+            StoredCredential storedCredential = new StoredCredential();
+            storedCredential.setType(StoredCredentialType.Recurring);
+            storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+            storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+            storedCredential.setSchemeId("MMC0F00YE4000000715");
+
+            storedCard.authorize(new BigDecimal("15.15"))
+                    .withCurrency("USD")
+                    .withStoredCredential(storedCredential)
+                    .withSupplementaryData("visaDirect", "John Smith", "10 High Street", "Nottingham", "GBR", "02", "123456789")
+                    .execute();
+        });
+    }
+
+    @Test
+    @Order(45)
+    public void visaAFTWithSupplementaryData_InvalidCurrency() {
+        assertThrows(ApiException.class, () -> {
+            executeVisaAFTAuthorization("INVALID");
+        });
+    }
+
+    private Transaction executeVisaAFTAuthorization(String currency) throws ApiException {
+        return card.authorize(new BigDecimal("10"))
+                .withCurrency(currency)
+                .withCountry("UK")
+                .withSupplementaryData("visaDirect", "John Smith", "10 High Street", "Nottingham", "GBR", "02", "123456789")
+                .execute(VISA_AFT_SERVICE);
+    }
+
+    private Transaction executeStoredCredentialVisaAFT() throws ApiException {
+        RecurringPaymentMethod storedCard = new RecurringPaymentMethod("20190729-GlobalApi", "20190729-GlobalApi-Credit");
+
+        StoredCredential storedCredential = new StoredCredential();
+        storedCredential.setType(StoredCredentialType.Recurring);
+        storedCredential.setInitiator(StoredCredentialInitiator.Merchant);
+        storedCredential.setSequence(StoredCredentialSequence.Subsequent);
+        storedCredential.setSchemeId("MMC0F00YE4000000715");
+
+        return storedCard.authorize(new BigDecimal("15.15"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withStoredCredential(storedCredential)
+                .withSupplementaryData("visaDirect", "John Smith", "10 High Street", "Nottingham", "GBR", "02", "123456789")
+                .execute(VISA_AFT_SERVICE);
+    }
+
+    private void configureChannel(String channel) throws ApiException {
+        GpEcomConfig config = gpEComSetup();
+        config.setChannel(channel);
+        ServicesContainer.configureService(config, VISA_AFT_SERVICE);  // named, isolated
+    }
 }

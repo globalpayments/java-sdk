@@ -34,6 +34,10 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     private static HashMap<String, String> mapCardType = new HashMap<String, String>() {{
         put("DinersClub", "Diners");
     }};
+    private static final Set<String> ALLOWED_VISA_AFT_KEYS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "VD_SENDER_NAME", "VD_SENDER_ADDRESS", "VD_SENDER_CITY",
+            "VD_SENDER_COUNTRY", "VD_ACCOUNT_TYPE", "VD_RECIPIENT_ACCOUNTNUMBER"
+    )));
     private String merchantId;
     private String accountId;
     private String rebatePassword;
@@ -604,6 +608,15 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
                         }
                         request.set(entry.getKey(), serializedValues.append("]").toString());
                     }
+                }
+            }
+        }
+
+        // Supplementary data for visa AFT for HPP
+        if (builder.getSupplementaryDataVisaAft() != null && !builder.getSupplementaryDataVisaAft().isEmpty()) {
+            for (Map.Entry<String, String> entry : builder.getSupplementaryDataVisaAft().entrySet()) {
+                if (ALLOWED_VISA_AFT_KEYS.contains(entry.getKey())) {
+                    request.set(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -1588,4 +1601,5 @@ public class GpEcomConnector extends XmlGateway implements IPaymentGateway, IRec
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
         throw new ApiException("Realex does not support KeepAlive.");
     }
+
 }

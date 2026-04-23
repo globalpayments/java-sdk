@@ -139,6 +139,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     private OrderDetails orderDetails;
     private StoredCredential storedCredential;
     private HashMap<String, ArrayList<String[]>> supplementaryData;
+
+    @Getter
+    private Map<String, String> supplementaryDataVisaAft;
+
     private BigDecimal surchargeAmount;
     @Getter
     @Setter
@@ -1094,6 +1098,11 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
 
         // add the values to it
         supplementaryData.get(type).add(values);
+        return this;
+    }
+
+    public AuthorizationBuilder withSupplementaryData(Map<String, String> supplementaryDataVisaAft) {
+        this.supplementaryDataVisaAft = supplementaryDataVisaAft;
         return this;
     }
 
