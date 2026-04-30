@@ -9,27 +9,25 @@ import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
 import com.global.api.logging.RequestConsoleLogger;
+import com.global.api.network.enums.EncryptionType;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.ReportingService;
-import com.global.api.tests.testdata.TestCards;
 import com.global.api.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.var;
 import org.joda.time.DateTime;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GpApiCreditCardPresentTest extends BaseGpApiTest {
@@ -126,8 +124,15 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
     }
 
     @Test
-    @Order(2)
-    public void CreditTrackData_SaleSwipe_Chip() throws ApiException {
+    void CreditTrackData_SaleSwipe_Chip_MissingFieldValidation() throws ApiException {
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setType(EncryptionType.BINARY);
+        encryptionData.setKsn("//89P4EAKAADiA==");
+
+        creditTrackData.setTrackNumber(TrackNumber.TrackTwo);
+        creditTrackData.setValue("tfVZYYHsp4H1Pwb1u+qaZcQI+WqvTcuh");
+        creditTrackData.setEncryptionData(encryptionData);
         creditTrackData.setPinBlock(null);
         Transaction response =
                 creditTrackData
@@ -135,7 +140,75 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .withTagData(tagData)
                         .execute();
+
         assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+
+    @Test
+    void CreditTrackData_SaleSwipe_Chip_NullTrackNumber() {
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setType(EncryptionType.BINARY);
+        encryptionData.setKsn("//89P4EAKAADiA==");
+
+        creditTrackData.setTrackNumber(null);
+        creditTrackData.setValue("tfVZYYHsp4H1Pwb1u+qaZcQI+WqvTcuh");
+        creditTrackData.setEncryptionData(encryptionData);
+        creditTrackData.setPinBlock(null);
+        NullPointerException exception = assertThrows(NullPointerException.class,
+                () ->
+                        creditTrackData
+                                .charge(amount)
+                                .withCurrency(currency)
+                                .withTagData(tagData)
+                                .execute()
+        );
+    }
+
+    //Allowed values for encryption type are BINARY and ASCII. Any other value should throw validation error which is tested in below test case.
+    @Test
+    void CreditTrackData_SaleSwipe_Chip_InvalidEncryptionType() {
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setType(EncryptionType.TEP1);
+        encryptionData.setKsn("//89P4EAKAADiA==");
+
+        creditTrackData.setTrackNumber(TrackNumber.TrackTwo);
+        creditTrackData.setValue("tfVZYYHsp4H1Pwb1u+qaZcQI+WqvTcuh");
+        creditTrackData.setEncryptionData(encryptionData);
+        creditTrackData.setPinBlock(null);
+        GatewayException exception = assertThrows(GatewayException.class, () ->
+                creditTrackData
+                        .charge(0.0)
+                        .withCurrency(currency)
+                        .withTagData(tagData)
+                        .execute()
+        );
+
+        assertEquals("Status Code: 400 - payment_method.encryption.type contains unexpected data", exception.getMessage());
+    }
+
+    // Chip card transactions with zero amount should be declined by the processor. This test is to validate that such transactions are not blocked by client side validation and are sent to processor for proper handling.
+    @Test
+    void CreditTrackData_SaleSwipe_Chip_ZeroAmount_ShouldDeclined() throws ApiException {
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setType(EncryptionType.BINARY);
+        encryptionData.setKsn("//89P4EAKAADiA==");
+
+        creditTrackData.setTrackNumber(TrackNumber.TrackTwo);
+        creditTrackData.setValue("tfVZYYHsp4H1Pwb1u+qaZcQI+WqvTcuh");
+        creditTrackData.setEncryptionData(encryptionData);
+        creditTrackData.setPinBlock(null);
+        Transaction response =
+                creditTrackData
+                        .charge(0.0)
+                        .withCurrency(currency)
+                        .withTagData(tagData)
+                        .execute();
+
+        assertEquals(DECLINED, response.getResponseCode());
     }
 
     @Test

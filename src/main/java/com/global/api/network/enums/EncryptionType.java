@@ -5,7 +5,9 @@ import com.global.api.entities.enums.IStringConstant;
 public enum EncryptionType implements IStringConstant {
     TEP1("1"),
     TEP2("2"),
-    TDES("1");
+    TDES("1"),
+    ASCII("ASCII"),
+    BINARY("BINARY");
 
     String value;
     EncryptionType(String value) {

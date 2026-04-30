@@ -15,7 +15,7 @@ public class ExtDataSubGroup implements IRequestSubGroup, IResponseSubGroup {
     private Dictionary<String, String> collection = new Hashtable<String, String>();
 
     public String get(PaxExtData key){
-        String rvalue = collection.get(key.getValue());
+        String rvalue = collection.get(key.getValue().toUpperCase());
         if(rvalue == null)
             return "";
         return rvalue;

@@ -23,11 +23,13 @@ public class PaxDeviceResponse extends PaxBaseResponse {
         // host response
         if(hostResponse != null) {
             setResponseCode(normalizeResponse(hostResponse.getHostResponseCode()));
+            setBankResponseCode(hostResponse.getHostResponseCode());
             setResponseText(hostResponse.getHostResponseMessage());
             setApprovalCode(hostResponse.getAuthCode());
             setHostReferenceNumber(hostResponse.getHostReferenceNumber());
             setAuthorizationCode(hostResponse.getAuthCode());
             setCardBrandTransactionId(hostResponse.getCardBrandTransactionId());
+            setPosSequenceNbr(hostResponse.getTraceNumber());
         }
 
         // amount
@@ -65,6 +67,8 @@ public class PaxDeviceResponse extends PaxBaseResponse {
         if(traceResponse != null) {
             setTerminalRefNumber(traceResponse.getTransactionNumber());
             setReferenceNumber(traceResponse.getReferenceNumber());
+            setResponseDateTime(traceResponse.getTimeStamp());
+            setInvoiceNumber(traceResponse.getInvoiceNumber());
         }
 
         // avs
@@ -94,14 +98,16 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setApplicationCryptogram(extDataResponse.get(PaxExtData.TRANSACTION_CERTIFICATE));
             setCustomerVerificationMethod(extDataResponse.get(PaxExtData.CUSTOMER_VERIFICATION_METHOD));
             setTerminalVerificationResults(extDataResponse.get(PaxExtData.TERMINAL_VERIFICATION_RESULTS));
+            setTransactionStatusInfo(extDataResponse.get(PaxExtData.TRANSACTION_STATUS_INFO));
+            setTerminalTransactionQualifiers(extDataResponse.get(PaxExtData.TERMINAL_TRANSACTION_QUALIFIERS));
+            setTransactionCurrencyCode(extDataResponse.get(PaxExtData.CURRENCY_CODE));
+            setIsoResponseCode(extDataResponse.get(PaxExtData.AUTHORIZATION_RESPONSE_CODE));
 
             // newer additions
             setSequenceNo(extDataResponse.get(PaxExtData.SEQUENCE_NUMBER));
             setCardHolderLanguage(extDataResponse.get(PaxExtData.USER_LANGUAGE_STATUS));
             setMerchantId(extDataResponse.get(PaxExtData.MERCHANT_ID));
             setPinVerified(extDataResponse.get(PaxExtData.PIN_STATUS_NUMBER));
-            setTransactionStatusInfo(extDataResponse.get(PaxExtData.SIGNATURE_STATUS));
-
         }
 
         PaxTxnType transType = ReverseStringEnumMap.parse(getTransactionType(), PaxTxnType.class);

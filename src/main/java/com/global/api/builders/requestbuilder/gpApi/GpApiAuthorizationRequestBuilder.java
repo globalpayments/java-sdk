@@ -279,11 +279,11 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             // TrackData
             else if (builderPaymentMethod instanceof ITrackData) {
                 ITrackData track = (ITrackData) builderPaymentMethod;
-
                 JsonDoc card =
                         new JsonDoc()
                                 .set("track", track.getValue())
                                 .set("tag", builder.getTagData())
+                                .set("track_number", track.getTrackNumber().equals(TrackNumber.TrackTwo) ? "2" : "1")
                                 .set("avs_address", builderBillingAddress != null ? builderBillingAddress.getStreetAddress1() : "")
                                 .set("avs_postal_code", builderBillingAddress != null ? builderBillingAddress.getPostalCode() : "")
                                 .set("authcode", builder.getOfflineAuthCode());
@@ -546,9 +546,11 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 if (!StringUtils.isNullOrEmpty(encryptionData.getKtb())) {
                     encryption.set("method", "KTB");
                     encryption.set("info", encryptionData.getKtb());
+                    encryption.set("type", encryptionData.getType());
                 } else if (!StringUtils.isNullOrEmpty(encryptionData.getKsn())) {
                     encryption.set("method", "KSN");
                     encryption.set("info", encryptionData.getKsn());
+                    encryption.set("type", encryptionData.getType());
                 }
 
                 if (encryption.has("info")) {

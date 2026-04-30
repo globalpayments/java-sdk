@@ -148,4 +148,5 @@ public abstract class TerminalResponse implements IDeviceResponse {
     protected String applicationName;
     protected String cardHolderLanguage;
     protected String terminalStatusIndicator;
+    protected String invoiceNumber;
 }

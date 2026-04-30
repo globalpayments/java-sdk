@@ -9,6 +9,7 @@ public class TraceResponse implements IResponseSubGroup {
     private String transactionNumber;
     private String referenceNumber;
     private String timeStamp;
+    private String invoiceNumber;
 
     public String getTransactionNumber() {
         return transactionNumber;
@@ -18,6 +19,9 @@ public class TraceResponse implements IResponseSubGroup {
     }
     public String getTimeStamp() {
         return timeStamp;
+    }
+    public String getInvoiceNumber() {
+        return invoiceNumber;
     }
 
     public TraceResponse(MessageReader br) {
@@ -30,6 +34,7 @@ public class TraceResponse implements IResponseSubGroup {
             this.transactionNumber = data[0];
             this.referenceNumber = data[1];
             this.timeStamp = data[2];
+            this.invoiceNumber = data[3];
         }
         catch (IndexOutOfBoundsException e) {
             // nom nom

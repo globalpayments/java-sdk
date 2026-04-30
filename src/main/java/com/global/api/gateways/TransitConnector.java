@@ -141,6 +141,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                     .set("cardDataInputMode", cardDataInputMode)
                     .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED")
                     .set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL");
+            
         } else if (builder.getPaymentMethod() instanceof ITrackData) {
             ITrackData track = (ITrackData) builder.getPaymentMethod();
 
@@ -194,9 +195,20 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                             "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
                     .set("cardDataInputMode", cardDataInputMode)
-                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED")
-                    .set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL");
+                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED");
 
+            if (track instanceof CreditTrackData) {
+                String cardBrand = ((CreditTrackData) track).getCardType();
+                if (cardBrand != null) {
+                    if (cardBrand.equals("MASTERCARD") || cardBrand.equals("AMERICAN_EXPRESS")) {
+                        request.set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL")
+                                .set("mPosAcceptanceDeviceType", "1");
+                    }
+                    if (cardBrand.equals("DISCOVER") || cardBrand.equals("UNKNOWN")) {
+                        request.set("mPosAcceptanceDeviceType", "M");
+                    }
+                }
+            }
             //figure out if pin present
             if (builder.getPaymentMethod() instanceof IPinProtected) {
                 IPinProtected pinProtected = (IPinProtected) builder.getPaymentMethod();

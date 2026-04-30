@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V15.1.10 (04/23/2026)
+## Latest Version - V15.1.11 (04/30/2026)
+### Enhancements:
+- [PAX] - additional response field mapping.
+
+### Bug Fixes:
+- [TRANSIT] -  For Sale/Auth request, Set authorizationIndicator conditionally based on detected card brand.
+- [TRANSIT] - Added mPosAcceptanceDeviceType value for transit track data transactions depending on card brand.
+- [GPAPI] - Added EMV missing fields
+
+## Version - V15.1.10 (04/23/2026)
 ### Enhancements:
 - [GPECOM] - Added supplementary data fields for Visa AFT transactions.
 

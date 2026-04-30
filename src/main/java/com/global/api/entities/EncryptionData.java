@@ -1,5 +1,6 @@
 package com.global.api.entities;
 
+import com.global.api.network.enums.EncryptionType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,9 @@ public class EncryptionData {
     @Setter
     private String encryptedKTB;
     private String dataFormat;
+    @Getter
+    @Setter
+    private EncryptionType type;
 
     public String getVersion() {
         return version;

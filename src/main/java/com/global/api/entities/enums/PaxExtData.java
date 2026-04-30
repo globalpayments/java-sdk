@@ -44,7 +44,11 @@ public enum PaxExtData implements IStringConstant {
     MERCHANT_NAME( "MerchantName"),
     SEQUENCE_NUMBER("SN"),
     PIN_STATUS_NUMBER("PINSTATUSNUM"),
-    USER_LANGUAGE_STATUS("USERLANGUAGESTATUS");
+    USER_LANGUAGE_STATUS("USERLANGUAGESTATUS"),
+    TRANSACTION_STATUS_INFO("TSI"),
+    AUTHORIZATION_RESPONSE_CODE("ARC"),
+    TERMINAL_TRANSACTION_QUALIFIERS("TTQ"),
+    CURRENCY_CODE("5F2A");
 
     String value;
     PaxExtData(String value) { this.value = value; }
