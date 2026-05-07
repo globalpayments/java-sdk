@@ -131,6 +131,10 @@ public class Transaction {
     private BigDecimal taxAmount;
     @Getter @Setter
     private String purchaseOrderNumber;
+    @Getter @Setter
+    private String authorizationMode;
+    @Getter @Setter
+    private String authorizationModeResult;
 
     public Customer getCustomerData() {
         return customerData;

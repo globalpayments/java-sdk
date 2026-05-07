@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V15.1.11 (04/30/2026)
+## Latest Version - V15.1.12 (05/07/2026)
+### Enhancements:
+- [GPAPI] - Mapping authorization_mode fields for GPAPI response.
+
+## Version - V15.1.11 (04/30/2026)
 ### Enhancements:
 - [PAX] - additional response field mapping.
 

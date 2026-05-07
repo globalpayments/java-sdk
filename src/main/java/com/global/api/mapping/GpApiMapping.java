@@ -69,6 +69,8 @@ public class GpApiMapping {
             transaction.setReferenceNumber(json.getString("reference"));
             transaction.setClientTransactionId(json.getString("reference"));
             transaction.setMultiCapture("MULTIPLE".equals(json.getString("capture_mode")));
+            transaction.setAuthorizationMode(json.getString("authorization_mode"));
+            transaction.setAuthorizationModeResult(json.getString("authorization_mode_result"));
 
             String actionType = json.get("action").getString("type");
 

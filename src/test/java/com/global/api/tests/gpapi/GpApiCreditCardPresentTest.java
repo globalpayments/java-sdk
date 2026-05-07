@@ -45,7 +45,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
         ServicesContainer.configureService(config);
 
-        creditTrackData.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        creditTrackData.setValue("%B4012002000060016^VI TEST CREDIT^301210118039000000000396?;4012002000060016=25121011803939600000?");
         creditTrackData.setPinBlock("32539F50C245A6A93D123412324000AA");
         creditTrackData.setEntryMethod(EntryMethod.Swipe);
 
@@ -71,6 +71,10 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
         accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
         ServicesContainer.configureService(gpApiConfig,"LevelII");
+
+        GpApiConfig configPortico = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
+        configPortico.getAccessTokenInfo().setTransactionProcessingAccountName("dcc_cp");
+        ServicesContainer.configureService(configPortico, "PorticoBackend");
 
         commercialData = new CommercialData(TaxType.Sales_Tax, TransactionModifier.LevelII) ;
         commercialData.setPoNumber("9876543210");
@@ -1306,6 +1310,31 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
 
         assertNotNull(chargeResponse);
         assertEquals("LEVEL_1", chargeResponse.getCardDetails().getCommercialLevel());
+    }
+
+    @Test
+    public void testAuthorizeWithPartialAuth() throws ApiException {
+        Transaction response =
+                creditTrackData
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .withAllowPartialAuth(true)
+                        .execute("PorticoBackend");
+        assertTransactionResponse(response, TransactionStatus.Preauthorized);
+        assertNotNull(response.getAuthorizationModeResult());
+        assertNotNull(response.getAuthorizationMode());
+        }
+
+    @Test
+    public void testAuthorizeWithoutPartialAuth() throws ApiException {
+        Transaction response =
+                creditTrackData
+                        .authorize(amount)
+                        .withCurrency(currency)
+                        .execute("PorticoBackend");
+        assertTransactionResponse(response, TransactionStatus.Preauthorized);
+        assertNull(response.getAuthorizationModeResult());
+        assertNull(response.getAuthorizationMode());
     }
 
     //endregion
