@@ -426,14 +426,14 @@ public class NTSUserData {
         }
 
         // 41 VisaFleet 2.0 Purchase Restriction Flag
-        if(supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && ((AuthorizationBuilder) builder).getPurchaseRestrictionFlag() != null) {
+        if(supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && ((AuthorizationBuilder) builder).getPurchaseRestrictionFlag() != null && cardType.equals(NTSCardTypes.VisaFleet)) {
             sb.append(UserDataTag.PurchaseRestrictionFlag.getValue() + "\\");
             sb.append(((AuthorizationBuilder) builder).getPurchaseRestrictionFlag().getValue() + "\\");
             totalNoOfTags++;
         }
 
         // 43 VisaFleet 2.0 Extended Fleet Prompt Data
-        if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && builder.getFleetData() != null){
+        if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && builder.getFleetData() != null && cardType.equals(NTSCardTypes.VisaFleet)){
             sb.append(UserDataTag.ExtendedFleetPromptData.getValue() + "\\");
             sb.append(getTagData43((AuthorizationBuilder) builder));
             sb.append("\\");
@@ -1880,13 +1880,14 @@ public class NTSUserData {
         boolean fuelFlag = fuel != null;
         boolean nonFuelFlag = nonFuel != null;
         sb.append(purchaseType.getValue());
+        int digitAfterDecimal = (builder.getTransactionType() != null && builder.getTransactionType().equals(TransactionType.Capture)) ? 2 : 4;
         for (int i = 0; i < 1; i++) {
             if (fuelFlag && i < fuel.size()) {
                 sb.append(StringUtils.padRight(fuel.get(i).getCode(), 4, ' '));
                 sb.append(StringUtils.padLeft(fuel.get(i).getUnitOfMeasure().getValue() , 1, ' '));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getQuantity(), 12,4));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 12, 4));
-                sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,4));
+                sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,digitAfterDecimal));
                 if (purchaseType != null && (Integer.parseInt(purchaseType.getValue()) == 1 || Integer.parseInt(purchaseType.getValue()) == 3)) {
                     sb.append(StringUtils.toFormatDigit(productData.getNetFuelAmount() != null ? productData.getNetFuelAmount() : BigDecimal.ZERO, 12, 4));
                 } else {
@@ -1906,11 +1907,11 @@ public class NTSUserData {
             for (int nonFuelCount = 0; nonFuelCount < nonFuel.size(); nonFuelCount++) {
                 grossNonFuelAmount = grossNonFuelAmount.add(nonFuel.get(nonFuelCount).getPrice());
             }
-            sb.append(StringUtils.toFormatDigit(grossNonFuelAmount, 12, 4));
+            sb.append(StringUtils.toFormatDigit(grossNonFuelAmount, 12, 2));
         }
         if (purchaseType.equals(PurchaseType.NonFuel) || purchaseType.equals(PurchaseType.FuelAndNonFuel)) {
             if (purchaseType != null && (Integer.parseInt(purchaseType.getValue()) == 2 || Integer.parseInt(purchaseType.getValue()) == 3)) {
-                sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount() != null ? productData.getNetNonFuelAmount() : BigDecimal.ZERO, 12, 4));
+                sb.append(StringUtils.toFormatDigit(productData.getNetNonFuelAmount() != null ? productData.getNetNonFuelAmount() : BigDecimal.ZERO, 12, 2));
             } else {
                 sb.append(StringUtils.toFormatDigit(BigDecimal.ZERO, 12, 4));
             }

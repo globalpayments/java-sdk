@@ -15,6 +15,8 @@ public class HostResponse implements IResponseSubGroup {
     private String batchNumber;
     @Getter @Setter
     private String cardBrandTransactionId;
+    @Getter @Setter
+    private String issuerResponseCode;
 
     public String getHostResponseCode() {
         return hostResponseCode;
@@ -49,6 +51,7 @@ public class HostResponse implements IResponseSubGroup {
             traceNumber = data[4];
             batchNumber = data[5];
             cardBrandTransactionId = data[6];
+            issuerResponseCode = data.length > 11 ? data[11] : null;
         }
         catch(ArrayIndexOutOfBoundsException e) {
             // Eating this

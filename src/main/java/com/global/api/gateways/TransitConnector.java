@@ -139,7 +139,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                     .set("cardPresentDetail", card.isCardPresent() ? "CARD_PRESENT" : "CARD_NOT_PRESENT")
                     .set("cardholderPresentDetail", cardholderPresentDetail)
                     .set("cardDataInputMode", cardDataInputMode)
-                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED")
+                    .set("cardholderAuthenticationMethod", "MANUAL_SIGNATURE")
                     .set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL");
             
         } else if (builder.getPaymentMethod() instanceof ITrackData) {
@@ -195,14 +195,14 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                             "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
                     .set("cardDataInputMode", cardDataInputMode)
-                    .set("cardholderAuthenticationMethod", "NOT_AUTHENTICATED");
+                    .set("cardholderAuthenticationMethod", "MANUAL_SIGNATURE");
 
             if (track instanceof CreditTrackData) {
                 String cardBrand = ((CreditTrackData) track).getCardType();
                 if (cardBrand != null) {
                     if (cardBrand.equals("MASTERCARD") || cardBrand.equals("AMERICAN_EXPRESS")) {
                         request.set("authorizationIndicator", Boolean.TRUE.equals(builder.isAmountEstimated()) ? "PREAUTH" : "FINAL")
-                                .set("mPosAcceptanceDeviceType", "1");
+                                .set("mPosAcceptanceDeviceType", "0");
                     }
                     if (cardBrand.equals("DISCOVER") || cardBrand.equals("UNKNOWN")) {
                         request.set("mPosAcceptanceDeviceType", "M");
@@ -249,8 +249,10 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
             // emv fallback
             if (builder.hasEmvFallbackData()) {
                 request.set("emvFallbackCondition", EnumUtils.getMapping(Target.Transit, builder.getEmvFallbackCondition()))
-                        .set("lastChipRead", EnumUtils.getMapping(Target.Transit, builder.getEmvLastChipRead()))
                         .set("paymentAppVersion", builder.getPaymentApplicationVersion() != null ? builder.getPaymentApplicationVersion() : "unspecified");
+                if (builder.getEmvFallbackCondition() == EmvFallbackCondition.ChipReadFailure) {
+                    request.set("lastChipRead", EnumUtils.getMapping(Target.Transit, builder.getEmvLastChipRead()));
+                }
             }
 
             // chip condition fallback

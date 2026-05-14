@@ -22,6 +22,16 @@ public class TransitRequestBuilder {
     private Boolean allowDuplicates;
     private Boolean hasPin;
 
+    private static final Map<String, String> transitBlackList;
+
+    static {
+        transitBlackList = new HashMap<>();
+        transitBlackList.put("DF78", "Serial Number");
+        transitBlackList.put("DF79", "Kernel Version");
+        transitBlackList.put("9F40", "Additional Terminal Capabilities");
+        transitBlackList.put("9F21", "Local Time");
+    }
+
     public TransitRequestBuilder(String root) {
         this.root = root;
         this.values = new HashMap<>();
@@ -124,6 +134,10 @@ public class TransitRequestBuilder {
                 EmvData emvData = EmvUtils.parseTagData(tagData, true);
                 LinkedHashMap<String, TlvData> tagsMap = emvData.getAcceptedTags();
                 for (Map.Entry<String, TlvData> entry : tagsMap.entrySet()) {
+                    //skip tags that are not supposed to be sent for transit
+                    if(transitBlackList.containsKey(entry.getKey())) {
+                        continue;
+                    }
                     et.subElement(emvTagsElement, "tag", new String(entry.getKey() + entry.getValue().getLength() + entry.getValue().getValue()));
                 }
             } else if ("productDetails".equals(element) && hasProductDetails()) {

@@ -30,6 +30,7 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setAuthorizationCode(hostResponse.getAuthCode());
             setCardBrandTransactionId(hostResponse.getCardBrandTransactionId());
             setPosSequenceNbr(hostResponse.getTraceNumber());
+            setIssuerResponseCode(hostResponse.getIssuerResponseCode());
         }
 
         // amount

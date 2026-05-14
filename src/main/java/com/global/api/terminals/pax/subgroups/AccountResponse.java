@@ -76,7 +76,7 @@ public class AccountResponse {
             cvdApprovalCode = data[8];
             cvdMessage = data[9];
             cardPresent = data[10].equals("0");
-            accountType=data[11];
+            accountType = data.length > 12 ? data[12] : null;
         }
         catch (IndexOutOfBoundsException e) {
             // Nom nom

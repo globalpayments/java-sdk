@@ -43,7 +43,7 @@ To install via [Maven](https://maven.apache.org/guides/introduction/introduction
 
 ```
 <dependency>
-  <groupId>com.heartlandpaymentsystems</groupId>
+  <groupId>com.globalpayments</groupId>
   <artifactId>globalpayments-sdk</artifactId>
   <version>1.4-SNAPSHOT</version>
 </dependency>
@@ -51,7 +51,7 @@ To install via [Maven](https://maven.apache.org/guides/introduction/introduction
 
 ## Documentation and Examples
 
-You can find the latest SDK documentation along with code examples and test cards on the [Global Payments](https://developer.realexpayments.com) and [Heartland](https://developer.heartlandpaymentsystems.com/documentation) Developer Hubs.
+You can find the latest SDK documentation along with code examples and test cards on the [Global Payments](https://developer.realexpayments.com) Developer Hubs.
 
 In addition you can find working examples in the our example code repository.
 

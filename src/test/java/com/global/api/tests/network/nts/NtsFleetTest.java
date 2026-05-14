@@ -77,6 +77,7 @@ public class NtsFleetTest {
         acceptorConfig.setCapableVoid(true);
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setMobileDevice(false);
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
 
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
@@ -2443,7 +2444,7 @@ public class NtsFleetTest {
 
         fleetData.setDriverId("123456");
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setValue(";5567300000000016=27121019999888877711?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -5456,5 +5457,243 @@ public class NtsFleetTest {
         assertNotNull(response.getTransactionReference().getHostBasedRestrictionResponse());
     }
 
+    @Test
+    public void test_VisaFleetTwoPointO_Auth_GrossNonFuelAmountCheck() throws ApiException {
+        //flag 10 representing the VF 2.0 support
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
 
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
+        //product data for tag 9
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 9.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setNonFuelProductCount("8");
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), BigDecimal.ZERO);
+        productData.setNetFuelAmount(new BigDecimal("11.22"));
+        productData.setNetNonFuelAmount(new BigDecimal("22.33"));
+
+        Transaction response = track.authorize(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.ChipBased)
+                .withTagData(emvTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_VisaFleetTwoPointO_Auth_Capture_GrossNonFuel_Check() throws ApiException {
+
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        fleetData.setAdditionalPromptData2("198765");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 9.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setNonFuelProductCount("8");
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), BigDecimal.ZERO);
+        productData.setNetFuelAmount(new BigDecimal("11.22"));
+        productData.setNetNonFuelAmount(new BigDecimal("22.33"));
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("      ")
+                .withAuthorizationCode("01798A")
+                .withOriginalTransactionDate("0428")
+                .withTransactionTime("152831")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(5)
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_VisaFleetTwoPointO_Auth_GrossFuelAmountCheck_9v8v9999() throws ApiException {
+        //flag 10 representing the VF 2.0 support
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
+        //product data for tag 9
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 9.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setNonFuelProductCount("8");
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), BigDecimal.ZERO);
+        // Net Fuel Format - 9(8)9999
+        productData.setNetFuelAmount(new BigDecimal("11.22"));
+        // Net NonFuel Format - 9(10)99
+        productData.setNetNonFuelAmount(new BigDecimal("22.33"));
+
+        Transaction response = track.authorize(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.ChipBased)
+                .withTagData(emvTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void test_VisaFleetTwoPointO_Auth_Capture_GrossFuelAmountCheck_9v10v99() throws ApiException {
+
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        fleetData.setAdditionalPromptData2("198765");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 9.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setNonFuelProductCount("8");
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), BigDecimal.ZERO);
+        productData.setNetFuelAmount(new BigDecimal("11.22"));
+        productData.setNetNonFuelAmount(new BigDecimal("22.33"));
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("00")
+                .withApprovalCode("      ")
+                .withAuthorizationCode("01798A")
+                .withOriginalTransactionDate("0428")
+                .withTransactionTime("152831")
+                .withOriginalMessageCode("01")
+                .withBatchNumber(1)
+                .withSequenceNumber(5)
+                .build();
+
+        Transaction dataCollectResponse = transaction.capture(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_masterCardFleet_auth_10392() throws ApiException {
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=27121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("125630");
+        fleetData.setDriverId("5555");
+        fleetData.setVehicleNumber("85214");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.NoRestriction)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+    }
 }

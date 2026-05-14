@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V15.1.12 (05/07/2026)
+## Latest Version - V15.1.13 (05/14/2026)
+### Bug Fixes:
+- [TRANSIT] Added EMV tag blacklist specific to the gateway.
+- [TRANSIT] Updated 'lastChipRead' to only be included for chip read failure fallback.
+- [NTS] - Formatted the Gross Fuel & Gross Non Fuel Amount correctly for Visa Fleet 2.0 auth & data collect transaction(Issue 10390 & 10391).
+- [NTS] - Removed unintended extra Tag 43 from MasterFleet transactions when Tag 2, Flag 11 = "Y" (Issue 10392).
+
+## Version - V15.1.12 (05/07/2026)
 ### Enhancements:
 - [GPAPI] - Mapping authorization_mode fields for GPAPI response.
 
