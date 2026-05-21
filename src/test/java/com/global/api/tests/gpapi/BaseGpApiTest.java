@@ -28,7 +28,7 @@ public class BaseGpApiTest {
     static final String APP_KEY_FOR_MERCHANT = "5jPt1OpB6LLitgi7";
     // ================================================================================
     static final String GP_API_CONFIG_NAME = "GP_API_CONFIG";
-    static final String SUCCESS = "SUCCESS";
+    static final String SUCCESS = "00";
     static final String DECLINED = "DECLINED";
     static final String VERIFIED = "VERIFIED";
     static final String CLOSED = "CLOSED";

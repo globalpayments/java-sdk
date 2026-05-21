@@ -63,7 +63,7 @@ class GpApiDataResidencyTest extends BaseGpApiTest {
                 .withCurrency("EUR")
                 .execute();
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
     }
 
     @Test
@@ -79,7 +79,7 @@ class GpApiDataResidencyTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
     }
 
     //This test case will fail as QA endpoint is not yet set up to handle EU data residency. This is expected and will be resolved once the endpoint is ready.

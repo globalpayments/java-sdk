@@ -71,7 +71,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), response.getResponseMessage());
             assertNotNull(response.getFraudFilterResponse());
             assertEquals(items.getKey().toString().toUpperCase(), response.getFraudFilterResponse().getFraudResponseMode());
@@ -98,7 +98,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), response.getResponseMessage());
         assertNotNull(response.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), response.getFraudFilterResponse().getFraudResponseMode());
@@ -137,7 +137,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), response.getResponseMessage());
         assertNotNull(response.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseMode());
@@ -171,7 +171,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), response.getResponseMessage());
         assertNotNull(response.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue().toUpperCase(), response.getFraudFilterResponse().getFraudResponseMode());
@@ -197,7 +197,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -210,7 +210,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn2);
-        assertEquals("SUCCESS", trn2.getResponseCode());
+        assertEquals(SUCCESS, trn2.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn2.getResponseMessage());
         assertNotNull(trn2.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn2.getFraudFilterResponse().getFraudResponseResult());
@@ -228,7 +228,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
 
         assertNotNull(trn.getFraudFilterResponse());
@@ -242,7 +242,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -254,7 +254,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -265,7 +265,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), trn.getResponseMessage());
     }
 
@@ -281,7 +281,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -293,7 +293,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -304,7 +304,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -315,7 +315,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
     }
 
@@ -332,7 +332,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -365,7 +365,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -398,7 +398,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -411,7 +411,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -423,7 +423,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -444,7 +444,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -478,7 +478,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -491,7 +491,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -503,7 +503,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -514,7 +514,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(refundResponse);
-        assertEquals("SUCCESS", refundResponse.getResponseCode());
+        assertEquals(SUCCESS, refundResponse.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), refundResponse.getResponseMessage());
     }
 
@@ -530,7 +530,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -543,7 +543,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -555,7 +555,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -573,7 +573,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -608,7 +608,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Passive.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -646,7 +646,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trn);
-            assertEquals("SUCCESS", trn.getResponseCode());
+            assertEquals(SUCCESS, trn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
             assertNotNull(trn.getFraudFilterResponse());
             assertEquals(FraudFilterMode.Active.getValue(),
@@ -660,7 +660,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                     .execute();
 
             assertNotNull(trn);
-            assertEquals("SUCCESS", trn.getResponseCode());
+            assertEquals(SUCCESS, trn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
             assertNotNull(trn.getFraudFilterResponse());
             assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -672,7 +672,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trn);
-            assertEquals("SUCCESS", trn.getResponseCode());
+            assertEquals(SUCCESS, trn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
             assertNotNull(trn.getFraudFilterResponse());
             assertEquals(FraudFilterResult.RELEASE_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -694,7 +694,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -707,7 +707,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -763,7 +763,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -797,7 +797,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -837,7 +837,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trn);
-            assertEquals("SUCCESS", trn.getResponseCode());
+            assertEquals(SUCCESS, trn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
             assertNotNull(trn.getFraudFilterResponse());
             assertEquals(FraudFilterMode.Active.getValue(),
@@ -852,7 +852,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trn);
-            assertEquals("SUCCESS", trn.getResponseCode());
+            assertEquals(SUCCESS, trn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
             assertNotNull(trn.getFraudFilterResponse());
             assertEquals(FraudFilterResult.HOLD_SUCCESSFUL.getValue(), trn.getFraudFilterResponse().getFraudResponseResult());
@@ -874,7 +874,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Active.getValue(), trn.getFraudFilterResponse().getFraudResponseMode());
@@ -932,7 +932,7 @@ public class GpApiFraudManagementTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue().toUpperCase(), trn.getResponseMessage());
         assertNotNull(trn.getFraudFilterResponse());
         assertEquals(FraudFilterMode.Passive.toString().toUpperCase(), trn.getFraudFilterResponse().getFraudResponseMode());

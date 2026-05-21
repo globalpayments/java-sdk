@@ -20,17 +20,13 @@ import com.global.api.paymentMethods.Installment;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.utils.JsonDoc;
+import com.global.api.utils.ReleaseVersionUtils;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.var;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -95,29 +91,10 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         headers.put(org.apache.http.HttpHeaders.ACCEPT_ENCODING, "gzip");
         headers.put("X-GP-Version", GP_API_VERSION);
         if (!gpApiConfig.isAndroid()) {
-            headers.put("x-gp-sdk", "java;version=" + getReleaseVersion());
+            headers.put("x-gp-sdk", "java;version=" + ReleaseVersionUtils.getReleaseVersion());
         }
 
         dynamicHeaders = gpApiConfig.getDynamicHeaders();
-    }
-
-    // Get the SDK release version
-    private String getReleaseVersion() {
-        String version = "";
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setExpandEntityReferences(false);
-            Document pomXml = factory.newDocumentBuilder().parse(new File("pom.xml"));
-            Element pomRoot = (Element) pomXml.getElementsByTagName("project").item(0);
-            version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
-        } catch (Exception ex) {
-            if (gpApiConfig.isEnableLogging())
-                System.out.println("JAVA SDK version could not be extracted from pom.xml file.");
-        }
-        return version;
     }
 
     public FileProcessor processFileUpload(FileProcessingBuilder builder) throws ApiException {

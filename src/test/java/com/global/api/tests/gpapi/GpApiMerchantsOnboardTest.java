@@ -85,7 +85,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .withPaymentStatistics(paymentStatistics)
                         .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -108,7 +108,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .withPaymentStatistics(paymentStatistics)
                         .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertEquals(merchantData.getUserName(), merchant.getName());
         assertEquals("Merchant Boarding in progress", merchant.getStatusDescription());
@@ -135,7 +135,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .withIdempotencyKey(idempotencyKey)
                         .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
 
@@ -180,7 +180,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                         .withPaymentStatistics(paymentStatistics)
                         .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
 
@@ -539,7 +539,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -563,7 +563,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -587,7 +587,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -611,7 +611,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -659,7 +659,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPersonsData(persons)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -684,7 +684,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -708,7 +708,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -733,7 +733,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -754,7 +754,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .withPaymentStatistics(paymentStatistics)
                 .execute();
 
-        assertEquals("SUCCESS", merchant.getResponseCode());
+        assertEquals(SUCCESS, merchant.getResponseCode());
         assertEquals(UserStatus.UNDER_REVIEW, merchant.getUserReference().getUserStatus());
         assertNotNull(merchant.getUserReference().getUserId());
     }
@@ -773,7 +773,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertNotNull(response.getDocument());
         assertNotNull(response.getDocument().getId());
         assertEquals(FileType.TIF, response.getDocument().getFormat());
@@ -796,7 +796,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertNotNull(response.getDocument());
             assertNotNull(response.getDocument().getId());
             assertEquals(fileType, response.getDocument().getFormat());
@@ -827,7 +827,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertNotNull(response.getDocument());
             assertNotNull(response.getDocument().getId());
             assertEquals(FileType.TIF, response.getDocument().getFormat());

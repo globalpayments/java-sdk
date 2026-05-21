@@ -47,8 +47,8 @@ public class GpApiCreateInstallmentTest extends BaseGpApiTest {
         assertEquals(new_installment.getProgram(), installment.getProgram());
         assertEquals("APPROVAL", installment.getMessage());
         assertNotNull(installment.getAuthCode());
-        assertEquals("00", installment.getResult());
-        assertEquals("SUCCESS", installment.getAction().getResultCode());
+        assertEquals(SUCCESS, installment.getResult());
+        assertEquals(SUCCESS, installment.getAction().getResultCode());
     }
 
 
@@ -65,8 +65,8 @@ public class GpApiCreateInstallmentTest extends BaseGpApiTest {
         assertEquals(new_installment.getProgram(), installment.getProgram());
         assertEquals("APPROVAL", installment.getMessage());
         assertNotNull(installment.getAuthCode());
-        assertEquals("00", installment.getResult());
-        assertEquals("SUCCESS", installment.getAction().getResultCode());
+        assertEquals(SUCCESS, installment.getResult());
+        assertEquals(SUCCESS, installment.getAction().getResultCode());
 
     }
 
@@ -82,8 +82,8 @@ public class GpApiCreateInstallmentTest extends BaseGpApiTest {
         assertEquals(new_installment.getProgram(), installment.getProgram());
         assertEquals("APPROVAL", installment.getMessage());
         assertNotNull(installment.getAuthCode());
-        assertEquals("00", installment.getResult());
-        assertEquals("SUCCESS", installment.getAction().getResultCode());
+        assertEquals(SUCCESS, installment.getResult());
+        assertEquals(SUCCESS, installment.getAction().getResultCode());
 
     }
 
@@ -100,8 +100,8 @@ public class GpApiCreateInstallmentTest extends BaseGpApiTest {
         assertEquals(new_installment.getProgram(), installment.getProgram());
         assertEquals("APPROVAL", installment.getMessage());
         assertNotNull(installment.getAuthCode());
-        assertEquals("00", installment.getResult());
-        assertEquals("SUCCESS", installment.getAction().getResultCode());
+        assertEquals(SUCCESS, installment.getResult());
+        assertEquals(SUCCESS, installment.getAction().getResultCode());
 
     }
 

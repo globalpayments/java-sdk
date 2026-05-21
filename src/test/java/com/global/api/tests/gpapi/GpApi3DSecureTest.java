@@ -252,7 +252,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -387,7 +387,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         assertNotNull(response.getCardBrandTransactionId());
 
@@ -400,7 +400,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response2);
-        assertEquals(SUCCESS, response2.getResponseCode());
+        assertEquals("00", response2.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response2.getResponseMessage());
     }
 
@@ -424,7 +424,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -487,7 +487,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -558,7 +558,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -636,7 +636,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -706,7 +706,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -770,7 +770,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -791,7 +791,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -849,7 +849,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute();
         assertNotNull(verifyResponse);
-        assertEquals(SUCCESS, verifyResponse.getResponseCode());
+        assertEquals("00", verifyResponse.getResponseCode());
         assertEquals("VERIFIED", verifyResponse.getResponseMessage());
 
         // Create transaction
@@ -860,7 +860,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -923,7 +923,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .withCurrency(currency)
                         .execute();
         assertNotNull(verifyResponse);
-        assertEquals(SUCCESS, verifyResponse.getResponseCode());
+        assertEquals("00", verifyResponse.getResponseCode());
         assertEquals("VERIFIED", verifyResponse.getResponseMessage());
 
         // Create transaction
@@ -934,7 +934,7 @@ public class GpApi3DSecureTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 

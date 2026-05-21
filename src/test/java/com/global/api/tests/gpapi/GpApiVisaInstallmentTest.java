@@ -231,7 +231,7 @@ class GpApiVisaInstallmentTest {
                 .withAllowDuplicates(true)
                 .execute();
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         assertEquals("VIS", response.getInstallmentData().getProgram());
     }
@@ -280,7 +280,7 @@ class GpApiVisaInstallmentTest {
                 .execute();
 
         assertNotNull(transactionResponse);
-        assertEquals("SUCCESS", transactionResponse.getResponseCode());
+        assertEquals("00", transactionResponse.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transactionResponse.getResponseMessage());
         try {
             Thread.sleep(5000);
@@ -419,7 +419,7 @@ class GpApiVisaInstallmentTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         assertNull(response.getInstallmentData());
     }

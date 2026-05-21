@@ -193,7 +193,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
         assertNotNull(transaction);
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
-        assertEquals("Success", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertFalse(StringUtils.isNullOrEmpty(transaction.getTransactionId()));
 
         Transaction refund =
@@ -203,7 +203,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(refund);
-        assertEquals("Success", refund.getResponseCode());
+        assertEquals(SUCCESS, refund.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
     }
 
@@ -223,7 +223,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
 
         assertNotNull(transaction);
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
-        assertEquals("Success", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertFalse(StringUtils.isNullOrEmpty(transaction.getTransactionId()));
 
         Transaction reverse =
@@ -233,7 +233,7 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(reverse);
-        assertEquals("Success", reverse.getResponseCode());
+        assertEquals(SUCCESS, reverse.getResponseCode());
         assertEquals(TransactionStatus.Reversed.getValue(), reverse.getResponseMessage());
     }
 

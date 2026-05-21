@@ -8,7 +8,8 @@ public enum PaymentDataSourceType implements IStringConstant {
      APPLEPAYWEB("ApplePayWeb"),
      GOOGLEPAYAPP("GooglePayApp"),
      GOOGLEPAYWEB("GooglePayWeb"),
-     DISCOVER3DSECURE("Discover 3DSecure");
+     DISCOVER3DSECURE("Discover 3DSecure"),
+     TOKENIZEDWALLET("TokenizedWallet");
 
      final String value;
 

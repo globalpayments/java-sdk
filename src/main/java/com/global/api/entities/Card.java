@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
+
 @Accessors(chain = true)
 @Getter
 @Setter
@@ -51,5 +53,7 @@ public class Card {
     private String avsResponseMessage;
 
     private CardIssuerResponse cardIssuerResponse;
+
+    private BigDecimal balanceAmount;
 
 }

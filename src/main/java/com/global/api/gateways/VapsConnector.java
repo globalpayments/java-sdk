@@ -2502,18 +2502,9 @@ public class VapsConnector extends GatewayConnectorConfig {
                     if (getWexFleetPromptCount(wexFleetData) > 6){
                         throw new UnsupportedOperationException("WEX has only six possible prompts per transaction.");
                     }
-                    if (builder.getPaymentMethod() instanceof CreditTrackData) {
-                        String trackData = ((CreditTrackData) builder.getPaymentMethod()).getTrackData();
-                        if(!StringUtils.isNullOrEmpty(trackData)) {
-                            String ISONumber = trackData.substring(3, 5);
-                            if (ISONumber.equals(00) && fleetData.getDriverId() == null) {
-                                throw new BuilderException("Driver ID must not be null.");
-                            }
-                        }
-                    }
                     customerData.set(DE48_CustomerDataType.EnteredData_Numeric, restrictWexPromptToMaxLength(wexFleetData.getEnteredData(), 12, DE48_CustomerDataType.EnteredData_Numeric));
                     customerData.set(DE48_CustomerDataType.Department, restrictWexPromptToMaxLength(wexFleetData.getDepartment(), 12, DE48_CustomerDataType.Department));
-                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, validateWexDriverIDLength(wexFleetData.getDriverId(), 10));
+                    customerData.set(DE48_CustomerDataType.DriverId_EmployeeNumber, restrictWexPromptToMaxLength(wexFleetData.getDriverId(), 10,DE48_CustomerDataType.DriverId_EmployeeNumber));
                     customerData.set(DE48_CustomerDataType.HubometerNumber, restrictWexPromptToMaxLength(wexFleetData.getHubometerNumber(), 9, DE48_CustomerDataType.HubometerNumber));
                     customerData.set(DE48_CustomerDataType.JobNumber, restrictWexPromptToMaxLength(wexFleetData.getJobNumber(), 12, DE48_CustomerDataType.JobNumber));
                     customerData.set(DE48_CustomerDataType.MaintenanceNumber, restrictWexPromptToMaxLength(wexFleetData.getMaintenanceNumber(), 12, DE48_CustomerDataType.MaintenanceNumber));
@@ -3682,15 +3673,7 @@ public class VapsConnector extends GatewayConnectorConfig {
         }
         return wexPrompt;
     }
-    private static String validateWexDriverIDLength(String wexDriverId,int length) throws BuilderException {
-        if(!StringUtils.isNullOrEmpty(wexDriverId)){
-            if(wexDriverId.length() != 4 && wexDriverId.length() != 6)
-                throw new BuilderException("Driver Id length must be 4 or 6.");
-            else
-                return StringUtils.padRight(wexDriverId,length, ' ');
-        }
-        return wexDriverId;
-    }
+
     private static int getWexFleetPromptCount(FleetData wexFleetData){
         int noOfPrompt =0;
 

@@ -230,7 +230,8 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
                         .execute();
 
-        assertEquals("SUCCESS", response2.getResponseCode());
+        assertEquals("" +
+                "", response2.getResponseCode());
         assertEquals("ACTIVE", response2.getResponseMessage());
         assertEquals(pmtToken, response2.getToken());
         assertEquals(PaymentMethodUsageMode.MULTIPLE, response2.getTokenUsageMode());
@@ -263,7 +264,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .withPaymentMethodUsageMode(PaymentMethodUsageMode.MULTIPLE)
                         .execute();
 
-        assertEquals("SUCCESS", response2.getResponseCode());
+        assertEquals(SUCCESS, response2.getResponseCode());
         assertEquals("ACTIVE", response2.getResponseMessage());
         assertEquals(pmtToken, response2.getToken());
         assertEquals(PaymentMethodUsageMode.MULTIPLE, response2.getTokenUsageMode());
@@ -298,7 +299,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(responseUpdateToken);
-        assertEquals("SUCCESS", responseUpdateToken.getResponseCode());
+        assertEquals(SUCCESS, responseUpdateToken.getResponseCode());
         assertEquals("ACTIVE", responseUpdateToken.getResponseMessage());
         assertEquals("MULTIPLE", responseUpdateToken.getTokenUsageMode().getValue());
 
@@ -309,7 +310,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(chargeResponse);
-        assertEquals("SUCCESS", chargeResponse.getResponseCode());
+        assertEquals(SUCCESS, chargeResponse.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), chargeResponse.getResponseMessage());
     }
 
@@ -940,7 +941,7 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
     }
 
@@ -1282,6 +1283,20 @@ public class GpApiCreditCardNotPresentTest extends BaseGpApiTest {
                 .execute(GP_API_CONFIG_FOR_ANDROID_SDK);
 
         assertTransactionResponse(response, TransactionStatus.Captured);
+    }
+
+    @Test
+    @Order(55)
+    public void CreditSaleWithIsSuccess() throws ApiException {
+        Transaction transaction =
+                card
+                        .charge(amount)
+                        .withCurrency(currency)
+                        .execute();
+        assertTransactionResponse(transaction, TransactionStatus.Captured);
+        assertEquals("123456", transaction.getAuthorizationCode());
+        assertEquals("SUCCESS",transaction.getOriginalResponseCode());
+        assertTrue(transaction.isSuccessTransaction());
     }
 
     private void assertTransactionResponse(Transaction transaction, TransactionStatus transactionStatus) {

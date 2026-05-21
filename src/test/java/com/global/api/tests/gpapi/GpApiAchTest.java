@@ -527,7 +527,7 @@ public class GpApiAchTest extends BaseGpApiTest {
 
     private void assertResponse(Transaction response, TransactionStatus transactionStatus) {
         assertNotNull(response);
-        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertEquals(transactionStatus.getValue(), response.getResponseMessage());
     }
 

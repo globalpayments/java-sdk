@@ -91,7 +91,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("INITIATED", response.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
@@ -127,7 +127,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertEquals("CAPTURED", response.getResponseMessage());
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
@@ -142,7 +142,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("INITIATED", response.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
@@ -179,7 +179,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertEquals("PREAUTHORIZED", response.getResponseMessage());
 
             Transaction capture =
@@ -188,7 +188,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(capture);
-            assertEquals("SUCCESS", capture.getResponseCode());
+            assertEquals(SUCCESS, capture.getResponseCode());
             assertEquals("CAPTURED", capture.getResponseMessage());
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
@@ -203,7 +203,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals("INITIATED", trn.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
@@ -240,7 +240,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertEquals("CAPTURED", response.getResponseMessage());
 
             Transaction trnRefund =
@@ -250,7 +250,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trnRefund);
-            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals(SUCCESS, trnRefund.getResponseCode());
             assertEquals("CAPTURED", trnRefund.getResponseMessage());
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
@@ -267,7 +267,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trn);
-        assertEquals("SUCCESS", trn.getResponseCode());
+        assertEquals(SUCCESS, trn.getResponseCode());
         assertEquals("INITIATED", trn.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
@@ -301,7 +301,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(responseTrn);
-            assertEquals("SUCCESS", responseTrn.getResponseCode());
+            assertEquals(SUCCESS, responseTrn.getResponseCode());
             assertEquals("CAPTURED", responseTrn.getResponseMessage());
 
             Transaction trnReverse =
@@ -311,7 +311,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trnReverse);
-            assertEquals("SUCCESS", trnReverse.getResponseCode());
+            assertEquals(SUCCESS, trnReverse.getResponseCode());
             assertEquals("REVERSED", trnReverse.getResponseMessage());
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
@@ -327,7 +327,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("INITIATED", response.getResponseMessage());
 
         System.out.println("copy the link and open it in a browser, do the login wih your paypal credentials and authorize the payment in the paypal form. You will be redirected to a blank page with a printed message like this: { \"success\": true }. This has to be done within a 25 seconds timeframe.");
@@ -362,7 +362,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(responseConf);
-            assertEquals("SUCCESS", responseConf.getResponseCode());
+            assertEquals(SUCCESS, responseConf.getResponseCode());
             assertEquals("PREAUTHORIZED", responseConf.getResponseMessage());
 
             Transaction capture =
@@ -371,7 +371,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(capture);
-            assertEquals("SUCCESS", capture.getResponseCode());
+            assertEquals(SUCCESS, capture.getResponseCode());
             assertEquals("CAPTURED", capture.getResponseMessage());
 
             Transaction capture2 =
@@ -380,7 +380,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(capture2);
-            assertEquals("SUCCESS", capture2.getResponseCode());
+            assertEquals(SUCCESS, capture2.getResponseCode());
             assertEquals("CAPTURED", capture2.getResponseMessage());
         } else assertEquals("INITIATED", transactionSummary.getTransactionStatus());
     }
@@ -433,7 +433,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("INITIATED", response.getResponseMessage());
     }
 
@@ -453,7 +453,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), response.getResponseMessage());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
         assertEquals(AlternativePaymentType.ALIPAY.toString(), response.getAlternativePaymentResponse().getProviderName().toUpperCase());
@@ -600,7 +600,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertNotNull(response.getAlternativePaymentResponse());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
         assertEquals("BLIK",response.getAlternativePaymentResponse().getProviderName().toUpperCase());
@@ -684,7 +684,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
         assertNotNull(response);
         assertEquals("BLIK",response.getTransactionReference().getAlternativePaymentResponse().getProviderName().toUpperCase());
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
     }
 
     // Run refund on same transactionId it will give response as "Declined"
@@ -757,7 +757,7 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertNotNull(response.getAlternativePaymentResponse());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
         assertEquals("BANK_PAYMENT",response.getAlternativePaymentResponse().getProviderName().toUpperCase());

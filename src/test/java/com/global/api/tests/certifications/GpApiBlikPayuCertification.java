@@ -93,7 +93,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("BLIK");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertNotNull(response.getAlternativePaymentResponse());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
         assertEquals("BLIK",response.getAlternativePaymentResponse().getProviderName().toUpperCase());
@@ -117,7 +117,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("BLIK");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("BLIK");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("BLIK");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -181,7 +181,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("PAYU");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
         assertNotNull(response.getAlternativePaymentResponse());
         assertNotNull(response.getAlternativePaymentResponse().getRedirectUrl());
         assertEquals("BANK_PAYMENT",response.getAlternativePaymentResponse().getProviderName().toUpperCase());
@@ -205,7 +205,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("PAYU");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -225,7 +225,7 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("PAYU");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 
     @Test
@@ -245,6 +245,6 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
                         .execute("PAYU");
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals("00", response.getResponseCode());
     }
 }

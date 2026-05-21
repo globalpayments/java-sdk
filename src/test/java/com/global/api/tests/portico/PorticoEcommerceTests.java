@@ -280,4 +280,36 @@ public class PorticoEcommerceTests {
         assertNotNull(response3.getToken());
         assertNotEquals(response1.getToken(), response3.getToken());
     }
+
+    @Test
+    public void ecomAuthWithTokenizedWallet() throws ApiException {
+        ThreeDSecure ecom = new ThreeDSecure();
+        ecom.setPaymentDataSource(PaymentDataSourceType.TOKENIZEDWALLET);
+        card.setThreeDSecure(ecom);
+
+        Transaction response = card.authorize(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withInvoiceNumber("1234567890")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void ecomAuthWithTokenizedWallet_InvalidData() throws ApiException {
+        ThreeDSecure ecom = new ThreeDSecure();
+        ecom.setPaymentDataSource(PaymentDataSourceType.TOKENIZEDWALLET);
+        // Simulate an invalid scenario: missing or invalid required 3DS data
+        // For example, do not set CAVV, ECI, or set an invalid value
+        card.setThreeDSecure(ecom);
+
+        Transaction response = card.authorize(BigDecimal.ZERO)
+                .withCurrency("USD")
+                .withInvoiceNumber("1234567890")
+                .withAllowDuplicates(true)
+                .execute();
+        assertNotNull(response);
+        assertNotEquals("00", response.getResponseCode());
+    }
 }

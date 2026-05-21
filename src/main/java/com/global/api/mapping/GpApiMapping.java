@@ -57,14 +57,36 @@ public class GpApiMapping {
         if (!isNullOrEmpty(rawResponse)) {
             JsonDoc json = JsonDoc.parse(rawResponse);
 
-            transaction.setResponseCode(json.get("action").getString("result_code"));
+            // Get the raw result code from GPAPI action
+            String rawResultCode = json.get("action").getString("result_code");
+
+            // Store the original response code before normalization
+            transaction.setOriginalResponseCode(rawResultCode);
+
+            // Normalize the response code to standard format
+            String normalizedResponseCode = normalizeResponse(rawResultCode);
+            transaction.setResponseCode(normalizedResponseCode);
+
+            // Set isSuccess and isPartial flags based on normalized response code
+            transaction.setSuccessTransaction(isSuccess(normalizedResponseCode));
+            transaction.setPartialTransaction(isPartial(normalizedResponseCode));
+
+            // Only set authorizedAmount for partial approvals, not balanceAmount for gift cards
+            String status = json.getString("status");
+            boolean isPartialApproval = isPartial(normalizedResponseCode);
+
+            if (isPartialApproval && !isNullOrEmpty(json.getString("amount"))) {
+                // For partial approvals, set authorizedAmount
+                transaction.setAuthorizedAmount(json.getAmount("amount"));
+            } else if (status != null && status.toUpperCase(Locale.ENGLISH).equals(TransactionStatus.Preauthorized.getValue().toUpperCase(Locale.ENGLISH)) &&
+                    !isNullOrEmpty(json.getString("amount"))) {
+                // For preauthorized transactions, set authorizedAmount
+                transaction.setAuthorizedAmount(json.getAmount("amount"));
+            }
+
             transaction.setResponseMessage(json.getString("status"));
             transaction.setTransactionId(json.getString("id"));
             transaction.setBalanceAmount(json.getAmount("amount"));
-            transaction.setAuthorizedAmount(
-                    json.getString("status").toUpperCase(Locale.ENGLISH).equals(TransactionStatus.Preauthorized.getValue().toUpperCase(Locale.ENGLISH)) &&
-                            !isNullOrEmpty(json.getString("amount")) ? json.getAmount("amount") : null
-            );
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setReferenceNumber(json.getString("reference"));
             transaction.setClientTransactionId(json.getString("reference"));
@@ -170,6 +192,9 @@ public class GpApiMapping {
                     cardDetails.setAvsResponseMessage(paymentMethodObj.getString("avs_action"));
                     if (paymentMethod.has("card") && paymentMethod.get("card").has("provider")) {
                         cardDetails.setCardIssuerResponse(mapCardIssuerResponse(paymentMethodObj.get("provider")));
+                    }
+                    if(paymentMethod.get("card").has("available_balance")) {
+                        cardDetails.setBalanceAmount(paymentMethodObj.getAmount("available_balance"));
                     }
 
                     transaction.setCardDetails(cardDetails);
@@ -1894,7 +1919,8 @@ public class GpApiMapping {
                 action.setTimeCreated(actionJson.getString("time_created"));
                 action.setAppId(actionJson.getString("app_id"));
                 action.setAppName(actionJson.getString("app_name"));
-                action.setResultCode(actionJson.getString("result_code"));
+                action.setOriginalResponseCode(actionJson.getString("result_code"));
+                action.setResultCode(normalizeResponse(actionJson.getString("result_code")));
                 installment.setAction(action);
             }
 
@@ -1971,5 +1997,38 @@ public class GpApiMapping {
             obResponse.setAccountNumber(bank.getString("account_number"));
             apm.setBank(obResponse);
         }
+    }
+
+    private static String normalizeResponse(String input) {
+        if (input == null) {
+            return null;
+        }
+        if ("SUCCESS".equalsIgnoreCase(input)) {
+            return "00";
+        }
+        if ("PARTIAL".equalsIgnoreCase(input)) {
+            return "10";
+        }
+        return input;
+    }
+
+    /**
+     * Determines if a normalized response code indicates a successful transaction.
+     *
+     * @param normalizedResponseCode The normalized response code
+     * @return true if the response code indicates success, false otherwise
+     */
+    public static boolean isSuccess(String normalizedResponseCode) {
+        return "00".equals(normalizedResponseCode);
+    }
+
+    /**
+     * Determines if a normalized response code indicates a partial approval.
+     *
+     * @param normalizedResponseCode The normalized response code
+     * @return true if the response code indicates partial approval, false otherwise
+     */
+    public static boolean isPartial(String normalizedResponseCode) {
+        return "10".equals(normalizedResponseCode);
     }
 }

@@ -82,6 +82,9 @@ public class Transaction {
     private String recurringDataCode;
     private String referenceNumber;
     private String responseCode;
+    private String originalResponseCode;
+    @Getter @Setter private boolean isSuccessTransaction;
+    @Getter @Setter private boolean isPartialTransaction;
     private Date responseDate;
     private String responseMessage;
     private HashMap<String, String> responseValues;
@@ -664,6 +667,14 @@ public class Transaction {
 
     public void setResponseCode(String responseCode) {
         this.responseCode = responseCode;
+    }
+
+    public String getOriginalResponseCode() {
+        return originalResponseCode;
+    }
+
+    public void setOriginalResponseCode(String originalResponseCode) {
+        this.originalResponseCode = originalResponseCode;
     }
 
     public String getResponseMessage() {

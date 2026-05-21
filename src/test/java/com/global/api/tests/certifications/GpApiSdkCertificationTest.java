@@ -23,7 +23,7 @@ public class GpApiSdkCertificationTest extends BaseGpApiTest {
     private final String currency = "USD";
     private final String successAuthCode = "123456";
     private final String successResultCode = "00";
-    private final String SUCCESS = "SUCCESS";
+    private final String SUCCESS = "00";
 
     @Before
     public void setupGpApi() throws ApiException {

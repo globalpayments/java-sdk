@@ -1,5 +1,9 @@
 package com.global.api.tests.utils.citesting;
 
+import com.global.api.ServicesContainer;
+import com.global.api.entities.exceptions.ConfigurationException;
+import com.global.api.serviceConfigs.GatewayConfig;
+import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.terminals.IRequestIdProvider;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,6 +16,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +37,16 @@ public class CiTestingHarness {
     private final Map<String, String> generatedIds;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    private String language = "java";
+    private String category;
+    private String subcategory;
+    private String currentFunction;
+
+    /**
+     * Constructor. The harness is instantiated with target service URL, cache mode,
+     * and test name only. Category, subcategory and function are set per-test via
+     * {@link #setFunction(String)} using the "category|subcategory|function" convention.
+     */
     public CiTestingHarness(String targetServiceUrl, CacheMode cacheMode, String testName) {
         String proxyHost = System.getenv("PROXY_ENDPOINT");
         if (proxyHost == null || proxyHost.isEmpty()) {
@@ -59,12 +74,86 @@ public class CiTestingHarness {
         DateTimeZone.setDefault(DateTimeZone.UTC);
     }
 
+    /**
+     * Set the function being tested. The convention is "category|subcategory|function".
+     * This is parsed at runtime into the respective fields and appended to the proxy URL
+     * so the proxy validates them against its functionality list and records the test run.
+     *
+     * If {@link #attach(GatewayConfig)} was called, this also re-registers the config
+     * with ServicesContainer so the connector picks up the updated URL — otherwise the
+     * URL is frozen at configure time and the new function tag would not be sent.
+     */
+    public void setFunction(String functionPath) {
+        if (functionPath == null) {
+            this.category = null;
+            this.subcategory = null;
+            this.currentFunction = null;
+        } else {
+            String[] parts = functionPath.split("\\|", 3);
+            if (parts.length == 3) {
+                this.category = parts[0];
+                this.subcategory = parts[1];
+                this.currentFunction = parts[2];
+            } else {
+                this.category = null;
+                this.subcategory = null;
+                this.currentFunction = functionPath;
+            }
+        }
+
+    }
+
+    /**
+     * Override the default language tag ("java") sent to the proxy.
+     * This is rarely needed; it exists for cross-language test scenarios.
+     */
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    /**
+     * Bind a GpApiConfig to this harness so that subsequent setFunction() calls can refresh
+     * the registered ServicesContainer connector with the latest URL. Replaces the manual
+     * config.setServiceUrl(harness.getTestingUrl()) + ServicesContainer.configureService
+     * pair that tests would otherwise write in their constructor.
+     *
+     * Also resets currentFunction — the harness instance is typically static, so this
+     * keeps a stale function tag from leaking from one test method into the next.
+     */
+    public void attach(GatewayConfig config) throws ConfigurationException {
+        attach(config, "default");
+    }
+
+    public void attach(GatewayConfig config, String configName) throws ConfigurationException {
+        config.setServiceUrl(getTestingUrl());
+        ServicesContainer.configureService(config, configName);
+        this.category = null;
+        this.subcategory = null;
+        this.currentFunction = null;
+    }
+
     public String getTestingUrl() {
         String cacheReturns = cacheMode == CacheMode.Locked ? "true" : "false";
         String targetHost = targetServiceUrl
                 .replaceFirst("^https?://", "https:/");
 
-        return ciTestingProxyEndpoint + "/(cacheReturns:" + cacheReturns + ")/" + targetHost;
+        StringBuilder args = new StringBuilder("cacheReturns:").append(cacheReturns);
+        if (language != null && category != null && subcategory != null && currentFunction != null) {
+            args.append(",language:").append(encodeUrlPathSegment(language))
+                .append(",category:").append(encodeUrlPathSegment(category))
+                .append(",subcategory:").append(encodeUrlPathSegment(subcategory))
+                .append(",function:").append(encodeUrlPathSegment(currentFunction));
+        }
+
+        return ciTestingProxyEndpoint + "/(" + args + ")/" + targetHost;
+    }
+
+    private String encodeUrlPathSegment(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e); // UTF-8 is guaranteed
+        }
     }
 
     public DateTime getCurrentTime() {

@@ -13,10 +13,6 @@ import com.global.api.utils.*;
 import lombok.Setter;
 import org.joda.time.DateTime;
 import lombok.experimental.Accessors;
-import org.w3c.dom.Document;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
 import java.math.BigDecimal;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -208,7 +204,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                     }
 
                     // WalletData Element
-                    if (isAppleOrGooglePay(secureEcom.getPaymentDataSource())) {
+                    if (isAppleOrGooglePay(secureEcom.getPaymentDataSource()) || secureEcom.getPaymentDataSource() == PaymentDataSourceType.TOKENIZEDWALLET) {
                         Element walletData = et.subElement(block1, "WalletData");
                         et.subElement(walletData, "PaymentSource", secureEcom.getPaymentDataSource());
                         et.subElement(walletData, "Cryptogram", secureEcom.getCavv());
@@ -217,14 +213,11 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
 
                 //WalletData Element
-                if (
-                        (
-                                creditCardData.getMobileType() == MobilePaymentMethodType.APPLEPAY
-                                        || creditCardData.getMobileType() == MobilePaymentMethodType.GOOGLEPAY
-                        )
+                if ((creditCardData.getMobileType() == MobilePaymentMethodType.APPLEPAY
+                                || creditCardData.getMobileType() == MobilePaymentMethodType.GOOGLEPAY)
                                 && creditCardData.getPaymentDataSourceType() != null
-                                && isAppleOrGooglePay(creditCardData.getPaymentDataSourceType())
-                ) {
+                                && isAppleOrGooglePay(creditCardData.getPaymentDataSourceType()))
+                {
                     Element walletData = et.subElement(block1, "WalletData");
                     et.subElement(walletData, "PaymentSource", creditCardData.getPaymentDataSourceType());
                     et.subElement(walletData, "Cryptogram", secureEcom != null ? secureEcom.getCavv() : null);
@@ -237,7 +230,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                         }
                     }
                 }
-
             }
 
             // recurring data
@@ -854,7 +846,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         et.subElement(header, "DeveloperID", developerId);
         et.subElement(header, "ClientTxnId", clientTransactionId);
         et.subElement(header, "PosReqDT", this.getPosReqDT());
-        et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + getReleaseVersion());
+        et.subElement(header, "SDKNameVersion", sdkNameVersion != null ? sdkNameVersion : "java;version=" + ReleaseVersionUtils.getReleaseVersion());
         if (builder != null && builder.getUniqueDeviceId() != null)
             et.subElement(header, "UniqueDeviceId", builder.getUniqueDeviceId());
 
@@ -1434,29 +1426,6 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         return summary;
     }
 
-    // Get the SDK release version
-    private String getReleaseVersion() {
-        if ("true".equalsIgnoreCase(System.getProperty("sdk.testing"))) {
-            return "";
-        }
-
-        String version = "";
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            // Disable external entity processing
-            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            dbf.setExpandEntityReferences(false);
-            Document pomXml = dbf.newDocumentBuilder().parse(new File("pom.xml"));
-            org.w3c.dom.Element pomRoot = (org.w3c.dom.Element) pomXml.getElementsByTagName("project").item(0);
-            version = pomRoot.getElementsByTagName("version").item(0).getTextContent();
-        } catch (Exception ex) {
-            System.out.println("JAVA SDK version could not be extracted from pom.xml file.");
-        }
-        return version;
-    }
-
     public NetworkMessageHeader sendKeepAlive() throws ApiException {
         throw new ApiException("Portico does not support KeepAlive.");
     }
@@ -1510,6 +1479,7 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
     }
 
     private boolean isAppleOrGooglePay(PaymentDataSourceType paymentDataSource) {
+        if (paymentDataSource == null) return false;
         return paymentDataSource == PaymentDataSourceType.APPLEPAY
                 || paymentDataSource == PaymentDataSourceType.APPLEPAYAPP
                 || paymentDataSource == PaymentDataSourceType.APPLEPAYWEB

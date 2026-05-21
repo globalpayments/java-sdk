@@ -1025,7 +1025,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
 
         var lodgingInfo = new LodgingData();
@@ -1052,7 +1052,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
         assertEquals(new BigDecimal("22.02"), transaction.getAuthorizedAmount());
 
@@ -1062,7 +1062,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(capture);
-        assertEquals("SUCCESS", capture.getResponseCode());
+        assertEquals(SUCCESS, capture.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
     }
 
@@ -1076,7 +1076,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
 
         transaction =
@@ -1086,7 +1086,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
         assertEquals(new BigDecimal("22.02"), transaction.getAuthorizedAmount());
 
@@ -1096,7 +1096,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(capture);
-        assertEquals("SUCCESS", capture.getResponseCode());
+        assertEquals(SUCCESS, capture.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), capture.getResponseMessage());
     }
 
@@ -1110,7 +1110,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
 
         var lodgingInfo = new LodgingData();
@@ -1137,7 +1137,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Preauthorized.getValue(), transaction.getResponseMessage());
         assertEquals(new BigDecimal("22.02"), transaction.getAuthorizedAmount());
 
@@ -1147,7 +1147,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(reversed);
-        assertEquals("SUCCESS", reversed.getResponseCode());
+        assertEquals(SUCCESS, reversed.getResponseCode());
         assertEquals(TransactionStatus.Reversed.getValue(), reversed.getResponseMessage());
     }
 
@@ -1161,7 +1161,7 @@ public class GpApiCreditCardPresentTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Captured.getValue(), transaction.getResponseMessage());
 
         var lodgingInfo = new LodgingData();

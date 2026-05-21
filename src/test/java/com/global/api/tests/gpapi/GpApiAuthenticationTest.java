@@ -248,7 +248,7 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
         } catch (GatewayException ex) {
             assertEquals("40004", ex.getResponseText());
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
-            assertEquals("Status Code: 403 - Credentials not recognized to create access token.", ex.getMessage());
+            assertEquals("Status Code: 403 - App credentials not recognized", ex.getMessage());
         }
     }
 

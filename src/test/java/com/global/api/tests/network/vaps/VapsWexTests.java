@@ -2872,38 +2872,20 @@ public class VapsWexTests {
         assertNotNull(response);
     }
     @Test
-    public void test_sale_wexFleet_driverIdValidation_negative_3Digit() throws BuilderException {
+    public void test_sale_wexFleet_driverIdValidation_negative_3Digit() {
         FleetData fleetData = new FleetData();
-        fleetData.setDriverId("373");
+        fleetData.setDriverId("373546789053");
         fleetData.setVehicleNumber("46581");
 
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
         productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
 
-        BuilderException lengthValidation = assertThrows(BuilderException.class,
+        assertThrows(BuilderException.class,
                 () -> card.charge(new BigDecimal("10"))
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
                 .execute());
-        assertTrue("Driver Id length must be 4 or 6.".equals(lengthValidation.getMessage()));
-    }
-    @Test
-    public void test_sale_wexFleet_driverIdValidation_negative_5Digit() throws BuilderException {
-        FleetData fleetData = new FleetData();
-        fleetData.setDriverId("37343");
-        fleetData.setVehicleNumber("46581");
-
-        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
-        productData.add("052", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
-
-        BuilderException lengthValidation = assertThrows(BuilderException.class,
-                () -> card.charge(new BigDecimal("10"))
-                        .withCurrency("USD")
-                        .withProductData(productData)
-                        .withFleetData(fleetData)
-                        .execute());
-        assertTrue("Driver Id length must be 4 or 6.".equals(lengthValidation.getMessage()));
     }
     @Test
     public void test_sale_wexFleet_enteredData_validation() throws ApiException {

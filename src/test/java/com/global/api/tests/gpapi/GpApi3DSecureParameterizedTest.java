@@ -31,7 +31,6 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
     private final static String NOT_ENROLLED = "NOT_ENROLLED";
     private final static String NOT_AUTHENTICATED = "NOT_AUTHENTICATED";
     private final static String CHALLENGE_REQUIRED = "CHALLENGE_REQUIRED";
-    private final static String SUCCESS = "SUCCESS";
     private final static String SUCCESS_AUTHENTICATED = "SUCCESS_AUTHENTICATED";
     private final static String FAILED = "FAILED";
     private final static String SUCCESS_ATTEMPT_MADE = "SUCCESS_ATTEMPT_MADE";
@@ -147,7 +146,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals("SUCCESS", response.getResponseCode());
+            assertEquals(SUCCESS, response.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         }
     }
@@ -225,7 +224,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals(SUCCESS, response.getResponseCode());
+            assertEquals("00", response.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         }
     }
@@ -301,7 +300,7 @@ public class GpApi3DSecureParameterizedTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(response);
-            assertEquals(SUCCESS, response.getResponseCode());
+            assertEquals("00", response.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), response.getResponseMessage());
         }
     }

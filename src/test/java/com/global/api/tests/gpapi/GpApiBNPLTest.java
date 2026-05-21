@@ -83,7 +83,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(TransactionStatus.Initiated.getValue().toUpperCase(), response.getResponseMessage());
 
         System.out.println(response.getBNPLResponse().getRedirectUrl());
@@ -104,7 +104,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captured);
-            assertEquals("SUCCESS", captured.getResponseCode());
+            assertEquals(SUCCESS, captured.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), captured.getResponseMessage());
 
             Transaction refund =
@@ -114,7 +114,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(refund);
-            assertEquals("SUCCESS", refund.getResponseCode());
+            assertEquals(SUCCESS, refund.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), refund.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -144,7 +144,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(trnRefund);
-        assertEquals("SUCCESS", trnRefund.getResponseCode());
+        assertEquals(SUCCESS, trnRefund.getResponseCode());
         assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
     }
 
@@ -168,7 +168,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -191,7 +191,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
 
             Thread.sleep(15000);
@@ -203,7 +203,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trnRefund);
-            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals(SUCCESS, trnRefund.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -228,7 +228,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -251,7 +251,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
 
             Thread.sleep(60000);
@@ -263,7 +263,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(trnRefund);
-            assertEquals("SUCCESS", trnRefund.getResponseCode());
+            assertEquals(SUCCESS, trnRefund.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), trnRefund.getResponseMessage());
 
             Transaction secondTrnRefund =
@@ -273,7 +273,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(secondTrnRefund);
-            assertEquals("SUCCESS", secondTrnRefund.getResponseCode());
+            assertEquals(SUCCESS, secondTrnRefund.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), secondTrnRefund.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -298,7 +298,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -321,7 +321,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(reverseTransactionResponse);
-            assertEquals("SUCCESS", reverseTransactionResponse.getResponseCode());
+            assertEquals(SUCCESS, reverseTransactionResponse.getResponseCode());
             assertEquals(TransactionStatus.Reversed.toString().toUpperCase(), reverseTransactionResponse.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -343,7 +343,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
     }
@@ -366,7 +366,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.getValue(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -389,7 +389,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.getValue(), captureTrn.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -412,7 +412,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -435,7 +435,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -458,7 +458,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -481,7 +481,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -505,7 +505,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 
@@ -528,7 +528,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
 
             Thread.sleep(25000);
@@ -539,7 +539,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                             .execute();
 
             assertNotNull(captureTrn);
-            assertEquals("SUCCESS", captureTrn.getResponseCode());
+            assertEquals(SUCCESS, captureTrn.getResponseCode());
             assertEquals(TransactionStatus.Captured.toString().toUpperCase(), captureTrn.getResponseMessage());
         } else assertEquals("INITIATED", findTransactionByIdResponse.getTransactionStatus());
     }
@@ -564,7 +564,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                         .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
 

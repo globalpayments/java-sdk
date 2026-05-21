@@ -1171,7 +1171,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         FundsAccountDetails fundsAccountDetails = response.getFundsAccountDetails();
         assertNotNull(fundsAccountDetails);
         assertEquals(FundsStatus.CAPTURED.toString(), fundsAccountDetails.getStatus());
@@ -1200,7 +1200,7 @@ public class GpApiMerchantAccountsTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         FundsAccountDetails fundsAccountDetails = response.getFundsAccountDetails();
         assertNotNull(fundsAccountDetails);
         assertEquals(FundsStatus.CAPTURED.toString(), fundsAccountDetails.getStatus());

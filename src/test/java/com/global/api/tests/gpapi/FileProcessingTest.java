@@ -35,7 +35,7 @@ public class FileProcessingTest extends BaseGpApiTest {
         FileProcessor response = fileProcessingService.initiate();
 
         assertNotNull(response);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("INITIATED", response.getResponseMessage());
         assertNotNull(response.getUploadUrl());
 
@@ -51,7 +51,7 @@ public class FileProcessingTest extends BaseGpApiTest {
 
         FileProcessor fp = new FileProcessingService().getDetails(response.getResourceId());
 
-        assertEquals("SUCCESS", fp.getResponseCode());
+        assertEquals(SUCCESS, fp.getResponseCode());
         assertEquals("INITIATED", fp.getStatus());
     }
 
@@ -60,7 +60,7 @@ public class FileProcessingTest extends BaseGpApiTest {
         String resourceId = "FPR_971edc6eb0944d8d890dcba7a2a41bea";
         FileProcessingService fileProcessingService = new FileProcessingService();
         FileProcessor response = fileProcessingService.getDetails(resourceId);
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("COMPLETED", response.getStatus());
         assertTrue(Integer.parseInt(response.getTotalRecordCount()) > 0);
         assertNotNull(response.getFilesUploaded().get(0).getUrl());

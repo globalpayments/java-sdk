@@ -31,4 +31,9 @@ public class Action {
      * Represents the name of the app the user gave to the application.
      */
     private String appName;
+
+    /**
+     * Represents the originalResponseCode.
+     */
+    private String originalResponseCode;
 }

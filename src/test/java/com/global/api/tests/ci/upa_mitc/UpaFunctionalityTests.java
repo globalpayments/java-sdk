@@ -22,15 +22,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UpaMicTests {
+public class UpaFunctionalityTests {
 
     private static final String MITC_UPA_APP_ID = "6l8Xr23kHL9tGmAtXUvCEXKskvF7aLGq";
     private static final String MITC_UPA_APP_KEY = "z0ApiLDfXrKmrlNa";
-
+    private static final CiTestingHarness.CacheMode CurrentCacheMode = CiTestingHarness.CacheMode.Locked;
     private static final CiTestingHarness ciTestingHarness = new CiTestingHarness(
             "https://apis.sandbox.globalpay.com/ucp",
-            CiTestingHarness.CacheMode.Locked,
-            "UpaMicTests"
+            CurrentCacheMode,
+            "UpaFunctionalityTests"
     );
 
     private static GpApiConfig getGpApiConfig() {
@@ -65,6 +65,7 @@ public class UpaMicTests {
 
     @Test
     public void CreditSale() throws ApiException {
+        ciTestingHarness.setFunction("UPA|Functionality|Credit Sale");
         UpaInterface device = createDevice("CreditSale");
         BigDecimal amount = ciTestingHarness.generateRandomBigDecimal(
                 "CreditSale_amount", new BigDecimal("1"), new BigDecimal("10"), 2);
@@ -76,17 +77,38 @@ public class UpaMicTests {
     }
 
     @Test
-    public void CreditSale_WithZeroTip() throws ApiException {
-        UpaInterface device = createDevice("CreditSale_WithZeroTip");
+    public void RefundAgainstCard() throws ApiException {
+        ciTestingHarness.setFunction("UPA|Functionality|Refund against Card");
+        UpaInterface device = createDevice("RefundAgainstCard");
         BigDecimal amount = ciTestingHarness.generateRandomBigDecimal(
-                "CreditSale_WithZeroTip_amount", new BigDecimal("1"), new BigDecimal("10"), 2);
+                "RefundAgainstCard_amount", new BigDecimal("1"), new BigDecimal("10"), 2);
 
-        TerminalResponse response = device.sale(amount)
-                .withGratuity(new BigDecimal(0))
-                .execute();
+        TerminalResponse response = device.refund(amount).execute();
 
         assertNotNull(response);
         assertMitcUpaResponse(response);
+    }
+
+    @Test
+    public void RefundAgainstTransactionId() throws ApiException, InterruptedException {
+        ciTestingHarness.setFunction("UPA|Functionality|Refund against Transaction ID");
+        UpaInterface device = createDevice("RefundAgainstTransactionId");
+        BigDecimal amount = ciTestingHarness.generateRandomBigDecimal(
+                "RefundAgainstTransactionId_amount", new BigDecimal("1"), new BigDecimal("10"), 2);
+
+        TerminalResponse saleResponse = device.sale(amount).execute();
+
+        assertNotNull(saleResponse);
+        assertMitcUpaResponse(saleResponse);
+
+        Thread.sleep(CurrentCacheMode == CiTestingHarness.CacheMode.Unlocked ? 15000 : 0);
+
+        TerminalResponse refundResponse = device.refund(amount)
+                .withTransactionId(saleResponse.getTransactionId())
+                .execute();
+
+        assertNotNull(refundResponse);
+        assertMitcUpaResponse(refundResponse);
     }
 
     private void assertMitcUpaResponse(TerminalResponse response) {

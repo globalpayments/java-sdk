@@ -5,5 +5,10 @@
   "creditSwipeReverse": "97677719",
   "creditAuthorization_withoutSAFIndicator03": "25067620",
   "creditReversalFromClientTransactionId": "46730260",
-  "creditSale_ClerkId": "48297314"
+  "creditSale_ClerkId": "48297314",
+  "creditReturn": "57602129",
+  "creditTxnEdit_charge": "98983246",
+  "creditAdditionalAuth_auth": "67049268",
+  "creditAdditionalAuth_additional": "48385083",
+  "creditTxnEdit_edit": "33689541"
 }

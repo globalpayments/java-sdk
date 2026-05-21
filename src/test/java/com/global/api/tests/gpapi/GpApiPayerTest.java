@@ -266,7 +266,7 @@ public class GpApiPayerTest extends BaseGpApiTest {
                 .execute();
 
         assertNotNull(transaction);
-        assertEquals("SUCCESS", transaction.getResponseCode());
+        assertEquals(SUCCESS, transaction.getResponseCode());
         assertEquals(TransactionStatus.Initiated.toString().toUpperCase(), transaction.getResponseMessage());
         assertNotNull(transaction.getBNPLResponse().getRedirectUrl());
     }

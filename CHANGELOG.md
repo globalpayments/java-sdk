@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - V15.1.13 (05/14/2026)
+## Latest Version - V15.1.14 (05/21/2026)
+### Enhancements:
+- [Portico] - Adding new enum TokenizedWallet in Portico.
+- [GPAPI] - Normalizing response codes for GP-API.
+
+### Bug Fixes:
+- [VAPS] - Removed the unnecessary spaces from the Wex Driver ID prompt(Issue 10393).
+
+## Version - V15.1.13 (05/14/2026)
 ### Bug Fixes:
 - [TRANSIT] Added EMV tag blacklist specific to the gateway.
 - [TRANSIT] Updated 'lastChipRead' to only be included for chip read failure fallback.
