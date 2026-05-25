@@ -200,7 +200,7 @@ public abstract class DeviceInterface<TResult extends DeviceController> implemen
     }
 
     @Override
-    public IDeviceResponse sendReady() throws ApiException {
+    public void sendReady() throws ApiException {
         throw new UnsupportedTransactionException(ERROR_MESSAGE);
     }
 
