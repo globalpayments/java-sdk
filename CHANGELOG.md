@@ -1,6 +1,14 @@
 # Changelog
 
-## Latest Version - V15.1.14 (05/21/2026)
+## Latest Version - V15.1.15 (06/04/2026)
+### Enhancements:
+- [GPAPI] - Added eRaty APM support for installment requests via GPAPI.
+- [APAC] - Verifying end point connection of SDK with GP_API for APAC Region.
+
+### Bug Fixes:
+- [VAPS] - Fixed the NPE exception for EBT EMV transaction issue 10394 and updated DE 24 value for Data Collect.
+
+## Version - V15.1.14 (05/21/2026)
 ### Enhancements:
 - [Portico] - Adding new enum TokenizedWallet in Portico.
 - [GPAPI] - Normalizing response codes for GP-API.

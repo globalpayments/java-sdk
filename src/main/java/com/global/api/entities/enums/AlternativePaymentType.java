@@ -141,7 +141,8 @@ public enum AlternativePaymentType implements IStringConstant{
 	PAYBYBANKAPP("paybybankapp"),
 	ALIPAY("alipay"),
 	BLIK("blik"),
-	OB("ob");
+	OB("ob"),
+	ERATY("eraty");
 
     String value;
     AlternativePaymentType(String value) { this.value = value; }

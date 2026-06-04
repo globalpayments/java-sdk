@@ -42,6 +42,7 @@ public class Customer extends RecurringEntity<Customer> {
     private Boolean isShippingAddressSameAsBilling;
     private String timeCreated;
     private String timeLastUpdated;
+    private String country;
 
     public Customer() {
         //super(Customer.class);

@@ -1,5 +1,6 @@
 package com.global.api.tests.ci.gpapi;
 
+import com.global.api.ServicesContainer;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.TransactionStatus;
@@ -46,7 +47,8 @@ public class GpApiTransactionsTests {
     private void configureGpApiService() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         config.setServiceUrl(ciTestingHarness.getTestingUrl());
-        ciTestingHarness.attach(config);
+        ServicesContainer.configureService(config);
+        ciTestingHarness.reset();
     }
 
     private static GpApiConfig gpApiSetup(String appId, String appKey, Channel channel) {

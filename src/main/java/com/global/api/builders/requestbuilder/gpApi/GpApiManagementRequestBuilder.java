@@ -82,7 +82,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .setRequestBody(data.toString())
                             .setMaskedData(maskedData);
 
-        } else if (builderTransactionType == TransactionType.Reversal) {
+        } else if (builderTransactionType == TransactionType.Reversal || builderTransactionType == TransactionType.Void) {
             data.set("amount", StringUtils.toNumeric(builder.getAmount()));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 

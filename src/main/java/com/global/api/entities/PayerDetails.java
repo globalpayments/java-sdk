@@ -18,4 +18,5 @@ public class PayerDetails {
     private Address billingAddress;
     private Address shippingAddress;
     private String taxIdReference;
+    private String reference;
 }

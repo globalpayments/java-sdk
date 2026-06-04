@@ -61,4 +61,15 @@ public class AlternativePaymentResponse {
     private String authReference;
     private BigDecimal feeAmount;
     private BankResponse bank;
+    // The payment category for APM (BNPL for eRaty).
+    private String category;
+
+    // The redirect URL provided directly by the APM provider (e.g., eRaty).
+    private String providerRedirectUrl;
+
+    // The payer name returned by the APM provider.
+    private String providerPayerName;
+
+    // For eRaty, only timeUnit,count and mode are populated.
+    private Terms terms;
 }

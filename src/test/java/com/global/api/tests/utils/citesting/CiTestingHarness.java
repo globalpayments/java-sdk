@@ -1,9 +1,5 @@
 package com.global.api.tests.utils.citesting;
 
-import com.global.api.ServicesContainer;
-import com.global.api.entities.exceptions.ConfigurationException;
-import com.global.api.serviceConfigs.GatewayConfig;
-import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.terminals.IRequestIdProvider;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -78,10 +74,6 @@ public class CiTestingHarness {
      * Set the function being tested. The convention is "category|subcategory|function".
      * This is parsed at runtime into the respective fields and appended to the proxy URL
      * so the proxy validates them against its functionality list and records the test run.
-     *
-     * If {@link #attach(GatewayConfig)} was called, this also re-registers the config
-     * with ServicesContainer so the connector picks up the updated URL — otherwise the
-     * URL is frozen at configure time and the new function tag would not be sent.
      */
     public void setFunction(String functionPath) {
         if (functionPath == null) {
@@ -112,21 +104,10 @@ public class CiTestingHarness {
     }
 
     /**
-     * Bind a GpApiConfig to this harness so that subsequent setFunction() calls can refresh
-     * the registered ServicesContainer connector with the latest URL. Replaces the manual
-     * config.setServiceUrl(harness.getTestingUrl()) + ServicesContainer.configureService
-     * pair that tests would otherwise write in their constructor.
-     *
-     * Also resets currentFunction — the harness instance is typically static, so this
-     * keeps a stale function tag from leaking from one test method into the next.
+     * Reset the harness fields so a stale function tag does not leak from one test
+     * method into the next. Call this after the test URL has been consumed.
      */
-    public void attach(GatewayConfig config) throws ConfigurationException {
-        attach(config, "default");
-    }
-
-    public void attach(GatewayConfig config, String configName) throws ConfigurationException {
-        config.setServiceUrl(getTestingUrl());
-        ServicesContainer.configureService(config, configName);
+    public void reset() {
         this.category = null;
         this.subcategory = null;
         this.currentFunction = null;

@@ -458,6 +458,17 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("bank", bank);
                     paymentMethod.set("bank_transfer", banktransfer);
             }
+            if (alternatepaymentMethod.getAlternativePaymentMethodType() == AlternativePaymentType.ERATY) {
+                apm.set("category", "BNPL");
+
+                if (alternatepaymentMethod.getTerms() != null) {
+                    var terms = new JsonDoc()
+                            .set("time_unit", alternatepaymentMethod.getTerms().getTimeUnit())
+                            .set("count", alternatepaymentMethod.getTerms().getCount())
+                            .set("mode", alternatepaymentMethod.getTerms().getMode());
+                    apm.set("terms", terms);
+                }
+            }
             paymentMethod.set("apm", apm);
         }
 
@@ -891,6 +902,13 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             payer.set("landline_phone", StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getHomePhone()) : builder.getHomePhone().toString());
             payer.set("mobile_phone", StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) != null ? StringUtils.toNumeric(builder.getCustomerData().getMobilePhone()) : builder.getMobilePhone().toString());
         } else if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
+            var alternativePaymentMethodPayer = (AlternativePaymentMethod) builder.getPaymentMethod();
+
+            if (alternativePaymentMethodPayer.getAlternativePaymentMethodType() == AlternativePaymentType.ERATY) {
+                payer.set("email", builder.getCustomerData() != null ? builder.getCustomerData().getEmail() : null);
+                payer.set("country", alternativePaymentMethodPayer.getCountry());
+            }
+
 
             if (builder.getHomePhone() != null) {
                 JsonDoc homePhone =

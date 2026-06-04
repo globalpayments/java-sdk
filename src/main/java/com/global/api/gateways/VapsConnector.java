@@ -245,7 +245,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                         dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactlessMsd);
                     }
                     else {
-                        if (card.getEntryMethod().equals(EntryMethod.Proximity)) {
+                        if (card.getEntryMethod() != null && card.getEntryMethod().equals(EntryMethod.Proximity)) {
                             dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactlessEmv);
                         } else dataCode.setCardDataInputMode(DE22_CardDataInputMode.ContactEmv);
                     }
@@ -2192,6 +2192,11 @@ public class VapsConnector extends GatewayConnectorConfig {
                         if (cardType.equals("VisaReadyLink") && type.equals(TransactionType.PreAuthCompletion)) {
                             return "200";
                         }
+                    } else if (originalPaymentMethod instanceof EBT || originalPaymentMethod instanceof Debit) {
+                        if (reference != null && reference.getMessageTypeIndicator() != null && type.equals(TransactionType.PreAuthCompletion) &&
+                                reference.getMessageTypeIndicator().equals("1200")) {
+                            return "200";
+                        }
                     }
                 }
 
@@ -3144,7 +3149,12 @@ public class VapsConnector extends GatewayConnectorConfig {
         impliedCapture.set(DataElementId.DE_012, request.getString(DataElementId.DE_012));
         impliedCapture.set(DataElementId.DE_018, request.getString(DataElementId.DE_018));
         impliedCapture.set(DataElementId.DE_022, request.getDataElement(DataElementId.DE_022, DE22_PosDataCode.class));
-        impliedCapture.set(DataElementId.DE_024, isPartial ? "202" : "201");
+        if (request.getMessageTypeIndicator().equals("1200")) {
+            // Check if original transaction type is Sale
+            impliedCapture.set(DataElementId.DE_024, isPartial ? "202" : "200");
+        } else {
+            impliedCapture.set(DataElementId.DE_024, isPartial ? "202" : "201");
+        }
         impliedCapture.set(DataElementId.DE_030, request.getString(DataElementId.DE_030));
         impliedCapture.set(DataElementId.DE_038, authCode);
         impliedCapture.set(DataElementId.DE_041, request.getString(DataElementId.DE_041));

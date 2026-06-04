@@ -60,6 +60,7 @@ public class UpaFunctionalityTests {
 
         UpaInterface device = (UpaInterface) DeviceService.create(connectionConfig);
         device.setEcrId("12");
+        ciTestingHarness.reset();
         return device;
     }
 

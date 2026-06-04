@@ -51,12 +51,22 @@ public class GpApiApmTest extends BaseGpApiTest {
     static final String descriptor = "Test Transaction";
     static final String accountName = "James Mason";
     static final String chargeDescription = "New APM";
+    private static String eratyAppId = "hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo";
+    private static String eratyAppKey = "cQOKHoAAvNIcEN8s";
 
     @BeforeEach
     public void initialize() throws ConfigurationException {
 
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
+
+        GpApiConfig eratyConfig = gpApiSetup(eratyAppId, eratyAppKey, Channel.CardNotPresent);
+
+        eratyConfig.setCountry("PL");
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("GPECOM_APM_Transaction_Processing");
+        eratyConfig.setAccessTokenInfo(accessTokenInfo);
+        ServicesContainer.configureService(eratyConfig, "eraty");
 
         paymentMethod =
                 new AlternativePaymentMethod()
@@ -843,5 +853,164 @@ public class GpApiApmTest extends BaseGpApiTest {
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
         ServicesContainer.configureService(gpApiConfig);
 
+    }
+
+    /**
+     * \[Manual Test Instructions\]
+     * 1. Run the test to submit an eRaty charge request. The redirect URL will be printed to the console.
+     * 2. Open the redirect URL in a browser to launch the eRaty APM simulator.
+     * 3. In the simulator, click the "Pay" button to simulate a successful BNPL payment.
+     * 4. After clicking "Pay", use `ReportingService.transactionDetail` with the TransactionId from step 1 to verify the transaction status is "CAPTURED".
+     * To test the rejection flow:
+     * 3a. In the simulator, click the "Reject" button instead of "Pay".
+     * 4a. Use `ReportingService.transactionDetail` with the TransactionId from step 1 to verify the transaction status is "DECLINED".
+     */
+
+    @Test
+    public void testERatyChargeWithTermsReturnsInitiated() throws ApiException {
+        Terms terms = new Terms();
+        terms.setTimeUnit("MONTH");
+        terms.setCount("6");
+        terms.setMode("BANK_INTEREST");
+
+        AlternativePaymentMethod eraty = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ERATY)
+                .setReturnUrl("https://www.example.com/returnUrl")
+                .setStatusUpdateUrl("https://www.example.com/statusUrl")
+                .setCancelUrl("https://www.example.com/cancelUrl")
+                .setAccountHolderName("John Doe")
+                .setCountry("PL")
+                .setTerms(terms);
+
+        Customer payer = new Customer();
+        payer.setKey("B8J9KSQA5M6S2");
+        payer.setEmail("abc@ccc.com");
+        payer.setCountry("PL");
+
+        Transaction response = eraty.charge(new BigDecimal("400"))
+                .withCurrency("PLN")
+                .withCustomerData(payer)
+                .execute("eraty");
+
+        assertNotNull(response);
+        assertEquals("INITIATED", response.getResponseMessage());
+
+        AlternativePaymentResponse apmResponse = response.getAlternativePaymentResponse();
+        assertNotNull(apmResponse);
+        assertFalse(StringUtils.isNullOrEmpty(apmResponse.getRedirectUrl()));
+        assertEquals("ERATY", apmResponse.getProviderName().toUpperCase());
+        assertEquals("BNPL", apmResponse.getCategory());
+        assertNotNull(apmResponse.getTerms());
+        assertEquals("MONTH", apmResponse.getTerms().getTimeUnit());
+        assertEquals("6", apmResponse.getTerms().getCount());
+        assertEquals("BANK_INTEREST", apmResponse.getTerms().getMode());
+
+        PayerDetails payerDetails = response.getPayerDetails();
+        assertNotNull(payerDetails);
+        assertEquals("B8J9KSQA5M6S2", payerDetails.getReference());
+        assertEquals("abc@ccc.com", payerDetails.getEmail());
+        assertEquals("PL", payerDetails.getCountry());
+    }
+
+    @Test
+    public void testERatyReportTransactionDetailCaptured() throws ApiException {
+        TransactionSummary response = (TransactionSummary) ReportingService
+                .transactionDetail("TRN_X3Hds5qhlvlp7we7LQVC74jVCM9Eh0_2fd52873ad53")
+                .execute("eraty");
+        assertNotNull(response);
+        assertEquals("CAPTURED", response.getTransactionStatus());
+    }
+
+    @Test
+    public void testERatyReportTransactionDetailDeclined() throws ApiException {
+        TransactionSummary response = (TransactionSummary) ReportingService
+                .transactionDetail("TRN_10tXeI3vO7kQE5NGDx7GmH3y5cSaeJ_a7403b592d4f")
+                .execute("eraty");
+        assertNotNull(response);
+        assertEquals("DECLINED", response.getTransactionStatus());
+    }
+
+    @Test
+    public void testERatyChargeWithoutTermsThrowsMandatoryDataMissing() {
+        AlternativePaymentMethod eraty = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ERATY)
+                .setReturnUrl("https://www.example.com/returnUrl")
+                .setStatusUpdateUrl("https://www.example.com/statusUrl")
+                .setCancelUrl("https://www.example.com/cancelUrl")
+                .setAccountHolderName("John Doe")
+                .setCountry("PL");
+
+        Customer payer = new Customer();
+        payer.setKey("B8J9KSQA5M6S2");
+        payer.setEmail("abc@ccc.com");
+
+        GatewayException ex = assertThrows(GatewayException.class, () -> {
+            eraty.charge(new BigDecimal("400"))
+                    .withCurrency("PLN")
+                    .withCustomerData(payer)
+                    .execute("eraty");
+        });
+
+        assertEquals("Status Code: 400 - Request expects the following fields : apm.terms.time_unit, apm.terms.count, apm.terms.mode", ex.getMessage());
+    }
+
+    @Test
+    public void testERatyShouldThrowExceptionWhenReturnUrlIsMissingForERatyCharge() {
+        Terms terms = new Terms();
+        terms.setTimeUnit("MONTH");
+        terms.setCount("6");
+        terms.setMode("BANK_INTEREST");
+
+        AlternativePaymentMethod eraty = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ERATY)
+                .setStatusUpdateUrl("https://www.example.com/statusUrl")
+                .setCancelUrl("https://www.example.com/cancelUrl")
+                .setAccountHolderName("John Doe")
+                .setCountry("PL")
+                .setTerms(terms);
+
+        Customer payer = new Customer();
+        payer.setKey("B8J9KSQA5M6S2");
+        payer.setEmail("abc@ccc.com");
+        payer.setCountry("PL");
+
+        BuilderException ex = assertThrows(BuilderException.class, () -> {
+            eraty.charge(new BigDecimal("400"))
+                    .withCurrency("PLN")
+                    .withCustomerData(payer)
+                    .execute("eraty");
+        });
+
+        assertEquals("returnUrl cannot be null for this transaction type.", ex.getMessage());
+    }
+
+    @Test
+    public void testERatyShouldThrowExceptionWhenStatusUpdateUrlIsMissingForERatyCharge() {
+        Terms terms = new Terms();
+        terms.setTimeUnit("MONTH");
+        terms.setCount("6");
+        terms.setMode("BANK_INTEREST");
+
+        AlternativePaymentMethod eraty = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.ERATY)
+                .setReturnUrl("https://www.example.com/returnUrl")
+                .setCancelUrl("https://www.example.com/cancelUrl")
+                .setAccountHolderName("John Doe")
+                .setCountry("PL")
+                .setTerms(terms);
+
+        Customer payer = new Customer();
+        payer.setKey("B8J9KSQA5M6S2");
+        payer.setEmail("abc@ccc.com");
+        payer.setCountry("PL");
+
+        BuilderException ex = assertThrows(BuilderException.class, () -> {
+            eraty.charge(new BigDecimal("400"))
+                    .withCurrency("PLN")
+                    .withCustomerData(payer)
+                    .execute("eraty");
+        });
+
+        assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
     }
 }

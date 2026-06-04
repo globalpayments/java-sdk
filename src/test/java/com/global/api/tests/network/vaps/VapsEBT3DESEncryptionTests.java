@@ -105,25 +105,6 @@ public class VapsEBT3DESEncryptionTests {
     }
 
     @Test
-    public void test_ebt_track_saleCashBack() throws ApiException {
-        Transaction response = foodCard.charge(new BigDecimal(10))
-                .withCurrency("USD")
-                .withCashBack(new BigDecimal(3))
-                .execute();
-        assertNotNull(response);
-
-        // check message data
-        PriorMessageInformation pmi = response.getMessageInformation();
-        assertNotNull(pmi);
-        assertEquals("1200", pmi.getMessageTransactionIndicator());
-        assertEquals("098100", pmi.getProcessingCode());
-        assertEquals("200", pmi.getFunctionCode());
-
-        // check result
-        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
-    }
-
-    @Test
     public void test_ebt_track_balance_enquiry1() throws ApiException {
         Transaction response = foodCard.balanceInquiry()
                 .withCurrency("USD")
@@ -559,4 +540,26 @@ public class VapsEBT3DESEncryptionTests {
                 .execute();
         assertTrue(("111").matches(response.getResponseCode()));
     }
+
+    @Test
+    public void test_EBT_EMV_sale_10394() throws ApiException {
+
+        Transaction response = cashTrack.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
+                .withTagData("4F07A000000004101050104D415354455243415244204445424954820218008407A00000000410108E120000000000000000420102055E0342031F00950580000080009A031901099B0268009C01405F24032212315F25031711015F2A0208405F300202015F3401119F01060000000000019F02060000000006009F03060000000000009F0607A00000000410109F0702FFC09F090200029F0D05B0509C88009F0E0500000000009F0F05B0709C98009F10120110A00003220000000000000000000000FF9F12104D6173746572636172642044656269749F160F3132333435363738393031323334359F1A0208409F1C0831313232333334349F1E0831323334353637389F21030647199F26084233C50A9D5D7FA29F2701809F330360F0C89F34035E03009F3501219F360201259F3704FF4CA1CD9F3901059F4005F000A0B0019F4104000000809F4E0D54657374204D65726368616E74")
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("008100", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check result
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
 }

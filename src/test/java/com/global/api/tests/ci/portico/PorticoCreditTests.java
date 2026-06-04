@@ -84,7 +84,8 @@ public class PorticoCreditTests {
         config.setVersionNumber("3026");
         config.setEnableLogging(true);
 
-        ciTestingHarness.attach(config);
+        ServicesContainer.configureService(config);
+        ciTestingHarness.reset();
     }
 
 

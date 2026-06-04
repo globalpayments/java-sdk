@@ -8,6 +8,7 @@ import com.global.api.entities.exceptions.GatewayDuplicateException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.network.NetworkMessageHeader;
+import com.global.api.network.enums.CardHolderAuthenticationEntity;
 import com.global.api.network.enums.OperatingEnvironment;
 import com.global.api.paymentMethods.*;
 import com.global.api.serviceConfigs.AcceptorConfig;
@@ -182,20 +183,27 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
             }
 
             String cardDataInputMode = "MAGNETIC_STRIPE_READER_INPUT_TRACK_DATA_CAPTURED_PASSED_UNALTERED";
+            String cardholderAuthenticationEntity = EnumUtils.getMapping(Target.Transit, CardHolderAuthenticationEntity.ByMerchant);
+            String cardholderAuthenticationMethod = "MANUAL_SIGNATURE";
             if (track.getEntryMethod() == EntryMethod.ContactEMV) {
                 cardDataInputMode = "ONLINE_CHIP";
             } else if (track.getEntryMethod() == EntryMethod.Proximity) {
                 cardDataInputMode = "PAN_AUTO_ENTRY_CONTACTLESS_CHIP_CARD";
             } else if (track.getEntryMethod() == EntryMethod.MagneticStripeAndMSRFallback) {
                 cardDataInputMode = "TRACK_DATA_READ_UNALTERED_CHIP_CAPABLE_TERMINAL_CHIP_DATA_NOT_READ";
+            } else if (track.getEntryMethod() == EntryMethod.CDCVM) {
+                cardDataInputMode = "PAN_AUTO_ENTRY_CONTACTLESS_CHIP_CARD";
+                cardholderAuthenticationMethod = "OFFLINE_PIN";
+                cardholderAuthenticationEntity = EnumUtils.getMapping(Target.Transit, CardHolderAuthenticationEntity.ICC);
             }
 
             // Set card presence details
-            request.set("cardPresentDetail", track.getEntryMethod() == EntryMethod.Proximity ?
-                            "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
+            boolean isProximity = track.getEntryMethod() == EntryMethod.Proximity || track.getEntryMethod() == EntryMethod.CDCVM;
+            request.set("cardPresentDetail", isProximity ? "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
                     .set("cardholderPresentDetail", "CARDHOLDER_PRESENT")
                     .set("cardDataInputMode", cardDataInputMode)
-                    .set("cardholderAuthenticationMethod", "MANUAL_SIGNATURE");
+                    .set("cardholderAuthenticationMethod", cardholderAuthenticationMethod)
+                    .set("cardholderAuthenticationEntity", cardholderAuthenticationEntity);
 
             if (track instanceof CreditTrackData) {
                 String cardBrand = ((CreditTrackData) track).getCardType();
@@ -252,18 +260,6 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                         .set("paymentAppVersion", builder.getPaymentApplicationVersion() != null ? builder.getPaymentApplicationVersion() : "unspecified");
                 if (builder.getEmvFallbackCondition() == EmvFallbackCondition.ChipReadFailure) {
                     request.set("lastChipRead", EnumUtils.getMapping(Target.Transit, builder.getEmvLastChipRead()));
-                }
-            }
-
-            // chip condition fallback
-            if (builder.getEmvChipCondition() != null) {
-                String emvFallbackCondition = null;
-                if (builder.getEmvChipCondition() == EmvChipCondition.ChipFailPreviousSuccess) {
-                    emvFallbackCondition = "ICC_TERMINAL_ERROR";
-                }
-                if (emvFallbackCondition != null) {
-                    request.set("emvFallbackCondition", emvFallbackCondition);
-                    request.set("paymentAppVersion", "unspecified");
                 }
             }
         }
@@ -366,7 +362,6 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         request.set("terminalCapability", EnumUtils.getMapping(Target.Transit, acceptorConfig.getCardDataInputCapability()))
                 .set("terminalCardCaptureCapability", acceptorConfig.isCardCaptureCapability() ? "CARD_CAPTURE_CAPABILITY" : "NO_CAPABILITY")
                 .set("terminalOperatingEnvironment", EnumUtils.getMapping(Target.Transit, acceptorConfig.getOperatingEnvironment()))
-                .set("cardholderAuthenticationEntity", EnumUtils.getMapping(Target.Transit, acceptorConfig.getCardHolderAuthenticationEntity()))
                 .set("cardDataOutputCapability", EnumUtils.getMapping(Target.Transit, acceptorConfig.getCardDataOutputCapability()))
                 .set("terminalAuthenticationCapability", EnumUtils.getMapping(Target.Transit, acceptorConfig.getCardHolderAuthenticationCapability()))
                 .set("terminalOutputCapability", EnumUtils.getMapping(Target.Transit, acceptorConfig.getTerminalOutputCapability()))

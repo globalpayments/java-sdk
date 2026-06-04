@@ -21,7 +21,8 @@ public enum EntryMethod implements IStringConstant {
 	NoTrackData("G"),
     ECommerce("ecommerce"),
     SecureEcommerce("secureEcommerce"),
-    CardOnFileEcommerce("cardOnFileEcommerce");
+    CardOnFileEcommerce("cardOnFileEcommerce"),
+    CDCVM("consumerDeviceCardholderVerificationMethod");
     String value;
     EntryMethod(String value) { this.value = value; }
     public String getValue() { return this.value; }

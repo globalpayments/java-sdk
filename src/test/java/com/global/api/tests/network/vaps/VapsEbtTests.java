@@ -846,6 +846,48 @@ public class VapsEbtTests {
         assertEquals("000", capture.getResponseCode());
     }
 
+    @Test
+    public void test_ebt_resubmit_sale_capture() throws ApiException {
+        IStanProvider stan = StanGenerator.getInstance();
+        IBatchProvider batch = BatchProvider.getInstance();
+        String date = DateTime.now().toString("yyMMddhhmmss");
+
+        Transaction saleResponse = cashCard.charge(new BigDecimal("10")) //Amount : DE 4
+                .withCurrency("USD")
+                .withSystemTraceAuditNumber(stan.generateStan()) //STAN : DE 11
+                .withBatchNumber(batch.getBatchNumber(), batch.getSequenceNumber()) // DE 48-4
+                .withTimestamp(date) // DE 12
+                .withUniqueDeviceId("2024") //DE 62
+                .withChipCondition(null)
+                .execute();
+        assertNotNull(saleResponse);
+
+        PriorMessageInformation pmi = saleResponse.getMessageInformation();
+
+        Transaction rebuild = Transaction.fromBuilder()
+                .withAmount(new BigDecimal("10")) //original transaction amount
+                .withAuthorizationCode(saleResponse.getAuthorizationCode()) // auth code from sales response DE 38 M
+                .withAuthorizedAmount(saleResponse.getAuthorizedAmount()) //Approved Amount
+                .withNtsData(saleResponse.getNtsData()) //DE 62-NTS Need to check, as we are receiving this parameter missing error if not passing.(This might be because we received RC 126)
+                .withPaymentMethod(cashCard) //Original Payment method DE 48-11 M
+                .withMessageTypeIndicator(pmi.getMessageTransactionIndicator()) // original MTI DE 56 M
+                .withSystemTraceAuditNumber(pmi.getSystemTraceAuditNumber()) // Original STAN DE 56 M
+                .withTransactionTime(saleResponse.getOriginalTransactionTime()) // original transaction time DE 56 M
+                .withProcessingCode(saleResponse.getProcessingCode()) //original Processing code DE 3 M
+                .build();
+
+
+        Transaction capture = rebuild.preAuthCompletion()
+                .withSystemTraceAuditNumber(stan.generateStan()) //DE 11
+                .withTimestamp(date)    //DE 12 - M
+                .withPriorMessageInformation(pmi) //DE 48-39 M
+                .withBatchNumber(saleResponse.getTransactionReference().getBatchNumber(), saleResponse.getTransactionReference().getSequenceNumber())
+                .execute();
+        assertNotNull(capture);
+        assertEquals("000", capture.getResponseCode());
+
+    }
+
     //Food Benefit only
     @Test
     public void test_ebt_refund() throws ApiException {

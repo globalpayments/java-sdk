@@ -406,6 +406,28 @@ public class GpApiMapping {
             apm.setType(paymentMethodApm.getString("type"));
             apm.setProtectionEligibility(paymentMethodApm.getString("protection_eligibilty"));
             apm.setFeeAmount(paymentMethodApm.getAmount("fee_amount"));
+
+            apm.setCategory(paymentMethodApm.getString("category"));
+            apm.setProviderRedirectUrl(paymentMethodApm.getString("provider_redirect_url"));
+            apm.setProviderPayerName(paymentMethodApm.getString("provider_payer_name"));
+
+            if (paymentMethodApm.has("terms")) {
+                JsonDoc termsJson = paymentMethodApm.get("terms");
+                Terms terms = new Terms();
+                terms.setTimeUnit(termsJson.getString("time_unit"));
+                terms.setCount(termsJson.getString("count"));
+                terms.setMode(termsJson.getString("mode"));
+                apm.setTerms(terms);
+            }
+
+            if(json.has("payer")){
+                var payerDetails = new PayerDetails();
+                JsonDoc payer = json.get("payer");
+                payerDetails.setEmail(payer.getString("email"));
+                payerDetails.setCountry(payer.getString("country"));
+                payerDetails.setReference(payer.getString("reference"));
+                transaction.setPayerDetails(payerDetails);
+            }
         }
 
         JsonDoc authorization = json.get("payment_method").get("authorization");
