@@ -7,7 +7,8 @@ import java.util.Set;
 
 public enum TerminalReportType implements IFlag {
     LocalDetailReport,
-    GetBatchReport;
+    GetBatchReport,
+    GetBatchDetails;
 
     @Override
     public long getLongValue() {

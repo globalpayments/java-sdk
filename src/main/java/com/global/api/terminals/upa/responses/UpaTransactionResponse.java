@@ -186,6 +186,25 @@ public class UpaTransactionResponse extends UpaResponseHandler {
             setGatewayResponseCode(host.getString("gatewayResponseCode"));
         }
 
+        if (host.has("redeemId")) {
+            setRedeemId(host.getString("redeemId"));
+            setRedeemStatus(host.getString("redeemStatus"));
+            BigDecimal currencyAmt = host.getDecimal("currencyAmountRedeemed");
+            if (currencyAmt != null) setCurrencyAmountRedeemed(StringUtils.toAmount(currencyAmt.toString()));
+            setPointsRedeemed(host.getDecimal("pointsRedeemed"));
+            BigDecimal discountAmt = host.getDecimal("discountAmountRedeemed");
+            if (discountAmt != null) setDiscountAmountRedeemed(StringUtils.toAmount(discountAmt.toString()));
+        }
+        if (host.has("voidRedeemId")) {
+            setVoidRedeemId(host.getString("voidRedeemId"));
+            setVoidRedeemStatus(host.getString("voidRedeemStatus"));
+            BigDecimal voidCurrencyAmt = host.getDecimal("voidCurrencyAmountRedeemed");
+            if (voidCurrencyAmt != null) setVoidCurrencyAmountRedeemed(StringUtils.toAmount(voidCurrencyAmt.toString()));
+            setVoidPointsRedeemed(host.getDecimal("voidPointsRedeemed"));
+            BigDecimal voidDiscountAmt = host.getDecimal("voidDiscountAmountRedeemed");
+            if (voidDiscountAmt != null) setVoidDiscountAmountRedeemed(StringUtils.toAmount(voidDiscountAmt.toString()));
+        }
+
     }
 
     protected void hydratePaymentData(JsonDoc payment) {

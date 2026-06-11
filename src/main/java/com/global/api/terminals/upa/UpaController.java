@@ -8,12 +8,12 @@ import com.global.api.entities.exceptions.*;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.terminals.*;
-import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalReport;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.builders.TerminalSearchBuilder;
 import com.global.api.terminals.enums.TerminalReportType;
 import com.global.api.terminals.upa.Entities.Enums.UpaMessageId;
 import com.global.api.terminals.upa.interfaces.UpaAidlInterface;
@@ -227,42 +227,70 @@ public class UpaController extends DeviceController {
         JsonDoc responseObj = JsonDoc.parse(
                 new String(resp, StandardCharsets.UTF_8)
         );
-        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport) {
+        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport ||
+                Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchDetails) {
             return new BatchReportResponse(responseObj);
         }
         throw new GatewayException("Unknown report type!");
     }
 
     private IDeviceMessage buildReportParams(TerminalReportBuilder builder) throws UnsupportedTransactionException {
-        String requestId = builder.getTerminalSearchBuilder().getReferenceNumber();
-        if (requestId == null) {
-            requestId = getRequestId().toString();
-        }
+        TerminalSearchBuilder searchBuilder = builder.getTerminalSearchBuilder();
+        String requestId = (searchBuilder != null && searchBuilder.getReferenceNumber() != null)
+                ? searchBuilder.getReferenceNumber()
+                : getRequestId().toString();
         JsonDoc doc = new JsonDoc();
         doc.set("message", "MSG");
 
         JsonDoc baseRequest = doc.subElement("data");
-        baseRequest.set("command", MapReportType(builder.getTerminalReportType()));
-        baseRequest.set("EcrId", _device.getEcrId());
+        baseRequest.set("command", mapReportType(builder.getTerminalReportType()));
+        String effectiveEcrId = (searchBuilder != null && searchBuilder.getEcrId() != null)
+                ? searchBuilder.getEcrId()
+                : _device.getEcrId();
+        baseRequest.set("EcrId", effectiveEcrId);
         baseRequest.set("requestId", requestId);
-        JsonDoc dataParams = new JsonDoc();
-        if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport) {
-            if (builder.getTerminalSearchBuilder().getBatch() > 0) {
-                dataParams.set("batch", builder.getTerminalSearchBuilder().getBatch());
+
+        if (builder.getTerminalReportType() == TerminalReportType.GetBatchDetails) {
+            JsonDoc dataParams = new JsonDoc();
+            if (searchBuilder != null) {
+                if (searchBuilder.getBatch() > 0)
+                    dataParams.set("batch", searchBuilder.getBatch());
+                if (searchBuilder.getReportOutput() != null)
+                    dataParams.set("reportOutput", searchBuilder.getReportOutput());
+                if (searchBuilder.getReportType() != null)
+                    dataParams.set("reportType", searchBuilder.getReportType());
+                if (searchBuilder.getReportSubType() != null)
+                    dataParams.set("reportSubType", searchBuilder.getReportSubType());
+                if (searchBuilder.getBothReports() != null)
+                    dataParams.set("bothReports", searchBuilder.getBothReports());
+                if (searchBuilder.getClerkId() != null)
+                    dataParams.set("clerkId", searchBuilder.getClerkId());
+                if (searchBuilder.getPreviousBatchReport() != null)
+                    dataParams.set("previousBatchReport", searchBuilder.getPreviousBatchReport());
             }
-        }
 
-
-        if (!dataParams.getKeys().isEmpty()) {
-            baseRequest.set("params", dataParams);
+            JsonDoc dataWrapper = new JsonDoc();
+            dataWrapper.set("params", dataParams);
+            baseRequest.set("data", dataWrapper);
+        } else if (Objects.requireNonNull(builder.getTerminalReportType()) == TerminalReportType.GetBatchReport) {
+            JsonDoc dataParams = new JsonDoc();
+            if (searchBuilder != null && searchBuilder.getBatch() > 0) {
+                dataParams.set("batch", searchBuilder.getBatch());
+            }
+            if (!dataParams.getKeys().isEmpty()) {
+                baseRequest.set("params", dataParams);
+            }
         }
 
         return TerminalUtilities.buildMessage(doc);
     }
 
-    private String MapReportType(TerminalReportType type) throws UnsupportedTransactionException {
+    private String mapReportType(TerminalReportType type) throws UnsupportedTransactionException {
         if (Objects.requireNonNull(type) == TerminalReportType.GetBatchReport) {
             return UpaMessageId.GetBatchReport.toString();
+        }
+        if (type == TerminalReportType.GetBatchDetails) {  // type already guaranteed non-null above
+            return UpaMessageId.GetBatchDetails.toString();
         }
         throw new UnsupportedTransactionException("Unsupported report type");
     }

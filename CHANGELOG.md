@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest Version - V15.1.15 (06/04/2026)
+## Latest Version - V15.1.16 (06/11/2026)
+### Enhancements:
+- [UPA] - Added support for Thank You Points (TYP) loyalty transactions on UPA payment terminals via Mexico GP-API.
+
+### Bug Fixes:
+- [NTS] - Gross Fuel Amount format Update for Visa Fleet 2.0 Data Collect Transaction(Issue 10391).
+
+## Version - V15.1.15 (06/04/2026)
 ### Enhancements:
 - [GPAPI] - Added eRaty APM support for installment requests via GPAPI.
 - [APAC] - Verifying end point connection of SDK with GP_API for APAC Region.

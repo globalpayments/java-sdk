@@ -135,6 +135,8 @@ public interface IDeviceInterface extends IDisposable {
 
     TerminalReportBuilder getBatchReport() throws ApiException;
 
+    TerminalReportBuilder getBatchDetailsReport() throws ApiException;
+
     //</editor-fold>
 
     //<editor-fold description="STORE AND FORWARD">

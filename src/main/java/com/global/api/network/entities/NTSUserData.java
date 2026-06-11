@@ -1880,14 +1880,13 @@ public class NTSUserData {
         boolean fuelFlag = fuel != null;
         boolean nonFuelFlag = nonFuel != null;
         sb.append(purchaseType.getValue());
-        int digitAfterDecimal = (builder.getTransactionType() != null && builder.getTransactionType().equals(TransactionType.Capture)) ? 2 : 4;
         for (int i = 0; i < 1; i++) {
             if (fuelFlag && i < fuel.size()) {
                 sb.append(StringUtils.padRight(fuel.get(i).getCode(), 4, ' '));
                 sb.append(StringUtils.padLeft(fuel.get(i).getUnitOfMeasure().getValue() , 1, ' '));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getQuantity(), 12,4));
                 sb.append(StringUtils.toFormatDigit(fuel.get(i).getPrice(), 12, 4));
-                sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,digitAfterDecimal));
+                sb.append(StringUtils.toFormatDigit(fuel.get(i).getAmount(), 12,4));
                 if (purchaseType != null && (Integer.parseInt(purchaseType.getValue()) == 1 || Integer.parseInt(purchaseType.getValue()) == 3)) {
                     sb.append(StringUtils.toFormatDigit(productData.getNetFuelAmount() != null ? productData.getNetFuelAmount() : BigDecimal.ZERO, 12, 4));
                 } else {

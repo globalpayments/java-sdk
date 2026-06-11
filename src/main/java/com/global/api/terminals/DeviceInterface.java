@@ -240,6 +240,11 @@ public abstract class DeviceInterface<TResult extends DeviceController> implemen
     }
 
     @Override
+    public TerminalReportBuilder getBatchDetailsReport() throws ApiException {
+        throw new UnsupportedTransactionException(ERROR_MESSAGE);
+    }
+
+    @Override
     public IBatchReportResponse getBatchDetails(String batchId) throws ApiException {
         return getBatchDetails(null, false);
     }

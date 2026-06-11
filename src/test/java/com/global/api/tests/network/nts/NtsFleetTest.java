@@ -5614,7 +5614,7 @@ public class NtsFleetTest {
     }
 
     @Test
-    public void test_VisaFleetTwoPointO_Auth_Capture_GrossFuelAmountCheck_9v10v99() throws ApiException {
+    public void test_VisaFleetTwoPointO_Auth_Capture_GrossFuelAmountCheck_9v8v9999() throws ApiException {
 
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
 
@@ -5654,8 +5654,8 @@ public class NtsFleetTest {
                 .withDebitAuthorizer("00")
                 .withApprovalCode("      ")
                 .withAuthorizationCode("01798A")
-                .withOriginalTransactionDate("0428")
-                .withTransactionTime("152831")
+                .withOriginalTransactionDate("0609")
+                .withTransactionTime("143635")
                 .withOriginalMessageCode("01")
                 .withBatchNumber(1)
                 .withSequenceNumber(5)

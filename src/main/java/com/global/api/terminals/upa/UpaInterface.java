@@ -759,7 +759,12 @@ public class UpaInterface extends DeviceInterface<UpaController> {
         return new TerminalReportBuilder(TerminalReportType.GetBatchReport);
     }
 
-    //<editor-fold description="Helper Methods">
+    @Override
+    public TerminalReportBuilder getBatchDetailsReport() throws ApiException {
+        return new TerminalReportBuilder(TerminalReportType.GetBatchDetails);
+    }
+
+    //</editor-fold description="Helper Methods">
 
     private JsonDoc sendRequest(IDeviceMessage message) throws ApiException {
         byte[] rawResponse = _controller.send(message);

@@ -47,6 +47,16 @@ public class TerminalSearchBuilder {
     private String ecrId;
     @Getter @Setter
     private String reportOutput;
+    @Getter @Setter
+    private String reportType;
+    @Getter @Setter
+    private String reportSubType;
+    @Getter @Setter
+    private String bothReports;
+    @Getter @Setter
+    private Integer clerkId;
+    @Getter @Setter
+    private String previousBatchReport;
 
     public TerminalSearchBuilder(TerminalReportBuilder terminalReportBuilder){
         this.terminalReportBuilder = terminalReportBuilder;

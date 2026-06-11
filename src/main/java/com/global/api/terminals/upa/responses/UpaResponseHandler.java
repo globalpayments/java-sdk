@@ -130,6 +130,28 @@ public class UpaResponseHandler extends TerminalResponse {
     private BigDecimal extraChargeTotal;
     private int batteryPercentage;
 
+    // UPA Thank you points fields
+    /** Identifier for the redemption transaction. */
+    private String redeemId;
+    /** Status of the redemption transaction. */
+    private String redeemStatus;
+    /** Amount of currency redeemed. */
+    private BigDecimal currencyAmountRedeemed;
+    /** Number of points redeemed. */
+    private BigDecimal pointsRedeemed;
+    /** Discount amount applied during redemption. */
+    private BigDecimal discountAmountRedeemed;
+    /** Identifier for the voided redemption transaction. */
+    private String voidRedeemId;
+    /** Status of the voided redemption transaction. */
+    private String voidRedeemStatus;
+    /** Amount of currency voided from redemption. */
+    private BigDecimal voidCurrencyAmountRedeemed;
+    /** Number of points voided from redemption. */
+    private BigDecimal voidPointsRedeemed;
+    /** Discount amount voided during redemption. */
+    private BigDecimal voidDiscountAmountRedeemed;
+
     protected static boolean isGpApiResponse(JsonDoc root) {
         return !root.has("data");
     }
