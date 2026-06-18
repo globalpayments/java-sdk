@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V15.1.16 (06/11/2026)
+## Latest Version - V15.2.0 (06/18/2026)
+### Enhancements:
+- [VAPS] - Added Fleet Product Rollup functionality support for all fleet cards except WEX, with discount and coupon enhancements for Voyager, FleetCor and Visa Fleet 2.0 cards.
+
+### Bug Fixes:
+- [NTS] - Fixed the User Data format for Mastercard Fleet Data Collect - Issue 10395.
+- [NTS] - Introduced "visaFleet2" field in acceptorConfig for VisaFleet2.0 transactions.
+- [TRANSIT] - Updates to xml requests for TransIT certification.
+
+## V15.1.16 (06/11/2026)
 ### Enhancements:
 - [UPA] - Added support for Thank You Points (TYP) loyalty transactions on UPA payment terminals via Mexico GP-API.
 

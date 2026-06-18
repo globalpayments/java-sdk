@@ -197,6 +197,18 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 cardholderAuthenticationEntity = EnumUtils.getMapping(Target.Transit, CardHolderAuthenticationEntity.ICC);
             }
 
+            if (track.getDiscretionaryData() != null && track.getDiscretionaryData().equals("NO_CVM")) {
+                cardholderAuthenticationMethod = "NOT_AUTHENTICATED";
+                cardholderAuthenticationEntity = EnumUtils.getMapping(Target.Transit, CardHolderAuthenticationEntity.NotAuthenticated);
+            }
+
+            if (builder.hasEmvFallbackData()) {
+                if (builder.getEmvFallbackCondition() != null &&
+                        builder.getEmvFallbackCondition() == EmvFallbackCondition.NoCandidateList) {
+                    cardDataInputMode = "EMPTY_CANDIDATE_LIST_FALLBACK";
+                }
+            }
+
             // Set card presence details
             boolean isProximity = track.getEntryMethod() == EntryMethod.Proximity || track.getEntryMethod() == EntryMethod.CDCVM;
             request.set("cardPresentDetail", isProximity ? "CONTACTLESS_CHIP_TRANSACTIONS" : "CARD_PRESENT")
@@ -259,7 +271,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 request.set("emvFallbackCondition", EnumUtils.getMapping(Target.Transit, builder.getEmvFallbackCondition()))
                         .set("paymentAppVersion", builder.getPaymentApplicationVersion() != null ? builder.getPaymentApplicationVersion() : "unspecified");
                 if (builder.getEmvFallbackCondition() == EmvFallbackCondition.ChipReadFailure) {
-                    request.set("lastChipRead", EnumUtils.getMapping(Target.Transit, builder.getEmvLastChipRead()));
+                    request.set("lastChipRead", EnumUtils.getMapping(Target.Transit, EmvLastChipRead.UNKNOWN));
                 }
             }
         }
@@ -548,7 +560,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         } else if (paymentMethod instanceof ITrackData) {
             ITrackData track = (ITrackData) paymentMethod;
             if (builder.getTagData() != null) {
-                return EntryMethod.Swipe.equals(track.getEntryMethod()) ? "EMV" : "EMV_CONTACTLESS";
+                return EntryMethod.ContactEMV == track.getEntryMethod() ? "EMV" : "EMV_CONTACTLESS";
             } else if (builder.hasEmvFallbackData()) {
                 return "FALLBACK_SWIPE";
             }

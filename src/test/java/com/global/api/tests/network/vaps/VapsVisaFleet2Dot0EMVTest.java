@@ -1465,4 +1465,281 @@ public class VapsVisaFleet2Dot0EMVTest {
         return quantity.multiply(price).setScale(4, RoundingMode.HALF_UP);
     }
 
+    // ==================== Discount/Coupon Rollup Tests ====================
+
+    @Test
+    public void test_01_visaFleetTwoPoint0_auth_moreThan8NonFuel_withoutDiscount_normalRollUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.0000"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.0000"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.0000"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.0000"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("4.0000"), new BigDecimal("4.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.0000"), new BigDecimal("3.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.0000"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.0000"), new BigDecimal("1.0000"));
+        productData.addNonFuel("68", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.0000"), new BigDecimal("3.0000"));
+        productData.addNonFuel("69", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.0000"), new BigDecimal("2.0000"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("221123");
+
+        Transaction response = card.authorize(new BigDecimal("49.50"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_02_visaFleetTwoPoint0_auth_8OrFewerNonFuel_withDiscount_withoutZC() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        // 6 non-fuel entries including discount - should all appear individually, no ZC
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.0000"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.0000"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.0000"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.0000"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.5000"), new BigDecimal("1.5000"));
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.0000"), new BigDecimal("1.0000"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("221123");
+
+        Transaction response = card.authorize(new BigDecimal("41.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_03_visaFleetTwoPoint0_auth_moreThan8NonFuel_withDiscountNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        // Add 10 non-fuel entries including both discount ("99") and coupon ("DM")
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("4.00"), new BigDecimal("4.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.00"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.00"), new BigDecimal("1.0000"));
+       // Discount should not rolled up into ZC.
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setVehicleNumber("221123");
+
+        Transaction response = card.authorize(new BigDecimal("51.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_04_visaFleetTwoPoint0_moreThan8NonFuel_withFuel_couponNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.0000"), new BigDecimal("2.5000"), new BigDecimal("25.0000"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("4.00"), new BigDecimal("4.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.00"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.00"), new BigDecimal("1.0000"));
+        // Coupon should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.COUPONS_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("75.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_05_visaFleetTwoPoint0_auth_moreThan8NonFuel_withFuel_discountNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.0000"), new BigDecimal("2.5000"), new BigDecimal("25.0000"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("7.00"), new BigDecimal("7.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("8.00"), new BigDecimal("8.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("9.00"), new BigDecimal("9.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("11.00"), new BigDecimal("11.0000"));
+        // Discount should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("99"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+
+    @Test
+    public void test_06_visaFleetTwoPoint0_auth_moreThan8NonFuel_withFuel_discountAndCouponNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.0000"), new BigDecimal("2.5000"), new BigDecimal("25.0000"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("7.00"), new BigDecimal("7.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("8.00"), new BigDecimal("8.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("9.00"), new BigDecimal("9.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("11.00"), new BigDecimal("11.0000"));
+        // Discount at 6th place & Coupon at 7th place -  should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel(ProductCode.COUPONS_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("96.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    // All the discounts & coupons entries should be added before 8th product. Also those entries should NOT be rolled up into ZC & remaining non fuel entries should be rolled up into ZC.
+    @Test
+    public void test_07_visaFleetTwoPoint0_auth_moreThan8NonFuel_withFuel_multipleDiscountAndCouponNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.0000"), new BigDecimal("2.5000"), new BigDecimal("25.0000"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("7.00"), new BigDecimal("7.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("8.00"), new BigDecimal("8.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("9.00"), new BigDecimal("9.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("11.00"), new BigDecimal("11.0000"));
+        // All the discounts & coupons entries added before 8th product -  should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel(ProductCode.COUPONS_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE2, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel(ProductCode.COUPONS_CODE2, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("90.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_08_visaFleetTwoPoint0_authCapture_moreThan8NonFuel_withFuel_discountNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.0000"), new BigDecimal("2.5000"), new BigDecimal("25.0000"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("8.00"), new BigDecimal("16.0000"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("4.00"), new BigDecimal("4.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.00"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.00"), new BigDecimal("1.0000"));
+        // Discount should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("75.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+        Transaction capture = response.capture(new BigDecimal("75.00"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(capture);
+    }
 }

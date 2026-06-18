@@ -224,8 +224,8 @@ public class UpaResponseHandler extends TerminalResponse {
 
                     throw new GatewayException(
                             "Unexpected Device Response :" + errorCode + " - " + errorMessage,
-                            gatewayResponseCode,
-                            gatewayResponseMessage,
+                            errorCode,
+                            errorMessage,
                             responseCode,
                             responseText,
                             errorCode,

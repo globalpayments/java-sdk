@@ -78,6 +78,7 @@ public class NtsFleetTest {
         acceptorConfig.setSupportsEmvPin(true);
         acceptorConfig.setMobileDevice(false);
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(false);
 
         // hardware software config values
         acceptorConfig.setHardwareLevel("34");
@@ -174,7 +175,7 @@ public class NtsFleetTest {
         fleetData.setServicePrompt("0");
 
         track = new CreditTrackData();
-        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?");
+        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
 
@@ -196,7 +197,7 @@ public class NtsFleetTest {
     public void test_VisaFleet_auth_track2_amount_expansion_emv() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -294,7 +295,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
 
@@ -320,7 +321,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -346,7 +347,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -371,7 +372,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -399,7 +400,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -438,7 +439,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = TestCards.VisaFleetSwipe();
-        track.setValue(";4484630000000126=25121019206100000001?");
+        track.setValue(";4484630000000126=27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
 
@@ -526,7 +527,7 @@ public class NtsFleetTest {
     public void test_VisaFleet_001_credit_authorization_void() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^25121019206100000001?");
+        track.setValue("%B4484630000000126^VISA TEST CARD/GOOD^27121019206100000001?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         Transaction response = track.authorize(new BigDecimal(10))
@@ -568,7 +569,7 @@ public class NtsFleetTest {
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         track = new CreditTrackData();
-        track.setValue(";4484630000000126=25121011000062111401?");
+        track.setValue(";4484630000000126=27121011000062111401?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         Transaction response = track.charge(new BigDecimal(10))
@@ -836,7 +837,7 @@ public class NtsFleetTest {
     public void test_MastercardFleet_auth_track2_amount_expansion_emv() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setValue(";5567300000000016=26121019999888877711?");
         track.setEntryMethod(EntryMethod.Swipe);
         Transaction response = track.authorize(new BigDecimal(10))
                 .withCurrency("USD")
@@ -983,7 +984,7 @@ public class NtsFleetTest {
 
 
         track = TestCards.MasterCardFleetSwipe();
-        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setValue(";5567300000000016=27121019999888877711?");
         track.setEntryMethod(EntryMethod.Swipe);
 
 
@@ -1040,9 +1041,8 @@ public class NtsFleetTest {
     @Test
     public void test_001_credit_authorization_track1_void_mcfleet() throws ApiException {
         track = new CreditTrackData();
-        track.setValue("%B5567300000000016^MASTERCARD FLEET          ^2512101777766665555444433332111?");
+        track.setValue("%B5567300000000016^MASTERCARD FLEET          ^2712101777766665555444433332111?");
         track.setEntryMethod(EntryMethod.Swipe);
-        //
 
         FleetData fleetData = new FleetData();
         fleetData.setOdometerReading("125630");
@@ -1090,7 +1090,7 @@ public class NtsFleetTest {
     public void test_001_credit_authorization_track2_void_mcfleet() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setValue(";5567300000000016=27121019999888877711?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         FleetData fleetData = new FleetData();
@@ -1131,7 +1131,7 @@ public class NtsFleetTest {
 
 
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?");
+        track.setValue(";5567300000000016=27121019999888877711?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         Transaction response = track.charge(new BigDecimal(10))
@@ -1167,7 +1167,7 @@ public class NtsFleetTest {
     public void test_001_credit_authorization_track1_reverse_mcfleet() throws ApiException {
 
         track = new CreditTrackData();
-        track.setValue("%B5567300000000016^MASTERCARD FLEET          ^2512101777766665555444433332111?");
+        track.setValue("%B5567300000000016^MASTERCARD FLEET          ^2712101777766665555444433332111?");
         track.setEntryMethod(EntryMethod.Swipe);
 
         FleetData fleetData = new FleetData();
@@ -1273,14 +1273,13 @@ public class NtsFleetTest {
 
     @Test //working
     public void test_mastercardfleet_DataCollect() throws ApiException {
-
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
 
         fleetData.setDriverId("123456");
 
 
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?"); // sample test track 2 data.
+        track.setValue(";5567300000000016=27121019999888877711?"); // sample test track 2 data.
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -1328,7 +1327,7 @@ public class NtsFleetTest {
         fleetData.setDriverId("123456");
 
         track = new CreditTrackData();
-        track.setValue(";5567300000000016=25121019999888877711?"); // sample test track 2 data.
+        track.setValue(";5567300000000016=27121019999888877711?"); // sample test track 2 data.
         track.setEntryMethod(EntryMethod.Swipe);
 
         productData = new NtsProductData(ServiceLevel.FullServe, track);
@@ -2690,6 +2689,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorization() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -2737,6 +2737,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorization_with_fuelOnly() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -2773,7 +2774,7 @@ public class NtsFleetTest {
     @Test
     public void test_VisaFleetTwoPointO_Auth_DataCollect() throws ApiException {
 
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -2851,7 +2852,7 @@ public class NtsFleetTest {
     @Test
     public void test_7_VisaFleetTwoPointO_Auth_creditAdjustment() throws ApiException {
 
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -2933,6 +2934,7 @@ public class NtsFleetTest {
     public void test_8_VisaFleetTwoPointO_authorization_with_OdometerAndGenericIDNo_Purchaseflagzero() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -2980,6 +2982,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorization_with_5NF_products() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3109,6 +3112,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorizationAndDataCollect_with_OdometerAndGenericIDNo() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3186,6 +3190,7 @@ public class NtsFleetTest {
     public void test_10_VisaFleetTwoPointO_authorization_with_OdometerAndDriverId() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3306,6 +3311,7 @@ public class NtsFleetTest {
     public void test_11_VisaFleetTwoPointO_authorizationAndDataCollect_with_OdometerOnly() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3481,6 +3487,7 @@ public class NtsFleetTest {
     public void test_12_VisaFleetTwoPointO_authorizationAndDataCollect_withoutPromtAndZeroPurchaseflag() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3527,6 +3534,7 @@ public class NtsFleetTest {
     public void test_13_VisaFleetTwoPointO_authorizationAndDataCollect_withGenericIdentificationAndOnePurchaseflag() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3575,7 +3583,7 @@ public class NtsFleetTest {
     @Test
     public void test_8_VisaFleetTwoPointO_DataCollect_withGenericIdAndOdometer() throws ApiException {
 
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -3635,6 +3643,7 @@ public class NtsFleetTest {
     public void test_9_VisaFleetTwoPointO_authorization_with_OdometerAndVehicleID_FuelOnly() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -3672,7 +3681,7 @@ public class NtsFleetTest {
     @Test
     public void test_9_VisaFleetTwoPointO_DataCollect_withVehicleIdAndOdometer_fuelProductOnly() throws ApiException {
 
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -3734,6 +3743,7 @@ public class NtsFleetTest {
     @Test
     public void test_5_VisaFleet_Datacollect_withVisaFleetTwoPointO_capableTerminal() throws ApiException{
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
         ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
         track = NtsTestCards.VisaFleet(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -4684,6 +4694,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_auth_purchaseRestrictionFlag_noRestriction() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -4732,6 +4743,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_auth_purchaseRestrictionFlag_chipBased() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -4779,6 +4791,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_auth_purchaseRestrictionFlag_hostBased() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -4826,7 +4839,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_auth_purchaseRestrictionFlag_bothChipNHost() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
-
+        acceptorConfig.setVisaFleet2(true);
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -4975,6 +4988,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authAndDataCollect_fleetData_withoutValue_codeCoverage() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -5014,7 +5028,7 @@ public class NtsFleetTest {
     }
     @Test
     public void test_VisaFleetTwoPointO_auth_noFuelPurchased_codeCoverage() throws ApiException {
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -5087,6 +5101,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorizationAndDataCollect_with_0nonFuel() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.ContactEMV);
         FleetData fleetData = new FleetData();
@@ -5320,6 +5335,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorization_10366() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -5368,6 +5384,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_authorization_10366_1() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
         FleetData fleetData = new FleetData();
@@ -5461,6 +5478,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_Auth_GrossNonFuelAmountCheck() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -5508,7 +5526,7 @@ public class NtsFleetTest {
     @Test
     public void test_VisaFleetTwoPointO_Auth_Capture_GrossNonFuel_Check() throws ApiException {
 
-        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -5567,6 +5585,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_Auth_GrossFuelAmountCheck_9v8v9999() throws ApiException {
         //flag 10 representing the VF 2.0 support
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -5617,6 +5636,7 @@ public class NtsFleetTest {
     public void test_VisaFleetTwoPointO_Auth_Capture_GrossFuelAmountCheck_9v8v9999() throws ApiException {
 
         acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
 
         FleetData fleetData = new FleetData();
         // fleetdata for tag 43 subtags
@@ -5695,5 +5715,177 @@ public class NtsFleetTest {
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
 
+    }
+
+    @Test
+    public void Test_MasterCardFleet_Auth_Capture_10395() throws ApiException {
+        track = new CreditTrackData();
+        track.setValue(";5567300000000016=27121019999888877711?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        FleetData fleetData = new FleetData();
+        fleetData.setOdometerReading("123456");
+        fleetData.setDriverId("5555");
+        fleetData.setVehicleNumber("85214");
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withFleetData(fleetData)
+                .withCvn("123")
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.NoRestriction)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 1, 1.259);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void Test_VisaFleet_Sale_FuelAndNonFue_10395() throws ApiException {
+        acceptorConfig.setCapableVisaFleetTwoPointO(false);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        track = TestCards.VisaFleetSwipe();
+        track.setValue(";4484630000000126=27121019206100000001?");
+        track.setEntryMethod(EntryMethod.Swipe);
+
+        productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Lng, UnitOfMeasure.Gallons, 10.24, 1.259);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 10.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.add(new BigDecimal(32.33), new BigDecimal(0));
+
+        Transaction response = track.charge(new BigDecimal(90.90))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withUniqueDeviceId("0102")
+                .withFleetData(fleetData)
+                .withNtsProductData(productData)
+                .withNtsTag16(tag)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+
+    @Test
+    public void test_VisaFleetTwoPointO_auth_tag41_43() throws ApiException {
+        //flag 10 representing the VF 2.0 support
+        acceptorConfig.setCapableVisaFleetTwoPointO(true);
+        acceptorConfig.setVisaFleet2(true);
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        fleetData.setAdditionalPromptData2("198765");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        //product data for tag 9
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addFuel(NtsProductCode.Diesel2, UnitOfMeasure.Gallons, 20.24, 1.259);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 09.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), new BigDecimal(0));
+        productData.setNetFuelAmount(new BigDecimal(10));
+        productData.setNetNonFuelAmount(new BigDecimal(10));
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.BothChipAndHostBased)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+    }
+
+    @Test
+    public void VisaFleetTwoPointO_Auth_DataCollect_Tag41_43() throws ApiException {
+        acceptorConfig.setVisaFleet2(true);
+        FleetData fleetData = new FleetData();
+        // fleetdata for tag 43 subtags
+        fleetData.setTrailerNumber("12345");
+        fleetData.setWorkOrderPoNumber("543210");
+        fleetData.setEmployeeNumber("G12345");
+        fleetData.setAdditionalPromptData1("567891");
+        fleetData.setAdditionalPromptData2("198765");
+        // fleetdata for tag 8
+        fleetData.setOdometerReading("98765");
+        fleetData.setVehicleNumber("56789");
+
+        track = NtsTestCards.VisaFleetTwoPointO(EntryMethod.Swipe);
+        NtsProductData productData = new NtsProductData(ServiceLevel.FullServe, track);
+        productData.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 10.24, 2.899);
+        productData.addNonFuel(NtsProductCode.Batteries, UnitOfMeasure.NoFuelPurchased, 1, 09.74);
+        productData.addNonFuel(NtsProductCode.CarWash, UnitOfMeasure.NoFuelPurchased, 2, 10.74);
+        productData.addNonFuel(NtsProductCode.Oil, UnitOfMeasure.NoFuelPurchased, 3, 11.74);
+        productData.addNonFuel(NtsProductCode.Tires, UnitOfMeasure.NoFuelPurchased, 1, 12.74);
+        productData.addNonFuel(NtsProductCode.EngineSvc, UnitOfMeasure.NoFuelPurchased, 2, 13.74);
+        productData.addNonFuel(NtsProductCode.OilChange, UnitOfMeasure.NoFuelPurchased, 3, 14.74);
+        productData.addNonFuel(NtsProductCode.BrakeSvc, UnitOfMeasure.NoFuelPurchased, 2, 15.74);
+        productData.addNonFuel(NtsProductCode.Repairs, UnitOfMeasure.NoFuelPurchased, 1, 16.74);
+        productData.setPurchaseType(PurchaseType.FuelAndNonFuel);
+        productData.setNonFuelProductCount("8");
+        productData.setProductCodeType(ProductCodeType.IdnumberAndOdometerOrVehicleId);
+        productData.add(new BigDecimal("32.33"), new BigDecimal(0));
+        productData.setNetFuelAmount(new BigDecimal(10));
+        productData.setNetNonFuelAmount(new BigDecimal(10));
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+        Transaction response = track.authorize(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withFleetData(fleetData)
+                .withUniqueDeviceId("0102")
+                .withNtsTag16(tag)
+                .withNtsProductData(productData)
+                .withPurchaseRestrictionFlag(PurchaseRestrictionFlag.BothChipAndHostBased)
+                .execute();
+
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+        Transaction dataCollectResponse = response.capture(new BigDecimal(10))
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(dataCollectResponse);
+        assertEquals("00", dataCollectResponse.getResponseCode());
     }
 }

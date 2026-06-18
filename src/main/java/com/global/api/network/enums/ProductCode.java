@@ -82,8 +82,28 @@ public enum ProductCode implements IStringConstant {
     Miscellaneous("90"),
     Federal_excise_tax_on_tire_lube("97"),
     Sales_tax("98"),
-    Discount("99");
-
+    Discount("99"),
+    DISCOUNT_CODE1("VW"),
+    DISCOUNT_CODE2("VX"),
+    DISCOUNT_CODE3("VY"),
+    DISCOUNT_CODE4("VZ"),
+    DISCOUNT_CODE5("W1"),
+    COUPONS_CODE1("W2"),
+    COUPONS_CODE2("W3"),
+    COUPONS_CODE3("W4"),
+    COUPONS_CODE4("W5"),
+    COUPONS_CODE5("W6"),
+    TAX_DISCOUNT_OR_FORGIVEN("WB"),
+    LOCAL_DISCOUNT_CODE1("WC"),
+    LOCAL_DISCOUNT_CODE2("WD"),
+    LOCAL_DISCOUNT_CODE3("WE"),
+    LOCAL_DISCOUNT_CODE4("WF"),
+    LOCAL_DISCOUNT_CODE5("WG"),
+    POS_OR_LOYALTY_RESERVED_DISCOUNT_CODE1("WH"),
+    POS_OR_LOYALTY_RESERVED_DISCOUNT_CODE2("WI"),
+    POS_OR_LOYALTY_RESERVED_DISCOUNT_CODE3("WJ"),
+    POS_OR_LOYALTY_RESERVED_DISCOUNT_CODE4("WK"),
+    POS_OR_LOYALTY_RESERVED_DISCOUNT_CODE5("WL");
     private final String value;
     ProductCode(String value) {
         this.value = value;

@@ -88,12 +88,12 @@ public class VapsFleetTests {
 //        ServicesContainer.configureService(config, "ICR");
 
         // MASTERCARD FLEET
-//        card = TestCards.MasterCardFleetManual(true, true);
-//        track = TestCards.MasterCardFleetSwipe();
+        card = TestCards.MasterCardFleetManual(true, true);
+        track = TestCards.MasterCardFleetSwipe();
 
         // VOYAGER FLEET
-        card = TestCards.VoyagerManual(true, true);
-        track = TestCards.VoyagerSwipe();
+//        card = TestCards.VoyagerManual(true, true);
+//        track = TestCards.VoyagerSwipe();
 
         fleetData = new FleetData();
 //        fleetData.setServicePrompt("00");
@@ -101,7 +101,7 @@ public class VapsFleetTests {
         fleetData.setDriverId("11411");
 
         productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.GlobalPayments);
-        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
+//        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, 1, 10);
 
         // VISA
 //        card = TestCards.VisaFleetManual(true, true);
@@ -118,9 +118,9 @@ public class VapsFleetTests {
     @Test
     public void test_001_manual_authorization() throws ApiException {
 
-        Transaction response = card.authorize(new BigDecimal(10),true)
+        Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
-                .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .withFleetData(fleetData)
                 .execute();
         assertNotNull(response);
@@ -141,9 +141,9 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
 
-        Transaction response = card.authorize(new BigDecimal(10),true)
+        Transaction response = card.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
-                .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .withFleetData(fleetData)
                 .execute();
         assertNotNull(response);
@@ -163,7 +163,7 @@ public class VapsFleetTests {
     public void test_002_manual_sale_27_PDF0() throws ApiException {
         card = TestCards.VisaFleetManual(true, true);
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
 
@@ -190,9 +190,8 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
-        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Quarts, new BigDecimal("21.12"), new BigDecimal("21.00"), new BigDecimal("51.2"));
         productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
         productData.addNonFuel(ProductCode.Lamps, UnitOfMeasure.Kilograms, new BigDecimal("15.12"), new BigDecimal("21.00"), new BigDecimal("14.2"));
         productData.addNonFuel(ProductCode.Cigarettes_Tobacco, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("12.2"));
@@ -245,10 +244,10 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        Transaction preRresponse = track.authorize(new BigDecimal(10),true)
+        Transaction preRresponse = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withFleetData(fleetData)
-                .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .execute();
         assertNotNull(preRresponse);
 
@@ -321,7 +320,7 @@ public class VapsFleetTests {
         assertNotNull(refundResponse);
 
         HashMap<CardIssuerEntryTag, String> issuerData = refundResponse.getIssuerData();
-        if(issuerData != null) {
+        if (issuerData != null) {
             assertTrue(issuerData.containsKey(CardIssuerEntryTag.SwipeIndicator));
             assertNotEquals("0", issuerData.get(CardIssuerEntryTag.SwipeIndicator));
         }
@@ -357,7 +356,7 @@ public class VapsFleetTests {
         assertNotNull(refundResponse);
 
         HashMap<CardIssuerEntryTag, String> issuerData = refundResponse.getIssuerData();
-        if(issuerData != null) {
+        if (issuerData != null) {
             assertTrue(issuerData.containsKey(CardIssuerEntryTag.SwipeIndicator));
             assertNotEquals("0", issuerData.get(CardIssuerEntryTag.SwipeIndicator));
         }
@@ -604,11 +603,11 @@ public class VapsFleetTests {
         // check response
         assertEquals("400", voidResponse.getResponseCode());
     }
-    
+
     @Test
     public void test_009_swipe_sale_product_01() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
-        productData.add("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
         Transaction response = track.charge(new BigDecimal(10))
                 .withCurrency("USD")
@@ -634,16 +633,16 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
-        productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
-        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
-        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"),new BigDecimal("12.74"));
+        productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
+        productData.addNonFuel(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"), new BigDecimal("1.65"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12.74"), new BigDecimal("12.74"));
 
-        Transaction response = track.authorize(new BigDecimal(10),true)
+        Transaction response = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
@@ -667,13 +666,13 @@ public class VapsFleetTests {
         card = TestCards.VisaFleetManual(true, true);
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
-        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("1.65"));
-        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.addFuel(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"), new BigDecimal("1.65"));
+        productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
 
-        Transaction response = track.authorize(new BigDecimal(10),true)
+        Transaction response = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
@@ -697,14 +696,14 @@ public class VapsFleetTests {
         track = TestCards.VisaFleetSwipe();
         ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific);
         productData.add(ProductCode.Unleaded_Gas, UnitOfMeasure.Gallons, new BigDecimal("1.99"), new BigDecimal("3.87"), new BigDecimal("478.99"));
-        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"),new BigDecimal("121.65"));
-        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("111.32"));
-        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units,  new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
-        productData.add(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"),new BigDecimal("1.32"));
+        productData.add(ProductCode.UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0005"), new BigDecimal("0.33"), new BigDecimal("121.65"));
+        productData.add(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("111.32"));
+        productData.add(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.add(ProductCode.BIODIESEL, UnitOfMeasure.Units, new BigDecimal("0002"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.add(ProductCode.Car_Wash, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
+        productData.add(ProductCode.Brake_Service, UnitOfMeasure.Units, new BigDecimal("0001"), new BigDecimal("0.66"), new BigDecimal("1.32"));
 
-        Transaction response = track.authorize(new BigDecimal(10),true)
+        Transaction response = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
@@ -1110,7 +1109,7 @@ public class VapsFleetTests {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Gallons, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 
-        Transaction preRresponse = track.authorize(new BigDecimal(10),true)
+        Transaction preRresponse = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withFleetData(fleetData)
                 .execute();
@@ -1126,7 +1125,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", preRresponse.getResponseCode());
 
-         productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
+        productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
 //        productData.add("01", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(20), new BigDecimal(20));
 //        productData.add("45", UnitOfMeasure.OtherOrUnknown, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
 //        productData.add("03", UnitOfMeasure.Liters, new BigDecimal(1), new BigDecimal(10), new BigDecimal(10));
@@ -1207,7 +1206,7 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("9876");
         fleetData.setDriverId("1234");
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe,ProductCodeSet.IssuerSpecific);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add("05", UnitOfMeasure.Gallons, new BigDecimal("10.720"), new BigDecimal("3.4664"), new BigDecimal("37.15"));
 
         Transaction response = rvalue.charge(new BigDecimal("37.15"))
@@ -1229,7 +1228,7 @@ public class VapsFleetTests {
         fleetData.setOdometerReading("9876");
         fleetData.setDriverId("1234");
 
-        ProductData productData = new ProductData(ServiceLevel.SelfServe,ProductCodeSet.IssuerSpecific);
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.IssuerSpecific);
         productData.add("09", UnitOfMeasure.Gallons, new BigDecimal("10.720"), new BigDecimal("3.4664"), new BigDecimal("37.15"));
 
         Transaction response = rvalue.charge(new BigDecimal("37.15"))
@@ -1248,7 +1247,7 @@ public class VapsFleetTests {
         CreditTrackData rvalue = new CreditTrackData();
         rvalue.setValue("7088850950270000149=32010100010100600");
 
-        ProductData productData = new ProductData(ServiceLevel.FullServe,ProductCodeSet.IssuerSpecific);
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.add("01", UnitOfMeasure.Gallons, new BigDecimal("10.720"), new BigDecimal("3.4664"), new BigDecimal("37.15"));
 
         Transaction response = rvalue.refund(new BigDecimal("31.75"))
@@ -1341,6 +1340,7 @@ public class VapsFleetTests {
         assertEquals("100", pmi.getFunctionCode());
 
     }
+
     @Test
     public void test_shipping_address_dataCollect_code_coverage_only() throws ApiException {
 
@@ -1362,14 +1362,15 @@ public class VapsFleetTests {
                 .execute();
         assertNotNull(response);
 
-        assertEquals("000",response.getResponseCode());
+        assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_currencyCode_code_coverage() throws ApiException {
         track.setEntryMethod(EntryMethod.Proximity);
         Transaction response = track.authorize(new BigDecimal(1))
                 .withCurrency("CAD")
-                .withFee(FeeType.Surcharge,new BigDecimal(11))
+                .withFee(FeeType.Surcharge, new BigDecimal(11))
                 .withFleetData(fleetData)
                 .execute();
         assertNotNull(response);
@@ -1432,8 +1433,9 @@ public class VapsFleetTests {
                 .execute();
 
         assertNotNull(resubmitResp);
-        assertEquals(resubmitResp.getResponseCode(),"000");
+        assertEquals(resubmitResp.getResponseCode(), "000");
     }
+
     @Test
     public void test_voyager_sale_1Fuel_5NonFuel() throws ApiException {
         fleetData.setOdometerReading("111");
@@ -1492,6 +1494,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_voyager_sale_1Fuel_3NonFuel() throws ApiException {
         fleetData.setOdometerReading("112");
@@ -1519,6 +1522,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_voyager_sale_1Fuel_2NonFuel() throws ApiException {
         fleetData.setOdometerReading("111");
@@ -1545,6 +1549,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_voyager_sale_1Fuel_1NonFuel() throws ApiException {
         fleetData.setOdometerReading("111");
@@ -1572,12 +1577,11 @@ public class VapsFleetTests {
     }
 
     @Test
-    public void test_voyager_sale_2Fuel_7NonFuel_combining() throws ApiException {
+    public void test_voyager_sale_Fuel_7NonFuel_combining() throws ApiException {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
         productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
-        productData.addFuel("06", UnitOfMeasure.Liters, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
         productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
         productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
         productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
@@ -1603,6 +1607,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_voyager_sale_onlyFuel() throws ApiException {
         fleetData.setOdometerReading("111");
@@ -1639,7 +1644,7 @@ public class VapsFleetTests {
         productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
         productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
 
-        Transaction response = track.authorize(new BigDecimal("10"),true)
+        Transaction response = track.authorize(new BigDecimal("10"), true)
                 .withCurrency("USD")
                 .withProductData(productData)
                 .withFleetData(fleetData)
@@ -1689,6 +1694,7 @@ public class VapsFleetTests {
         // check response
         assertEquals("000", response.getResponseCode());
     }
+
     @Test
     public void test_voyager_void() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific);
@@ -2020,7 +2026,6 @@ public class VapsFleetTests {
     public void test_001_manual_sale_Fuel_nonFuel() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
         productData.addFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
-        productData.addFuel(ProductCode.SUPER_UNLEADED_ETHANOL, UnitOfMeasure.Gallons, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Natural_Gas, UnitOfMeasure.Quarts, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
@@ -2043,12 +2048,9 @@ public class VapsFleetTests {
         assertEquals("000", response.getResponseCode());
     }
 
-    //  If add(), addFuel/addNonFuel method used then only addFuel/addNonFuel products will be added, other ignored
     @Test
     public void test_002_track_sale_Fuel_nonFuel() throws ApiException {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
-        productData.add(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
-        productData.add(ProductCode.Ethanol_Unleaded_Mid_Grade, UnitOfMeasure.Kilograms, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.ImperialGallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.UNLEADED_PLUS_ETHANOL, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
         productData.addNonFuel(ProductCode.Restaurant, UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
@@ -2129,26 +2131,23 @@ public void test_sale_same_Fuel_products() throws ApiException {
     ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments, ProductDataFormat.GlobalPaymentsStandardFormat);
     productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
     productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
-    productData.addFuel(ProductCode.Unleaded_Gas, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
-    productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.ImperialGallons, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
-    productData.addFuel(ProductCode.Unleaded_Premium_Gas, UnitOfMeasure.Liters, new BigDecimal("5.12"), new BigDecimal("50.00"), new BigDecimal("111.2"));
 
-    Transaction response = track.charge(new BigDecimal("111.2"))
-            .withCurrency("USD")
-            .withFleetData(fleetData)
-            .withProductData(productData)
-            .execute();
-    assertNotNull(response);
+        Transaction response = track.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
 
-    // check message data
-    PriorMessageInformation pmi = response.getMessageInformation();
-    assertNotNull(pmi);
-    assertEquals("1200", pmi.getMessageTransactionIndicator());
-    assertEquals("000900", pmi.getProcessingCode());
-    assertEquals("200", pmi.getFunctionCode());
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
 
-    // check response
-    assertEquals("000", response.getResponseCode());
+        // check response
+        assertEquals("000", response.getResponseCode());
     }
 
     @Test
@@ -2158,10 +2157,10 @@ public void test_sale_same_Fuel_products() throws ApiException {
         fleetData.setOdometerReading("111");
         fleetData.setDriverId("11411");
 
-        Transaction preRresponse = track.authorize(new BigDecimal(10),true)
+        Transaction preRresponse = track.authorize(new BigDecimal(10), true)
                 .withCurrency("USD")
                 .withFleetData(fleetData)
-                .withFee(FeeType.TransactionFee,new BigDecimal(1))
+                .withFee(FeeType.TransactionFee, new BigDecimal(1))
                 .execute();
         assertNotNull(preRresponse);
 
@@ -2222,11 +2221,400 @@ public void test_sale_same_Fuel_products() throws ApiException {
         PriorMessageInformation pmi = response.getMessageInformation();
         assertNotNull(pmi);
         assertEquals("1200", pmi.getMessageTransactionIndicator());
-        assertEquals("200009", pmi.getProcessingCode());
+        assertEquals("000900", pmi.getProcessingCode());
         assertEquals("200", pmi.getFunctionCode());
 
         // check response
         assertEquals("000", response.getResponseCode());
 
     }
+
+    // more than 6 products for rollup
+    @Test
+    public void test_mcrollup_swipe_charge_products() throws ApiException {
+        track = TestCards.MasterCardFleetSwipe();
+        fleetData.setServicePrompt("00");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("15.50"));
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+    }
+
+    //No rollup for 6 products
+    @Test
+    public void test_mcrollup_swipe_charge_products2() throws ApiException {
+        track = TestCards.MasterCardFleetSwipe();
+        fleetData.setServicePrompt("00");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+
+    }
+
+    //more than 2 fuel product
+    @Test
+    public void test_mcrollup_swipe_charge_products3() throws ApiException {
+        track = TestCards.MasterCardFleetSwipe();
+        fleetData.setServicePrompt("00");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addFuel(ProductCode.CNG_Gas, UnitOfMeasure.Kilograms, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("60"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("20"));
+
+        UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class,
+                () -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withFleetData(fleetData)
+                        .withProductData(productData)
+                        .execute()
+        );
+
+        assertEquals("Number of Fuel product should not more than 1", exception.getMessage());
+
+    }
+
+    @Test
+    public void test_VisaFleet_Charge_ManualSale() throws ApiException {
+        card = TestCards.VisaFleetManual(true, true);
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.GlobalPayments,ProductDataFormat.GlobalPaymentsStandardFormat);
+        productData.addFuel(ProductCode.Regular_Leaded, UnitOfMeasure.Gallons, new BigDecimal("11.12"), new BigDecimal("10.00"), new BigDecimal("111.2"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.Units, new BigDecimal("5.12"), new BigDecimal("5.00"), new BigDecimal("21.2"));
+
+        Transaction response = card.charge(new BigDecimal("111.2"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_VisaFleet_Charge_SwipeWithMoreThan6Products_UsesMisc90Rollup() throws ApiException {
+        track = TestCards.VisaFleetSwipe();
+
+        fleetData.setServicePrompt("00");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("5"));
+        productData.addNonFuel("89", UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("41")); //62
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("15"));
+        productData.addNonFuel(ProductCode.Groceries, UnitOfMeasure.Liters, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("25"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("20"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("15"), new BigDecimal("35"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Groceries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("5"));
+        productData.addNonFuel(ProductCode.Beer_and_Wine, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("40"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("11"), new BigDecimal("45"));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    //Negative scenerio if more than 2 fuel product
+    @Test
+    public void test_VisaFleet_Charge_SwipeWithMultipleFuelProducts_ThrowsException() throws UnsupportedOperationException {
+        track = TestCards.VisaFleetSwipe();
+        fleetData.setServicePrompt("00");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addFuel(ProductCode.CNG_Gas, UnitOfMeasure.Kilograms, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("12"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("14"), new BigDecimal("50"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("13"), new BigDecimal("40"));
+
+        UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class,
+                () -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withFleetData(fleetData)
+                        .withProductData(productData)
+                        .execute()
+        );
+
+        assertEquals("Number of Fuel product should not more than 1", exception.getMessage());
+
+    }
+
+    @Test
+    public void test_voyager_no_rollup_6products() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        fleetData.setServicePrompt("02");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("15"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11"), new BigDecimal("22"));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    // more than 6 products
+    @Test
+    public void test_voyager_rollup_6products() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        fleetData.setServicePrompt("02");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("15"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11"), new BigDecimal("22"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11.5"), new BigDecimal("23"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.OtherOrUnknown, new BigDecimal("3"), new BigDecimal("15.50"), new BigDecimal("46.50"));
+
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    // only 1 fuel product
+    @Test
+    public void test_voyager_rollup_1fuelproducts() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    // only non fuel product
+    @Test
+    public void test_voyager_rollup_nonfuel_products() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("15"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11"), new BigDecimal("22"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11.5"), new BigDecimal("23"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.OtherOrUnknown, new BigDecimal("3"), new BigDecimal("15.50"), new BigDecimal("46.50"));
+
+        Transaction response = track.charge(new BigDecimal(10))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_voyager_rollup_2fuelproducts() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addFuel(ProductCode.CNG_Gas, UnitOfMeasure.Kilograms, new BigDecimal("3"), new BigDecimal("10"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("15"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11"), new BigDecimal("22"));
+        productData.addNonFuel(ProductCode.Car_Wash, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11.5"), new BigDecimal("23"));
+        productData.addNonFuel(ProductCode.Filters, UnitOfMeasure.OtherOrUnknown, new BigDecimal("3"), new BigDecimal("15.50"), new BigDecimal("46.50"));
+
+        UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class,
+                () -> track.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withFleetData(fleetData)
+                        .withProductData(productData)
+                        .execute()
+        );
+
+        assertEquals("Number of Fuel product should not more than 1", exception.getMessage());
+    }
+
+    // no rollup for 6 products with discount
+    @Test
+    public void test_voyager_norollup_6products_withdiscount() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        fleetData.setServicePrompt("02");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel("35", UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("23"), new BigDecimal("23"));
+        productData.addNonFuel("36", UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("25"), new BigDecimal("25"));
+
+
+        Transaction response = track.charge(new BigDecimal(40))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    //  rollup nonfuel for more than 6 products with discount
+    @Test
+    public void test_voyager_rollup_6products_withdiscount() throws ApiException {
+        track = TestCards.VoyagerSwipe();
+        fleetData.setServicePrompt("02");
+        fleetData.setOdometerReading("111");
+        fleetData.setDriverId("11411");
+        productData.addFuel("04", UnitOfMeasure.Gallons, new BigDecimal("1"), new BigDecimal("10"), new BigDecimal("10"));
+        productData.addNonFuel(ProductCode.Tires, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("12"), new BigDecimal("24"));
+        productData.addNonFuel(ProductCode.Oil_Change, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("14"), new BigDecimal("28"));
+        productData.addNonFuel(ProductCode.Batteries, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("13"), new BigDecimal("26"));
+        productData.addNonFuel(ProductCode.Wipers, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("15"), new BigDecimal("30"));
+        productData.addNonFuel(ProductCode.Brake_Service, UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("11"), new BigDecimal("22"));
+        productData.addNonFuel("35", UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("23"), new BigDecimal("23"));
+        productData.addNonFuel("36", UnitOfMeasure.OtherOrUnknown, new BigDecimal("1"), new BigDecimal("25"), new BigDecimal("25"));
+
+
+        Transaction response = track.charge(new BigDecimal(92))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
 }

@@ -122,6 +122,15 @@ public class StringUtils {
         return numberPlaces + rvalue;
     }
 
+    public static String toNumericWithPrecision(BigDecimal amount, int precision) {
+        if(amount == null) {
+            return "";
+        }
+        BigDecimal scaled = amount.setScale(precision, java.math.RoundingMode.HALF_UP);
+        String numeric = trimStart(scaled.toPlainString().replaceAll("[^0-9]", ""), "0");
+        return StringUtils.isNullOrEmpty(numeric) ? "0" : numeric;
+    }
+
   /*  public static String toCurrencyString(BigDecimal amount) {
         if (amount == null) {
             return "";
