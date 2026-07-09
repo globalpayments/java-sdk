@@ -2,12 +2,16 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
+import com.global.api.entities.enums.RestrictedTokenType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.GpApiRequest;
+import com.global.api.entities.gpApi.GpApiSessionInfo;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.GpApiService;
+import com.global.api.utils.JsonDoc;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,6 +69,32 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
         assertNull(info.getDataAccountName());
         assertNull(info.getDisputeManagementAccountName());
         assertNull(info.getTransactionProcessingAccountName());
+        assertEquals(APP_ID, info.getAppId());
+        assertEquals("Bearer", info.getType());
+        assertTrue(info.getSecondsToExpire() > 0);
+        assertNotNull(info.getTimeCreated());
+    }
+
+    @Test
+    public void GenerateAccessTokenRequestIncludesRestrictedToken() throws GatewayException {
+        GpApiSessionInfo sessionInfo = new GpApiSessionInfo();
+
+        GpApiRequest request = sessionInfo.signIn(
+                APP_ID,
+                APP_KEY,
+                0,
+                null,
+                new String[]{"PMT_POST_Create"},
+                RestrictedTokenType.YES,
+                null);
+
+        JsonDoc requestBody = JsonDoc.parse(request.getRequestBody());
+
+        assertEquals("client_credentials", requestBody.getString("grant_type"));
+        assertEquals("YES", requestBody.getString("restricted_token"));
+        assertEquals(APP_ID, requestBody.getString("app_id"));
+        assertNotNull(requestBody.getString("nonce"));
+        assertNotNull(requestBody.getString("secret"));
     }
 
     @Test
@@ -359,6 +389,20 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
         assertNotNull(response);
         assertEquals(SUCCESS, response.getResponseCode());
         assertEquals("VERIFIED", response.getResponseMessage());
+    }
+
+    @Test
+    public void GenerateAccessTokenManualIncludesResponseMetadata() throws GatewayException {
+        AccessTokenInfo accessTokenInfo = GpApiService.generateTransactionKey(configAccessTokenCall());
+
+        assertNotNull(accessTokenInfo.getMerchantId());
+        assertTrue(accessTokenInfo.getMerchantId().startsWith("MER_"));
+        assertEquals(APP_ID, accessTokenInfo.getAppId());
+        assertEquals("Bearer", accessTokenInfo.getType());
+        assertNotNull(accessTokenInfo.getTimeCreated());
+        assertTrue(accessTokenInfo.getSecondsToExpire() > 0);
+        assertNotNull(accessTokenInfo.getAccounts());
+        assertTrue(accessTokenInfo.getAccounts().length > 0);
     }
 
     private void assertAccessTokenResponse(AccessTokenInfo accessTokenInfo) {

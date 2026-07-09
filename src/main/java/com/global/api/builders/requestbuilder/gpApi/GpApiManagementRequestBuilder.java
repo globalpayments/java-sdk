@@ -52,6 +52,14 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
 
         String merchantUrl = !StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getMerchantId()) ? GpApiRequest.MERCHANT_MANAGEMENT_ENDPOINT + "/" + gateway.getGpApiConfig().getMerchantId() : "";
 
+        String amountCurrency;
+        if (builder.getCurrency() != null) {
+            amountCurrency = builder.getCurrency();
+        } else if (builder.getPaymentMethod() instanceof TransactionReference) {
+            amountCurrency = ((TransactionReference) builder.getPaymentMethod()).getCurrency();
+        } else {
+            amountCurrency = null;
+        }
         if (builderPaymentMethod != null && builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.BankPayment) {
             if (allowedActions.get(PaymentMethodType.BankPayment.toString()) == null ||
                     !allowedActions.get(PaymentMethodType.BankPayment.toString()).contains(builder.getTransactionType().toString())) {
@@ -60,8 +68,8 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
         }
 
         if (builderTransactionType == TransactionType.Capture) {
-            data.set("amount", StringUtils.toNumeric(builder.getAmount()));
-            data.set("gratuity_amount", StringUtils.toNumeric(builder.getGratuity()));
+            data.set("amount", StringUtils.toNumericWithCurrency(builder.getAmount(),amountCurrency));
+            data.set("gratuity_amount", StringUtils.toNumericWithCurrency(builder.getGratuity(),amountCurrency));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             return (GpApiRequest)
@@ -72,7 +80,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .setMaskedData(maskedData);
 
         } else if (builderTransactionType == TransactionType.Refund) {
-            data.set("amount", StringUtils.toNumeric(builder.getAmount()));
+            data.set("amount", StringUtils.toNumericWithCurrency(builder.getAmount(),amountCurrency));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             return (GpApiRequest)
@@ -83,7 +91,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .setMaskedData(maskedData);
 
         } else if (builderTransactionType == TransactionType.Reversal || builderTransactionType == TransactionType.Void) {
-            data.set("amount", StringUtils.toNumeric(builder.getAmount()));
+            data.set("amount", StringUtils.toNumericWithCurrency(builder.getAmount(),amountCurrency));
             data.set("currency_conversion", builder.getDccRateData() != null ? getDccId(builder.getDccRateData()) : null);
 
             String endpoint = merchantUrl;
@@ -176,13 +184,42 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                             .setRequestBody(disputeChallengeData.toString())
                             .setMaskedData(maskedData);
         } else if (builderTransactionType == TransactionType.BatchClose) {
+            if (!StringUtils.isNullOrEmpty(builder.getBatchReference())) {
+                return (GpApiRequest) new GpApiRequest()
+                        .setVerb(GpApiRequest.HttpMethod.Post)
+                        .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference())
+                        .setMaskedData(maskedData);
+            }
+
+            JsonDoc batchCloseData = new JsonDoc();
+            boolean scopeByTransaction = !StringUtils.isNullOrEmpty(builder.getCurrency()) || builder.getPaymentMethodNames() != null;
+
+            if (gateway.getGpApiConfig().getAccessTokenInfo() != null) {
+                if (!StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())) {
+                    batchCloseData.set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName());
+                }
+
+                if (!StringUtils.isNullOrEmpty(gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())) {
+                    batchCloseData.set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID());
+                }
+            }
+
+            if (scopeByTransaction) {
+                batchCloseData
+                        .set("channel", gateway.getGpApiConfig().getChannel())
+                        .set("currency", builder.getCurrency())
+                        .set("country", gateway.getGpApiConfig().getCountry())
+                        .set("payment_methods", builder.getPaymentMethodNames() != null ? getPaymentMethodNames(builder.getPaymentMethodNames()) : null);
+            }
+
             return (GpApiRequest) new GpApiRequest()
                     .setVerb(GpApiRequest.HttpMethod.Post)
-                    .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT + "/" + builder.getBatchReference())
+                    .setEndpoint(merchantUrl + GpApiRequest.BATCHES_ENDPOINT)
+                    .setRequestBody(batchCloseData.toString())
                     .setMaskedData(maskedData);
         } else if (builderTransactionType == TransactionType.Reauth) {
             data = new JsonDoc()
-                    .set("amount", builder.getAmount());
+                    .set("amount", StringUtils.toNumericWithCurrency(builder.getAmount(),amountCurrency));
 
             if (builderPaymentMethod.getPaymentMethodType() == PaymentMethodType.ACH) {
                 data.set("description", builder.getDescription());
@@ -249,7 +286,7 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
                         .setMaskedData(maskedData);
             }
         } else if (builderTransactionType == TransactionType.Auth) {
-            data.set("amount", builder.getAmount());
+            data.set("amount", StringUtils.toNumericWithCurrency(builder.getAmount(),builder.getCurrency()));
 
             if (builder.getLodgingData() != null) {
                 var lodging = builder.getLodgingData();
@@ -393,5 +430,24 @@ public class GpApiManagementRequestBuilder implements IRequestBuilder<Management
             allowedActions = new HashMap<>();
             allowedActions.put(PaymentMethodType.BankPayment.toString(), null);
         }
+    }
+
+    /**
+     * Converts SDK payment method names to their GP-API mapped values.
+     *
+     * @param paymentMethodNames payment method names from the management builder; can be {@code null}
+     * @return mapped payment method names for GP-API, or {@code null} when input is {@code null}
+     */
+    private static String[] getPaymentMethodNames(PaymentMethodName[] paymentMethodNames) {
+        if (paymentMethodNames == null) {
+            return null;
+        }
+
+        String[] result = new String[paymentMethodNames.length];
+        for (int i = 0; i < paymentMethodNames.length; i++) {
+            result[i] = EnumUtils.getMapping(Target.GP_API, paymentMethodNames[i]);
+        }
+
+        return result;
     }
 }

@@ -4,6 +4,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.google.gson.*;
 import org.joda.time.DateTime;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -273,6 +274,41 @@ public class JsonDoc implements IRawRequestBuilder {
         }
         return null;
     }
+
+    /**
+     * Converts a minor\-unit amount string into a major\-unit {@link BigDecimal}
+     * using the currency exponent.
+     *
+     * <p>Examples:</p>
+     * <ul>
+     *   <li>amount `"1234"` with exponent `2` \-\> `12.34`</li>
+     *   <li>amount `"500"` with exponent `0` \-\> `500`</li>
+     * </ul>
+     *
+     * @param name the amount in minor units as a numeric string
+     * @param currency the ISO currency code used to resolve exponent
+     * @return converted amount in major units, or `null` if input is invalid
+     */
+    public BigDecimal getAmountWithCurrency(String name,String currency) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+
+        final BigDecimal amount;
+        try {
+            amount = new BigDecimal(name.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+
+        int exponent = CurrencyExponentUtils.getExponent(currency);
+        if (exponent == 0) {
+            return amount;
+        }
+
+        return amount.movePointLeft(exponent).setScale(exponent, RoundingMode.HALF_UP);
+    }
+
 
     @SuppressWarnings("unchecked")
     public List<JsonDoc> getEnumerator(String name) {

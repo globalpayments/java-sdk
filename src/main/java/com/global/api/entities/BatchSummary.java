@@ -18,13 +18,62 @@ public class BatchSummary {
     private static final String CONFIG_NAME = "default";
     private static final String FORMATERRORTWICEINROW = "79";
     int counter = 0;
+    // New fields from JSON response
+    @Getter @Setter
+    private String id;
+    @Getter @Setter
+    private String status;
+    @Getter @Setter
+    private DateTime timeCreated;
+    @Getter @Setter
+    private DateTime timeLastUpdated;
+    @Getter @Setter
+    private DateTime timeClosed;
+    @Getter @Setter
+    private String openActionId;
+    @Getter @Setter
+    private String closeActionId;
+    @Getter @Setter
+    private String merchantId;
+    @Getter @Setter
+    private String merchantName;
+    @Getter @Setter
+    private String accountId;
+    @Getter @Setter
+    private String accountName;
+    @Getter @Setter
+    private String siteReference;
+    @Getter @Setter
+    private String deviceReference;
+    @Getter @Setter
+    private Integer transactionCount;
+    @Getter @Setter
+    private BigDecimal amount;
+    @Getter @Setter
+    private String currency;
+    @Getter @Setter
+    private BigDecimal gratuityAmount;
+    @Getter @Setter
+    private SalesInfo sales;
+    @Getter @Setter
+    private RefundInfo refunds;
+    @Getter @Setter
+    private FundingInfo fundingDebit;
+    @Getter @Setter
+    private FundingInfo fundingCredit;
+    @Getter @Setter
+    private List<BrandBreakdown> brandBreakdown;
+    @Getter @Setter
+    private HostBreakdown hostBreakdown;
+    @Getter @Setter
+    private BatchAction action;
+    
+    // Original fields
     private Integer batchId;
     private Transaction resentBatchClose;
     private LinkedList<Transaction> resentTransactions;
     private String responseCode;
     private String sequenceNumber;
-    private Integer transactionCount;
-    private BigDecimal totalAmount;
     private String transactionToken;
     // TODO: Additional totals are missing from the summary response
     private String batchReference;
@@ -35,18 +84,17 @@ public class BatchSummary {
     private BigDecimal debitAmount;
     private Integer debitCount;
     private String deviceId;
-    private String merchantName;
     private DateTime openTime;
     private String openTransactionId;
     private BigDecimal returnAmount;
     private Integer returnCount;
     private BigDecimal saleAmount;
     private Integer saleCount;
+    private BigDecimal totalAmount;
     @Getter
     @Setter
     private String sicCode;
     private String siteId;
-    private String status;
     @Getter
     @Setter
     private LinkedList<Transaction> resentbatchTransactions;
@@ -380,5 +428,62 @@ public class BatchSummary {
             }
             this.setResentTransactions(responses);
         }
+    }
+
+    // Inner classes for nested JSON objects
+    @Getter
+    @Setter
+    public static class SalesInfo {
+        private Integer count;
+        private BigDecimal amount;
+    }
+
+    @Getter
+    @Setter
+    public static class RefundInfo {
+        private Integer count;
+        private BigDecimal amount;
+    }
+
+    @Getter
+    @Setter
+    public static class FundingInfo {
+        private Integer count;
+        private BigDecimal amount;
+    }
+
+    @Getter
+    @Setter
+    public static class BrandBreakdown {
+        private String brand;
+        private BigDecimal amount;
+        private Integer count;
+        private BigDecimal gratuityAmount;
+        private SalesInfo sales;
+        private RefundInfo refunds;
+        private FundingInfo fundingDebit;
+        private FundingInfo fundingCredit;
+    }
+
+    @Getter
+    @Setter
+    public static class HostBreakdown {
+        private String merchantName;
+        private String reference;
+        private BigDecimal amount;
+        private Integer count;
+        private FundingInfo fundingDebit;
+        private FundingInfo fundingCredit;
+    }
+
+    @Getter
+    @Setter
+    public static class BatchAction {
+        private String id;
+        private String type;
+        private DateTime timeCreated;
+        private String resultCode;
+        private String appId;
+        private String appName;
     }
 }

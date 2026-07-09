@@ -155,6 +155,13 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     @Getter
     private EBTVoucherEntryData voucherEntryData;
     private String eWICIssuingEntity;
+
+    /**
+     * The payment method names used to filter the batch close operation.
+     */
+    @Getter
+    private PaymentMethodName[] paymentMethodNames;
+
     public ManagementBuilder(TransactionType type) {
         super(type, null);
     }
@@ -637,6 +644,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
         if (paymentMethod instanceof TransactionReference) {
             this.orderId = ((TransactionReference) paymentMethod).getOrderId();
         }
+        return this;
+    }
+
+    public ManagementBuilder withPaymentMethodNames(PaymentMethodName[] value) {
+        paymentMethodNames = value;
         return this;
     }
 

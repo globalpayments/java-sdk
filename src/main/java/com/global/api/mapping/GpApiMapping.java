@@ -31,6 +31,7 @@ import static com.global.api.utils.StringUtils.isNullOrEmpty;
 public class GpApiMapping {
 
     private static final String BATCH_CLOSE = "CLOSE";
+    private static final String BATCH_SINGLE = "BATCH_SINGLE";
     private static final String PAYMENT_METHOD_CREATE = "PAYMENT_METHOD_CREATE";
     private static final String PAYMENT_METHOD_DETOKENIZE = "PAYMENT_METHOD_DETOKENIZE";
     private static final String PAYMENT_METHOD_EDIT = "PAYMENT_METHOD_EDIT";
@@ -77,16 +78,24 @@ public class GpApiMapping {
 
             if (isPartialApproval && !isNullOrEmpty(json.getString("amount"))) {
                 // For partial approvals, set authorizedAmount
-                transaction.setAuthorizedAmount(json.getAmount("amount"));
+                transaction.setAuthorizedAmount(json.getAmountWithCurrency(json.getString("amount"),json.getString("currency")));
             } else if (status != null && status.toUpperCase(Locale.ENGLISH).equals(TransactionStatus.Preauthorized.getValue().toUpperCase(Locale.ENGLISH)) &&
                     !isNullOrEmpty(json.getString("amount"))) {
                 // For preauthorized transactions, set authorizedAmount
-                transaction.setAuthorizedAmount(json.getAmount("amount"));
+                transaction.setAuthorizedAmount(json.getAmountWithCurrency(json.getString("amount"),json.getString("currency")));
+            }
+
+            String txnCurrency = json.getString("currency");
+            if (!isNullOrEmpty(txnCurrency)) {
+                if (transaction.getTransactionReference() == null) {
+                    transaction.setTransactionReference(new TransactionReference());
+                }
+                transaction.getTransactionReference().setCurrency(txnCurrency);
             }
 
             transaction.setResponseMessage(json.getString("status"));
             transaction.setTransactionId(json.getString("id"));
-            transaction.setBalanceAmount(json.getAmount("amount"));
+            transaction.setBalanceAmount(json.getAmountWithCurrency(json.getString("amount"),json.getString("currency")));
             transaction.setTimestamp(json.getString("time_created"));
             transaction.setReferenceNumber(json.getString("reference"));
             transaction.setClientTransactionId(json.getString("reference"));
@@ -98,14 +107,8 @@ public class GpApiMapping {
 
             switch (actionType) {
                 case BATCH_CLOSE:
-                    BatchSummary batchSummary = new BatchSummary();
-
-                    batchSummary.setBatchReference(json.getString("id"));
-                    batchSummary.setStatus(json.getString("status"));
-                    batchSummary.setTotalAmount(json.getAmount("amount"));
-                    batchSummary.setTransactionCount(json.getInt("transaction_count"));
-
-                    transaction.setBatchSummary(batchSummary);
+                case BATCH_SINGLE:
+                    transaction.setBatchSummary(mapBatchSummary(json));
 
                     return transaction;
 
@@ -193,8 +196,10 @@ public class GpApiMapping {
                     if (paymentMethod.has("card") && paymentMethod.get("card").has("provider")) {
                         cardDetails.setCardIssuerResponse(mapCardIssuerResponse(paymentMethodObj.get("provider")));
                     }
-                    if(paymentMethod.get("card").has("available_balance")) {
-                        cardDetails.setBalanceAmount(paymentMethodObj.getAmount("available_balance"));
+                    if (paymentMethod.get("card").has("available_balance")) {
+                        cardDetails.setBalanceAmount(
+                                json.getAmountWithCurrency(paymentMethodObj.getString("available_balance"), json.getString("currency"))
+                        );
                     }
 
                     transaction.setCardDetails(cardDetails);
@@ -331,6 +336,166 @@ public class GpApiMapping {
 
         return transferResponse;
     }
+
+    private static BatchSummary mapBatchSummary(JsonDoc json) throws GatewayException {
+        BatchSummary summary = new BatchSummary();
+
+        // Existing mapped fields.
+        summary.setBatchReference(json.getString("id")); // legacy alias for id (back-compat)
+        summary.setStatus(json.getString("status"));
+        summary.setTotalAmount(json.getAmount("amount")); // legacy alias for amount (back-compat)
+        summary.setTransactionCount(json.getInt("transaction_count"));
+
+        // Top-level batch fields from the GP API payload.
+        summary.setAmount(json.getAmount("amount"));
+        summary.setId(json.getString("id"));
+        summary.setTimeCreated(json.getDateTime("time_created"));
+        summary.setTimeLastUpdated(json.getDateTime("time_last_updated"));
+        summary.setTimeClosed(json.getDateTime("time_closed"));
+        summary.setOpenActionId(json.getString("open_action_id"));
+        summary.setCloseActionId(json.getString("close_action_id"));
+        summary.setMerchantId(json.getString("merchant_id"));
+        summary.setMerchantName(json.getString("merchant_name"));
+        summary.setAccountId(json.getString("account_id"));
+        summary.setAccountName(json.getString("account_name"));
+        summary.setSiteReference(json.getString("site_reference"));
+        summary.setDeviceReference(json.getString("device_reference"));
+        summary.setCurrency(json.getString("currency"));
+        summary.setGratuityAmount(json.getAmount("gratuity_amount"));
+
+        JsonDoc sales = json.get("sales");
+        if (sales != null) {
+            BatchSummary.SalesInfo s = new BatchSummary.SalesInfo();
+            s.setCount(sales.getInt("count"));
+            s.setAmount(sales.getAmount("amount"));
+            summary.setSales(s);
+        }
+
+        JsonDoc refunds = json.get("refunds");
+        if (refunds != null) {
+            BatchSummary.RefundInfo r = new BatchSummary.RefundInfo();
+            r.setCount(refunds.getInt("count"));
+            r.setAmount(refunds.getAmount("amount"));
+            summary.setRefunds(r);
+        }
+
+        JsonDoc fundingDebit = json.get("funding_debit");
+        if (fundingDebit != null) {
+            BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+            fundingInfo.setCount(fundingDebit.getInt("count"));
+            fundingInfo.setAmount(fundingDebit.getAmount("amount"));
+            summary.setFundingDebit(fundingInfo);
+        }
+
+        JsonDoc fundingCredit = json.get("funding_credit");
+        if (fundingCredit != null) {
+            BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+            fundingInfo.setCount(fundingCredit.getInt("count"));
+            fundingInfo.setAmount(fundingCredit.getAmount("amount"));
+            summary.setFundingCredit(fundingInfo);
+        }
+
+        List<JsonDoc> brandBreakdown = json.getEnumerator("brand_breakdown");
+        if (brandBreakdown != null) {
+            summary.setBrandBreakdown(mapBrandBreakdown(brandBreakdown));
+        }
+
+        JsonDoc hostBreakdown = json.get("host_breakdown");
+        if (hostBreakdown != null) {
+            summary.setHostBreakdown(mapHostBreakdown(hostBreakdown));
+        }
+
+        JsonDoc action = json.get("action");
+        if (action != null) {
+            BatchSummary.BatchAction a = new BatchSummary.BatchAction();
+            a.setId(action.getString("id"));
+            a.setType(action.getString("type"));
+            a.setTimeCreated(parseGpApiDateTime(action.getString("time_created")));
+            a.setResultCode(action.getString("result_code"));
+            a.setAppId(action.getString("app_id"));
+            a.setAppName(action.getString("app_name"));
+            summary.setAction(a);
+        }
+
+        return summary;
+    }
+
+    private static List<BatchSummary.BrandBreakdown> mapBrandBreakdown(List<JsonDoc> brandBreakdown) {
+        List<BatchSummary.BrandBreakdown> mapped = new ArrayList<>();
+
+        for (JsonDoc brandNode : brandBreakdown) {
+            BatchSummary.BrandBreakdown brand = new BatchSummary.BrandBreakdown();
+
+            brand.setBrand(brandNode.getString("brand"));
+            brand.setAmount(brandNode.getAmount("amount"));
+            brand.setCount(brandNode.getInt("count"));
+            brand.setGratuityAmount(brandNode.getAmount("gratuity_amount"));
+
+            JsonDoc sales = brandNode.get("sales");
+            if (sales != null) {
+                BatchSummary.SalesInfo salesInfo = new BatchSummary.SalesInfo();
+                salesInfo.setCount(sales.getInt("count"));
+                salesInfo.setAmount(sales.getAmount("amount"));
+                brand.setSales(salesInfo);
+            }
+
+            JsonDoc refunds = brandNode.get("refunds");
+            if (refunds != null) {
+                BatchSummary.RefundInfo refundInfo = new BatchSummary.RefundInfo();
+                refundInfo.setCount(refunds.getInt("count"));
+                refundInfo.setAmount(refunds.getAmount("amount"));
+                brand.setRefunds(refundInfo);
+            }
+
+            JsonDoc fundingDebit = brandNode.get("funding_debit");
+            if (fundingDebit != null) {
+                BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+                fundingInfo.setCount(fundingDebit.getInt("count"));
+                fundingInfo.setAmount(fundingDebit.getAmount("amount"));
+                brand.setFundingDebit(fundingInfo);
+            }
+
+            JsonDoc fundingCredit = brandNode.get("funding_credit");
+            if (fundingCredit != null) {
+                BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+                fundingInfo.setCount(fundingCredit.getInt("count"));
+                fundingInfo.setAmount(fundingCredit.getAmount("amount"));
+                brand.setFundingCredit(fundingInfo);
+            }
+
+            mapped.add(brand);
+        }
+
+        return mapped;
+    }
+
+    private static BatchSummary.HostBreakdown mapHostBreakdown(JsonDoc hostBreakdown) {
+        BatchSummary.HostBreakdown mapped = new BatchSummary.HostBreakdown();
+
+        mapped.setMerchantName(hostBreakdown.getString("merchant_name"));
+        mapped.setReference(hostBreakdown.getString("reference"));
+        mapped.setAmount(hostBreakdown.getAmount("amount"));
+        mapped.setCount(hostBreakdown.getInt("count"));
+
+        JsonDoc fundingDebit = hostBreakdown.get("funding_debit");
+        if (fundingDebit != null) {
+            BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+            fundingInfo.setCount(fundingDebit.getInt("count"));
+            fundingInfo.setAmount(fundingDebit.getAmount("amount"));
+            mapped.setFundingDebit(fundingInfo);
+        }
+
+        JsonDoc fundingCredit = hostBreakdown.get("funding_credit");
+        if (fundingCredit != null) {
+            BatchSummary.FundingInfo fundingInfo = new BatchSummary.FundingInfo();
+            fundingInfo.setCount(fundingCredit.getInt("count"));
+            fundingInfo.setAmount(fundingCredit.getAmount("amount"));
+            mapped.setFundingCredit(fundingInfo);
+        }
+
+        return mapped;
+    }
+
 
     private static Boolean getIsMultiCapture(JsonDoc json) {
         if (!isNullOrEmpty(json.getString("capture_mode"))) {

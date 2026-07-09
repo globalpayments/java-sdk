@@ -175,8 +175,15 @@ public class TerminalUtilities {
 
     public static byte calculateLRC(byte[] buffer) {
         int length = buffer.length;
+
+        // Check the end byte is ETX and not the LRC
         if(buffer[buffer.length - 1] != ControlCodes.ETX.getByte()) {
             length--;
+        }
+        else { // Check for when the LRC is also ETX
+            if(buffer[buffer.length - 2] == ControlCodes.ETX.getByte()) {
+                length--;
+            }
         }
 
         byte lrc = (byte)0x00;

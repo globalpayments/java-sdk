@@ -52,6 +52,9 @@ public class GpApiConfig extends GatewayConfig {
     @Accessors(chain = true)
     private String[] permissions;
 
+    @Accessors(chain = true)
+    private RestrictedTokenType restrictedToken;
+
     // GP-API Access token information
     @Accessors(chain = true)
     private AccessTokenInfo accessTokenInfo;

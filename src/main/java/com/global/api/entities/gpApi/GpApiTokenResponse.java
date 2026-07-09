@@ -1,5 +1,6 @@
 package com.global.api.entities.gpApi;
 
+import com.global.api.entities.enums.IntervalToExpire;
 import com.global.api.entities.gpApi.entities.GpApiAccount;
 import com.global.api.utils.JsonDoc;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class GpApiTokenResponse {
     private String appName;
     private Date timeCreated;
     private int secondsToExpire;
+    private IntervalToExpire intervalToExpire;
     private String email;
     private String merchantId;
     private String merchantName;
@@ -116,6 +118,8 @@ public class GpApiTokenResponse {
         appName = doc.getString("app_name");
         timeCreated = doc.getDate("time_created", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         secondsToExpire = doc.getInt("seconds_to_expire");
+        intervalToExpire = mapIntervalToExpire(doc.getString("interval_to_expire"));
+
         email = doc.getString("email");
 
         if (doc.has("scope")) {
@@ -135,5 +139,17 @@ public class GpApiTokenResponse {
                 accounts = accountList.toArray(new GpApiAccount[0]);
             }
         }
+    }
+    private IntervalToExpire mapIntervalToExpire(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        for (IntervalToExpire interval : IntervalToExpire.values()) {
+            if (interval.getValue().equalsIgnoreCase(value)) {
+                return interval;
+            }
+        }
+        return null;
     }
 }

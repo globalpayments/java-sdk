@@ -131,42 +131,76 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
         }
 
         accessTokenInfo.setMerchantId(response.getMerchantId());
+        accessTokenInfo.setMerchantName(response.getMerchantName());
 
         if (isNullOrEmpty(accessTokenInfo.getAccessToken())) {
             accessTokenInfo.setAccessToken(response.getToken());
         }
+        if (isNullOrEmpty(accessTokenInfo.getType())) {
+            accessTokenInfo.setType(response.getType());
+        }
+        if (isNullOrEmpty(accessTokenInfo.getAppId())) {
+            accessTokenInfo.setAppId(response.getAppId());
+        }
+        if (isNullOrEmpty(accessTokenInfo.getAppName())) {
+            accessTokenInfo.setAppName(response.getAppName());
+        }
+        if (accessTokenInfo.getTimeCreated() == null) {
+            accessTokenInfo.setTimeCreated(response.getTimeCreated());
+        }
+        if (accessTokenInfo.getSecondsToExpire() == 0) {
+            accessTokenInfo.setSecondsToExpire(response.getSecondsToExpire());
+        }
+        if (accessTokenInfo.getIntervalToExpire() == null) {
+            accessTokenInfo.setIntervalToExpire(response.getIntervalToExpire());
+        }
+        if (isNullOrEmpty(accessTokenInfo.getEmail())) {
+            accessTokenInfo.setEmail(response.getEmail());
+        }
+        if (accessTokenInfo.getAccounts() == null || accessTokenInfo.getAccounts().length == 0) {
+            accessTokenInfo.setAccounts(response.getAccounts());
+        }
 
-        if (isNullOrEmpty(accessTokenInfo.getDataAccountName()) && isNullOrEmpty(accessTokenInfo.getDataAccountID())) {
+        if (isNullOrEmpty(accessTokenInfo.getDataAccountID())) {
             accessTokenInfo.setDataAccountID(response.getDataAccountID());
+        }
+        if (isNullOrEmpty(accessTokenInfo.getDataAccountName())) {
+            accessTokenInfo.setDataAccountName(response.getDataAccountName());
         }
 
         if (isNullOrEmpty(accessTokenInfo.getTokenizationAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getTokenizationAccountID())) {
             accessTokenInfo.setTokenizationAccountID(response.getTokenizationAccountID());
+            accessTokenInfo.setTokenizationAccountName(response.getTokenizationAccountName());
         }
 
         if (isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getDisputeManagementAccountID())) {
             accessTokenInfo.setDisputeManagementAccountID(response.getDisputeManagementAccountID());
+            accessTokenInfo.setDisputeManagementAccountName(response.getDisputeManagementAccountName());
         }
 
         if (isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getTransactionProcessingAccountID())) {
             accessTokenInfo.setTransactionProcessingAccountID(response.getTransactionProcessingAccountID());
+            accessTokenInfo.setTransactionProcessingAccountName(response.getTransactionProcessingAccountName());
         }
         if (isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getRiskAssessmentAccountID())) {
             accessTokenInfo.setRiskAssessmentAccountID(response.getRiskAssessmentAccountID());
+            accessTokenInfo.setRiskAssessmentAccountName(response.getRiskAssessmentAccountName());
         }
         if (isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getMerchantManagementAccountID())) {
             accessTokenInfo.setMerchantManagementAccountID(response.getMerchantManagementAccountID());
+            accessTokenInfo.setMerchantManagementAccountName(response.getMerchantManagementAccountName());
         }
 
         if (isNullOrEmpty(accessTokenInfo.getFileProcessingAccountName()) &&
                 isNullOrEmpty(accessTokenInfo.getFileProcessingAccountID())) {
 
             accessTokenInfo.setFileProcessingAccountID(response.getFileProcessingAccountID());
+            accessTokenInfo.setFileProcessingAccountName(response.getFileProcessingAccountName());
         }
 
         gpApiConfig.setAccessTokenInfo(accessTokenInfo);
@@ -177,7 +211,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     }
 
     public GpApiTokenResponse getAccessToken() throws GatewayException {
-        GpApiRequest request = gpApiConfig.getAccessTokenProvider().signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions(),gpApiConfig.getPorticoTokenConfig());
+        GpApiRequest request = gpApiConfig.getAccessTokenProvider().signIn(gpApiConfig.getAppId(), gpApiConfig.getAppKey(), gpApiConfig.getSecondsToExpire(), gpApiConfig.getIntervalToExpire(), gpApiConfig.getPermissions(), gpApiConfig.getRestrictedToken(), gpApiConfig.getPorticoTokenConfig());
 
         String rawResponse = null;
 

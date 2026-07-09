@@ -1,6 +1,7 @@
 package com.global.api.entities.gpApi;
 
 import com.global.api.entities.enums.IntervalToExpire;
+import com.global.api.entities.enums.RestrictedTokenType;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.entities.PorticoTokenConfig;
 import com.global.api.gateways.IAccessTokenProvider;
@@ -37,7 +38,7 @@ public class GpApiSessionInfo implements IAccessTokenProvider {
         return generatedPassword;
     }
 
-    public GpApiRequest signIn(String appId, String appKey, int secondsToExpire, IntervalToExpire intervalToExpire, String[] permissions, PorticoTokenConfig porticoTokenConfig) throws GatewayException {
+    public GpApiRequest signIn(String appId, String appKey, int secondsToExpire, IntervalToExpire intervalToExpire, String[] permissions, RestrictedTokenType restrictedToken, PorticoTokenConfig porticoTokenConfig) throws GatewayException {
         String nonce = DateTime.now().toString("MM/dd/yyyy hh:mm:ss.SSS a");
         JsonDoc request;
 
@@ -61,6 +62,9 @@ public class GpApiSessionInfo implements IAccessTokenProvider {
             }
             if (intervalToExpire != null) {
                 request.set("interval_to_expire", intervalToExpire);
+            }
+            if (restrictedToken != null) {
+                request.set("restricted_token", restrictedToken);
             }
         }
 

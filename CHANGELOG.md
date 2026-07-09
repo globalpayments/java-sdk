@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V15.2.0 (06/18/2026)
+## Latest Version - V15.2.1 (07/09/2026)
+### Enhancements:
+- [GPAPI] - Added Multicurrency support for APAC.
+- [GPAPI] - Added support for closing batches without predefined Batch ID.
+- [GPAPI] - Added missing request and response fields for Access Token endpoint.
+
+### Bug Fixes:
+- [PAX] - Fixed checksum handling
+
+## Version - V15.2.0 (06/18/2026)
 ### Enhancements:
 - [VAPS] - Added Fleet Product Rollup functionality support for all fleet cards except WEX, with discount and coupon enhancements for Voyager, FleetCor and Visa Fleet 2.0 cards.
 

@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +63,39 @@ public class StringUtils {
 
         BigDecimal amount = new BigDecimal(str);
         return amount.divide(new BigDecimal(100));
+    }
+
+    /**
+     * Converts a monetary amount to its numeric minor\-unit representation based on the given currency exponent.
+     *
+     * <p>Behavior:
+     * <ul>
+     *   <li>Returns an empty string when `amount` is `null`.</li>
+     *   <li>Returns `000` when `amount` is zero.</li>
+     *   <li>Uses `CurrencyExponentUtils.getExponent(currency)` to determine the number of decimal places
+     *       for the currency.</li>
+     *   <li>Multiplies the amount by `10^exponent`, rounds using `HALF_UP`, removes non\-digits,
+     *       and trims leading zeros.</li>
+     * </ul>
+     *
+     * @param amount the monetary amount to convert
+     * @param currency the ISO currency code used to resolve exponent
+     * @return numeric amount as a string in minor units, with leading zeros removed; `""` for `null` input; `000` for zero
+     */
+    public static String toNumericWithCurrency(BigDecimal amount, String currency) {
+        if (amount == null) {
+            return "";
+        } else if (amount.compareTo(BigDecimal.ZERO) == 0) {
+            return "000";
+        }
+
+        // Map of currency code to exponent
+        int exponent = CurrencyExponentUtils.getExponent(currency);
+        BigDecimal multiplier = BigDecimal.TEN.pow(exponent);
+        BigDecimal numericAmount = amount.multiply(multiplier).setScale(0, RoundingMode.HALF_UP);
+
+        String minor = trimStart(numericAmount.toPlainString().replaceAll("[^0-9]", ""), "0");
+        return minor.isEmpty() ? "0" : minor;
     }
     public static BigDecimal toFractionalAmount(String str) {
         if(isNullOrEmpty(str)) {

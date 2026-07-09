@@ -21,6 +21,16 @@ public class GpApiService {
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
 
         accessTokenInfo.setAccessToken(data.getToken());
+        accessTokenInfo.setType(data.getType());
+        accessTokenInfo.setMerchantId(data.getMerchantId());
+        accessTokenInfo.setMerchantName(data.getMerchantName());
+        accessTokenInfo.setAppId(data.getAppId());
+        accessTokenInfo.setAppName(data.getAppName());
+        accessTokenInfo.setTimeCreated(data.getTimeCreated());
+        accessTokenInfo.setSecondsToExpire(data.getSecondsToExpire());
+        accessTokenInfo.setIntervalToExpire(data.getIntervalToExpire());
+        accessTokenInfo.setEmail(data.getEmail());
+        accessTokenInfo.setAccounts(data.getAccounts());
         accessTokenInfo.setDataAccountName(data.getDataAccountName());
         accessTokenInfo.setDisputeManagementAccountName(data.getDisputeManagementAccountName());
         accessTokenInfo.setTokenizationAccountName(data.getTokenizationAccountName());
