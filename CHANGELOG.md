@@ -1,6 +1,6 @@
 # Changelog
 
-## Latest Version - V15.2.1 (07/09/2026)
+## Latest Version - V15.3.0 (07/09/2026)
 ### Enhancements:
 - [GPAPI] - Added Multicurrency support for APAC.
 - [GPAPI] - Added support for closing batches without predefined Batch ID.
