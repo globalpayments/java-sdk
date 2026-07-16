@@ -50,7 +50,6 @@ public class NtsConnector extends GatewayConnectorConfig {
     Set<String> allDataCollectToken = new LinkedHashSet<>();
     BatchSummary summary = new BatchSummary();
 
-    StringBuilder maskedRequest = new StringBuilder("");
     private Integer UTILITY_TYPE =2;
 
     @Override
@@ -450,7 +449,6 @@ public class NtsConnector extends GatewayConnectorConfig {
                 }
             }
         }
-        setMaskedReq(originalReq,builder);
         StringUtils.setMaskRequest(setMaskedReq(originalReq,builder));
         request.setMessageRequest(new StringBuilder(originalReq));
         result = sendRequest(request, builder);
@@ -555,6 +553,8 @@ public class NtsConnector extends GatewayConnectorConfig {
             throw exc;
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage());
+        } finally {
+            StringUtils.clearThreadLocalData();
         }
 
     }
@@ -652,10 +652,6 @@ public class NtsConnector extends GatewayConnectorConfig {
                 result.setTransactionReference(getReferencesObject(builder, ntsResponse, cardType));
             }
         }
-        StringUtils.setAccNo(null);
-        StringUtils.setExpDate(null);
-        StringUtils.setTrackData(null);
-        StringUtils.setMaskRequest(new StringBuilder(""));
         return result;
     }
 
@@ -685,7 +681,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             int startIndex2 = maskedResponse.indexOf(StringUtils.getExpDate());
             int stopIndex2 = startIndex2 + StringUtils.getExpDate().length();
             maskedResponse = startIndex2 != -1 && stopIndex2 != -1?
-                    maskedResponse.replace(startIndex2, stopIndex2, "****"):maskedResponse;
+                    maskedResponse.replace(startIndex2, stopIndex2, StringUtils.padLeft("", StringUtils.getExpDate().length(), '*')):maskedResponse;
         }
 
         MessageReader mr2 = new MessageReader(request.getSendBuffer());
@@ -1193,7 +1189,7 @@ public class NtsConnector extends GatewayConnectorConfig {
     }
 
     private StringBuilder setMaskedReq(String originalReq,ResubmitBuilder builder){
-        maskedRequest = new StringBuilder(originalReq);
+        StringBuilder maskedRequest = new StringBuilder(originalReq);
         switch (builder.getTransactionType()) {
             case BatchClose: {
                 StringUtils.setMaskRequest(maskedRequest);
@@ -1207,7 +1203,7 @@ public class NtsConnector extends GatewayConnectorConfig {
                 StringUtils.setAccNo(actNum.trim());
                 StringUtils.setExpDate(expiry);
                 maskedRequest.replace(61, 80,StringUtils.padRight(StringUtils.maskAccountNumber(actNum.trim()), 19, ' ') );
-                maskedRequest.replace(80, 84, "****");
+                maskedRequest.replace(80, 84, StringUtils.padLeft("", expiry.length(), '*'));
             }
             break;
             default: StringUtils.setMaskRequest(new StringBuilder(originalReq));

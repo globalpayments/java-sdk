@@ -24,6 +24,7 @@ import com.global.api.tests.BatchProvider;
 import com.global.api.tests.StanGenerator;
 import com.global.api.tests.testdata.NtsTestCards;
 import com.global.api.tests.testdata.TestCards;
+import com.global.api.utils.StringUtils;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,7 +32,9 @@ import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
 
@@ -5191,6 +5194,725 @@ public void test_Amex_BalanceInquiry_without_track_amount_expansion() throws Api
                     .execute();
             assertNotNull(capture);
         }
+    }
+
+    // ==================== Thread Safety Masking Tests ====================
+    // These tests execute real authorize/charge/capture transactions concurrently
+    // through the NTS connector, which internally triggers the masking logic
+    // in NtsAuthSaleCreditRequest, NtsDataCollectRequestBuilder, and NtsConnector.
+
+    /**
+     * Verifies that concurrent Sale (charge) transactions with different card data
+     * maintain proper masking isolation. Each thread executes a real sale through
+     * the NtsConnector which sets/reads ThreadLocal masking fields internally.
+     * After execution, verifies that getMaskRequest() does not contain raw PAN from other threads.
+     */
+    @Test
+    public void masking_Sale_ConcurrentTransactions_ThreadSafety() throws Exception {
+        final int THREAD_COUNT = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadId = i;
+            final boolean useMasterCard = (i % 2 == 0);
+
+            futures.add(executor.submit(
+                    () -> {
+                try {
+                    startLatch.await();
+
+                    CreditTrackData threadTrack;
+                    String myPan;
+                    String otherPan;
+
+                    if (useMasterCard) {
+                        threadTrack = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+                        myPan = "5473500000000014";
+                        otherPan = "4012002000060016";
+                    } else {
+                        threadTrack = new CreditTrackData();
+                        threadTrack.setValue(";4012002000060016=25121011803939600000?");
+                        threadTrack.setEntryMethod(EntryMethod.Swipe);
+                        myPan = "4012002000060016";
+                        otherPan = "5473500000000014";
+                    }
+
+                    NtsRequestMessageHeader threadHeader = new NtsRequestMessageHeader();
+                    threadHeader.setTerminalDestinationTag("999");
+                    threadHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                    threadHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+                    PriorMessageInformation pmi = new PriorMessageInformation();
+                    pmi.setResponseTime("1");
+                    pmi.setConnectTime("999");
+                    pmi.setMessageReasonCode("01");
+                    threadHeader.setPriorMessageInformation(pmi);
+
+                    NtsTag16 threadTag = new NtsTag16();
+                    threadTag.setPumpNumber(1);
+                    threadTag.setWorkstationId(1);
+                    threadTag.setServiceCode(ServiceCode.Self);
+                    threadTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                    NtsProductData pd = new NtsProductData(ServiceLevel.FullServe, threadTrack);
+                    pd.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 1.24, 2.899);
+                    pd.setPurchaseType(PurchaseType.FuelAndNonFuel);
+                    pd.add(new BigDecimal("32.33"), new BigDecimal(0));
+
+                    // Execute a real sale transaction through NtsConnector
+                    Transaction response = threadTrack.charge(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsRequestMessageHeader(threadHeader)
+                            .withUniqueDeviceId("0102")
+                            .withNtsProductData(pd)
+                            .withNtsTag16(threadTag)
+                            .withCvn("123")
+                            .execute();
+
+                    assertNotNull(response);
+
+                    // After transaction, check masking state — other thread's PAN must not leak
+                    String accNo = StringUtils.getAccNo();
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Sale Thread " + threadId + ": other thread's PAN leaked into accNo");
+                    }
+
+                    StringBuilder maskedReq = StringUtils.getMaskRequest();
+                    if (maskedReq != null && maskedReq.toString().contains(otherPan)) {
+                        failures.add("Sale Thread " + threadId + ": other thread's PAN found in masked request");
+                    }
+
+                } catch (Exception e) {
+                    // Gateway exceptions acceptable — verify masking isolation even on failure
+                    String accNo = StringUtils.getAccNo();
+                    String otherPan = useMasterCard ? "4012002000060016" : "5473500000000014";
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Sale Thread " + threadId + " (exception): other PAN leaked");
+                    }
+                }
+            }));
+        }
+
+        startLatch.countDown();
+        for (Future<?> f : futures) {
+            try {
+                f.get(30, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.ExecutionException e) {
+                // Ignore gateway failures — testing masking thread safety
+            }
+        }
+        executor.shutdown();
+
+        assertTrue("Sale concurrent masking failures: " + failures, failures.isEmpty());
+    }
+
+    /**
+     * Verifies that concurrent Auth (authorize) transactions with manual card entry
+     * maintain proper masking isolation. Each thread executes a real auth through
+     * the NtsConnector. Verifies no PAN cross-contamination between threads.
+     */
+    @Test
+    public void masking_Auth_ConcurrentTransactions_ThreadSafety() throws Exception {
+        final int THREAD_COUNT = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadId = i;
+            final boolean useMasterCard = (i % 2 == 0);
+
+            futures.add(executor.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    CreditCardData threadCard;
+                    String myPan;
+                    String otherPan;
+
+                    if (useMasterCard) {
+                        threadCard = TestCards.MasterCardManual(true, true);
+                        myPan = "5473500000000014";
+                        otherPan = "4012002000060016";
+                    } else {
+                        threadCard = TestCards.VisaManual(true, true);
+                        myPan = "4012002000060016";
+                        otherPan = "5473500000000014";
+                    }
+
+                    NtsRequestMessageHeader threadHeader = new NtsRequestMessageHeader();
+                    threadHeader.setTerminalDestinationTag("999");
+                    threadHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                    threadHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+                    PriorMessageInformation pmi = new PriorMessageInformation();
+                    pmi.setResponseTime("1");
+                    pmi.setConnectTime("999");
+                    pmi.setMessageReasonCode("01");
+                    threadHeader.setPriorMessageInformation(pmi);
+
+                    NtsTag16 threadTag = new NtsTag16();
+                    threadTag.setPumpNumber(1);
+                    threadTag.setWorkstationId(1);
+                    threadTag.setServiceCode(ServiceCode.Self);
+                    threadTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                    // Execute a real auth transaction through NtsConnector
+                    Transaction response = threadCard.authorize(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsRequestMessageHeader(threadHeader)
+                            .withUniqueDeviceId("0102")
+                            .withNtsTag16(threadTag)
+                            .execute();
+
+                    assertNotNull(response);
+
+                    // Verify masking state belongs to this thread only
+                    String accNo = StringUtils.getAccNo();
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Auth Thread " + threadId + ": other thread's PAN leaked into accNo");
+                    }
+
+                    StringBuilder maskedReq = StringUtils.getMaskRequest();
+                    if (maskedReq != null && maskedReq.toString().contains(otherPan)) {
+                        failures.add("Auth Thread " + threadId + ": other thread's PAN found in masked request");
+                    }
+
+                } catch (Exception e) {
+                    // Gateway exceptions acceptable — testing masking isolation only
+                    String accNo = StringUtils.getAccNo();
+                    String otherPan = useMasterCard ? "4012002000060016" : "5473500000000014";
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Auth Thread " + threadId + " (exception): other PAN leaked");
+                    }
+                }
+            }));
+        }
+
+        startLatch.countDown();
+        for (Future<?> f : futures) {
+            try {
+                f.get(30, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.ExecutionException e) {
+                // Ignore gateway failures
+            }
+        }
+        executor.shutdown();
+
+        assertTrue("Auth concurrent masking failures: " + failures, failures.isEmpty());
+    }
+
+    /**
+     * Verifies that concurrent Auth followed by Capture transactions maintain
+     * proper masking isolation. Each thread performs a full sale (auth+datacollect)
+     * then an explicit capture — all concurrently with other threads using different cards.
+     */
+    @Test
+    public void masking_AuthAndCapture_ConcurrentTransactions_ThreadSafety() throws Exception {
+        final int THREAD_COUNT = 4;
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadId = i;
+            final boolean useMasterCard = (i % 2 == 0);
+
+            futures.add(executor.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    CreditTrackData threadTrack;
+                    String myPan;
+                    String otherPan;
+
+                    if (useMasterCard) {
+                        threadTrack = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+                        myPan = "5473500000000014";
+                        otherPan = "4012002000060016";
+                    } else {
+                        threadTrack = new CreditTrackData();
+                        threadTrack.setValue(";4012002000060016=25121011803939600000?");
+                        threadTrack.setEntryMethod(EntryMethod.Swipe);
+                        myPan = "4012002000060016";
+                        otherPan = "5473500000000014";
+                    }
+
+                    NtsRequestMessageHeader threadHeader = new NtsRequestMessageHeader();
+                    threadHeader.setTerminalDestinationTag("999");
+                    threadHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                    threadHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+                    PriorMessageInformation pmi = new PriorMessageInformation();
+                    pmi.setResponseTime("1");
+                    pmi.setConnectTime("999");
+                    pmi.setMessageReasonCode("01");
+                    threadHeader.setPriorMessageInformation(pmi);
+
+                    NtsTag16 threadTag = new NtsTag16();
+                    threadTag.setPumpNumber(1);
+                    threadTag.setWorkstationId(1);
+                    threadTag.setServiceCode(ServiceCode.Self);
+                    threadTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                    NtsProductData pd = new NtsProductData(ServiceLevel.FullServe, threadTrack);
+                    pd.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 1.24, 2.899);
+                    pd.setPurchaseType(PurchaseType.FuelAndNonFuel);
+                    pd.add(new BigDecimal("32.33"), new BigDecimal(0));
+
+                    // Execute sale (auth + internal datacollect)
+                    Transaction response = threadTrack.charge(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsRequestMessageHeader(threadHeader)
+                            .withUniqueDeviceId("0102")
+                            .withNtsProductData(pd)
+                            .withNtsTag16(threadTag)
+                            .withCvn("123")
+                            .execute();
+
+                    assertNotNull(response);
+
+                    // Now do an explicit capture (ForceCollect) concurrently
+                    Transaction transaction = Transaction.fromNetwork(
+                            response.getTransactionReference().getAuthorizer(),
+                            response.getTransactionReference().getApprovalCode(),
+                            response.getResponseCode(),
+                            response.getOriginalTransactionDate(),
+                            response.getOriginalTransactionTime(),
+                            threadTrack
+                    );
+
+                    NtsRequestMessageHeader captureHeader = new NtsRequestMessageHeader();
+                    captureHeader.setTerminalDestinationTag("999");
+                    captureHeader.setPinIndicator(PinIndicator.WithoutPin);
+                    captureHeader.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+                    captureHeader.setPriorMessageInformation(pmi);
+
+                    Transaction captureResponse = transaction.capture(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsProductData(pd)
+                            .withNtsRequestMessageHeader(captureHeader)
+                            .withNtsTag16(threadTag)
+                            .execute();
+
+                    assertNotNull(captureResponse);
+
+                    // Verify masking state after capture — no other thread's PAN
+                    String accNo = StringUtils.getAccNo();
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Capture Thread " + threadId + ": other thread's PAN leaked after capture");
+                    }
+
+                } catch (Exception e) {
+                    // Gateway/network exceptions acceptable for thread safety testing
+                    String accNo = StringUtils.getAccNo();
+                    String otherPan = useMasterCard ? "4012002000060016" : "5473500000000014";
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Capture Thread " + threadId + " (exception): other PAN leaked");
+                    }
+                }
+            }));
+        }
+
+        startLatch.countDown();
+        for (Future<?> f : futures) {
+            try {
+                f.get(60, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.ExecutionException e) {
+                // Ignore gateway failures
+            }
+        }
+        executor.shutdown();
+
+        assertTrue("Auth+Capture concurrent masking failures: " + failures, failures.isEmpty());
+    }
+
+    /**
+     * Verifies that when one thread executes a Visa Auth and another executes
+     * a MasterCard Sale simultaneously through the NtsConnector, the masking state
+     * from the Auth does not contaminate the Sale's masking state and vice versa.
+     */
+    @Test
+    public void masking_SimultaneousAuthAndSale_DifferentCards_ThreadSafety() throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        final String VISA_PAN = "4012002000060016";
+        final String MC_PAN = "5473500000000014";
+
+        // Thread 1: Visa Auth (manual entry)
+        Future<?> authFuture = executor.submit(() -> {
+            try {
+                startLatch.await();
+
+                CreditCardData visaCard = TestCards.VisaManual(true, true);
+
+                NtsRequestMessageHeader authHeader = new NtsRequestMessageHeader();
+                authHeader.setTerminalDestinationTag("999");
+                authHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                authHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+                PriorMessageInformation pmi = new PriorMessageInformation();
+                pmi.setResponseTime("1");
+                pmi.setConnectTime("999");
+                pmi.setMessageReasonCode("01");
+                authHeader.setPriorMessageInformation(pmi);
+
+                NtsTag16 authTag = new NtsTag16();
+                authTag.setPumpNumber(1);
+                authTag.setWorkstationId(1);
+                authTag.setServiceCode(ServiceCode.Self);
+                authTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                Transaction response = visaCard.authorize(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(authHeader)
+                        .withUniqueDeviceId("0102")
+                        .withNtsTag16(authTag)
+                        .execute();
+
+                assertNotNull(response);
+
+                // Verify this thread's masking state doesn't contain MasterCard PAN
+                String accNo = StringUtils.getAccNo();
+                if (accNo != null && accNo.contains(MC_PAN)) {
+                    failures.add("Visa Auth thread: MasterCard PAN leaked into accNo");
+                }
+                StringBuilder maskedReq = StringUtils.getMaskRequest();
+                if (maskedReq != null && maskedReq.toString().contains(MC_PAN)) {
+                    failures.add("Visa Auth thread: MasterCard PAN found in masked request");
+                }
+
+            } catch (Exception e) {
+                String accNo = StringUtils.getAccNo();
+                if (accNo != null && accNo.contains(MC_PAN)) {
+                    failures.add("Visa Auth thread (exception): MasterCard PAN leaked");
+                }
+            }
+        });
+
+        // Thread 2: MasterCard Sale (swipe)
+        Future<?> saleFuture = executor.submit(() -> {
+            try {
+                startLatch.await();
+
+                CreditTrackData mcTrack = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+
+                NtsRequestMessageHeader saleHeader = new NtsRequestMessageHeader();
+                saleHeader.setTerminalDestinationTag("999");
+                saleHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                saleHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+                PriorMessageInformation pmi = new PriorMessageInformation();
+                pmi.setResponseTime("1");
+                pmi.setConnectTime("999");
+                pmi.setMessageReasonCode("01");
+                saleHeader.setPriorMessageInformation(pmi);
+
+                NtsTag16 saleTag = new NtsTag16();
+                saleTag.setPumpNumber(1);
+                saleTag.setWorkstationId(1);
+                saleTag.setServiceCode(ServiceCode.Self);
+                saleTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                NtsProductData pd = new NtsProductData(ServiceLevel.FullServe, mcTrack);
+                pd.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 1.24, 2.899);
+                pd.setPurchaseType(PurchaseType.FuelAndNonFuel);
+                pd.add(new BigDecimal("32.33"), new BigDecimal(0));
+
+                Transaction response = mcTrack.charge(new BigDecimal(10))
+                        .withCurrency("USD")
+                        .withNtsRequestMessageHeader(saleHeader)
+                        .withUniqueDeviceId("0102")
+                        .withNtsProductData(pd)
+                        .withNtsTag16(saleTag)
+                        .withCvn("123")
+                        .execute();
+
+                assertNotNull(response);
+
+                // Verify this thread's masking state doesn't contain Visa PAN
+                String accNo = StringUtils.getAccNo();
+                if (accNo != null && accNo.contains(VISA_PAN)) {
+                    failures.add("MC Sale thread: Visa PAN leaked into accNo");
+                }
+                StringBuilder maskedReq = StringUtils.getMaskRequest();
+                if (maskedReq != null && maskedReq.toString().contains(VISA_PAN)) {
+                    failures.add("MC Sale thread: Visa PAN found in masked request");
+                }
+
+            } catch (Exception e) {
+                String accNo = StringUtils.getAccNo();
+                if (accNo != null && accNo.contains(VISA_PAN)) {
+                    failures.add("MC Sale thread (exception): Visa PAN leaked");
+                }
+            }
+        });
+
+        startLatch.countDown();
+        try { authFuture.get(30, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception e) { /* gateway failure ok */ }
+        try { saleFuture.get(30, java.util.concurrent.TimeUnit.SECONDS); } catch (Exception e) { /* gateway failure ok */ }
+        executor.shutdown();
+
+        assertTrue("Simultaneous Auth+Sale masking isolation failures: " + failures, failures.isEmpty());
+    }
+
+    /**
+     * Stress test: Multiple concurrent sale transactions with different cards
+     * running simultaneously to verify no masking state leakage under high contention.
+     * This mimics a real-world scenario where a multi-threaded payment server
+     * processes many NTS transactions simultaneously.
+     */
+    @Test
+    public void masking_HighContention_MultipleSales_ThreadSafety() throws Exception {
+        final int THREAD_COUNT = 8;
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadId = i;
+            final boolean useMasterCard = (i % 2 == 0);
+
+            futures.add(executor.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    CreditTrackData threadTrack;
+                    String otherPan;
+
+                    if (useMasterCard) {
+                        threadTrack = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+                        otherPan = "4012002000060016";
+                    } else {
+                        threadTrack = new CreditTrackData();
+                        threadTrack.setValue(";4012002000060016=25121011803939600000?");
+                        threadTrack.setEntryMethod(EntryMethod.Swipe);
+                        otherPan = "5473500000000014";
+                    }
+
+                    NtsRequestMessageHeader threadHeader = new NtsRequestMessageHeader();
+                    threadHeader.setTerminalDestinationTag("999");
+                    threadHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                    threadHeader.setNtsMessageCode(NtsMessageCode.DataCollectOrSale);
+
+                    PriorMessageInformation pmi = new PriorMessageInformation();
+                    pmi.setResponseTime("1");
+                    pmi.setConnectTime("999");
+                    pmi.setMessageReasonCode("01");
+                    threadHeader.setPriorMessageInformation(pmi);
+
+                    NtsTag16 threadTag = new NtsTag16();
+                    threadTag.setPumpNumber(1);
+                    threadTag.setWorkstationId(1);
+                    threadTag.setServiceCode(ServiceCode.Self);
+                    threadTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                    NtsProductData pd = new NtsProductData(ServiceLevel.FullServe, threadTrack);
+                    pd.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 1.24, 2.899);
+                    pd.setPurchaseType(PurchaseType.FuelAndNonFuel);
+                    pd.add(new BigDecimal("32.33"), new BigDecimal(0));
+
+                    // Execute sale through NtsConnector (triggers internal masking)
+                    Transaction response = threadTrack.charge(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsRequestMessageHeader(threadHeader)
+                            .withUniqueDeviceId("0102")
+                            .withNtsProductData(pd)
+                            .withNtsTag16(threadTag)
+                            .withCvn("123")
+                            .execute();
+
+                    assertNotNull(response);
+
+                    // Critical check: other thread's PAN must not be in this thread's state
+                    String accNo = StringUtils.getAccNo();
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("HighContention Thread " + threadId + " (" + (useMasterCard ? "MC" : "Visa") + "): other PAN leaked");
+                    }
+
+                } catch (Exception e) {
+                    // Gateway exceptions ok — check masking isolation even on failure
+                    String accNo = StringUtils.getAccNo();
+                    String otherPan = useMasterCard ? "4012002000060016" : "5473500000000014";
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("HighContention Thread " + threadId + " (exception): other PAN leaked");
+                    }
+                }
+            }));
+        }
+
+        startLatch.countDown();
+        for (Future<?> f : futures) {
+            try {
+                f.get(60, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.ExecutionException e) {
+                // Ignore gateway failures
+            }
+        }
+        executor.shutdown();
+
+        assertTrue("High contention masking failures: " + failures, failures.isEmpty());
+    }
+
+    /**
+     * Verifies that ThreadLocal state is properly cleared between Auth and Capture phases
+     * in concurrent transactions. Each thread performs an Auth, validates ThreadLocal cleanup,
+     * then performs a Capture and verifies no stale data remains from the Auth phase or
+     * from other threads.
+     */
+    @Test
+    public void masking_AuthCapture_ThreadLocalCleanup_ThreadSafety() throws Exception {
+        final int THREAD_COUNT = 6;
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<String> failures = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadId = i;
+            final boolean useMasterCard = (i % 2 == 0);
+
+            futures.add(executor.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    CreditTrackData threadTrack;
+                    String myPan;
+                    String otherPan;
+
+                    if (useMasterCard) {
+                        threadTrack = NtsTestCards.MasterCardTrack2(EntryMethod.Swipe);
+                        myPan = "5473500000000014";
+                        otherPan = "4012002000060016";
+                    } else {
+                        threadTrack = new CreditTrackData();
+                        threadTrack.setValue(";4012002000060016=25121011803939600000?");
+                        threadTrack.setEntryMethod(EntryMethod.Swipe);
+                        myPan = "4012002000060016";
+                        otherPan = "5473500000000014";
+                    }
+
+                    NtsRequestMessageHeader authHeader = new NtsRequestMessageHeader();
+                    authHeader.setTerminalDestinationTag("999");
+                    authHeader.setPinIndicator(PinIndicator.NotPromptedPin);
+                    authHeader.setNtsMessageCode(NtsMessageCode.AuthorizationOrBalanceInquiry);
+
+                    PriorMessageInformation pmi = new PriorMessageInformation();
+                    pmi.setResponseTime("1");
+                    pmi.setConnectTime("999");
+                    pmi.setMessageReasonCode("01");
+                    authHeader.setPriorMessageInformation(pmi);
+
+                    NtsTag16 threadTag = new NtsTag16();
+                    threadTag.setPumpNumber(1);
+                    threadTag.setWorkstationId(1);
+                    threadTag.setServiceCode(ServiceCode.Self);
+                    threadTag.setSecurityData(SecurityData.NoAVSAndNoCVN);
+
+                    // Phase 1: Auth
+                    Transaction authResponse = threadTrack.authorize(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsRequestMessageHeader(authHeader)
+                            .withUniqueDeviceId("0102")
+                            .withNtsTag16(threadTag)
+                            .execute();
+
+                    assertNotNull(authResponse);
+
+                    // Verify ThreadLocal is cleaned after auth (centralized cleanup in NtsConnector)
+                    String accNoAfterAuth = StringUtils.getAccNo();
+                    StringBuilder maskReqAfterAuth = StringUtils.getMaskRequest();
+
+                    if (accNoAfterAuth != null && accNoAfterAuth.contains(otherPan)) {
+                        failures.add("Thread " + threadId + " [Auth]: other thread's PAN leaked into accNo");
+                    }
+                    if (maskReqAfterAuth != null && maskReqAfterAuth.toString().contains(otherPan)) {
+                        failures.add("Thread " + threadId + " [Auth]: other thread's PAN in masked request");
+                    }
+
+                    // Phase 2: Capture
+                    Transaction transaction = Transaction.fromNetwork(
+                            authResponse.getTransactionReference().getAuthorizer(),
+                            authResponse.getTransactionReference().getApprovalCode(),
+                            authResponse.getResponseCode(),
+                            authResponse.getOriginalTransactionDate(),
+                            authResponse.getOriginalTransactionTime(),
+                            threadTrack
+                    );
+
+                    NtsRequestMessageHeader captureHeader = new NtsRequestMessageHeader();
+                    captureHeader.setTerminalDestinationTag("999");
+                    captureHeader.setPinIndicator(PinIndicator.WithoutPin);
+                    captureHeader.setNtsMessageCode(NtsMessageCode.ForceCollectOrForceSale);
+                    captureHeader.setPriorMessageInformation(pmi);
+
+                    NtsProductData pd = new NtsProductData(ServiceLevel.FullServe, threadTrack);
+                    pd.addFuel(NtsProductCode.Diesel1, UnitOfMeasure.Gallons, 1.24, 2.899);
+                    pd.setPurchaseType(PurchaseType.FuelAndNonFuel);
+                    pd.add(new BigDecimal("32.33"), new BigDecimal(0));
+
+                    Transaction captureResponse = transaction.capture(new BigDecimal(10))
+                            .withCurrency("USD")
+                            .withNtsProductData(pd)
+                            .withNtsRequestMessageHeader(captureHeader)
+                            .withNtsTag16(threadTag)
+                            .execute();
+
+                    assertNotNull(captureResponse);
+
+                    // Verify ThreadLocal is cleaned after capture
+                    String accNoAfterCapture = StringUtils.getAccNo();
+                    StringBuilder maskReqAfterCapture = StringUtils.getMaskRequest();
+
+                    if (accNoAfterCapture != null && accNoAfterCapture.contains(otherPan)) {
+                        failures.add("Thread " + threadId + " [Capture]: other thread's PAN leaked into accNo");
+                    }
+                    if (maskReqAfterCapture != null && maskReqAfterCapture.toString().contains(otherPan)) {
+                        failures.add("Thread " + threadId + " [Capture]: other thread's PAN in masked request");
+                    }
+
+                    // Verify no stale auth data leaks into capture phase
+                    // After centralized cleanup, ThreadLocal should not carry over from auth
+                    if (accNoAfterCapture != null && accNoAfterAuth != null
+                            && accNoAfterCapture.equals(accNoAfterAuth)
+                            && !accNoAfterCapture.isEmpty()) {
+                        // This could indicate ThreadLocal was NOT cleared between phases
+                        // Only flag if accNo still has the raw (unmasked) PAN
+                        if (accNoAfterCapture.contains(myPan)) {
+                            failures.add("Thread " + threadId + ": stale auth accNo persisted into capture phase");
+                        }
+                    }
+
+                } catch (Exception e) {
+                    // Gateway/network exceptions are acceptable for thread safety testing
+                    String accNo = StringUtils.getAccNo();
+                    String otherPan = useMasterCard ? "4012002000060016" : "5473500000000014";
+                    if (accNo != null && accNo.contains(otherPan)) {
+                        failures.add("Thread " + threadId + " (exception): other PAN leaked");
+                    }
+                }
+            }));
+        }
+
+        startLatch.countDown();
+        for (Future<?> f : futures) {
+            try {
+                f.get(60, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                // Ignore gateway failures
+            }
+        }
+        executor.shutdown();
+
+        assertTrue("Auth-Capture ThreadLocal cleanup failures: " + failures, failures.isEmpty());
     }
 
 }

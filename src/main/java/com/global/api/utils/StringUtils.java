@@ -4,9 +4,6 @@ import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.IStringConstant;
 import com.global.api.entities.enums.TrackNumber;
 import com.global.api.paymentMethods.ITrackData;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -16,12 +13,24 @@ import java.util.regex.Pattern;
 
 public class StringUtils {
 
-    @Getter @Setter
-    public static String accNo;
-    @Getter @Setter
-    public static String expDate;
-    @Getter @Setter
-    public static String trackData;
+    private static final ThreadLocal<String> accNoHolder = new ThreadLocal<>();
+    private static final ThreadLocal<String> expDateHolder = new ThreadLocal<>();
+    private static final ThreadLocal<String> trackDataHolder = new ThreadLocal<>();
+
+    public static String getAccNo() { return accNoHolder.get(); }
+    public static void setAccNo(String value) {
+        if (value == null) accNoHolder.remove(); else accNoHolder.set(value);
+    }
+
+    public static String getExpDate() { return expDateHolder.get(); }
+    public static void setExpDate(String value) {
+        if (value == null) expDateHolder.remove(); else expDateHolder.set(value);
+    }
+
+    public static String getTrackData() { return trackDataHolder.get(); }
+    public static void setTrackData(String value) {
+        if (value == null) trackDataHolder.remove(); else trackDataHolder.set(value);
+    }
 
     public static boolean isNullOrEmpty(String value) {
         return value == null || value.trim().equals("");
@@ -417,26 +426,33 @@ public class StringUtils {
     }
 
     public static String maskAccountNumber(String value) {
-        String firstSentinel = "";
-        String lastSentinel = "";
-
+        if (value == null || value.trim().length() <= 10) {
+            return padLeft("", value == null ? 0 : value.trim().length(), '*');
+        }
         String pan = value.trim();
-        firstSentinel = pan.substring(0,6);
-        lastSentinel = pan.substring(pan.length()-4);
+        String firstSentinel = pan.substring(0, 6);
+        String lastSentinel = pan.substring(pan.length() - 4);
 
-        int len = (pan.length() -4) - firstSentinel.length();
+        int len = (pan.length() - 4) - firstSentinel.length();
 
-        return firstSentinel + StringUtils.padLeft("",len,'*') + lastSentinel;
+        return firstSentinel + StringUtils.padLeft("", len, '*') + lastSentinel;
 
     }
 
-    public static StringBuilder message;
+    private static final ThreadLocal<StringBuilder> messageHolder = new ThreadLocal<>();
 
     public static void setMaskRequest(StringBuilder sb){
-        message = sb;
+        if (sb == null) messageHolder.remove(); else messageHolder.set(sb);
     }
 
     public static StringBuilder getMaskRequest(){
-        return message;
+        return messageHolder.get();
+    }
+
+    public static void clearThreadLocalData() {
+        accNoHolder.remove();
+        expDateHolder.remove();
+        trackDataHolder.remove();
+        messageHolder.remove();
     }
 }

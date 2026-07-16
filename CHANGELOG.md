@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V15.3.0 (07/09/2026)
+## Latest Version - V15.3.1 (07/16/2026)
+### Enhancements:
+- [NTS] - Refined and expanded NTS masking logic to ensure more consistent and comprehensive handling of sensitive fields across transaction flows, improving the reliability and consistency of masked output in logs and messages.
+
+## Version - V15.3.0 (07/09/2026)
 ### Enhancements:
 - [GPAPI] - Added Multicurrency support for APAC.
 - [GPAPI] - Added support for closing batches without predefined Batch ID.

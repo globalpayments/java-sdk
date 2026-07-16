@@ -233,20 +233,26 @@ public class NtsEbtRequest implements INtsRequestMessage {
         maskedRequest.append(request.getMessageRequest());
         if (this.getTrackData() != null) {
             int startIndex = maskedRequest.indexOf(this.getTrackData());
-            int stopIndex = startIndex + this.getTrackData().length();
-            maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+            if (startIndex != -1) {
+                int stopIndex = startIndex + this.getTrackData().length();
+                maskedRequest.replace(startIndex, stopIndex, StringUtils.maskTrackData(this.getTrackData()));
+            }
         }
 
         if (this.getAccNo() != null) {
             int startIndex1 = maskedRequest.indexOf(this.getAccNo());
-            int stopIndex1 = startIndex1 + this.getAccNo().length();
-            maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+            if (startIndex1 != -1) {
+                int stopIndex1 = startIndex1 + this.getAccNo().length();
+                maskedRequest.replace(startIndex1, stopIndex1, StringUtils.maskAccountNumber(this.getAccNo()));
+            }
         }
 
         if (this.getExpDate() != null) {
             int startIndex2 = maskedRequest.indexOf(this.getExpDate());
-            int stopIndex2 = startIndex2 + this.getExpDate().length();
-            maskedRequest.replace(startIndex2, stopIndex2, "****");
+            if (startIndex2 != -1) {
+                int stopIndex2 = startIndex2 + this.getExpDate().length();
+                maskedRequest.replace(startIndex2, stopIndex2, StringUtils.padLeft("", this.getExpDate().length(), '*'));
+            }
         }
 
         StringUtils.setMaskRequest(maskedRequest);
