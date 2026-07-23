@@ -1,6 +1,7 @@
 package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.*;
 import com.global.api.entities.enums.*;
@@ -1595,5 +1596,55 @@ public class NtsDebitTest {
 
         // check response
         assertEquals("00", dataCollectResponse.getResponseCode());
+    }
+
+    @Test
+    public void test_preauthCompletion_originalApprovedAmount_10377() throws ApiException {
+        AuthorizationBuilder builder = track.authorize(new BigDecimal("11"))
+                .withCurrency("USD")
+                .withNtsTag16(getTag16())
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader);
+
+        Transaction preAuthorizationResponse = builder.execute();
+        assertNotNull(preAuthorizationResponse);
+        assertEquals("00", preAuthorizationResponse.getResponseCode());
+        assertNotNull(preAuthorizationResponse.getTransactionReference().getOriginalApprovedAmount());
+
+        ManagementBuilder managementBuilder = preAuthorizationResponse.preAuthCompletion(new BigDecimal("11"))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withNtsTag16(getTag16())
+                .withSettlementAmount(new BigDecimal("10"));
+
+        Transaction completionResponse = managementBuilder.execute();
+        assertEquals("00", completionResponse.getResponseCode());
+        assertNotNull(completionResponse.getTransactionReference().getOriginalApprovedAmount());
+    }
+
+    @Test
+    public void test_PinDebit_preauth_completion_originalAmountCheck() throws ApiException {
+        TransactionReference transactionReference = new TransactionReference();
+        transactionReference.setOriginalTransactionCode(TransactionCode.PreAuthorizationFunds);
+        Transaction transaction = Transaction.fromBuilder()
+                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
+                .withPaymentMethod(track)
+                .withDebitAuthorizer("21")
+                .withApprovalCode("778899")
+                .withAuthorizationCode("00")
+                .withOriginalTransactionDate("0721")
+                .withTransactionTime("105529")
+                .build();
+
+        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
+        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PinDebit);
+
+        ManagementBuilder builder = transaction.preAuthCompletion(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withSettlementAmount(new BigDecimal("10"))
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader);
+
+        Transaction preauthCompletion = builder.execute();
+        assertNotNull(preauthCompletion);
+        assertEquals("00", preauthCompletion.getResponseCode());
+        assertNotNull(preauthCompletion.getTransactionReference().getOriginalAmount());
     }
 }

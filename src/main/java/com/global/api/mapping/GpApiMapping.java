@@ -145,7 +145,10 @@ public class GpApiMapping {
                     if (json.has("transactions")) {
                         JsonDoc trn = json.get("transactions");
                         transaction.setBalanceAmount(trn.getString("amount") != null ? trn.getAmount("amount") : null);
-                        payByLinkResponse.setAllowedPaymentMethods(trn.getStringArrayList("allowed_payment_methods").toArray(new String[0]));
+                        ArrayList<String> allowedPaymentMethods = trn.getStringArrayList("allowed_payment_methods");
+                        payByLinkResponse.setAllowedPaymentMethods(allowedPaymentMethods != null
+                                ? allowedPaymentMethods.toArray(new String[0])
+                                : new String[0]);
                     }
 
                     transaction.setPayByLinkResponse(payByLinkResponse);
@@ -843,9 +846,10 @@ public class GpApiMapping {
                 payByLinkResponse.setCurrency(transaction.getString("currency"));
                 payByLinkResponse.setAmount(transaction.getDouble("amount"));
                 payByLinkResponse.setCountry(transaction.getString("country"));
-                payByLinkResponse.setAllowedPaymentMethods(getAllowedPaymentMethods(transaction).stream()
-                        .map(PaymentMethodName::name)
-                        .toArray(String[]::new));
+                ArrayList<String> allowedPaymentMethods = transaction.getStringArrayList("allowed_payment_methods");
+                payByLinkResponse.setAllowedPaymentMethods(allowedPaymentMethods != null
+                        ? allowedPaymentMethods.toArray(new String[0])
+                        : new String[0]);
             }
 
             // Map Order and nested Transaction Configuration if present
@@ -898,13 +902,36 @@ public class GpApiMapping {
         return transaction;
     }
 
+    /**
+     * Retrieves a list of allowed payment method names from a JSON document.
+     *
+     * <p>Parses the {@code transactions.allowed_payment_methods} array from the
+     * provided {@link JsonDoc} and maps each entry to a {@link PaymentMethodName}
+     * using the {@link Target#GP_API} target. Entries that cannot be mapped are ignored.</p>
+     *
+     * @param doc the {@link JsonDoc} containing the {@code transactions} node
+     * @return a non-null list of payment method names
+     */
     private static List<PaymentMethodName> getAllowedPaymentMethods(JsonDoc doc) {
         List<PaymentMethodName> list = new ArrayList<>();
-        for (String item : doc.get("transactions").getStringArrayList("allowed_payment_methods")) {
-            for (PaymentMethodName paymentMethodName : PaymentMethodName.values()) {
-                if (paymentMethodName.getValue(Target.GP_API).equals(item)) {
-                    list.add(paymentMethodName);
-                }
+        if (doc == null || !doc.has("transactions")) {
+            return list;
+        }
+
+        JsonDoc transactions = doc.get("transactions");
+        if (transactions == null) {
+            return list;
+        }
+
+        ArrayList<String> allowedPaymentMethods = transactions.getStringArrayList("allowed_payment_methods");
+        if (allowedPaymentMethods == null) {
+            return list;
+        }
+
+        for (String item : allowedPaymentMethods) {
+            PaymentMethodName paymentMethodName = PaymentMethodName.fromString(item, Target.GP_API);
+            if (paymentMethodName != null) {
+                list.add(paymentMethodName);
             }
         }
 

@@ -2,13 +2,40 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.Address;
+import com.global.api.entities.Customer;
+import com.global.api.entities.DisplayConfiguration;
+import com.global.api.entities.PayByLinkData;
+import com.global.api.entities.PaymentMethodConfiguration;
+import com.global.api.entities.PhoneNumber;
+import com.global.api.entities.Surcharge;
+import com.global.api.entities.Terms;
 import com.global.api.entities.Transaction;
-import com.global.api.entities.enums.*;
+import com.global.api.entities.enums.AddressType;
+import com.global.api.entities.enums.CardType;
+import com.global.api.entities.enums.ChallengeRequestIndicator;
+import com.global.api.entities.enums.Channel;
+import com.global.api.entities.enums.DigitalWalletProvider;
+import com.global.api.entities.enums.FundingMode;
+import com.global.api.entities.enums.MobilePaymentMethodType;
+import com.global.api.entities.enums.PayByLinkType;
+import com.global.api.entities.enums.PaymentEntryMode;
+import com.global.api.entities.enums.PaymentMethodName;
+import com.global.api.entities.enums.PaymentMethodUsageMode;
+import com.global.api.entities.enums.PhoneNumberType;
+import com.global.api.entities.enums.StorageMode;
+import com.global.api.entities.enums.Target;
+import com.global.api.entities.enums.TransactionModifier;
+import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
+import com.global.api.paymentMethods.InstallmentData;
 import com.global.api.serviceConfigs.GpApiConfig;
+import com.global.api.services.PayByLinkService;
 import com.global.api.utils.StringUtils;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,10 +51,25 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
             "\n\"protocolVersion\": \"ECv1\"," +
             "\n\"signedMessage\": \"{\\\"encryptedMessage\\\":\\\"keMtGQ03Kz+ydkxvv3Wy8XtUoHIGDvaKdLmIT3Czi7gY4wNe7o6UQ4gkjxH2qyYvRyoFqSfUyXAN+++AEEAlaJUsJysFJkM6G3GOcAvt7mxrNRJQhj60JbvX3iJ/NBDTlInPZVO5jbDh314igbV/tKhehztLIjFF4+Rn0bwh+ZE8DvFqt+hH/piw4vvDSVPXLdMiCddfmFKYEgHAxeiovHjnlb6PcA6UXRIWanu0etLmX0Wj4Kkz15MD6rIjPaKTP8VJr5El13/4SaRpbWZ8pAEULZuJYNUQbhwEas+5YjsskGDPJQKn8L2zMAOF9YOCA9+C/wBMRvDPvJ4X4hobkk7E/QsHViUtKFlEYHN73ojTsymrJxq9kDQY2rZQtgalzDq0gRWJYxDyvCX3979X8FGNitbV7rzL2rPyt0TA\\\",\\\"ephemeralPublicKey\\\":\\\"BMEZDnSw5a1OgsZlMJU9mrml/FWfKzRRNgtV/2P7uzpb0j5/MuqXH4gFgan6u1qlVC8E6nPCsago7yu2tMNJBAA\\\\u003d\\\",\\\"tag\\\":\\\"YGvjeXWGRW1jfLkHzm6vDJKu3p+ccCeUF/xARa5NQuk\\\\u003d\\\"}" +
             "\"\n}";
+    private static final String EU_HPP_CONFIG = "EU_HPP_CONFIG";
 
     public GpApiDigitalWalletsTest() throws ApiException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
         ServicesContainer.configureService(config);
+
+        // Arrange: service configuration
+        GpApiConfig hppConfig = new GpApiConfig();
+        hppConfig.setAppId(EU_HPP_APP_ID);
+        hppConfig.setAppKey(EU_HPP_APP_KEY);
+        hppConfig.setChannel(Channel.CardNotPresent);
+        hppConfig.setCountry("US");
+        hppConfig.setServiceUrl("https://apis.sandbox.eu.globalpay.com/ucp");
+        hppConfig.setEnableLogging(true);
+        hppConfig.setRequestLogger(new RequestConsoleLogger());
+        hppConfig.setAccessTokenInfo(
+                new AccessTokenInfo().setTransactionProcessingAccountName("GPECOM_Transaction_Processing_CNP")
+        );
+        ServicesContainer.configureService(hppConfig,EU_HPP_CONFIG);
 
         card = new CreditCardData();
         card.setCardHolderName("James Mason");
@@ -351,5 +393,130 @@ public class GpApiDigitalWalletsTest extends BaseGpApiTest {
         assertNotNull(response.getPayerDetails().getShippingAddress());
         assertNotNull(response.getPayerDetails().getFirstName());
         assertNotNull(response.getPayerDetails().getLastName());
+    }
+
+    @Test
+    public void HostedPaymentPage_CreatePayByLink_ClickToPay() throws ApiException {
+        // Arrange: pay by link request
+        PayByLinkData payByLinkData = new PayByLinkData();
+        payByLinkData.setType(PayByLinkType.HOSTED_PAYMENT_PAGE);
+        payByLinkData.setUsageMode(PaymentMethodUsageMode.SINGLE);
+        payByLinkData.setUsageLimit(17);
+        payByLinkData.setAllowedPaymentMethods(new String[]{PaymentMethodName.Card.getValue(Target.GP_API), "paypal"});
+        payByLinkData.setName("Mobile Bill Payment");
+        payByLinkData.isShippable(false);
+        payByLinkData.setIsDccEnabled(true);
+        payByLinkData.setReturnUrl("https://webhook.site/f5fd6ea7-0328-4701-91ab-c5d239668c7f");
+        payByLinkData.setStatusUpdateUrl("https://webhook.site/f5fd6ea7-0328-4701-91ab-c5d239668c7f");
+        payByLinkData.setCancelUrl("https://webhook.site/f5fd6ea7-0328-4701-91ab-c5d239668c7f");
+        payByLinkData.setPaymentMethodConfiguration(getPaymentMethodConfiguration());
+        payByLinkData.setExpirationDate(DateTime.now().plusDays(10));
+        payByLinkData.setSubmitButtonLabel("SUBMIT NOW");
+        payByLinkData.setEntryMode(PaymentEntryMode.Ecom);
+        payByLinkData.setShippingAmount(new BigDecimal("1.00"));
+
+        InstallmentData installmentData = new InstallmentData();
+        installmentData.setFundingMode(FundingMode.MERCHANT_FUNDED.getValue());
+        Terms terms = new Terms();
+        terms.setMaxAmount("1000");
+        terms.setMaxTimeUnitNumber("24");
+        installmentData.setTerms(terms);
+        payByLinkData.setInstallmentData(installmentData);
+
+        Surcharge debitSurcharge = new Surcharge();
+        debitSurcharge.setAmount(new BigDecimal("100001"));
+        debitSurcharge.setCardType("DEBIT");
+
+        Surcharge creditSurcharge = new Surcharge();
+        creditSurcharge.setAmount(new BigDecimal("100002"));
+        creditSurcharge.setCardType("CREDIT");
+
+        Surcharge commercialSurcharge = new Surcharge();
+        commercialSurcharge.setAmount(new BigDecimal("100003"));
+        commercialSurcharge.setCardType("COMMERCIAL");
+        payByLinkData.setSurcharge(new Surcharge[]{debitSurcharge, creditSurcharge, commercialSurcharge});
+
+        DisplayConfiguration displayConfiguration = new DisplayConfiguration();
+        displayConfiguration.setIframeDimensionsDomain("https://www.example.com");
+        displayConfiguration.setIframeResponseDomain("https://www.example.com");
+        payByLinkData.setDisplayConfiguration(displayConfiguration);
+
+        Address shippingAddress = new Address();
+        shippingAddress.setStreetAddress1("Flat 123");
+        shippingAddress.setStreetAddress2("House 456");
+        shippingAddress.setStreetAddress3("Btower");
+        shippingAddress.setCity("Chicago");
+        shippingAddress.setState("IL");
+        shippingAddress.setPostalCode("50001");
+        shippingAddress.setCountry("US");
+
+        Address billingAddress = new Address();
+        billingAddress.setStreetAddress1("bill_street1");
+        billingAddress.setStreetAddress2("bill_street2");
+        billingAddress.setStreetAddress3("bill_street3");
+        billingAddress.setCity("Bill_city");
+        billingAddress.setPostalCode("44");
+        billingAddress.setCountry("US");
+
+        // Act
+        Transaction response = PayByLinkService
+                .create(payByLinkData, new BigDecimal("1000.00"))
+                .withCurrency("USD")
+                .withClientTransactionId("123456789")
+                .withDescription("map_COMMENT1")
+                .withCustomer(createCustomer())
+                .withPhoneNumber("99", "1801555999", PhoneNumberType.Shipping)
+                .withAddress(shippingAddress, AddressType.Shipping)
+                .withAddress(billingAddress, AddressType.Billing)
+                .withInstallmentData(installmentData)
+                .execute(EU_HPP_CONFIG);
+
+        // Assert
+        assertNotNull(response);
+        assertNotNull(response.getPayByLinkResponse().getUrl());
+        assertNotNull(response.getPayByLinkResponse().getAllowedPaymentMethods());
+    }
+
+    @Test
+    public void HostedPaymentPage_CreatePayByLink_NullPayByLinkData_ShouldFail() {
+        GatewayException ex = assertThrows(GatewayException.class, () ->
+                PayByLinkService
+                        .create(null, new BigDecimal("1000.00"))
+                        .withCurrency("USD")
+                        .execute(EU_HPP_CONFIG)
+        );
+
+        assertNotNull(ex);
+    }
+
+    private static PaymentMethodConfiguration getPaymentMethodConfiguration() {
+        PaymentMethodConfiguration paymentMethodConfiguration = new PaymentMethodConfiguration();
+        paymentMethodConfiguration.setStorageMode(StorageMode.ALWAYS);
+        paymentMethodConfiguration.setExemptStatus("LOW_VALUE");
+        paymentMethodConfiguration.setIsBillingAddressRequired(true);
+        paymentMethodConfiguration.setIsShippableAddressEnabled(true);
+        paymentMethodConfiguration.setIsAddressOverrideAllowed(true);
+        paymentMethodConfiguration.setChallengeRequestIndicator(ChallengeRequestIndicator.ChallengeMandated);
+        paymentMethodConfiguration.setDigitalWalletProviders(new DigitalWalletProvider[]{
+                DigitalWalletProvider.GOOGLEPAY,
+                DigitalWalletProvider.APPLEPAY,
+                DigitalWalletProvider.CLICK_TO_PAY
+        });
+        return paymentMethodConfiguration;
+    }
+
+    private static Customer createCustomer() {
+        Customer customer = new Customer();
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setEmail("jamesmason@example.com");
+        customer.setLanguage("en");
+        customer.setStatus("NEW");
+        customer.setIsShippingAddressSameAsBilling(true);
+        PhoneNumber phone = new PhoneNumber();
+        phone.setCountryCode("44");
+        phone.setNumber("1801555888");
+        customer.setPhone(phone);
+        return customer;
     }
 }

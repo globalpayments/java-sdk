@@ -98,7 +98,9 @@ public class UpaController extends DeviceController {
             return new UpaTransactionResponse(responseObj);
         } catch (ApiException e) {
             if (e.getMessage().equals("Terminal did not respond in the given timeout")) {
-                _device.cancel();
+                try {
+                    _device.cancel();
+                } catch (ApiException ignored) { }
             }
             throw e;
         }

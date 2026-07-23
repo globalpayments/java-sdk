@@ -1,6 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.entities.enums.ChallengeRequestIndicator;
+import com.global.api.entities.enums.DigitalWalletProvider;
 import com.global.api.entities.enums.StorageMode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,4 +20,6 @@ public class PaymentMethodConfiguration {
     private Boolean isBillingAddressRequired;
 
     private ChallengeRequestIndicator challengeRequestIndicator;
+
+    private DigitalWalletProvider[] digitalWalletProviders;
 }

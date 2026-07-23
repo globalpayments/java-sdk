@@ -573,6 +573,14 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         if (builderTransactionType == TransactionType.Create && builder.getPayByLinkData() instanceof PayByLinkData) {
             var payByLinkData = builder.getPayByLinkData();
 
+            JsonDoc displayConfiguration = new JsonDoc()
+                    .set("iframe_dimensions_domain", payByLinkData.getDisplayConfiguration() != null
+                            ? payByLinkData.getDisplayConfiguration().getIframeDimensionsDomain()
+                            : null)
+                    .set("iframe_response_domain", payByLinkData.getDisplayConfiguration() != null
+                            ? payByLinkData.getDisplayConfiguration().getIframeResponseDomain()
+                            : null);
+
             var requestData =
                     new JsonDoc()
                             .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
@@ -588,7 +596,9 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("expiration_date", payByLinkData.getExpirationDate() != null ? getDateIfNotNull(payByLinkData.getExpirationDate()) : null)
                             // .set("status", payByLinkData.getStatus() != null ? payByLinkData.getStatus().toString() : null)
                             .set("status", PayByLinkStatus.ACTIVE.toString())
-                            .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null);
+                            .set("images", payByLinkData.getImages() != null ? payByLinkData.getImages().toString() : null)
+                            .set("submit_button_label", payByLinkData.getSubmitButtonLabel())
+                            .set("display_configuration", displayConfiguration.isEmpty() ? null : displayConfiguration);
 
             if (!payByLinkData.getType().equals(PayByLinkType.HOSTED_PAYMENT_PAGE)) {
 
@@ -630,11 +640,31 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         new JsonDoc()
                                 .set("authentication", authentication)
                                 .set("apm", apm)
-                                .set("storage_mode", payByLinkData.getPaymentMethodConfiguration().getStorageMode());
+                                .set("storage_mode", payByLinkData.getPaymentMethodConfiguration().getStorageMode())
+                                .set("entry_mode", payByLinkData.getEntryMode() != null ? payByLinkData.getEntryMode().getValue() : null);
+
+                var digitalWalletProviders = payByLinkData.getPaymentMethodConfiguration().getDigitalWalletProviders();
+                if (digitalWalletProviders != null && digitalWalletProviders.length > 0) {
+                    paymentMethodConfiguration.set("digital_wallets", new JsonDoc().set("provider", digitalWalletProviders));
+                }
 
                 var shippingAddress = GetBasicAddressInformation(builder.getShippingAddress(), true);
 
                 var shippingPhone = setPhoneInformation(builder.getShippingPhone());
+
+                var surcharges = new ArrayList<HashMap<String, Object>>();
+                if (payByLinkData.getSurcharge() != null) {
+                    for (var surcharge : payByLinkData.getSurcharge()) {
+                        if (surcharge == null) {
+                            continue;
+                        }
+
+                        var surchargeData = new HashMap<String, Object>();
+                        surchargeData.put("amount", StringUtils.toNumeric(surcharge.getAmount()));
+                        surchargeData.put("card_type", surcharge.getCardType() != null ? surcharge.getCardType() : null);
+                        surcharges.add(surchargeData);
+                    }
+                }
 
                 var order =
                         new JsonDoc()
@@ -644,7 +674,8 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("transaction_configuration", transactionConfiguration)
                                 .set("payment_method_configuration", paymentMethodConfiguration)
                                 .set("shipping_address", shippingAddress)
-                                .set("shipping_phone", shippingPhone);
+                                .set("shipping_phone", shippingPhone)
+                                .set("surcharge", surcharges.isEmpty() ? null : surcharges);
                 requestData.set("order", order);
 
                 // Visa installments configuration for HPP
@@ -972,7 +1003,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     payer.set("documents", documents);
                 }
             }
-        } else if (builder.getPayByLinkData().getType() == PayByLinkType.HOSTED_PAYMENT_PAGE) {
+        } else if (builder.getPayByLinkData() != null && builder.getPayByLinkData().getType() == PayByLinkType.HOSTED_PAYMENT_PAGE) {
 
             var billingAddress = GetBasicAddressInformation(builder.getBillingAddress(), true);
             if (builder.getCustomerData().getPhone() != null) {

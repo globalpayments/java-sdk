@@ -1,6 +1,7 @@
 package com.global.api.tests.network.nts;
 
 import com.global.api.ServicesContainer;
+import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.builders.ManagementBuilder;
 import com.global.api.entities.Address;
 import com.global.api.entities.Transaction;
@@ -1782,6 +1783,51 @@ public class NtsGiftTests {
     public void test_NTS24point1_svs_issue_reverse() throws ApiException {
         Transaction issueReverse = SVS_reverseTransaction(TransactionTypeIndicator.CardIssue,70710,"0310","133711",new BigDecimal(14));
         assertEquals("00",issueReverse.getResponseCode());
+    }
+
+    @Test
+    public void test_SVS_Pre_Authorization_Completion_10377() throws ApiException {
+        acceptorConfig.setOperatingEnvironment(OperatingEnvironment.UnattendedAfd);
+
+        card = NtsTestCards.svsCard3();
+        BigDecimal originalAmount = new BigDecimal("14");
+        AuthorizationBuilder builder = card.authorize(originalAmount)
+                .withCurrency("USD")
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan);
+
+        Transaction authResponse = builder.execute();
+        assertNotNull(authResponse);
+        assertEquals(originalAmount,authResponse.getTransactionReference().getOriginalAmount());
+
+        ManagementBuilder managementBuilder = authResponse.preAuthCompletion(originalAmount)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan);
+
+        Transaction completionResponse = managementBuilder.execute();
+        assertEquals(originalAmount,completionResponse.getTransactionReference().getOriginalAmount());
+    }
+
+    @Test
+    public void test_SVS_preauth_completion_Individual_10377() throws ApiException {
+        giftCard = NtsTestCards.svsCard3();
+        Transaction originalTransaction = Transaction.fromBuilder()
+                .withPaymentMethod(giftCard)
+                .withOriginalTransactionDate("0721")
+                .withTransactionTime("063651")
+                .build();
+
+        originalTransaction.getTransactionReference()
+                .setOriginalTransactionTypeIndicator(TransactionTypeIndicator.PreAuthorization);
+
+        BigDecimal originalAmount = new BigDecimal("14");
+        ManagementBuilder builder = originalTransaction.preAuthCompletion(originalAmount)
+                .withNtsRequestMessageHeader(ntsRequestMessageHeader)
+                .withSystemTraceAuditNumber(Stan);
+
+        Transaction completion = builder.execute();
+        assertNotNull(completion.getTransactionReference().getOriginalAmount());
+        assertEquals(originalAmount,completion.getTransactionReference().getOriginalAmount());
     }
 
     public Transaction SVS_reverseTransaction(TransactionTypeIndicator originalTransactionIndicator,int originalStan,String originalDate, String originalTime,BigDecimal reversibleAmount) throws ApiException {

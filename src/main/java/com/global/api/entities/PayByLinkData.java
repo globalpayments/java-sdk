@@ -2,6 +2,7 @@ package com.global.api.entities;
 
 import com.global.api.entities.enums.PayByLinkStatus;
 import com.global.api.entities.enums.PayByLinkType;
+import com.global.api.entities.enums.PaymentEntryMode;
 import com.global.api.entities.enums.PaymentMethodUsageMode;
 import com.global.api.paymentMethods.InstallmentData;
 import lombok.Getter;
@@ -55,5 +56,13 @@ public class PayByLinkData {
     public void isShippable(Boolean shippable) {
         isShippable = shippable;
     }
+
+    private String submitButtonLabel;
+
+    private PaymentEntryMode entryMode;
+
+    private DisplayConfiguration displayConfiguration;
+
+    private Surcharge[] surcharge;
 
 }

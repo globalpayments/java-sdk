@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V15.3.1 (07/16/2026)
+## Latest Version - V15.3.2 (07/23/2026)
+### Enhancements:
+- [GPAPI] - Added Click to Pay as a supported digital wallet option (CLICK_TO_PAY) in the HPP via GPAPI.
+- [UPA] - Added error handling for incomplete positive scenario.
+
+### Bug Fixes:
+- [NTS] - Added mapping for the Original Amount field in the TransactionReference object for Debit and Gift Card completion transactions(Issue 10377).
+- [Snyk] - Critical and high level security issues resolved.
+
+## Version - V15.3.1 (07/16/2026)
 ### Enhancements:
 - [NTS] - Refined and expanded NTS masking logic to ensure more consistent and comprehensive handling of sensitive fields across transaction flows, improving the reliability and consistency of masked output in logs and messages.
 

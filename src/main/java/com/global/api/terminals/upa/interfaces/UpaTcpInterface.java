@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.*;
 
 import com.global.api.entities.enums.ControlCodes;
+import com.global.api.entities.exceptions.PositiveScenarioTimeoutException;
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.DeviceCommInterface;
 import com.global.api.terminals.TerminalUtilities;
@@ -62,6 +63,7 @@ public class UpaTcpInterface extends DeviceCommInterface {
         }
 
         byte[] sendBuffer = message.getSendBuffer();
+        byte[] responseMessage = null;
         try {
             // send the message out
             out.write(sendBuffer);
@@ -72,7 +74,6 @@ public class UpaTcpInterface extends DeviceCommInterface {
 
             // read the response
             boolean readyReceived = false;
-            byte[] responseMessage = null;
             do {
                 byte[] rvalue = getTerminalResponse();
                 if (rvalue != null) {
@@ -117,6 +118,25 @@ public class UpaTcpInterface extends DeviceCommInterface {
             return responseMessage;
         }
         catch (Exception exc) {
+            if (responseMessage != null) {
+                String transactionId = null;
+                String terminalRefNumber = null;
+                try {
+                    JsonDoc responseObj = JsonDoc.parse(new String(responseMessage));
+                    JsonDoc data = responseObj != null ? responseObj.get(Constants.COMMAND_DATA) : null;
+                    if (data != null) {
+                        JsonDoc innerData = data.get(Constants.COMMAND_DATA);
+                        if (innerData != null) {
+                            JsonDoc host = innerData.get("host");
+                            if (host != null) {
+                                transactionId = host.getString("referenceNumber");
+                                terminalRefNumber = host.getString("tranNo");
+                            }
+                        }
+                    }
+                } catch (Exception ignored) { }
+                throw new PositiveScenarioTimeoutException(exc.getMessage(), transactionId, terminalRefNumber, exc);
+            }
             throw new MessageException(exc.getMessage(), exc);
         }
         finally {

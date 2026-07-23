@@ -31,6 +31,30 @@ public class NtsTestCards {
         return card;
     }
 
+    public static GiftCard svsCard3(){
+        GiftCard card = new GiftCard();
+        card.setValue(";6006490799999933695=760711084109460?");
+        return card;
+    }
+
+    public static GiftCard svsCard4(){
+        GiftCard card = new GiftCard();
+        card.setValue(";6006490799999933703=760711038360467?");
+        return card;
+    }
+
+    public static GiftCard svsCard5(){
+        GiftCard card = new GiftCard();
+        card.setValue(";6006490799999933711=760711053246565?");
+        return card;
+    }
+
+    public static GiftCard svsCard6(){
+        GiftCard card = new GiftCard();
+        card.setValue(";6006490799999933729=760711099058361?");
+        return card;
+    }
+
     /**
     GIFT CARDS
     */
