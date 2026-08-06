@@ -43,24 +43,29 @@ public class NTSUserData {
 
         boolean isAVSUsed = StringUtils.isNullOrEmpty(cvn);
         boolean supportVisaFleetTwoPointO = Boolean.TRUE.equals(acceptorConfig.getCapableVisaFleetTwoPointO());
-        boolean isVisaFleet2 = supportVisaFleetTwoPointO && Boolean.TRUE.equals(acceptorConfig.getVisaFleet2());
+
         String uniqueDeviceId = StringUtils.padRight(builder.getUniqueDeviceId(), 4, ' ');
 
         StringBuilder sb = new StringBuilder();
 
         String amount = StringUtils.toNumeric(builder.getAmount());
-        if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
-                && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture)) && !isVisaFleet2) {
-                sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
+        if (cardType.equals(NTSCardTypes.MastercardFleet) && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
+            sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
             if (builder.getNtsProductData() != null) {
                 sb.append(getProductDataTag09(builder, cardType));
             }
             return sb.append("?").toString();
-        }
-        else if (isVisaFleet2 && cardType.equals(NTSCardTypes.VisaFleet) && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))){
-            sb.append(getFleetDataTag08(builder.getFleetData(),cardType));
-            if (builder.getNtsProductData() != null){
-                sb.append(getTagData09ForVisaFleetTwoPointO(builder,cardType));
+        } else if (cardType.equals(NTSCardTypes.VisaFleet) && (transactionType.equals(TransactionType.DataCollect) || transactionType.equals(TransactionType.Capture))) {
+            sb.append(getFleetDataTag08(builder.getFleetData(), cardType));
+            if (supportVisaFleetTwoPointO) {
+                if (builder.getNtsProductData() != null) {
+                    sb.append(getTagData09ForVisaFleetTwoPointO(builder, cardType));
+                }
+            } else {
+                if (builder.getNtsProductData() != null) {
+                    sb.append(getProductDataTag09(builder, cardType));
+                }
+
             }
             return sb.append("?").toString();
         }
@@ -146,6 +151,12 @@ public class NTSUserData {
         }
 
         //09
+        if (supportVisaFleetTwoPointO
+                && cardType.equals(NTSCardTypes.VisaFleet)
+                && transactionType.equals(TransactionType.Sale)) {
+            throw new UnsupportedOperationException("VisaFleet 2.0 does not support Sale transaction");
+        }
+
         if ((cardType.equals(NTSCardTypes.MastercardFleet) || cardType.equals(NTSCardTypes.VisaFleet))
                 && transactionType.equals(TransactionType.Sale)
                 && builder.getNtsProductData() != null) {
@@ -166,7 +177,8 @@ public class NTSUserData {
             sb.append("\\"); // Added separator
             totalNoOfTags++;
 
-        }else if (isVisaFleet2 && transactionType.equals(TransactionType.Auth) && cardType.equals(NTSCardTypes.VisaFleet)){
+        }else if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && cardType.equals(NTSCardTypes.VisaFleet) &&
+                builder.getNtsProductData() != null) {
             sb.append(UserDataTag.ProductDataTag.getValue()).append("\\");
             sb.append(getTagData09ForVisaFleetTwoPointO(builder, cardType));
             sb.append("?");
@@ -423,14 +435,14 @@ public class NTSUserData {
         }
 
         // 41 VisaFleet 2.0 Purchase Restriction Flag
-        if(isVisaFleet2 && transactionType.equals(TransactionType.Auth) && ((AuthorizationBuilder) builder).getPurchaseRestrictionFlag() != null && cardType.equals(NTSCardTypes.VisaFleet)) {
+        if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && ((AuthorizationBuilder) builder).getPurchaseRestrictionFlag() != null && cardType.equals(NTSCardTypes.VisaFleet)) {
             sb.append(UserDataTag.PurchaseRestrictionFlag.getValue() + "\\");
             sb.append(((AuthorizationBuilder) builder).getPurchaseRestrictionFlag().getValue() + "\\");
             totalNoOfTags++;
         }
 
         // 43 VisaFleet 2.0 Extended Fleet Prompt Data
-        if (isVisaFleet2 && transactionType.equals(TransactionType.Auth) && builder.getFleetData() != null && cardType.equals(NTSCardTypes.VisaFleet)){
+        if (supportVisaFleetTwoPointO && transactionType.equals(TransactionType.Auth) && builder.getFleetData() != null && cardType.equals(NTSCardTypes.VisaFleet)){
             sb.append(UserDataTag.ExtendedFleetPromptData.getValue() + "\\");
             sb.append(getTagData43((AuthorizationBuilder) builder));
             sb.append("\\");

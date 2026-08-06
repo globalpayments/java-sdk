@@ -1,6 +1,12 @@
 # Changelog
 
-## Latest Version - V15.3.2 (07/23/2026)
+## Latest Version - V15.3.3 (08/06/2026)
+### Bug Fixes:
+- [NTS] - Issue 20 : Fixed Format error in legacy Visa fleet transactions.
+          Removed VisaFleet2 flag for VF2.0 transactions.
+- [VAPS] - Issue 17 – DE_063 (quantity): Corrected non-fuel product quantity handling so the fractional indicator is always set to 4 (previously 0 in some cases).
+
+## Version - V15.3.2 (07/23/2026)
 ### Enhancements:
 - [GPAPI] - Added Click to Pay as a supported digital wallet option (CLICK_TO_PAY) in the HPP via GPAPI.
 - [UPA] - Added error handling for incomplete positive scenario.

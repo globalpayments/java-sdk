@@ -395,11 +395,11 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                                 rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
                             }
                             if (entry.getQuantity() != null) {
-                                rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+                                rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity().setScale(4, RoundingMode.HALF_UP)));
 
                             }
                             rvalue = rvalue.concat("\\")
-                                    .concat(StringUtils.toFractionalNumeric(entry.getPrice()) + "\\")
+                                    .concat(StringUtils.toFractionalNumeric(entry.getPrice().setScale(4, RoundingMode.HALF_UP)) + "\\")
                                     .concat(StringUtils.toNumericWithPrecision(entry.getAmount(), 4) + "\\");
                         }
                     }
@@ -582,7 +582,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
             // Write combined remaining entry with ZC code
             rvalue = rvalue.concat("ZC\\");
             rvalue = rvalue.concat(" ");
-            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(combinedQuantity));
+            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(combinedQuantity.setScale(4,RoundingMode.HALF_UP)));
             rvalue = rvalue.concat("\\")
                     .concat("\\")
                     .concat(StringUtils.toNumericWithPrecision(combinedAmount, 4) + "\\");
@@ -595,7 +595,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         rvalue = rvalue.concat(entry.getCode() + "\\");
         rvalue = rvalue.concat(" "); // Unit Of Measure
         if (entry.getQuantity() != null) {
-            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity()));
+            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity().setScale(4, RoundingMode.HALF_UP)));
         }
         rvalue = rvalue.concat("\\")
                 .concat("\\") // Price

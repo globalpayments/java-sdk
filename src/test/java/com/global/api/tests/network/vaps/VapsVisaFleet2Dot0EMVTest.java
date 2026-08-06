@@ -1742,4 +1742,40 @@ public class VapsVisaFleet2Dot0EMVTest {
                 .execute();
         assertNotNull(capture);
     }
+
+    @Test
+    public void test_08_visaFleetTwoPoint0_auth_moreThan8NonFuel_withFuel_discountNotRolledUp() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.12"), new BigDecimal("2.50"), new BigDecimal("25.20"));
+
+        // Add 9 non-fuel entries including discount
+        productData.addNonFuel("60", UnitOfMeasure.Units, new BigDecimal("1.1"), new BigDecimal("10.00"), new BigDecimal("10.0"));
+        productData.addNonFuel("61", UnitOfMeasure.Units, new BigDecimal("2"), new BigDecimal("8.00"), new BigDecimal("16"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("6.00"), new BigDecimal("6.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("64", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("4.00"), new BigDecimal("4.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.00"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.00"), new BigDecimal("1.0000"));
+        // Discount should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("75.00"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+
+    }
 }
