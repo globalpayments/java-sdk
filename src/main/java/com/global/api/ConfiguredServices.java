@@ -21,7 +21,7 @@ public class ConfiguredServices implements IDisposable {
     @Getter @Setter private TableServiceConnector tableServiceConnector;
     @Getter @Setter private PayrollConnector payrollConnector;
     @Getter @Setter private IFraudCheckService fraudService;
-    @Getter @Setter private IFileProcessingService FileProcessingService;
+    @Getter @Setter private IFileProcessingService fileProcessingService;
     @Setter @Getter private IBillingProvider billingProvider;
     @Getter @Setter private IOpenBankingProvider openBankingProvider;
     @Getter @Setter private IProPayProvider proPayProvider;
