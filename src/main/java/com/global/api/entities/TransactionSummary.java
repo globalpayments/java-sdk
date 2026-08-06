@@ -156,4 +156,6 @@ public class TransactionSummary {
     private String transactionTime;
     private Card cardDetails;
     private InstallmentData installmentData;
+
+    private BigDecimal feeTotalAmount;
 }
