@@ -119,8 +119,7 @@ public class UpaAdminTests {
 
     @Test
     public void test05_sendReady() throws ApiException {
-        IDeviceResponse iDeviceResponse = device.sendReady();
-        assertNotNull(iDeviceResponse);
+        device.sendReady();
     }
 
     @Test

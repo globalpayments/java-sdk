@@ -107,7 +107,7 @@ public interface IDeviceInterface extends IDisposable {
 
     IDeviceResponse sendFile(SendFileType fileType, String filePath) throws ApiException;
 
-    IDeviceResponse sendReady() throws ApiException; //UPA
+    void sendReady() throws ApiException; //UPA
 
     IDeviceResponse setDebugLevel(DebugLevel[] debugLevels, Enum logToConsole) throws ApiException;
 
