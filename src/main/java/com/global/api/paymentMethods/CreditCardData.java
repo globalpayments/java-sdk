@@ -21,6 +21,9 @@ public class CreditCardData extends Credit implements ICardData {
     private String number;
     @Setter boolean readerPresent = false;
     @Setter private String tokenizationData;
+    @Setter private String dpaReference;
+    @Setter private String decryptId;
+    @Setter private CvvPresent cvvPresent;
 
     public void setCvn(String cvn) {
         if(cvn != null && !cvn.isEmpty()) {

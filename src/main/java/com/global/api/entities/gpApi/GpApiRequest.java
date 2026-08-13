@@ -46,4 +46,6 @@ public class GpApiRequest extends Request {
     public static final String PAYERS_ENDPOINT = "/payers";
 
     public static final String INSTALLMENT_ENDPOINT = "/installments";
+
+    public static final String DECRYPT_ENDPOINT = "/decrypt";
 }

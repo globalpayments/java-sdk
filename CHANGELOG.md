@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.3.3 (08/06/2026)
+## Latest Version - V15.3.4 (08/13/2026)
+### Enhancements:
+- [GPAPI] - Added support for GPAPI Click to Pay token decryption and enhance the Transactions endpoint to return the decrypted payment details.
+- [TRANSIT] - Added tokenRequired flag for multi-use token requests for TransIT.
+
+## Version - V15.3.3 (08/06/2026)
 ### Bug Fixes:
 - [NTS] - Issue 20 : Fixed Format error in legacy Visa fleet transactions.
           Removed VisaFleet2 flag for VF2.0 transactions.

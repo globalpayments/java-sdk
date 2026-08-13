@@ -40,7 +40,7 @@ public class GpApiMapping {
     private static final String LINK_EDIT = "LINK_EDIT";
 
     private static final String TRANSFER = "TRANSFER";
-
+    private static final String DECRYPT_TOKEN = "DECRYPT_TOKEN";
     private static final String MERCHANT_CREATE = "MERCHANT_CREATE";
     private static final String MERCHANT_LIST = "MERCHANT_LIST";
     private static final String MERCHANT_SINGLE = "MERCHANT_SINGLE";
@@ -156,6 +156,9 @@ public class GpApiMapping {
                 case TRANSFER:
                     transaction.setPaymentMethodType(PaymentMethodType.AccountFunds);
                     break;
+                case DECRYPT_TOKEN:
+                    mapDecryptTokenResponse(json, transaction);
+                    return transaction;
                 default:
                     break;
             }
@@ -199,7 +202,7 @@ public class GpApiMapping {
                     if (paymentMethod.has("card") && paymentMethod.get("card").has("provider")) {
                         cardDetails.setCardIssuerResponse(mapCardIssuerResponse(paymentMethodObj.get("provider")));
                     }
-                    if (paymentMethod.get("card").has("available_balance")) {
+                    if (paymentMethod.has("card") && paymentMethod.get("card").has("available_balance")) {
                         cardDetails.setBalanceAmount(
                                 json.getAmountWithCurrency(paymentMethodObj.getString("available_balance"), json.getString("currency"))
                         );
@@ -2244,5 +2247,88 @@ public class GpApiMapping {
      */
     public static boolean isPartial(String normalizedResponseCode) {
         return "10".equals(normalizedResponseCode);
+    }
+
+    private static void mapDecryptTokenResponse(JsonDoc json, Transaction transaction) {
+        if (json.has("payment_method")) {
+            transaction.setTransactionId(json.getString("id"));
+            JsonDoc paymentMethod = json.get("payment_method");
+            transaction.setToken(paymentMethod.getString("id"));
+            transaction.setEntryMode(paymentMethod.getString("entry_mode"));
+            transaction.setDecryptId(json.getString("id"));
+            transaction.setTransactionTime(json.getString("time_created"));
+            transaction.setStatus(json.getString("status"));
+            transaction.setNarrative(paymentMethod.getString("narrative"));
+
+            if (paymentMethod.has("digital_wallet")) {
+                JsonDoc digitalWallet = paymentMethod.get("digital_wallet");
+
+                var cardDetails = new Card();
+                cardDetails.setBrand(digitalWallet.getString("brand"));
+                cardDetails.setFunding(digitalWallet.getString("funding"));
+                cardDetails.setMaskedNumberLast4(digitalWallet.getString("number_last4"));
+                cardDetails.setBin(digitalWallet.getString("card_bin"));
+
+                transaction.setCardDetails(cardDetails);
+                transaction.setCardType(digitalWallet.getString("brand"));
+                transaction.setCardLast4(digitalWallet.getString("number_last4"));
+                transaction.setProvider(digitalWallet.getString("provider"));
+                transaction.setTokenFormat(digitalWallet.getString("token_format"));
+                transaction.setPaymentAccountReference(digitalWallet.getString("payment_account_reference"));
+
+                JsonDoc imageDoc = digitalWallet.get("image");
+                var image = new Transaction.Image();
+                if (imageDoc != null) {
+                    image.setWidth(imageDoc.getString("width"));
+                    image.setHeight(imageDoc.getString("height"));
+                    image.setUrl(imageDoc.getString("url"));
+                    image.setStatus(imageDoc.getString("status"));
+                }
+                transaction.setImage(image);
+            }
+        }
+
+        if (json.has("payer")) {
+            JsonDoc payer = json.get("payer");
+
+            var payerDetails = new PayerDetails();
+            payerDetails.setFirstName(payer.getString("first_name"));
+            payerDetails.setLastName(payer.getString("last_name"));
+            payerDetails.setName(payer.getString("name"));
+            payerDetails.setReference(payer.getString("reference"));
+
+            if (payer.has("mobile_phone")) {
+                JsonDoc mobilePhoneJson = payer.get("mobile_phone");
+                String countryCode = mobilePhoneJson.getString("country_code");
+                String subscriberNumber = mobilePhoneJson.getString("subscriber_number");
+                payerDetails.setMobilePhone(
+                        !isNullOrEmpty(countryCode) && !isNullOrEmpty(subscriberNumber)
+                                ? "+" + countryCode + subscriberNumber
+                                : subscriberNumber
+                );
+            }
+
+            if (payer.has("billing_address")) {
+                JsonDoc billingAddressJson = payer.get("billing_address");
+                payerDetails.setCountry(billingAddressJson.getString("country"));
+
+                var billingAddress = mapAddressObject(billingAddressJson);
+                billingAddress.setType(AddressType.Billing);
+                payerDetails.setBillingAddress(billingAddress);
+            }
+
+            transaction.setPayerDetails(payerDetails);
+        }
+        if (json.has("action")) {
+            JsonDoc actionJson = json.get("action");
+            Action action = new Action();
+            action.setId(actionJson.getString("id"));
+            action.setType(actionJson.getString("type"));
+            action.setTimeCreated(actionJson.getString("time_created"));
+            action.setResultCode(actionJson.getString("result_code"));
+            action.setAppId(actionJson.getString("app_id"));
+            action.setAppName(actionJson.getString("app_name"));
+            transaction.setAction(action);
+        }
     }
 }

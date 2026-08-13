@@ -229,4 +229,9 @@ public abstract class Credit implements IPaymentMethod, IEncryptable, ITokenizab
         return new AuthorizationBuilder(TransactionType.GetTokenInfo, this).execute(configName);
     }
 
+    public AuthorizationBuilder decrypt(String currency) {
+        return new AuthorizationBuilder(TransactionType.Decrypt, this)
+                .withCurrency(currency);
+    }
+
 }

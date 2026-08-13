@@ -138,6 +138,22 @@ public class Transaction {
     private String authorizationMode;
     @Getter @Setter
     private String authorizationModeResult;
+    @Getter @Setter
+    private String decryptId;
+    @Setter @Getter
+    private String provider;
+    @Setter @Getter
+    private String tokenFormat;
+    @Setter @Getter
+    private String paymentAccountReference;
+    @Getter @Setter
+    private Image image;
+    @Getter @Setter
+    private Action action;
+    @Getter @Setter
+    private String status;
+    @Getter @Setter
+    private String narrative;
 
     public Customer getCustomerData() {
         return customerData;
@@ -1092,4 +1108,12 @@ public class Transaction {
     public static TransactionRebuilder fromBuilder() {
         return new TransactionRebuilder();
     }
+
+    public static class Image {
+        @Getter @Setter private String width;
+        @Getter @Setter private String height;
+        @Getter @Setter private String url;
+        @Getter @Setter private String status;
+    }
+
 }

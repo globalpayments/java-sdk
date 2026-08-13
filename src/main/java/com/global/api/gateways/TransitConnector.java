@@ -101,6 +101,7 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         }
         if (builder.isRequestMultiUseToken()) {
             request.set("cardOnFile", builder.isRequestMultiUseToken() ? "Y" : "N");
+            request.set("tokenRequired", builder.isRequestMultiUseToken() ? "Y" : "N");
         }
 
         String cardDataSource = mapCardDataSource(builder);

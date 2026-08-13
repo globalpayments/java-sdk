@@ -70,6 +70,8 @@ public class ThreeDSecure {
     @Getter
     @Setter
     private String providerServerTransRef;
+    @Getter @Setter
+    private String preference;
 
     public ThreeDSecure() {
         this.paymentDataType = "3DSecure";

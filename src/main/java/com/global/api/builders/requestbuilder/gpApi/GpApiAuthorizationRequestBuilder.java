@@ -157,6 +157,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     tokenizationData.set("reference", isNullOrEmpty(builder.getClientTransactionId()) ? java.util.UUID.randomUUID().toString() : builder.getClientTransactionId());
                     tokenizationData.set("usage_mode", builder.getPaymentMethodUsageMode());
                     tokenizationData.set("card", card);
+                    if (builderPaymentMethod instanceof CreditCardData) {
+                        CvvPresent cvvPresent = ((CreditCardData) builderPaymentMethod).getCvvPresent();
+                        if (cvvPresent != null) {
+                            tokenizationData.set("cvv_present", cvvPresent.name());
+                        }
+                    }
 
                     maskedData.putAll(
                             MaskValueUtil.hideValues(
@@ -381,6 +387,20 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("id", secureEcom.getServerTransactionId())
                                 .set("three_ds", threeDS);
                 paymentMethod.set("authentication", authentication);
+            }
+
+            // Click to Pay post-decrypt flow
+            if (!isNullOrEmpty(creditCardData.getDecryptId()) && creditCardData.getMobileType() == MobilePaymentMethodType.CLICK_TO_PAY) {
+                var paymentToken = new JsonDoc()
+                        .set("dpa_reference", creditCardData.getDpaReference());
+
+                var digitalWallet = new JsonDoc()
+                        .set("provider", mapDigitalWalletType(Target.GP_API, creditCardData.getMobileType()))
+                        .set("decrypt", new JsonDoc().set("id", creditCardData.getDecryptId()))
+                        .set("payment_token", paymentToken);
+
+                paymentMethod.set("digital_wallet", digitalWallet);
+                paymentMethod.set("id", creditCardData.getToken());
             }
         }
 
@@ -744,6 +764,44 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .setMaskedData(maskedData);
         }
 
+        if (builderTransactionType == TransactionType.Decrypt) {
+            if (!(builderPaymentMethod instanceof CreditCardData)) {
+                throw new UnsupportedTransactionException("Decrypt is only supported with CreditCardData containing a Click to Pay token.");
+            }
+            CreditCardData ctpCard = (CreditCardData) builderPaymentMethod;
+
+            var paymentToken = new JsonDoc()
+                    .set("data", ctpCard.getToken());
+            if (!isNullOrEmpty(ctpCard.getDpaReference())) {
+                paymentToken.set("dpa_reference", ctpCard.getDpaReference());
+            }
+            var digitalWallet = new JsonDoc()
+                    .set("provider", mapDigitalWalletType(Target.GP_API, ctpCard.getMobileType()))
+                    .set("brand", ctpCard.getCardType())
+                    .set("payment_token", paymentToken);
+
+            if (!isNullOrEmpty(builder.getDynamicDescriptor())) {
+                paymentMethod.set("narrative", builder.getDynamicDescriptor());
+            }
+            paymentMethod.set("digital_wallet", digitalWallet);
+
+            var decryptData = new JsonDoc()
+                    .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                    .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
+                    .set("type", "DECRYPT")
+                    .set("channel", gateway.getGpApiConfig().getChannel())
+                    .set("country", gateway.getGpApiConfig().getCountry())
+                    .set("currency", builder.getCurrency())
+                    .set("payment_method", paymentMethod);
+
+            return (GpApiRequest)
+                    new GpApiRequest()
+                            .setVerb(GpApiRequest.HttpMethod.Post)
+                            .setEndpoint(merchantUrl + GpApiRequest.DECRYPT_ENDPOINT)
+                            .setRequestBody(decryptData.toString())
+                            .setMaskedData(maskedData);
+        }
+
         JsonDoc data = new JsonDoc()
                 .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
                 .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
@@ -816,7 +874,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         }
 
 
-        if (builderPaymentMethod instanceof CreditCardData && (((CreditCardData) builderPaymentMethod).getMobileType() == MobilePaymentMethodType.CLICK_TO_PAY)) {
+        if (builderPaymentMethod instanceof CreditCardData && builder.getMaskedDataResponse() != null && (((CreditCardData) builderPaymentMethod).getMobileType() == MobilePaymentMethodType.CLICK_TO_PAY)) {
             data.set("masked", builder.getMaskedDataResponse() ? "YES" : "NO");
         }
 
@@ -1097,6 +1155,9 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                         builderPaymentMethod instanceof CreditCardData &&
                         ((CreditCardData) builder.getPaymentMethod()).hasInAppPaymentData()
                 ) {
+                    if (((CreditCardData) builder.getPaymentMethod()).getDecryptId() != null) {
+                        return "ECOM";
+                    }
                     return "IN_APP";
                 }
             }

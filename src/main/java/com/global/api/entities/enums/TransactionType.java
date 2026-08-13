@@ -87,7 +87,8 @@ public enum TransactionType implements IFlag {
     DeleteOpenTab,
     CheckQueryInfo,
     OrderDevice,
-    SurchargeEligibilityLookup;
+    SurchargeEligibilityLookup,
+    Decrypt;
 
     public long getLongValue() {
         return 1L << this.ordinal();
