@@ -137,6 +137,8 @@ public class PaxDeviceResponse extends PaxBaseResponse {
 	}
 
     private String normalizeResponse(String input) {
+        if(input == null)
+            return null;
         if(input.equals("0") || input.equals("85"))
             return "00";
         return input;

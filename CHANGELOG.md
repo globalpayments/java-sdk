@@ -1,6 +1,10 @@
 # Changelog
 
-## Latest Version - V15.3.4 (08/13/2026)
+## Latest Version - V15.3.5 (08/19/2026)
+### Enhancements:
+- [PAX] - Added missing mapping for error messages and codes
+
+## Version - V15.3.4 (08/13/2026)
 ### Enhancements:
 - [GPAPI] - Added support for GPAPI Click to Pay token decryption and enhance the Transactions endpoint to return the decrypted payment details.
 - [TRANSIT] - Added tokenRequired flag for multi-use token requests for TransIT.

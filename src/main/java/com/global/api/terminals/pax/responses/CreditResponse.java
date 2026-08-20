@@ -15,18 +15,16 @@ public class CreditResponse extends PaxDeviceResponse {
     protected void parseResponse(MessageReader br) throws MessageException {
         super.parseResponse(br);
 
-        if (deviceResponseCode.equals("000000") || deviceResponseCode.equals("000002")) {
-            hostResponse = new HostResponse(br);
-            transactionType = br.readToCode(ControlCodes.FS);
-            amountResponse = new AmountResponse(br);
-            accountResponse = new AccountResponse(br);
-            traceResponse = new TraceResponse(br);
-            avsResponse = new AvsResponse(br);
-            commercialResponse = new CommercialResponse(br);
-            ecomResponse = new EcomSubGroup(br);
-            extDataResponse = new ExtDataSubGroup(br);
+        hostResponse = new HostResponse(br);
+        transactionType = br.readToCode(ControlCodes.FS);
+        amountResponse = new AmountResponse(br);
+        accountResponse = new AccountResponse(br);
+        traceResponse = new TraceResponse(br);
+        avsResponse = new AvsResponse(br);
+        commercialResponse = new CommercialResponse(br);
+        ecomResponse = new EcomSubGroup(br);
+        extDataResponse = new ExtDataSubGroup(br);
 
-            mapResponse();
-        }
+        mapResponse();
     }
 }

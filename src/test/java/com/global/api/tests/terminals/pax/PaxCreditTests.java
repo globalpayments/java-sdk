@@ -471,6 +471,16 @@ public class PaxCreditTests {
         assertEquals("00", response.getResponseCode());
     }
 
+    @Test
+    public void creditSale_ErrorResponse() throws ApiException {
+        TerminalResponse response = device.sale(new BigDecimal("10.16"))
+                .withAllowDuplicates(true)
+                .execute();
+
+        assertNotNull(response);
+        assertEquals("NO CHECK ACCOUNT", response.getResponseText());
+    }
+
     public void logStuff() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         String newLine = System.lineSeparator();
