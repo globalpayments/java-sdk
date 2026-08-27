@@ -253,7 +253,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
                         .withPhoneNumber("99", "1801555999", PhoneNumberType.Shipping)
                         .execute("PayByLink");
 
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
         assertNotNull(response.getPayByLinkResponse().getUrl());
         assertNotNull(response.getPayByLinkResponse().getId());
@@ -294,7 +294,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
                         .withPhoneNumber("99", "1801555999", PhoneNumberType.Shipping)
                         .execute("PayByLink");
 
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
         assertNotNull(response.getPayByLinkResponse().getUrl());
         assertNotNull(response.getPayByLinkResponse().getId());
@@ -1025,7 +1025,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
     }
 
     private void assertPayByLinkResponse(Transaction response) {
-        assertEquals("SUCCESS", response.getResponseCode());
+        assertEquals(SUCCESS, response.getResponseCode());
         assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
         assertEquals(amount, response.getBalanceAmount());
         assertNotNull(response.getPayByLinkResponse().getUrl());

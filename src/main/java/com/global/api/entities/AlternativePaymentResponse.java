@@ -64,6 +64,9 @@ public class AlternativePaymentResponse {
     // The payment category for APM (BNPL for eRaty).
     private String category;
 
+    // The configured payment plan returned by provider-specific APM flows.
+    private String paymentPlan;
+
     // The redirect URL provided directly by the APM provider (e.g., eRaty).
     private String providerRedirectUrl;
 

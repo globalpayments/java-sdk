@@ -28,6 +28,8 @@ import static com.global.api.utils.StringUtils.toNumeric;
 
 public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<AuthorizationBuilder> {
 
+    private static final Set<String> CASHPRESSO_SUPPORTED_COUNTRIES = new HashSet<>(Arrays.asList("DE", "AT"));
+    private static final BigDecimal CASHPRESSO_PAY_IN_3_MIN_MINOR_UNITS = new BigDecimal("15000");
     private final Map<String, String> maskedData = new HashMap<>();
 
     @Override
@@ -467,10 +469,36 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
         if (builderPaymentMethod instanceof AlternativePaymentMethod) {
             var alternatepaymentMethod = (AlternativePaymentMethod) builderPaymentMethod;
 
+            boolean isCashpresso = isCashpressoAlternativePayment(alternatepaymentMethod);
+            if (isCashpresso) {
+                validateCashpressoRegion(gateway.getGpApiConfig().getCountry());
+                if (alternatepaymentMethod.getPaymentPlan() == null) {
+                    throw new UnsupportedTransactionException("Cashpresso requires payment_plan.");
+                }
+                validateCashpressoPayIn3MinimumAmount(alternatepaymentMethod.getPaymentPlan(), builder.getAmount());
+                if (builder.getCashpressoShippingMethod() == null) {
+                    throw new UnsupportedTransactionException("Cashpresso requires shipping_method.");
+                }
+                if (StringUtils.isNullOrEmpty(builder.getCashpressoShippingDate())) {
+                    throw new UnsupportedTransactionException("Cashpresso requires shipping_date.");
+                }
+            }
+
             paymentMethod.set("name", alternatepaymentMethod.getAccountHolderName());
             var apm = new JsonDoc()
                     .set("provider", alternatepaymentMethod.getAlternativePaymentMethodType().getValue())
                     .set("address_override_mode", alternatepaymentMethod.getAddressOverrideMode());
+
+            if (isCashpresso) {
+                apm.set("payment_plan", alternatepaymentMethod.getPaymentPlan() != null ? alternatepaymentMethod.getPaymentPlan().name() : null);
+
+                if (builder.getCustomerData() != null) {
+                    paymentMethod
+                            .set("first_name", builder.getCustomerData().getFirstName())
+                            .set("last_name", builder.getCustomerData().getLastName());
+                }
+            }
+
             if (alternatepaymentMethod.getAlternativePaymentMethodType().name().equalsIgnoreCase("OB")) {
                     var bank = new JsonDoc()
                             .set("name", alternatepaymentMethod.getBank().getValue());
@@ -599,6 +627,12 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             : null)
                     .set("iframe_response_domain", payByLinkData.getDisplayConfiguration() != null
                             ? payByLinkData.getDisplayConfiguration().getIframeResponseDomain()
+                            : null)
+                    .set("cardholder_name", payByLinkData.getDisplayConfiguration() != null
+                            ? payByLinkData.getDisplayConfiguration().getCardholderName()
+                            : null)
+                    .set("cvv", payByLinkData.getDisplayConfiguration() != null
+                            ? payByLinkData.getDisplayConfiguration().getCvv()
                             : null);
 
             var requestData =
@@ -631,6 +665,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
                 requestData.set("transactions", transactions);
             }
+
             var notifications =
                     new JsonDoc()
                             .set("cancel_url", payByLinkData.getCancelUrl())
@@ -638,11 +673,15 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                             .set("status_url", payByLinkData.getStatusUpdateUrl());
 
             if (payByLinkData.getType().equals(PayByLinkType.HOSTED_PAYMENT_PAGE)) {
+                if (isCashpressoEnabledForPayByLink(payByLinkData)) {
+                    validateCashpressoRegion(gateway.getGpApiConfig().getCountry());
+                }
 
                 var transactionConfiguration =
                         new JsonDoc()
                                 .set("channel", gateway.getGpApiConfig().getChannel())
                                 .set("country", gateway.getGpApiConfig().getCountry())
+                                .set("currency", builder.getCurrency())
                                 .set("currency_conversion_mode", payByLinkData.getIsDccEnabled() ? "YES" : "NO")
                                 .set("capture_mode", getCaptureMode(builder))
                                 .set("allowed_payment_methods", payByLinkData.getAllowedPaymentMethods());
@@ -655,6 +694,17 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 var apm = new JsonDoc()
                         .set("shipping_address_enabled", payByLinkData.getPaymentMethodConfiguration().getIsShippableAddressEnabled() ? "YES" : "NO")
                         .set("address_override", payByLinkData.getPaymentMethodConfiguration().getIsAddressOverrideAllowed() ? "YES" : "NO");
+
+                var cashpressoPlans = payByLinkData.getPaymentMethodConfiguration().getCashpressoPaymentPlans();
+                if (cashpressoPlans != null && cashpressoPlans.length > 0) {
+                    validateCashpressoPayIn3MinimumAmount(cashpressoPlans, builder.getAmount());
+                    var configurations = new ArrayList<HashMap<String, Object>>();
+                    var configuration = new HashMap<String, Object>();
+                    configuration.put("provider", AlternativePaymentType.CASHPRESSO.name());
+                    configuration.put("payment_plans", mapCashpressoPaymentPlans(cashpressoPlans));
+                    configurations.add(configuration);
+                    apm.set("configurations", configurations);
+                }
 
                 var paymentMethodConfiguration =
                         new JsonDoc()
@@ -686,7 +736,7 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                     }
                 }
 
-                var order =
+                JsonDoc order =
                         new JsonDoc()
                                 .set("amount", StringUtils.toNumeric(builder.getAmount()))
                                 .set("currency", builder.getCurrency())
@@ -695,7 +745,25 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                                 .set("payment_method_configuration", paymentMethodConfiguration)
                                 .set("shipping_address", shippingAddress)
                                 .set("shipping_phone", shippingPhone)
-                                .set("surcharge", surcharges.isEmpty() ? null : surcharges);
+                                .set("surcharge", surcharges.isEmpty() ? null : surcharges)
+                                .set("tax_amount", StringUtils.toNumeric(builder.getOrderDetails() != null ? builder.getOrderDetails().getTaxAmount() : null))
+                                .set("shipping_amount", StringUtils.toNumeric(builder.getShippingAmount()))
+                                .set("shipping_method", builder.getBNPLShippingMethod() != null ? builder.getBNPLShippingMethod().toString() : 
+                                     (isCashpressoEnabledForPayByLink(payByLinkData) && builder.getCashpressoShippingMethod() != null ? 
+                                      builder.getCashpressoShippingMethod().name() : null))
+                                .set("shipping_date", isCashpressoEnabledForPayByLink(payByLinkData) ? builder.getCashpressoShippingDate() : null);
+                
+                // Add items if present
+                if (builder.getMiscProductData() != null && builder.getMiscProductData().size() > 0) {
+                    if (isCashpressoEnabledForPayByLink(payByLinkData)) {
+                        setItemDetailsListForCashpresso(builder, order);
+                    } else if (builder.getPaymentMethod() instanceof BNPL) {
+                        setItemDetailsListForBNPL(builder, order);
+                    } else {
+                        setItemDetailsListForApm(builder, order);
+                    }
+                }
+                
                 requestData.set("order", order);
 
                 // Visa installments configuration for HPP
@@ -996,6 +1064,22 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
             if (alternativePaymentMethodPayer.getAlternativePaymentMethodType() == AlternativePaymentType.ERATY) {
                 payer.set("email", builder.getCustomerData() != null ? builder.getCustomerData().getEmail() : null);
                 payer.set("country", alternativePaymentMethodPayer.getCountry());
+            }
+
+            if (isCashpressoAlternativePayment(alternativePaymentMethodPayer)) {
+                payer.set("email", builder.getCustomerData() != null ? builder.getCustomerData().getEmail() : null);
+
+                JsonDoc billingAddress = GetBasicAddressInformation(builder.getBillingAddress(), false);
+                if (!billingAddress.getKeys().isEmpty()) {
+                    payer.set("billing_address", billingAddress);
+                }
+
+                if (builder.getHomePhone() == null && builder.getCustomerData() != null && builder.getCustomerData().getPhone() != null) {
+                    JsonDoc homePhone = new JsonDoc()
+                            .set("country_code", builder.getCustomerData().getPhone().getCountryCode())
+                            .set("subscriber_number", builder.getCustomerData().getPhone().getNumber());
+                    payer.set("home_phone", homePhone);
+                }
             }
 
 
@@ -1316,7 +1400,14 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
         //AlternativePaymentMethod
         if (builder.getPaymentMethod() instanceof AlternativePaymentMethod) {
-            if (builder.getMiscProductData() != null) {
+            var apm = (AlternativePaymentMethod) builder.getPaymentMethod();
+            if (isCashpressoAlternativePayment(apm)) {
+                if (builder.getMiscProductData() != null) {
+                    setItemDetailsListForCashpresso(builder, order);
+                }
+                order.set("shipping_method", builder.getCashpressoShippingMethod() != null ? builder.getCashpressoShippingMethod().name() : null);
+                order.set("shipping_date", builder.getCashpressoShippingDate());
+            } else if (builder.getMiscProductData() != null) {
                 setItemDetailsListForApm(builder, order);
             }
         }
@@ -1399,6 +1490,129 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 items.add(item);
             }
             order.set("items", items);
+        }
+    }
+
+    private static JsonDoc setItemDetailsListForCashpresso(AuthorizationBuilder builder, JsonDoc order) {
+        BigDecimal taxTotalAmount = BigDecimal.ZERO;
+
+        if (builder.getMiscProductData() != null) {
+            var items = new ArrayList<HashMap<String, Object>>();
+            for (var product : builder.getMiscProductData()) {
+                Integer quantity = product.getQuantity() != null ? product.getQuantity() : 0;
+                BigDecimal taxAmount = product.getTaxAmount() != null ? product.getTaxAmount() : BigDecimal.ZERO;
+                BigDecimal unitAmount = product.getUnitPrice() != null ? product.getUnitPrice() : BigDecimal.ZERO;
+
+                var item = new HashMap<String, Object>();
+                item.put("quantity", quantity.toString());
+                item.put("unit_amount", formatCashpressoAmount(unitAmount));
+                item.put("tax_amount", formatCashpressoAmount(taxAmount));
+
+                if (product.getDescription() != null && !product.getDescription().isEmpty())
+                    item.put("description", product.getDescription());
+
+                if (product.getReference() != null && !product.getReference().isEmpty())
+                    item.put("reference", product.getReference());
+
+                if (product.getLabel() != null && !product.getLabel().isEmpty())
+                    item.put("label", product.getLabel());
+
+                if (product.getProductCode() != null && !product.getProductCode().isEmpty())
+                    item.put("product_code", product.getProductCode());
+
+                items.add(item);
+
+                taxTotalAmount = taxTotalAmount.add(taxAmount);
+            }
+
+            order.set("tax_amount", formatCashpressoAmount(taxTotalAmount));
+            order.set("items", items);
+        }
+
+        return order;
+    }
+
+    private static boolean isCashpressoAlternativePayment(AlternativePaymentMethod paymentMethod) {
+        return paymentMethod != null && paymentMethod.getAlternativePaymentMethodType() == AlternativePaymentType.CASHPRESSO;
+    }
+
+    private static String formatCashpressoAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
+            return "0";
+        }
+        return StringUtils.toNumeric(amount);
+    }
+
+    private static void validateCashpressoRegion(String country) throws UnsupportedTransactionException {
+        String normalizedCountry = country != null ? country.toUpperCase(Locale.ENGLISH) : "";
+        if (!CASHPRESSO_SUPPORTED_COUNTRIES.contains(normalizedCountry)) {
+            throw new UnsupportedTransactionException("Cashpresso is only supported for GPAPI country DE or AT.");
+        }
+    }
+
+    private static boolean isCashpressoEnabledForPayByLink(PayByLinkData payByLinkData) {
+        if (payByLinkData == null) {
+            return false;
+        }
+
+        String[] allowedPaymentMethods = payByLinkData.getAllowedPaymentMethods();
+        if (allowedPaymentMethods != null) {
+            for (String paymentMethod : allowedPaymentMethods) {
+                if (AlternativePaymentType.CASHPRESSO.name().equalsIgnoreCase(paymentMethod)) {
+                    return true;
+                }
+            }
+        }
+
+        return payByLinkData.getPaymentMethodConfiguration() != null
+                && payByLinkData.getPaymentMethodConfiguration().getCashpressoPaymentPlans() != null
+                && payByLinkData.getPaymentMethodConfiguration().getCashpressoPaymentPlans().length > 0;
+    }
+
+    private static List<String> mapCashpressoPaymentPlans(CashpressoPaymentPlan[] plans) {
+        List<String> paymentPlans = new ArrayList<>();
+        for (CashpressoPaymentPlan plan : plans) {
+            if (plan != null) {
+                paymentPlans.add(plan.name());
+            }
+        }
+        return paymentPlans;
+    }
+
+    private static void validateCashpressoPayIn3MinimumAmount(CashpressoPaymentPlan plan, BigDecimal amount)
+            throws UnsupportedTransactionException {
+        if (plan == CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS) {
+            validateCashpressoMinimumAmount(amount);
+        }
+    }
+
+    private static void validateCashpressoPayIn3MinimumAmount(CashpressoPaymentPlan[] plans, BigDecimal amount)
+            throws UnsupportedTransactionException {
+        if (plans == null) {
+            return;
+        }
+
+        for (CashpressoPaymentPlan plan : plans) {
+            if (plan == CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS) {
+                validateCashpressoMinimumAmount(amount);
+                return;
+            }
+        }
+    }
+
+    private static void validateCashpressoMinimumAmount(BigDecimal amount) throws UnsupportedTransactionException {
+        String amountInMinorUnits = StringUtils.toNumeric(amount);
+        if (StringUtils.isNullOrEmpty(amountInMinorUnits)) {
+            throw new UnsupportedTransactionException("Cashpresso PAY_IN_3_INSTALLMENTS requires amount of 15000 or more (minor units).");
+        }
+        BigDecimal minorUnits;
+        try {
+            minorUnits = new BigDecimal(amountInMinorUnits);
+        } catch (NumberFormatException ex) {
+            throw new UnsupportedTransactionException("Cashpresso amount could not be parsed to minor units.");
+        }
+        if (minorUnits.compareTo(CASHPRESSO_PAY_IN_3_MIN_MINOR_UNITS) < 0) {
+            throw new UnsupportedTransactionException("Cashpresso PAY_IN_3_INSTALLMENTS requires amount of 15000 or more (minor units).");
         }
     }
 

@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.3.5 (08/19/2026)
+## Latest Version - V15.3.6 (08/27/2026)
+### Enhancements:
+- [GPAPI] - Added Cashpresso payment method support for GPAPI with HPP and Transaction Initiate flows.
+- [Portico] - Added portico custom logger interface to enable merchants to push SDK logs to their own logging systems.
+
+## Version - V15.3.5 (08/19/2026)
 ### Enhancements:
 - [PAX] - Added missing mapping for error messages and codes
 

@@ -27,4 +27,7 @@ public class Product {
     private String giftCardCurrency;
     private String url;
     private String imageUrl;
+    private String label;
+    private String productCode;
+    private String reference;
 }

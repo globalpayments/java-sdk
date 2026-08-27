@@ -1,6 +1,7 @@
 package com.global.api.entities;
 
 import com.global.api.entities.enums.ChallengeRequestIndicator;
+import com.global.api.entities.enums.CashpressoPaymentPlan;
 import com.global.api.entities.enums.DigitalWalletProvider;
 import com.global.api.entities.enums.StorageMode;
 import lombok.Getter;
@@ -22,4 +23,6 @@ public class PaymentMethodConfiguration {
     private ChallengeRequestIndicator challengeRequestIndicator;
 
     private DigitalWalletProvider[] digitalWalletProviders;
+
+    private CashpressoPaymentPlan[] cashpressoPaymentPlans;
 }

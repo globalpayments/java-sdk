@@ -159,6 +159,10 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
     @Getter
     @Setter
     private BNPLShippingMethod BNPLShippingMethod;
+    @Getter
+    private CashpressoShippingMethod cashpressoShippingMethod;
+    @Getter
+    private String cashpressoShippingDate;
     private List<Bill> bills;
     // network fields
     private BigDecimal feeAmount;
@@ -1263,6 +1267,26 @@ public class AuthorizationBuilder extends TransactionBuilder<Transaction> {
         }
 
         BNPLShippingMethod = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withCashpressoShippingMethod(CashpressoShippingMethod value) throws UnsupportedTransactionException {
+        boolean isHostedPaymentPagePayByLink = payByLinkData != null && payByLinkData.getType() == PayByLinkType.HOSTED_PAYMENT_PAGE;
+        if (!(paymentMethod instanceof AlternativePaymentMethod) && !isHostedPaymentPagePayByLink) {
+            throw new UnsupportedTransactionException("The selected payment method doesn't support this property!");
+        }
+
+        cashpressoShippingMethod = value;
+        return this;
+    }
+
+    public AuthorizationBuilder withCashpressoShippingDate(String value) throws UnsupportedTransactionException {
+        boolean isHostedPaymentPagePayByLink = payByLinkData != null && payByLinkData.getType() == PayByLinkType.HOSTED_PAYMENT_PAGE;
+        if (!(paymentMethod instanceof AlternativePaymentMethod) && !isHostedPaymentPagePayByLink) {
+            throw new UnsupportedTransactionException("The selected payment method doesn't support this property!");
+        }
+
+        cashpressoShippingDate = value;
         return this;
     }
 

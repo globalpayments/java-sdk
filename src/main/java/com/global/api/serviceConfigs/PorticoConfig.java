@@ -4,6 +4,8 @@ import com.global.api.ConfiguredServices;
 import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.gateways.*;
+import com.global.api.logging.INetworkRequestLogger;
+import com.global.api.utils.NtsUtils;
 import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +47,9 @@ public class PorticoConfig extends GatewayConfig {
     // If true (default), use the US ProPay endpoints. If false, use the Canadian ProPay endpoints
     private boolean proPayUS = true;
 
+    @Setter @Getter
+    private static INetworkRequestLogger networkRequestLogger;
+
     private String getPayPlanEndpoint() {
         if (
                 (!StringUtils.isNullOrEmpty(secretApiKey) && secretApiKey.toLowerCase().contains("cert")) ||
@@ -66,6 +71,10 @@ public class PorticoConfig extends GatewayConfig {
             serviceUrl = environment.equals(Environment.PRODUCTION) ?
                     ServiceEndpoints.PORTICO_PRODUCTION.getValue() :
                     ServiceEndpoints.PORTICO_TEST.getValue();
+        }
+
+        if(networkRequestLogger == null) {
+            networkRequestLogger = new NtsUtils();
         }
 
         PorticoConnector gateway =

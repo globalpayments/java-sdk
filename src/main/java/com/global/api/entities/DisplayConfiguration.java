@@ -6,7 +6,8 @@ import lombok.experimental.Accessors;
 
 /**
  * Display configuration for iframe settings.
- * Contains domain configuration for iframe dimensions and response handling.
+ * Contains domain configuration for iframe dimensions and response handling,
+ * as well as display options for cardholder information and CVV.
  */
 @Getter
 @Setter
@@ -21,4 +22,14 @@ public class DisplayConfiguration {
      * The domain used for iframe response handling.
      */
     private String iframeResponseDomain;
+    
+    /**
+     * Whether to display the cardholder name field (YES/NO).
+     */
+    private String cardholderName;
+    
+    /**
+     * Whether to display the CVV field (YES/NO).
+     */
+    private String cvv;
 }

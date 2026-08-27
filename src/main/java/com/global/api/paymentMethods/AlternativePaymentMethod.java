@@ -4,6 +4,7 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.BankList;
 import com.global.api.entities.Terms;
 import com.global.api.entities.enums.AlternativePaymentType;
+import com.global.api.entities.enums.CashpressoPaymentPlan;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionModifier;
 import com.global.api.entities.enums.TransactionType;
@@ -31,6 +32,7 @@ public class AlternativePaymentMethod implements IPaymentMethod, IChargable, INo
     private String addressOverrideMode;
     private BankList bank;
     private Terms terms;
+    private CashpressoPaymentPlan paymentPlan;
 
     public AlternativePaymentMethod() {
         this.paymentMethodType = PaymentMethodType.APM;

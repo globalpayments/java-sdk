@@ -144,7 +144,7 @@ public class GpApiMapping {
 
                     if (json.has("transactions")) {
                         JsonDoc trn = json.get("transactions");
-                        transaction.setBalanceAmount(trn.getString("amount") != null ? trn.getAmount("amount") : null);
+                        transaction.setBalanceAmount(trn.getAmountWithCurrency(trn.getString("amount"),trn.getString("currency")));
                         ArrayList<String> allowedPaymentMethods = trn.getStringArrayList("allowed_payment_methods");
                         payByLinkResponse.setAllowedPaymentMethods(allowedPaymentMethods != null
                                 ? allowedPaymentMethods.toArray(new String[0])
@@ -579,6 +579,7 @@ public class GpApiMapping {
             apm.setFeeAmount(paymentMethodApm.getAmount("fee_amount"));
 
             apm.setCategory(paymentMethodApm.getString("category"));
+            apm.setPaymentPlan(paymentMethodApm.getString("payment_plan"));
             apm.setProviderRedirectUrl(paymentMethodApm.getString("provider_redirect_url"));
             apm.setProviderPayerName(paymentMethodApm.getString("provider_payer_name"));
 
@@ -742,6 +743,8 @@ public class GpApiMapping {
                     alternativePaymentResponse.setRedirectUrl(apm.getString("redirect_url"));
                     alternativePaymentResponse.setProviderName(apm.getString("provider"));
                     alternativePaymentResponse.setProviderReference(apm.getString("provider_reference"));
+                    alternativePaymentResponse.setCategory(apm.getString("category"));
+                    alternativePaymentResponse.setPaymentPlan(apm.getString("payment_plan"));
                     summary.setAlternativePaymentResponse(alternativePaymentResponse);
                     summary.setPaymentType(EnumUtils.getMapping(Target.GP_API, PaymentMethodName.APM));
                 }
@@ -917,16 +920,22 @@ public class GpApiMapping {
      */
     private static List<PaymentMethodName> getAllowedPaymentMethods(JsonDoc doc) {
         List<PaymentMethodName> list = new ArrayList<>();
-        if (doc == null || !doc.has("transactions")) {
+        if (doc == null) {
             return list;
         }
 
-        JsonDoc transactions = doc.get("transactions");
-        if (transactions == null) {
+        JsonDoc paymentMethodsNode = null;
+        if (doc.has("transactions")) {
+            paymentMethodsNode = doc.get("transactions");
+        } else if (doc.has("order") && doc.get("order") != null && doc.get("order").has("transaction_configuration")) {
+            paymentMethodsNode = doc.get("order").get("transaction_configuration");
+        }
+
+        if (paymentMethodsNode == null) {
             return list;
         }
 
-        ArrayList<String> allowedPaymentMethods = transactions.getStringArrayList("allowed_payment_methods");
+        ArrayList<String> allowedPaymentMethods = paymentMethodsNode.getStringArrayList("allowed_payment_methods");
         if (allowedPaymentMethods == null) {
             return list;
         }

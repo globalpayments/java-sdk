@@ -22,6 +22,7 @@ public class OrderDetails {
     private String stateTaxIdReference;
     private String merchantTaxIdReference;
     private List<OrderDetails.Tax> taxes;
+    private BigDecimal taxAmount;
 
     @Getter
     @Setter

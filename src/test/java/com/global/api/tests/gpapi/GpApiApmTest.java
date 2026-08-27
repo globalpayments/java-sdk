@@ -7,15 +7,24 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.TransactionSummaryPaged;
+import com.global.api.gateways.GpApiConnector;
 import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.AlternativePaymentMethod;
 import com.global.api.serviceConfigs.GpApiConfig;
+import com.global.api.services.PayByLinkService;
 import com.global.api.services.ReportingService;
+import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
+import com.global.api.builders.AuthorizationBuilder;
+import com.global.api.builders.requestbuilder.gpApi.GpApiAuthorizationRequestBuilder;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
@@ -53,6 +62,12 @@ public class GpApiApmTest extends BaseGpApiTest {
     static final String chargeDescription = "New APM";
     private static String eratyAppId = "hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo";
     private static String eratyAppKey = "cQOKHoAAvNIcEN8s";
+    private static final String CASHPRESSO_CONFIG_NAME = "cashpresso";
+    private static final String CASHPRESSO_APP_ID = "hlZAokTftDazLlWDPe8E6VAz5g9rSDPg";
+    private static final String CASHPRESSO_APP_KEY = "ThDO2fISzzWCgkCZ";
+    private static final String CASHPRESSO_ACCOUNT_NAME = "GPECOM_CASHPRESSO_APM_Transaction_Processing";
+    private static final String CASHPRESSO_COUNTRY = "DE";
+    private static final String CASHPRESSO_CURRENCY = "EUR";
 
     @BeforeEach
     public void initialize() throws ConfigurationException {
@@ -67,6 +82,8 @@ public class GpApiApmTest extends BaseGpApiTest {
         accessTokenInfo.setTransactionProcessingAccountName("GPECOM_APM_Transaction_Processing");
         eratyConfig.setAccessTokenInfo(accessTokenInfo);
         ServicesContainer.configureService(eratyConfig, "eraty");
+
+        initializeCashpressoConfig();
 
         paymentMethod =
                 new AlternativePaymentMethod()
@@ -1012,5 +1029,350 @@ public class GpApiApmTest extends BaseGpApiTest {
         });
 
         assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
+    }
+
+    @Test
+    public void testCashpressoApmForSale_Pay30Days() throws ApiException {
+        ArrayList<Product> products = new ArrayList<>();
+        products.add(
+                new Product()
+                        .setDescription("Iphone 16")
+                        .setReference("Invoice No.68775")
+                        .setQuantity(1)
+                        .setUnitPrice(new BigDecimal("100"))
+                        .setTaxAmount(new BigDecimal("0"))
+        );
+        AlternativePaymentMethod cashpresso = getCashpressoPaymentMethod();
+
+        Transaction response = cashpresso
+                .charge(new BigDecimal("100"))
+                .withCurrency(CASHPRESSO_CURRENCY)
+                .withDescription("CashpressoPayment-001")
+                .withCustomerData(getCashpressoCustomer())
+                .withAddress(getCashpressoBillingAddress(), AddressType.Billing)
+                .withAddress(getCashpressoShippingAddress(), AddressType.Shipping)
+                .withCashpressoShippingMethod(CashpressoShippingMethod.POSTOFFICE)
+                .withCashpressoShippingDate(getCashpressoShippingDate())
+                .withMiscProductData(products)
+                .execute(CASHPRESSO_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("INITIATED", response.getResponseMessage());
+        assertNotNull(response.getAlternativePaymentResponse());
+        assertFalse(StringUtils.isNullOrEmpty(response.getAlternativePaymentResponse().getRedirectUrl()));
+        assertEquals("CASHPRESSO", response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+        assertEquals("BNPL", response.getAlternativePaymentResponse().getCategory());
+        assertEquals(CashpressoPaymentPlan.PAY_30_DAYS.name(), response.getAlternativePaymentResponse().getPaymentPlan());
+    }
+
+    @Test
+    public void testCashpressoApmForSale_PayIn3Installments() throws ApiException {
+        ArrayList<Product> products = new ArrayList<>();
+        products.add(
+                new Product()
+                        .setDescription("Iphone 16")
+                        .setReference("Invoice No.68775")
+                        .setQuantity(1)
+                        .setUnitPrice(new BigDecimal("150"))
+                        .setTaxAmount(new BigDecimal("0"))
+        );
+        AlternativePaymentMethod cashpresso = getCashpressoPaymentMethod();
+        cashpresso.setPaymentPlan(CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS);
+        Transaction response = cashpresso
+                .charge(new BigDecimal("150"))
+                .withCurrency(CASHPRESSO_CURRENCY)
+                .withDescription("CashpressoPayment-001")
+                .withCustomerData(getCashpressoCustomer())
+                .withAddress(getCashpressoBillingAddress(), AddressType.Billing)
+                .withAddress(getCashpressoShippingAddress(), AddressType.Shipping)
+                .withCashpressoShippingMethod(CashpressoShippingMethod.POSTOFFICE)
+                .withCashpressoShippingDate(getCashpressoShippingDate())
+                .withMiscProductData(products)
+                .execute(CASHPRESSO_CONFIG_NAME);
+
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals("INITIATED", response.getResponseMessage());
+        assertNotNull(response.getAlternativePaymentResponse());
+        assertFalse(StringUtils.isNullOrEmpty(response.getAlternativePaymentResponse().getRedirectUrl()));
+        assertEquals("CASHPRESSO", response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+        assertEquals("BNPL", response.getAlternativePaymentResponse().getCategory());
+        assertEquals(CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS.name(), response.getAlternativePaymentResponse().getPaymentPlan());
+    }
+
+    @Test
+    public void testCashpressoApmForSaleWithoutPaymentPlan() {
+        AlternativePaymentMethod cashpresso = getCashpressoPaymentMethod();
+        cashpresso.setPaymentPlan(null);
+
+        UnsupportedTransactionException ex = assertThrows(UnsupportedTransactionException.class, () ->
+                buildCashpressoRequest(getCashpressoBuilder(cashpresso, false), CASHPRESSO_COUNTRY));
+
+        assertEquals("Cashpresso requires payment_plan.", ex.getMessage());
+    }
+
+    @Test
+    public void testCashpressoApmForSaleWithoutShippingMethod() throws ApiException {
+        AuthorizationBuilder builder = getCashpressoBuilder(getCashpressoPaymentMethod(), false);
+        builder.withCashpressoShippingDate(getCashpressoShippingDate());
+
+        UnsupportedTransactionException ex = assertThrows(UnsupportedTransactionException.class, () ->
+                buildCashpressoRequest(builder, CASHPRESSO_COUNTRY));
+
+        assertEquals("Cashpresso requires shipping_method.", ex.getMessage());
+    }
+
+    @Test
+    public void testCashpressoApmForSaleWithoutShippingDate() throws ApiException {
+        AuthorizationBuilder builder = getCashpressoBuilder(getCashpressoPaymentMethod(), false);
+        builder.withCashpressoShippingMethod(CashpressoShippingMethod.POSTOFFICE);
+
+        UnsupportedTransactionException ex = assertThrows(UnsupportedTransactionException.class, () ->
+                buildCashpressoRequest(builder, CASHPRESSO_COUNTRY));
+
+        assertEquals("Cashpresso requires shipping_date.", ex.getMessage());
+    }
+
+    @Test
+    public void testCashpressoApmForSaleUnsupportedCountry() throws ApiException {
+        AuthorizationBuilder builder = getCashpressoBuilder(getCashpressoPaymentMethod(), false);
+        builder.withCashpressoShippingMethod(CashpressoShippingMethod.POSTOFFICE);
+        builder.withCashpressoShippingDate(getCashpressoShippingDate());
+
+        UnsupportedTransactionException ex = assertThrows(UnsupportedTransactionException.class, () ->
+                buildCashpressoRequest(builder, "PL"));
+
+        assertEquals("Cashpresso is only supported for GPAPI country DE or AT.", ex.getMessage());
+    }
+
+    @Test
+    public void testCashpressoPayIn3AmountBelowMinimum() throws ApiException {
+        AlternativePaymentMethod cashpresso = getCashpressoPaymentMethod()
+                .setPaymentPlan(CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS);
+        AuthorizationBuilder builder = getCashpressoBuilder(cashpresso, false);
+        builder.withCashpressoShippingMethod(CashpressoShippingMethod.POSTOFFICE);
+        builder.withCashpressoShippingDate(getCashpressoShippingDate());
+
+        UnsupportedTransactionException ex = assertThrows(UnsupportedTransactionException.class, () ->
+                buildCashpressoRequest(builder, CASHPRESSO_COUNTRY));
+
+        assertEquals("Cashpresso PAY_IN_3_INSTALLMENTS requires amount of 15000 or more (minor units).", ex.getMessage());
+    }
+
+    private void initializeCashpressoConfig() throws ConfigurationException {
+        GpApiConfig gpApiConfig = gpApiSetup(CASHPRESSO_APP_ID, CASHPRESSO_APP_KEY, Channel.CardNotPresent);
+        gpApiConfig.setServiceUrl("https://apis-qa.globalpay.com/ucp");
+        gpApiConfig.setCountry(CASHPRESSO_COUNTRY);
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName(CASHPRESSO_ACCOUNT_NAME);
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+
+        ServicesContainer.configureService(gpApiConfig, CASHPRESSO_CONFIG_NAME);
+    }
+
+    private AlternativePaymentMethod getCashpressoPaymentMethod() {
+        return new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(AlternativePaymentType.CASHPRESSO)
+                .setPaymentPlan(CashpressoPaymentPlan.PAY_30_DAYS)
+                .setReturnUrl(returnUrl)
+                .setStatusUpdateUrl(statusUpdateUrl)
+                .setCancelUrl("https://www.example.com/cancelUrl")
+                .setDescriptor("Cashpresso Test")
+                .setCountry(CASHPRESSO_COUNTRY)
+                .setAccountHolderName("James Mason");
+    }
+
+    private AuthorizationBuilder getCashpressoBuilder(AlternativePaymentMethod cashpresso, boolean authorize) {
+        AuthorizationBuilder builder = authorize
+                ? cashpresso.authorize(new BigDecimal("100"))
+                : cashpresso.charge(new BigDecimal("100"));
+
+        return builder
+                .withCurrency(CASHPRESSO_CURRENCY)
+                .withDescription("CashpressoPayment-001")
+                .withCustomerData(getCashpressoCustomer())
+                .withAddress(getCashpressoBillingAddress(), AddressType.Billing)
+                .withAddress(getCashpressoShippingAddress(), AddressType.Shipping);
+    }
+
+    private GpApiRequest buildCashpressoRequest(AuthorizationBuilder builder, String country) throws ApiException {
+        GpApiConfig gpApiConfig = getCashpressoConfig(country);
+        GpApiConnector connector = new GpApiConnector(gpApiConfig);
+        return new GpApiAuthorizationRequestBuilder().buildRequest(builder, connector);
+    }
+
+    private GpApiConfig getCashpressoConfig(String country) {
+        GpApiConfig gpApiConfig = gpApiSetup(CASHPRESSO_APP_ID, CASHPRESSO_APP_KEY, Channel.CardNotPresent);
+        gpApiConfig.setServiceUrl("https://apis-qa.globalpay.com/ucp");
+        gpApiConfig.setCountry(country);
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName(CASHPRESSO_ACCOUNT_NAME);
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+
+        return gpApiConfig;
+    }
+
+    private Customer getCashpressoCustomer() {
+        Customer customer = new Customer();
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setEmail("james.mason82@example.com");
+
+        PhoneNumber phoneNumber = new PhoneNumber();
+        phoneNumber.setCountryCode("+49");
+        phoneNumber.setNumber("123456789");
+        customer.setPhone(phoneNumber);
+
+        return customer;
+    }
+
+    private Address getCashpressoBillingAddress() {
+        return new Address()
+                .setStreetAddress1("Marienplatz 8")
+                .setStreetAddress2("Suite 302, Commercial Center")
+                .setStreetAddress3("Old Town District")
+                .setCity("Munchen")
+                .setPostalCode("80331")
+                .setState("BY")
+                .setCountryCode(CASHPRESSO_COUNTRY);
+    }
+
+    private Address getCashpressoShippingAddress() {
+        return new Address()
+                .setStreetAddress1("Marienplatz 8")
+                .setStreetAddress2("Suite 302, Commercial Center")
+                .setStreetAddress3("Old Town District")
+                .setCity("Munchen")
+                .setPostalCode("80331")
+                .setState("BY")
+                .setCountryCode(CASHPRESSO_COUNTRY);
+    }
+
+    private String getCashpressoShippingDate() {
+        return DateTime.now().plusDays(5).toString("yyyy-MM-dd");
+    }
+
+    @Test
+    public void testCashpressoHPPPayByLink_WithAllConfiguration() throws ApiException {
+        // Create PayByLinkData for Cashpresso HPP
+        PayByLinkData cashpressoPayByLink = new PayByLinkData();
+        cashpressoPayByLink.setType(PayByLinkType.HOSTED_PAYMENT_PAGE);
+        cashpressoPayByLink.setUsageMode(PaymentMethodUsageMode.SINGLE);
+        cashpressoPayByLink.setUsageLimit(1);
+        cashpressoPayByLink.setName("Mobile Bill Payment");
+        cashpressoPayByLink.isShippable(false);
+        cashpressoPayByLink.setShippingAmount(new BigDecimal("0"));
+        cashpressoPayByLink.setExpirationDate(DateTime.now().plusDays(150));
+        cashpressoPayByLink.setReturnUrl("https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb");
+        cashpressoPayByLink.setStatusUpdateUrl("https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb");
+        cashpressoPayByLink.setCancelUrl("https://webhook.site/62511d22-b672-41ef-afc3-03b136069aeb");
+        cashpressoPayByLink.setIsDccEnabled(false);
+        cashpressoPayByLink.setAllowedPaymentMethods(new String[]{"CARD", "CASHPRESSO"});
+
+        // Configure display settings
+        DisplayConfiguration displayConfig = new DisplayConfiguration()
+                .setIframeDimensionsDomain("https://www.example.com")
+                .setIframeResponseDomain("https://www.example.com")
+                .setCardholderName("YES")
+                .setCvv("YES");
+
+        // Configure payment methods with Cashpresso
+        PaymentMethodConfiguration paymentMethodConfig = new PaymentMethodConfiguration();
+        paymentMethodConfig.setStorageMode(StorageMode.ALWAYS);
+        paymentMethodConfig.setExemptStatus("LOW_VALUE");
+        paymentMethodConfig.setIsBillingAddressRequired(false);
+        paymentMethodConfig.setIsShippableAddressEnabled(true);
+        paymentMethodConfig.setIsAddressOverrideAllowed(false);
+        paymentMethodConfig.setChallengeRequestIndicator(ChallengeRequestIndicator.NoChallengeRequested);
+        paymentMethodConfig.setDigitalWalletProviders(new DigitalWalletProvider[]{
+                DigitalWalletProvider.GOOGLEPAY,
+                DigitalWalletProvider.APPLEPAY
+        });
+        paymentMethodConfig.setCashpressoPaymentPlans(new CashpressoPaymentPlan[]{
+                CashpressoPaymentPlan.PAY_IN_3_INSTALLMENTS,
+                CashpressoPaymentPlan.PAY_30_DAYS
+        });
+
+        cashpressoPayByLink.setPaymentMethodConfiguration(paymentMethodConfig);
+        cashpressoPayByLink.setDisplayConfiguration(displayConfig);
+
+        // Setup customer
+        Customer customer = new Customer();
+        customer.setId("PYR_992a3181a1bb493ead11474ce0fbd567");
+        customer.setFirstName("James");
+        customer.setLastName("Mason");
+        customer.setEmail("James.Mason8286@example.com");
+        customer.setLanguage("en");
+        customer.setStatus("ACTIVE");
+        customer.setIsShippingAddressSameAsBilling(false);
+
+        PhoneNumber customerPhone = new PhoneNumber();
+        customerPhone.setCountryCode("+49");
+        customerPhone.setNumber("609568831");
+        customer.setPhone(customerPhone);
+
+        // Setup billing address
+        Address billingAddress = new Address();
+        billingAddress.setStreetAddress1("Hauptstraße 25");
+        billingAddress.setStreetAddress2("Apartment 12");
+        billingAddress.setStreetAddress3("Gebäude C");
+        billingAddress.setCity("Munich");
+        billingAddress.setPostalCode("80331");
+        billingAddress.setState("BY");
+        billingAddress.setCountry("DE");
+
+        // Setup shipping address
+        Address shippingAddress = new Address();
+        shippingAddress.setStreetAddress1("100 main st");
+        shippingAddress.setStreetAddress2("Guly2");
+        shippingAddress.setStreetAddress3("Kop Straße 1892");
+        shippingAddress.setCity("Frankfurt");
+        shippingAddress.setPostalCode("60329");
+        shippingAddress.setState("HE");
+        shippingAddress.setCountry("DE");
+
+        // Setup product items
+        ArrayList<Product> items = new ArrayList<>();
+        Product product = new Product();
+        product.setProductCode("IPH65434");
+        product.setLabel("Iphone 16");
+        product.setQuantity(1);
+        product.setUnitPrice(new BigDecimal("650.00"));
+        product.setTaxAmount(new BigDecimal("0"));
+        items.add(product);
+
+        BigDecimal amount = new BigDecimal("650.00");
+
+        // Create HPP link with Cashpresso configuration
+        Transaction response =
+                PayByLinkService
+                        .create(cashpressoPayByLink, amount)
+                        .withCurrency("EUR")
+                        .withClientTransactionId("TRANS-20231218062503340Za51")
+                        .withDescription("February and March Invoice")
+                        .withCashpressoShippingMethod(CashpressoShippingMethod.DELIVERY)
+                        .withCashpressoShippingDate(getCashpressoShippingDate())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withAddress(billingAddress, AddressType.Billing)
+                        .withCustomer(customer)
+                        .withPhoneNumber("+49", "609568831", PhoneNumberType.Shipping)
+                        .withMiscProductData(items)
+                        .execute(CASHPRESSO_CONFIG_NAME);
+
+        // Assertions
+        assertNotNull(response);
+        assertEquals(SUCCESS, response.getResponseCode());
+        assertEquals(PayByLinkStatus.ACTIVE.toString(), response.getResponseMessage());
+        assertNotNull(response.getPayByLinkResponse());
+        assertNotNull(response.getPayByLinkResponse().getUrl());
+        assertNotNull(response.getPayByLinkResponse().getId());
+        assertEquals(amount, response.getBalanceAmount());
     }
 }
