@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import org.joda.time.DateTime;
 
 @Accessors(chain = true)
@@ -392,11 +393,90 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 .set("transactionAmount", StringUtils.toNumeric(builder.getAmount()))
                 .set("tip", StringUtils.toNumeric(builder.getGratuity()))
                 .set("transactionID", builder.getTransactionId())
+                .set("currencyCode", builder.getCurrency())
                 .set("isPartialShipment", builder.isMultiCapture() ? "Y" : null)
                 .set("externalReferenceID", builder.getClientTransactionId())
                 .set("voidReason", EnumUtils.getMapping(Target.Transit, builder.getVoidReason()));
 
         request.setPartialShipmentData(builder.getMultiCaptureSequence(), builder.getMultiCapturePaymentCount());
+
+        if (builder.isAllowDuplicates()) {
+            request.setAllowDuplicates(true);
+        }
+
+        // IncrementalAuth — map all optional/conditional API fields
+        if (builder.getTransactionType() == TransactionType.Increment) {
+
+            // operatorID (Optional) — sourced from clerkId
+            request.set("operatorID", builder.getClerkId());
+
+            // Lodging data group (Optional)
+            if (builder.getLodgingData() != null) {
+                LodgingData lodging = builder.getLodgingData();
+
+                // checkInDate — Mandatory within lodging group, format: YYYY-MM-DD
+                if (lodging.getCheckInDate() != null) {
+                    request.set("checkInDate", new java.text.SimpleDateFormat("yyyy-MM-dd").format(lodging.getCheckInDate().toDate()));
+                }
+                // lodgingRoomRate (Optional)
+                if (lodging.getRate() != null) {
+                    request.set("lodgingRoomRate", StringUtils.toNumeric(lodging.getRate()));
+                }
+                // stayDuration — Mandatory within lodging group
+                if (lodging.getStayDuration() != null) {
+                    request.set("stayDuration", String.valueOf(lodging.getStayDuration()));
+                }
+                // hotelFolioNumber (Conditional)
+                request.set("hotelFolioNumber", lodging.getFolioNumber());
+                // bookingReference → reservationNumber (Optional)
+                request.set("reservationNumber", lodging.getBookingReference());
+                // prestigiousPropertyIndicator (Optional)
+                if (lodging.getPrestigiousPropertyLimit() != null) {
+                    request.set("prestigiousPropertyIndicator", lodging.getPrestigiousPropertyLimit().getValue());
+                }
+                // extraCharges (Optional) — build comma-separated list of TransIT enum values
+                if (lodging.getExtraCharges() != null && !lodging.getExtraCharges().isEmpty()) {
+                    StringBuilder extraChargeStr = new StringBuilder();
+                    for (ExtraChargeType chargeType : lodging.getExtraCharges().keySet()) {
+                        if (extraChargeStr.length() > 0) extraChargeStr.append(",");
+                        switch (chargeType) {
+                            case Restaurant: extraChargeStr.append("RESTAURANT"); break;
+                            case GiftShop:   extraChargeStr.append("GIFT_SHOP");  break;
+                            case MiniBar:    extraChargeStr.append("MINI_BAR");   break;
+                            case Telephone:  extraChargeStr.append("TELEPHONE");  break;
+                            case Laundry:    extraChargeStr.append("LAUNDRY");    break;
+                            case Other:      extraChargeStr.append("OTHER");      break;
+                            default: break;
+                        }
+                    }
+                    if (extraChargeStr.length() > 0) {
+                        request.set("extraCharges", extraChargeStr.toString());
+                    }
+                }
+            }
+
+            // Customer name fields (Optional) — from customer data
+            if (builder.getCustomer() != null) {
+                request.set("firstName", builder.getCustomer().getFirstName());
+                request.set("lastName", builder.getCustomer().getLastName());
+                request.set("companyName", builder.getCustomer().getCompany());
+
+                Address locationAddress = builder.getCustomer().getAddress();
+                if (locationAddress != null) {
+                    request.set("locationDetailName", locationAddress.getName() != null ? locationAddress.getName() : builder.getCustomer().getCompany())
+                            .set("locationDetailAddress", locationAddress.getStreetAddress1())
+                            .set("locationDetailCity", locationAddress.getCity())
+                            .set("locationDetailRegionCode", locationAddress.getState())
+                            .set("locationDetailPostalCode", locationAddress.getPostalCode());
+
+                    String locationCountryCode = locationAddress.getCountryCode();
+                    if (StringUtils.isNullOrEmpty(locationCountryCode) && !StringUtils.isNullOrEmpty(locationAddress.getCountry())) {
+                        locationCountryCode = CountryUtils.getCountryCodeByCountry(locationAddress.getCountry());
+                    }
+                    request.set("locationDetailCountryCode", locationCountryCode);
+                }
+            }
+        }
 
         String response = doTransaction(request.buildRequest(builder));
         return mapResponse(builder, response);
@@ -448,15 +528,27 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
         trans.setAuthorizationCode(root.getString("authCode"));
         trans.setTransactionId(root.getString("transactionID"));
         trans.setTimestamp(root.getString("transactionTimestamp"));
+        trans.setReferenceNumber(root.getString("hostReferenceNumber"));
+        trans.setOrigionalAmount(StringUtils.toAmount(root.getString("transactionAmount")));
         trans.setAuthorizedAmount(StringUtils.toAmount(root.getString("processedAmount")));
         trans.setAvsResponseCode(root.getString("addressVerificationCode"));
         trans.setCvnResponseCode(root.getString("cvvVerificationCode"));
         trans.setCardType(root.getString("cardType"));
         trans.setCardLast4(root.getString("maskedCardNumber"));
+        trans.setCustomerReceipt(root.getString("customerReceipt"));
+        trans.setMerchantReceipt(root.getString("merchantReceipt"));
         trans.setToken(root.getString("token"));
         trans.setCommercialIndicator(root.getString("commercialCard"));
         trans.setBalanceAmount(StringUtils.toAmount(root.getString("balanceAmount")));
         trans.setCardBrandTransactionId(root.getString("cardTransactionIdentifier"));
+
+        HashMap<String, String> responseValues = new HashMap<>();
+        responseValues.put("taskID", root.getString("taskID"));
+        responseValues.put("transactionAmount", root.getString("transactionAmount"));
+        responseValues.put("processedAmount", root.getString("processedAmount"));
+        responseValues.put("totalAmount", root.getString("totalAmount"));
+        responseValues.put("hostReferenceNumber", root.getString("hostReferenceNumber"));
+        trans.setResponseValues(responseValues);
 
         AdditionalDuplicateData duplicateData = hydrateDuplicateData(root);
         if (duplicateData != null) {
@@ -527,6 +619,8 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
                 return "GetOnusToken";
             case Refund:
                 return "Return";
+            case Increment:
+                return "IncrementalAuth";
             default:
                 throw new UnsupportedTransactionException();
         }

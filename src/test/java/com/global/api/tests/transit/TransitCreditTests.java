@@ -898,4 +898,36 @@ public class TransitCreditTests {
 
         assertEquals(thrown.getResponseText().toLowerCase().contains("duplicate"), true);
     }
+
+    @Test
+    public void incrementalAuthManual() throws ApiException {
+        Transaction authResponse = card.authorize(new BigDecimal("10.00"))
+                .withAllowDuplicates(true)
+                .withCurrency("USD")
+                .execute();
+        assertNotNull(authResponse);
+        assertEquals("00", authResponse.getResponseCode(), authResponse.getResponseMessage());
+
+        Transaction incrementalResponse=authResponse.increment(new BigDecimal("5.00"))
+                .withCurrency("USD")
+                .execute();
+
+        assertNotNull(incrementalResponse);
+        assertEquals("00", incrementalResponse.getResponseCode(), incrementalResponse.getResponseMessage());
+        assertNotNull(incrementalResponse.getTransactionId());
+    }
+
+    // Negative Test Cases for Incremental Auth
+
+    @Test
+    public void incrementalAuth_withInvalidTransactionReference_shouldFail() throws ApiException {
+        // Attempt incremental auth with a non-existent/invalid transaction ID
+        // Gateway should reject the invalid transaction reference with GatewayException
+        assertThrows(GatewayException.class, () ->
+                Transaction.fromId("99999999")
+                        .increment(new BigDecimal("5.00"))
+                        .withCurrency("USD")
+                        .execute()
+        );
+    }
 }

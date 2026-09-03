@@ -232,6 +232,9 @@ public class TransitRequestBuilder {
             case Tokenize:
                 return buildList("deviceID|transactionKey|cardDataSource|cardNumber|expirationDate|cardHolderName|cardVerification|developerID");
 
+            case Increment:
+                return buildList("deviceID|transactionKey|manifest|transactionID|externalReferenceID|operatorID|transactionAmount|currencyCode|checkInDate|lodgingRoomRate|stayDuration|extraCharges|hotelCode|hotelFolioNumber|roomNumber|firstName|lastName|companyName|rateType|agentCode|agentName|chargeType|prestigiousPropertyIndicator|reservationNumber|locationDetailName|locationDetailAddress|locationDetailCity|locationDetailRegionCode|locationDetailCountryCode|locationDetailPostalCode|developerID|enablerVerificationValue");
+
             default:
                 throw new UnsupportedOperationException("Unsupported transaction type: " + builder.getTransactionType());
         }
