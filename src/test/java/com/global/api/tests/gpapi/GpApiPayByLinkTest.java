@@ -59,7 +59,7 @@ public class GpApiPayByLinkTest extends BaseGpApiTest {
 
         ServicesContainer.configureService(config);
 
-        GpApiConfig config2 = gpApiSetup("hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo", "cQOKHoAAvNIcEN8s", Channel.CardNotPresent);
+        GpApiConfig config2 = gpApiSetup("", "", Channel.CardNotPresent);
         config2.setCountry("US");
         AccessTokenInfo accessTokenInfo2 =
                 new AccessTokenInfo()

@@ -10,6 +10,7 @@ import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.TerminalResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.pax.responses.PaxDeviceResponse;
 import com.global.api.tests.terminals.hpa.RandomIdProvider;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -525,7 +526,18 @@ public class PaxCreditTests {
                 .execute();
         assertNotNull(response);
         assertEquals("00", response.getResponseCode());
-        assertNotNullandNotEmpty(response.getMerchantId());
+        assertNotNullandNotEmpty("merchantId", response.getMerchantId());
+    }
+
+    @Test
+    public void creditSaleWithGlobalUniqueId() throws ApiException {
+        TerminalResponse response = device.sale(amount)
+                .withAllowDuplicates(true)
+                .withGratuity(new BigDecimal("1.00"))
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertNotNullandNotEmpty("globalUniqueId", ((PaxDeviceResponse) response).getGlobalUniqueId());
     }
 
     @Test
@@ -544,12 +556,12 @@ public class PaxCreditTests {
                 .execute();
         assertNotNull(refundResponse);
         assertEquals("00", refundResponse.getResponseCode());
-        assertNotNullandNotEmpty(refundResponse.getMerchantId());
+        assertNotNullandNotEmpty("merchantId", refundResponse.getMerchantId());
     }
 
-    private void assertNotNullandNotEmpty(String merchantId) {
-        if (merchantId == null || merchantId.trim().isEmpty()) {
-            throw new AssertionError("merchantId must not be null or empty");
+    private void assertNotNullandNotEmpty(String fieldName, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new AssertionError(String.format("%s must not be null or empty", fieldName));
         }
     }
 }

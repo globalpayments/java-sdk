@@ -60,11 +60,11 @@ public class GpApiApmTest extends BaseGpApiTest {
     static final String descriptor = "Test Transaction";
     static final String accountName = "James Mason";
     static final String chargeDescription = "New APM";
-    private static String eratyAppId = "hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo";
-    private static String eratyAppKey = "cQOKHoAAvNIcEN8s";
+    private static String eratyAppId = "";
+    private static String eratyAppKey = "";
     private static final String CASHPRESSO_CONFIG_NAME = "cashpresso";
-    private static final String CASHPRESSO_APP_ID = "hlZAokTftDazLlWDPe8E6VAz5g9rSDPg";
-    private static final String CASHPRESSO_APP_KEY = "ThDO2fISzzWCgkCZ";
+    private static final String CASHPRESSO_APP_ID = "";
+    private static final String CASHPRESSO_APP_KEY = "";
     private static final String CASHPRESSO_ACCOUNT_NAME = "GPECOM_CASHPRESSO_APM_Transaction_Processing";
     private static final String CASHPRESSO_COUNTRY = "DE";
     private static final String CASHPRESSO_CURRENCY = "EUR";
@@ -849,15 +849,15 @@ public class GpApiApmTest extends BaseGpApiTest {
     }
 
     public void GpApiPayuInitializationTest() throws ApiException {
-        String APP_ID = "ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD";
-        String APP_KEY = "4NpIQJDCIDzfTKhA";
+        String APP_ID = "";
+        String APP_KEY = "";
 
-        GpApiConfig  gpApiConfig = new GpApiConfig()
+        GpApiConfig gpApiConfig = new GpApiConfig()
                 .setAppId(APP_ID)
                 .setAppKey(APP_KEY);
         gpApiConfig.setChannel(Channel.CardNotPresent);
 
-        gpApiConfig.setServiceUrl("https://apis.globalpay.com/ucp");
+        gpApiConfig.setServiceUrl("");
 
         gpApiConfig.setEnableLogging(true);
         gpApiConfig.setRequestLogger(new RequestConsoleLogger());
@@ -1162,7 +1162,7 @@ public class GpApiApmTest extends BaseGpApiTest {
 
     private void initializeCashpressoConfig() throws ConfigurationException {
         GpApiConfig gpApiConfig = gpApiSetup(CASHPRESSO_APP_ID, CASHPRESSO_APP_KEY, Channel.CardNotPresent);
-        gpApiConfig.setServiceUrl("https://apis-qa.globalpay.com/ucp");
+        gpApiConfig.setServiceUrl("");
         gpApiConfig.setCountry(CASHPRESSO_COUNTRY);
         gpApiConfig.setEnableLogging(true);
         gpApiConfig.setRequestLogger(new RequestConsoleLogger());

@@ -35,13 +35,13 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
     @BeforeEach
     public void Init() throws ConfigurationException {
         //BLIK APM configuration
-        String APP_ID_BLIK = "ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD";
-        String APP_KEY_BLIK = "4NpIQJDCIDzfTKhA";
+        String APP_ID_BLIK = "";
+        String APP_KEY_BLIK = "";
         GpApiConfig gpApiConfigBlik = new GpApiConfig()
                 .setAppId(APP_ID_BLIK)
                 .setAppKey(APP_KEY_BLIK);
         gpApiConfigBlik.setChannel(Channel.CardNotPresent);
-        gpApiConfigBlik.setServiceUrl("https://apis.globalpay.com/ucp");
+        gpApiConfigBlik.setServiceUrl("");
         gpApiConfigBlik.setEnableLogging(true);
         gpApiConfigBlik.setRequestLogger(new RequestConsoleLogger());
         gpApiConfigBlik.setCountry("PL");
@@ -53,13 +53,13 @@ public class GpApiBlikPayuCertification extends BaseGpEComTest {
         ServicesContainer.configureService(gpApiConfigBlik,"BLIK");
 
         //Payu APM configuration
-        String APP_ID_Payu = "ZbFY1jAz6sqq0GAyIPZe1raLCC7cUlpD";
-        String APP_KEY_Payu = "4NpIQJDCIDzfTKhA";
+        String APP_ID_Payu = "";
+        String APP_KEY_Payu = "";
         GpApiConfig gpApiConfigPayu = new GpApiConfig()
                 .setAppId(APP_ID_Payu)
                 .setAppKey(APP_KEY_Payu);
         gpApiConfigPayu.setChannel(Channel.CardNotPresent);
-        gpApiConfigPayu.setServiceUrl("https://apis.globalpay.com/ucp");
+        gpApiConfigPayu.setServiceUrl("");
         gpApiConfigPayu.setEnableLogging(true);
         gpApiConfigPayu.setRequestLogger(new RequestConsoleLogger());
         gpApiConfigPayu.setCountry("PL");

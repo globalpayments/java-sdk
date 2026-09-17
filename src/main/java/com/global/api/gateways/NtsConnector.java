@@ -188,13 +188,13 @@ public class NtsConnector extends GatewayConnectorConfig {
             if (builder instanceof ManagementBuilder) {
                 reference.setOriginalAmount(builder.getAmount());
             }
-        } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)
-                && transactionType != TransactionType.DataCollect
-                && transactionType != TransactionType.Capture) {
-            NtsDebitResponse ntsDebitResponse = (NtsDebitResponse) ntsResponse.getNtsResponseMessage();
-            reference.setOriginalTransactionCode(ntsDebitResponse.getTransactionCode());
-            reference.setOriginalApprovedAmount(StringUtils.toAmount(String.valueOf(ntsDebitResponse.getAmount())));
-            if (builder instanceof ManagementBuilder) {
+        } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
+            if (transactionType != TransactionType.DataCollect
+                    && transactionType != TransactionType.Capture) {
+                NtsDebitResponse ntsDebitResponse = (NtsDebitResponse) ntsResponse.getNtsResponseMessage();
+                reference.setOriginalTransactionCode(ntsDebitResponse.getTransactionCode());
+                reference.setOriginalApprovedAmount(StringUtils.toAmount(String.valueOf(ntsDebitResponse.getAmount())));
+            } else if (builder instanceof ManagementBuilder) {
                 reference.setOriginalAmount(builder.getAmount());
             }
         } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.EBT)

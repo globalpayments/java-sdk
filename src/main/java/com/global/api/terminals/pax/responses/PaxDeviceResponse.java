@@ -14,6 +14,7 @@ import lombok.Setter;
 public class PaxDeviceResponse extends PaxBaseResponse {
     private String referenceNumber;
     private String hostReferenceNumber;
+    private String globalUniqueId;
 
     public PaxDeviceResponse(byte[] buffer, PaxMsgId... messageIds) throws MessageException {
         super(buffer, messageIds);
@@ -109,6 +110,7 @@ public class PaxDeviceResponse extends PaxBaseResponse {
             setCardHolderLanguage(extDataResponse.get(PaxExtData.USER_LANGUAGE_STATUS));
             setMerchantId(extDataResponse.get(PaxExtData.MERCHANT_ID));
             setPinVerified(extDataResponse.get(PaxExtData.PIN_STATUS_NUMBER));
+            setGlobalUniqueId(extDataResponse.get(PaxExtData.GLOBAL_UNIQUE_ID));
         }
 
         PaxTxnType transType = ReverseStringEnumMap.parse(getTransactionType(), PaxTxnType.class);

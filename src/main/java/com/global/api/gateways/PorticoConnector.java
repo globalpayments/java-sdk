@@ -9,6 +9,7 @@ import com.global.api.entities.reporting.CheckData;
 import com.global.api.entities.reporting.SurchargeLookup;
 import com.global.api.network.NetworkMessageHeader;
 import com.global.api.paymentMethods.*;
+import com.global.api.serviceConfigs.PorticoConfig;
 import com.global.api.utils.*;
 import lombok.Setter;
 import org.joda.time.DateTime;
@@ -489,7 +490,15 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
 //            }
 //        }
 
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            String request = buildEnvelope(et, transaction, builder.getClientTransactionId(), builder);
+            PorticoConfig.getNetworkRequestLogger().logInfo("Request Breakdown:\r\n" + request);
+        }
+
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder));
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            PorticoConfig.getNetworkRequestLogger().logInfo("\r\nResponse Breakdown:\r\n" + response);
+        }
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -679,8 +688,15 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 et.subElement(addons, "InvoiceNbr", builder.getInvoiceNumber());
             }
         }
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            String request = buildEnvelope(et, transaction, builder.getClientTransactionId(), builder);
+            PorticoConfig.getNetworkRequestLogger().logInfo("Request Breakdown:\r\n" + request);
+        }
 
         String response = doTransaction(buildEnvelope(et, transaction, builder.getClientTransactionId(), builder));
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            PorticoConfig.getNetworkRequestLogger().logInfo("\r\nResponse Breakdown:\r\n" + response);
+        }
         return mapResponse(response, builder.getPaymentMethod());
     }
 
@@ -758,7 +774,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
                 }
             }
         }
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            String request = buildEnvelope(et, transaction);
+            PorticoConfig.getNetworkRequestLogger().logInfo("Request Breakdown:\r\n" + request);
+        }
         String response = doTransaction(buildEnvelope(et, transaction));
+        if (PorticoConfig.getNetworkRequestLogger() != null) {
+            PorticoConfig.getNetworkRequestLogger().logInfo("Response Breakdown:\r\n" + response);
+        }
         return mapReportResponse(response, builder.getReportType(), clazz);
     }
 
@@ -809,7 +832,14 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
 
         try {
+            if (PorticoConfig.getNetworkRequestLogger() != null) {
+                String request = buildEnvelope(et, transaction);
+                PorticoConfig.getNetworkRequestLogger().logInfo("Request Breakdown:\r\n" + request);
+            }
             String response = doTransaction(buildEnvelope(et, transaction));
+            if (PorticoConfig.getNetworkRequestLogger() != null) {
+                PorticoConfig.getNetworkRequestLogger().logInfo("Response Breakdown:\r\n" + response);
+            }
             return (TResult) mapSurchargeLookupResponse(response, clazz);
         } catch (GatewayException e) {
             SurchargeLookup lookupResponse = new SurchargeLookup();

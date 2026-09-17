@@ -142,11 +142,11 @@ class GpApiVisaInstallmentTest {
      */
     public GpApiConfig setUpConfig() {
         GpApiConfig config = new GpApiConfig();
-        config.setAppId("hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo");
-        config.setAppKey("cQOKHoAAvNIcEN8s");
+        config.setAppId("");
+        config.setAppKey("");
         config.setChannel(Channel.CardNotPresent);
         config.setEnvironment(Environment.TEST);
-        config.setServiceUrl("https://apis.sandbox.boipagateway.com/ucp");
+        config.setServiceUrl("");
         config.setCountry("GB");
         config.setEnableLogging(true);
         config.setRequestLogger(new RequestConsoleLogger());
@@ -161,14 +161,14 @@ class GpApiVisaInstallmentTest {
      */
     public GpApiConfig setUpInstallmentConfig() {
         GpApiConfig config = new GpApiConfig();
-        config.setAppId("hkjrcsGDhWiDt8GEhoDMKy3pzFz5R0Bo");
-        config.setAppKey("cQOKHoAAvNIcEN8s");
+        config.setAppId("");
+        config.setAppKey("");
         config.setChannel(Channel.CardNotPresent);
         config.setEnvironment(Environment.TEST);
         config.setCountry("GB");
         config.setEnableLogging(true);
         config.setRequestLogger(new RequestConsoleLogger());
-        config.setServiceUrl("https://apis.sandbox.globalpay.com/ucp");
+        config.setServiceUrl("");
         AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
         accessTokenInfo.setTransactionProcessingAccountName("GPECOM_Installments_Processing");
         config.setAccessTokenInfo(accessTokenInfo);

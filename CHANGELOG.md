@@ -1,13 +1,20 @@
 # Changelog
 
-## Latest Version - V15.3.7 (09/03/2026)
+## Latest Version - V15.3.8 (09/17/2026)
+### Enhancements:
+- [Portico] - Added portico custom logger interface to enable merchants to push SDK logs to their own logging systems.
+- [PAX] - Added support for GUID parsing in responses
+
+### Bug Fixes:
+- [NTS] - Added mapping for the Original Amount field in the TransactionReference object for Debit capture method(Issue - 10377).
+
+## Version - V15.3.7 (09/03/2026)
 ### Enhancements:
 - [TransIT] - Added support for Credit Incremental Authorization API for enabling incremental auth flows for GH27 payments.
 
 ## Version - V15.3.6 (08/27/2026)
 ### Enhancements:
 - [GPAPI] - Added Cashpresso payment method support for GPAPI with HPP and Transaction Initiate flows.
-- [Portico] - Added portico custom logger interface to enable merchants to push SDK logs to their own logging systems.
 
 ## Version - V15.3.5 (08/19/2026)
 ### Enhancements:
