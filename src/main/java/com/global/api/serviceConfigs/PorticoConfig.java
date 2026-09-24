@@ -73,10 +73,6 @@ public class PorticoConfig extends GatewayConfig {
                     ServiceEndpoints.PORTICO_TEST.getValue();
         }
 
-        if(networkRequestLogger == null) {
-            networkRequestLogger = new NtsUtils();
-        }
-
         PorticoConnector gateway =
                 new PorticoConnector()
                         .setSiteId(siteId)

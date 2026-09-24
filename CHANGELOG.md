@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.3.8 (09/17/2026)
+## Latest Version - V15.3.9 (09/24/2026)
+### Bug Fixes:
+- [Portico] - Removed the default network request logger initialization from PorticoConfig so Portico logging only uses an explicitly configured logger.
+- [Synk] - Critical and high level security issues resolved. No impact on any connectors.
+
+## Version - V15.3.8 (09/17/2026)
 ### Enhancements:
 - [Portico] - Added portico custom logger interface to enable merchants to push SDK logs to their own logging systems.
 - [PAX] - Added support for GUID parsing in responses
