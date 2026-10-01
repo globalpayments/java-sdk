@@ -37,13 +37,19 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     private static final String VISA_FLEET = "VisaFleet";
     private static final String FUELMAN_FLEET = "FuelmanFleet";
     private static final String FLEETWIDE_FLEET = "FleetWide";
+    private static final String WEX_FLEET = "WexFleet";
     private static final String FUEL_PRODUCT_COUNT_EXCEPTION = "Number of Fuel product should not more than 1";
+    private static final String WEX_FUEL_PRODUCT_COUNT_EXCEPTION = "WEX Fleet supports a maximum of two fuel products.";
     private static final String MASTERCARD_MISC_PRODUCT_CODE = "99";
     private static final String VISAFLEET_MISC_PRODUCT_CODE = "90";
     private static final String VOYAGER_MISC_PRODUCT_CODE = "33";
     private static final String FLEETCOR_MISC_PRODUCT_CODE = "400";
+    private static final String WEX_MISC_PRODUCT_CODE = "400";
+    private static final UnitOfMeasure WEX_ROLLUP_UNIT_OF_MEASURE = UnitOfMeasure.OtherOrUnknown;
     private static final int FLEETCOR_MAX_PRODUCT_COUNT = 4;
     private static final int STANDARD_FLEET_MAX_PRODUCT_COUNT = 6;
+    private static final int WEX_MAX_FUEL_PRODUCT_COUNT = 2;
+    private static final int WEX_MAX_NON_FUEL_PRODUCT_COUNT = 6;
     private static final Set<String> fleetCorCodes = fleetCorDiscountCodes();
     private static final Map<String, Integer> DISCOUNT_COUPON_PRIORITY = createDiscountCouponPriority();
     private static final Map<String, Set<String>> DISCOUNT_CODES_BY_FLEET_CARD = createDiscountCodesByFleetCard();
@@ -303,6 +309,9 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                     rvalue = handleFleetFormat(rvalue, FLEETCOR_MISC_PRODUCT_CODE, FUELMAN_FLEET);
                 } else if ((cardType != null) && ((cardType).equals(FLEETWIDE_FLEET))) {
                     rvalue = handleFleetFormat(rvalue, FLEETCOR_MISC_PRODUCT_CODE, FLEETWIDE_FLEET);
+                } else if ((cardType != null) && ((cardType).equals(WEX_FLEET))
+                        && (getFuelProductCount() != 0 || getNonFuelProductCount() != 0)) {
+                    rvalue = handleWexFleetFormat(rvalue);
                 } else {
                     LinkedHashMap<String, DE63_ProductDataEntry> productDataCountEntries = new LinkedHashMap<>();
                     int count = 0;
@@ -499,6 +508,78 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         return result;
     }
 
+    // WEX allows two fuel entries and six non-fuel entries independently; only the non-fuel overflow rolls up to 400.
+    private String handleWexFleetFormat(String rvalue) {
+        if (getFuelProductCount() > WEX_MAX_FUEL_PRODUCT_COUNT) {
+            throw new UnsupportedOperationException(WEX_FUEL_PRODUCT_COUNT_EXCEPTION);
+        }
+
+        int nonFuelCount = getNonFuelProductCount();
+        int encodedNonFuelCount = Math.min(nonFuelCount, WEX_MAX_NON_FUEL_PRODUCT_COUNT);
+        String result = rvalue.concat(StringUtils.padLeft(getFuelProductCount() + encodedNonFuelCount, 3, '0'));
+
+        for (DE63_ProductDataEntry entry : getDecreasingOrderFuelEntries()) {
+            result = appendWexProductEntry(result, entry);
+        }
+
+        if (nonFuelCount == 0) {
+            return result;
+        }
+
+        Collection<DE63_ProductDataEntry> nonFuelEntries = getDecreasingOrderNonFuelEntries().values();
+
+        if (nonFuelCount <= WEX_MAX_NON_FUEL_PRODUCT_COUNT) {
+            for (DE63_ProductDataEntry entry : nonFuelEntries) {
+                result = appendWexProductEntry(result, entry);
+            }
+            return result;
+        }
+
+        BigDecimal combinedQuantity = BigDecimal.ZERO;
+        BigDecimal combinedAmount = BigDecimal.ZERO;
+        int slotsBeforeRollup = WEX_MAX_NON_FUEL_PRODUCT_COUNT - 1;
+        int processedCount = 0;
+
+        for (DE63_ProductDataEntry entry : nonFuelEntries) {
+            if (processedCount < slotsBeforeRollup) {
+                result = appendWexProductEntry(result, entry);
+                processedCount++;
+            } else {
+                if (entry.getQuantity() != null) {
+                    combinedQuantity = combinedQuantity.add(entry.getQuantity());
+                }
+                combinedAmount = combinedAmount.add(entry.getAmount());
+            }
+        }
+
+        // The rolled-up product aggregates mixed units, so it is reported as OtherOrUnknown.
+        result = result.concat(WEX_MISC_PRODUCT_CODE + "\\");
+        result = result.concat(WEX_ROLLUP_UNIT_OF_MEASURE.getValue());
+        result = result.concat(StringUtils.toFractionalNumeric(combinedQuantity.setScale(3, RoundingMode.HALF_UP)));
+        return result.concat("\\")
+                .concat("\\")
+                .concat(StringUtils.toNumericWithPrecision(combinedAmount, 2) + "\\");
+    }
+
+    private String appendWexProductEntry(String rvalue, DE63_ProductDataEntry entry) {
+        rvalue = rvalue.concat(entry.getCode() + "\\");
+
+        if (entry.getUnitOfMeasure() != null) {
+            rvalue = rvalue.concat(entry.getUnitOfMeasure().getValue());
+        }
+        if (entry.getQuantity() != null) {
+            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getQuantity().setScale(3, RoundingMode.HALF_UP)));
+        }
+
+        rvalue = rvalue.concat("\\");
+        if (entry.getPrice() != null) {
+            rvalue = rvalue.concat(StringUtils.toFractionalNumeric(entry.getPrice().setScale(3, RoundingMode.HALF_UP)));
+        }
+
+        return rvalue.concat("\\")
+                .concat(StringUtils.toNumericWithPrecision(entry.getAmount(), 2) + "\\");
+    }
+
     private String appendProductEntry(String rvalue, DE63_ProductDataEntry entry) {
         rvalue = rvalue.concat(entry.getCode() + "\\");
 
@@ -514,6 +595,13 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
         return rvalue.concat("\\")
                 .concat(StringUtils.toNumeric(entry.getAmount()) + "\\");
+    }
+
+    private List<DE63_ProductDataEntry> getDecreasingOrderFuelEntries() {
+        List<DE63_ProductDataEntry> decreasingOrderFuelEntries = new ArrayList<>(fuelProductDataEntries.values());
+        // Sort by total amount (descending), not unit price.
+        decreasingOrderFuelEntries.sort((entry1, entry2) -> entry2.getAmount().compareTo(entry1.getAmount()));
+        return decreasingOrderFuelEntries;
     }
 
     private LinkedHashMap<String, DE63_ProductDataEntry> getDecreasingOrderNonFuelEntries() {

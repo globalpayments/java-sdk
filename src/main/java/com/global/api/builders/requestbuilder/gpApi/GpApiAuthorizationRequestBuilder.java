@@ -484,10 +484,22 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 }
             }
 
+            boolean isBlikLevelZero = isBlikLevelZeroAlternativePayment(alternatepaymentMethod);
+            if (alternatepaymentMethod.getMode() == AlternativePaymentMethodMode.LEVEL_ZERO) {
+                validateBlikLevelZero(alternatepaymentMethod, builder);
+            }
+
             paymentMethod.set("name", alternatepaymentMethod.getAccountHolderName());
             var apm = new JsonDoc()
                     .set("provider", alternatepaymentMethod.getAlternativePaymentMethodType().getValue())
                     .set("address_override_mode", alternatepaymentMethod.getAddressOverrideMode());
+
+            if (isBlikLevelZero) {
+                apm
+                        .set("mode", alternatepaymentMethod.getMode() != null ? alternatepaymentMethod.getMode().getValue() : null)
+                        .set("payment_code_initiator", alternatepaymentMethod.getPaymentCodeInitiator())
+                        .set("payment_code", alternatepaymentMethod.getPaymentCode());
+            }
 
             if (isCashpresso) {
                 apm.set("payment_plan", alternatepaymentMethod.getPaymentPlan() != null ? alternatepaymentMethod.getPaymentPlan().name() : null);
@@ -1066,6 +1078,19 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
                 payer.set("country", alternativePaymentMethodPayer.getCountry());
             }
 
+            if (isBlikLevelZeroAlternativePayment(alternativePaymentMethodPayer)) {
+                Customer customerData = builder.getCustomerData();
+
+                if (customerData != null) {
+                    payer
+                            .set("first_name", customerData.getFirstName())
+                            .set("last_name", customerData.getLastName())
+                            .set("email", customerData.getEmail())
+                            .set("ip_address", customerData.getIpAddress())
+                            .set("user_agent", customerData.getUserAgent());
+                }
+            }
+
             if (isCashpressoAlternativePayment(alternativePaymentMethodPayer)) {
                 payer.set("email", builder.getCustomerData() != null ? builder.getCustomerData().getEmail() : null);
 
@@ -1534,6 +1559,27 @@ public class GpApiAuthorizationRequestBuilder implements IRequestBuilder<Authori
 
     private static boolean isCashpressoAlternativePayment(AlternativePaymentMethod paymentMethod) {
         return paymentMethod != null && paymentMethod.getAlternativePaymentMethodType() == AlternativePaymentType.CASHPRESSO;
+    }
+
+    private static boolean isBlikLevelZeroAlternativePayment(AlternativePaymentMethod paymentMethod) {
+        return paymentMethod != null
+                && paymentMethod.getAlternativePaymentMethodType() == AlternativePaymentType.BLIK
+                && paymentMethod.getMode() == AlternativePaymentMethodMode.LEVEL_ZERO;
+    }
+
+    private static void validateBlikLevelZero(AlternativePaymentMethod paymentMethod, AuthorizationBuilder builder)
+            throws UnsupportedTransactionException {
+        if (paymentMethod.getMode() != AlternativePaymentMethodMode.LEVEL_ZERO) {
+            return;
+        }
+
+        if (paymentMethod.getAlternativePaymentMethodType() != AlternativePaymentType.BLIK) {
+            throw new UnsupportedTransactionException("BLIK level_zero is only supported for provider BLIK.");
+        }
+
+        if (StringUtils.isNullOrEmpty(paymentMethod.getPaymentCodeInitiator()) || StringUtils.isNullOrEmpty(paymentMethod.getPaymentCode())) {
+            throw new UnsupportedTransactionException("BLIK level_zero requires payment_code_initiator and payment_code.");
+        }
     }
 
     private static String formatCashpressoAmount(BigDecimal amount) {

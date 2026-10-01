@@ -4,6 +4,7 @@ import com.global.api.builders.AuthorizationBuilder;
 import com.global.api.entities.BankList;
 import com.global.api.entities.Terms;
 import com.global.api.entities.enums.AlternativePaymentType;
+import com.global.api.entities.enums.AlternativePaymentMethodMode;
 import com.global.api.entities.enums.CashpressoPaymentPlan;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TransactionModifier;
@@ -26,6 +27,9 @@ public class AlternativePaymentMethod implements IPaymentMethod, IChargable, INo
     private String descriptor;
     private String country;
     private String accountHolderName;
+    private AlternativePaymentMethodMode mode;
+    private String paymentCodeInitiator;
+    private String paymentCode;
     // The reference from the payment provider: from PayPal, etc
     private String providerReference;
     // Accepted values ENABLE/DISABLE

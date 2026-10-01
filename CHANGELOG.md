@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.3.9 (09/24/2026)
+## Latest Version - V15.3.10 (10/01/2026)
+### Enhancements
+- [GPAPI] - Added support for Blik Level 0 payments, allowing merchants to process with one-time payment codes.
+- [VAPS] - Added WexFleet Rollup Functionality
+
+## Version - V15.3.9 (09/24/2026)
 ### Bug Fixes:
 - [Portico] - Removed the default network request logger initialization from PorticoConfig so Portico logging only uses an explicitly configured logger.
 - [Synk] - Critical and high level security issues resolved. No impact on any connectors.

@@ -43,6 +43,8 @@ public class Customer extends RecurringEntity<Customer> {
     private String timeCreated;
     private String timeLastUpdated;
     private String country;
+    private String ipAddress;
+    private String userAgent;
 
     public Customer() {
         //super(Customer.class);

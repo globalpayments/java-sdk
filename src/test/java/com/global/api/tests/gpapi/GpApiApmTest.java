@@ -69,6 +69,9 @@ public class GpApiApmTest extends BaseGpApiTest {
     private static final String CASHPRESSO_COUNTRY = "DE";
     private static final String CASHPRESSO_CURRENCY = "EUR";
 
+    private static final String BLIKLEVELZERO_APP_ID = "hlZAokTftDazLlWDPe8E6VAz5g9rSDPg";
+    private static final String BLIKLEVELZERO_APP_KEY = "ThDO2fISzzWCgkCZ";
+
     @BeforeEach
     public void initialize() throws ConfigurationException {
 
@@ -107,6 +110,21 @@ public class GpApiApmTest extends BaseGpApiTest {
                         .setPostalCode("5001")
                         .setProvince("IL")
                         .setCountryCode("US");
+
+        GpApiConfig gpApiConfig = new GpApiConfig()
+                .setAppId(BLIKLEVELZERO_APP_ID)
+                .setAppKey(BLIKLEVELZERO_APP_KEY);
+        gpApiConfig.setChannel(Channel.CardNotPresent);
+        gpApiConfig.setServiceUrl("https://apis-qa.globalpay.com/ucp");
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setCountry("PL");
+
+        AccessTokenInfo accessTokenInfoBlikZero = new AccessTokenInfo();
+        accessTokenInfoBlikZero.setTransactionProcessingAccountName("GPECOM_BLIK_APM_Transaction_Processing");
+        accessTokenInfoBlikZero.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfoBlikZero);
+
+        ServicesContainer.configureService(gpApiConfig, "bliklevelzero");
     }
 
     @Test
@@ -1375,4 +1393,154 @@ public class GpApiApmTest extends BaseGpApiTest {
         assertNotNull(response.getPayByLinkResponse().getId());
         assertEquals(amount, response.getBalanceAmount());
     }
+
+    @Test
+    public void blikLevelZeroSale_WhenRequestIsValid_ShouldSucceed() throws ApiException {
+       AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(BLIK)
+                .setMode(AlternativePaymentMethodMode.LEVEL_ZERO)
+                .setPaymentCodeInitiator("payer")
+                .setPaymentCode("999000")
+                .setReturnUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setStatusUpdateUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCancelUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCountry("PL")
+                .setAccountHolderName("James2 Carl");
+
+        Customer payer = new Customer()
+                .setFirstName("James")
+                .setLastName("Mason")
+                .setEmail("james2.carl@gmail.com")
+                .setIpAddress("106.215.180.111")
+                .setUserAgent("PostmanRuntime/7.51.1");
+
+        Transaction response = paymentMethod
+                .charge(new BigDecimal("1000"))
+                .withCurrency("PLN")
+                .withCustomerData(payer)
+                .execute("bliklevelzero");
+
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+        assertEquals(TransactionStatus.Pending.getValue(), response.getResponseMessage());
+        assertNotNull(response.getAlternativePaymentResponse());
+        assertEquals("BLIK", response.getAlternativePaymentResponse().getProviderName().toUpperCase());
+    }
+
+    @Test
+    public void blikLevelZeroSaleShouldThrowException_WhenReturnURLIsMissingInRequest() {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(BLIK)
+                .setMode(AlternativePaymentMethodMode.LEVEL_ZERO)
+                .setPaymentCodeInitiator("payer")
+                .setPaymentCode("999000")
+                .setStatusUpdateUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCancelUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCountry("PL")
+                .setAccountHolderName("James2 Carl");
+
+        Customer payer = new Customer()
+                .setFirstName("James")
+                .setLastName("Mason")
+                .setEmail("james2.carl@gmail.com")
+                .setIpAddress("106.215.180.111")
+                .setUserAgent("PostmanRuntime/7.51.1");
+
+        BuilderException ex = assertThrows(BuilderException.class, () ->
+                paymentMethod
+                        .charge(new BigDecimal("1000"))
+                        .withCurrency("PLN")
+                        .withCustomerData(payer)
+                        .execute("bliklevelzero"));
+
+        assertEquals("returnUrl cannot be null for this transaction type.", ex.getMessage());
+    }
+
+    @Test
+    public void blikLevelZeroSaleShouldThrowException_WhenStatusURLIsMissingInRequest() {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(BLIK)
+                .setMode(AlternativePaymentMethodMode.LEVEL_ZERO)
+                .setPaymentCodeInitiator("payer")
+                .setPaymentCode("999000")
+                .setReturnUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCancelUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCountry("PL")
+                .setAccountHolderName("James2 Carl");
+
+        Customer payer = new Customer()
+                .setFirstName("James")
+                .setLastName("Mason")
+                .setEmail("james2.carl@gmail.com")
+                .setIpAddress("106.215.180.111")
+                .setUserAgent("PostmanRuntime/7.51.1");
+
+        BuilderException ex = assertThrows(BuilderException.class, () ->
+                paymentMethod
+                        .charge(new BigDecimal("1000"))
+                        .withCurrency("PLN")
+                        .withCustomerData(payer)
+                        .execute("bliklevelzero"));
+
+        assertEquals("statusUpdateUrl cannot be null for this transaction type.", ex.getMessage());
+    }
+
+    @Test
+    public void blikLevelZeroSaleShouldThrowException_WhenIPIsMissingInRequest() {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(BLIK)
+                .setMode(AlternativePaymentMethodMode.LEVEL_ZERO)
+                .setPaymentCodeInitiator("payer")
+                .setPaymentCode("999000")
+                .setReturnUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setStatusUpdateUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCancelUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCountry("PL")
+                .setAccountHolderName("James2 Carl");
+
+        Customer payer = new Customer()
+                .setFirstName("James")
+                .setLastName("Mason")
+                .setEmail("james2.carl@gmail.com")
+                .setUserAgent("PostmanRuntime/7.51.1");
+
+        GatewayException ex = assertThrows(GatewayException.class, () ->
+                paymentMethod
+                        .charge(new BigDecimal("1000"))
+                        .withCurrency("PLN")
+                        .withCustomerData(payer)
+                        .execute("bliklevelzero"));
+
+        assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields: payer.ip_address", ex.getMessage());
+    }
+
+    @Test
+    public void blikLevelZeroSaleShouldThrowException_WhenUserAgentIsMissingInRequest() {
+        AlternativePaymentMethod paymentMethod = new AlternativePaymentMethod()
+                .setAlternativePaymentMethodType(BLIK)
+                .setMode(AlternativePaymentMethodMode.LEVEL_ZERO)
+                .setPaymentCodeInitiator("payer")
+                .setPaymentCode("999000")
+                .setReturnUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setStatusUpdateUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCancelUrl("https://webhook.site/5ef888b0-a200-403d-97c1-6e19f698ea98")
+                .setCountry("PL")
+                .setAccountHolderName("James2 Carl");
+
+        Customer payer = new Customer()
+                .setFirstName("James")
+                .setLastName("Mason")
+                .setEmail("james2.carl@gmail.com")
+                .setIpAddress("106.215.180.111");
+
+        GatewayException ex = assertThrows(GatewayException.class, () ->
+                paymentMethod
+                        .charge(new BigDecimal("1000"))
+                        .withCurrency("PLN")
+                        .withCustomerData(payer)
+                        .execute("bliklevelzero"));
+
+        assertEquals("Status Code: 400 - Request expects the following conditionally mandatory fields: payer.user_agent", ex.getMessage());
+    }
+
 }
