@@ -156,6 +156,9 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
     private EBTVoucherEntryData voucherEntryData;
     private String eWICIssuingEntity;
 
+    @Getter
+    private String originalClientTransactionId;
+
     /**
      * The payment method names used to filter the batch close operation.
      */
@@ -525,6 +528,11 @@ public class ManagementBuilder extends TransactionBuilder<Transaction> {
 
     public ManagementBuilder withClientTransactionId(String value) {
         clientTransactionId = value;
+        return this;
+    }
+
+    public ManagementBuilder withOriginalClientTransactionId(String value) {
+        originalClientTransactionId = value;
         return this;
     }
 

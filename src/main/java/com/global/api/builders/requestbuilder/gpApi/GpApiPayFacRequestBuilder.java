@@ -11,6 +11,7 @@ import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.gpApi.GpApiRequest;
 import com.global.api.entities.payFac.BankAccountData;
 import com.global.api.entities.payFac.Person;
+import com.global.api.entities.payFac.ProcessingLimits;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.utils.CountryUtils;
@@ -133,7 +134,36 @@ public class GpApiPayFacRequestBuilder implements IRequestBuilder<PayFacBuilder>
                             mapAddress((Address) builder.getAddresses().get(AddressType.Billing), "alpha2", null));
                 }
 
-                dataRequest.set("payer", paymentMethod);
+                if (!paymentMethod.isEmpty()) {
+                    dataRequest.set("payer", paymentMethod);
+                }
+
+                // Add processing limits if present
+                if (builder.getProcessingLimits() != null) {
+                    dataRequest.set("processing_limits", mapProcessingLimits(builder.getProcessingLimits()));
+                }
+
+                // Add capabilities if present
+                if (builder.getCapabilities() != null && !builder.getCapabilities().isEmpty()) {
+                    dataRequest.set("capabilities", builder.getCapabilities());
+                }
+
+                // Add status change reason if present
+                if (builder.getStatusChangeReason() != null) {
+                    dataRequest.set("status_change_reason", builder.getStatusChangeReason().toString());
+                }
+
+                // Add card replacement reason if present
+                if (!StringUtils.isNullOrEmpty(builder.getCardReplacementReason())) {
+                    dataRequest.set("card_replacement_reason", builder.getCardReplacementReason());
+                }
+
+                // Add notifications if present
+                if (!StringUtils.isNullOrEmpty(builder.getNotificationStatusUrl())) {
+                    var notifications = new JsonDoc();
+                    notifications.set("status_url", builder.getNotificationStatusUrl());
+                    dataRequest.set("notifications", notifications);
+                }
 
                 String endpoint = merchantUrl;
                 if (builder.getUserReference() != null && !StringUtils.isNullOrEmpty(builder.getUserReference().getUserId())) {
@@ -205,6 +235,38 @@ public class GpApiPayFacRequestBuilder implements IRequestBuilder<PayFacBuilder>
         item.put("cvv", value.getCvn());
 
         return item;
+    }
+
+    private static JsonDoc mapProcessingLimits(ProcessingLimits limits) {
+        if (limits == null) {
+            return null;
+        }
+
+        JsonDoc doc = new JsonDoc();
+
+        if (limits.getCardTransactionLimitAmount() != null) {
+            doc.set("card_transaction_limit_amount", StringUtils.toNumeric(limits.getCardTransactionLimitAmount()).toString());
+        }
+        if (limits.getCardMonthlyLimitAmount() != null) {
+            doc.set("card_monthly_limit_amount", StringUtils.toNumeric(limits.getCardMonthlyLimitAmount()).toString());
+        }
+        if (limits.getBankTransferTransactionLimitAmount() != null) {
+            doc.set("bank_transfer_transaction_limit_amount", StringUtils.toNumeric(limits.getBankTransferTransactionLimitAmount()).toString());
+        }
+        if (limits.getBankTransferMonthlyLimitAmount() != null) {
+            doc.set("bank_transfer_monthly_limit_amount", StringUtils.toNumeric(limits.getBankTransferMonthlyLimitAmount()).toString());
+        }
+        if (limits.getDisablePayoutCardLimitPercentage() != null) {
+            doc.set("disable_payout_card_limit_percentage", StringUtils.toNumeric(limits.getDisablePayoutCardLimitPercentage()).toString());
+        }
+        if (limits.getDisablePayoutBankTransferLimitPercentage() != null) {
+            doc.set("disable_payout_bank_transfer_limit_percentage", StringUtils.toNumeric(limits.getDisablePayoutBankTransferLimitPercentage()).toString());
+        }
+        if (limits.getAllowedNegativeBalanceAmount() != null) {
+            doc.set("allowed_negative_balance_amount", StringUtils.toNumeric(limits.getAllowedNegativeBalanceAmount()).toString());
+        }
+
+        return doc;
     }
 
     private static JsonDoc setMerchantInfo() {

@@ -43,6 +43,7 @@ public class GpApiMapping {
     private static final String DECRYPT_TOKEN = "DECRYPT_TOKEN";
     private static final String MERCHANT_CREATE = "MERCHANT_CREATE";
     private static final String MERCHANT_LIST = "MERCHANT_LIST";
+    private static final String ACCOUNTS_SINGLE = "ACCOUNTS_SINGLE";
     private static final String MERCHANT_SINGLE = "MERCHANT_SINGLE";
     private static final String MERCHANT_EDIT = "MERCHANT_EDIT";
     private static final String MERCHANT_EDIT_INITIATED = "MERCHANT_EDIT_INITIATED";
@@ -1018,10 +1019,21 @@ public class GpApiMapping {
     private static <T> void setPagingInfo(PagedResult<T> result, JsonDoc json) {
         if (json.getInt("total_record_count") != null) {
             result.setTotalRecordCount(json.getInt("total_record_count"));
-        } else if (json.getInt("total_count") != null) {
+        }
+        if (json.getInt("total_count") != null) {
             result.setTotalRecordCount(json.getInt("total_count"));
-        } else {
-            result.setTotalRecordCount(json.getInt("current_page_size"));
+        }
+        if (json.getInt("current_page_size") != null) {
+            result.setCurrentPageSize(json.getInt("current_page_size"));
+        }
+        String merchantId = json.getString("merchant_id", "merchantId");
+        if (merchantId != null) {
+            result.setMerchantId(merchantId);
+        }
+
+        String merchantName = json.getString("merchant_name", "merchantName");
+        if (merchantName != null) {
+            result.setMerchantName(merchantName);
         }
 
         JsonDoc paging = json.get("paging");
@@ -1489,7 +1501,41 @@ public class GpApiMapping {
         actionSummary.setAccountId(doc.getString("account_id"));
         actionSummary.setAccountName(doc.getString("account_name"));
         actionSummary.setMerchantName(doc.getString("merchant_name"));
+
+        actionSummary.setResourceParentId(doc.getString("resource_parent_id"));
+        actionSummary.setResourceRequestUrl(doc.getString("resource_request_url"));
+        actionSummary.setResponseDetailedCode(doc.getString("response_detailed_code"));
+        actionSummary.setResponseDetailedMessage(doc.getString("response_detailed_message"));
+        actionSummary.setEmail(doc.getString("email"));
+        actionSummary.setMerchantId(doc.getString("merchant_id"));
+        actionSummary.setSourceLocation(doc.getString("source_location"));
+        actionSummary.setDestinationLocation(doc.getString("destination_location"));
+        actionSummary.setMessageReceived(doc.getString("message_received"));
+        actionSummary.setMessageSent(doc.getString("message_sent"));
+        actionSummary.setMetrics(doc.getString("metrics"));
+        actionSummary.setTotalTimeMilliseconds(doc.getString("total_time_milliseconds"));
+        actionSummary.setTotalTimeDownstreamMilliseconds(doc.getString("total_time_downstream_milliseconds"));
+
+        if (doc.has("action")) {
+            actionSummary.setAction(mapAction(doc.get("action")));
+        }
         return actionSummary;
+    }
+
+    private static Action mapAction(JsonDoc actionDoc) {
+        var action = new Action();
+
+        action.setId(actionDoc.getString("id"));
+        action.setType(actionDoc.getString("type"));
+        action.setTimeCreated(actionDoc.getString("time_created"));
+
+        String rawResultCode = actionDoc.getString("result_code", "response_code");
+        action.setOriginalResponseCode(rawResultCode);
+        action.setResultCode(normalizeResponse(rawResultCode));
+        action.setAppId(actionDoc.getString("app_id"));
+        action.setAppName(actionDoc.getString("app_name"));
+
+        return action;
     }
     public static <T> T mapRecurringEntity(String rawResponse, T recurringEntity, Class<T> clazz ) throws ApiException {
         try {
@@ -1709,22 +1755,24 @@ public class GpApiMapping {
         if (account.has("status")) {
             merchantAccountSummary.setStatus(MerchantAccountStatus.valueOf(account.getString("status")));
         }
-        merchantAccountSummary.setPermissions(account.getStringArrayList("permissions"));
-        merchantAccountSummary.setCountries(account.getStringArrayList("countries"));
+        merchantAccountSummary.setPermissions(getStringListValue(account, "permissions"));
+        merchantAccountSummary.setCountries(getStringListValue(account, "countries"));
 
-        if (account != null && account.has("channels")) {
-            List<Channel> channelsList = new ArrayList<>();
-            for (String channel : account.getStringArrayList("channels")) {
-                channelsList.add(Channel.fromString(channel));
-            }
-            merchantAccountSummary.setChannels(channelsList);
-        }
+        merchantAccountSummary.setChannels(mapChannels(account));
 
-        merchantAccountSummary.setCurrencies(account.getStringArrayList("currencies"));
+        merchantAccountSummary.setCurrencies(getStringListValue(account, "currencies"));
 
         merchantAccountSummary.setPaymentMethods(getPaymentMethodsName(account));
 
         merchantAccountSummary.setConfigurations(account.getStringArrayList("configurations"));
+        merchantAccountSummary.setConfigurationDetails(mapMerchantAccountConfigurations(account));
+        merchantAccountSummary.setCapabilities(getStringListValue(account, "capabilities"));
+
+        if (account.has("payment_processing_statistics")) {
+            merchantAccountSummary.setPaymentProcessingStatistics(
+                    mapMerchantAccountProcessingStatistics(account.get("payment_processing_statistics"))
+            );
+        }
 
         if (account.has("addresses")) {
             var addresses = new ArrayList<Address>();
@@ -1734,7 +1782,140 @@ public class GpApiMapping {
             merchantAccountSummary.setAddresses(addresses);
         }
 
+        if (account.has("action")) {
+            merchantAccountSummary.setAction(mapNestedActionSummary(account.get("action")));
+        }
+
+        // FMA Account Details fields
+        String created = account.getString("time_created", "created_date");
+        if (created != null) {
+            try {
+                merchantAccountSummary.setTimeCreated(parseGpApiDateTime(created));
+            } catch (GatewayException exception) {
+                merchantAccountSummary.setTimeCreated(null);
+            }
+        }
+
+        String updated = account.getString("time_last_updated", "updated_date");
+        if (updated != null) {
+            try {
+                merchantAccountSummary.setTimeUpdated(parseGpApiDateTime(updated));
+            } catch (GatewayException exception) {
+                merchantAccountSummary.setTimeUpdated(null);
+            }
+        }
+        if (account.has("currency")) {
+            merchantAccountSummary.setCurrency(account.getString("currency"));
+        }
+        if (account.has("balances")) {
+            merchantAccountSummary.setBalances(mapAccountBalances(account.get("balances")));
+        }
+
         return merchantAccountSummary;
+    }
+
+    private static MerchantAccountProcessingStatistics mapMerchantAccountProcessingStatistics(JsonDoc statistics) {
+        var paymentProcessingStatistics = new MerchantAccountProcessingStatistics();
+
+        paymentProcessingStatistics.setCardTransactionLimitAmount(statistics.getAmount("card_transaction_limit_amount"));
+        paymentProcessingStatistics.setCardMonthlyLimitAmount(statistics.getAmount("card_monthly_limit_amount"));
+        paymentProcessingStatistics.setBankTransferPerTransactionLimitAmount(statistics.getAmount("bank_transfer_per_transaction_limit_amount"));
+        paymentProcessingStatistics.setBankTransferMonthlyLimitAmount(statistics.getAmount("bank_transfer_monthly_limit_amount"));
+        paymentProcessingStatistics.setBankTransferMonthToDateProcessedAmount(statistics.getAmount("bank_transfer_month_to_date_processed_amount"));
+        paymentProcessingStatistics.setCardMonthToDateProcessedAmount(statistics.getAmount("card_month_to_date_processed_amount"));
+        paymentProcessingStatistics.setAvailableBalanceAmount(statistics.getAmount("available_balance_amount"));
+        paymentProcessingStatistics.setPendingBalanceAmount(statistics.getAmount("pending_balance_amount"));
+        paymentProcessingStatistics.setReserveBalanceAmount(statistics.getAmount("reserve_balance_amount"));
+        paymentProcessingStatistics.setAllowedNegativeBalanceAmount(statistics.getAmount("allowed_negative_balance_amount"));
+        paymentProcessingStatistics.setDisablePayoutCardLimitPercentage(statistics.getAmount("disable_payout_card_limit_percentage"));
+        paymentProcessingStatistics.setDisablePayoutBankTransferLimitPercentage(statistics.getAmount("disable_payout_bank_transfer_limit_percentage"));
+        paymentProcessingStatistics.setCardMonthToDateProcessedPercentage(statistics.getAmount("card_month_to_date_processed_percentage"));
+        paymentProcessingStatistics.setBankTransferMonthToDateProcessedPercentage(statistics.getAmount("bank_transfer_month_to_date_processed_percentage"));
+
+        return paymentProcessingStatistics;
+    }
+
+    private static AccountBalances mapAccountBalances(JsonDoc balances) {
+        if (balances == null) {
+            return null;
+        }
+        var accountBalances = new AccountBalances();
+        
+        if (balances.has("available_balance")) {
+            accountBalances.setAvailableBalance(balances.getDecimal("available_balance"));
+        }
+        if (balances.has("pending_balance")) {
+            accountBalances.setPendingBalance(balances.getDecimal("pending_balance"));
+        }
+        if (balances.has("reserve_balance")) {
+            accountBalances.setReserveBalance(balances.getDecimal("reserve_balance"));
+        }
+        
+        return accountBalances;
+    }
+
+    private static List<MerchantAccountConfiguration> mapMerchantAccountConfigurations(JsonDoc account) {
+        if (!account.has("configurations") || account.getEnumerator("configurations") == null) {
+            return null;
+        }
+
+        var configurationDetails = new ArrayList<MerchantAccountConfiguration>();
+        for (JsonDoc configuration : account.getEnumerator("configurations")) {
+            var merchantAccountConfiguration = new MerchantAccountConfiguration();
+            merchantAccountConfiguration.setCountries(getStringListValue(configuration, "countries"));
+            merchantAccountConfiguration.setCurrencies(getStringListValue(configuration, "currencies"));
+            merchantAccountConfiguration.setChannels(mapChannels(configuration));
+            merchantAccountConfiguration.setPaymentMethods(getPaymentMethodsName(configuration));
+            configurationDetails.add(merchantAccountConfiguration);
+        }
+
+        return configurationDetails;
+    }
+
+    private static List<Channel> mapChannels(JsonDoc doc) {
+        if (!doc.has("channels")) {
+            return null;
+        }
+
+        List<Channel> channels = new ArrayList<>();
+        for (String channel : getStringListValue(doc, "channels")) {
+            channels.add(Channel.fromString(channel));
+        }
+
+        return channels;
+    }
+
+    private static ActionSummary mapNestedActionSummary(JsonDoc action) {
+        var actionSummary = new ActionSummary();
+
+        actionSummary.setId(action.getString("id"));
+        actionSummary.setType(action.getString("type"));
+        try {
+            actionSummary.setTimeCreated(parseGpApiDateTime(action.getString("time_created")));
+        } catch (GatewayException exception) {
+            actionSummary.setTimeCreated(null);
+        }
+        actionSummary.setResponseCode(action.getString("result_code", "response_code"));
+        actionSummary.setAppId(action.getString("app_id"));
+        actionSummary.setAppName(action.getString("app_name"));
+
+        return actionSummary;
+    }
+
+    private static ArrayList<String> getStringListValue(JsonDoc doc, String fieldName) {
+        var values = doc.getStringArrayList(fieldName);
+        if (values != null) {
+            return values;
+        }
+
+        var singleValue = doc.getString(fieldName);
+        if (singleValue != null) {
+            var singleItemList = new ArrayList<String>();
+            singleItemList.add(singleValue);
+            return singleItemList;
+        }
+
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -1812,6 +1993,9 @@ public class GpApiMapping {
                     }
 
                     return (T) user;
+
+                case ACCOUNTS_SINGLE:
+                    return (T) mapMerchantAccountSummary(json);
 
                 case FUNDS:
                     var userFunds = new User()
@@ -2011,7 +2195,7 @@ public class GpApiMapping {
         var result = new ArrayList<PaymentMethodName>();
 
         if (doc.has("payment_methods")) {
-            for (var payment : doc.getStringArrayList("payment_methods")) {
+            for (var payment : getStringListValue(doc, "payment_methods")) {
                 switch (payment) {
                     case "BANK_TRANSFER":
                         result.add(PaymentMethodName.BankTransfer);

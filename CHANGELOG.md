@@ -1,6 +1,15 @@
 # Changelog
 
-## Latest Version - V15.3.10 (10/01/2026)
+## Latest Version - V15.4.0 (10/15/2026)
+### Enhancements:
+- [GPAPI] - Added missing request and response fields for Accounts endpoint.
+- [Portico] - Corrected mapping of clientTransactionId for reversal transaction.
+- [GPAPI] - Added missing request and response fields for Actions endpoint.
+
+### Bug Fixes:
+- [Synk] - Critical and high level security issues resolved. No impact on any connectors.
+
+## Version - V15.3.10 (10/01/2026)
 ### Enhancements
 - [GPAPI] - Added support for Blik Level 0 payments, allowing merchants to process with one-time payment codes.
 - [VAPS] - Added WexFleet Rollup Functionality

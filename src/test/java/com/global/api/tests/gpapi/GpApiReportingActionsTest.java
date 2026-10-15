@@ -502,4 +502,28 @@ public class GpApiReportingActionsTest extends BaseGpApiReportingTest {
         }
     }
 
+    /**
+     * Verifies that GET Actions returns mapped action records and paging metadata from the sandbox.
+     */
+    @Test
+    @Order(25)
+    public void ReportFindActionsPaged_MapsResponseFields() throws ApiException {
+        ActionSummaryPaged result =
+                ReportingService
+                        .findActionsPaged(FIRST_PAGE, PAGE_SIZE)
+                        .where(SearchCriteria.ActionId, sampleAction.getId())
+                        .execute();
+
+        assertNotNull(result);
+        assertNotNull(result.getResults());
+        assertEquals(1, result.getResults().size());
+
+        ActionSummary action = result.getResults().get(0);
+        assertEquals(sampleAction.getId(), action.getId());
+        assertFalse(StringUtils.isNullOrEmpty(action.getType()));
+        assertFalse(StringUtils.isNullOrEmpty(action.getResource()));
+        assertFalse(StringUtils.isNullOrEmpty(action.getHttpResponseCode()));
+        assertFalse(StringUtils.isNullOrEmpty(action.getResponseCode()));
+    }
+
 }

@@ -13,6 +13,9 @@ public class PagedResult<T>  {
     @Getter @Setter public String Order;
     @Getter @Setter public String OrderBy;
     @Getter @Setter public List<T> results = new ArrayList<T>();
+    @Getter @Setter public int currentPageSize;
+    @Getter @Setter public String merchantId;
+    @Getter @Setter public String merchantName;
 
     public void add(T item) {
         results.add(item);

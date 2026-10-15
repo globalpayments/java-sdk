@@ -4,12 +4,17 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.enums.Channel;
+import com.global.api.entities.enums.PaymentMethodName;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.exceptions.UnsupportedTransactionException;
+import com.global.api.entities.reporting.*;
 import com.global.api.entities.reporting.ActionSummary;
+import com.global.api.entities.reporting.ActionSummaryPaged;
 import com.global.api.entities.reporting.DepositSummary;
 import com.global.api.entities.reporting.DisputeSummary;
 import com.global.api.entities.reporting.StoredPaymentMethodSummary;
+import com.global.api.entities.enums.ReportType;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.mapping.GpApiMapping;
 import com.global.api.serviceConfigs.GpApiConfig;
@@ -18,6 +23,9 @@ import com.global.api.utils.StringUtils;
 import lombok.var;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
@@ -324,7 +332,7 @@ public class GpApiMappingTest extends BaseGpApiTest {
     @Test
     public void MapActionSummaryTest() throws GatewayException {
         // Arrange
-        String rawJson = "{\"id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"type\":\"CREATE_TOKEN\",\"time_created\":\"2021-03-24T02:02:27.158Z\",\"resource\":\"ACCESS_TOKENS\",\"resource_request_url\":\"http://localhost:8998/v7/unifiedcommerce/accesstoken\",\"version\":\"2020-12-22\",\"resource_parent_id\":\"\",\"resource_id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"resource_status\":\"\",\"http_response_code\":\"200\",\"http_response_message\":\"OK\",\"response_code\":\"SUCCESS\",\"response_detailed_code\":\"\",\"response_detailed_message\":\"\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\",\"app_developer\":\"colleen.mcgloin@globalpay.com\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"\",\"account_name\":\"\",\"source_location\":\"63.241.252.2\",\"destination_location\":\"74.125.196.153\",\"metrics\":{\"X-GP-Version\":\"2020-12-22\"},\"action\":{\"id\":\"ACT_qOTwHG38UvuWwjcI6DBNu0uqbg8eoR\",\"type\":\"ACTION_SINGLE\",\"time_created\":\"2021-04-23T18:23:05.824Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
+        String rawJson = "{\"id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"type\":\"CREATE_TOKEN\",\"time_created\":\"2021-03-24T02:02:27.158Z\",\"resource\":\"ACCESS_TOKENS\",\"resource_parent_id\":\"ACT_PARENT_123\",\"resource_request_url\":\"http://localhost:8998/v7/unifiedcommerce/accesstoken\",\"version\":\"2020-12-22\",\"resource_id\":\"ACT_PJiFWTaNcLW8aVBo2fA8E5Dqd8ZyrH\",\"resource_status\":\"\",\"http_response_code\":\"200\",\"http_response_message\":\"OK\",\"response_code\":\"SUCCESS\",\"response_detailed_code\":\"D001\",\"response_detailed_message\":\"Detailed message\",\"email\":\"colleen.mcgloin@globalpay.com\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"\",\"account_name\":\"\",\"source_location\":\"63.241.252.2\",\"destination_location\":\"74.125.196.153\",\"message_received\":\"Request received\",\"message_sent\":\"Response sent\",\"metrics\":\"X-GP-Version=2020-12-22\",\"total_time_milliseconds\":\"125\",\"total_time_downstream_milliseconds\":\"87\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\",\"app_developer\":\"colleen.mcgloin@globalpay.com\",\"action\":{\"id\":\"ACT_qOTwHG38UvuWwjcI6DBNu0uqbg8eoR\",\"type\":\"ACTION_SINGLE\",\"time_created\":\"2021-04-23T18:23:05.824Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"P3LRVjtGRGxWQQJDE345mSkEh2KfdAyg\",\"app_name\":\"colleens_app\"}}";
 
         JsonDoc doc = JsonDoc.parse(rawJson);
 
@@ -336,16 +344,75 @@ public class GpApiMappingTest extends BaseGpApiTest {
         assertEquals(doc.getString("type"), action.getType());
         assertEquals(parseGpApiDateTime(doc.getString("time_created")), action.getTimeCreated());
         assertEquals(doc.getString("resource"), action.getResource());
+        assertEquals(doc.getString("resource_parent_id"), action.getResourceParentId());
+        assertEquals(doc.getString("resource_request_url"), action.getResourceRequestUrl());
         assertEquals(doc.getString("version"), action.getVersion());
         assertEquals(doc.getString("resource_id"), action.getResourceId());
         assertEquals(doc.getString("resource_status"), action.getResourceStatus());
         assertEquals(doc.getString("http_response_code"), action.getHttpResponseCode());
         assertEquals(doc.getString("response_code"), action.getResponseCode());
+        assertEquals(doc.getString("response_detailed_code"), action.getResponseDetailedCode());
+        assertEquals(doc.getString("response_detailed_message"), action.getResponseDetailedMessage());
+        assertEquals(doc.getString("email"), action.getEmail());
         assertEquals(doc.getString("app_id"), action.getAppId());
         assertEquals(doc.getString("app_name"), action.getAppName());
         assertEquals(doc.getString("account_id"), action.getAccountId());
         assertEquals(doc.getString("account_name"), action.getAccountName());
         assertEquals(doc.getString("merchant_name"), action.getMerchantName());
+        assertEquals(doc.getString("merchant_id"), action.getMerchantId());
+        assertEquals(doc.getString("source_location"), action.getSourceLocation());
+        assertEquals(doc.getString("destination_location"), action.getDestinationLocation());
+        assertEquals(doc.getString("message_received"), action.getMessageReceived());
+        assertEquals(doc.getString("message_sent"), action.getMessageSent());
+        assertEquals(doc.getString("metrics"), action.getMetrics());
+        assertEquals(doc.getString("total_time_milliseconds"), action.getTotalTimeMilliseconds());
+        assertEquals(doc.getString("total_time_downstream_milliseconds"), action.getTotalTimeDownstreamMilliseconds());
+    }
+
+    @Test
+    public void mapReportResponseFindActionsPagedMapsEnvelopeAndActionRecords() throws ApiException {
+        // Arrange
+        String rawJson = "{\"total_record_count\":1,\"current_page_size\":1,\"paging\":{\"page\":1,\"page_size\":5,\"order_by\":\"TIME_CREATED\",\"order\":\"ASC\"},\"actions\":[{\"id\":\"ACT_123\",\"type\":\"MERCHANT_EDIT\",\"time_created\":\"2023-05-01T12:00:00.000Z\",\"resource\":\"TRANSACTIONS\",\"resource_parent_id\":\"ACT_PARENT_123\",\"resource_request_url\":\"http://localhost:8998/v7/unifiedcommerce/actions\",\"resource_id\":\"TRN_123\",\"resource_status\":\"DECLINED\",\"version\":\"2021-03-22\",\"http_response_code\":\"400\",\"response_code\":\"DECLINED\",\"response_detailed_code\":\"D001\",\"response_detailed_message\":\"Detailed message\",\"email\":\"test@example.com\",\"merchant_id\":\"MER_123\",\"merchant_name\":\"Sandbox_merchant\",\"account_id\":\"ACC_123\",\"account_name\":\"transaction_processing\",\"source_location\":\"63.241.252.2\",\"destination_location\":\"74.125.196.153\",\"message_received\":\"Request received\",\"message_sent\":\"Response sent\",\"metrics\":\"X-GP-Version=2020-12-22\",\"total_time_milliseconds\":\"125\",\"total_time_downstream_milliseconds\":\"87\",\"app_id\":\"APP_123\",\"app_name\":\"test_app\"}],\"action\":{\"id\":\"ACT_result\",\"type\":\"ACTION_LIST\",\"time_created\":\"2023-05-01T12:01:00.000Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"APP_123\",\"app_name\":\"test_app\"}}";
+
+        // Act
+        ActionSummaryPaged result = GpApiMapping.mapReportResponse(rawJson, ReportType.FindActionsPaged);
+
+        // Assert
+        assertEquals(1, result.getTotalRecordCount());
+        assertEquals(5, result.getPageSize());
+        assertEquals(1, result.getPage());
+        assertEquals("ASC", result.getOrder());
+        assertEquals("TIME_CREATED", result.getOrderBy());
+        assertEquals(1, result.getResults().size());
+
+        ActionSummary action = result.getResults().get(0);
+        assertEquals("ACT_123", action.getId());
+        assertEquals("MERCHANT_EDIT", action.getType());
+        assertEquals(parseGpApiDateTime("2023-05-01T12:00:00.000Z"), action.getTimeCreated());
+        assertEquals("TRANSACTIONS", action.getResource());
+        assertEquals("ACT_PARENT_123", action.getResourceParentId());
+        assertEquals("http://localhost:8998/v7/unifiedcommerce/actions", action.getResourceRequestUrl());
+        assertEquals("TRN_123", action.getResourceId());
+        assertEquals("DECLINED", action.getResourceStatus());
+        assertEquals("2021-03-22", action.getVersion());
+        assertEquals("400", action.getHttpResponseCode());
+        assertEquals("DECLINED", action.getResponseCode());
+        assertEquals("D001", action.getResponseDetailedCode());
+        assertEquals("Detailed message", action.getResponseDetailedMessage());
+        assertEquals("test@example.com", action.getEmail());
+        assertEquals("APP_123", action.getAppId());
+        assertEquals("test_app", action.getAppName());
+        assertEquals("ACC_123", action.getAccountId());
+        assertEquals("transaction_processing", action.getAccountName());
+        assertEquals("Sandbox_merchant", action.getMerchantName());
+        assertEquals("MER_123", action.getMerchantId());
+        assertEquals("63.241.252.2", action.getSourceLocation());
+        assertEquals("74.125.196.153", action.getDestinationLocation());
+        assertEquals("Request received", action.getMessageReceived());
+        assertEquals("Response sent", action.getMessageSent());
+        assertEquals("X-GP-Version=2020-12-22", action.getMetrics());
+        assertEquals("125", action.getTotalTimeMilliseconds());
+        assertEquals("87", action.getTotalTimeDownstreamMilliseconds());
     }
 
     @Test
@@ -450,6 +517,39 @@ public class GpApiMappingTest extends BaseGpApiTest {
         assertEquals(transaction.getCardLast4(), doc.get("card").getString("masked_number_last4"));
         assertEquals(transaction.getCardExpMonth(), doc.get("card").getInt("expiry_month").intValue());
         assertEquals(transaction.getCardExpYear(), doc.get("card").getInt("expiry_year").intValue());
+    }
+
+    @Test
+    public void MapMerchantAccountSummary_MapsPagingAndTimestamps() throws GatewayException, UnsupportedTransactionException {
+        String rawJson = "{"
+                + "\"id\":\"FMA_123\","
+                + "\"type\":\"FUND_MANAGEMENT\","
+                + "\"time_created\":\"2023-04-27T21:23:39.718Z\","
+                + "\"time_last_updated\":\"2023-04-28T21:23:39.718Z\","
+                + "\"balances\":{\"available_balance\":\"1000\",\"pending_balance\":\"25\"},"
+                + "\"action\":{\"type\":\"ACCOUNTS_SINGLE\",\"result_code\":\"SUCCESS\"}}";
+
+        MerchantAccountSummary accountSummary = GpApiMapping.mapMerchantEndpointResponse(rawJson);
+
+        assertEquals(parseGpApiDateTime("2023-04-27T21:23:39.718Z"), accountSummary.getTimeCreated());
+        assertEquals(parseGpApiDateTime("2023-04-28T21:23:39.718Z"), accountSummary.getTimeUpdated());
+        assertEquals(new BigDecimal("1000"), accountSummary.getBalances().getAvailableBalance());
+        assertEquals(new BigDecimal("25"), accountSummary.getBalances().getPendingBalance());
+    }
+
+    @Test
+    public void MapMerchantAccountSummary_SingleValueCollectionsTest() throws GatewayException, UnsupportedTransactionException {
+        String rawJson = "{\"id\":\"TRA_123\",\"type\":\"TRANSACTION_PROCESSING\",\"name\":\"transaction_processing\",\"status\":\"ACTIVE\",\"permissions\":[\"APP_GET_Single_Key\"],\"countries\":[\"US\"],\"channels\":\"CP\",\"currencies\":[\"USD\"],\"payment_methods\":\"CARD\",\"configurations\":[{\"countries\":[\"US\"],\"currencies\":[\"USD\"],\"channels\":\"CP\",\"payment_methods\":\"CARD\"}],\"action\":{\"id\":\"ACT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d\",\"type\":\"ACCOUNTS_SINGLE\",\"time_created\":\"2021-05-03T21:23:39.718Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"U1lRHKomEn7DN907RCDPxVhyMfiMLcfy\",\"app_name\":\"demo_app\"}}";
+
+        MerchantAccountSummary accountSummary = GpApiMapping.mapMerchantEndpointResponse(rawJson);
+
+        assertNotNull(accountSummary.getChannels());
+        assertEquals(Channel.CardPresent, accountSummary.getChannels().get(0));
+        assertNotNull(accountSummary.getPaymentMethods());
+        assertEquals(PaymentMethodName.Card, accountSummary.getPaymentMethods().get(0));
+        assertNotNull(accountSummary.getConfigurationDetails());
+        assertEquals(Channel.CardPresent, accountSummary.getConfigurationDetails().get(0).getChannels().get(0));
+        assertEquals(PaymentMethodName.Card, accountSummary.getConfigurationDetails().get(0).getPaymentMethods().get(0));
     }
 
 }

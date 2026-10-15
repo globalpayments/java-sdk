@@ -7,6 +7,7 @@ import com.global.api.entities.enums.MerchantAccountType;
 import com.global.api.entities.enums.PaymentMethodName;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
 import java.util.List;
 
@@ -24,4 +25,13 @@ public class MerchantAccountSummary {
     private List<PaymentMethodName> paymentMethods;
     private List<String> configurations;
     private List<Address> addresses;
+    private List<MerchantAccountConfiguration> configurationDetails;
+    private List<String> capabilities;
+    private MerchantAccountProcessingStatistics paymentProcessingStatistics;
+    private ActionSummary action;
+    // FMA Account Details fields
+    private DateTime timeCreated;
+    private DateTime timeUpdated;
+    private String currency;
+    private AccountBalances balances;
 }

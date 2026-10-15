@@ -1,5 +1,6 @@
 package com.global.api.entities.reporting;
 
+import com.global.api.entities.Action;
 import lombok.Getter;
 import lombok.Setter;
 import org.joda.time.DateTime;
@@ -21,4 +22,19 @@ public class ActionSummary {
     private String accountId;
     private String accountName;
     private String merchantName;
+    private String resourceParentId;
+    private String resourceRequestUrl;
+    private String responseDetailedCode;
+    private String responseDetailedMessage;
+    private String email;
+    private String merchantId;
+    private String sourceLocation;
+    private String destinationLocation;
+    private String messageReceived;
+    private String messageSent;
+    private String metrics;
+    private String totalTimeMilliseconds;
+    private String totalTimeDownstreamMilliseconds;
+    private Action action;
+
 }

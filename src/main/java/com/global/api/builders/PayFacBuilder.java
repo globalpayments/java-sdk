@@ -46,6 +46,10 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
     private PaymentMethodType paymentMethodType;
     private String currency;
     private String clientTransactionId;
+    private String cardReplacementReason;
+    private String notificationStatusUrl;
+    private ProcessingLimits processingLimits;
+    private List<String> capabilities;
 
     public PayFacBuilder(TransactionType type) {
         this.transactionType = type;
@@ -231,6 +235,26 @@ public class PayFacBuilder<TResult> extends BaseBuilder<TResult> {
 
     public PayFacBuilder<TResult> withClientTransactionId(String clientTransactionId){
         this.clientTransactionId = clientTransactionId;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withCardReplacementReason(String cardReplacementReason) {
+        this.cardReplacementReason = cardReplacementReason;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withNotificationStatusUrl(String notificationStatusUrl) {
+        this.notificationStatusUrl = notificationStatusUrl;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withProcessingLimits(ProcessingLimits processingLimits) {
+        this.processingLimits = processingLimits;
+        return this;
+    }
+
+    public PayFacBuilder<TResult> withCapabilities(List<String> capabilities) {
+        this.capabilities = capabilities;
         return this;
     }
 }

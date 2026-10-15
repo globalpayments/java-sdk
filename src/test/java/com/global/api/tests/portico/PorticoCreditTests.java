@@ -1034,5 +1034,43 @@ public class PorticoCreditTests {
                 .execute();
         assertEquals("00", captureResponse.getResponseCode());
     }
+
+    @Test
+    public void creditReverseWithUniqueHeaderClientTransactionId() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withClientTransactionId(clientTxnID)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        String headerClientTxnId = Integer.toString(new Random().nextInt(999999 - 10000) + 10000);
+        Transaction reverseResponse = response.reverse(new BigDecimal("10"))
+                .withOriginalClientTransactionId(response.getClientTransactionId())
+                .withClientTransactionId(headerClientTxnId)
+                .execute();
+        assertNotNull(reverseResponse);
+        assertEquals("00", reverseResponse.getResponseCode());
+        assertEquals(headerClientTxnId, reverseResponse.getClientTransactionId());
+    }
+
+    @Test
+    public void creditReverseWithClientTransactionIdLegacy() throws ApiException {
+        Transaction response = card.charge(new BigDecimal("10"))
+                .withCurrency("USD")
+                .withAllowDuplicates(true)
+                .withClientTransactionId(clientTxnID)
+                .execute();
+        assertNotNull(response);
+        assertEquals("00", response.getResponseCode());
+
+        Transaction reverseResponse = response.reverse(new BigDecimal("10"))
+                .withOriginalClientTransactionId(response.getClientTransactionId())
+                .execute();
+        assertNotNull(reverseResponse);
+        assertEquals("00", reverseResponse.getResponseCode());
+        assertEquals(clientTxnID, reverseResponse.getClientTransactionId());
+    }
 }
 
