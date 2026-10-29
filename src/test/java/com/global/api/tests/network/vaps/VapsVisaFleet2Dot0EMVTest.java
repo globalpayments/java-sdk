@@ -1778,4 +1778,70 @@ public class VapsVisaFleet2Dot0EMVTest {
         assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
 
     }
+
+    @Test
+    public void test_08_visaFleetTwoPoint0_auth_moreThan8NonFuel_withFuel_DE54() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.FuelAndNonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+        productData.addFuel("01", UnitOfMeasure.Gallons, new BigDecimal("10.12"), new BigDecimal("2.50"), new BigDecimal("25.20"));
+
+        // Add 10 non-fuel entries including discount & coupon
+        productData.addNonFuel("70", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("51", UnitOfMeasure.Units, new BigDecimal("2"), new BigDecimal("8.00"), new BigDecimal("16"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("6.00"), new BigDecimal("12.0000"));
+        productData.addNonFuel("63", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("5.00"), new BigDecimal("5.0000"));
+        productData.addNonFuel("74", UnitOfMeasure.Units, new BigDecimal("3.0000"), new BigDecimal("4.00"), new BigDecimal("12.0000"));
+        productData.addNonFuel("65", UnitOfMeasure.Units, new BigDecimal("4.0000"), new BigDecimal("2.00"), new BigDecimal("8.0000"));
+        productData.addNonFuel("66", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("2.00"), new BigDecimal("2.0000"));
+        productData.addNonFuel("67", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("1.00"), new BigDecimal("1.0000"));
+        // Discount should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+        productData.addNonFuel(ProductCode.COUPONS_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("5.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("90.20"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_08_visaFleetTwoPoint0_auth_NonFuel_DE54() throws ApiException {
+        acceptorConfig.setSupportVisaFleet2dot0(PurchaseType.NonFuel);
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.IssuerSpecific, ProductDataFormat.VISAFLEET2Dot0);
+
+        // Add non-fuel entries including discount
+        productData.addNonFuel("70", UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("10.00"), new BigDecimal("10.0000"));
+        productData.addNonFuel("51", UnitOfMeasure.Units, new BigDecimal("2"), new BigDecimal("8.00"), new BigDecimal("16"));
+        productData.addNonFuel("62", UnitOfMeasure.Units, new BigDecimal("2.0000"), new BigDecimal("6.00"), new BigDecimal("12.0000"));
+        // Discount should NOT be rolled up into ZC
+        productData.addNonFuel(ProductCode.DISCOUNT_CODE1, UnitOfMeasure.Units, new BigDecimal("1.0000"), new BigDecimal("3.00"), new BigDecimal("3.0000"));
+
+        productData.addSaleTax(new BigDecimal("10.00"));
+
+        FleetData fleetData = new FleetData();
+        fleetData.setDriverId("123456");
+        fleetData.setOdometerReading("221123");
+
+        Transaction response = card.authorize(new BigDecimal("45"),true)
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .withTagData(visaTagData)
+                .execute();
+        assertNotNull(response);
+        assertEquals(response.getResponseMessage(), "000", response.getResponseCode());
+    }
+
 }

@@ -570,7 +570,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                     }
                     if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
-                        amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelWithTax());
+                        amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
                     } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
                         amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
                         amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode,new BigDecimal(0));
@@ -1135,7 +1135,7 @@ public class VapsConnector extends GatewayConnectorConfig {
                         }
                         if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.Fuel) || acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.FuelAndNonFuel)) {
                             amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
-                            amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelWithTax());
+                            amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, productData.getFuelAmount());
                         } else if (acceptorConfig.getSupportVisaFleet2dot0().equals(PurchaseType.NonFuel)) {
                             amountsAdditional.put(DE54_AmountTypeCode.NETFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));
                             amountsAdditional.put(DE54_AmountTypeCode.GROSSFUELPRICE, DE3_AccountType.Unspecified, currencyCode, new BigDecimal(0));

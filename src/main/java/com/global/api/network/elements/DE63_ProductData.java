@@ -137,6 +137,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         return sumAmount.setScale(4, RoundingMode.HALF_UP);
     }
 
+    // Currently not in use; keeping for future use (may be required in NWS).
     public BigDecimal getFuelWithTax(){
         BigDecimal sumAmount = BigDecimal.ZERO;
 
@@ -150,23 +151,27 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     }
 
     public BigDecimal getNonFuelAmount(){
-        BigDecimal sumAmount = BigDecimal.ZERO;
-        for (DE63_ProductDataEntry nonFuelDataEntry : nonFuelProductDataEntries.values()) {
-            sumAmount = sumAmount.add(nonFuelDataEntry.getAmount());
-        }
-        return sumAmount.setScale(2, RoundingMode.HALF_UP);
+        return sumNonDiscountNonFuel().setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getNonFuelWithTax(){
-        BigDecimal sumAmount = BigDecimal.ZERO;
-
-        for (DE63_ProductDataEntry nonFuelDataEntry : nonFuelProductDataEntries.values()) {
-            sumAmount = sumAmount.add(nonFuelDataEntry.getAmount());
-        }
+        BigDecimal sumAmount = sumNonDiscountNonFuel();
         if(salesTax!=null) {
             sumAmount = sumAmount.add(salesTax);
         }
         return sumAmount.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal sumNonDiscountNonFuel() {
+        BigDecimal sumAmount = BigDecimal.ZERO;
+        Set<String> discountCodes = getDiscountCodesForFleetCard(cardType);
+        for (DE63_ProductDataEntry entry : nonFuelProductDataEntries.values()) {
+            if (discountCodes.contains(entry.getCode()) || isDiscountOrCoupon(entry)) {
+                continue;
+            }
+            sumAmount = sumAmount.add(entry.getAmount());
+        }
+        return sumAmount;
     }
 
 

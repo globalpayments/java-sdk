@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.4.0 (10/15/2026)
+## Latest Version - V15.4.1 (10/29/2026)
+### Bug Fixes:
+- [VAPS] - Fixed DE 54 calculation for non-fuel products in Visa Fleet 2.0 by removing discount and coupon amounts from non-fuel DE 54 calculation.
+           Fixed tax calculation for fuel products under DE 54 for Visa Fleet 2.0. (Issue - 25)
+
+## Version - V15.4.0 (10/15/2026)
 ### Enhancements:
 - [GPAPI] - Added missing request and response fields for Accounts endpoint.
 - [Portico] - Corrected mapping of clientTransactionId for reversal transaction.
