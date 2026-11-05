@@ -290,12 +290,6 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
                             .setEndpoint(merchantUrl + GpApiRequest.ACTIONS_ENDPOINT + "/" + trb.getSearchBuilder().getActionId())
                             .setMaskedData(maskedData);
 
-                case AuthenticationDetail:
-                    return (GpApiRequest) request
-                            .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT + "/" + trb.getAuthenticationId())
-                            .setMaskedData(maskedData);
-
                 case FindActionsPaged:
                     request
                             .setVerb(GpApiRequest.HttpMethod.Get)
@@ -319,42 +313,6 @@ public class GpApiReportRequestBuilder implements IRequestBuilder<ReportBuilder>
                     request.addQueryStringParam("version", trb.getSearchBuilder().getVersion());
                     request.addQueryStringParam("response_code", trb.getSearchBuilder().getResponseCode());
                     request.addQueryStringParam("http_response_code", trb.getSearchBuilder().getHttpResponseCode());
-
-                    return request;
-
-                case FindAuthenticationsPaged:
-                    request
-                            .setVerb(GpApiRequest.HttpMethod.Get)
-                            .setEndpoint(merchantUrl + GpApiRequest.AUTHENTICATIONS_ENDPOINT)
-                            .setMaskedData(maskedData);
-
-                    request.addQueryStringParam("page", String.valueOf(trb.getPage()));
-                    request.addQueryStringParam("page_size", String.valueOf(trb.getPageSize()));
-                    request.addQueryStringParam("order_by", getValueIfNotNull(trb.getAuthenticationOrderBy()));
-                    request.addQueryStringParam("order", getValueIfNotNull(trb.getOrder()));
-                    request.addQueryStringParam("id", trb.getAuthenticationId());
-                    request.addQueryStringParam("status", trb.getSearchBuilder().getAuthenticationStatus());
-                    request.addQueryStringParam("account_name", trb.getSearchBuilder().getAccountName());
-                    request.addQueryStringParam("account_id", trb.getSearchBuilder().getAccountId());
-                    request.addQueryStringParam("reference", trb.getSearchBuilder().getReferenceNumber());
-                    request.addQueryStringParam("currency", trb.getSearchBuilder().getCurrency());
-                    request.addQueryStringParam("amount", StringUtils.toNumeric(trb.getSearchBuilder().getAmount()));
-                    request.addQueryStringParam("country", trb.getSearchBuilder().getCountry());
-                    request.addQueryStringParam("channel", getValueIfNotNull(trb.getSearchBuilder().getChannel()));
-                    request.addQueryStringParam("order_id", trb.getSearchBuilder().getOrderId());
-                    request.addQueryStringParam("authentication_source", getValueIfNotNull(trb.getSearchBuilder().getAuthenticationSource()));
-                    request.addQueryStringParam("authentication_request_type", getValueIfNotNull(trb.getSearchBuilder().getAuthenticationType()));
-                    request.addQueryStringParam("message_category", getValueIfNotNull(trb.getSearchBuilder().getAuthenticationMessageCategory()));
-                    request.addQueryStringParam("message_version", getValueIfNotNull(trb.getSearchBuilder().getAuthenticationMessageVersion()));
-                    request.addQueryStringParam("source", trb.getSearchBuilder().getSource());
-                    request.addQueryStringParam("three_ds.ds_trans_ref", trb.getSearchBuilder().getThreeDsDsTransRef());
-                    request.addQueryStringParam("three_ds.server_trans_ref", trb.getSearchBuilder().getThreeDsServerTransRef());
-                    request.addQueryStringParam("three_ds.liability_shift", trb.getSearchBuilder().getThreeDsLiabilityShift());
-                    request.addQueryStringParam("three_ds.authentication_value", trb.getSearchBuilder().getThreeDsAuthenticationValue());
-                    request.addQueryStringParam("three_ds.eci", trb.getSearchBuilder().getThreeDsEci());
-                    request.addQueryStringParam("three_ds.message_version", trb.getSearchBuilder().getThreeDsMessageVersion());
-                    request.addQueryStringParam("from_time_created", getDateIfNotNull(trb.getSearchBuilder().getStartDate()));
-                    request.addQueryStringParam("to_time_created", getDateIfNotNull(trb.getSearchBuilder().getEndDate()));
 
                     return request;
 

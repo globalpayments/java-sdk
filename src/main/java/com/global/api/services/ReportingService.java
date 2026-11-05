@@ -1,27 +1,15 @@
 package com.global.api.services;
 
+import com.global.api.builders.ReportBuilder;
 import com.global.api.builders.TransactionReportBuilder;
 import com.global.api.builders.UserReportBuilder;
 import com.global.api.entities.ActivityReport;
 import com.global.api.entities.DisputeDocument;
-import com.global.api.entities.ThreeDSecure;
 import com.global.api.entities.TransactionSummary;
 import com.global.api.entities.TransactionSummaryList;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.TransactionModifier;
-import com.global.api.entities.reporting.ActionSummary;
-import com.global.api.entities.reporting.ActionSummaryPaged;
-import com.global.api.entities.reporting.AuthenticationSummaryPaged;
-import com.global.api.entities.reporting.DepositSummary;
-import com.global.api.entities.reporting.DepositSummaryPaged;
-import com.global.api.entities.reporting.DisputeSummary;
-import com.global.api.entities.reporting.DisputeSummaryPaged;
-import com.global.api.entities.reporting.MerchantAccountSummary;
-import com.global.api.entities.reporting.MerchantAccountSummaryPaged;
-import com.global.api.entities.reporting.MerchantSummaryPaged;
-import com.global.api.entities.reporting.StoredPaymentMethodSummary;
-import com.global.api.entities.reporting.StoredPaymentMethodSummaryPaged;
-import com.global.api.entities.reporting.TransactionSummaryPaged;
+import com.global.api.entities.reporting.*;
 
 public class ReportingService {
 
@@ -81,11 +69,6 @@ public class ReportingService {
                 .withActionId(actionId);
     }
 
-    public static TransactionReportBuilder<ThreeDSecure> authenticationDetail(String authenticationId) {
-        return new TransactionReportBuilder<>(ReportType.AuthenticationDetail, ThreeDSecure.class)
-                .withAuthenticationId(authenticationId);
-    }
-
     public static TransactionReportBuilder<TransactionSummaryPaged> bankPaymentDetail(String bankPaymentId, int page, int pageSize) {
         return new TransactionReportBuilder<>(ReportType.FindBankPayment, TransactionSummaryPaged.class)
                 .withBankPaymentId(bankPaymentId)
@@ -135,11 +118,6 @@ public class ReportingService {
 
     public static TransactionReportBuilder<ActionSummaryPaged> findActionsPaged(int page, int pageSize) {
         return new TransactionReportBuilder<>(ReportType.FindActionsPaged, ActionSummaryPaged.class)
-                .withPaging(page, pageSize);
-    }
-
-    public static TransactionReportBuilder<AuthenticationSummaryPaged> findAuthenticationsPaged(int page, int pageSize) {
-        return new TransactionReportBuilder<>(ReportType.FindAuthenticationsPaged, AuthenticationSummaryPaged.class)
                 .withPaging(page, pageSize);
     }
 

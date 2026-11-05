@@ -319,10 +319,6 @@ public class TransitConnector extends XmlGateway implements IPaymentGateway, ISe
             request.set("tip", StringUtils.toNumeric(builder.getGratuity()));
         }
 
-        if (builder.getSurchargeAmount() != null) {
-            request.set("surcharge", StringUtils.toNumeric(builder.getSurchargeAmount()));
-        }
-
         // 3DS 1/2
         if (builder.getPaymentMethod() instanceof ISecure3d) {
             ISecure3d secure = (ISecure3d) builder.getPaymentMethod();

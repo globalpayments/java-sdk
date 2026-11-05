@@ -27,12 +27,6 @@ public class SearchCriteriaBuilder<TResult> {
     private String accountNumberLastFour;
     private String actionId;
     private String actionType;
-    private String authenticationId;
-    private String authenticationStatus;
-    private AuthenticationSource authenticationSource;
-    private AuthenticationRequestType authenticationType;
-    private MessageCategory authenticationMessageCategory;
-    private MessageVersion authenticationMessageVersion;
     private String altPaymentStatus;
     private BigDecimal amount;
     private String appName;
@@ -139,13 +133,6 @@ public class SearchCriteriaBuilder<TResult> {
     private String safIndicator;
     String timezone;
     String version;
-    private String threeDsDsTransRef;
-    private String threeDsServerTransRef;
-    private String threeDsLiabilityShift;
-    private String threeDsAuthenticationValue;
-    private String threeDsEci;
-    private String threeDsMessageVersion;
-    private String source;
 
     public SearchCriteriaBuilder(ReportBuilder<TResult> reportBuilder) {
         _reportBuilder = reportBuilder;

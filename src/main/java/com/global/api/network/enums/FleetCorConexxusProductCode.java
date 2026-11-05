@@ -2,7 +2,7 @@ package com.global.api.network.enums;
 
 import com.global.api.entities.enums.IStringConstant;
 
-public enum ConexxusProductCodes implements IStringConstant {
+public enum FleetCorConexxusProductCode implements IStringConstant {
     DISCOUNT_1("900"),
     DISCOUNT_2("901"),
     DISCOUNT_3("902"),
@@ -18,30 +18,11 @@ public enum ConexxusProductCodes implements IStringConstant {
     LOTTERY_PAY_OUT_OTHER("912"),
     SPLIT_TENDER("913"),
     TAX_DISCOUNT_FORGIVEN("914"),
-    MISCELLANEOUS_NEGATIVE_ADMINISTRATIVE("949"),
-    /**
-     * Tax , Fee & all added to the transaction as a positive amount.
-     */
-    TAX_1("950"),
-    TAX_2("951"),
-    TAX_3("952"),
-    TAX_4("953"),
-    TAX_5("954"),
-    FEE_1("957"),
-    FEE_2("958"),
-    FEE_3("959"),
-    FEE_4("960"),
-    FEE_5("961"),
-    MISCELLANEOUS_AVIATION_TAX("962"),
-    GST_HST_VAT_1("963"),
-    PST_QST_VAT_2("964"),
-    SWT_RATE("965"),
-    UNIDENTIFIED_ADMINISTRATIVE("966"),
-    MISCELLANEOUS_ADMINISTRATIVE("999");
+    MISCELLANEOUS_NEGATIVE_ADMINISTRATIVE("949");
 
     private final String value;
 
-    ConexxusProductCodes(String value) {
+    FleetCorConexxusProductCode(String value) {
         this.value = value;
     }
 

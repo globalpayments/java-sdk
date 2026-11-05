@@ -1,48 +1,31 @@
 package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
-import com.global.api.builders.Secure3dBuilder;
-import com.global.api.builders.requestbuilder.gpApi.GpApiReportRequestBuilder;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.TransactionSummary;
-import com.global.api.entities.ThreeDSecure;
-import com.global.api.entities.enums.AuthenticationSortProperty;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.PaymentMethodName;
-import com.global.api.entities.enums.MessageCategory;
-import com.global.api.entities.enums.MessageVersion;
-import com.global.api.entities.enums.ReportType;
-import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.entities.reporting.*;
-import com.global.api.entities.gpApi.GpApiRequest;
-import com.global.api.entities.gpApi.entities.AccessTokenInfo;
 import com.global.api.entities.reporting.ActionSummary;
 import com.global.api.entities.reporting.ActionSummaryPaged;
-import com.global.api.entities.reporting.AuthenticationSummaryPaged;
 import com.global.api.entities.reporting.DepositSummary;
 import com.global.api.entities.reporting.DisputeSummary;
-import com.global.api.entities.reporting.SearchCriteria;
 import com.global.api.entities.reporting.StoredPaymentMethodSummary;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.gateways.GpApiConnector;
 import com.global.api.mapping.GpApiMapping;
-import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
-import com.global.api.services.ReportingService;
-import com.global.api.services.Secure3dService;
 import com.global.api.utils.JsonDoc;
 import com.global.api.utils.StringUtils;
 import lombok.var;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDate;
 import static com.global.api.gateways.GpApiConnector.parseGpApiDateTime;
@@ -94,147 +77,6 @@ public class GpApiMappingTest extends BaseGpApiTest {
                 assertEquals(card.getString("masked_number_first6last4"), transaction.getMaskedCardNumber());
             }
         }
-    }
-
-    @Test
-    public void MapCheck3DSAvailabilityRequestAndResponseTest() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("Transaction_Processing");
-        config.setAccessTokenInfo(accessTokenInfo);
-
-        GpApiConnector gateway = new GpApiConnector(config);
-        gateway.setChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-        gateway.setMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-
-        CreditCardData card = new CreditCardData();
-        card.setNumber("4012001038488884");
-        card.setExpMonth(12);
-        card.setExpYear(2030);
-
-        Secure3dBuilder builder = Secure3dService.checkEnrollment(card)
-                .withAccountName("Transaction_Processing")
-                .withReferenceNumber("3ds2_ref1")
-                .withChannel("CNP")
-                .withCountry("FR")
-                .withAmount(new BigDecimal("50.89"))
-                .withCurrency("EUR")
-                .withChallengeNotificationUrl("https://ensi808o85za.x.pipedream.net/")
-                .withMethodNotificationUrl("https://ensi808o85za.x.pipedream.net/");
-
-        GpApiRequest request = new com.global.api.builders.requestbuilder.gpApi.GpApiSecureRequestBuilder().buildRequest(builder, gateway);
-        JsonDoc requestBody = JsonDoc.parse(request.getRequestBody());
-
-        assertEquals("Transaction_Processing", requestBody.getString("account_name"));
-        assertEquals("3ds2_ref1", requestBody.getString("reference"));
-        assertEquals("CNP", requestBody.getString("channel"));
-        assertEquals("5089", requestBody.getString("amount"));
-        assertEquals("EUR", requestBody.getString("currency"));
-        assertEquals("FR", requestBody.getString("country"));
-        assertEquals("4012001038488884", requestBody.get("payment_method").get("card").getString("number"));
-        assertEquals("https://ensi808o85za.x.pipedream.net/", requestBody.get("notifications").getString("challenge_return_url"));
-        assertEquals("https://ensi808o85za.x.pipedream.net/", requestBody.get("notifications").getString("three_ds_method_return_url"));
-
-        JsonDoc responseJson = new JsonDoc();
-        responseJson.set("id", "AUT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d");
-        responseJson.set("time_created", "2021-05-03T21:23:39.718Z");
-        responseJson.set("transaction_type", "SALE");
-        responseJson.set("status", "AVAILABLE");
-        responseJson.set("channel", "CP");
-        responseJson.set("amount", "11099");
-        responseJson.set("currency", "USD");
-        responseJson.set("country", "AD");
-        responseJson.set("merchant_id", "MER_A6A1EC44522F96630ABEA17A");
-        responseJson.set("merchant_name", "ABC INDUSTRIES");
-        responseJson.set("account_id", "TRA_86920f927028745yt34d077d88beb29b");
-        responseJson.set("account_name", "transaction_processing");
-        responseJson.set("reference", "becf9f3e-4d33-459c-8ed2-0c4affc9555e");
-
-        JsonDoc threeDs = new JsonDoc();
-        threeDs.set("server_trans_ref", "string");
-        threeDs.set("message_version", "string");
-        threeDs.set("ds_protocol_version_start", "string");
-        threeDs.set("ds_protocol_version_end", "string");
-        threeDs.set("acs_protocol_version_start", "string");
-        threeDs.set("acs_protocol_version_end", "string");
-        threeDs.set("acs_info_indicator", new String[]{"NOT_AVAILABLE"});
-        threeDs.set("enrolled_status", "ENROLLED");
-        threeDs.set("eci", "string");
-        threeDs.set("liability_shift", "YES");
-        threeDs.set("challenge_model", "STATIC_CHALLENGE");
-        threeDs.set("session_data_field_name", "threeDSSessionData");
-        threeDs.set("message_type", "PAREQ");
-        threeDs.set("challenge_value", "string");
-        threeDs.set("redirect_url", "string");
-        threeDs.set("acs_challenge_request_url", "string");
-        threeDs.set("method_url", "string");
-
-        JsonDoc methodData = new JsonDoc();
-        methodData.set("three_ds_server_trans_id", "string");
-        methodData.set("three_ds_method_return_url", "string");
-        methodData.set("encoded_method_data", "string");
-        threeDs.set("method_data", methodData);
-        responseJson.set("three_ds", threeDs);
-
-        JsonDoc notifications = new JsonDoc();
-        notifications.set("challenge_return_url", "string");
-        responseJson.set("notifications", notifications);
-
-        JsonDoc action = new JsonDoc();
-        action.set("id", "ACT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d");
-        action.set("type", "INITIATE");
-        action.set("time_created", "2021-05-03T21:23:39.718Z");
-        action.set("result_code", "SUCCESS");
-        action.set("app_id", "uzFr7t4VOqxdLDI44hHmXIjHtOOE8d");
-        action.set("app_name", "my_lovely_app");
-        responseJson.set("action", action);
-
-        Transaction mapped = GpApiMapping.map3DSecureData(responseJson.toString());
-        ThreeDSecure threeDSecure = mapped.getThreeDsecure();
-
-        assertNotNull(threeDSecure);
-        assertEquals("AUT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d", threeDSecure.getId());
-        assertEquals("SALE", threeDSecure.getTransactionType());
-        assertEquals("AVAILABLE", threeDSecure.getStatus());
-        assertEquals("CP", threeDSecure.getChannel());
-        assertEquals("MER_A6A1EC44522F96630ABEA17A", threeDSecure.getMerchantId());
-        assertEquals("transaction_processing", threeDSecure.getAccountName());
-        assertEquals("STATIC_CHALLENGE", threeDSecure.getChallengeModel());
-        assertEquals("threeDSSessionData", threeDSecure.getSessionDataFieldName());
-        assertEquals("string", threeDSecure.getThreeDsMethodReturnUrl());
-        assertEquals("string", threeDSecure.getThreeDsServerTransId());
-        assertEquals("string", threeDSecure.getEncodedMethodData());
-        assertEquals("string", threeDSecure.getChallengeReturnUrl());
-        assertEquals("ACT_uzFr7t4VOqxdLDI44hHmXIjHtOOE8d", threeDSecure.getActionId());
-        assertEquals("INITIATE", threeDSecure.getActionType());
-        assertEquals("SUCCESS", threeDSecure.getActionResultCode());
-        assertEquals("uzFr7t4VOqxdLDI44hHmXIjHtOOE8d", threeDSecure.getActionAppId());
-        assertEquals("my_lovely_app", threeDSecure.getActionAppName());
-    }
-
-    @Test
-    public void MapCheck3DSAvailabilityRequest_UsesGpApiChannelValueWhenBuilderChannelIsOmitted() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
-        config.setAccessTokenInfo(accessTokenInfo);
-
-        GpApiConnector gateway = new GpApiConnector(config);
-
-        CreditCardData card = new CreditCardData();
-        card.setNumber("4012001038488884");
-        card.setExpMonth(12);
-        card.setExpYear(2030);
-
-        Secure3dBuilder builder = Secure3dService.checkEnrollment(card)
-                .withAmount(new BigDecimal("10.01"))
-                .withCurrency("GBP");
-
-        GpApiRequest request = new com.global.api.builders.requestbuilder.gpApi.GpApiSecureRequestBuilder().buildRequest(builder, gateway);
-        JsonDoc requestBody = JsonDoc.parse(request.getRequestBody());
-
-        assertEquals("CNP", requestBody.getString("channel"));
-        assertNull(requestBody.get("stored_credential"));
     }
 
     @Test
@@ -576,7 +418,7 @@ public class GpApiMappingTest extends BaseGpApiTest {
     @Test
     public void MapResponseTest_CreateTransaction() throws GatewayException {
         // Arrange
-        String rawJson = "{\"id\":\"TRN_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"type\":\"SALE\",\"status\":\"PREAUTHORIZED\",\"channel\":\"CNP\",\"capture_mode\":\"LATER\",\"amount\":\"1400\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"reference\":\"15fbcdd9-8626-4e29-aae8-050f823f995f\",\"payment_method\":{\"id\":\"PMT_9a8f1b66-58e3-409d-86df-ed5fb14ad2f6\",\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"fingerprint\":\"\",\"fingerprint_presence_indicator\":\"\",\"card\":{\"funding\":\"CREDIT\",\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"PSkAnccWLNMTcRmm\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\"}},\"batch_id\":\"\",\"action\":{\"id\":\"ACT_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"type\":\"PREAUTHORIZE\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"Uyq6PzRbkorv2D4RQGlldEtunEeGNZll\",\"app_name\":\"sample_app_CERT\"}}";
+        String rawJson = "{\"id\":\"TRN_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"type\":\"SALE\",\"status\":\"PREAUTHORIZED\",\"channel\":\"CNP\",\"capture_mode\":\"LATER\",\"amount\":\"1400\",\"currency\":\"USD\",\"country\":\"US\",\"merchant_id\":\"MER_c4c0df11039c48a9b63701adeaa296c3\",\"merchant_name\":\"Sandbox_merchant_2\",\"account_id\":\"TRA_6716058969854a48b33347043ff8225f\",\"account_name\":\"Transaction_Processing\",\"reference\":\"15fbcdd9-8626-4e29-aae8-050f823f995f\",\"payment_method\":{\"id\":\"PMT_9a8f1b66-58e3-409d-86df-ed5fb14ad2f6\",\"result\":\"00\",\"message\":\"[ test system ] AUTHORISED\",\"entry_mode\":\"ECOM\",\"card\":{\"brand\":\"VISA\",\"masked_number_last4\":\"XXXXXXXXXXXX5262\",\"authcode\":\"12345\",\"brand_reference\":\"PSkAnccWLNMTcRmm\",\"brand_time_created\":\"\",\"cvv_result\":\"MATCHED\"}},\"batch_id\":\"\",\"action\":{\"id\":\"ACT_BHZ1whvNJnMvB6dPwf3znwWTsPjCn0\",\"type\":\"PREAUTHORIZE\",\"time_created\":\"2020-12-04T12:46:05.235Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"Uyq6PzRbkorv2D4RQGlldEtunEeGNZll\",\"app_name\":\"sample_app_CERT\"}}";
 
         // Act
         Transaction transaction = GpApiMapping.mapResponse(rawJson);
@@ -585,13 +427,12 @@ public class GpApiMappingTest extends BaseGpApiTest {
 
         // Assert
         assertEquals(doc.getString("id"), transaction.getTransactionId());
-        assertEquals(0, doc.getAmount("amount").compareTo(transaction.getBalanceAmount()));
+        assertEquals(doc.getAmount("amount"), transaction.getBalanceAmount());
         assertEquals(doc.getString("time_created"), transaction.getTimestamp());
         assertEquals(doc.getString("status"), transaction.getResponseMessage());
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
         assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getBatchReference());
-        assertEquals(doc.get("action").getString("result_code"), transaction.getOriginalResponseCode());
-        assertEquals("00", transaction.getResponseCode());
+        assertEquals(doc.get("action").getString("result_code"), transaction.getResponseCode());
         if (doc.has("payment_method")) {
             JsonDoc paymentMethod = doc.get("payment_method");
             assertEquals(paymentMethod.getString("id"), transaction.getToken());
@@ -617,13 +458,12 @@ public class GpApiMappingTest extends BaseGpApiTest {
 
         // Assert
         assertEquals(doc.getString("id"), transaction.getTransactionId());
-        assertEquals(0, StringUtils.toAmount(doc.getString("amount")).compareTo(transaction.getBalanceAmount()));
+        assertEquals(StringUtils.toAmount(doc.getString("amount")), transaction.getBalanceAmount());
         assertEquals(doc.getString("time_created"), transaction.getTimestamp());
         assertEquals(doc.getString("status"), transaction.getResponseMessage());
         assertEquals(doc.getString("reference"), transaction.getReferenceNumber());
         assertEquals(doc.getString("batch_id"), transaction.getBatchSummary().getBatchReference());
-        assertEquals(doc.get("action").getString("result_code"), transaction.getOriginalResponseCode());
-        assertEquals("00", transaction.getResponseCode());
+        assertEquals(doc.get("action").getString("result_code"), transaction.getResponseCode());
 
         var payment_method = doc.get("payment_method");
         if (payment_method != null) {
@@ -710,242 +550,6 @@ public class GpApiMappingTest extends BaseGpApiTest {
         assertNotNull(accountSummary.getConfigurationDetails());
         assertEquals(Channel.CardPresent, accountSummary.getConfigurationDetails().get(0).getChannels().get(0));
         assertEquals(PaymentMethodName.Card, accountSummary.getConfigurationDetails().get(0).getPaymentMethods().get(0));
-    }
-
-    @Test
-    public void MapInitiate3DSRequest_IncludesEnhancedAuthenticationFields() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
-        accessTokenInfo.setTransactionProcessingAccountName("Transaction_Processing");
-        config.setAccessTokenInfo(accessTokenInfo);
-        config.setMerchantContactUrl("https://merchant.example/contact");
-
-        GpApiConnector gateway = new GpApiConnector(config);
-        gateway.setChallengeNotificationUrl("https://challenge.example/return");
-        gateway.setMethodNotificationUrl("https://method.example/return");
-
-        CreditCardData card = new CreditCardData();
-        card.setNumber("4012001038488884");
-        card.setExpMonth(12);
-        card.setExpYear(2030);
-
-        Secure3dBuilder builder = Secure3dService
-                .initiateAuthentication(card, null)
-                .withServerTransactionId("AUT_auth_123")
-                .withAmount(new BigDecimal("50.89"))
-                .withCurrency("EUR")
-                .withReferenceNumber("3ds-initiate-ref")
-                .withOrderCreateDate(new DateTime(2021, 5, 3, 21, 23, 39, 718, DateTimeZone.forOffsetHoursMinutes(5, 30)))
-                .withChallengeNotificationUrl("https://challenge.example/return")
-                .withMethodNotificationUrl("https://method.example/return")
-                .withMethodUrlCompletion(com.global.api.entities.enums.MethodUrlCompletion.Yes)
-                .withMessageVersion(MessageVersion.Version_210)
-                .withChallengeRequestIndicator(com.global.api.entities.enums.ChallengeRequestIndicator.ChallengeMandated)
-                .withMerchantInitiatedRequestType(com.global.api.entities.enums.MerchantInitiatedRequestType.OtherPayment)
-                .withWhitelistStatus(true)
-                .withEnableExemptionOptimization(true)
-                .withChallengeWindowSize("FULL_SCREEN")
-                .withDeviceRenderingOptions("BOTH")
-                .withFrictionlessFlowEligible(true)
-                .withExemptionRequestType("LOW_VALUE")
-                .withChallengeType("STATIC")
-                .withDecoupledFlowIndicator("SUPPORTED")
-                .withDecoupledFlowTimerValue(10)
-                .withDecoupledFlowTimerUnit("MINUTES")
-                .withDecoupledNotificationUrl("https://decoupled.example/notify")
-                .withNotificationUrl("https://notify.example/3ds")
-                .withRiskScore("87")
-                .withRiskAssessmentStatus("LOW")
-                .withTrustedMerchantExemption("ALLOWED")
-                .withLowValueExemption("ALLOWED")
-                .withTransactionRiskAnalysisExemption("ALLOWED")
-                .withRecurringExemption("NOT_REQUESTED");
-
-        GpApiRequest request = new com.global.api.builders.requestbuilder.gpApi.GpApiSecureRequestBuilder().buildRequest(builder, gateway);
-        JsonDoc requestBody = JsonDoc.parse(request.getRequestBody());
-
-        assertTrue(request.getEndpoint().endsWith("/authentications/AUT_auth_123/initiate"));
-        assertEquals("PAYMENT_TRANSACTION", requestBody.get("three_ds").getString("authentication_request_type"));
-        assertNull(requestBody.get("three_ds").getString("message_category"));
-        assertEquals(MessageVersion.Version_210.getValue(), requestBody.get("three_ds").getString("message_version"));
-        assertEquals("CHALLENGE_MANDATED", requestBody.get("three_ds").getString("preference"));
-        assertEquals("FULL_SCREEN", requestBody.get("three_ds").getString("challenge_window_size"));
-        assertEquals("BOTH", requestBody.get("three_ds").getString("device_rendering_options"));
-        assertEquals(Boolean.TRUE, requestBody.get("three_ds").getBool("frictionless_flow_eligible"));
-        assertEquals("LOW_VALUE", requestBody.get("three_ds").getString("exemption_request_type"));
-        assertEquals("STATIC", requestBody.get("three_ds").getString("challenge_type"));
-        assertEquals("2021-05-03T15:53:39.718Z", requestBody.get("order").getString("time_created_reference"));
-        assertEquals("SUPPORTED", requestBody.get("three_ds").getString("decoupled_flow_indicator"));
-        assertEquals(10, requestBody.get("three_ds").getInt("decoupled_flow_timer_value").intValue());
-        assertEquals("MINUTES", requestBody.get("three_ds").getString("decoupled_flow_timer_unit"));
-        assertEquals("https://decoupled.example/notify", requestBody.get("notifications").getString("decoupled_notification_url"));
-        assertEquals("https://notify.example/3ds", requestBody.get("three_ds").getString("notification_url"));
-        assertEquals("87", requestBody.get("three_ds").getString("risk_score"));
-        assertEquals("LOW", requestBody.get("three_ds").getString("risk_assessment_status"));
-        assertEquals("ALLOWED", requestBody.get("three_ds").getString("trusted_merchant_exemption"));
-        assertEquals("ALLOWED", requestBody.get("three_ds").getString("low_value_exemption"));
-        assertEquals("ALLOWED", requestBody.get("three_ds").getString("transaction_risk_analysis_exemption"));
-        assertEquals("NOT_REQUESTED", requestBody.get("three_ds").getString("recurring_exemption"));
-        assertEquals("OTHER_PAYMENT", requestBody.getString("merchant_initiated_request_type"));
-        assertEquals(Boolean.TRUE, requestBody.getBool("whitelist_status"));
-        assertEquals(Boolean.TRUE, requestBody.getBool("enable_exemption_optimization"));
-    }
-
-    @Test
-    public void MapGet3DSResultRequest_BuildsChallengeResultPayload() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        GpApiConnector gateway = new GpApiConnector(config);
-
-        Secure3dBuilder builder = Secure3dService
-                .getAuthenticationData()
-                .withServerTransactionId("AUT_result_123")
-                .withPayerAuthenticationResponse("challenge-result-token");
-
-        GpApiRequest request = new com.global.api.builders.requestbuilder.gpApi.GpApiSecureRequestBuilder().buildRequest(builder, gateway);
-        JsonDoc requestBody = JsonDoc.parse(request.getRequestBody());
-
-        assertTrue(request.getEndpoint().endsWith("/authentications/AUT_result_123/result"));
-        assertEquals("challenge-result-token", requestBody.get("three_ds").getString("challenge_result_value"));
-    }
-
-    @Test
-    public void MapAuthenticationReportRequestAndPagedResponseTest() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        GpApiConnector gateway = new GpApiConnector(config);
-
-        var builder = ReportingService.findAuthenticationsPaged(2, 25)
-                .orderBy(AuthenticationSortProperty.TimeCreated, SortDirection.Descending)
-                .withAuthenticationId("AUT_list_123")
-                .withAuthenticationStatus("SUCCESS_AUTHENTICATED");
-
-        builder.where(SearchCriteria.AccountName, "Transaction_Processing")
-                .and(SearchCriteria.AccountId, "TRA_123")
-                .and(SearchCriteria.ReferenceNumber, "auth-ref-123")
-                .and(SearchCriteria.StartDate, new DateTime(2021, 5, 1, 0, 0).toDate())
-                .and(SearchCriteria.EndDate, new DateTime(2021, 5, 31, 0, 0).toDate())
-                .and(SearchCriteria.Country, "US")
-                .and(SearchCriteria.AuthenticationSource, com.global.api.entities.enums.AuthenticationSource.Browser)
-                .and(SearchCriteria.AuthenticationType, com.global.api.entities.enums.AuthenticationRequestType.PaymentTransaction)
-                .and(SearchCriteria.AuthenticationMessageCategory, MessageCategory.PaymentAuthentication)
-                .and(SearchCriteria.AuthenticationMessageVersion, MessageVersion.Version_210);
-
-        GpApiRequest request = new GpApiReportRequestBuilder().buildRequest(builder, gateway);
-
-        assertTrue(request.getEndpoint().endsWith("/authentications"));
-        assertEquals("2", request.getQueryStringParams().get("page"));
-        assertEquals("25", request.getQueryStringParams().get("page_size"));
-        assertEquals("TIME_CREATED", request.getQueryStringParams().get("order_by"));
-        assertEquals("DESC", request.getQueryStringParams().get("order"));
-        assertEquals("AUT_list_123", request.getQueryStringParams().get("id"));
-        assertEquals("SUCCESS_AUTHENTICATED", request.getQueryStringParams().get("status"));
-        assertEquals("Transaction_Processing", request.getQueryStringParams().get("account_name"));
-        assertEquals("TRA_123", request.getQueryStringParams().get("account_id"));
-        assertEquals("auth-ref-123", request.getQueryStringParams().get("reference"));
-        assertEquals("US", request.getQueryStringParams().get("country"));
-        assertEquals("2021-05-01", request.getQueryStringParams().get("from_time_created"));
-        assertEquals("2021-05-31", request.getQueryStringParams().get("to_time_created"));
-        assertEquals("BROWSER", request.getQueryStringParams().get("authentication_source"));
-
-        String rawJson = "{\"total_count\":1,\"paging\":{\"page\":2,\"page_size\":25,\"order\":\"DESC\",\"order_by\":\"TIME_CREATED\"},\"authentications\":[{\"id\":\"AUT_list_123\",\"time_created\":\"2021-05-03T21:23:39.718Z\",\"status\":\"SUCCESS_AUTHENTICATED\",\"transaction_type\":\"SALE\",\"channel\":\"CNP\",\"amount\":\"11099\",\"currency\":\"USD\",\"reference\":\"auth-ref-123\",\"country\":\"US\",\"merchant_id\":\"MER_123\",\"merchant_name\":\"ABC INDUSTRIES\",\"account_id\":\"TRA_123\",\"account_name\":\"Transaction_Processing\",\"three_ds\":{\"server_trans_ref\":\"server-trans-ref\",\"message_version\":\"2.1.0\",\"authentication_source\":\"BROWSER\",\"authentication_request_type\":\"PAYMENT_TRANSACTION\",\"message_category\":\"PAYMENT_AUTHENTICATION\",\"liability_shift\":\"YES\"}}]}";
-
-        AuthenticationSummaryPaged paged = GpApiMapping.mapReportResponse(rawJson, ReportType.FindAuthenticationsPaged);
-
-        assertEquals(1, paged.getResults().size());
-        assertEquals(1, paged.getTotalRecordCount());
-        assertEquals(2, paged.getPage());
-        assertEquals(25, paged.getPageSize());
-        assertEquals("AUT_list_123", paged.getResults().get(0).getId());
-        assertEquals("SUCCESS_AUTHENTICATED", paged.getResults().get(0).getStatus());
-        assertEquals("USD", paged.getResults().get(0).getCurrency());
-        assertEquals("US", paged.getResults().get(0).getCountry());
-        assertEquals("BROWSER", paged.getResults().get(0).getAuthenticationSource());
-        assertEquals("PAYMENT_TRANSACTION", paged.getResults().get(0).getAuthenticationType());
-        assertEquals("YES", paged.getResults().get(0).getLiabilityShift());
-    }
-
-    @Test
-    public void MapAuthenticationDetailResponseTest() throws ApiException {
-        String rawJson = "{\"id\":\"AUT_detail_123\",\"time_created\":\"2021-05-03T21:23:39.718Z\",\"transaction_type\":\"SALE\",\"status\":\"SUCCESS_AUTHENTICATED\",\"channel\":\"CNP\",\"amount\":\"11099\",\"currency\":\"USD\",\"country\":\"AD\",\"merchant_id\":\"MER_A6A1EC44522F96630ABEA17A\",\"merchant_name\":\"ABC INDUSTRIES\",\"account_id\":\"TRA_86920f927028745yt34d077d88beb29b\",\"account_name\":\"transaction_processing\",\"reference\":\"becf9f3e-4d33-459c-8ed2-0c4affc9555e\",\"payment_method\":{\"result\":\"00\",\"message\":\"SUCCESS\",\"entry_mode\":\"ECOM\",\"name\":\"Jane Doe\",\"card\":{\"brand\":\"VISA\",\"masked_number_first6last4\":\"411111XXXXXX1111\",\"masked_number_last4\":\"XXXXXXXXXXXX1111\",\"expiry_month\":\"12\",\"expiry_year\":\"30\",\"authcode\":\"12345\",\"brand_reference\":\"TQ76bJf7qzkC30U0\",\"funding\":\"CREDIT\"}},\"three_ds\":{\"server_trans_ref\":\"server-trans-ref\",\"message_version\":\"2.1.0\",\"ds_protocol_version_start\":\"2.1.0\",\"ds_protocol_version_end\":\"2.2.0\",\"acs_protocol_version_start\":\"2.1.0\",\"acs_protocol_version_end\":\"2.2.0\",\"acs_info_indicator\":[\"NOT_AVAILABLE\"],\"enrolled_status\":\"ENROLLED\",\"eci\":\"05\",\"cavv_result\":\"MATCHED\",\"liability_shift\":\"YES\",\"challenge_model\":\"STATIC_CHALLENGE\",\"session_data_field_name\":\"threeDSSessionData\",\"message_type\":\"PAREQ\",\"challenge_value\":\"challenge-data\",\"redirect_url\":\"https://redirect.example\",\"acs_challenge_request_url\":\"https://acs.example/challenge\",\"method_url\":\"https://acs.example/method\",\"challenge_window_size\":\"FULL_SCREEN\",\"frictionless_flow_eligible\":true,\"exempt_status\":\"TRANSACTION_RISK_ANALYSIS\",\"eos_reason\":\"LOW_VALUE_EXEMPTION\",\"exemption_request_type\":\"LOW_VALUE\",\"exemption_approval_url\":\"https://approval.example\",\"exemption_rejection_reason\":\"NONE\",\"challenge_type\":\"STATIC\",\"creq_data\":\"creq-data\",\"acs_signed_content\":\"signed-content\",\"decoupled_flow_indicator\":\"SUPPORTED\",\"decoupled_flow_timer_value\":10,\"decoupled_flow_timer_unit\":\"MINUTES\",\"notification_url\":\"https://notify.example/3ds\",\"hardcoded_decision\":true,\"risk_score\":\"87\",\"risk_assessment_status\":\"LOW\",\"trusted_merchant_exemption\":\"ALLOWED\",\"low_value_exemption\":\"ALLOWED\",\"transaction_risk_analysis_exemption\":\"ALLOWED\",\"recurring_exemption\":\"NOT_REQUESTED\",\"method_url_completion_indicator\":\"YES\",\"authentication_request_data\":\"request-data\",\"authentication_response_data\":\"response-data\",\"authentication_value\":\"auth-value\",\"authentication_source\":\"BROWSER\",\"authentication_request_type\":\"PAYMENT_TRANSACTION\",\"message_category\":\"PAYMENT_AUTHENTICATION\",\"status_reason\":\"AUTHENTICATION_SUCCESSFUL\",\"method_data\":{\"three_ds_server_trans_id\":\"3ds-server-trans-id\",\"three_ds_method_return_url\":\"https://method.example/return\",\"encoded_method_data\":\"encoded-method-data\"}},\"notifications\":{\"challenge_return_url\":\"https://challenge.example/return\"},\"action\":{\"id\":\"ACT_detail_123\",\"type\":\"RESULT\",\"time_created\":\"2021-05-03T21:23:39.718Z\",\"result_code\":\"SUCCESS\",\"app_id\":\"app-id\",\"app_name\":\"my_lovely_app\"}}";
-
-        ThreeDSecure threeDSecure = GpApiMapping.mapReportResponse(rawJson, ReportType.AuthenticationDetail);
-
-        assertNotNull(threeDSecure);
-        assertEquals("AUT_detail_123", threeDSecure.getId());
-        assertEquals("AD", threeDSecure.getCountry());
-        assertEquals("SUCCESS", threeDSecure.getPaymentMethodMessage());
-        assertEquals("Jane Doe", threeDSecure.getPaymentMethodName());
-        assertNotNull(threeDSecure.getCard());
-        assertEquals("VISA", threeDSecure.getCard().getBrand());
-        assertEquals("411111XXXXXX1111", threeDSecure.getCard().getMaskedCardNumber());
-        assertEquals("XXXXXXXXXXXX1111", threeDSecure.getCard().getMaskedNumberLast4());
-        assertEquals("FULL_SCREEN", threeDSecure.getChallengeWindowSize());
-        assertEquals(Boolean.TRUE, threeDSecure.getFrictionlessFlowEligible());
-        assertEquals("LOW_VALUE", threeDSecure.getExemptionRequestType());
-        assertEquals("https://approval.example", threeDSecure.getExemptionApprovalURL());
-        assertEquals("NONE", threeDSecure.getExemptionRejectionReason());
-        assertEquals("STATIC", threeDSecure.getChallengeType());
-        assertEquals("creq-data", threeDSecure.getCreqData());
-        assertEquals("signed-content", threeDSecure.getAcsSignedContent());
-        assertEquals("SUPPORTED", threeDSecure.getDecoupledFlowIndicator());
-        assertEquals(10, threeDSecure.getDecoupledFlowTimerValue().intValue());
-        assertEquals("MINUTES", threeDSecure.getDecoupledFlowTimerUnit());
-        assertEquals("https://notify.example/3ds", threeDSecure.getNotificationURL());
-        assertEquals(Boolean.TRUE, threeDSecure.getHardcodedDecision());
-        assertEquals("87", threeDSecure.getRiskScore());
-        assertEquals("LOW", threeDSecure.getRiskAssessmentStatus());
-        assertEquals("ALLOWED", threeDSecure.getTrustedMerchantExemption());
-        assertEquals("ALLOWED", threeDSecure.getLowValueExemption());
-        assertEquals("ALLOWED", threeDSecure.getTransactionRiskAnalysisExemption());
-        assertEquals("NOT_REQUESTED", threeDSecure.getRecurringExemption());
-        assertEquals("YES", threeDSecure.getMethodUrlCompletionIndicator());
-        assertEquals("request-data", threeDSecure.getAuthenticationRequestData());
-        assertEquals("response-data", threeDSecure.getAuthenticationResponseData());
-        assertEquals("https://challenge.example/return", threeDSecure.getChallengeReturnUrl());
-        assertEquals("3ds-server-trans-id", threeDSecure.getThreeDsServerTransId());
-        assertEquals("https://method.example/return", threeDSecure.getThreeDsMethodReturnUrl());
-        assertEquals("encoded-method-data", threeDSecure.getEncodedMethodData());
-        assertEquals("MATCHED", threeDSecure.getCavv());
-        assertEquals(com.global.api.entities.enums.ExemptStatus.TransactionRiskAnalysis, threeDSecure.getExemptStatus());
-        assertEquals("LOW_VALUE_EXEMPTION", threeDSecure.getExemptReason());
-        assertEquals("AUTHENTICATION_SUCCESSFUL", threeDSecure.getStatusReason());
-        assertEquals("PAYMENT_AUTHENTICATION", threeDSecure.getMessageCategory());
-        assertEquals("PAYMENT_TRANSACTION", threeDSecure.getAuthenticationType());
-        assertEquals("BROWSER", threeDSecure.getAuthenticationSource());
-        assertEquals("ACT_detail_123", threeDSecure.getActionId());
-    }
-
-    @Test
-    public void MapAuthenticationReportRequestWithThreeDsFiltersTest() throws ApiException {
-        GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardNotPresent);
-        GpApiConnector gateway = new GpApiConnector(config);
-
-        var builder = ReportingService.findAuthenticationsPaged(1, 25)
-                .orderBy(AuthenticationSortProperty.TimeCreated, SortDirection.Descending)
-                .withAuthenticationId("AUT_list_123")
-                .withAuthenticationStatus("SUCCESS_AUTHENTICATED");
-
-        builder.where(SearchCriteria.ThreeDsDsTransRef, "DS_123456")
-                .and(SearchCriteria.ThreeDsServerTransRef, "server-trans-ref")
-                .and(SearchCriteria.ThreeDsLiabilityShift, "YES")
-                .and(SearchCriteria.ThreeDsAuthenticationValue, "auth-value")
-                .and(SearchCriteria.ThreeDsEci, "05")
-                .and(SearchCriteria.ThreeDsMessageVersion, "2.1.0")
-                .and(SearchCriteria.Source, "BROWSER");
-
-        GpApiRequest request = new GpApiReportRequestBuilder().buildRequest(builder, gateway);
-
-        assertTrue(request.getEndpoint().endsWith("/authentications"));
-        assertEquals("1", request.getQueryStringParams().get("page"));
-        assertEquals("25", request.getQueryStringParams().get("page_size"));
-        assertEquals("AUT_list_123", request.getQueryStringParams().get("id"));
-        assertEquals("SUCCESS_AUTHENTICATED", request.getQueryStringParams().get("status"));
-        assertEquals("DS_123456", request.getQueryStringParams().get("three_ds.ds_trans_ref"));
-        assertEquals("server-trans-ref", request.getQueryStringParams().get("three_ds.server_trans_ref"));
-        assertEquals("YES", request.getQueryStringParams().get("three_ds.liability_shift"));
-        assertEquals("auth-value", request.getQueryStringParams().get("three_ds.authentication_value"));
-        assertEquals("05", request.getQueryStringParams().get("three_ds.eci"));
-        assertEquals("2.1.0", request.getQueryStringParams().get("three_ds.message_version"));
-        assertEquals("BROWSER", request.getQueryStringParams().get("source"));
     }
 
 }

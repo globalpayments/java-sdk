@@ -23,18 +23,11 @@ import java.math.BigDecimal;
 public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     private String applicationId;
     private AuthenticationRequestType authenticationRequestType = AuthenticationRequestType.PaymentTransaction;
-    private String accountId;
-    private String accountName;
     @Getter @Setter private MobileData mobileData;
     private ChallengeRequestIndicator challengeRequestIndicator;
     private Boolean decoupledFlowRequest;
     private Integer decoupledFlowTimeout;
     private String decoupledNotificationUrl;
-    @Getter @Setter
-    private String returnUrl;
-    @Getter @Setter
-    private String statusUrl;
-    private String channel;
     @Getter @Setter private boolean enableExemptionOptimization;
     private String encodedData;
     private JsonDoc ephemeralPublicKey;
@@ -50,12 +43,7 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     private SdkUiType[] sdkUiTypes;
     private StoredCredential storedCredential;
     private ThreeDSecure threeDSecure;
-    private String country;
-    private String challengeNotificationUrl;
-    private String methodNotificationUrl;
     private Boolean whitelistStatus;
-    @Getter @Setter
-    private String category;
 
     public AgeIndicator getAccountAgeIndicator() {
         return accountAgeIndicator;
@@ -78,12 +66,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     public String getApplicationId() {
         return applicationId;
     }
-    public String getAccountId() {
-        return accountId;
-    }
-    public String getAccountName() {
-        return accountName;
-    }
     public AuthenticationSource getAuthenticationSource() {
         return authenticationSource;
     }
@@ -101,9 +83,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     }
     public String getCurrency() {
         return currency;
-    }
-    public String getChannel() {
-        return channel;
     }
     public String getCustomerAccountId() {
         return customerAccountId;
@@ -137,60 +116,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     }
     public void setDecoupledNotificationUrl(String decoupledNotificationUrl) {
         this.decoupledNotificationUrl = decoupledNotificationUrl;
-    }
-    public String getCountry() {
-        return country;
-    }
-    public String getChallengeNotificationUrl() {
-        return challengeNotificationUrl;
-    }
-    public String getChallengeWindowSize() {
-        return threeDSecure != null ? threeDSecure.getChallengeWindowSize() : null;
-    }
-    public String getDeviceRenderingOptions() {
-        return threeDSecure != null ? threeDSecure.getDeviceRenderingOptions() : null;
-    }
-    public Boolean getFrictionlessFlowEligible() {
-        return threeDSecure != null ? threeDSecure.getFrictionlessFlowEligible() : null;
-    }
-    public String getExemptionRequestType() {
-        return threeDSecure != null ? threeDSecure.getExemptionRequestType() : null;
-    }
-    public String getChallengeType() {
-        return threeDSecure != null ? threeDSecure.getChallengeType() : null;
-    }
-    public String getMethodNotificationUrl() {
-        return methodNotificationUrl;
-    }
-    public String getDecoupledFlowIndicator() {
-        return threeDSecure != null ? threeDSecure.getDecoupledFlowIndicator() : null;
-    }
-    public Integer getDecoupledFlowTimerValue() {
-        return threeDSecure != null ? threeDSecure.getDecoupledFlowTimerValue() : null;
-    }
-    public String getDecoupledFlowTimerUnit() {
-        return threeDSecure != null ? threeDSecure.getDecoupledFlowTimerUnit() : null;
-    }
-    public String getNotificationUrl() {
-        return threeDSecure != null ? threeDSecure.getNotificationURL() : null;
-    }
-    public String getRiskScore() {
-        return threeDSecure != null ? threeDSecure.getRiskScore() : null;
-    }
-    public String getRiskAssessmentStatus() {
-        return threeDSecure != null ? threeDSecure.getRiskAssessmentStatus() : null;
-    }
-    public String getTrustedMerchantExemption() {
-        return threeDSecure != null ? threeDSecure.getTrustedMerchantExemption() : null;
-    }
-    public String getLowValueExemption() {
-        return threeDSecure != null ? threeDSecure.getLowValueExemption() : null;
-    }
-    public String getTransactionRiskAnalysisExemption() {
-        return threeDSecure != null ? threeDSecure.getTransactionRiskAnalysisExemption() : null;
-    }
-    public String getRecurringExemption() {
-        return threeDSecure != null ? threeDSecure.getRecurringExemption() : null;
     }
     public String getDeliveryEmail() {
         return deliveryEmail;
@@ -498,14 +423,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
         customerEmail = value;
         return this;
     }
-    public Secure3dBuilder withAccountId(String accountId) {
-        this.accountId = accountId;
-        return this;
-    }
-    public Secure3dBuilder withAccountName(String accountName) {
-        this.accountName = accountName;
-        return this;
-    }
     public Secure3dBuilder withDecoupledFlowRequest(Boolean value) {
         this.decoupledFlowRequest = value;
         return this;
@@ -516,10 +433,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     }
     public Secure3dBuilder withDecoupledNotificationUrl(String value) {
         this.decoupledNotificationUrl = value;
-        return this;
-    }
-    public Secure3dBuilder withChannel(String channel) {
-        this.channel = channel;
         return this;
     }
     public Secure3dBuilder withDeliveryEmail(String deliveryEmail) {
@@ -569,128 +482,6 @@ public class Secure3dBuilder extends SecureBuilder<ThreeDSecure> {
     }
     public Secure3dBuilder withMaximumTimeout(Integer maximumTimeout) {
         this.maximumTimeout = maximumTimeout;
-        return this;
-    }
-    public Secure3dBuilder withCountry(String country) {
-        this.country = country;
-        return this;
-    }
-    public Secure3dBuilder withChallengeNotificationUrl(String challengeNotificationUrl) {
-        this.challengeNotificationUrl = challengeNotificationUrl;
-        return this;
-    }
-    public Secure3dBuilder withChallengeWindowSize(String challengeWindowSize) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setChallengeWindowSize(challengeWindowSize);
-        return this;
-    }
-    public Secure3dBuilder withDeviceRenderingOptions(String deviceRenderingOptions) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setDeviceRenderingOptions(deviceRenderingOptions);
-        return this;
-    }
-    public Secure3dBuilder withFrictionlessFlowEligible(Boolean frictionlessFlowEligible) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setFrictionlessFlowEligible(frictionlessFlowEligible);
-        return this;
-    }
-    public Secure3dBuilder withExemptionRequestType(String exemptionRequestType) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setExemptionRequestType(exemptionRequestType);
-        return this;
-    }
-    public Secure3dBuilder withChallengeType(String challengeType) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setChallengeType(challengeType);
-        return this;
-    }
-    public Secure3dBuilder withMethodNotificationUrl(String methodNotificationUrl) {
-        this.methodNotificationUrl = methodNotificationUrl;
-        return this;
-    }
-    public Secure3dBuilder withDecoupledFlowIndicator(String decoupledFlowIndicator) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setDecoupledFlowIndicator(decoupledFlowIndicator);
-        return this;
-    }
-    public Secure3dBuilder withDecoupledFlowTimerValue(Integer decoupledFlowTimerValue) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setDecoupledFlowTimerValue(decoupledFlowTimerValue);
-        return this;
-    }
-    public Secure3dBuilder withDecoupledFlowTimerUnit(String decoupledFlowTimerUnit) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setDecoupledFlowTimerUnit(decoupledFlowTimerUnit);
-        return this;
-    }
-    public Secure3dBuilder withNotificationUrl(String notificationUrl) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setNotificationURL(notificationUrl);
-        return this;
-    }
-    public Secure3dBuilder withRiskScore(String riskScore) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setRiskScore(riskScore);
-        return this;
-    }
-    public Secure3dBuilder withRiskAssessmentStatus(String riskAssessmentStatus) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setRiskAssessmentStatus(riskAssessmentStatus);
-        return this;
-    }
-    public Secure3dBuilder withTrustedMerchantExemption(String trustedMerchantExemption) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setTrustedMerchantExemption(trustedMerchantExemption);
-        return this;
-    }
-    public Secure3dBuilder withLowValueExemption(String lowValueExemption) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setLowValueExemption(lowValueExemption);
-        return this;
-    }
-    public Secure3dBuilder withTransactionRiskAnalysisExemption(String transactionRiskAnalysisExemption) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setTransactionRiskAnalysisExemption(transactionRiskAnalysisExemption);
-        return this;
-    }
-    public Secure3dBuilder withRecurringExemption(String recurringExemption) {
-        if (threeDSecure == null) {
-            threeDSecure = new ThreeDSecure();
-        }
-        threeDSecure.setRecurringExemption(recurringExemption);
-        return this;
-    }
-
-    public Secure3dBuilder withCategory(String category) {
-        this.category = category;
         return this;
     }
     public Secure3dBuilder withMerchantData(MerchantDataCollection value) {

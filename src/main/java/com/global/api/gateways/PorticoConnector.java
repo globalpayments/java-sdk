@@ -461,34 +461,34 @@ public class PorticoConnector extends XmlGateway implements IPaymentGateway, IRe
         }
 
         // lodging data
-        if (builder.getLodgingData() != null) {
-            LodgingData lodging = builder.getLodgingData();
-
-            Element lodgingElement = et.subElement(block1, "LodgingData");
-            et.subElement(lodgingElement, "PrestigiousPropertyLimit", lodging.getPrestigiousPropertyLimit());
-            et.subElement(lodgingElement, "NoShow", lodging.isNoShow() ? "Y" : "N");
-            et.subElement(lodgingElement, "AdvancedDepositType", lodging.getAdvancedDepositType());
-            et.subElement(lodgingElement, "PreferredCustomer", lodging.isPreferredCustomer() ? "Y" : "N");
-            if (lodging.getFolioNumber() != null || lodging.getStayDuration() != null || lodging.getCheckInDate() != null || lodging.getCheckOutDate() != null || lodging.getRate() != null || lodging.getExtraCharges() != null) {
-                Element lodgingDataEdit = et.subElement(lodgingElement, "LodgingDataEdit");
-                et.subElement(lodgingDataEdit, "FolioNumber", lodging.getFolioNumber());
-                et.subElement(lodgingDataEdit, "Duration", lodging.getStayDuration());
-                if (lodging.getCheckInDate() != null) {
-                    et.subElement(lodgingDataEdit, "CheckInDate", lodging.getCheckInDate().toString("yyyy-MM-dd"));
-                }
-                if (lodging.getCheckOutDate() != null) {
-                    et.subElement(lodgingDataEdit, "CheckOutDate", lodging.getCheckOutDate().toString("yyyy-MM-dd"));
-                }
-                et.subElement(lodgingDataEdit, "Rate", lodging.getRate());
-                if (lodging.getExtraCharges() != null) {
-                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
-                    for (ExtraChargeType chargeType : lodging.getExtraCharges().keySet()) {
-                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
-                    }
-                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
-                }
-            }
-        }
+//        if(builder.getLodgingData() != null) {
+//            LodgingData lodging = builder.getLodgingData();
+//
+//            Element lodgingElement = et.subElement(block1, "LodgingData");
+//            et.subElement(lodgingElement, "PrestigiousPropertyLimit", lodging.getPrestigiousPropertyLimit());
+//            et.subElement(lodgingElement, "NoShow", lodging.isNoShow() ? "Y" : "N");
+//            et.subElement(lodgingElement, "AdvancedDepositType", lodging.getAdvancedDepositType());
+//            et.subElement(lodgingElement, "PreferredCustomer", lodging.isPreferredCustomer() ? "Y" : "N");
+//            if(lodging.getFolioNumber() != null || lodging.getStayDuration() != null || lodging.getCheckInDate() != null || lodging.getCheckOutDate() != null || lodging.getRate() != null || lodging.getExtraCharges() != null) {
+//                Element lodgingDataEdit = et.subElement(lodgingElement, "LodgingDataEdit");
+//                et.subElement(lodgingDataEdit, "FolioNumber", lodging.getFolioNumber());
+//                et.subElement(lodgingDataEdit, "Duration", lodging.getStayDuration());
+//                if(lodging.getCheckInDate() != null) {
+//                    et.subElement(lodgingDataEdit, "CheckInDate", lodging.getCheckInDate().toString("mm/DD/YYYY"));
+//                }
+//                if(lodging.getCheckOutDate() != null) {
+//                    et.subElement(lodgingDataEdit, "CheckOutDate", lodging.getCheckOutDate().toString("mm/DD/YYYY"));
+//                }
+//                et.subElement(lodgingDataEdit, "Rate", lodging.getRate());
+//                if(lodging.getExtraCharges() != null) {
+//                    Element extraChargesElement = et.subElement(lodgingDataEdit, "ExtraCharges");
+//                    for(ExtraChargeType chargeType: lodging.getExtraCharges().keySet()) {
+//                        et.subElement(extraChargesElement, chargeType.toString(), "Y");
+//                    }
+//                    et.subElement(lodgingDataEdit, "ExtraChargeAmtInfo", lodging.getExtraChargeAmount());
+//                }
+//            }
+//        }
 
         if (PorticoConfig.getNetworkRequestLogger() != null) {
             String request = buildEnvelope(et, transaction, builder.getClientTransactionId(), builder);

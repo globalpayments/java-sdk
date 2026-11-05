@@ -408,7 +408,7 @@ public class GpApiAuthenticationTest extends BaseGpApiTest {
     private void assertAccessTokenResponse(AccessTokenInfo accessTokenInfo) {
         assertNotNull(accessTokenInfo);
         assertNotNull(accessTokenInfo.getAccessToken());
-        assertEquals("dcc_rate", accessTokenInfo.getTransactionProcessingAccountName());
+        assertEquals("transaction_processing", accessTokenInfo.getTransactionProcessingAccountName());
         assertEquals("settlement_reporting", accessTokenInfo.getDataAccountName());
         assertEquals("dispute_management", accessTokenInfo.getDisputeManagementAccountName());
         assertEquals("tokenization", accessTokenInfo.getTokenizationAccountName());

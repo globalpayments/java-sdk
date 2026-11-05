@@ -730,8 +730,8 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields: amount.", ex.getMessage());
-            assertEquals("40251", ex.getResponseText());
+            assertEquals("Status Code: 400 - Request expects the following fields amount", ex.getMessage());
+            assertEquals("40005", ex.getResponseText());
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
         } finally {
             assertTrue(exceptionCaught);
@@ -888,6 +888,7 @@ public class GpApiBNPLTest extends BaseGpApiTest {
         ArrayList<Product> products = generateProducts();
         products.get(0).setQuantity(null);
 
+        boolean exceptionCaught = false;
         try {
             paymentMethod
                     .authorize(amount)
@@ -900,9 +901,12 @@ public class GpApiBNPLTest extends BaseGpApiTest {
                     .withBNPLShippingMethod(BNPLShippingMethod.DELIVERY)
                     .execute();
         } catch (GatewayException ex) {
+            exceptionCaught = true;
             assertEquals("Status Code: 502 - Processor System error", ex.getMessage());
             assertEquals("50143", ex.getResponseText());
             assertEquals("SYSTEM_ERROR_DOWNSTREAM", ex.getResponseCode());
+        } finally {
+            assertTrue(exceptionCaught);
         }
     }
 

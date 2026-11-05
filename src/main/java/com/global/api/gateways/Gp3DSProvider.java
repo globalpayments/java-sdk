@@ -394,32 +394,6 @@ public class Gp3DSProvider extends RestGateway implements ISecure3dProvider {
         }
 
         secureEcom.setAcsReferenceNumber(doc.getString("acs_reference_number"));
-        
-        // Additional response fields
-        secureEcom.setChallengeWindowSize(doc.getString("challenge_window_size"));
-        secureEcom.setFrictionlessFlowEligible(doc.has("frictionless_flow_eligible") ? doc.getBool("frictionless_flow_eligible") : null);
-        secureEcom.setExemptionRequestType(doc.getString("exemption_request_type"));
-        secureEcom.setExemptionApprovalURL(doc.getString("exemption_approval_url"));
-        secureEcom.setExemptionRejectionReason(doc.getString("exemption_rejection_reason"));
-        secureEcom.setChallengeType(doc.getString("challenge_type"));
-        secureEcom.setCreqData(doc.getString("creq_data"));
-        secureEcom.setAcsSignedContent(doc.getString("acs_signed_content"));
-        secureEcom.setDecoupledFlowIndicator(doc.getString("decoupled_flow_indicator"));
-        secureEcom.setDecoupledFlowTimerValue(doc.has("decoupled_flow_timer_value") ? doc.getInt("decoupled_flow_timer_value") : null);
-        secureEcom.setDecoupledFlowTimerUnit(doc.getString("decoupled_flow_timer_unit"));
-        secureEcom.setNotificationURL(doc.getString("notification_url"));
-        secureEcom.setHardcodedDecision(doc.has("hardcoded_decision") ? doc.getBool("hardcoded_decision") : null);
-        secureEcom.setRiskScore(doc.getString("risk_score"));
-        secureEcom.setRiskAssessmentStatus(doc.getString("risk_assessment_status"));
-        secureEcom.setTrustedMerchantExemption(doc.getString("trusted_merchant_exemption"));
-        secureEcom.setLowValueExemption(doc.getString("low_value_exemption"));
-        secureEcom.setTransactionRiskAnalysisExemption(doc.getString("transaction_risk_analysis_exemption"));
-        secureEcom.setRecurringExemption(doc.getString("recurring_exemption"));
-        secureEcom.setMethodUrlCompletionIndicator(doc.getString("method_url_completion_indicator"));
-        secureEcom.setAcsRenderingType(doc.getString("acs_rendering_type"));
-        secureEcom.setAuthenticationRequestData(doc.getString("authentication_request_data"));
-        secureEcom.setAuthenticationResponseData(doc.getString("authentication_response_data"));
-        
         if (AuthenticationSource.MobileSDK.getValue().equals(secureEcom.getAuthenticationSource())) {
             secureEcom.setPayerAuthenticationRequest(doc.getString("acs_signed_content"));
             JsonDoc acs_rendering_type = doc.get("acs_rendering_type");

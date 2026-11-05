@@ -1677,31 +1677,4 @@ public class NtsDebitTest {
         assertEquals("00", capture.getResponseCode());
         assertNotNull(capture.getTransactionReference().getOriginalAmount());
     }
-
-    @Test
-    public void test05_PinDebit_cancel_capture_originalAmountCheck() throws ApiException {
-        TransactionReference transactionReference = new TransactionReference();
-        transactionReference.setOriginalTransactionCode(TransactionCode.PreAuthorizationFunds);
-        Transaction transaction = Transaction.fromBuilder()
-                .withAuthorizer(AuthorizerCode.Interchange_Authorized)
-                .withPaymentMethod(track)
-                .withDebitAuthorizer("21")
-                .withApprovalCode("778899")
-                .withAuthorizationCode("00")
-                .withOriginalTransactionDate("0130")
-                .withTransactionTime("115829")
-                .build();
-
-        ntsRequestMessageHeader.setPinIndicator(PinIndicator.WithoutPin);
-        ntsRequestMessageHeader.setNtsMessageCode(NtsMessageCode.PinDebit);
-
-        ManagementBuilder builder = transaction.voidTransaction(new BigDecimal("10"))
-                .withNtsRequestMessageHeader(ntsRequestMessageHeader);
-
-
-        Transaction capture = builder.execute();
-        assertNotNull(capture);;
-        assertNotNull(capture.getTransactionReference().getOriginalAmount());
-    }
-
-    }
+}

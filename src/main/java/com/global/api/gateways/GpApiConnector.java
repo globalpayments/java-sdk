@@ -25,7 +25,6 @@ import com.global.api.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.var;
-import org.joda.time.DateTimeZone;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import java.text.ParseException;
@@ -494,7 +493,7 @@ public class GpApiConnector extends RestGateway implements IPaymentGateway, IRep
     }
 
     public static String getDateTimeIfNotNull(DateTime obj) {
-        return (obj != null) ? obj.withZone(DateTimeZone.UTC).toString(DATE_TIME_DTF) : "";
+        return (obj != null) ? DATE_TIME_DTF.parseDateTime(obj.toString()).toString() : "";
     }
 
     public static Date parseGpApiDate(String dateValue) throws GatewayException {

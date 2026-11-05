@@ -916,8 +916,8 @@ public class VapsFleetCorTests {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
         productData.addFuel("001", UnitOfMeasure.Gallons, new BigDecimal("10.00"), new BigDecimal("3.50"), new BigDecimal("35.00"));
         productData.addNonFuel("062", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("20.00"), new BigDecimal("20.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
 
         Transaction response = track.charge(new BigDecimal("113.00"))
                 .withCurrency("USD")
@@ -943,8 +943,8 @@ public class VapsFleetCorTests {
         productData.addNonFuel("062", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("20.00"), new BigDecimal("20.00"));
         productData.addNonFuel("050", UnitOfMeasure.Quarts, new BigDecimal("2.00"), new BigDecimal("15.00"), new BigDecimal("30.00"));
         productData.addNonFuel("067", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("10.00"), new BigDecimal("10.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
 
         Transaction response = track.charge(new BigDecimal("113.00"))
                 .withCurrency("USD")
@@ -968,8 +968,8 @@ public class VapsFleetCorTests {
         ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
         productData.addFuel("001", UnitOfMeasure.Gallons, new BigDecimal("10.00"), new BigDecimal("3.50"), new BigDecimal("35.00"));
         productData.addNonFuel("062", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("20.00"), new BigDecimal("20.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
 
         Transaction response = track.charge(new BigDecimal("113.00"))
                 .withCurrency("USD")
@@ -995,8 +995,8 @@ public class VapsFleetCorTests {
         productData.addNonFuel("062", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("20.00"), new BigDecimal("20.00"));
         productData.addNonFuel("050", UnitOfMeasure.Quarts, new BigDecimal("2.00"), new BigDecimal("15.00"), new BigDecimal("30.00"));
         productData.addNonFuel("067", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("10.00"), new BigDecimal("10.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
-        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
+        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("5.00"), new BigDecimal("5.00"));
 
         Transaction response = track.charge(new BigDecimal("113.00"))
                 .withCurrency("USD")

@@ -930,28 +930,4 @@ public class TransitCreditTests {
                         .execute()
         );
     }
-
-    @Test
-    public void testSaleWithSurcharge() throws ApiException {
-        Transaction response = card.charge(AMOUNT)
-                .withAllowDuplicates(true)
-                .withCurrency("USD")
-                .withSurchargeAmount(new BigDecimal("1.00"))
-                .execute();
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode(), response.getResponseMessage());
-        assertEquals(AMOUNT, response.getAuthorizedAmount());
-    }
-
-    @Test
-    public void testAuthWithSurcharge() throws ApiException {
-        Transaction response = card.authorize(AMOUNT)
-                .withAllowDuplicates(true)
-                .withCurrency("USD")
-                .withSurchargeAmount(new BigDecimal("1.00"))
-                .execute();
-        assertNotNull(response);
-        assertEquals("00", response.getResponseCode(), response.getResponseMessage());
-        assertEquals(AMOUNT, response.getAuthorizedAmount());
-    }
 }

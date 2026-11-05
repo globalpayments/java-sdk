@@ -10,7 +10,6 @@ import com.global.api.entities.enums.Host;
 import com.global.api.entities.enums.HostError;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.GatewayTimeoutException;
-import com.global.api.network.elements.DE63_ProductData;
 import com.global.api.network.entities.FleetData;
 import com.global.api.network.entities.NtsData;
 import com.global.api.network.entities.PriorMessageInformation;
@@ -2659,83 +2658,5 @@ public void test_sale_same_Fuel_products() throws ApiException {
         assertNotNull(capture);
     }
 
-    @Test
-    public void test_voyager_rollup_token_Issue_26() throws ApiException {
-        track = TestCards.VoyagerSwipe();
-        fleetData.setServicePrompt("02");
-        fleetData.setOdometerReading("111");
-        fleetData.setDriverId("11411");
 
-        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific,ProductDataFormat.GlobalPaymentsStandardFormat);
-        // Entries are sorted by amount (desc); 7 non-fuel products > 6 max, so the last two (40, 41) roll up into Voyager misc code 33.
-        productData.addNonFuel("33", UnitOfMeasure.Units, new BigDecimal("7"), new BigDecimal("4.00"), new BigDecimal("27.00"));
-        productData.addNonFuel("23", UnitOfMeasure.Units, new BigDecimal("6"), new BigDecimal("2.00"), new BigDecimal("12.00"));
-        productData.addNonFuel("14", UnitOfMeasure.Units, new BigDecimal("4"), new BigDecimal("2.00"), new BigDecimal("8.00"));
-        productData.addNonFuel("43", UnitOfMeasure.Units, new BigDecimal("3"), new BigDecimal("2.00"), new BigDecimal("6.00"));
-        productData.addNonFuel("34", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("5.96"), new BigDecimal("5.96"));
-        productData.addNonFuel("40", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("4.00"), new BigDecimal("4.00"));
-        productData.addNonFuel("41", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("4.00"), new BigDecimal("4.00"));
-
-        String expectedDE63 = "02O00633\\U07\\2400\\2700\\23\\U06\\2200\\1200\\14\\U04\\2200\\800\\43\\U03\\2200\\600\\34\\U01\\2596\\596\\33\\U02\\\\800\\";
-        Transaction response = track.charge(new BigDecimal("66.96"))
-                .withCurrency("USD")
-                .withFleetData(fleetData)
-                .withProductData(productData)
-                .withUniqueDeviceId("2112")
-                .execute();
-        assertNotNull(response);
-
-        // check DE 63 product data (without the LLL length prefix "100")
-        assertEquals(expectedDE63,
-                productData.toDataElement().toString());
-
-        // check message data
-        PriorMessageInformation pmi = response.getMessageInformation();
-        assertNotNull(pmi);
-        assertEquals("1200", pmi.getMessageTransactionIndicator());
-        assertEquals("000900", pmi.getProcessingCode());
-        assertEquals("200", pmi.getFunctionCode());
-
-        // check response
-        assertEquals("000", response.getResponseCode());
-        assertNotNull(response.getTransactionToken());
-
-        Transaction resubmitDataCollect = NetworkService.resubmitDataCollect(response.getTransactionToken())
-                .withCurrency("USD")
-                .withForceToHost(true)
-                .execute();
-
-        assertNotNull(resubmitDataCollect);
-        assertEquals(resubmitDataCollect.getResponseMessage(), "000", resubmitDataCollect.getResponseCode());
-    }
-
-    @Test
-    public void test_voyager_rollup_token_DE63_matches_transaction() {
-        ProductData productData = new ProductData(ServiceLevel.Other_NonFuel, ProductCodeSet.IssuerSpecific, ProductDataFormat.GlobalPaymentsStandardFormat);
-        productData.addNonFuel("33", UnitOfMeasure.Units, new BigDecimal("7"), new BigDecimal("4.00"), new BigDecimal("27.00"));
-        productData.addNonFuel("23", UnitOfMeasure.Units, new BigDecimal("6"), new BigDecimal("2.00"), new BigDecimal("12.00"));
-        productData.addNonFuel("14", UnitOfMeasure.Units, new BigDecimal("4"), new BigDecimal("2.00"), new BigDecimal("8.00"));
-        productData.addNonFuel("43", UnitOfMeasure.Units, new BigDecimal("3"), new BigDecimal("2.00"), new BigDecimal("6.00"));
-        productData.addNonFuel("34", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("5.96"), new BigDecimal("5.96"));
-        productData.addNonFuel("40", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("4.00"), new BigDecimal("4.00"));
-        productData.addNonFuel("41", UnitOfMeasure.Units, new BigDecimal("1"), new BigDecimal("4.00"), new BigDecimal("4.00"));
-
-        // DE 63 exactly as the original charge serialises it (Voyager fleet rollup applied by the connector).
-        DE63_ProductData requestedDE63 = productData.toDataElement();
-        requestedDE63.setCardType("VoyagerFleet");
-        String originalDE63 = requestedDE63.toString();
-
-        // Sanity check: requested vs expected DE 63 check
-        String expectedDE63 = "02O00633\\U07\\2400\\2700\\23\\U06\\2200\\1200\\14\\U04\\2200\\800\\43\\U03\\2200\\600\\34\\U01\\2596\\596\\33\\U02\\\\800\\";
-        assertEquals(expectedDE63, originalDE63);
-
-        // Token round trip: the resubmit/data-collect decodes the stored DE 63 (fromByteArray)
-        // and re-serialises it (toByteArray) - this is the DE 63 that goes out on the transaction.
-        DE63_ProductData reconstructed = new DE63_ProductData().fromByteArray(originalDE63.getBytes());
-        String reconstructedTokenDE63 = reconstructed.toString();
-
-        // The DE 63 on the resubmitted transaction(tokenized) must match the DE 63 from the original charge.
-        assertEquals(originalDE63, reconstructedTokenDE63);
-        assertEquals(6, reconstructed.getProductCount());
-    }
 }
