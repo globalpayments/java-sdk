@@ -12,7 +12,39 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 public class ThreeDSecure {
+    @Getter
+    @Setter
+    private String id;
+    @Getter
+    @Setter
+    private DateTime timeCreated;
+    @Getter
+    @Setter
+    private String transactionType;
+    @Getter
+    @Setter
+    private String channel;
+    @Getter
+    @Setter
+    private String merchantId;
+    @Getter
+    @Setter
+    private String merchantName;
+    @Getter
+    @Setter
+    private String accountId;
+    @Getter
+    @Setter
+    private String accountName;
+    @Getter
+    @Setter
+    private String reference;
+    @Getter
+    @Setter
+    private String country;
     public String challengeReturnUrl;
     public String sessionDataFieldName;
     public String messageType;
@@ -72,6 +104,147 @@ public class ThreeDSecure {
     private String providerServerTransRef;
     @Getter @Setter
     private String preference;
+    @Getter
+    @Setter
+    private String challengeWindowSize;
+    @Getter
+    @Setter
+    private String deviceRenderingOptions;
+    @Getter
+    @Setter
+    private Boolean frictionlessFlowEligible;
+    @Getter
+    @Setter
+    private String exemptionRequestType;
+    @Getter
+    @Setter
+    private String exemptionApprovalURL;
+    @Getter
+    @Setter
+    private String exemptionRejectionReason;
+    @Getter
+    @Setter
+    private String challengeType;
+    @Getter
+    @Setter
+    private String creqData;
+    @Getter
+    @Setter
+    private String acsSignedContent;
+    @Getter
+    @Setter
+    private String challengeModel;
+    @Getter
+    @Setter
+    private String redirectUrl;
+    @Getter
+    @Setter
+    private String acsChallengeRequestUrl;
+    @Getter
+    @Setter
+    private String methodUrl;
+    @Getter
+    @Setter
+    private String threeDsServerTransId;
+    @Getter
+    @Setter
+    private String threeDsMethodReturnUrl;
+    @Getter
+    @Setter
+    private String encodedMethodData;
+    @Getter
+    @Setter
+    private String decoupledFlowIndicator;
+    @Getter
+    @Setter
+    private Integer decoupledFlowTimerValue;
+    @Getter
+    @Setter
+    private String decoupledFlowTimerUnit;
+    @Getter
+    @Setter
+    private String notificationURL;
+    @Getter
+    @Setter
+    private Boolean hardcodedDecision;
+    @Getter
+    @Setter
+    private String riskScore;
+    @Getter
+    @Setter
+    private String riskAssessmentStatus;
+    @Getter
+    @Setter
+    private String trustedMerchantExemption;
+    @Getter
+    @Setter
+    private String lowValueExemption;
+    @Getter
+    @Setter
+    private String transactionRiskAnalysisExemption;
+    @Getter
+    @Setter
+    private String recurringExemption;
+    @Getter
+    @Setter
+    private String aggregationData;
+    @Getter
+    @Setter
+    private String acsRenderingType;
+    @Getter
+    @Setter
+    private String methodUrlCompletionIndicator;
+    @Getter
+    @Setter
+    private String threeRiRequestorPriorAuthenticationData;
+    @Getter
+    @Setter
+    private String messageExtensionData;
+    @Getter
+    @Setter
+    private String payerAuthenticationResponseDecrypted;
+    @Getter
+    @Setter
+    private String authenticationRequestData;
+    @Getter
+    @Setter
+    private String authenticationResponseData;
+    @Getter
+    @Setter
+    private String actionId;
+    @Getter
+    @Setter
+    private String actionType;
+    @Getter
+    @Setter
+    private DateTime actionTimeCreated;
+    @Getter
+    @Setter
+    private String actionResultCode;
+    @Getter
+    @Setter
+    private String actionAppId;
+    @Getter
+    @Setter
+    private String actionAppName;
+    @Getter
+    @Setter
+    private String paymentMethodResult;
+    @Getter
+    @Setter
+    private String paymentMethodMessage;
+    @Getter
+    @Setter
+    private String paymentMethodEntryMode;
+    @Getter
+    @Setter
+    private String paymentMethodName;
+    @Getter
+    @Setter
+    private Card card;
+    @Getter
+    @Setter
+    private DateTime timeLastUpdated;
 
     public ThreeDSecure() {
         this.paymentDataType = "3DSecure";
@@ -460,6 +633,16 @@ public class ThreeDSecure {
 
     public void merge(ThreeDSecure secureEcom) {
         if (secureEcom != null) {
+            this.id = mergeValue(id, secureEcom.getId());
+            this.timeCreated = mergeValue(timeCreated, secureEcom.getTimeCreated());
+            this.transactionType = mergeValue(transactionType, secureEcom.getTransactionType());
+            this.channel = mergeValue(channel, secureEcom.getChannel());
+            this.merchantId = mergeValue(merchantId, secureEcom.getMerchantId());
+            this.merchantName = mergeValue(merchantName, secureEcom.getMerchantName());
+            this.accountId = mergeValue(accountId, secureEcom.getAccountId());
+            this.accountName = mergeValue(accountName, secureEcom.getAccountName());
+            this.reference = mergeValue(reference, secureEcom.getReference());
+            this.country = mergeValue(country, secureEcom.getCountry());
             this.acsTransactionId = mergeValue(acsTransactionId, secureEcom.getAcsTransactionId());
             this.acsEndVersion = mergeValue(acsEndVersion, secureEcom.getAcsEndVersion());
             this.acsStartVersion = mergeValue(acsStartVersion, secureEcom.getAcsStartVersion());
@@ -474,6 +657,13 @@ public class ThreeDSecure {
             this.cardHolderResponseInfo = mergeValue(cardHolderResponseInfo, secureEcom.getCardHolderResponseInfo());
             this.cavv = mergeValue(cavv, secureEcom.getCavv());
             this.challengeMandated = mergeValue(challengeMandated, secureEcom.isChallengeMandated());
+            this.challengeModel = mergeValue(challengeModel, secureEcom.getChallengeModel());
+            this.redirectUrl = mergeValue(redirectUrl, secureEcom.getRedirectUrl());
+            this.acsChallengeRequestUrl = mergeValue(acsChallengeRequestUrl, secureEcom.getAcsChallengeRequestUrl());
+            this.methodUrl = mergeValue(methodUrl, secureEcom.getMethodUrl());
+            this.threeDsServerTransId = mergeValue(threeDsServerTransId, secureEcom.getThreeDsServerTransId());
+            this.threeDsMethodReturnUrl = mergeValue(threeDsMethodReturnUrl, secureEcom.getThreeDsMethodReturnUrl());
+            this.encodedMethodData = mergeValue(encodedMethodData, secureEcom.getEncodedMethodData());
             this.messageExtensions = mergeValue(messageExtensions, secureEcom.getMessageExtensions());
             this.currency = mergeValue(currency, secureEcom.getCurrency());
             this.decoupledResponseIndicator = mergeValue(decoupledResponseIndicator, secureEcom.getDecoupledResponseIndicator());
@@ -504,6 +694,45 @@ public class ThreeDSecure {
             this.ucafIndicator = mergeValue(ucafIndicator, secureEcom.getUcafIndicator());
             //this.merchantData = mergeValue(merchantData, secureEcom.getMerchantData());
             this.providerServerTransRef = mergeValue(providerServerTransRef, secureEcom.getProviderServerTransRef());
+            this.actionId = mergeValue(actionId, secureEcom.getActionId());
+            this.actionType = mergeValue(actionType, secureEcom.getActionType());
+            this.actionTimeCreated = mergeValue(actionTimeCreated, secureEcom.getActionTimeCreated());
+            this.actionResultCode = mergeValue(actionResultCode, secureEcom.getActionResultCode());
+            this.actionAppId = mergeValue(actionAppId, secureEcom.getActionAppId());
+            this.actionAppName = mergeValue(actionAppName, secureEcom.getActionAppName());
+            this.challengeWindowSize = mergeValue(challengeWindowSize, secureEcom.getChallengeWindowSize());
+            this.deviceRenderingOptions = mergeValue(deviceRenderingOptions, secureEcom.getDeviceRenderingOptions());
+            this.frictionlessFlowEligible = mergeValue(frictionlessFlowEligible, secureEcom.getFrictionlessFlowEligible());
+            this.exemptionRequestType = mergeValue(exemptionRequestType, secureEcom.getExemptionRequestType());
+            this.exemptionApprovalURL = mergeValue(exemptionApprovalURL, secureEcom.getExemptionApprovalURL());
+            this.exemptionRejectionReason = mergeValue(exemptionRejectionReason, secureEcom.getExemptionRejectionReason());
+            this.challengeType = mergeValue(challengeType, secureEcom.getChallengeType());
+            this.creqData = mergeValue(creqData, secureEcom.getCreqData());
+            this.acsSignedContent = mergeValue(acsSignedContent, secureEcom.getAcsSignedContent());
+            this.decoupledFlowIndicator = mergeValue(decoupledFlowIndicator, secureEcom.getDecoupledFlowIndicator());
+            this.decoupledFlowTimerValue = mergeValue(decoupledFlowTimerValue, secureEcom.getDecoupledFlowTimerValue());
+            this.decoupledFlowTimerUnit = mergeValue(decoupledFlowTimerUnit, secureEcom.getDecoupledFlowTimerUnit());
+            this.notificationURL = mergeValue(notificationURL, secureEcom.getNotificationURL());
+            this.hardcodedDecision = mergeValue(hardcodedDecision, secureEcom.getHardcodedDecision());
+            this.riskScore = mergeValue(riskScore, secureEcom.getRiskScore());
+            this.riskAssessmentStatus = mergeValue(riskAssessmentStatus, secureEcom.getRiskAssessmentStatus());
+            this.trustedMerchantExemption = mergeValue(trustedMerchantExemption, secureEcom.getTrustedMerchantExemption());
+            this.lowValueExemption = mergeValue(lowValueExemption, secureEcom.getLowValueExemption());
+            this.transactionRiskAnalysisExemption = mergeValue(transactionRiskAnalysisExemption, secureEcom.getTransactionRiskAnalysisExemption());
+            this.recurringExemption = mergeValue(recurringExemption, secureEcom.getRecurringExemption());
+            this.aggregationData = mergeValue(aggregationData, secureEcom.getAggregationData());
+            this.acsRenderingType = mergeValue(acsRenderingType, secureEcom.getAcsRenderingType());
+            this.methodUrlCompletionIndicator = mergeValue(methodUrlCompletionIndicator, secureEcom.getMethodUrlCompletionIndicator());
+            this.threeRiRequestorPriorAuthenticationData = mergeValue(threeRiRequestorPriorAuthenticationData, secureEcom.getThreeRiRequestorPriorAuthenticationData());
+            this.messageExtensionData = mergeValue(messageExtensionData, secureEcom.getMessageExtensionData());
+            this.payerAuthenticationResponseDecrypted = mergeValue(payerAuthenticationResponseDecrypted, secureEcom.getPayerAuthenticationResponseDecrypted());
+            this.authenticationRequestData = mergeValue(authenticationRequestData, secureEcom.getAuthenticationRequestData());
+            this.authenticationResponseData = mergeValue(authenticationResponseData, secureEcom.getAuthenticationResponseData());
+            this.paymentMethodResult = mergeValue(paymentMethodResult, secureEcom.getPaymentMethodResult());
+            this.paymentMethodMessage = mergeValue(paymentMethodMessage, secureEcom.getPaymentMethodMessage());
+            this.paymentMethodEntryMode = mergeValue(paymentMethodEntryMode, secureEcom.getPaymentMethodEntryMode());
+            this.paymentMethodName = mergeValue(paymentMethodName, secureEcom.getPaymentMethodName());
+            this.card = mergeValue(card, secureEcom.getCard());
         }
     }
 

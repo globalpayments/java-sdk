@@ -507,7 +507,7 @@ public class VapsFleetProductRollupDiscountCert {
         productData.addNonFuel("063", UnitOfMeasure.Quarts, new BigDecimal("2.000"), new BigDecimal("4.000"), new BigDecimal("8.000"));
         productData.addNonFuel("064", UnitOfMeasure.Units, new BigDecimal("1.000"), new BigDecimal("7.000"), new BigDecimal("7.000"));
         productData.addNonFuel("065", UnitOfMeasure.Units, new BigDecimal("2.000"), new BigDecimal("3.000"), new BigDecimal("6.000"));
-        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.000"), new BigDecimal("2.000"), new BigDecimal("2.000"));
+        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.000"), new BigDecimal("2.000"), new BigDecimal("2.000"));
 
         Transaction response = track.charge(new BigDecimal("38.00"))
                 .withCurrency("USD")
@@ -541,7 +541,7 @@ public class VapsFleetProductRollupDiscountCert {
         productData.addNonFuel("063", UnitOfMeasure.Quarts, new BigDecimal("2.000"), new BigDecimal("4.000"), new BigDecimal("8.000"));
         productData.addNonFuel("064", UnitOfMeasure.Units, new BigDecimal("1.000"), new BigDecimal("7.000"), new BigDecimal("7.000"));
         productData.addNonFuel("065", UnitOfMeasure.Units, new BigDecimal("2.000"), new BigDecimal("3.000"), new BigDecimal("6.000"));
-        productData.addNonFuel(FleetCorConexxusProductCode.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.000"), new BigDecimal("2.000"), new BigDecimal("2.000"));
+        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.000"), new BigDecimal("2.000"), new BigDecimal("2.000"));
 
         Transaction response = track.charge(new BigDecimal("38.00"))
                 .withCurrency("USD")

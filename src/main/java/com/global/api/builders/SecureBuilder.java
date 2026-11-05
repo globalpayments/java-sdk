@@ -77,6 +77,8 @@ public class SecureBuilder<TResult> extends BaseBuilder<TResult> {
     protected IPaymentMethod paymentMethod;
     protected TransactionType transactionType;
     protected Address billingAddress;
+    private String name;
+    private String dateOfBirth;
 
     @Override
     public void setupValidations() {

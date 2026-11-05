@@ -147,7 +147,9 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
         var payer =
                 new JsonDoc()
+                        .set("name",builder.getName())
                         .set("reference", builder.getCustomerAccountId())
+                        .set("date_of_birth", builder.getDateOfBirth() != null ? builder.getDateOfBirth() : null)
                         .set("account_age", getValueIfNotNull(builder.getAccountAgeIndicator()))
                         .set("account_creation_date", builder.getAccountCreateDate() != null ? builder.getAccountCreateDate().toString("yyyy-MM-dd") : null)
                         .set("account_change_date", builder.getAccountChangeDate() != null ? builder.getAccountChangeDate().toString("yyyy-MM-dd") : null)
@@ -245,7 +247,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
             paymentMethod
                     .set("card", card)
-                    .set("name", !StringUtils.isNullOrEmpty(cardData.getCardHolderName()) ? cardData.getCardHolderName() : null);
+                    .set("name", !StringUtils.isNullOrEmpty(cardData.getCardHolderName()) ? cardData.getCardHolderName() : null)
+                    .set("entry_mode",((ICardData) builderPaymentMethod).getEntryMethod());
 
         }
 
@@ -274,25 +277,43 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
                 JsonDoc notifications =
                         new JsonDoc()
-                                .set("challenge_return_url", gateway.getGpApiConfig().getChallengeNotificationUrl())
-                                .set("three_ds_method_return_url", gateway.getGpApiConfig().getMethodNotificationUrl())
-                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
+                                .set("challenge_return_url", !isNullOrEmpty(builder.getChallengeNotificationUrl()) ? builder.getChallengeNotificationUrl() : gateway.getGpApiConfig().getChallengeNotificationUrl())
+                                .set("three_ds_method_return_url", !isNullOrEmpty(builder.getMethodNotificationUrl()) ? builder.getMethodNotificationUrl() : gateway.getGpApiConfig().getMethodNotificationUrl())
+                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl())
+                                .set("decoupled_challenge_return_url", builder.getDecoupledNotificationUrl())
+                                .set("return_url", builder.getReturnUrl())
+                                .set("status_url", builder.getStatusUrl());
+
+                JsonDoc mobileData = new JsonDoc();
+                MobileData builderMobileData = builder.getMobileData();
+                if (builderMobileData != null) {
+                    mobileData
+                            .set("encoded_data", builderMobileData.getEncodedData())
+                            .set("application_reference", builderMobileData.getApplicationReference())
+                            .set("sdk_interface", builderMobileData.getSdkInterface())
+                            .set("sdk_ui_type", SdkUiType.getSdkUiTypes(builderMobileData.getSdkUiTypes(), Target.GP_API))
+                            .set("ephemeral_public_key", builderMobileData.getEphemeralPublicKey()) // Maybe .toString() needed
+                            .set("maximum_timeout", builderMobileData.getMaximumTimeout())
+                            .set("reference_number", builderMobileData.getReferenceNumber())
+                            .set("sdk_trans_reference", builderMobileData.getSdkTransReference());
+                }
 
                 JsonDoc data =
                         new JsonDoc()
-                                .set("account_name", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
-                                .set("account_id", gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
+                                .set("account_name", !isNullOrEmpty(builder.getAccountName()) ? builder.getAccountName() : gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountName())
+                                .set("account_id", !isNullOrEmpty(builder.getAccountId()) ? builder.getAccountId() : gateway.getGpApiConfig().getAccessTokenInfo().getTransactionProcessingAccountID())
                                 .set("reference", isNullOrEmpty(builder.getReferenceNumber()) ? java.util.UUID.randomUUID().toString() : builder.getReferenceNumber())
-                                .set("channel", gateway.getGpApiConfig().getChannel())
+                                .set("channel", normalizeChannel(!isNullOrEmpty(builder.getChannel()) ? builder.getChannel() : gateway.getGpApiConfig().getChannel().getValue()))
                                 .set("amount", StringUtils.toNumeric(builder.getAmount()))
                                 .set("currency", builder.getCurrency())
-                                .set("country", gateway.getGpApiConfig().getCountry())
+                                .set("country", !isNullOrEmpty(builder.getCountry()) ? builder.getCountry() : gateway.getGpApiConfig().getCountry())
                                 .set("preference", getValueIfNotNull(builder.getChallengeRequestIndicator()))
                                 .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
                                 .set("initator", builder.getStoredCredential() != null ? getValueIfNotNull(builder.getStoredCredential().getInitiator()) : null)
-                                .set("stored_credential", storedCredential.getKeys() != null ? storedCredential : null)
+                                .set("stored_credential", !storedCredential.getKeys().isEmpty() ? storedCredential : null)
                                 .set("payment_method", paymentMethod)
-                                .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null);
+                                .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null)
+                                .set("mobile_data", !mobileData.getKeys().isEmpty() && builder.getAuthenticationSource() == AuthenticationSource.MobileSDK ? mobileData : null);
 
                 return (GpApiRequest) new GpApiRequest()
                         .setVerb(GpApiRequest.HttpMethod.Post)
@@ -314,9 +335,10 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
 
                 JsonDoc notifications =
                         new JsonDoc()
-                                .set("challenge_return_url", gateway.getChallengeNotificationUrl())
-                                .set("three_ds_method_return_url", gateway.getMethodNotificationUrl())
-                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl());
+                                .set("challenge_return_url", !isNullOrEmpty(builder.getChallengeNotificationUrl()) ? builder.getChallengeNotificationUrl() : gateway.getChallengeNotificationUrl())
+                                .set("three_ds_method_return_url", !isNullOrEmpty(builder.getMethodNotificationUrl()) ? builder.getMethodNotificationUrl() : gateway.getMethodNotificationUrl())
+                                .set("decoupled_notification_url", builder.getDecoupledNotificationUrl())
+                                .set("decoupled_challenge_return_url", builder.getDecoupledNotificationUrl());
 
                 JsonDoc order = setOrderParam(builder);
 
@@ -373,15 +395,38 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                 JsonDoc threeDS =
                         new JsonDoc()
                                 .set("source", getValueIfNotNull(builder.getAuthenticationSource()))
+                                .set("authentication_request_type", getValueIfNotNull(builder.getAuthenticationRequestType()))
+                                .set("message_category", resolveMessageCategory(builder))
                                 .set("preference", getValueIfNotNull(builder.getChallengeRequestIndicator()))
-                                .set("message_version", getValueIfNotNull(builder.getMessageVersion()));
+                                .set("whitelist_status", builder.getWhitelistStatus())
+                                .set("message_version", resolveMessageVersion(builder))
+                                .set("challenge_window_size", builder.getChallengeWindowSize())
+                                .set("device_rendering_options", builder.getDeviceRenderingOptions())
+                                .set("frictionless_flow_eligible", builder.getFrictionlessFlowEligible())
+                                .set("exemption_request_type", builder.getExemptionRequestType())
+                                .set("challenge_type", builder.getChallengeType())
+                                .set("decoupled_flow_indicator", builder.getDecoupledFlowIndicator())
+                                .set("decoupled_flow_timer_value", builder.getDecoupledFlowTimerValue())
+                                .set("decoupled_flow_timer_unit", builder.getDecoupledFlowTimerUnit())
+                                .set("notification_url", builder.getNotificationUrl())
+                                .set("risk_score", builder.getRiskScore())
+                                .set("risk_assessment_status", builder.getRiskAssessmentStatus())
+                                .set("trusted_merchant_exemption", builder.getTrustedMerchantExemption())
+                                .set("low_value_exemption", builder.getLowValueExemption())
+                                .set("transaction_risk_analysis_exemption", builder.getTransactionRiskAnalysisExemption())
+                                .set("recurring_exemption", builder.getRecurringExemption())
+                                .set("merchant_contact_url", gateway.getGpApiConfig().getMerchantContactUrl());
 
                 JsonDoc data =
                         new JsonDoc()
+                                .set("message_category", resolveMessageCategory(builder))
                                 .set("three_ds", !threeDS.getKeys().isEmpty() ? threeDS : null)
                                 .set("initator", builder.getStoredCredential() != null ? getValueIfNotNull(builder.getStoredCredential().getInitiator()) : null)
                                 .set("stored_credential", !storedCredential.getKeys().isEmpty() ? storedCredential : null)
                                 .set("method_url_completion_status", builder.getMethodUrlCompletion() != null ? getValueIfNotNull(builder.getMethodUrlCompletion()) : null)
+                                .set("merchant_initiated_request_type", builder.getMerchantInitiatedRequestType() != null ? getValueIfNotNull(builder.getMerchantInitiatedRequestType()) : null)
+                                .set("whitelist_status", builder.getWhitelistStatus())
+                                .set("enable_exemption_optimization", builder.isEnableExemptionOptimization())
                                 .set("payment_method", !paymentMethod.getKeys().isEmpty() ? paymentMethod : null)
                                 .set("notifications", !notifications.getKeys().isEmpty() ? notifications : null)
                                 .set("decoupled_flow_request", builder.getDecoupledFlowRequest() == Boolean.TRUE ? DecoupledFlowRequest.DECOUPLED_PREFERRED.toString() : null)
@@ -441,7 +486,7 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
     private static JsonDoc setOrderParam(Secure3dBuilder builder) {
         JsonDoc order =
                 new JsonDoc()
-                        .set("time_created_reference", builder.getOrderCreateDate().toString(GpApiConnector.DATE_TIME_DTF))
+                        .set("time_created_reference", GpApiConnector.getDateTimeIfNotNull(builder.getOrderCreateDate()))
                         .set("amount", StringUtils.toNumeric(builder.getAmount()))
                         .set("currency", builder.getCurrency())
                         .set("reference", builder.getReferenceNumber())
@@ -456,8 +501,8 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                         .set("preorder_indicator", getValueIfNotNull(builder.getPreOrderIndicator()))
                         .set("preorder_availability_date", GpApiConnector.getDateTimeIfNotNull((builder.getPreOrderAvailabilityDate())))
                         .set("reorder_indicator", getValueIfNotNull(builder.getReorderIndicator()))
-                        .set("category", getValueIfNotNull(builder.getMessageCategory()))
-                        .set("transaction_type", getValueIfNotNull(builder.getOrderTransactionType()));
+                        .set("transaction_type", getValueIfNotNull(builder.getOrderTransactionType()))
+                        .set("category", builder.getCategory());
 
         Address builderShippingAddress = builder.getShippingAddress();
         if (builderShippingAddress != null) {
@@ -483,5 +528,38 @@ public class GpApiSecureRequestBuilder implements IRequestBuilder<Secure3dBuilde
                 new ElementToMask("payment_method.card.expiry_year", card.getString("expiry_year")),
                 new ElementToMask("payment_method.card.number", card.getString("number"), 4, 6)
         ));
+    }
+
+    private static String normalizeChannel(String channel) {
+        if (isNullOrEmpty(channel)) {
+            return channel;
+        }
+
+        Channel mappedChannel = Channel.fromString(channel);
+        if (mappedChannel != null) {
+            return mappedChannel.getValue();
+        }
+
+        for (Channel value : Channel.values()) {
+            if (value.name().equalsIgnoreCase(channel)) {
+                return value.getValue();
+            }
+        }
+
+        return channel;
+    }
+
+    private static String resolveMessageCategory(Secure3dBuilder builder) {
+        return builder.getMessageCategory() == MessageCategory.PaymentAuthentication
+                ? null
+                : getValueIfNotNull(builder.getMessageCategory());
+    }
+
+    private static String resolveMessageVersion(Secure3dBuilder builder) {
+        if (builder.getMessageVersion() != null) {
+            return getValueIfNotNull(builder.getMessageVersion());
+        }
+
+        return builder.getThreeDSecure() != null ? builder.getThreeDSecure().getMessageVersion() : null;
     }
 }

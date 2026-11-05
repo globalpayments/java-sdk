@@ -190,7 +190,7 @@ public class NtsConnector extends GatewayConnectorConfig {
             }
         } else if (paymentMethod.getPaymentMethodType().equals(PaymentMethodType.Debit)) {
             if (transactionType != TransactionType.DataCollect
-                    && transactionType != TransactionType.Capture) {
+                    && transactionType != TransactionType.Capture && builder instanceof AuthorizationBuilder) {
                 NtsDebitResponse ntsDebitResponse = (NtsDebitResponse) ntsResponse.getNtsResponseMessage();
                 reference.setOriginalTransactionCode(ntsDebitResponse.getTransactionCode());
                 reference.setOriginalApprovedAmount(StringUtils.toAmount(String.valueOf(ntsDebitResponse.getAmount())));
