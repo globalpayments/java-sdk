@@ -15,6 +15,7 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     private Date startDate;
     @Getter @Setter private String startDateUTC;
     @Getter @Setter private String endDateUTC;
+    private String authenticationId;
     private String transactionId;
     @Getter @Setter private int page = 1;       // 1: DEFAULT PARAM VALUE
     @Getter @Setter private int pageSize = 5;   // 5: DEFAULT PARAM VALUE
@@ -25,6 +26,7 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     @Getter @Setter private StoredPaymentMethodSortProperty storedPaymentMethodOrderBy;
     @Getter @Setter private SortDirection storedPaymentMethodOrder;
     @Getter @Setter private ActionSortProperty actionOrderBy;
+    @Getter @Setter private AuthenticationSortProperty authenticationOrderBy;
     @Getter @Setter private PayByLinkSortProperty payByLinkOrderBy;
     @Getter @Setter private String payByLinkId;
     @Getter @Setter private int batchId;
@@ -55,12 +57,49 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     public String getTransactionId() {
         return transactionId;
     }
+    public String getAuthenticationId() {
+        return authenticationId;
+    }
+    public void setAuthenticationId(String authenticationId) {
+        this.authenticationId = authenticationId;
+    }
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
     public TransactionReportBuilder<TResult> withActionId(String value) {
         getSearchBuilder().setActionId(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationId(String value) {
+        this.authenticationId = value;
+        getSearchBuilder().setAuthenticationId(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationStatus(String value) {
+        getSearchBuilder().setAuthenticationStatus(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationSource(AuthenticationSource value) {
+        getSearchBuilder().setAuthenticationSource(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationType(AuthenticationRequestType value) {
+        getSearchBuilder().setAuthenticationType(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationMessageCategory(MessageCategory value) {
+        getSearchBuilder().setAuthenticationMessageCategory(value);
+        return this;
+    }
+
+    public TransactionReportBuilder<TResult> withAuthenticationMessageVersion(MessageVersion value) {
+        getSearchBuilder().setAuthenticationMessageVersion(value);
         return this;
     }
 
@@ -174,6 +213,12 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         return this;
     }
 
+    public TransactionReportBuilder<TResult> orderBy(AuthenticationSortProperty orderBy, SortDirection direction) {
+        authenticationOrderBy = orderBy;
+        order = (direction != null) ? direction : SortDirection.Ascending;
+        return this;
+    }
+
     public TransactionReportBuilder<TResult> orderBy(PayByLinkSortProperty orderBy, SortDirection direction) {
         payByLinkOrderBy = orderBy;
         order = (direction != null) ? direction : SortDirection.Ascending;
@@ -183,6 +228,8 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     public void setupValidations() {
         this.validations.of(ReportType.TransactionDetail)
                 .check("transactionId").isNotNull();
+        this.validations.of(ReportType.AuthenticationDetail)
+                .check("authenticationId").isNotNull();
 
         this.validations.of(ReportType.Activity).check("transactionId").isNull();
         this.validations.of(ReportType.DocumentDisputeDetail)

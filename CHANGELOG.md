@@ -1,6 +1,18 @@
 # Changelog
 
-## Latest Version - V15.4.1 (10/29/2026)
+## Latest Version - V15.5.0 (11/05/2026)
+### Enhancements:
+- [GPAPI] - Added missing request and response fields for Authentication endpoint.
+- [TransIT] - Added surcharge data to authorization and charge transactions.
+
+### Bug Fixes:
+- [Portico] - Restore Portico lodging data serialization (agilysis-lodging)
+- [GPAPI] - Fixed failure test cases.
+- [VAPS] - WEX Fleet : Discount, Coupon and Tax Codes Excluded from Rollup.
+- [NTS] - Mapped the 'Original Amount' field inside the TransactionReference object to retrive the approved amount for Debit Transactions.(Issue - 10377).
+- [VAPS] - Fixed the DE 63 mapping in the transaction token for the Voyager Rollup scenario(Issue - 26).
+
+## Version - V15.4.1 (10/29/2026)
 ### Bug Fixes:
 - [VAPS] - Fixed DE 54 calculation for non-fuel products in Visa Fleet 2.0 by removing discount and coupon amounts from non-fuel DE 54 calculation.
            Fixed tax calculation for fuel products under DE 54 for Visa Fleet 2.0. (Issue - 25)

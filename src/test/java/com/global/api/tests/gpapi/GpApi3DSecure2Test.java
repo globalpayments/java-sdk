@@ -6,6 +6,8 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.entities.gpApi.entities.AccessTokenInfo;
+import com.global.api.logging.RequestConsoleLogger;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.serviceConfigs.GpApiConfig;
 import com.global.api.services.Secure3dService;
@@ -20,6 +22,9 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import static com.global.api.tests.gpapi.BaseGpApiTest.GpApi3DSTestCards.*;
+
+import com.global.api.entities.reporting.AuthenticationSummaryPaged;
+import com.global.api.services.ReportingService;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class GpApi3DSecure2Test extends BaseGpApiTest {
@@ -1195,4 +1200,174 @@ public class GpApi3DSecure2Test extends BaseGpApiTest {
         assertNotNull(secureEcom.getMessageType());
         assertNotNull(secureEcom.getSessionDataFieldName());
         assertNull(secureEcom.getEci());
-    }}
+    }
+
+    @Test
+    @Order(35)
+    public void check3DSAvailability_UsingCheckEnrollment() throws ApiException {
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .execute();
+
+        assertNotNull(secureEcom);
+        assertEquals(ENROLLED, secureEcom.getEnrolledStatus());
+        assertEquals(Secure3dVersion.TWO, secureEcom.getVersion());
+        assertEquals(AVAILABLE, secureEcom.getStatus());
+        assertTrue(secureEcom.isEnrolled());
+        assertNotNull(secureEcom.getServerTransactionId());
+    }
+
+    @Test
+    @Order(36)
+    public void initiate3DS_UsingInitiateAuthentication() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .execute();
+
+        assertThreeDSResponse(secureEcom, AVAILABLE, Secure3dVersion.TWO);
+
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .execute();
+
+        assertNotNull(initAuth);
+        assertNotNull(initAuth.getServerTransactionId());
+        assertTrue(initAuth.getStatus() != null);
+    }
+
+    @Test
+    @Order(37)
+    public void get3DSResult_UsingAuthenticationData() throws ApiException {
+        card.setNumber(CARD_AUTH_SUCCESSFUL_V2_2.cardNumber);
+
+        ThreeDSecure secureEcom =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .execute();
+
+        ThreeDSecure initAuth =
+                Secure3dService
+                        .initiateAuthentication(card, secureEcom)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withAuthenticationSource(AuthenticationSource.Browser)
+                        .withMethodUrlCompletion(MethodUrlCompletion.Yes)
+                        .withOrderCreateDate(DateTime.now())
+                        .withAddress(shippingAddress, AddressType.Shipping)
+                        .withBrowserData(browserData)
+                        .execute();
+
+        ThreeDSecure result =
+                Secure3dService
+                        .getAuthenticationData()
+                        .withServerTransactionId(initAuth.getServerTransactionId())
+                        .withPayerAuthenticationResponse(initAuth.getPayerAuthenticationRequest())
+                        .execute();
+
+        assertNotNull(result);
+        assertNotNull(result.getServerTransactionId());
+        assertEquals(initAuth.getServerTransactionId(), result.getServerTransactionId());
+        assertTrue(result.getStatus() != null);
+    }
+
+    @Test
+    @Order(38)
+    public void getAuthentications_UsingReportingService() throws ApiException {
+        getAuthenticationConfiguration();
+        String reference = "auth-list-" + UUID.randomUUID();
+
+        ThreeDSecure createdAuthentication =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withReferenceNumber(reference)
+                        .withChallengeNotificationUrl("https://challenge.example/return")
+                        .withMethodNotificationUrl("https://method.example/return")
+                        .execute();
+
+        assertNotNull(createdAuthentication);
+        String authenticationId = createdAuthentication.getServerTransactionId();
+
+        AuthenticationSummaryPaged authenticationList =
+                ReportingService
+                        .findAuthenticationsPaged(1, 10)
+                        .withAuthenticationId(authenticationId)
+                        .execute();
+
+        assertNotNull(authenticationList);
+        assertNotNull(authenticationList.getResults());
+        assertFalse(authenticationList.getResults().isEmpty());
+
+    }
+
+    @Test
+    @Order(39)
+    public void getAuthenticationById_UsingReportingService() throws ApiException {
+        getAuthenticationConfiguration();
+        String reference = "auth-fetch-" + UUID.randomUUID();
+
+        ThreeDSecure createdAuthentication =
+                Secure3dService
+                        .checkEnrollment(card)
+                        .withCurrency(currency)
+                        .withAmount(amount)
+                        .withReferenceNumber(reference)
+                        .withChallengeNotificationUrl("https://challenge.example/return")
+                        .withMethodNotificationUrl("https://method.example/return")
+                        .execute();
+
+        assertNotNull(createdAuthentication);
+        assertNotNull(createdAuthentication.getServerTransactionId());
+
+        String authenticationId = createdAuthentication.getServerTransactionId();
+
+        ThreeDSecure fetchedAuthentication =
+                ReportingService
+                        .authenticationDetail(authenticationId)
+                        .execute();
+
+        assertNotNull(fetchedAuthentication);
+        assertEquals(authenticationId, fetchedAuthentication.getId());
+        assertEquals(authenticationId, fetchedAuthentication.getServerTransactionId());
+    }
+
+    private void getAuthenticationConfiguration() throws ApiException {
+        String AAP_ID = "";
+        String AAP_KEY = "";
+        GpApiConfig  gpApiConfig = new GpApiConfig()
+                .setAppId(AAP_ID)
+                .setAppKey(AAP_KEY);
+        gpApiConfig.setChannel(Channel.CardNotPresent);
+        gpApiConfig.setServiceUrl("https://apis.sandbox.globalpay.com/ucp");
+        gpApiConfig.setEnableLogging(true);
+        gpApiConfig.setRequestLogger(new RequestConsoleLogger());
+
+        AccessTokenInfo accessTokenInfo = new AccessTokenInfo();
+        accessTokenInfo.setTransactionProcessingAccountName("transaction_processing");
+        accessTokenInfo.setRiskAssessmentAccountName("EOS_RiskAssessment");
+        gpApiConfig.setAccessTokenInfo(accessTokenInfo);
+        ServicesContainer.configureService(gpApiConfig);
+
+    }
+}

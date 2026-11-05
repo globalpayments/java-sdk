@@ -154,7 +154,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + merchant.getUserReference().getUserId() + ", status=" + merchant.getUserReference().getUserStatus(), ex.getMessage());
+            assertEquals("Status Code: 409 - Idempotency Key seen before: id=" + merchant.getUserReference().getUserId(), ex.getMessage());
             assertEquals("DUPLICATE_ACTION", ex.getResponseCode());
             assertEquals("40039", ex.getResponseText());
         } finally {
@@ -634,7 +634,7 @@ public class GpApiMerchantsOnboardTest extends BaseGpApiTest {
                     .execute();
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Request expects the following fields : email", ex.getMessage());
+            assertEquals("Status Code: 400 - Request expects the following fields: email", ex.getMessage());
             assertEquals("MANDATORY_DATA_MISSING", ex.getResponseCode());
             assertEquals("40005", ex.getResponseText());
         } catch (ApiException e) {

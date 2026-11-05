@@ -37,6 +37,7 @@ public class User {
     private List<PaymentMethodList> paymentMethods;
     private FundsAccountDetails fundsAccountDetails;
     private Document document;
+    private String originalResponseCode;
 
     /**
      * Creates an `User` object from an existing user ID

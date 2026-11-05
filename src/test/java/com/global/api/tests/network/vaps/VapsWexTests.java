@@ -3778,4 +3778,83 @@ public class VapsWexTests {
         assertEquals(capture.getResponseMessage(), "000", capture.getResponseCode());
     }
 
+    @Test
+    public void test_sale_2Fuel_10NonFuel_rollup_discount_tax() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
+
+        ProductData productData = new ProductData(ServiceLevel.FullServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.addFuel("003", UnitOfMeasure.Liters, new BigDecimal("15.1211"), new BigDecimal("50.00"), new BigDecimal("21.0089"));
+        productData.addFuel("045", UnitOfMeasure.Units, new BigDecimal("6.1001"), new BigDecimal("10"), new BigDecimal("60.01"));
+        productData.addNonFuel("565", UnitOfMeasure.Quarts, new BigDecimal("16"), new BigDecimal("10"), new BigDecimal("160"));
+        productData.addNonFuel("497", UnitOfMeasure.Pounds, new BigDecimal("12.1001"), new BigDecimal("3.0101"), new BigDecimal("36.11"));
+        productData.addNonFuel("567", UnitOfMeasure.Kilograms, new BigDecimal("17"), new BigDecimal("5"), new BigDecimal("85"));
+        productData.addNonFuel("463", UnitOfMeasure.CaseOrCarton, new BigDecimal("10"), new BigDecimal("20"), new BigDecimal("200"));
+        productData.addNonFuel("488", UnitOfMeasure.Kilowatt_Hour, new BigDecimal("9"), new BigDecimal("10"), new BigDecimal("90"));
+        productData.addNonFuel("473", UnitOfMeasure.ImperialGallons, new BigDecimal("22"), new BigDecimal("10"), new BigDecimal("220"));
+        productData.addNonFuel("540", UnitOfMeasure.Units, new BigDecimal("12"), new BigDecimal("3"), new BigDecimal("36"));
+        productData.addNonFuel(ConexxusProductCodes.COUPON_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("11"), new BigDecimal("5"), new BigDecimal("55"));
+        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_3.getValue(), UnitOfMeasure.CaseOrCarton, new BigDecimal("1"), new BigDecimal("5"), new BigDecimal("5"));
+        productData.addNonFuel(ConexxusProductCodes.TAX_5.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("5"), new BigDecimal("10"));
+        productData.addNonFuel(ConexxusProductCodes.TAX_5.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("2"), new BigDecimal("5"), new BigDecimal("10"));
+
+        Transaction response = card.charge(new BigDecimal("858.13"))
+                .withCurrency("USD")
+                .withFleetData(fleetData)
+                .withProductData(productData)
+                .execute();
+        assertNotNull(response);
+
+        // check message data
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+
+        // check response
+        assertEquals("000", response.getResponseCode());
+    }
+
+    @Test
+    public void test_Rollup_When_Over_Limit_With_Discounts() throws ApiException {
+        CreditTrackData card = new CreditTrackData();
+        card.setValue(";6900460430001234566=22124012203100001?");
+
+        FleetData fleetData = new FleetData();
+        fleetData.setServicePrompt("00");
+        fleetData.setDriverId("456320");
+        fleetData.setOdometerReading("100");
+
+        ProductData productData = new ProductData(ServiceLevel.SelfServe, ProductCodeSet.Conexxus_3_Digit);
+        productData.addFuel("225", UnitOfMeasure.Gallons, new BigDecimal("10.00"), new BigDecimal("3.50"), new BigDecimal("35.00"));
+        productData.addNonFuel("562", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("20.00"), new BigDecimal("20.00"));
+        productData.addNonFuel("450", UnitOfMeasure.Quarts, new BigDecimal("2.00"), new BigDecimal("15.00"), new BigDecimal("30.00"));
+        productData.addNonFuel("467", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("10.00"), new BigDecimal("10.00"));
+        productData.addNonFuel("557", UnitOfMeasure.Units, new BigDecimal("1.00"), new BigDecimal("10.00"), new BigDecimal("10.00"));
+        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("1.00"), new BigDecimal("8.00"), new BigDecimal("8.00"));
+        productData.addNonFuel(ConexxusProductCodes.DISCOUNT_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("5.00"), new BigDecimal("4.00"), new BigDecimal("20.00"));
+        productData.addNonFuel(ConexxusProductCodes.COUPON_1.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("10.00"), new BigDecimal("5.00"), new BigDecimal("50.00"));
+        productData.addNonFuel(ConexxusProductCodes.TAX_2.getValue(), UnitOfMeasure.OtherOrUnknown, new BigDecimal("3.00"), new BigDecimal("5.00"), new BigDecimal("15.00"));
+
+        Transaction response = card.charge(new BigDecimal("42.00"))
+                .withCurrency("USD")
+                .withProductData(productData)
+                .withFleetData(fleetData)
+                .execute();
+        assertNotNull(response);
+
+        PriorMessageInformation pmi = response.getMessageInformation();
+        assertNotNull(pmi);
+        assertEquals("1200", pmi.getMessageTransactionIndicator());
+        assertEquals("000900", pmi.getProcessingCode());
+        assertEquals("200", pmi.getFunctionCode());
+        assertEquals("000", response.getResponseCode());
+    }
+
 }

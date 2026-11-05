@@ -27,6 +27,11 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     @Getter
     private BigDecimal discount;
     private LinkedHashMap<String, DE63_ProductDataEntry> productDataEntries;
+    /**
+     * Entries exactly as parsed by fromByteArray(byte[])(GlobalPaymentsStandardFormat only), in message
+     * order and including duplicate product codes to differentiate the product code if the rollup code & entry product code is same.
+     */
+    private final List<DE63_ProductDataEntry> orderedProductEntries = new ArrayList<>();
     @Getter@Setter
     private LinkedHashMap<String, DE63_ProductDataEntry> fuelProductDataEntries;
     @Getter@Setter
@@ -50,15 +55,16 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
     private static final int STANDARD_FLEET_MAX_PRODUCT_COUNT = 6;
     private static final int WEX_MAX_FUEL_PRODUCT_COUNT = 2;
     private static final int WEX_MAX_NON_FUEL_PRODUCT_COUNT = 6;
-    private static final Set<String> fleetCorCodes = fleetCorDiscountCodes();
+    private static final Set<String> conexxusProductCodes = conexxusDiscountSaleCodes();
     private static final Map<String, Integer> DISCOUNT_COUPON_PRIORITY = createDiscountCouponPriority();
     private static final Map<String, Set<String>> DISCOUNT_CODES_BY_FLEET_CARD = createDiscountCodesByFleetCard();
 
     private static Map<String, Set<String>> createDiscountCodesByFleetCard() {
         Map<String, Set<String>> discountCodesByFleetCard = new HashMap<>();
         discountCodesByFleetCard.put(VOYAGER_FLEET, Collections.unmodifiableSet(new HashSet<>(Arrays.asList("35", "36"))));
-        discountCodesByFleetCard.put(FLEETWIDE_FLEET, fleetCorCodes);
-        discountCodesByFleetCard.put(FUELMAN_FLEET, fleetCorCodes);
+        discountCodesByFleetCard.put(FLEETWIDE_FLEET, conexxusProductCodes);
+        discountCodesByFleetCard.put(FUELMAN_FLEET, conexxusProductCodes);
+        discountCodesByFleetCard.put(WEX_FLEET, conexxusProductCodes);
         return Collections.unmodifiableMap(discountCodesByFleetCard);
     }
 
@@ -81,7 +87,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         this.serviceLevel = serviceLevel;
     }
     public int getProductCount() {
-        return productDataEntries.size();
+        return getOrderedProductEntries().size();
     }
     public int getFuelProductCount() {
         return fuelProductDataEntries.size();
@@ -99,6 +105,13 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         this.productDataEntries = productDataEntries;
     }
 
+    public List<DE63_ProductDataEntry> getOrderedProductEntries() {
+        if (orderedProductEntries.isEmpty()) {
+            return new ArrayList<>(productDataEntries.values());
+        }
+        return new ArrayList<>(orderedProductEntries);
+    }
+
     public DE63_ProductData() {
         productDataEntries = new LinkedHashMap<String, DE63_ProductDataEntry>();
         fuelProductDataEntries = new LinkedHashMap<String, DE63_ProductDataEntry>();
@@ -107,6 +120,11 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
 
     public void add(DE63_ProductDataEntry entry) {
         productDataEntries.put(entry.getCode(), entry);
+    }
+
+    private void putParsedEntry(DE63_ProductDataEntry entry) {
+        orderedProductEntries.add(entry);
+        productDataEntries.putIfAbsent(entry.getCode(), entry);
     }
     public void addFuel(DE63_ProductDataEntry entry) {
         if (fuelProductDataEntries.containsKey(entry.getCode())) {
@@ -201,7 +219,7 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                         entry.setQuantity(StringUtils.toFractionalAmount(quantity.substring(1)));
                     }
 
-                    productDataEntries.put(code, entry);
+                    putParsedEntry(entry);
                 }
             } break;
             case ANSI_X9_TG23_Format: {
@@ -318,24 +336,21 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                         && (getFuelProductCount() != 0 || getNonFuelProductCount() != 0)) {
                     rvalue = handleWexFleetFormat(rvalue);
                 } else {
-                    LinkedHashMap<String, DE63_ProductDataEntry> productDataCountEntries = new LinkedHashMap<>();
+                    List<DE63_ProductDataEntry> productDataCountEntries = new ArrayList<>();
                     int count = 0;
                     if (getFuelProductCount() != 0 || getNonFuelProductCount() != 0) {
-                        count = getFuelProductCount() + getNonFuelProductCount();
                         if (getFuelProductCount() != 0) {
-                            productDataCountEntries = new LinkedHashMap<>(getFuelProductDataEntries());
-                            productDataCountEntries.putAll(getNonFuelProductDataEntries());
-                        } else {
-                            productDataCountEntries = new LinkedHashMap<>(getNonFuelProductDataEntries());
+                            productDataCountEntries.addAll(getFuelProductDataEntries().values());
                         }
-                    } else if (getProductDataEntries().size() != 0) {
-                        count = getProductCount();
-                        productDataCountEntries = new LinkedHashMap<>(productDataEntries);
-
+                        productDataCountEntries.addAll(getNonFuelProductDataEntries().values());
+                        count = productDataCountEntries.size();
+                    } else if (!getOrderedProductEntries().isEmpty()) {
+                        productDataCountEntries = new ArrayList<>(getOrderedProductEntries());
+                        count = productDataCountEntries.size();
                     }
                     rvalue = rvalue.concat(StringUtils.padLeft(count, 3, '0'));
                     if (!productDataCountEntries.isEmpty()) {
-                        for (DE63_ProductDataEntry entry : productDataCountEntries.values()) {
+                        for (DE63_ProductDataEntry entry : productDataCountEntries) {
                             rvalue = rvalue.concat(entry.getCode() + "\\");
 
                             if (entry.getUnitOfMeasure() != null) {
@@ -519,7 +534,12 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
             throw new UnsupportedOperationException(WEX_FUEL_PRODUCT_COUNT_EXCEPTION);
         }
 
-        int nonFuelCount = getNonFuelProductCount();
+        Set<String> discountCodes = getDiscountCodesForFleetCard(WEX_FLEET);
+        LinkedHashMap<String, DE63_ProductDataEntry> decreasingOrderNonFuelEntries = getDecreasingOrderNonFuelEntries();
+        LinkedHashMap<String, DE63_ProductDataEntry> nonDiscountNonFuelEntries = getFilteredNonFuelEntries(decreasingOrderNonFuelEntries, discountCodes, false);
+        List<DE63_ProductDataEntry> discountEntries = getDiscountEntriesInOrder(getFilteredNonFuelEntries(decreasingOrderNonFuelEntries, discountCodes, true));
+
+        int nonFuelCount = nonDiscountNonFuelEntries.size() + discountEntries.size();
         int encodedNonFuelCount = Math.min(nonFuelCount, WEX_MAX_NON_FUEL_PRODUCT_COUNT);
         String result = rvalue.concat(StringUtils.padLeft(getFuelProductCount() + encodedNonFuelCount, 3, '0'));
 
@@ -531,22 +551,39 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
             return result;
         }
 
-        Collection<DE63_ProductDataEntry> nonFuelEntries = getDecreasingOrderNonFuelEntries().values();
+        // Conexxus discounts and coupons are never folded into the rollup product.
+        boolean isRollupRequired = nonFuelCount > WEX_MAX_NON_FUEL_PRODUCT_COUNT;
 
-        if (nonFuelCount <= WEX_MAX_NON_FUEL_PRODUCT_COUNT) {
-            for (DE63_ProductDataEntry entry : nonFuelEntries) {
+        if (!isRollupRequired) {
+            for (DE63_ProductDataEntry entry : nonDiscountNonFuelEntries.values()) {
                 result = appendWexProductEntry(result, entry);
             }
+
+            for (DE63_ProductDataEntry entry : discountEntries) {
+                result = appendWexProductEntry(result, entry);
+            }
+
+            return result;
+        }
+
+        if (nonDiscountNonFuelEntries.isEmpty()) {
+            // Rollup required with discount-only products; emit discounts directly up to available slots.
+            for (int i = 0; i < WEX_MAX_NON_FUEL_PRODUCT_COUNT; i++) {
+                result = appendWexProductEntry(result, discountEntries.get(i));
+            }
+
             return result;
         }
 
         BigDecimal combinedQuantity = BigDecimal.ZERO;
         BigDecimal combinedAmount = BigDecimal.ZERO;
         int slotsBeforeRollup = WEX_MAX_NON_FUEL_PRODUCT_COUNT - 1;
+        int discountSlotsBeforeRollup = Math.min(discountEntries.size(), slotsBeforeRollup);
+        int nonDiscountSlotsBeforeRollup = slotsBeforeRollup - discountSlotsBeforeRollup;
         int processedCount = 0;
 
-        for (DE63_ProductDataEntry entry : nonFuelEntries) {
-            if (processedCount < slotsBeforeRollup) {
+        for (DE63_ProductDataEntry entry : nonDiscountNonFuelEntries.values()) {
+            if (processedCount < nonDiscountSlotsBeforeRollup) {
                 result = appendWexProductEntry(result, entry);
                 processedCount++;
             } else {
@@ -555,6 +592,11 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
                 }
                 combinedAmount = combinedAmount.add(entry.getAmount());
             }
+        }
+
+        // When rollup is used, discount entries must appear immediately before rollup.
+        for (int i = 0; i < discountSlotsBeforeRollup; i++) {
+            result = appendWexProductEntry(result, discountEntries.get(i));
         }
 
         // The rolled-up product aggregates mixed units, so it is reported as OtherOrUnknown.
@@ -716,24 +758,40 @@ public class DE63_ProductData implements IDataElement<DE63_ProductData> {
         return Collections.unmodifiableMap(map);
     }
 
-    private static Set<String> fleetCorDiscountCodes() {
+    private static Set<String> conexxusDiscountSaleCodes() {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-                FleetCorConexxusProductCode.DISCOUNT_1.getValue(),
-                FleetCorConexxusProductCode.DISCOUNT_2.getValue(),
-                FleetCorConexxusProductCode.DISCOUNT_3.getValue(),
-                FleetCorConexxusProductCode.DISCOUNT_4.getValue(),
-                FleetCorConexxusProductCode.DISCOUNT_5.getValue(),
-                FleetCorConexxusProductCode.COUPON_1.getValue(),
-                FleetCorConexxusProductCode.COUPON_2.getValue(),
-                FleetCorConexxusProductCode.COUPON_3.getValue(),
-                FleetCorConexxusProductCode.COUPON_4.getValue(),
-                FleetCorConexxusProductCode.COUPON_5.getValue(),
-                FleetCorConexxusProductCode.LOTTERY_PAY_OUT_INSTANT.getValue(),
-                FleetCorConexxusProductCode.LOTTERY_PAY_OUT_ONLINE.getValue(),
-                FleetCorConexxusProductCode.LOTTERY_PAY_OUT_OTHER.getValue(),
-                FleetCorConexxusProductCode.SPLIT_TENDER.getValue(),
-                FleetCorConexxusProductCode.TAX_DISCOUNT_FORGIVEN.getValue(),
-                FleetCorConexxusProductCode.MISCELLANEOUS_NEGATIVE_ADMINISTRATIVE.getValue()
+                ConexxusProductCodes.DISCOUNT_1.getValue(),
+                ConexxusProductCodes.DISCOUNT_2.getValue(),
+                ConexxusProductCodes.DISCOUNT_3.getValue(),
+                ConexxusProductCodes.DISCOUNT_4.getValue(),
+                ConexxusProductCodes.DISCOUNT_5.getValue(),
+                ConexxusProductCodes.COUPON_1.getValue(),
+                ConexxusProductCodes.COUPON_2.getValue(),
+                ConexxusProductCodes.COUPON_3.getValue(),
+                ConexxusProductCodes.COUPON_4.getValue(),
+                ConexxusProductCodes.COUPON_5.getValue(),
+                ConexxusProductCodes.LOTTERY_PAY_OUT_INSTANT.getValue(),
+                ConexxusProductCodes.LOTTERY_PAY_OUT_ONLINE.getValue(),
+                ConexxusProductCodes.LOTTERY_PAY_OUT_OTHER.getValue(),
+                ConexxusProductCodes.SPLIT_TENDER.getValue(),
+                ConexxusProductCodes.TAX_DISCOUNT_FORGIVEN.getValue(),
+                ConexxusProductCodes.MISCELLANEOUS_NEGATIVE_ADMINISTRATIVE.getValue(),
+                ConexxusProductCodes.TAX_1.getValue(),
+                ConexxusProductCodes.TAX_2.getValue(),
+                ConexxusProductCodes.TAX_3.getValue(),
+                ConexxusProductCodes.TAX_4.getValue(),
+                ConexxusProductCodes.TAX_5.getValue(),
+                ConexxusProductCodes.FEE_1.getValue(),
+                ConexxusProductCodes.FEE_2.getValue(),
+                ConexxusProductCodes.FEE_3.getValue(),
+                ConexxusProductCodes.FEE_4.getValue(),
+                ConexxusProductCodes.FEE_5.getValue(),
+                ConexxusProductCodes.MISCELLANEOUS_AVIATION_TAX.getValue(),
+                ConexxusProductCodes.GST_HST_VAT_1.getValue(),
+                ConexxusProductCodes.PST_QST_VAT_2.getValue(),
+                ConexxusProductCodes.SWT_RATE.getValue(),
+                ConexxusProductCodes.UNIDENTIFIED_ADMINISTRATIVE.getValue(),
+                ConexxusProductCodes.MISCELLANEOUS_ADMINISTRATIVE.getValue()
         )));
     }
 

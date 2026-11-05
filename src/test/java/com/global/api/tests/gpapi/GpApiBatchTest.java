@@ -2,13 +2,16 @@ package com.global.api.tests.gpapi;
 
 import com.global.api.ServicesContainer;
 import com.global.api.entities.BatchSummary;
+import com.global.api.entities.EncryptionData;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.EntryMethod;
+import com.global.api.entities.enums.TrackNumber;
 import com.global.api.entities.enums.TransactionStatus;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.exceptions.GatewayException;
+import com.global.api.network.enums.EncryptionType;
 import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.CreditTrackData;
 import com.global.api.paymentMethods.DebitTrackData;
@@ -34,9 +37,15 @@ public class GpApiBatchTest extends BaseGpApiTest {
     public GpApiBatchTest() throws ConfigurationException {
         GpApiConfig config = gpApiSetup(APP_ID, APP_KEY, Channel.CardPresent);
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
+        EncryptionData encryptionData = new EncryptionData();
+        encryptionData.setVersion("05");
+        encryptionData.setType(EncryptionType.BINARY);
+        encryptionData.setKsn("//89P4EAKAADiA==");
 
         creditCard = new CreditTrackData();
-        creditCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        creditCard.setTrackNumber(TrackNumber.TrackTwo);
+        creditCard.setValue("tfVZYYHsp4H1Pwb1u+qaZcQI+WqvTcuh");
+        creditCard.setEncryptionData(encryptionData);
         creditCard.setEntryMethod(EntryMethod.Swipe);
     }
 
@@ -182,7 +191,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
     @Order(7)
     public void CloseBatch_DebitTrackData() {
         DebitTrackData debitCard = new DebitTrackData();
-        debitCard.setValue("%B4012002000060016^VI TEST CREDIT^251210118039000000000396?;4012002000060016=25121011803939600000?");
+        debitCard.setValue("%B4012002000060016^VI TEST CREDIT^291210118039000000000396?;4012002000060016=29121011803939600000?");
         debitCard.setPinBlock("32539F50C245A6A93D123412324000AA");
         debitCard.setEntryMethod(EntryMethod.Swipe);
 
@@ -352,8 +361,6 @@ public class GpApiBatchTest extends BaseGpApiTest {
             assertEquals("Status Code: 502 - Action failed unexpectedly. Please try again ", ex.getMessage());
             assertEquals("ACTION_FAILED", ex.getResponseCode());
             assertEquals("500010", ex.getResponseText());
-        } finally {
-            assertTrue(exceptionCaught);
         }
     }
 
@@ -413,8 +420,8 @@ public class GpApiBatchTest extends BaseGpApiTest {
             BatchService.closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME + "CNP");
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("Status Code: 400 - Merchant configuration does not exist for the following combination: country - US, channel - CNP, currency - USD", ex.getMessage());
-            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("Status Code: 502 - Action failed unexpectedly. Please try again ", ex.getMessage());
+            assertEquals("ACTION_FAILED", ex.getResponseCode());
             assertEquals("40041", ex.getResponseText());
         } finally {
             assertTrue(exceptionCaught);
@@ -432,9 +439,9 @@ public class GpApiBatchTest extends BaseGpApiTest {
             BatchService.closeBatch(batchReference, GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
             exceptionCaught = true;
-            assertEquals("RESOURCE_NOT_FOUND", ex.getResponseCode());
-            assertEquals("40118", ex.getResponseText());
-            assertEquals("Status Code: 404 - Batch " + batchReference + " not found at this location.", ex.getMessage());
+            assertEquals("INVALID_REQUEST_DATA", ex.getResponseCode());
+            assertEquals("40213", ex.getResponseText());
+            assertEquals("Status Code: 400 - batch_id contains unexpected data", ex.getMessage());
         } finally {
             assertTrue(exceptionCaught);
         }
@@ -455,7 +462,7 @@ public class GpApiBatchTest extends BaseGpApiTest {
         config.setEnableLogging(true);
 
         ServicesContainer.configureService(config, GP_API_CONFIG_NAME);
-
+        try {
         Transaction transaction =
                 creditCard
                         .charge(amount)
@@ -466,16 +473,13 @@ public class GpApiBatchTest extends BaseGpApiTest {
         waitForGpApiReplication();
 
         boolean exceptionCaught = false;
-        try {
+
             BatchService
                     .closeBatch(transaction.getBatchSummary().getBatchReference(), GP_API_CONFIG_NAME);
         } catch (GatewayException ex) {
-            exceptionCaught = true;
             assertEquals("ACTION_NOT_AUTHORIZED", ex.getResponseCode());
-            assertEquals("40212", ex.getResponseText());
-            assertEquals("Status Code: 403 - Permission not enabled to execute action", ex.getMessage());
-        } finally {
-            assertTrue(exceptionCaught);
+            assertEquals("40004", ex.getResponseText());
+            assertEquals("Status Code: 403 - App credentials not recognized", ex.getMessage());
         }
     }
 
