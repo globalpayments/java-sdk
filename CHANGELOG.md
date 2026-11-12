@@ -1,6 +1,11 @@
 # Changelog
 
-## Latest Version - V15.5.0 (11/05/2026)
+## Latest Version - V15.5.1 (11/11/2026)
+### Enhancements:
+- [PAX] - Added better support for aborted transactions.  
+
+
+## Version - V15.5.0 (11/05/2026)
 ### Enhancements:
 - [GPAPI] - Added missing request and response fields for Authentication endpoint.
 - [TransIT] - Added surcharge data to authorization and charge transactions.

@@ -118,6 +118,9 @@ public class PaxDeviceResponse extends PaxBaseResponse {
     }
     
     protected String mapTransactionType(PaxTxnType transType) {
+		if(transType == null) {
+			return "UNKNOWN";
+		}
 		switch (transType) {
 		case SALE_REDEEM:
 		    return "SALE";
